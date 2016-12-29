@@ -32,4 +32,6 @@ public class HeliumConf {
   public void setRegistry(List<HeliumRegistry> registry) {
     this.registry = registry;
   }
+
+  // enabled visualization
 }

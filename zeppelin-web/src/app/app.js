@@ -46,13 +46,20 @@
           // withCredentials when running locally via grunt
           $httpProvider.defaults.withCredentials = true;
 
+          var visBundleLoad = {
+            load: function(heliumService) {
+              return heliumService.load;
+            }
+          };
+
           $routeProvider
             .when('/', {
               templateUrl: 'app/home/home.html'
             })
             .when('/notebook/:noteId', {
               templateUrl: 'app/notebook/notebook.html',
-              controller: 'NotebookCtrl'
+              controller: 'NotebookCtrl',
+              resolve: visBundleLoad
             })
             .when('/notebook/:noteId/paragraph?=:paragraphId', {
               templateUrl: 'app/notebook/notebook.html',
@@ -82,6 +89,10 @@
             .when('/credential', {
               templateUrl: 'app/credential/credential.html',
               controller: 'CredentialCtrl'
+            })
+            .when('/helium', {
+              templateUrl: 'app/helium/helium.html',
+              controller: 'HeliumCtrl'
             })
             .when('/configuration', {
               templateUrl: 'app/configuration/configuration.html',

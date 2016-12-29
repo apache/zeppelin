@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.helium.HeliumVisualizationFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -41,6 +42,7 @@ public class HeliumRestApi {
 
   private Helium helium;
   private HeliumApplicationFactory applicationFactory;
+  private HeliumVisualizationFactory visualizationFactory;
   private Notebook notebook;
   private Gson gson = new Gson();
 
@@ -49,9 +51,11 @@ public class HeliumRestApi {
 
   public HeliumRestApi(Helium helium,
                        HeliumApplicationFactory heliumApplicationFactory,
+                       HeliumVisualizationFactory heliumVisualizationFactory,
                        Notebook notebook) {
     this.helium  = helium;
     this.applicationFactory = heliumApplicationFactory;
+    this.visualizationFactory = heliumVisualizationFactory;
     this.notebook = notebook;
   }
 
@@ -105,4 +109,11 @@ public class HeliumRestApi {
     return new JsonResponse(Response.Status.OK, "", appId).build();
   }
 
+  @GET
+  @Path("visualizations/load")
+  @Produces("text/javascript")
+  public Response visualizationLoad() {
+
+    return Response.ok("console.log(' -- vis bundle -- ');").build();
+  }
 }

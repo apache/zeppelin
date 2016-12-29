@@ -132,6 +132,15 @@ public class Helium {
     return list;
   }
 
+  public void enable(HeliumPackage pkg) {
+
+  }
+
+  public void disable(HeliumPackage pkg) {
+
+  }
+
+
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
     HeliumPackageSuggestion suggestion = new HeliumPackageSuggestion();
 

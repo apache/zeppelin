@@ -35,6 +35,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
+import org.apache.zeppelin.helium.HeliumVisualizationFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -83,6 +84,7 @@ public class ZeppelinServer extends Application {
   public static NotebookServer notebookWsServer;
   public static Helium helium;
   public static HeliumApplicationFactory heliumApplicationFactory;
+  public static HeliumVisualizationFactory heliumVisualizationFactory;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -100,6 +102,10 @@ public class ZeppelinServer extends Application {
 
     this.helium = new Helium(conf.getHeliumConfPath(), conf.getHeliumDefaultLocalRegistryPath());
     this.heliumApplicationFactory = new HeliumApplicationFactory();
+    this.heliumVisualizationFactory = new HeliumVisualizationFactory(
+        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)));
+
+
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated());
@@ -332,7 +338,8 @@ public class ZeppelinServer extends Application {
     NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
     singletons.add(notebookRepoApi);
 
-    HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);
+    HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory,
+        heliumVisualizationFactory, notebook);
     singletons.add(heliumApi);
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
