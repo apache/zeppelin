@@ -556,6 +556,10 @@
 
         $scope.editor.commands.bindKey('ctrl-alt-l', null);
         $scope.editor.commands.bindKey('ctrl-alt-w', null);
+        $scope.editor.commands.bindKey('ctrl-alt-a', null);
+        $scope.editor.commands.bindKey('ctrl-alt-k', null);
+        $scope.editor.commands.bindKey('ctrl-alt-e', null);
+        $scope.editor.commands.bindKey('ctrl-alt-t', null);
 
         // autocomplete on 'ctrl+.'
         $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
