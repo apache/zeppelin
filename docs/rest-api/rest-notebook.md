@@ -92,7 +92,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
@@ -275,7 +275,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
@@ -710,7 +710,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
@@ -1010,7 +1010,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
@@ -1060,7 +1060,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>

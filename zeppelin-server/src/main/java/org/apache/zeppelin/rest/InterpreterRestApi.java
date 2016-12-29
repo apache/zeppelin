@@ -122,7 +122,7 @@ public class InterpreterRestApi {
           .createNewSetting(request.getName(), request.getGroup(), request.getDependencies(),
               request.getOption(), p);
       logger.info("new setting created with {}", interpreterSetting.getId());
-      return new JsonResponse<>(Status.CREATED, "", interpreterSetting).build();
+      return new JsonResponse<>(Status.OK, "", interpreterSetting).build();
     } catch (InterpreterException | IOException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
@@ -237,7 +237,7 @@ public class InterpreterRestApi {
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
           ExceptionUtils.getStackTrace(e)).build();
     }
-    return new JsonResponse(Status.CREATED).build();
+    return new JsonResponse(Status.OK).build();
   }
 
   /**

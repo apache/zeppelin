@@ -253,7 +253,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td>Fail code</td>
@@ -492,7 +492,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td>Fail code</td>
