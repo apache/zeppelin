@@ -1,4 +1,5 @@
 {
+  "preset": "google",
   "env": {
     "browser": true,
     "jasmine": true,
@@ -9,7 +10,7 @@
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true
     },
-	"sourceType": "module"
+    "sourceType": "module"
   },
   "globals": {
     "angular": false,
@@ -40,6 +41,7 @@
     "no-shadow": 0,
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
-    "strict": [2, "global"]
+    "strict": [2, "global"],
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
   }
 }
