@@ -271,8 +271,9 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Add paragraph last.
    */
-  public Paragraph addParagraph() {
+  public Paragraph addParagraph(AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory);
+    p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, paragraphs.size());
     synchronized (paragraphs) {
       paragraphs.add(p);
@@ -327,8 +328,9 @@ public class Note implements Serializable, ParagraphJobListener {
    *
    * @param index index of paragraphs
    */
-  public Paragraph insertParagraph(int index) {
+  public Paragraph insertParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory);
+    p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, index);
     synchronized (paragraphs) {
       paragraphs.add(index, p);

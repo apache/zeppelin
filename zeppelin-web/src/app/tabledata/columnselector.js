@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 
-'use strict';
-
-var zeppelin = zeppelin || {};
+import zeppelin from '../zeppelin';
 
 /**
  * select columns
