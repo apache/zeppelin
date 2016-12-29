@@ -155,6 +155,26 @@
   },
   {
     "group": "livy",
+    "name": "pyspark3",
+    "className": "org.apache.zeppelin.livy.LivyPySpark3Interpreter",
+    "properties": {
+    },    
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  },  
+  {
+    "group": "livy",
     "name": "sparkr",
     "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
     "properties": {
