@@ -135,7 +135,7 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/app/**/*.js',
           '<%= yeoman.app %>/components/**/*.js'
         ],
-        tasks: ['newer:eslint:all', 'newer:jscs:all'],
+        tasks: ['newer:eslint:all'],
       },
       html: {
         files: [
@@ -147,7 +147,6 @@ module.exports = function(grunt) {
         files: ['test/spec/{,*/}*.js'],
         tasks: [
           'newer:eslint:test',
-          'newer:jscs:test',
           'karma'
         ]
       },
@@ -172,25 +171,6 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/**/*.css',
           '<%= yeoman.app %>/assets/images/**/*.{png,jpg,jpeg,gif,webp,svg}'
         ]
-      }
-    },
-
-    jscs: {
-      options: {
-        config: '.jscsrc',
-        esnext: true, // If you use ES6 http://jscs.info/overview.html#esnext
-        verbose: true, // If you need output with rule names http://jscs.info/overview.html#verbose
-        requireCurlyBraces: ['if']
-      },
-      all: {
-        src: [
-          'Gruntfile.js',
-          '<%= yeoman.app %>/app/**/*.js',
-          '<%= yeoman.app %>/components/**/*.js'
-        ]
-      },
-      test: {
-        src: ['test/spec/{,*/}*.js']
       }
     },
 
@@ -471,7 +451,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('pre-webpack-dist', [
-    'jscs',
     'eslint',
     'htmlhint',
     'clean:dist',
