@@ -191,7 +191,7 @@
     };
 
     $scope.$watch($scope.getEditor, function(newValue, oldValue) {
-      if (newValue === null) {
+      if (newValue === null || newValue === undefined) {
         console.log('editor isn\'t loaded yet, returning..');
         return;
       }
