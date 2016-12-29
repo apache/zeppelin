@@ -85,11 +85,11 @@
     function normalizeFolderId(folderId) {
       folderId = folderId.trim();
 
-      while (folderId.contains('\\')) {
+      while (folderId.indexOf('\\') > -1) {
         folderId = folderId.replace('\\', '/');
       }
 
-      while (folderId.contains('///')) {
+      while (folderId.indexOf('///') > -1) {
         folderId = folderId.replace('///', '/');
       }
 
