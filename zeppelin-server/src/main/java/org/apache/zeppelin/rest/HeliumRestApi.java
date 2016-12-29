@@ -123,6 +123,5 @@ public class HeliumRestApi {
       logger.error(e.getMessage(), e);
       return Response.serverError().build();
     }
-
   }
 }
