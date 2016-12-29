@@ -95,7 +95,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException {
 
-    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+    checkIfUserIsAnon(blockNotAuthenticatedUserError());
     checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot get the list of permissions for this note");
     HashMap<String, Set<String>> permissionsMap = new HashMap<>();
@@ -113,7 +113,8 @@ public class NotebookRestApi {
         "User belongs to: " + current.toString();
   }
 
-  private String getBlockNotAuthenticatedUserErrorMsg() throws IOException {
+  private String blockNotAuthenticatedUserError() throws IOException {
+    LOG.info("Anonymous user cannot set any permissions for this note.");
     return  "Only authenticated user can set the permission.";
   }
 
@@ -128,8 +129,7 @@ public class NotebookRestApi {
    */
   private void checkIfUserIsAnon(String errorMsg) {
     boolean isAuthenticated = SecurityUtils.isAuthenticated();
-    if (isAuthenticated && SecurityUtils.getPrincipal().equals("anonymous")) {
-      LOG.info("Anonymous user cannot set any permissions for this note.");
+    if (!isAuthenticated) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -196,7 +196,7 @@ public class NotebookRestApi {
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
 
-    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+    checkIfUserIsAnon(blockNotAuthenticatedUserError());
     checkIfUserIsOwner(noteId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
     
