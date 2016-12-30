@@ -223,27 +223,30 @@ limitations under the License.
     </span>
     </div>
 
-    <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
-      <span class="setting-btn"
-            type="button"
-            data-toggle="modal"
-            data-target="#shortcutModal"
-            tooltip-placement="bottom" tooltip="List of shortcut">
-        <i class="fa fa-keyboard-o"></i>
-      </span>
-      <span class="setting-btn"
-            type="button"
-            ng-click="toggleSetting()"
-            tooltip-placement="bottom" tooltip="Interpreter binding">
-        <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
-      </span>
-      <span class="setting-btn"
-            type="button"
-            ng-click="togglePermissions()"
-            tooltip-placement="bottom" tooltip="Note permissions">
-        <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
-      </span>
 
+    <div class="pull-right" style="margin-top:15px; margin-right:15px; margin-left: 15px; margin-bottom: 13px; font-size:15px;">
+      <span ng-if="!revisionView">
+        <span class="setting-btn"
+              type="button"
+              data-toggle="modal"
+              data-target="#shortcutModal"
+              tooltip-placement="bottom" tooltip="List of shortcut">
+          <i class="fa fa-keyboard-o"></i>
+        </span>
+        <span class="setting-btn"
+              type="button"
+              ng-click="toggleSetting()"
+              tooltip-placement="bottom" tooltip="Interpreter binding">
+          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+        </span>
+        <span class="setting-btn"
+              type="button"
+              ng-click="togglePermissions()"
+              tooltip-placement="bottom" tooltip="Note permissions">
+          <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
+        </span>
+      </span>
+      
       <span class="btn-group">
         <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                 data-toggle="dropdown">
