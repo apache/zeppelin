@@ -357,4 +357,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   public void onRemoteRunParagraph(String noteId, String PsaragraphID) throws Exception {
 
   }
+
+  @Override
+  public void onGetParagraphJobStatus(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+
+  }
 }

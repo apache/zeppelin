@@ -43,7 +43,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   APP_STATUS_UPDATE(12),
   META_INFOS(13),
   REMOTE_ZEPPELIN_SERVER_RESOURCE(14),
-  RESOURCE_INVOKE_METHOD(15);
+  RESOURCE_INVOKE_METHOD(15),
+  REMOTE_ZEPPELIN_JOB_STATUS(16);
 
   private final int value;
 
@@ -94,6 +95,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
         return REMOTE_ZEPPELIN_SERVER_RESOURCE;
       case 15:
         return RESOURCE_INVOKE_METHOD;
+      case 16:
+        return REMOTE_ZEPPELIN_JOB_STATUS;
       default:
         return null;
     }

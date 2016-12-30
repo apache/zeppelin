@@ -17,43 +17,49 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.scheduler.Job.Status;
+
+import java.util.Date;
+
 /**
- * Remote Zeppelin Server Resource
+ * Remote Zeppelin Server job status
  */
-public class RemoteZeppelinServerResource {
-  /**
-   * Resource Type for Zeppelin Server
-   */
-  public enum Type{
-    PARAGRAPH_RUNNERS,
-    JOB_STATUS
+public class RemoteZeppelinJobStatus {
+
+  private String noteId;
+  private Status jobStatus;
+  private String paragraphId;
+  private Date lastRunningTime;
+
+  public String getNoteId() {
+    return noteId;
   }
 
-  private String ownerKey;
-  private Type resourceType;
-  private Object data;
-
-  public Type getResourceType() {
-    return resourceType;
+  public void setNoteId(String noteId) {
+    this.noteId = noteId;
   }
 
-  public String getOwnerKey() {
-    return ownerKey;
+  public Status getJobStatus() {
+    return jobStatus;
   }
 
-  public void setOwnerKey(String ownerKey) {
-    this.ownerKey = ownerKey;
+  public void setJobStatus(Status jobStatus) {
+    this.jobStatus = jobStatus;
   }
 
-  public void setResourceType(Type resourceType) {
-    this.resourceType = resourceType;
+  public String getParagraphId() {
+    return paragraphId;
   }
 
-  public Object getData() {
-    return data;
+  public void setParagraphId(String paragraphId) {
+    this.paragraphId = paragraphId;
   }
 
-  public void setData(Object data) {
-    this.data = data;
+  public Date getLastRunningTime() {
+    return lastRunningTime;
+  }
+
+  public void setLastRunningTime(Date lastRunningTime) {
+    this.lastRunningTime = lastRunningTime;
   }
 }

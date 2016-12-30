@@ -46,6 +46,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.RemoteWorksController;
+import org.apache.zeppelin.interpreter.RemoteZeppelinJobStatus;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -345,10 +346,21 @@ public class ZeppelinContext {
 
   }
 
+  /**
+   * Run Zeppelin Note by note id
+   * @param noteId
+   */
+  @ZeppelinApi
   public void runNote(String noteId) {
     runNote(noteId, interpreterContext);
   }
 
+  /**
+   * Run Zepppelin Note by note id
+   * @param noteId
+   * @param context
+   */
+  @ZeppelinApi
   public void runNote(String noteId, InterpreterContext context) {
     String runningNoteId = context.getNoteId();
     String runningParagraphId = context.getParagraphId();
@@ -364,6 +376,31 @@ public class ZeppelinContext {
       }
       r.run();
     }
+  }
+
+  /**
+   * get job status by zeppelin note id and paragraph id
+   * @param noteId
+   * @param paragraphId
+   * @return
+   */
+  @ZeppelinApi
+  public RemoteZeppelinJobStatus getZepplinJobStatus(String noteId, String paragraphId) {
+    return getZepplinJobStatus(noteId, paragraphId, interpreterContext);
+  }
+
+  /**
+   * get job status by zeppelin note id and paragraph id
+   * @param noteId
+   * @param paragraphId
+   * @param context
+   * @return
+   */
+  @ZeppelinApi
+  public RemoteZeppelinJobStatus getZepplinJobStatus(
+      String noteId, String paragraphId, InterpreterContext context) {
+    RemoteWorksController remoteWorksController = context.getRemoteWorksController();
+    return remoteWorksController.getRemoteJobStatus(noteId, paragraphId);
   }
 
 

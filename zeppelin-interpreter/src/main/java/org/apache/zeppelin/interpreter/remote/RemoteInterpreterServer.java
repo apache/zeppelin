@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -373,6 +374,17 @@ public class RemoteInterpreterServer
               response.getOwnerKey(),
               intpContextRunners);
         }
+      } else if (response.getResourceType() == RemoteZeppelinServerResource.Type.JOB_STATUS) {
+
+        String jobStatusJsonString = response.getData().toString();
+        RemoteZeppelinJobStatus jobStatus = gson.fromJson(
+          jobStatusJsonString, RemoteZeppelinJobStatus.class);
+
+        synchronized (this.remoteWorksResponsePool) {
+          this.remoteWorksResponsePool.put(
+              response.getOwnerKey(),
+              jobStatus);
+        }
       }
     } catch (Exception e) {
       throw e;
@@ -719,7 +731,26 @@ public class RemoteInterpreterServer
       return runners;
     }
 
+    @Override
+    public RemoteZeppelinJobStatus getRemoteJobStatus(String noteId, String paragraphId) {
+      RemoteZeppelinJobStatus jobStatus = null;
+      String ownerKey = generateOwnerKey();
+      if (StringUtils.isBlank(noteId) || StringUtils.isBlank(paragraphId)) {
+        return null;
+      }
+      server.eventClient.getZeppelinServerJobStatus(ownerKey, noteId, paragraphId);
 
+      try {
+        this.waitForEvent(ownerKey);
+      } catch (Exception e) {
+        return null;
+      }
+      synchronized (this.remoteWorksResponsePool) {
+        jobStatus = (RemoteZeppelinJobStatus) this.remoteWorksResponsePool.get(ownerKey);
+        this.remoteWorksResponsePool.remove(ownerKey);
+      }
+      return jobStatus;
+    }
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,
