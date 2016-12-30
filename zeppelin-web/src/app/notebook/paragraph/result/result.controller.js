@@ -580,6 +580,9 @@ import zeppelin from '../../../zeppelin';
 
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
+      var currentTime = moment().format('YYYY-MM-DD hh:mm:ss A');
+      var exportedFileName = paragraph.title ? paragraph.title + '_' + currentTime : 'Exported data_' + currentTime;
+
       for (var titleIndex in tableData.columns) {
         dsv += tableData.columns[titleIndex].name + delimiter;
       }
@@ -603,7 +606,7 @@ import zeppelin from '../../../zeppelin';
       } else if (delimiter === ',') {
         extension = 'csv';
       }
-      saveAsService.saveAs(dsv, 'data', extension);
+      saveAsService.saveAs(dsv, exportedFileName, extension);
     };
 
     $scope.getBase64ImageSrc = function(base64Data) {
