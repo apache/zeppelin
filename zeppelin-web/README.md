@@ -29,7 +29,7 @@ $ yarn run build
 
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
-$ yarn run start 
+$ yarn run dev
 
 # execute tests
 $ yarn run test
