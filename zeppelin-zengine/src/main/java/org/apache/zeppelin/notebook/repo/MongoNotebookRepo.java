@@ -229,7 +229,8 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject) throws IOException {
+  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+      throws IOException {
     // no-op
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
@@ -248,7 +249,8 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject) throws IOException {
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException {
     // Auto-generated method stub
     return null;
   }
