@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -47,6 +48,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.RemoteZeppelinJobStatus;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -1609,7 +1611,7 @@ public class NotebookServer extends WebSocketServlet
 
     if (notebookIns == null) {
       LOG.info("intepreter request notebook instance is null");
-      callback.onFinished(notebookIns);
+      callback.onFinished(runner);
     }
 
     try {
@@ -1627,6 +1629,37 @@ public class NotebookServer extends WebSocketServlet
         }
       }
       callback.onFinished(runner);
+    } catch (NullPointerException e) {
+      LOG.warn(e.getMessage());
+      callback.onError();
+    }
+  }
+
+  @Override
+  public void onGetParagraphJobStatus(String noteId, String paragraphId,
+      RemoteWorksEventListener callback) {
+    Notebook notebookIns = notebook();
+    RemoteZeppelinJobStatus jobStatus = new RemoteZeppelinJobStatus();
+    jobStatus.setNoteId(noteId);
+    jobStatus.setParagraphId(paragraphId);
+    jobStatus.setJobStatus(Status.ERROR);
+    jobStatus.setLastRunningTime(new Date());
+
+    if (notebookIns == null) {
+      LOG.info("intepreter request notebook instance is null");
+      callback.onFinished(jobStatus);
+    }
+
+    try {
+      Note note = notebookIns.getNote(noteId);
+      if (note != null) {
+        if (paragraphId != null) {
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          jobStatus.setJobStatus(paragraph.getStatus());
+          jobStatus.setLastRunningTime(paragraph.getDateStarted());
+        }
+      }
+      callback.onFinished(jobStatus);
     } catch (NullPointerException e) {
       LOG.warn(e.getMessage());
       callback.onError();

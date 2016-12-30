@@ -26,5 +26,5 @@ import java.util.List;
 public interface RemoteWorksController {
   List<InterpreterContextRunner> getRemoteContextRunner(String noteId);
   List<InterpreterContextRunner> getRemoteContextRunner(String noteId, String paragraphId);
-  RemoteWorkJobStatus getRemoteJobStatus(String noteId, String paragraphId);
+  RemoteZeppelinJobStatus getRemoteJobStatus(String noteId, String paragraphId);
 }

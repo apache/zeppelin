@@ -17,10 +17,14 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.scheduler.Job.Status;
+
+import java.util.Date;
+
 /**
  * Remote Zeppelin Server job status
  */
-public class RemoteZeppelinServerResource {
+public class RemoteZeppelinJobStatus {
 
   private String noteId;
   private Status jobStatus;

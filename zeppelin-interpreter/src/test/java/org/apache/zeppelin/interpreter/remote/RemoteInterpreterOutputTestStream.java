@@ -182,4 +182,9 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
 
   }
+
+  @Override
+  public void onGetParagraphJobStatus(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+
+  }
 }
