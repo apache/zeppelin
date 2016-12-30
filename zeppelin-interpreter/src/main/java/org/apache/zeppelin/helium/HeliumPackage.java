@@ -46,13 +46,15 @@ public class HeliumPackage {
                        String description,
                        String artifact,
                        String className,
-                       String[][] resources) {
+                       String[][] resources,
+                       String icon) {
     this.type = type;
     this.name = name;
     this.description = description;
     this.artifact = artifact;
     this.className = className;
     this.resources = resources;
+    this.icon = icon;
   }
 
   @Override

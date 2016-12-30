@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Helium Rest Api
@@ -113,7 +116,13 @@ public class HeliumRestApi {
   @Path("visualizations/load")
   @Produces("text/javascript")
   public Response visualizationLoad() {
+    try {
+      String visBundle = FileUtils.readFileToString(new File("/tmp/npm/vis.bundle.js"));
+      return Response.ok(visBundle).build();
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+      return Response.serverError().build();
+    }
 
-    return Response.ok("console.log(' -- vis bundle -- ');").build();
   }
 }

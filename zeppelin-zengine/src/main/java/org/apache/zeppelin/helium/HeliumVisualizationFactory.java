@@ -109,18 +109,26 @@ public class HeliumVisualizationFactory {
     String webpackConfig = Resources.toString(webpackConfigUrl, Charsets.UTF_8);
 
     // generate load.js
-    StringBuilder loadJs = new StringBuilder();
+    StringBuilder loadJsImport = new StringBuilder();
+    StringBuilder loadJsRegister = new StringBuilder();
     for (HeliumPackage pkg : pkgs) {
       String [] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
       if (moduleNameVersion == null) {
         continue;
       }
-      loadJs.append("import " + moduleNameVersion[0] + " from \"" + moduleNameVersion[0] + "\"\n");
+      loadJsImport.append(
+          "import " + moduleNameVersion[0] + " from \"" + moduleNameVersion[0] + "\"\n");
+      loadJsRegister.append("visualizations.push({" +
+          "id: '" + moduleNameVersion[0] + "'," +
+          "name: '" + pkg.getName() + "'," +
+          "icon: '" + pkg.getIcon() + "'," +
+          "class: " + moduleNameVersion[0] +
+          "})\n");
     }
 
     FileUtils.write(new File(workingDirectory, "package.json"), pkgJson);
     FileUtils.write(new File(workingDirectory, "webpack.config.js"), webpackConfig);
-    FileUtils.write(new File(workingDirectory, "load.js"), loadJs.toString());
+    FileUtils.write(new File(workingDirectory, "load.js"), loadJsImport.append(loadJsRegister).toString());
 
     // install tabledata module
     File tabledataModuleInstallPath = new File(workingDirectory,

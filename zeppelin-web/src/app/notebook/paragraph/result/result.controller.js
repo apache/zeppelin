@@ -40,12 +40,13 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
     'baseUrlSrv',
     'ngToast',
     'saveAsService',
-    'noteVarShareService'
+    'noteVarShareService',
+    'heliumService'
   ];
 
   function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                       $timeout, $compile, $http, $q, $templateRequest, websocketMsgSrv,
-                      baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
+                      baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
 
     /**
      * Built-in visualizations
@@ -152,6 +153,21 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
 
     $scope.init = function(result, config, paragraph, index) {
       console.log('result controller init %o %o %o', result, config, index);
+
+      // register helium plugin vis
+      var heliumVis = heliumService.get();
+      console.log('Helium visualizations %o', heliumVis);
+      heliumVis.forEach(function(vis) {
+        $scope.builtInTableDataVisualizationList.push({
+          id: vis.id,
+          name: vis.name,
+          icon: vis.icon
+        });
+        builtInVisualizations[vis.id] = {
+          class: vis.class
+        };
+      });
+
       updateData(result, config, paragraph, index);
       renderResult($scope.type);
     };

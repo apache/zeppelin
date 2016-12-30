@@ -85,7 +85,8 @@ public class HeliumTest {
         "desc1",
         "artifact1",
         "className1",
-        new String[][]{}));
+        new String[][]{},
+        ""));
 
     registry2.add(new HeliumPackage(
         HeliumPackage.Type.APPLICATION,
@@ -93,7 +94,8 @@ public class HeliumTest {
         "desc2",
         "artifact2",
         "className2",
-        new String[][]{}));
+        new String[][]{},
+        ""));
 
     // then
     assertEquals(2, helium.getAllPackageInfo().size());

@@ -71,7 +71,8 @@ public class HeliumVisualizationFactoryTest {
         "lodash",
         "lodash^3.9.3",
         "",
-        null
+        null,
+        "icon"
     );
     hvf.install(pkg);
     assertTrue(new File(tmpDir, "node_modules/lodash").isDirectory());
@@ -85,7 +86,8 @@ public class HeliumVisualizationFactoryTest {
         "lodash",
         "lodash^3.9.3",
         "",
-        null
+        null,
+        "icon"
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
     pkgs.add(pkg);
@@ -107,7 +109,8 @@ public class HeliumVisualizationFactoryTest {
         "vis1",
         localPkg,
         "",
-        null
+        null,
+        "fa fa-coffee"
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
     pkgs.add(pkg);
