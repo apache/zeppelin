@@ -11,7 +11,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
+<a style="text-decoration: none; position: relative;">
+  <i style="font-size: 13px; margin: 5px; cursor: pointer; text-decoration: none; position: absolute; right: 0; z-index: 1;"
+     class="fa fa-eraser" ng-click="clearAllParagraphOutput(note.id)"
+     tooltip-placement="left" tooltip="Clear notes output">
+  </i>
+</a>
 <a class="notebook-list-item" ng-if="!note.children" href="#/notebook/{{note.id}}">
   <i style="font-size: 10px; margin-right: 5px;" class="icon-doc"></i>
   <span>{{noteName(note)}}</span>
