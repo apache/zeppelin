@@ -146,7 +146,8 @@ limitations under the License.
               </div>
               <div ng-if="query && query.name !== ''">
                 <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
-                  <i style="font-size: 10px;" class="icon-doc"></i>
+                  <i ng-if="!note.isTrash" style="font-size: 10px;" class="icon-doc"></i>
+                  <i ng-if="note.isTrash" style="font-size: 12px;" class="fa fa-trash-o"></i>
                   <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
                 </li>
               </div>
