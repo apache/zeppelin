@@ -66,6 +66,7 @@
             <exclude>**/*.iml</exclude>
             <exclude>.git/</exclude>
             <exclude>.gitignore</exclude>
+            <exclude>.babelrc</exclude>
             <exclude>.bowerrc</exclude>
             <exclude>.editorconfig</exclude>
             <exclude>.jscsrc</exclude>

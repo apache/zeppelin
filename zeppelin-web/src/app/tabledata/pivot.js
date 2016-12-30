@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 
-'use strict';
-
-var zeppelin = zeppelin || {};
+import zeppelin from '../zeppelin';
 
 /**
  * pivot table data and return d3 chart data
@@ -262,4 +260,3 @@ zeppelin.PivotTransformation.prototype.pivot = function(data, keys, groups, valu
     rows: rows
   };
 };
-

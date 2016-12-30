@@ -93,6 +93,14 @@ public class NotebookRepoSync implements NotebookRepo {
       LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
     }
+    // sync for anonymous mode on start
+    if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
+      try {
+        sync(AuthenticationInfo.ANONYMOUS);
+      } catch (IOException e) {
+        LOG.error("Couldn't sync on start ", e);
+      }
+    }
   }
 
   @SuppressWarnings("static-access")
