@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -54,7 +56,13 @@ import org.quartz.SchedulerException;
 import org.sonatype.aether.RepositoryException;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+
 import org.mockito.Mock;
 
 public class InterpreterFactoryTest {
@@ -309,5 +317,36 @@ public class InterpreterFactoryTest {
     // when interpreter is not bound to note
     editor = factory.getEditorSetting("user1", note.getId(), "mock2");
     assertEquals("text", editor.get("language"));
+  }
+
+  @Test
+  public void registerCustomInterpreterRunner() throws IOException {
+    InterpreterFactory spyFactory = spy(factory);
+
+    doNothing().when(spyFactory).saveToFile();
+
+    ArrayList<InterpreterInfo> interpreterInfos1 = new ArrayList<>();
+    interpreterInfos1.add(new InterpreterInfo("name1.class", "name1", true, Maps.<String, Object>newHashMap()));
+
+    spyFactory.add("normalGroup1", interpreterInfos1, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/normalGroup1", null);
+
+    spyFactory.createNewSetting("normalGroup1", "normalGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
+
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo("name1.class", "name1", true, Maps.<String, Object>newHashMap()));
+
+    InterpreterRunner mockInterpreterRunner = mock(InterpreterRunner.class);
+
+    when(mockInterpreterRunner.getPath()).thenReturn("custom-linux-path.sh");
+
+    spyFactory.add("customGroup1", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/customGroup1", mockInterpreterRunner);
+
+    spyFactory.createNewSetting("customGroup1", "customGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
+
+    spyFactory.setInterpreters("anonymous", "noteCustome", spyFactory.getDefaultInterpreterSettingList());
+
+    spyFactory.getInterpreter("anonymous", "noteCustome", "customGroup1");
+
+    verify(mockInterpreterRunner, times(1)).getPath();
   }
 }

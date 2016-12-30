@@ -548,7 +548,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
-  private void saveToFile() throws IOException {
+  void saveToFile() throws IOException {
     String jsonString;
 
     synchronized (interpreterSettings) {
