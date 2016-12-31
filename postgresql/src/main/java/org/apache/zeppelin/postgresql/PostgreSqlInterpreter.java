@@ -315,7 +315,6 @@ public class PostgreSqlInterpreter extends Interpreter {
 
     // It's strange, but here cursor comes with +1 extra
     cursor = cursor - 1;
-    logger.info("CURSOR = " + cursor);
 
     List<CharSequence> candidates = new ArrayList<>();
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
