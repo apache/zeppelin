@@ -381,7 +381,11 @@
 
     $scope.setLookAndFeel = function(looknfeel) {
       $scope.note.config.looknfeel = looknfeel;
-      $scope.setConfig();
+      if ($scope.revisionView === true) {
+        $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
+      } else {
+        $scope.setConfig();
+      }
     };
 
     /** Set cron expression for this note **/
