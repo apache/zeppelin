@@ -84,27 +84,33 @@ public class PostgreSqlInterpreter extends Interpreter {
   static final String DEFAULT_JDBC_USER_NAME = "gpadmin";
   static final String DEFAULT_JDBC_DRIVER_NAME = "org.postgresql.Driver";
   static final String DEFAULT_MAX_RESULT = "1000";
+  static final String DEFAULT_COMPLETER_SCHEMA_FILTER = "";
 
   static final String POSTGRESQL_SERVER_URL = "postgresql.url";
   static final String POSTGRESQL_SERVER_USER = "postgresql.user";
   static final String POSTGRESQL_SERVER_PASSWORD = "postgresql.password";
   static final String POSTGRESQL_SERVER_DRIVER_NAME = "postgresql.driver.name";
   static final String POSTGRESQL_SERVER_MAX_RESULT = "postgresql.max.result";
+  static final String POSTGRESQL_COMPLETER_SCHEMA_FILTER = "postgresql.completer.schema.filter";
+
   static final String EMPTY_COLUMN_VALUE = "";
 
   static {
     Interpreter.register(
-        "sql",
-        "psql",
-        PostgreSqlInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(POSTGRESQL_SERVER_URL, DEFAULT_JDBC_URL, "The URL for PostgreSQL.")
-            .add(POSTGRESQL_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The PostgreSQL user name")
-            .add(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
-                "The PostgreSQL user password")
-            .add(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
-            .add(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
-                "Max number of SQL result to display.").build());
+            "sql",
+            "psql",
+            PostgreSqlInterpreter.class.getName(),
+            new InterpreterPropertyBuilder()
+                    .add(POSTGRESQL_SERVER_URL, DEFAULT_JDBC_URL, "The URL for PostgreSQL.")
+                    .add(POSTGRESQL_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The PostgreSQL user name")
+                    .add(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
+                            "The PostgreSQL user password")
+                    .add(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME,
+                            "JDBC Driver Name")
+                    .add(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
+                            "Max number of SQL result to display.")
+                    .add(POSTGRESQL_COMPLETER_SCHEMA_FILTER, DEFAULT_COMPLETER_SCHEMA_FILTER,
+                            "Schema names filter for auto-complition").build());
   }
 
   private Connection jdbcConnection;
@@ -112,7 +118,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   private Exception exceptionOnConnect;
   private int maxResult;
 
-  private SqlCompleter sqlCompleter;
+  private SqlCompleter sqlCompleter = new SqlCompleter();
 
   private static final Function<CharSequence, InterpreterCompletion> sequenceToStringTransformer =
       new Function<CharSequence, InterpreterCompletion>() {
@@ -142,12 +148,13 @@ public class PostgreSqlInterpreter extends Interpreter {
       String user = getProperty(POSTGRESQL_SERVER_USER);
       String password = getProperty(POSTGRESQL_SERVER_PASSWORD);
       maxResult = Integer.valueOf(getProperty(POSTGRESQL_SERVER_MAX_RESULT));
+      String schemaFilter = getProperty(POSTGRESQL_COMPLETER_SCHEMA_FILTER);
 
       Class.forName(driverName);
 
       jdbcConnection = DriverManager.getConnection(url, user, password);
 
-      sqlCompleter = createSqlCompleter(jdbcConnection);
+      sqlCompleter.initFromConnection(jdbcConnection, schemaFilter);
 
       exceptionOnConnect = null;
       logger.info("Successfully created psql connection");
@@ -157,23 +164,6 @@ public class PostgreSqlInterpreter extends Interpreter {
       exceptionOnConnect = e;
       close();
     }
-  }
-
-  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
-
-    SqlCompleter completer = null;
-    try {
-      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
-      Set<String> dataModelCompletions =
-          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
-      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
-      completer = new SqlCompleter(allCompletions, dataModelCompletions);
-
-    } catch (IOException | SQLException e) {
-      logger.error("Cannot create SQL completer", e);
-    }
-
-    return completer;
   }
 
   @Override
@@ -250,9 +240,8 @@ public class PostgreSqlInterpreter extends Interpreter {
 
           // In case of update event (e.g. isResultSetAvailable = false) update the completion
           // meta-data.
-          if (sqlCompleter != null) {
-            sqlCompleter.updateDataModelMetaData(getJdbcConnection());
-          }
+          String schemaFilter = getProperty(POSTGRESQL_COMPLETER_SCHEMA_FILTER);
+          sqlCompleter.initFromConnection(getJdbcConnection(), schemaFilter);
         }
       } finally {
         try {
@@ -323,6 +312,10 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
+
+    // It's strange, but here cursor comes with +1 extra
+    cursor = cursor - 1;
+    logger.info("CURSOR = " + cursor);
 
     List<CharSequence> candidates = new ArrayList<>();
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
