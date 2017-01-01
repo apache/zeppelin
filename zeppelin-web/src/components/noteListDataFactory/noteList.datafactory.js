@@ -25,7 +25,7 @@
 
       setNotes: function(notesList) {
         // a flat list to boost searching
-        notes.flatList = _.map(angular.copy(notesList), (note) => {
+        notes.flatList = _.map(notesList, (note) => {
           note.isTrash = note.name.split('/')[0] === TRASH_FOLDER_ID;
           return note;
         });
