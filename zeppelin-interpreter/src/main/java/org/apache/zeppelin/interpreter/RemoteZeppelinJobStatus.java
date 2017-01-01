@@ -19,13 +19,16 @@ package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.scheduler.Job.Status;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Remote Zeppelin Server job status
  */
 public class RemoteZeppelinJobStatus {
-
   private String noteId;
   private Status jobStatus;
   private String paragraphId;
@@ -47,6 +50,10 @@ public class RemoteZeppelinJobStatus {
     this.jobStatus = jobStatus;
   }
 
+  public void setJobStatus(String jobStatusString) {
+    this.jobStatus = Status.valueOf(jobStatusString);
+  }
+
   public String getParagraphId() {
     return paragraphId;
   }
@@ -62,4 +69,17 @@ public class RemoteZeppelinJobStatus {
   public void setLastRunningTime(Date lastRunningTime) {
     this.lastRunningTime = lastRunningTime;
   }
+
+  public void setLastRunningTime(String lastRunningTimeString) {
+    DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+    Date date = new Date();
+    try {
+      date = format.parse(lastRunningTimeString);
+    } catch (ParseException e) {
+
+    } finally {
+      this.lastRunningTime = date;
+    }
+  }
+
 }
