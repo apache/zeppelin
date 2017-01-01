@@ -101,7 +101,8 @@
             combineDuplications: true,
             timeout: 6000
           });
-        });
+        })
+        .constant('TRASH_FOLDER_ID', '~Trash');
 
   function auth() {
     var $http = angular.injector(['ng']).get('$http');

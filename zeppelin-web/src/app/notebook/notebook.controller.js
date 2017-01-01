@@ -28,12 +28,13 @@
     'saveAsService',
     'ngToast',
     'noteActionSrv',
-    'noteVarShareService'
+    'noteVarShareService',
+    'TRASH_FOLDER_ID'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast, noteActionSrv, noteVarShareService) {
+                        ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID) {
 
     ngToast.dismiss();
 
@@ -182,9 +183,18 @@
       $scope.$broadcast('doubleClickParagraph', paragraphId);
     };
 
-    // Remove the note and go back to the main page
+    // Move the note to trash and go back to the main page
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, true);
+    };
+
+    // Remove the note permanently if it's in the trash
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, true);
+    };
+
+    $scope.isTrash = function(note) {
+      return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
     };
 
     //Export notebook

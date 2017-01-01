@@ -175,4 +175,28 @@ public class NoteTest {
     note.setName("a/b/note");
     assertEquals("note", note.getNameWithoutPath());
   }
+
+  @Test
+  public void isTrashTest() {
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    // Notes in the root folder
+    note.setName("noteOnRootFolder");
+    assertFalse(note.isTrash());
+    note.setName("/noteOnRootFolderStartsWithSlash");
+    assertFalse(note.isTrash());
+
+    // Notes in subdirectories
+    note.setName("/a/b/note");
+    assertFalse(note.isTrash());
+    note.setName("a/b/note");
+    assertFalse(note.isTrash());
+
+    // Notes in trash
+    note.setName(Folder.TRASH_FOLDER_ID + "/a");
+    assertTrue(note.isTrash());
+    note.setName("/" + Folder.TRASH_FOLDER_ID + "/a");
+    assertTrue(note.isTrash());
+    note.setName(Folder.TRASH_FOLDER_ID + "/a/b/c");
+    assertTrue(note.isTrash());
+  }
 }

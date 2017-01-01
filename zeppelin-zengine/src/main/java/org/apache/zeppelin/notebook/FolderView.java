@@ -99,6 +99,8 @@ public class FolderView implements NoteNameListener, FolderListener {
   }
 
   private Folder createFolder(String folderId) {
+    folderId = Folder.normalizeFolderId(folderId);
+
     Folder newFolder = new Folder(folderId);
     newFolder.addFolderListener(this);
 
