@@ -154,10 +154,9 @@ export default class Visualization {
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      var self = this;
-      this._templateRequest(template).then(function(t) {
-        self._renderSetting(targetEl, t, scope);
-      });
+      this._templateRequest(template).then(t =>
+        this._renderSetting(targetEl, t, scope)
+      );
     } else {
       this._renderSetting(targetEl, template, scope);
     }
