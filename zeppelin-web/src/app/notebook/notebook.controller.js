@@ -256,6 +256,7 @@
       console.log('received note revision %o', data);
       if (data.note) {
         $scope.note = data.note;
+        initializeLookAndFeel();
       } else {
         $location.path('/');
       }
