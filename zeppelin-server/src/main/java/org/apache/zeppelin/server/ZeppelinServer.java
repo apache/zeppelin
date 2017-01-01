@@ -83,8 +83,6 @@ public class ZeppelinServer extends Application {
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
   public static Helium helium;
-  public static HeliumApplicationFactory heliumApplicationFactory;
-  public static HeliumVisualizationFactory heliumVisualizationFactory;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -100,10 +98,15 @@ public class ZeppelinServer extends Application {
     this.depResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
-    this.helium = new Helium(conf.getHeliumConfPath(), conf.getHeliumDefaultLocalRegistryPath());
-    this.heliumApplicationFactory = new HeliumApplicationFactory();
-    this.heliumVisualizationFactory = new HeliumVisualizationFactory(
+    HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory();
+    HeliumVisualizationFactory heliumVisualizationFactory = new HeliumVisualizationFactory(
         new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)));
+
+    this.helium = new Helium(
+        conf.getHeliumConfPath(),
+        conf.getHeliumDefaultLocalRegistryPath(),
+        heliumVisualizationFactory,
+        heliumApplicationFactory);
 
 
     this.schedulerFactory = new SchedulerFactory();
@@ -338,8 +341,7 @@ public class ZeppelinServer extends Application {
     NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
     singletons.add(notebookRepoApi);
 
-    HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory,
-        heliumVisualizationFactory, notebook);
+    HeliumRestApi heliumApi = new HeliumRestApi(helium, notebook);
     singletons.add(heliumApi);
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);

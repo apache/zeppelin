@@ -19,13 +19,33 @@
   HeliumCtrl.$inject = ['$scope', '$rootScope', '$http', 'baseUrlSrv', 'ngToast'];
 
   function HeliumCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
-    $scope.packageInfos = [];
+    $scope.packageInfos = {};
+    $scope.defaultVersions = {};
+
+    var buildDefaultVersionListToDisplay = function(packageInfos) {
+      var defaultVersions = {};
+      // show enabled version if any version of package is enabled
+      for (var name in packageInfos) {
+        var pkgs = packageInfos[name];
+        for (var pkg in pkgs) {
+          if (pkg.enabled) {
+            defaultVersions[name] = pkg;
+          }
+        }
+
+        // show first available version if package is not enabled
+        if (!defaultVersions[name]) {
+          defaultVersions[name] = pkgs[0];
+        }
+      }
+      $scope.defaultVersions = defaultVersions;
+    };
 
     var getAllPackageInfo = function() {
       $http.get(baseUrlSrv.getRestApiBase() + '/helium/all').
         success(function(data, status) {
-          console.log('Packages %o', data);
           $scope.packageInfos = data.body;
+          buildDefaultVersionListToDisplay($scope.packageInfos);
         }).
         error(function(data, status) {
           console.log('Can not load package info %o %o', status, data);
@@ -37,5 +57,25 @@
     };
 
     init();
+
+    $scope.enable = function(name, artifact) {
+      $http.post(baseUrlSrv.getRestApiBase() + '/helium/enable/' + name, artifact).
+        success(function(data, status) {
+          getAllPackageInfo();
+        }).
+        error(function(data, status) {
+          console.log('Failed to enable package %o %o', name, artifact);
+        });
+    };
+
+    $scope.disable = function(name) {
+      $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name).
+        success(function(data, status) {
+          getAllPackageInfo();
+        }).
+        error(function(data, status) {
+          console.log('Failed to disable package %o', name);
+        });
+    };
   }
 })();

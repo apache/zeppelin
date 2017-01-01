@@ -25,21 +25,23 @@ limitations under the License.
 
 <div class="box width-full">
   <div class="row"
-       ng-repeat="packageInfo in packageInfos"
+       ng-repeat="(pkgName, pkgInfo) in defaultVersions"
        style="margin-bottom:20px">
     <div class="col-md-12">
       <div style="height:25px">
         <div style="float:left;width:20px;height:20px"
-             ng-bind-html=packageInfo.pkg.icon></div>
-        <b style="float:left">{{packageInfo.pkg.name}}</b>
-        <div ng-show="!packageInfo.enabled"
+             ng-bind-html=pkgInfo.pkg.icon></div>
+        <b style="float:left">{{pkgName}}</b>
+        <div ng-show="!pkgInfo.enabled"
+             ng-click="enable(pkgName, pkgInfo.pkg.artifact)"
              class="btn btn-success btn-xs"
              style="float:right">Enable</div>
-        <div ng-show="packageInfo.enabled"
+        <div ng-show="pkgInfo.enabled"
+             ng-click="disable(pkgName)"
              class="btn btn-info btn-xs"
              style="float:right">Disable</div>
       </div>
-      {{packageInfo.pkg.description}}
+      {{pkgInfo.pkg.description}}
     </div>
   </div>
 </div>

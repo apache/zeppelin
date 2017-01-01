@@ -46,6 +46,9 @@ public class HeliumVisualizationFactory {
   private File tabledataModulePath;
   private File visualizationModulePath;
 
+  String bundleCacheKey = "";
+  File currentBundle;
+
   public HeliumVisualizationFactory(
       File moduleDownloadPath,
       File tabledataModulePath,
@@ -63,6 +66,7 @@ public class HeliumVisualizationFactory {
     frontEndPluginFactory = new FrontendPluginFactory(
         workingDirectory, installDirectory);
 
+    currentBundle = new File(workingDirectory, "vis.bundle.cache.js");
     installNodeAndNpm();
   }
 
@@ -81,11 +85,12 @@ public class HeliumVisualizationFactory {
     return new ProxyConfig(proxy);
   }
 
-  public void bundle(List<HeliumPackage> pkgs) throws IOException, TaskRunnerException {
+  public File bundle(List<HeliumPackage> pkgs) throws IOException, TaskRunnerException {
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
-    StringBuffer dependencies = new StringBuffer();
+    StringBuilder dependencies = new StringBuilder();
+
     for (HeliumPackage pkg : pkgs) {
       String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
       if (moduleNameVersion == null) {
@@ -104,6 +109,11 @@ public class HeliumVisualizationFactory {
     }
     pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
 
+    // check if we can use previous bundle or not
+    if (dependencies.toString().equals(bundleCacheKey) && currentBundle.isFile()) {
+      return currentBundle;
+    }
+
     // webpack.config.js
     URL webpackConfigUrl = Resources.getResource("helium/webpack.config.js");
     String webpackConfig = Resources.toString(webpackConfigUrl, Charsets.UTF_8);
@@ -111,6 +121,7 @@ public class HeliumVisualizationFactory {
     // generate load.js
     StringBuilder loadJsImport = new StringBuilder();
     StringBuilder loadJsRegister = new StringBuilder();
+
     for (HeliumPackage pkg : pkgs) {
       String [] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
       if (moduleNameVersion == null) {
@@ -146,6 +157,28 @@ public class HeliumVisualizationFactory {
 
     npmCommand("install");
     npmCommand("run bundle");
+
+    File visBundleJs = new File(workingDirectory, "vis.bundle.js");
+    if (!visBundleJs.isFile()) {
+      throw new IOException("Failed to create visualization bundle");
+    }
+
+    synchronized (this) {
+      currentBundle.delete();
+      FileUtils.moveFile(visBundleJs, currentBundle);
+      bundleCacheKey = dependencies.toString();
+    }
+    return currentBundle;
+  }
+
+  public File getCurrentBundle() {
+    synchronized (this) {
+      if (currentBundle.isFile()) {
+        return currentBundle;
+      } else {
+        return null;
+      }
+    }
   }
 
   private boolean isLocalPackage(HeliumPackage pkg) {

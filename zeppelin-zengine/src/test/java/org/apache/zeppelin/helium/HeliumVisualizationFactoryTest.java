@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class HeliumVisualizationFactoryTest {
@@ -38,8 +39,7 @@ public class HeliumVisualizationFactoryTest {
 
   @Before
   public void setUp() throws InstallationException, TaskRunnerException {
-    //tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    tmpDir = new File("/tmp/npm");
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
 
     // get module dir
@@ -91,8 +91,13 @@ public class HeliumVisualizationFactoryTest {
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
     pkgs.add(pkg);
-    hvf.bundle(pkgs);
-    assertTrue(new File(tmpDir, "vis.bundle.js").isFile());
+    File bundle = hvf.bundle(pkgs);
+    assertTrue(bundle.isFile());
+    long lastModified = bundle.lastModified();
+
+    // bundle again and check if it served from cache
+    bundle = hvf.bundle(pkgs);
+    assertEquals(lastModified, bundle.lastModified());
   }
 
 
@@ -101,7 +106,6 @@ public class HeliumVisualizationFactoryTest {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
     String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
-    System.err.println("local package " + localPkg);
 
     HeliumPackage pkg = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
@@ -114,7 +118,7 @@ public class HeliumVisualizationFactoryTest {
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
     pkgs.add(pkg);
-    hvf.bundle(pkgs);
-    assertTrue(new File(tmpDir, "vis.bundle.js").isFile());
+    File bundle = hvf.bundle(pkgs);
+    assertTrue(bundle.isFile());
   }
 }

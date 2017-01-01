@@ -45,6 +45,7 @@ import './app/notebook/paragraph/paragraph.controller.js';
 import './app/notebook/paragraph/result/result.controller.js';
 import './app/search/result-list.controller.js';
 import './app/notebookRepos/notebookRepos.controller.js';
+import './app/helium/helium.controller.js';
 import './components/arrayOrderingSrv/arrayOrdering.service.js';
 import './components/clipboard/clipboard.controller.js';
 import './components/navbar/navbar.controller.js';
