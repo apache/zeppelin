@@ -70,8 +70,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   // For backward compatibility of note.json format after ZEPPELIN-212
   Object result;
-  private Map<String, Set<String>> runtimeInfos;
-  private Map<String, ParagraphRuntimeInfos> runtimeInfos;
+  private Map<String, ParagraphRuntimeInfo> runtimeInfos;
 
   /**
    * Application states in this paragraph
