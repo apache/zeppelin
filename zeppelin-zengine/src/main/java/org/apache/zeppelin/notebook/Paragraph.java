@@ -74,7 +74,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private Map<String, ParagraphRuntimeInfos> runtimeInfos;
 
   /**
-   * Applicaiton states in this paragraph
+   * Application states in this paragraph
    */
   private final List<ApplicationState> apps = new LinkedList<>();
 
