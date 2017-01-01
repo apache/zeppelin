@@ -26,6 +26,7 @@ group: manual
 ## Supported runtime mode
   - Local
   - MapReduce
+  - Tez_Local (Only Tez 0.7 is supported)
   - Tez  (Only Tez 0.7 is supported)
 
 ## How to use
@@ -40,6 +41,10 @@ group: manual
 
     HADOOP\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
 
+- Tez Local Mode
+    
+    Nothing needs to be done for tez local mode
+    
 - Tez Mode
 
     HADOOP\_CONF\_DIR and TEZ\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
@@ -57,7 +62,7 @@ At the Interpreters menu, you have to create a new Pig interpreter. Pig interpre
     <tr>
         <td>zeppelin.pig.execType</td>
         <td>mapreduce</td>
-        <td>Execution mode for pig runtime. local | mapreduce | tez </td>
+        <td>Execution mode for pig runtime. local | mapreduce | tez_local | tez </td>
     </tr>
     <tr>
         <td>zeppelin.pig.includeJobStats</td>
