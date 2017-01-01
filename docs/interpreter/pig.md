@@ -99,4 +99,4 @@ c = group b by Category;
 foreach c generate group as category, COUNT($1) as count;
 ```
 
-Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`.
+Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`. There's one pig tutorial note in zeppelin for your reference.

@@ -1,0 +1,326 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\nThis pig tutorial use pig to do the same thing as spark tutorial.\n",
+      "user": "user1",
+      "dateUpdated": "Jan 1, 2017 9:43:30 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis pig tutorial use pig to do the same thing as spark tutorial.\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483278047624_1595771060",
+      "id": "20170101-214047_1432767446",
+      "dateCreated": "Jan 1, 2017 9:40:47 PM",
+      "dateStarted": "Jan 1, 2017 9:43:30 PM",
+      "dateFinished": "Jan 1, 2017 9:43:31 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sh\n\nwget https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\nhadoop fs -put bank.csv .\n\n",
+      "user": "user1",
+      "dateUpdated": "Jan 1, 2017 9:46:58 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/sh"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483278233939_-1920020061",
+      "id": "20170101-214353_1707095371",
+      "dateCreated": "Jan 1, 2017 9:43:53 PM",
+      "dateStarted": "Jan 1, 2017 9:46:58 PM",
+      "dateFinished": "Jan 1, 2017 9:47:03 PM",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pig\n\nbankText \u003d load \u0027bank.csv\u0027 using PigStorage(\u0027;\u0027);\nbank \u003d foreach bankText generate $0 as age, $1 as job, $2 as marital, $3 as education, $5 as balance; \nbank \u003d filter bank by age !\u003d \u0027\"age\"\u0027;\nbank \u003d foreach bank generate (int)age, REPLACE(job,\u0027\"\u0027,\u0027\u0027) as job, REPLACE(marital, \u0027\"\u0027, \u0027\u0027) as marital, (int)(REPLACE(balance, \u0027\"\u0027, \u0027\u0027)) as balance;\n\n-- The following statement is optional, it depends on your needs.\n-- store bank into \u0027clean_bank.csv\u0027 using PigStorage(\u0027;\u0027);\n",
+      "user": "user1",
+      "dateUpdated": "Jan 2, 2017 11:41:21 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "pig",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/pig"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1482905200045_-1233984644",
+      "id": "20161228-140640_1560978333",
+      "dateCreated": "Dec 28, 2016 2:06:40 PM",
+      "dateStarted": "Jan 2, 2017 11:41:21 AM",
+      "dateFinished": "Jan 2, 2017 11:41:23 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pig.query\n\nbank_data \u003d filter bank by age \u003c 30;\nb \u003d group bank_data by age;\nforeach b generate group as age, COUNT($1) as count;\n\n",
+      "user": "user1",
+      "dateUpdated": "Jan 2, 2017 11:41:34 AM",
+      "config": {
+        "colWidth": 4.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "pig",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/pig"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tcount\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1482905250090_1355268184",
+      "id": "20161228-140730_1903342877",
+      "dateCreated": "Dec 28, 2016 2:07:30 PM",
+      "dateStarted": "Jan 2, 2017 11:41:34 AM",
+      "dateFinished": "Jan 2, 2017 11:41:35 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pig.query\n\nbank_data \u003d filter bank by age \u003c ${maxAge\u003d40};\nb \u003d group bank_data by age;\nforeach b generate group as age, COUNT($1) as count;",
+      "user": "user1",
+      "dateUpdated": "Jan 2, 2017 11:41:30 AM",
+      "config": {
+        "colWidth": 4.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "pig",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/pig"
+      },
+      "settings": {
+        "params": {
+          "maxAge": "36"
+        },
+        "forms": {
+          "maxAge": {
+            "name": "maxAge",
+            "defaultValue": "40",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tcount\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n35\t180\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1482911358985_1722452666",
+      "id": "20161228-154918_1551591203",
+      "dateCreated": "Dec 28, 2016 3:49:18 PM",
+      "dateStarted": "Jan 2, 2017 11:41:30 AM",
+      "dateFinished": "Jan 2, 2017 11:41:31 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pig.query\n\nbank_data \u003d filter bank by marital\u003d\u003d\u0027${marital\u003dsingle,single|divorced|married}\u0027;\nb \u003d group bank_data by age;\nforeach b generate group as age, COUNT($1) as count;\n\n\n\n",
+      "user": "user1",
+      "dateUpdated": "Jan 2, 2017 11:42:11 AM",
+      "config": {
+        "colWidth": 4.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "scatterChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "stackedAreaChart": {
+                  "style": "stack"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "group",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "null",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "pig",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/pig"
+      },
+      "settings": {
+        "params": {
+          "marital": "married"
+        },
+        "forms": {
+          "marital": {
+            "name": "marital",
+            "defaultValue": "single",
+            "options": [
+              {
+                "value": "single"
+              },
+              {
+                "value": "divorced"
+              },
+              {
+                "value": "married"
+              }
+            ],
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tcount\n23\t3\n24\t11\n25\t11\n26\t18\n27\t26\n28\t23\n29\t37\n30\t56\n31\t104\n32\t105\n33\t103\n34\t142\n35\t109\n36\t117\n37\t100\n38\t99\n39\t88\n40\t105\n41\t97\n42\t91\n43\t79\n44\t68\n45\t76\n46\t82\n47\t78\n48\t91\n49\t87\n50\t74\n51\t63\n52\t66\n53\t75\n54\t56\n55\t68\n56\t50\n57\t78\n58\t67\n59\t56\n60\t36\n61\t15\n62\t5\n63\t7\n64\t6\n65\t4\n66\t7\n67\t5\n68\t1\n69\t5\n70\t5\n71\t5\n72\t4\n73\t6\n74\t2\n75\t3\n76\t1\n77\t5\n78\t2\n79\t3\n80\t6\n81\t1\n83\t2\n86\t1\n87\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1482906179178_-901386451",
+      "id": "20161228-142259_575675591",
+      "dateCreated": "Dec 28, 2016 2:22:59 PM",
+      "dateStarted": "Jan 2, 2017 11:41:27 AM",
+      "dateFinished": "Jan 2, 2017 11:41:28 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pig\n",
+      "dateUpdated": "Dec 28, 2016 3:50:36 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1482911436320_-1651936394",
+      "id": "20161228-155036_1854903164",
+      "dateCreated": "Dec 28, 2016 3:50:36 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Zeppelin Tutorial/Pig Tutorial",
+  "id": "2C7BDKAHN",
+  "angularObjects": {
+    "2C3DR183X:shared_process": [],
+    "2C5VH924X:shared_process": [],
+    "2C686X8ZH:shared_process": [],
+    "2C66Z9XPQ:shared_process": [],
+    "2C3JKFMJU:shared_process": [],
+    "2C69WE69N:shared_process": [],
+    "2C3RWCVAG:shared_process": [],
+    "2C4HKDCQW:shared_process": [],
+    "2C4BJDRRZ:shared_process": [],
+    "2C6V3D44K:shared_process": [],
+    "2C3VECEG2:shared_process": [],
+    "2C5SRRXHM:shared_process": [],
+    "2C5DCRVGM:shared_process": [],
+    "2C66GE1VB:shared_process": [],
+    "2C3PTPMUH:shared_process": [],
+    "2C48Y7FSJ:shared_process": [],
+    "2C4ZD49PF:shared_process": [],
+    "2C63XW4XE:shared_process": [],
+    "2C4UB1UZA:shared_process": [],
+    "2C5S1R21W:shared_process": [],
+    "2C3SQSB7V:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}
