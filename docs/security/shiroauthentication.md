@@ -180,7 +180,7 @@ In this case, only who have `admin` role can see **Interpreter Setting**, **Cred
 If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
 
 <br/>
-> **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file. This documentation is originally from [SECURITY-README.md](https://github.com/apache/zeppelin/blob/master/SECURITY-README.md).
+> **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
 
 
 ## Other authentication methods
