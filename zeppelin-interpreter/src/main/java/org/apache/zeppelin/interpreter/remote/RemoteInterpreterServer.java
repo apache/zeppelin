@@ -375,9 +375,13 @@ public class RemoteInterpreterServer
         }
       } else if (response.getResourceType() == RemoteZeppelinServerResource.Type.JOB_STATUS) {
 
-        String jobStatusJsonString = response.getData().toString();
-        RemoteZeppelinJobStatus jobStatus = gson.fromJson(
-          jobStatusJsonString, RemoteZeppelinJobStatus.class);
+        Map<String, Object> jobStatusMap = (Map<String, Object>) response.getData();
+
+        RemoteZeppelinJobStatus jobStatus = new RemoteZeppelinJobStatus();
+        jobStatus.setNoteId((String) jobStatusMap.get("noteId"));
+        jobStatus.setParagraphId((String) jobStatusMap.get("paragraphId"));
+        jobStatus.setJobStatus((String) jobStatusMap.get("jobStatus"));
+        jobStatus.setLastRunningTime((String) jobStatusMap.get("lastRunningTime"));
 
         synchronized (this.remoteWorksResponsePool) {
           this.remoteWorksResponsePool.put(
