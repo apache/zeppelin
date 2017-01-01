@@ -195,10 +195,6 @@ module.exports = function makeWebpackConfig () {
    * List: http://webpack.github.io/docs/list-of-plugins.html
    */
   config.plugins = [
-    // Enable global variable
-    new webpack.ProvidePlugin({
-      "zeppelin": "zeppelin"
-    })
   ];
 
   // Skip rendering index.html in test mode

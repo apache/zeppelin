@@ -12,61 +12,61 @@
  * limitations under the License.
  */
 
-import zeppelin from '../zeppelin';
-
 /**
  * Create table data object from paragraph table type result
  */
-zeppelin.TableData = function(columns, rows, comment) {
-  this.columns = columns || [];
-  this.rows = rows || [];
-  this.comment = comment || '';
-};
+export default class TableData {
+  constructor(columns, rows, comment) {
+    this.columns = columns || [];
+    this.rows = rows || [];
+    this.comment = comment || '';
+  };
 
-zeppelin.TableData.prototype.loadParagraphResult = function(paragraphResult) {
-  if (!paragraphResult || paragraphResult.type !== 'TABLE') {
-    console.log('Can not load paragraph result');
-    return;
-  }
-
-  var columnNames = [];
-  var rows = [];
-  var array = [];
-  var textRows = paragraphResult.msg.split('\n');
-  var comment = '';
-  var commentRow = false;
-
-  for (var i = 0; i < textRows.length; i++) {
-    var textRow = textRows[i];
-    if (commentRow) {
-      comment += textRow;
-      continue;
+  loadParagraphResult(paragraphResult) {
+    if (!paragraphResult || paragraphResult.type !== 'TABLE') {
+      console.log('Can not load paragraph result');
+      return;
     }
 
-    if (textRow === '') {
-      if (rows.length > 0) {
-        commentRow = true;
+    var columnNames = [];
+    var rows = [];
+    var array = [];
+    var textRows = paragraphResult.msg.split('\n');
+    var comment = '';
+    var commentRow = false;
+
+    for (var i = 0; i < textRows.length; i++) {
+      var textRow = textRows[i];
+      if (commentRow) {
+        comment += textRow;
+        continue;
       }
-      continue;
-    }
-    var textCols = textRow.split('\t');
-    var cols = [];
-    var cols2 = [];
-    for (var j = 0; j < textCols.length; j++) {
-      var col = textCols[j];
-      if (i === 0) {
-        columnNames.push({name: col, index: j, aggr: 'sum'});
-      } else {
-        cols.push(col);
-        cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
+
+      if (textRow === '') {
+        if (rows.length > 0) {
+          commentRow = true;
+        }
+        continue;
+      }
+      var textCols = textRow.split('\t');
+      var cols = [];
+      var cols2 = [];
+      for (var j = 0; j < textCols.length; j++) {
+        var col = textCols[j];
+        if (i === 0) {
+          columnNames.push({name: col, index: j, aggr: 'sum'});
+        } else {
+          cols.push(col);
+          cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
+        }
+      }
+      if (i !== 0) {
+        rows.push(cols);
+        array.push(cols2);
       }
     }
-    if (i !== 0) {
-      rows.push(cols);
-      array.push(cols2);
-    }
-  }
-  this.comment = comment;
-  this.columns = columnNames;
-  this.rows = rows;
-};
+    this.comment = comment;
+    this.columns = columnNames;
+    this.rows = rows;
+  };
+}
