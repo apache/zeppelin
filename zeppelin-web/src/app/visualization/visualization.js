@@ -155,17 +155,17 @@ export default class Visualization {
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
       this._templateRequest(template).then(t =>
-        this._renderSetting(targetEl, t, scope)
+      _renderSetting(this, targetEl, t, scope)
       );
     } else {
-      this._renderSetting(targetEl, template, scope);
+      _renderSetting(this, targetEl, template, scope);
     }
   };
-
-  _renderSetting(targetEl, template, scope) {
-    this._targetEl = targetEl;
-    targetEl.html(template);
-    this._compile(targetEl.contents())(scope);
-    this._scope = scope;
-  };
 }
+
+function _renderSetting(instance, targetEl, template, scope) {
+  instance._targetEl = targetEl;
+  targetEl.html(template);
+  instance._compile(targetEl.contents())(scope);
+  instance._scope = scope;
+};
