@@ -55,36 +55,36 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
       {
         id: 'table',   // paragraph.config.graph.mode
         name: 'Table', // human readable name. tooltip
-        icon: 'fa fa-table'
+        icon: '<i class="fa fa-table"></i>'
       },
       {
         id: 'multiBarChart',
         name: 'Bar Chart',
-        icon: 'fa fa-bar-chart',
+        icon: '<i class="fa fa-bar-chart"></i>',
         transformation: 'pivot'
       },
       {
         id: 'pieChart',
         name: 'Pie Chart',
-        icon: 'fa fa-pie-chart',
+        icon: '<i class="fa fa-pie-chart"></i>',
         transformation: 'pivot'
       },
       {
         id: 'stackedAreaChart',
         name: 'Area Chart',
-        icon: 'fa fa-area-chart',
+        icon: '<i class="fa fa-area-chart"></i>',
         transformation: 'pivot'
       },
       {
         id: 'lineChart',
         name: 'Line Chart',
-        icon: 'fa fa-line-chart',
+        icon: '<i class="fa fa-line-chart"></i>',
         transformation: 'pivot'
       },
       {
         id: 'scatterChart',
         name: 'Scatter Chart',
-        icon: 'cf cf-scatter-chart'
+        icon: '<i class="cf cf-scatter-chart"></i>'
       }
     ];
 

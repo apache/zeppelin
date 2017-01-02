@@ -99,15 +99,18 @@ public class ZeppelinServer extends Application {
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
     HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory();
-    HeliumVisualizationFactory heliumVisualizationFactory = new HeliumVisualizationFactory(
-        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)));
+    HeliumVisualizationFactory heliumVisualizationFactory;
+
+    heliumVisualizationFactory = new HeliumVisualizationFactory(
+        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
+        new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
+        new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")));
 
     this.helium = new Helium(
         conf.getHeliumConfPath(),
         conf.getHeliumDefaultLocalRegistryPath(),
         heliumVisualizationFactory,
         heliumApplicationFactory);
-
 
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,

@@ -45,6 +45,7 @@ public class HeliumVisualizationFactory {
   private final File workingDirectory;
   private File tabledataModulePath;
   private File visualizationModulePath;
+  private Gson gson;
 
   String bundleCacheKey = "";
   File currentBundle;
@@ -60,13 +61,14 @@ public class HeliumVisualizationFactory {
 
   public HeliumVisualizationFactory(File moduleDownloadPath)
       throws InstallationException, TaskRunnerException {
-    this.workingDirectory = moduleDownloadPath;
-    File installDirectory = moduleDownloadPath;
+    this.workingDirectory = new File(moduleDownloadPath, "vis");
+    File installDirectory = workingDirectory;
 
     frontEndPluginFactory = new FrontendPluginFactory(
         workingDirectory, installDirectory);
 
     currentBundle = new File(workingDirectory, "vis.bundle.cache.js");
+    gson = new Gson();
     installNodeAndNpm();
   }
 
@@ -129,17 +131,19 @@ public class HeliumVisualizationFactory {
       }
       loadJsImport.append(
           "import " + moduleNameVersion[0] + " from \"" + moduleNameVersion[0] + "\"\n");
-      loadJsRegister.append("visualizations.push({" +
-          "id: '" + moduleNameVersion[0] + "'," +
-          "name: '" + pkg.getName() + "'," +
-          "icon: '" + pkg.getIcon() + "'," +
-          "class: " + moduleNameVersion[0] +
-          "})\n");
+
+      loadJsRegister.append("visualizations.push({\n");
+      loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
+      loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
+      loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
+      loadJsRegister.append("class: " + moduleNameVersion[0] + "\n");
+      loadJsRegister.append("})\n");
     }
 
     FileUtils.write(new File(workingDirectory, "package.json"), pkgJson);
     FileUtils.write(new File(workingDirectory, "webpack.config.js"), webpackConfig);
-    FileUtils.write(new File(workingDirectory, "load.js"), loadJsImport.append(loadJsRegister).toString());
+    FileUtils.write(new File(workingDirectory, "load.js"),
+        loadJsImport.append(loadJsRegister).toString());
 
     // install tabledata module
     File tabledataModuleInstallPath = new File(workingDirectory,
