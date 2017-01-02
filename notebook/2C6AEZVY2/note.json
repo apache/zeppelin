@@ -3,7 +3,7 @@
     {
       "text": "%md\n# Zeppelin Workflow\n#### Describes how various interpreters can be used as workflows.",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 3:22:38 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:00 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -33,17 +33,17 @@
       "jobName": "paragraph_1483311356894_400311605",
       "id": "20170101-145556_1340440758",
       "dateCreated": "Jan 1, 2017 2:55:56 PM",
-      "dateStarted": "Jan 1, 2017 3:22:38 PM",
-      "dateFinished": "Jan 1, 2017 3:22:38 PM",
+      "dateStarted": "Jan 1, 2017 7:00:00 PM",
+      "dateFinished": "Jan 1, 2017 7:00:00 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%angular\n\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027well\u0027\u003e\n    \u003cdiv class\u003d\u0027row\u0027\u003e\n      \u003cdiv class\u003d\u0027col-md-12 text-center text-warning\u0027\u003e\n        Normaly Execute Cycle\n      \u003c/div\u003e\n    \u003c/div\u003e\n\u003c/div\u003e\n\u003cdiv class\u003d\u0027row\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-right text-warning\u0027\u003e\n    For example ---\u003e\n  \u003c/div\u003e\n\u003c/div\u003e",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:33:42 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:00 PM",
       "config": {
-        "colWidth": 3.0,
+        "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
@@ -71,15 +71,15 @@
       "jobName": "paragraph_1483312806703_-1252533564",
       "id": "20170101-152006_1383393641",
       "dateCreated": "Jan 1, 2017 3:20:06 PM",
-      "dateStarted": "Jan 1, 2017 4:33:42 PM",
-      "dateFinished": "Jan 1, 2017 4:33:42 PM",
+      "dateStarted": "Jan 1, 2017 7:00:01 PM",
+      "dateFinished": "Jan 1, 2017 7:00:01 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%spark\n\nprintln(\"%html \u003ch1 class\u003d\u0027text-primary\u0027\u003ePlease Execute this paragraph\u003c/h1\u003e\")\n\nz.run(\"2C6AEZVY2\", \"20170101-152325_935191391\")\nz.run(\"2C6AEZVY2\", \"20170101-152357_227883083\")\nz.run(\"2C6AEZVY2\", \"20170101-152408_302376653\")",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:43:03 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:01 PM",
       "config": {
         "colWidth": 3.0,
         "enabled": true,
@@ -107,15 +107,15 @@
       "jobName": "paragraph_1483313002204_284228519",
       "id": "20170101-152322_987058228",
       "dateCreated": "Jan 1, 2017 3:23:22 PM",
-      "dateStarted": "Jan 1, 2017 4:43:03 PM",
-      "dateFinished": "Jan 1, 2017 4:43:05 PM",
+      "dateStarted": "Jan 1, 2017 7:00:01 PM",
+      "dateFinished": "Jan 1, 2017 7:00:04 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%spark\nThread.sleep(3000)\n\nprintln(\"%html \u003ch1\u003eSPARK DONE\u003c/h1\u003e\")\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:41:08 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:01 PM",
       "config": {
         "colWidth": 2.0,
         "enabled": true,
@@ -146,17 +146,17 @@
       "jobName": "paragraph_1483313005407_295016813",
       "id": "20170101-152325_935191391",
       "dateCreated": "Jan 1, 2017 3:23:25 PM",
-      "dateStarted": "Jan 1, 2017 4:43:04 PM",
-      "dateFinished": "Jan 1, 2017 4:43:09 PM",
+      "dateStarted": "Jan 1, 2017 7:00:09 PM",
+      "dateFinished": "Jan 1, 2017 7:00:15 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%md\n# MARKDOWN DONE",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:41:09 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:01 PM",
       "config": {
-        "colWidth": 3.0,
+        "colWidth": 2.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
@@ -164,7 +164,7 @@
           "editOnDblClick": true
         },
         "editorMode": "ace/mode/markdown",
-        "editorHide": false,
+        "editorHide": true,
         "tableHide": false
       },
       "settings": {
@@ -184,17 +184,17 @@
       "jobName": "paragraph_1483313037019_1351567941",
       "id": "20170101-152357_227883083",
       "dateCreated": "Jan 1, 2017 3:23:57 PM",
-      "dateStarted": "Jan 1, 2017 4:43:05 PM",
-      "dateFinished": "Jan 1, 2017 4:43:05 PM",
+      "dateStarted": "Jan 1, 2017 7:00:04 PM",
+      "dateFinished": "Jan 1, 2017 7:00:04 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%angular\n\u003ch1\u003eANGULAR DONE\u003c/h1\u003e\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:41:10 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:02 PM",
       "config": {
-        "colWidth": 3.0,
+        "colWidth": 2.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
@@ -202,7 +202,7 @@
           "editOnDblClick": true
         },
         "editorMode": "ace/mode/undefined",
-        "editorHide": false,
+        "editorHide": true,
         "tableHide": false
       },
       "settings": {
@@ -222,17 +222,17 @@
       "jobName": "paragraph_1483313048080_-1861070051",
       "id": "20170101-152408_302376653",
       "dateCreated": "Jan 1, 2017 3:24:08 PM",
-      "dateStarted": "Jan 1, 2017 4:43:05 PM",
-      "dateFinished": "Jan 1, 2017 4:43:05 PM",
+      "dateStarted": "Jan 1, 2017 7:00:04 PM",
+      "dateFinished": "Jan 1, 2017 7:00:04 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%angular\n\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-primary\u0027\u003e\n    Workflow execute\n  \u003c/div\u003e\n\u003c/div\u003e\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 3:27:33 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:02 PM",
       "config": {
-        "colWidth": 3.0,
+        "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
@@ -260,15 +260,15 @@
       "jobName": "paragraph_1483313003802_1345365986",
       "id": "20170101-152323_1238754452",
       "dateCreated": "Jan 1, 2017 3:23:23 PM",
-      "dateStarted": "Jan 1, 2017 3:27:33 PM",
-      "dateFinished": "Jan 1, 2017 3:27:33 PM",
+      "dateStarted": "Jan 1, 2017 7:00:02 PM",
+      "dateFinished": "Jan 1, 2017 7:00:02 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%spark\n\nprintln(\"%html \u003ch1 class\u003d\u0027text-primary\u0027\u003ePlease Execute this paragraph\u003c/h1\u003e\")\nnew Thread(new Runnable {\n    def run() {\n        z.run(\"2C6AEZVY2\", \"20170101-152406_303378533\")\n        var job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152406_303378533\").getJobStatus();\n        while (job.isPending || job.isRunning) {\n            Thread.sleep(1000)\n            job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152406_303378533\").getJobStatus()\n        }\n        \n        z.run(\"2C6AEZVY2\", \"20170101-152404_1766974937\")\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152404_1766974937\").getJobStatus();\n        \n        while (job.isPending || job.isRunning) {\n            Thread.sleep(500)\n            job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152404_1766974937\").getJobStatus();\n        }\n        z.run(\"2C6AEZVY2\", \"20170101-164138_1051383091\")\n                println(\"ex Hello\")\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-164138_1051383091\").getJobStatus();\n        while (job.isPending || job.isRunning) {\n            Thread.sleep(500)\n            job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-164138_1051383091\").getJobStatus();\n        }\n    }\n}).start",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 6:56:14 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:47 PM",
       "config": {
         "colWidth": 3.0,
         "enabled": true,
@@ -296,15 +296,15 @@
       "jobName": "paragraph_1483313046793_1537817057",
       "id": "20170101-152406_916644710",
       "dateCreated": "Jan 1, 2017 3:24:06 PM",
-      "dateStarted": "Jan 1, 2017 6:56:14 PM",
-      "dateFinished": "Jan 1, 2017 6:56:14 PM",
+      "dateStarted": "Jan 1, 2017 7:00:47 PM",
+      "dateFinished": "Jan 1, 2017 7:00:47 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%spark\nThread.sleep(3000)\n\nprintln(\"%html \u003ch1\u003eSPARK DONE\u003c/h1\u003e\")\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:43:06 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:02 PM",
       "config": {
         "colWidth": 3.0,
         "enabled": true,
@@ -332,15 +332,15 @@
       "jobName": "paragraph_1483313046170_1692870864",
       "id": "20170101-152406_303378533",
       "dateCreated": "Jan 1, 2017 3:24:06 PM",
-      "dateStarted": "Jan 1, 2017 6:56:15 PM",
-      "dateFinished": "Jan 1, 2017 6:56:18 PM",
+      "dateStarted": "Jan 1, 2017 7:00:48 PM",
+      "dateFinished": "Jan 1, 2017 7:00:51 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%md\n# MARKDOWN DONE",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:43:06 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:03 PM",
       "config": {
         "colWidth": 3.0,
         "enabled": true,
@@ -349,7 +349,9 @@
           "language": "markdown",
           "editOnDblClick": true
         },
-        "editorMode": "ace/mode/markdown"
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -368,15 +370,15 @@
       "jobName": "paragraph_1483313044517_-1645625991",
       "id": "20170101-152404_1766974937",
       "dateCreated": "Jan 1, 2017 3:24:04 PM",
-      "dateStarted": "Jan 1, 2017 6:56:20 PM",
-      "dateFinished": "Jan 1, 2017 6:56:20 PM",
+      "dateStarted": "Jan 1, 2017 7:00:53 PM",
+      "dateFinished": "Jan 1, 2017 7:00:53 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%angular\n\u003ch1\u003eANGULAR DONE\u003c/h1\u003e\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 6:48:21 PM",
+      "dateUpdated": "Jan 1, 2017 7:00:03 PM",
       "config": {
         "colWidth": 3.0,
         "enabled": true,
@@ -386,7 +388,7 @@
           "editOnDblClick": true
         },
         "editorMode": "ace/mode/undefined",
-        "editorHide": false,
+        "editorHide": true,
         "tableHide": false
       },
       "settings": {
@@ -406,16 +408,27 @@
       "jobName": "paragraph_1483317698107_-128478476",
       "id": "20170101-164138_1051383091",
       "dateCreated": "Jan 1, 2017 4:41:38 PM",
-      "dateStarted": "Jan 1, 2017 6:56:22 PM",
-      "dateFinished": "Jan 1, 2017 6:56:22 PM",
+      "dateStarted": "Jan 1, 2017 7:00:55 PM",
+      "dateFinished": "Jan 1, 2017 7:00:55 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%md\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 1, 2017 4:41:35 PM",
-      "config": {},
+      "dateUpdated": "Jan 1, 2017 7:00:03 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
       "settings": {
         "params": {},
         "forms": {}
@@ -424,6 +437,22 @@
       "jobName": "paragraph_1483317695374_-369716037",
       "id": "20170101-164135_309113214",
       "dateCreated": "Jan 1, 2017 4:41:35 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:03 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483326003200_406855249",
+      "id": "20170101-190003_224666894",
+      "dateCreated": "Jan 1, 2017 7:00:03 PM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
