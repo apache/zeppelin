@@ -146,6 +146,17 @@
             </configuration>
           </execution>
 
+          <execution>
+            <id>npm clean</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>clean</phase>
+            <configuration>
+              <arguments>run clean</arguments>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
@@ -173,14 +184,8 @@
       </plugin>
 
       <plugin>
+        <!-- clean task will be executed by front-end-maven plugin -->
         <artifactId>maven-clean-plugin</artifactId>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>bower_components</directory>
-            </fileset>
-          </filesets>
-        </configuration>
       </plugin>
     </plugins>
   </build>
