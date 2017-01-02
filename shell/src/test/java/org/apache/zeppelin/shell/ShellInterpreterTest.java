@@ -32,12 +32,17 @@ import org.junit.Test;
 public class ShellInterpreterTest {
 
   private ShellInterpreter shell;
+  private InterpreterContext context;
+  private InterpreterResult result;
 
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
     p.setProperty("shell.command.timeout.millisecs", "60000");
     shell = new ShellInterpreter(p);
+
+    context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
+    shell.open();
   }
 
   @After
@@ -46,9 +51,6 @@ public class ShellInterpreterTest {
 
   @Test
   public void test() {
-    shell.open();
-    InterpreterContext context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
-    InterpreterResult result = new InterpreterResult(Code.ERROR);
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("dir", context);
     } else {
@@ -63,16 +65,24 @@ public class ShellInterpreterTest {
 
   @Test
   public void testInvalidCommand(){
-    shell.open();
-    InterpreterContext context = new InterpreterContext("","1",null,"","",null,null,null,null,null,null,null);
-    InterpreterResult result = new InterpreterResult(Code.ERROR);
     if (System.getProperty("os.name").startsWith("Windows")) {
-      result = shell.interpret("invalid_command\ndir",context);
+      result = shell.interpret("invalid_command\ndir", context);
     } else {
-      result = shell.interpret("invalid_command\nls",context);
+      result = shell.interpret("invalid_command\nls", context);
     }
-    assertEquals(InterpreterResult.Code.SUCCESS,result.code());
-    assertTrue(result.message().get(0).getData().contains("invalid_command"));
+    assertEquals(Code.SUCCESS, result.code());
+    assertTrue(shell.executors.isEmpty());
   }
 
+  @Test
+  public void testShellTimeout() {
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      result = shell.interpret("timeout 61", context);
+    } else {
+      result = shell.interpret("sleep 61", context);
+    }
+
+    assertEquals(Code.INCOMPLETE, result.code());
+    assertTrue(result.message().get(0).getData().contains("Paragraph received a SIGTERM"));
+  }
 }
