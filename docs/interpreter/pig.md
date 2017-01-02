@@ -99,4 +99,6 @@ c = group b by Category;
 foreach c generate group as category, COUNT($1) as count;
 ```
 
-Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`. There's one pig tutorial note in zeppelin for your reference.
+Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`. 
+Besides, we recommend you to specify alias explicitly so that the visualization can display the column name correctly. Here, we name `COUNT($1)` as `count`, if you don't do this,
+then we will name it using position, here we will use `col_1` to represent `COUNT($1)` if you don't specify alias for it. There's one pig tutorial note in zeppelin for your reference.
