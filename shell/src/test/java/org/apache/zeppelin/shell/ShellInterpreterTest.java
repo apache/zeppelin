@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.apache.commons.exec.ExecuteException;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -38,6 +39,8 @@ public class ShellInterpreterTest {
     Properties p = new Properties();
     p.setProperty("shell.command.timeout.millisecs", "60000");
     shell = new ShellInterpreter(p);
+
+    shell.open();
   }
 
   @After
@@ -46,9 +49,8 @@ public class ShellInterpreterTest {
 
   @Test
   public void test() {
-    shell.open();
     InterpreterContext context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
-    InterpreterResult result = new InterpreterResult(Code.ERROR);
+    InterpreterResult result;
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("dir", context);
     } else {
@@ -63,16 +65,30 @@ public class ShellInterpreterTest {
 
   @Test
   public void testInvalidCommand(){
-    shell.open();
-    InterpreterContext context = new InterpreterContext("","1",null,"","",null,null,null,null,null,null,null);
-    InterpreterResult result = new InterpreterResult(Code.ERROR);
+    InterpreterContext context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
+    InterpreterResult result;
     if (System.getProperty("os.name").startsWith("Windows")) {
-      result = shell.interpret("invalid_command\ndir",context);
+      result = shell.interpret("invalid_command\ndir", context);
     } else {
-      result = shell.interpret("invalid_command\nls",context);
+      result = shell.interpret("invalid_command\nls", context);
     }
-    assertEquals(InterpreterResult.Code.SUCCESS,result.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("invalid_command"));
   }
 
+  @Test
+  public void testShellTimeout() {
+    InterpreterContext context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
+    InterpreterResult result;
+
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      result = shell.interpret("timeout 61", context);
+    } else {
+      result = shell.interpret("sleep 61", context);
+    }
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(Code.INCOMPLETE, result.code());
+    assertTrue(result.message().get(0).getData().contains("Paragraph received a SIGTERM"));
+  }
 }
