@@ -227,22 +227,19 @@ module.exports = function makeWebpackConfig () {
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
       // Minify all javascript, switch loaders to minimizing mode
       new webpack.optimize.UglifyJsPlugin({
-        options: {
-          mangle: {
-            'screw_ie8': true
-          },
-          preserveComments: 'some',
-          compress: {
-            'screw_ie8': true,
-            sequences: true,
-            'dead_code': true,
-            conditionals: true,
-            booleans: true,
-            unused: true,
-            'if_return': true,
-            'join_vars': true,
-            'drop_console': true
-          }
+        mangle: { screw_ie8: true },
+        preserveComments: 'some',
+        compress: {
+          screw_ie8: true,
+          warnings: false,
+          sequences: true,
+          dead_code: true,
+          conditionals: true,
+          booleans: true,
+          unused: true,
+          if_return: true,
+          join_vars: true,
+          drop_console: true,
         }
       }),
 
