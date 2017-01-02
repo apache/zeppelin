@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 {
-  "type" : "APPLICATION",
-  "name" : "zeppelin.horizontalbar",
+  "type" : "VISUALIZATION",
+  "name" : "zeppelin_horizontalbar",
   "description" : "Horizontal Bar chart (example)",
-  "artifact" : "zeppelin-examples/zeppelin-example-horizontalbar/target/zeppelin-example-horizontalbar-0.7.0-SNAPSHOT.jar",
-  "className" : "org.apache.zeppelin.example.app.horizontalbar.HorizontalBar",
-  "resources" : [[":org.apache.zeppelin.interpreter.InterpreterResult"]],
-  "icon" : '<i class="fa fa-bar-chart" style="-webkit-transform: rotate(90deg) scaleX(-1);-moz-transform: rotate(90deg) scaleX(-1);-ms-transform: rotate(90deg) scaleX(-1);"></i>'
+  "artifact" : "./zeppelin-examples/zeppelin-example-horizontalbar",
+  "icon" : "<i class='fa fa-bar-chart rotate90flipX'></i>"
 }
