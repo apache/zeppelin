@@ -600,8 +600,11 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   public int getMaxResult() {
-    return Integer.valueOf(
+    if (basePropretiesMap.containsKey(COMMON_KEY)) {
+      return Integer.valueOf(
         basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY, MAX_LINE_DEFAULT));
+    }
+    return Integer.valueOf(MAX_LINE_DEFAULT);
   }
 
   boolean isConcurrentExecution() {
