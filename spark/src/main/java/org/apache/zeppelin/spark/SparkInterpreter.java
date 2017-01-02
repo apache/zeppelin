@@ -556,7 +556,7 @@ public class SparkInterpreter extends Interpreter {
     return (o instanceof String) ? (String) o : "";
   }
 
-  private boolean useSparkSubmit() {
+  public static boolean useSparkSubmit() {
     return null != System.getenv("SPARK_SUBMIT");
   }
 
@@ -726,7 +726,6 @@ public class SparkInterpreter extends Interpreter {
 
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
-
 
     // set classloader for scala compiler
     settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
@@ -976,7 +975,7 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private List<File> currentClassPath() {
+  public static List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
     String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
     if (cps != null) {
@@ -987,7 +986,7 @@ public class SparkInterpreter extends Interpreter {
     return paths;
   }
 
-  private List<File> classPath(ClassLoader cl) {
+  private static List<File> classPath(ClassLoader cl) {
     List<File> paths = new LinkedList<>();
     if (cl == null) {
       return paths;
