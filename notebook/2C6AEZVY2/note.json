@@ -1,0 +1,258 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n# Zeppelin Workflow\n#### Describes how various interpreters can be used as workflows.",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:22:38 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eZeppelin Workflow\u003c/h1\u003e\n\u003ch4\u003eDescribes how various interpreters can be used as workflows.\u003c/h4\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483311356894_400311605",
+      "id": "20170101-145556_1340440758",
+      "dateCreated": "Jan 1, 2017 2:55:56 PM",
+      "dateStarted": "Jan 1, 2017 3:22:38 PM",
+      "dateFinished": "Jan 1, 2017 3:22:38 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-warning\u0027\u003e\n    Normaly Execute Cycle\n  \u003c/div\u003e\n\u003c/div\u003e",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:27:37 PM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-warning\u0027\u003e\n    Normaly Execute Cycle\n  \u003c/div\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483312806703_-1252533564",
+      "id": "20170101-152006_1383393641",
+      "dateCreated": "Jan 1, 2017 3:20:06 PM",
+      "dateStarted": "Jan 1, 2017 3:26:53 PM",
+      "dateFinished": "Jan 1, 2017 3:26:53 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:23:22 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313002204_284228519",
+      "id": "20170101-152322_987058228",
+      "dateCreated": "Jan 1, 2017 3:23:22 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-primary\u0027\u003e\n    Workflow execute\n  \u003c/div\u003e\n\u003c/div\u003e\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:27:33 PM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-primary\u0027\u003e\n    Workflow execute\n  \u003c/div\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313003802_1345365986",
+      "id": "20170101-152323_1238754452",
+      "dateCreated": "Jan 1, 2017 3:23:23 PM",
+      "dateStarted": "Jan 1, 2017 3:27:33 PM",
+      "dateFinished": "Jan 1, 2017 3:27:33 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:23:25 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313005407_295016813",
+      "id": "20170101-152325_935191391",
+      "dateCreated": "Jan 1, 2017 3:23:25 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:23:57 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313037019_1351567941",
+      "id": "20170101-152357_227883083",
+      "dateCreated": "Jan 1, 2017 3:23:57 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:24:08 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313048080_-1861070051",
+      "id": "20170101-152408_302376653",
+      "dateCreated": "Jan 1, 2017 3:24:08 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:24:06 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313046793_1537817057",
+      "id": "20170101-152406_916644710",
+      "dateCreated": "Jan 1, 2017 3:24:06 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:24:06 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313046170_1692870864",
+      "id": "20170101-152406_303378533",
+      "dateCreated": "Jan 1, 2017 3:24:06 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 3:24:04 PM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313044517_-1645625991",
+      "id": "20170101-152404_1766974937",
+      "dateCreated": "Jan 1, 2017 3:24:04 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Zeppelin Tutorial/Workflow Tutorial",
+  "id": "2C6AEZVY2",
+  "angularObjects": {
+    "2C8AHX3W9:shared_process": [],
+    "2C67YNHQU:shared_process": [],
+    "2C6B7JAYS:shared_process": [],
+    "2C548UHDB:shared_process": [],
+    "2C53F7RSM:shared_process": [],
+    "2C7E2MKRM:shared_process": [],
+    "2C5C149TR:shared_process": [],
+    "2C5VB3W86:shared_process": [],
+    "2C6Q32VJ2:shared_process": [],
+    "2C4G9MQGQ:shared_process": [],
+    "2C4QKZTAQ:shared_process": [],
+    "2C76ZHMJ8:shared_process": [],
+    "2C6KBJDXK:shared_process": [],
+    "2C78P62FM:shared_process": [],
+    "2C7YVY1JE:shared_process": [],
+    "2C6VZEHC3:shared_process": [],
+    "2C6P5GQ63:shared_process": [],
+    "2C851PFXZ:shared_process": [],
+    "2C6BHV77Q:shared_process": []
+  },
+  "config": {
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}
