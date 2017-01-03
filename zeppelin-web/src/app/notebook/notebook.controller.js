@@ -69,7 +69,7 @@
 
     $scope.noteRevisions = [];
     $scope.currentRevision = 'Head';
-    $scope.revisionDisabled = !isRevisionPath($location.path());
+    $scope.revisionView = isRevisionPath($location.path());
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
@@ -165,7 +165,7 @@
 
     $scope.keyboardShortcut = function(keyEvent) {
       // handle keyevent
-      if (!$scope.viewOnly) {
+      if (!$scope.viewOnly && !$scope.revisionView) {
         $scope.$broadcast('keyEvent', keyEvent);
       }
     };
@@ -260,6 +260,7 @@
       console.log('received note revision %o', data);
       if (data.note) {
         $scope.note = data.note;
+        initializeLookAndFeel();
       } else {
         $location.path('/');
       }
@@ -385,7 +386,11 @@
 
     $scope.setLookAndFeel = function(looknfeel) {
       $scope.note.config.looknfeel = looknfeel;
-      $scope.setConfig();
+      if ($scope.revisionView === true) {
+        $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
+      } else {
+        $scope.setConfig();
+      }
     };
 
     /** Set cron expression for this note **/

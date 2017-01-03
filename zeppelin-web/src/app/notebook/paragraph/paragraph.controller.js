@@ -185,6 +185,22 @@
       }
     });
 
+    $scope.getEditor = function() {
+      return $scope.editor;
+    };
+
+    $scope.$watch($scope.getEditor, function(newValue, oldValue) {
+      if (newValue === null || newValue === undefined) {
+        console.log('editor isnt loaded yet, returning');
+        return;
+      }
+      if ($scope.revisionView === true) {
+        $scope.editor.setReadOnly(true);
+      } else {
+        $scope.editor.setReadOnly(false);
+      }
+    });
+
     var isEmpty = function(object) {
       return !object;
     };
@@ -1140,7 +1156,7 @@
 
     $scope.$on('doubleClickParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
-          $scope.paragraph.config.editorSetting.editOnDblClick) {
+          $scope.paragraph.config.editorSetting.editOnDblClick && $scope.revisionView !== true) {
         var deferred = $q.defer();
         openEditorAndCloseTable($scope.paragraph);
         $timeout(
