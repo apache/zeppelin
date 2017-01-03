@@ -16,7 +16,7 @@ limitations under the License.
 To connect to Zeppelin, users will be asked to enter their credentials. Once logged, a user has access to all notes including other users notes.
 This a a first step toward full security as implemented by this pull request (https://github.com/apache/zeppelin/pull/53).
 
-Please check [Shiro authentication in Apache Zeppelin](https://zeppelin.apache.org/docs/snapshot/security/shiroauthentication.html) in our official website for more detailed information(e.g. [How to setup](https://zeppelin.apache.org/docs/0.7.0-SNAPSHOT/security/shiroauthentication.html#security-setup), [How to configure user groups and permissions](https://zeppelin.apache.org/docs/snapshot/security/shiroauthentication.html#groups-and-permissions-optional), etc)
+Please check [Shiro authentication in Apache Zeppelin](https://zeppelin.apache.org/docs/snapshot/security/shiroauthentication.html) in our official website for more detailed information(e.g. How to setup the security, How to configure user groups and permissions, and etc).
 
 # Implementation notes
 ## Vocabulary
