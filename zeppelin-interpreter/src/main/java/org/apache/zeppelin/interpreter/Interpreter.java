@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.google.gson.annotations.SerializedName;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -44,7 +43,6 @@ import org.slf4j.LoggerFactory;
  * open(), close(), interpret() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
  * getFormType(), getScheduler() determine Zeppelin's behavior
- *
  */
 public abstract class Interpreter {
 
@@ -66,16 +64,12 @@ public abstract class Interpreter {
    * Run code and return result, in synchronous way.
    *
    * @param st statements to run
-   * @param context
-   * @return
    */
   @ZeppelinApi
   public abstract InterpreterResult interpret(String st, InterpreterContext context);
 
   /**
    * Optionally implement the canceling routine to abort interpret() method
-   *
-   * @param context
    */
   @ZeppelinApi
   public abstract void cancel(InterpreterContext context);
@@ -85,7 +79,7 @@ public abstract class Interpreter {
    * see http://zeppelin.apache.org/docs/dynamicform.html
    *
    * @return FormType.SIMPLE enables simple pattern replacement (eg. Hello ${name=world}),
-   *         FormType.NATIVE handles form in API
+   * FormType.NATIVE handles form in API
    */
   @ZeppelinApi
   public abstract FormType getFormType();
@@ -93,7 +87,6 @@ public abstract class Interpreter {
   /**
    * get interpret() method running process in percentage.
    *
-   * @param context
    * @return number between 0-100
    */
   @ZeppelinApi
@@ -121,10 +114,8 @@ public abstract class Interpreter {
    * SchedulerFactory.singleton().createOrGetFIFOScheduler()
    * SchedulerFactory.singleton().createOrGetParallelScheduler()
    *
-   *
-   * @return return scheduler instance.
-   *         This method can be called multiple times and have to return the same instance.
-   *         Can not return null.
+   * @return return scheduler instance. This method can be called multiple times and have to return
+   * the same instance. Can not return null.
    */
   @ZeppelinApi
   public Scheduler getScheduler() {
@@ -133,7 +124,7 @@ public abstract class Interpreter {
 
   public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
-  private URL [] classloaderUrls;
+  private URL[] classloaderUrls;
   protected Properties property;
   private String userName;
 
@@ -208,6 +199,7 @@ public abstract class Interpreter {
 
   /**
    * General function to register hook event
+   *
    * @param noteId - Note to bind hook to
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param cmd The code to be executed by the interpreter on given event
@@ -221,6 +213,7 @@ public abstract class Interpreter {
 
   /**
    * registerHook() wrapper for global scope
+   *
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param cmd The code to be executed by the interpreter on given event
    */
@@ -231,6 +224,7 @@ public abstract class Interpreter {
 
   /**
    * Get the hook code
+   *
    * @param noteId - Note to bind hook to
    * @param event The type of event to hook to (pre_exec, post_exec)
    */
@@ -243,6 +237,7 @@ public abstract class Interpreter {
 
   /**
    * getHook() wrapper for global scope
+   *
    * @param event The type of event to hook to (pre_exec, post_exec)
    */
   @Experimental
@@ -252,6 +247,7 @@ public abstract class Interpreter {
 
   /**
    * Unbind code from given hook event
+   *
    * @param noteId - Note to bind hook to
    * @param event The type of event to hook to (pre_exec, post_exec)
    */
@@ -264,13 +260,14 @@ public abstract class Interpreter {
 
   /**
    * unregisterHook() wrapper for global scope
+   *
    * @param event The type of event to hook to (pre_exec, post_exec)
    */
   @Experimental
   public void unregisterHook(String event) {
     unregisterHook(null, event);
   }
-  
+
   @ZeppelinApi
   public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
     synchronized (interpreterGroup) {
@@ -311,17 +308,16 @@ public abstract class Interpreter {
    * Represent registered interpreter class
    */
   public static class RegisteredInterpreter {
-    //@SerializedName("interpreterGroup")
+
     private String group;
-    //@SerializedName("interpreterName")
     private String name;
-    //@SerializedName("interpreterClassName")
     private String className;
     private boolean defaultInterpreter;
     private Map<String, InterpreterProperty> properties;
     private Map<String, Object> editor;
     private String path;
     private InterpreterOption option;
+    private InterpreterRunner runner;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
@@ -382,6 +378,10 @@ public abstract class Interpreter {
     public InterpreterOption getOption() {
       return option;
     }
+
+    public InterpreterRunner getRunner() {
+      return runner;
+    }
   }
 
   /**
@@ -417,8 +417,8 @@ public abstract class Interpreter {
   public static void register(String name, String group, String className,
       boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
     logger.warn("Static initialization is deprecated for interpreter {}, You should change it " +
-                     "to use interpreter-setting.json in your jar or " +
-                     "interpreter/{interpreter}/interpreter-setting.json", name);
+        "to use interpreter-setting.json in your jar or " +
+        "interpreter/{interpreter}/interpreter-setting.json", name);
     register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
   }
 
