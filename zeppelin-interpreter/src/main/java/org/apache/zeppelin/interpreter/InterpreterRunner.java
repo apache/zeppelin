@@ -8,9 +8,9 @@ import com.google.gson.annotations.SerializedName;
 public class InterpreterRunner {
 
   @SerializedName("linux")
-  String linuxPath;
+  private String linuxPath;
   @SerializedName("win")
-  String winPath;
+  private String winPath;
 
   public String getPath() {
     return System.getProperty("os.name").startsWith("Windows") ? winPath : linuxPath;

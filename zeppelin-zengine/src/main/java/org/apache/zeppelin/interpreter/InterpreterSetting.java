@@ -38,6 +38,7 @@ import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
  * Interpreter settings
  */
 public class InterpreterSetting {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterSetting.class);
   private static final String SHARED_PROCESS = "shared_process";
   private String id;
@@ -49,26 +50,29 @@ public class InterpreterSetting {
   /**
    * properties can be either Properties or Map<String, InterpreterProperty>
    * properties should be:
-   *  - Properties when Interpreter instances are saved to `conf/interpreter.json` file
-   *  - Map<String, InterpreterProperty> when Interpreters are registered
-   *    : this is needed after https://github.com/apache/zeppelin/pull/1145
-   *      which changed the way of getting default interpreter setting AKA interpreterSettingsRef
+   * - Properties when Interpreter instances are saved to `conf/interpreter.json` file
+   * - Map<String, InterpreterProperty> when Interpreters are registered
+   * : this is needed after https://github.com/apache/zeppelin/pull/1145
+   * which changed the way of getting default interpreter setting AKA interpreterSettingsRef
    * Note(mina): In order to simplify the implementation, I chose to change properties
-   *             from Properties to Object instead of creating new classes.
+   * from Properties to Object instead of creating new classes.
    */
   private Object properties;
   private Status status;
   private String errorReason;
 
-  @SerializedName("interpreterGroup") private List<InterpreterInfo> interpreterInfos;
+  @SerializedName("interpreterGroup")
+  private List<InterpreterInfo> interpreterInfos;
   private final transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
 
-  @SerializedName("runner") private InterpreterRunner interpreterRunner;
+  @SerializedName("runner")
+  private InterpreterRunner interpreterRunner;
 
-  @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
+  @Deprecated
+  private transient InterpreterGroupFactory interpreterGroupFactory;
 
   private final transient ReentrantReadWriteLock.ReadLock interpreterGroupReadLock;
   private final transient ReentrantReadWriteLock.WriteLock interpreterGroupWriteLock;

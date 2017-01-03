@@ -86,15 +86,15 @@ import org.apache.zeppelin.scheduler.Job.Status;
  * Manage interpreters.
  */
 public class InterpreterFactory implements InterpreterGroupFactory {
-  private static Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
-
+  private static final Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
   private static final String SHARED_SESSION = "shared_session";
 
   private Map<String, URLClassLoader> cleanCl =
       Collections.synchronizedMap(new HashMap<String, URLClassLoader>());
 
   private ZeppelinConfiguration conf;
-  @Deprecated private String[] interpreterClassList;
+  @Deprecated
+  private String[] interpreterClassList;
   private String[] interpreterGroupOrderList;
 
   /**
@@ -200,7 +200,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
              * - Support ThreadInterpreter
             */
             URLClassLoader ccl = new URLClassLoader(
-                    recursiveBuildLibList(interpreterDir.toFile()), cl);
+                recursiveBuildLibList(interpreterDir.toFile()), cl);
             for (String className : interpreterClassList) {
               try {
                 // Load classes
@@ -270,7 +270,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       saveToFile();
     }
-
 
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
@@ -411,7 +410,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
       if (interpreterSettingObject == null) {
         logger.warn("can't get InterpreterSetting " +
-          "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
+            "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
         continue;
       }
       depClassPath = interpreterSettingObject.getPath();
@@ -606,8 +605,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   private boolean findDefaultInterpreter(List<InterpreterInfo> infos) {
     for (InterpreterInfo interpreterInfo : infos) {
-      if (interpreterInfo.isDefaultInterpreter())
+      if (interpreterInfo.isDefaultInterpreter()) {
         return true;
+      }
     }
     return false;
   }
@@ -642,7 +642,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   /**
    * @param group InterpreterSetting reference name
-   * @return
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
       List<Dependency> dependencies, InterpreterOption option,
@@ -708,21 +707,17 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   /**
-   *
    * @param id interpreterGroup id. Combination of interpreterSettingId + noteId/userId/shared
-   *           depends on interpreter mode
-   * @param option
-   * @return
-   * @throws InterpreterException
-   * @throws NullArgumentException
+   * depends on interpreter mode
    */
   @Override
   public InterpreterGroup createInterpreterGroup(String id, InterpreterOption option)
       throws InterpreterException, NullArgumentException {
 
     //When called from REST API without option we receive NPE
-    if (option == null)
+    if (option == null) {
       throw new NullArgumentException("option");
+    }
 
     AngularObjectRegistry angularObjectRegistry;
 
@@ -852,8 +847,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   /**
    * Get interpreter settings
-   *
-   * @return
    */
   public List<InterpreterSetting> get() {
     synchronized (interpreterSettings) {
@@ -952,11 +945,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   /**
    * Change interpreter property and restart
-   *
-   * @param id
-   * @param option
-   * @param properties
-   * @throws IOException
    */
   public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
       List<Dependency> dependencies) throws IOException {
@@ -1074,7 +1062,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       URLClassLoader ccl = cleanCl.get(dirName);
       if (ccl == null) {
         // classloader fallback
-        ccl = URLClassLoader.newInstance(new URL[] {}, oldcl);
+        ccl = URLClassLoader.newInstance(new URL[]{}, oldcl);
       }
 
       boolean separateCL = true;
@@ -1090,7 +1078,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       URLClassLoader cl;
 
       if (separateCL == true) {
-        cl = URLClassLoader.newInstance(new URL[] {}, ccl);
+        cl = URLClassLoader.newInstance(new URL[]{}, ccl);
       } else {
         cl = ccl;
       }
@@ -1098,7 +1086,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
       Constructor<Interpreter> constructor =
-          replClass.getConstructor(new Class[] {Properties.class});
+          replClass.getConstructor(new Class[]{Properties.class});
       Interpreter repl = constructor.newInstance(property);
       repl.setClassloaderUrls(ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl));
@@ -1164,8 +1152,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
    * map interpreter ids into noteId
    *
    * @param noteId note id
-   * @param ids    InterpreterSetting id list
-   * @throws IOException
+   * @param ids InterpreterSetting id list
    */
   public void setInterpreters(String user, String noteId, List<String> ids) throws IOException {
     putNoteInterpreterSettingBinding(user, noteId, ids);
@@ -1222,7 +1209,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
 
     logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
-            "{}", key, noteId, user, setting.getName());
+        "{}", key, noteId, user, setting.getName());
     return key;
   }
 
@@ -1389,7 +1376,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       }
       return urls;
     } else {
-      return new URL[] {path.toURI().toURL()};
+      return new URL[]{path.toURI().toURL()};
     }
   }
 
