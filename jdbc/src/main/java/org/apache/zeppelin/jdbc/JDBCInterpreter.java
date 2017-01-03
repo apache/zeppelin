@@ -80,7 +80,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String JDBC_DEFAULT_PASSWORD_KEY = "default.password";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
-  static final String MAX_LINE_DEFAULT = "1000";
+  static final int MAX_LINE_DEFAULT = 1000;
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -121,12 +121,14 @@ public class JDBCInterpreter extends Interpreter {
       };
 
   private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
+  private int maxLineResults;
 
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
     propertyKeySqlCompleterMap = new HashMap<>();
     basePropretiesMap = new HashMap<>();
+    maxLineResults = MAX_LINE_DEFAULT;
   }
 
   public HashMap<String, Properties> getPropertiesMap() {
@@ -146,9 +148,9 @@ public class JDBCInterpreter extends Interpreter {
           prefixProperties = basePropretiesMap.get(keyValue[0]);
         } else {
           prefixProperties = new Properties();
-          basePropretiesMap.put(keyValue[0], prefixProperties);
+          basePropretiesMap.put(keyValue[0].trim(), prefixProperties);
         }
-        prefixProperties.put(keyValue[1], property.getProperty(propertyKey));
+        prefixProperties.put(keyValue[1].trim(), property.getProperty(propertyKey));
       }
     }
 
@@ -174,6 +176,14 @@ public class JDBCInterpreter extends Interpreter {
     }
     for (String propertyKey : basePropretiesMap.keySet()) {
       propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(null));
+    }
+    setMaxLineResults();
+  }
+
+  private void setMaxLineResults() {
+    if (basePropretiesMap.containsKey(COMMON_KEY) &&
+        basePropretiesMap.get(COMMON_KEY).containsKey(MAX_LINE_KEY)) {
+      maxLineResults = Integer.valueOf(basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY));
     }
   }
 
@@ -600,11 +610,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   public int getMaxResult() {
-    if (basePropretiesMap.containsKey(COMMON_KEY)) {
-      return Integer.valueOf(
-        basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY, MAX_LINE_DEFAULT));
-    }
-    return Integer.valueOf(MAX_LINE_DEFAULT);
+    return maxLineResults;
   }
 
   boolean isConcurrentExecution() {
