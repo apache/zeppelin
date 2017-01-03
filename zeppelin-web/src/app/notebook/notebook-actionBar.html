@@ -161,11 +161,23 @@ limitations under the License.
 
 <!-- put the delete action by itself for your protection -->
       <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
-        <button type="button"
+        <!-- if the note is in the trash, remove note permanently -->
+        <button ng-if="isTrash(note)"
+                type="button"
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Remove this note"
+                tooltip-placement="bottom" tooltip="Remove this note permanently"
+                ng-disabled="revisionView">
+          <i class="icon-trash"></i>
+        </button>
+        <!-- if the note is not in the trash, move to trash -->
+        <button ng-if="!isTrash(note)"
+                type="button"
+                class="btn btn-default btn-xs"
+                ng-click="moveNoteToTrash(note.id)"
+                ng-hide="viewOnly"
+                tooltip-placement="bottom" tooltip="Move this note to trash"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
         </button>

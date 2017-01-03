@@ -56,8 +56,9 @@ Two binary packages are available on the [Apache Zeppelin Download Page](http://
 
   Unpack and follow [install additional interpreters](../manual/interpreterinstallation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
 
-## Starting Apache Zeppelin from the Command Line
-#### Starting Apache Zeppelin
+## Starting Apache Zeppelin 
+
+#### Starting Apache Zeppelin from the Command Line
 
 On all unix like platforms:
 
@@ -78,6 +79,48 @@ After Zeppelin has started successfully, go to [http://localhost:8080](http://lo
 ```
 bin/zeppelin-daemon.sh stop
 ```
+
+#### Start Apache Zeppelin with a service manager
+
+> **Note :** The below description was written based on Ubuntu Linux.
+
+Apache Zeppelin can be auto-started as a service with an init script, using a service manager like **upstart**.
+
+This is an example upstart script saved as `/etc/init/zeppelin.conf`
+This allows the service to be managed with commands such as
+
+```
+sudo service zeppelin start  
+sudo service zeppelin stop  
+sudo service zeppelin restart
+```
+
+Other service managers could use a similar approach with the `upstart` argument passed to the `zeppelin-daemon.sh` script.
+
+```
+bin/zeppelin-daemon.sh upstart
+```
+
+**zeppelin.conf**
+
+```
+description "zeppelin"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on shutdown
+
+# Respawn the process on unexpected termination
+respawn
+
+# respawn the job up to 7 times within a 5 second period.
+# If the job exceeds these values, it will be stopped and marked as failed.
+respawn limit 7 5
+
+# zeppelin was installed in /usr/share/zeppelin in this example
+chdir /usr/share/zeppelin
+exec bin/zeppelin-daemon.sh upstart
+```
+
 
 ## Next Steps
 
@@ -107,6 +150,11 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * Learn how [Display System](../displaysystem/basicdisplaysystem.html) works.
  * Use [Service Manager](#start-apache-zeppelin-with-a-service-manager) to start Zeppelin.
  * If you're using previous version please see [Upgrade Zeppelin version](./upgrade.html).
+
+
+## Building Apache Zeppelin from Source
+
+If you want to build from source instead of using binary package, follow the instructions [here](./build.html).
 
 
 ## Apache Zeppelin Configuration
@@ -339,48 +387,132 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
 </table>
 
 
-#### Start Apache Zeppelin with a service manager
+## Apache Zeppelin Configuration to enable SSL
 
-> **Note :** The below description was written based on Ubuntu Linux.
+Enabling SSL requires a few configuration changes. First you need to create certificates and then update necessary configurations to enable server side SSL and/or client side certificate authentication.
 
-Apache Zeppelin can be auto-started as a service with an init script, using a service manager like **upstart**.
+#### Creating and configuring the Certificates
 
-This is an example upstart script saved as `/etc/init/zeppelin.conf`
-This allows the service to be managed with commands such as
+Information how about to generate certificates and a keystore can be found [here](https://wiki.eclipse.org/Jetty/Howto/Configure_SSL).
 
-```
-sudo service zeppelin start  
-sudo service zeppelin stop  
-sudo service zeppelin restart
-```
+A condensed example can be found in the top answer to this [StackOverflow post](http://stackoverflow.com/questions/4008837/configure-ssl-on-jetty).
 
-Other service managers could use a similar approach with the `upstart` argument passed to the `zeppelin-daemon.sh` script.
+The keystore holds the private key and certificate on the server end. The trustore holds the trusted client certificates. Be sure that the path and password for these two stores are correctly configured in the password fields below. They can be obfuscated using the Jetty password tool. After Maven pulls in all the dependency to build Zeppelin, one of the Jetty jars contain the Password tool. Invoke this command from the Zeppelin home build directory with the appropriate version, user, and password.
 
 ```
-bin/zeppelin-daemon.sh upstart
+java -cp ./zeppelin-server/target/lib/jetty-all-server-<version>.jar org.eclipse.jetty.util.security.Password <user> <password>
 ```
 
-**zeppelin.conf**
+If you are using a self-signed, a certificate signed by an untrusted CA, or if client authentication is enabled, then the client must have a browser create exceptions for both the normal HTTPS port and WebSocket port. This can by done by trying to establish an HTTPS connection to both ports in a browser (i.e. if the ports are 443 and 8443, then visit https://127.0.0.1:443 and https://127.0.0.1:8443). This step can be skipped if the server certificate is signed by a trusted CA and client auth is disabled.
+
+#### Configuring server side SSL
+
+The following properties needs to be updated in the **zeppeling-site.xml** in order to enable server side SSL.
 
 ```
-description "zeppelin"
+<property>
+  <name>zeppelin.server.ssl.port</name>
+  <value>8443</value>
+  <description>Server ssl port. (used when ssl property is set to true)</description>
+</property>
 
-start on (local-filesystems and net-device-up IFACE!=lo)
-stop on shutdown
+<property>
+  <name>zeppelin.ssl</name>
+  <value>true</value>
+  <description>Should SSL be used by the servers?</description>
+</property>
 
-# Respawn the process on unexpected termination
-respawn
+<property>
+  <name>zeppelin.ssl.keystore.path</name>
+  <value>keystore</value>
+  <description>Path to keystore relative to Zeppelin configuration directory</description>
+</property>
 
-# respawn the job up to 7 times within a 5 second period.
-# If the job exceeds these values, it will be stopped and marked as failed.
-respawn limit 7 5
+<property>
+  <name>zeppelin.ssl.keystore.type</name>
+  <value>JKS</value>
+  <description>The format of the given keystore (e.g. JKS or PKCS12)</description>
+</property>
 
-# zeppelin was installed in /usr/share/zeppelin in this example
-chdir /usr/share/zeppelin
-exec bin/zeppelin-daemon.sh upstart
+<property>
+  <name>zeppelin.ssl.keystore.password</name>
+  <value>change me</value>
+  <description>Keystore password. Can be obfuscated by the Jetty Password tool</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.key.manager.password</name>
+  <value>change me</value>
+  <description>Key Manager password. Defaults to keystore password. Can be obfuscated.</description>
+</property>
 ```
 
 
-## Building from Source
+#### Enabling client side certificate authentication
 
-If you want to build from source instead of using binary package, follow the instructions [here](./build.html).
+The following properties needs to be updated in the **zeppeling-site.xml** in order to enable client side certificate authentication.
+
+```
+<property>
+  <name>zeppelin.server.ssl.port</name>
+  <value>8443</value>
+  <description>Server ssl port. (used when ssl property is set to true)</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.client.auth</name>
+  <value>true</value>
+  <description>Should client authentication be used for SSL connections?</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.truststore.path</name>
+  <value>truststore</value>
+  <description>Path to truststore relative to Zeppelin configuration directory. Defaults to the keystore path</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.truststore.type</name>
+  <value>JKS</value>
+  <description>The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.truststore.password</name>
+  <value>change me</value>
+  <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
+</property>
+```
+
+
+#### Obfuscating Passwords using the Jetty Password Tool
+
+Security best practices advise to not use plain text passwords and Jetty provides a password tool to help obfuscating the passwords used to access the KeyStore and TrustStore.
+ 
+The Password tool documentation can be found [here](http://www.eclipse.org/jetty/documentation/current/configuring-security-secure-passwords.html)
+
+After using the tool:
+
+```
+java -cp $ZEPPELIN_HOME/zeppelin-server/target/lib/jetty-util-9.2.15.v20160210.jar \
+         org.eclipse.jetty.util.security.Password  \
+         password
+
+2016-12-15 10:46:47.931:INFO::main: Logging initialized @101ms
+password
+OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v
+MD5:5f4dcc3b5aa765d61d8327deb882cf99
+```
+
+update your configuration with the obfuscated password :
+
+```
+<property>
+  <name>zeppelin.ssl.keystore.password</name>
+  <value>OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</value>
+  <description>Keystore password. Can be obfuscated by the Jetty Password tool</description>
+</property>
+```
+
+
+**Note:** After updating these configurations, Zeppelin server needs to be restarted.
