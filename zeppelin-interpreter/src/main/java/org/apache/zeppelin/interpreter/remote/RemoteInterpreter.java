@@ -554,4 +554,9 @@ public class RemoteInterpreter extends Interpreter {
     }
     this.env.putAll(env);
   }
+
+  //Only for test
+  public String getInterpreterRunner() {
+    return interpreterRunner;
+  }
 }

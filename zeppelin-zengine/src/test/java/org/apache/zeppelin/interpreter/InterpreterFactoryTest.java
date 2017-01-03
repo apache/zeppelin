@@ -349,4 +349,25 @@ public class InterpreterFactoryTest {
 
     verify(mockInterpreterRunner, times(1)).getPath();
   }
+
+  @Test
+  public void interpreterRunnerTest() {
+    InterpreterRunner mockInterpreterRunner = mock(InterpreterRunner.class);
+    String testInterpreterRunner = "relativePath.sh";
+    when(mockInterpreterRunner.getPath()).thenReturn(testInterpreterRunner); // This test only for Linux
+    Interpreter i = factory.createRemoteRepl("path1", "sessionKey", "className", new Properties(), "settingId", "userName", false, mockInterpreterRunner);
+    String interpreterRunner = ((RemoteInterpreter) ((LazyOpenInterpreter) i).getInnerInterpreter()).getInterpreterRunner();
+    assertNotEquals(interpreterRunner, testInterpreterRunner);
+
+    testInterpreterRunner = "/AbsolutePath.sh";
+    when(mockInterpreterRunner.getPath()).thenReturn(testInterpreterRunner);
+    i = factory.createRemoteRepl("path1", "sessionKey", "className", new Properties(), "settingId", "userName", false, mockInterpreterRunner);
+    interpreterRunner = ((RemoteInterpreter) ((LazyOpenInterpreter) i).getInnerInterpreter()).getInterpreterRunner();
+    assertEquals(interpreterRunner, testInterpreterRunner);
+  }
+
+  @Test
+  public void interpreterRunnerAsAbsolutePathTest() {
+
+  }
 }

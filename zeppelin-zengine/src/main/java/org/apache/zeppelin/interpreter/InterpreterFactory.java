@@ -1133,7 +1133,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return intp;
   }
 
-  private Interpreter createRemoteRepl(String interpreterPath, String interpreterSessionKey,
+  Interpreter createRemoteRepl(String interpreterPath, String interpreterSessionKey,
       String className, Properties property, String interpreterSettingId,
       String userName, Boolean isUserImpersonate, InterpreterRunner interpreterRunner) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
@@ -1141,8 +1141,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     String interpreterRunnerPath;
     if (null != interpreterRunner) {
-      interpreterRunnerPath = Joiner.on(File.separator)
-          .join(interpreterPath, interpreterRunner.getPath());
+      interpreterRunnerPath = interpreterRunner.getPath();
+      Path p = Paths.get(interpreterRunnerPath);
+      if (!p.isAbsolute()) {
+        interpreterRunnerPath = Joiner.on(File.separator)
+            .join(interpreterPath, interpreterRunnerPath);
+      }
     } else {
       interpreterRunnerPath = conf.getInterpreterRemoteRunnerPath();
     }
