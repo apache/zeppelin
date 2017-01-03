@@ -88,8 +88,8 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
     }
   });
 
-  $scope.renameNote = function(node) {
-    noteActionSrv.renameNote(node.id, node.path);
+  $scope.renameNote = function(nodeId, nodePath) {
+    noteActionSrv.renameNote(nodeId, nodePath);
   };
 
   $scope.moveNoteToTrash = function(noteId) {
