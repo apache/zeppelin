@@ -54,13 +54,13 @@ public class HeliumVisualizationFactoryTest {
 
   @After
   public void tearDown() throws IOException {
-    //FileUtils.deleteDirectory(tmpDir);
+    FileUtils.deleteDirectory(tmpDir);
   }
 
   @Test
   public void testInstallNpm() throws InstallationException {
-    assertTrue(new File(tmpDir, "node/npm").isFile());
-    assertTrue(new File(tmpDir, "node/node").isFile());
+    assertTrue(new File(tmpDir, "vis/node/npm").isFile());
+    assertTrue(new File(tmpDir, "vis/node/node").isFile());
   }
 
   @Test
@@ -69,13 +69,13 @@ public class HeliumVisualizationFactoryTest {
         HeliumPackage.Type.VISUALIZATION,
         "lodash",
         "lodash",
-        "lodash^3.9.3",
+        "lodash@3.9.3",
         "",
         null,
         "icon"
     );
     hvf.install(pkg);
-    assertTrue(new File(tmpDir, "node_modules/lodash").isDirectory());
+    assertTrue(new File(tmpDir, "vis/node_modules/lodash").isDirectory());
   }
 
   @Test
