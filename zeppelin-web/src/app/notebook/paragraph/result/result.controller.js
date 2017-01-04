@@ -581,7 +581,7 @@ import zeppelin from '../../../zeppelin';
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
       var dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
-      var exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'Exported data_' + dateFinished;
+      var exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
 
       for (var titleIndex in tableData.columns) {
         dsv += tableData.columns[titleIndex].name + delimiter;
