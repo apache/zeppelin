@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
@@ -1562,9 +1563,11 @@ public class NotebookServer extends WebSocketServlet
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     p.setConfig(config);
 
-    // if it's the last paragraph, let's add a new one
+    // if it's the last paragraph and empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (isTheLastParagraph) {
+    if (!(text.trim().equals(p.getMagic()) ||
+        Strings.isNullOrEmpty(text)) &&
+        isTheLastParagraph) {
       Paragraph newPara = note.addParagraph(subject);
       broadcastNewParagraph(note, newPara);
     }
