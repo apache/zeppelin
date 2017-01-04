@@ -715,7 +715,7 @@
      * lastCursorMove : 1(down), 0, -1(up) last cursor move event
      **/
     $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
-      if (!$scope.editor.isFocused()) {
+      if (!$scope.editor || !$scope.editor.isFocused()) {
         // only make sense when editor is focused
         return;
       }
