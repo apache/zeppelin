@@ -171,7 +171,7 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
   fi
-  
+
   # autodetect TEZ_CONF_DIR
   if [[ -n "${TEZ_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${TEZ_CONF_DIR}"
@@ -187,19 +187,26 @@ addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
 
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
-    INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
-    if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
-        INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+    suid="$(id -u ${ZEPPELIN_IMPERSONATE_USER})"
+    if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
+       INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
+       if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
+           INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+       fi
     fi
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT}`
+    if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+       INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} --proxy-user ${ZEPPELIN_IMPERSONATE_USER} ${SPARK_APP_JAR} ${PORT}`
+    else
+       INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT}`
+    fi
 else
     INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} `
 fi
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
     INTERPRETER_RUN_COMMAND+="'"
 fi
 
