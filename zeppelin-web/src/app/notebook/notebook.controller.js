@@ -973,11 +973,7 @@
         $rootScope.$broadcast('setIframe', $scope.asIframe);
       }
 
-      if ($scope.note === null) {
-        $scope.note = note;
-      } else {
-        $scope.note.config.personalizedMode = note.config.personalizedMode;
-      }
+      $scope.note = note;
       initializeLookAndFeel();
       //open interpreter binding setting when there're none selected
       getInterpreterBindings();
