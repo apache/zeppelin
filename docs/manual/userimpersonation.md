@@ -43,10 +43,10 @@ cat ~/.ssh/id_rsa.pub | ssh user1@localhost 'cat >> .ssh/authorized_keys'
 ```
 export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c '
 ```
-  
+
 
  * Start zeppelin server.
- 
+
 <hr>
 <div class="row">
   <div class="col-md-12">
@@ -57,13 +57,13 @@ export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c
       <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
         <img class="img-responsive" src="../assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
       </a>
-    
+
   </div>
 </div>
 <hr>
- 
+
  * Go to interpreter setting page, and enable "User Impersonate" in any of the interpreter (in my example its shell interpreter)
- 
+
  * Test with a simple paragraph
 
 ```
@@ -71,3 +71,5 @@ export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c
 whoami
 ```
 
+
+Note that usage of "User Impersonate" option will enable Spark interpreter to use `--proxy-user` option with current user by default.
