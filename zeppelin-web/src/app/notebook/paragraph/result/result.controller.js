@@ -594,6 +594,9 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
 
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
+      var dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
+      var exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
+
       for (var titleIndex in tableData.columns) {
         dsv += tableData.columns[titleIndex].name + delimiter;
       }
@@ -617,7 +620,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
       } else if (delimiter === ',') {
         extension = 'csv';
       }
-      saveAsService.saveAs(dsv, 'data', extension);
+      saveAsService.saveAs(dsv, exportedFileName, extension);
     };
 
     $scope.getBase64ImageSrc = function(base64Data) {
