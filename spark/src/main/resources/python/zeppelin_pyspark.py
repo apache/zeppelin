@@ -24,6 +24,11 @@ from pyspark.context import SparkContext
 import ast
 import warnings
 
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
+
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
@@ -44,14 +49,53 @@ class Logger(object):
 class PyZeppelinContext(dict):
   def __init__(self, zc):
     self.z = zc
+    self.max_result = 1000
     self._displayhook = lambda *args: None
 
   def show(self, obj):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
       print(self.z.showData(obj._jdf))
+    elif type(obj).__name__ == "DataFrame": # does not play well with sub-classes
+      # `isinstance(obj, DataFrame)` would req `import pandas.core.frame.DataFrame`
+      # and so a dependency on pandas
+      self.show_dataframe(obj)
     else:
       print(str(obj))
+
+  def show_dataframe(self, df, show_index=False):
+    """Pretty prints DF using Table Display System
+    """
+    limit = len(df) > self.max_result
+    header_buf = StringIO("")
+    if show_index:
+      idx_name = str(df.index.name) if df.index.name is not None else ""
+      header_buf.write(idx_name + "\t")
+    header_buf.write(str(df.columns[0]))
+    for col in df.columns[1:]:
+      header_buf.write("\t")
+      header_buf.write(str(col))
+    header_buf.write("\n")
+
+    body_buf = StringIO("")
+    rows = df.head(self.max_result).values if limit else df.values
+    index = df.index.values
+    for idx, row in zip(index, rows):
+      if show_index:
+        body_buf.write("%html <strong>{}</strong>".format(idx))
+        body_buf.write("\t")
+      body_buf.write(str(row[0]))
+      for cell in row[1:]:
+        body_buf.write("\t")
+        body_buf.write(str(cell))
+      body_buf.write("\n")
+    body_buf.seek(0); header_buf.seek(0)
+    #TODO(bzz): fix it, so it shows red notice, as in Spark
+    print("%table " + header_buf.read() + body_buf.read()) # +
+    #      ("\n<font color=red>Results are limited by {}.</font>" \
+    #          .format(self.max_result) if limit else "")
+    #)
+    body_buf.close(); header_buf.close()
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):

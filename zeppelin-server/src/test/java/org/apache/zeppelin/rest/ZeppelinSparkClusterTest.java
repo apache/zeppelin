@@ -232,6 +232,23 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
             assertEquals("55\n", p.getResult().message().get(0).getData());
+
+            // display pandas data frame
+            p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            config = p.getConfig();
+            config.put("enabled", true);
+            p.setConfig(config);
+            p.setText("%pyspark data = {'id':[1,2], 'name':['alice', 'bob']}\n"
+                + "import pandas as pd\n"
+                + "df = pd.DataFrame(data)\n"
+                + "z.show(df)");
+            p.setAuthenticationInfo(anonymous);
+            note.run(p.getId());
+            waitForFinish(p);
+            assertEquals(Status.FINISHED, p.getStatus());
+            assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
+            assertEquals("id\tname\n1\talice\n2\tbob\n", p.getResult().message().get(0).getData());
+
             if (sparkVersion >= 13) {
                 // run sqlContext test
                 p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
