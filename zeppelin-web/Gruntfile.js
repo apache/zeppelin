@@ -212,21 +212,6 @@ module.exports = function(grunt) {
       }
     },
 
-    // Empties folders to start fresh
-    clean: {
-      dist: {
-        files: [{
-          dot: true,
-          src: [
-            '.tmp',
-            '<%= yeoman.dist %>/{,*/}*',
-            '!<%= yeoman.dist %>/.git*'
-          ]
-        }]
-      },
-      tmp: '.tmp'
-    },
-
     // Add vendor prefixed styles
     postcss: {
       options: {
@@ -461,7 +446,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
-      'clean:tmp',
       'wiredep',
     ]);
   });
@@ -474,7 +458,6 @@ module.exports = function(grunt) {
     'jscs',
     'eslint',
     'htmlhint',
-    'clean:dist',
     'wiredep',
   ]);
 
