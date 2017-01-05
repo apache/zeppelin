@@ -441,75 +441,87 @@ public class JDBCInterpreter extends Interpreter {
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
-    try {
-      String results = null;
-      connection = getConnection(propertyKey, interpreterContext);
+    InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
 
-      if (connection == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
-      }
-
-      statement = connection.createStatement();
-      if (statement == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
-      }
+    String[] multipleSqlArray = sql.split("\\s*;\\s*(?=([^'\"`]*'[^'\"`]*')*[^'\"`]*$)");
+    for (int i = 0; i < multipleSqlArray.length; i++) {
+      String sqlToExecute = multipleSqlArray[i];
 
       try {
-        getJDBCConfiguration(user).saveStatement(paragraphId, statement);
 
-        boolean isResultSetAvailable = statement.execute(sql);
-        if (isResultSetAvailable) {
-          resultSet = statement.getResultSet();
+        connection = getConnection(propertyKey, interpreterContext);
 
-          // Regards that the command is DDL.
-          if (isDDLCommand(statement.getUpdateCount(), resultSet.getMetaData().getColumnCount())) {
-            results = "Query executed successfully.";
+        if (connection == null) {
+          return new InterpreterResult(Code.ERROR, "Prefix not found.");
+        }
+
+        statement = connection.createStatement();
+        if (statement == null) {
+          return new InterpreterResult(Code.ERROR, "Prefix not found.");
+        }
+
+        try {
+          getJDBCConfiguration(user).saveStatement(paragraphId, statement);
+
+
+          boolean isResultSetAvailable = statement.execute(sqlToExecute);
+          if (isResultSetAvailable) {
+            resultSet = statement.getResultSet();
+
+            // Regards that the command is DDL.
+            if (isDDLCommand(statement.getUpdateCount(),
+                resultSet.getMetaData().getColumnCount())) {
+              interpreterResult.add(InterpreterResult.Type.TEXT,
+                  "Query executed successfully.");
+            } else {
+              interpreterResult.add(
+                  getResults(resultSet, !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE)));
+            }
           } else {
-            results = getResults(resultSet, !containsIgnoreCase(sql, EXPLAIN_PREDICATE));
+            // Response contains either an update count or there are no results.
+            int updateCount = statement.getUpdateCount();
+            interpreterResult.add(InterpreterResult.Type.TEXT,
+                "Query executed successfully. Affected rows : " +
+                    updateCount);
           }
-        } else {
-          // Response contains either an update count or there are no results.
-          int updateCount = statement.getUpdateCount();
-          results = "Query executed successfully. Affected rows : " + updateCount;
-        }
-        //In case user ran an insert/update/upsert statement
-        if (connection.getAutoCommit() != true) connection.commit();
+          //In case user ran an insert/update/upsert statement
+          if (connection.getAutoCommit() != true) connection.commit();
 
-      } finally {
-        if (resultSet != null) {
-          try {
-            resultSet.close();
-          } catch (SQLException e) { /*ignored*/ }
+        } finally {
+          if (resultSet != null) {
+            try {
+              resultSet.close();
+            } catch (SQLException e) { /*ignored*/ }
+          }
+          if (statement != null) {
+            try {
+              statement.close();
+            } catch (SQLException e) { /*ignored*/ }
+          }
+          if (connection != null) {
+            try {
+              connection.close();
+            } catch (SQLException e) { /*ignored*/ }
+          }
+          getJDBCConfiguration(user).removeStatement(paragraphId);
         }
-        if (statement != null) {
-          try {
-            statement.close();
-          } catch (SQLException e) { /*ignored*/ }
+      } catch (Exception e) {
+        logger.error("Cannot run " + sqlToExecute, e);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        e.printStackTrace(ps);
+        String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+
+        try {
+          closeDBPool(user, propertyKey);
+        } catch (SQLException e1) {
+          e1.printStackTrace();
         }
-        if (connection != null) {
-          try {
-            connection.close();
-          } catch (SQLException e) { /*ignored*/ }
-        }
-        getJDBCConfiguration(user).removeStatement(paragraphId);
+
+        return new InterpreterResult(Code.ERROR, errorMsg);
       }
-      return new InterpreterResult(Code.SUCCESS, results);
-
-    } catch (Exception e) {
-      logger.error("Cannot run " + sql, e);
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      PrintStream ps = new PrintStream(baos);
-      e.printStackTrace(ps);
-      String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-
-      try {
-        closeDBPool(user, propertyKey);
-      } catch (SQLException e1) {
-        e1.printStackTrace();
-      }
-
-      return new InterpreterResult(Code.ERROR, errorMsg);
     }
+    return interpreterResult;
   }
 
   /**
