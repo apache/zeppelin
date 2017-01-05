@@ -433,22 +433,23 @@ public class JDBCInterpreter extends Interpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
+  //inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/pgadmin/dlg/dlgProperty.cpp#L999-L1045
   protected String[] splitSqlQueries(String sql) {
     ArrayList<String> queries = new ArrayList<>();
     StringBuilder query = new StringBuilder();
-    Character c;
+    Character character;
 
     Boolean antiSlash = false;
     Boolean quoteString = false;
     Boolean doubleQuoteString = false;
 
     for (int item = 0; item < sql.length(); item++) {
-      c = sql.charAt(item);
+      character = sql.charAt(item);
 
-      if (c.equals('\\')) {
+      if (character.equals('\\')) {
         antiSlash = true;
       }
-      if (c.equals('\'')) {
+      if (character.equals('\'')) {
         if (antiSlash) {
           antiSlash = false;
         } else if (quoteString) {
@@ -457,7 +458,7 @@ public class JDBCInterpreter extends Interpreter {
           quoteString = true;
         }
       }
-      if (c.equals('"')) {
+      if (character.equals('"')) {
         if (antiSlash) {
           antiSlash = false;
         } else if (doubleQuoteString) {
@@ -467,11 +468,11 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
-      if (c.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
+      if (character.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
         queries.add(query.toString());
         query = new StringBuilder();
       } else {
-        query.append(c);
+        query.append(character);
       }
     }
     if (queries.size() == 0) {
