@@ -52,13 +52,18 @@ class PyZeppelinContext(dict):
     self.max_result = 1000
     self._displayhook = lambda *args: None
 
+  def _isPandas(self, obj):
+    try:
+      from pandas.core.frame import DataFrame
+      return isinstance(obj, DataFrame)
+    except ImportError:
+      return false
+
   def show(self, obj):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
       print(self.z.showData(obj._jdf))
-    elif type(obj).__name__ == "DataFrame": # does not play well with sub-classes
-      # `isinstance(obj, DataFrame)` would req `import pandas.core.frame.DataFrame`
-      # and so a dependency on pandas
+    elif self._isPandas(obj):
       self.show_dataframe(obj)
     else:
       print(str(obj))

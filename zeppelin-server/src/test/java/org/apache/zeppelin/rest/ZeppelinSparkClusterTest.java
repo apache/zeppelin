@@ -234,7 +234,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals("55\n", p.getResult().message().get(0).getData());
 
             // display pandas data frame
-            p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
