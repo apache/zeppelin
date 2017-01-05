@@ -1035,7 +1035,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       for (final InterpreterSetting intpSetting : intpSettings) {
         Thread t = new Thread() {
           public void run() {
-            intpSetting.closeAndRmoveAllInterpreterGroups();
+            intpSetting.closeAndRemoveAllInterpreterGroups();
           }
         };
         t.start();
