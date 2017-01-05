@@ -112,6 +112,9 @@ public class ZeppelinServer extends Application {
         heliumVisualizationFactory,
         heliumApplicationFactory);
 
+    // create visualization bundle
+    heliumVisualizationFactory.bundle(helium.getVisualizationPackagesToBundle());
+
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated());

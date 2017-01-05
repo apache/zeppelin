@@ -67,7 +67,6 @@ public class Helium {
     gson = builder.create();
 
     heliumConf = loadConf(heliumConfPath);
-    visualizationFactory.bundle(getVisualizationPackagesToBundle());
   }
 
   /**
