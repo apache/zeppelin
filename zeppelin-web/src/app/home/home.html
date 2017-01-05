@@ -133,7 +133,7 @@ limitations under the License.
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-            <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+            <h5 ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;" ng-click="notenamectrl.getInterpreterSettings()">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>

@@ -100,6 +100,7 @@
     vm.getInterpreterSettings = function() {
       vm.websocketMsgSrv.getInterpreterSettings();
     };
+    
 
     $scope.$on('interpreterSettings', function(event, data) {
       $scope.interpreterSettings = data.interpreterSettings;
@@ -108,13 +109,6 @@
       $scope.note.defaultInterpreter = data.interpreterSettings[0];
     });
 
-    var init = function() {
-      if (!vm.clone) {
-        vm.getInterpreterSettings();
-      }
-    };
-
-    init();
   }
 
 })();
