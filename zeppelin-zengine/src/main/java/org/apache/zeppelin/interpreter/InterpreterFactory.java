@@ -1052,6 +1052,30 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
   }
 
+  public void shutdown() {
+    List<Thread> closeThreads = new LinkedList<>();
+    synchronized (interpreterSettings) {
+      Collection<InterpreterSetting> intpSettings = interpreterSettings.values();
+      for (final InterpreterSetting intpSetting : intpSettings) {
+        Thread t = new Thread() {
+          public void run() {
+            intpSetting.shutdownAndRemoveAllInterpreterGroups();
+          }
+        };
+        t.start();
+        closeThreads.add(t);
+      }
+    }
+
+    for (Thread t : closeThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        logger.error("Can't close interpreterGroup", e);
+      }
+    }
+  }
+
   private Interpreter createRepl(String dirName, String className, Properties property)
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);

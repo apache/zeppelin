@@ -156,7 +156,7 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterFactory().close();
+          notebook.getInterpreterFactory().shutdown();
           notebook.close();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
