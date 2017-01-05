@@ -222,6 +222,12 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       remoteInterpreterProcess = null;
     }
     allInterpreterGroups.remove(id);
+
+    List<Interpreter> intpToClose = new LinkedList<>();
+    for (List<Interpreter> intpGroupForSession : this.values()) {
+      intpToClose.addAll(intpGroupForSession);
+    }
+    close(intpToClose);
   }
 
   public void setResourcePool(ResourcePool resourcePool) {
