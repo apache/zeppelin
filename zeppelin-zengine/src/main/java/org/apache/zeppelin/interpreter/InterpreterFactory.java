@@ -825,7 +825,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       if (interpreterSettings.containsKey(id)) {
         InterpreterSetting intp = interpreterSettings.get(id);
-        intp.closeAndRmoveAllInterpreterGroups();
+        intp.closeAndRemoveAllInterpreterGroups();
 
         interpreterSettings.remove(id);
         for (List<String> settings : interpreterBindings.values()) {
@@ -954,7 +954,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         try {
           stopJobAllInterpreter(intpSetting);
 
-          intpSetting.closeAndRmoveAllInterpreterGroups();
+          intpSetting.closeAndRemoveAllInterpreterGroups();
           intpSetting.setOption(option);
           intpSetting.setProperties(properties);
           intpSetting.setDependencies(dependencies);
@@ -999,7 +999,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
         stopJobAllInterpreter(intpSetting);
 
-        intpSetting.closeAndRmoveAllInterpreterGroups();
+        intpSetting.closeAndRemoveAllInterpreterGroups();
 
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
