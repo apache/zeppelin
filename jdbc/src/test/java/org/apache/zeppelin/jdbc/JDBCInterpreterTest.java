@@ -172,6 +172,49 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testSplitSqlQuery() throws SQLException, IOException {
+    String sqlQuery = "select * from test_table;" +
+        "select * from test_table WHERE ID = `;`;" +
+        "select * from test_table WHERE ID = \";\";" +
+        "select * from test_table WHERE ID = ';';";
+
+    Properties properties = new Properties();
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+    String[] multipleSqlArray = t.splitSqlQuery(sqlQuery);
+    assertEquals(4, multipleSqlArray.length);
+    assertEquals("select * from test_table", multipleSqlArray[0]);
+    assertEquals("select * from test_table WHERE ID = `;`", multipleSqlArray[1]);
+    assertEquals("select * from test_table WHERE ID = \";\"", multipleSqlArray[2]);
+    assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray[3]);
+  }
+
+  @Test
+  public void testSelectMultipleQuries() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select * from test_table;" +
+        "select * from test_table WHERE ID = ';';";
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(2, interpreterResult.message().size());
+
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n", interpreterResult.message().get(0).getData());
+
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
+    assertEquals("ID\tNAME\n", interpreterResult.message().get(1).getData());
+  }
+
+  @Test
   public void testSelectQueryWithNull() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");

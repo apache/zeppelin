@@ -433,6 +433,10 @@ public class JDBCInterpreter extends Interpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
+  protected String[] splitSqlQuery(String query) {
+    return query.split("\\s*;\\s*(?=([^'\"`]*['\"`][^'\"`]*['\"`])*[^'\"`]*$)");
+  }
+
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
     Connection connection;
@@ -449,7 +453,7 @@ public class JDBCInterpreter extends Interpreter {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      String[] multipleSqlArray = sql.split("\\s*;\\s*(?=([^'\"`]*'[^'\"`]*')*[^'\"`]*$)");
+      String[] multipleSqlArray = splitSqlQuery(sql);
       for (int i = 0; i < multipleSqlArray.length; i++) {
         String sqlToExecute = multipleSqlArray[i];
         statement = connection.createStatement();
