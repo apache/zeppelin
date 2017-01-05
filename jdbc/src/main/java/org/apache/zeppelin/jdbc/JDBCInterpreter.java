@@ -433,7 +433,10 @@ public class JDBCInterpreter extends Interpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
-  //inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/pgadmin/dlg/dlgProperty.cpp#L999-L1045
+  /*
+  inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/
+    pgadmin/dlg/dlgProperty.cpp#L999-L1045
+   */
   protected String[] splitSqlQueries(String sql) {
     ArrayList<String> queries = new ArrayList<>();
     StringBuilder query = new StringBuilder();
