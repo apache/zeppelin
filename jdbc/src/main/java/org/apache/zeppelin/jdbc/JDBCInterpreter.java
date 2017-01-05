@@ -443,11 +443,8 @@ public class JDBCInterpreter extends Interpreter {
 
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
 
-
     try {
-
       connection = getConnection(propertyKey, interpreterContext);
-
       if (connection == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
@@ -462,7 +459,6 @@ public class JDBCInterpreter extends Interpreter {
 
         try {
           getJDBCConfiguration(user).saveStatement(paragraphId, statement);
-
 
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           if (isResultSetAvailable) {
