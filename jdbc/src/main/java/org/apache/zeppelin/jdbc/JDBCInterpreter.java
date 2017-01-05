@@ -474,12 +474,12 @@ public class JDBCInterpreter extends Interpreter {
       if (character.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
         queries.add(query.toString());
         query = new StringBuilder();
+      } else if (item == sql.length() - 1) {
+        query.append(character);
+        queries.add(query.toString());
       } else {
         query.append(character);
       }
-    }
-    if (queries.size() == 0) {
-      queries.add(query.toString());
     }
     return queries.toArray(new String[queries.size()]);
   }

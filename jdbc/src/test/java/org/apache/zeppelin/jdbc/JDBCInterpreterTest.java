@@ -15,7 +15,6 @@
 package org.apache.zeppelin.jdbc;
 
 import static java.lang.String.format;
-import static org.apache.zeppelin.interpreter.Interpreter.register;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
@@ -171,7 +170,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
         "select * from test_table;" +
         "select * from test_table WHERE ID = \";'\";" +
-        "select * from test_table WHERE ID = ';';";
+        "select * from test_table WHERE ID = ';'";
 
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
