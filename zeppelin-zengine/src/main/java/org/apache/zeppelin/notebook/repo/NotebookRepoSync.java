@@ -51,7 +51,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final String delDstKey = "delDstNoteIds";
 
   private static ZeppelinConfiguration config;
-  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
+  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
