@@ -443,18 +443,18 @@ public class JDBCInterpreter extends Interpreter {
 
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
 
-    String[] multipleSqlArray = sql.split("\\s*;\\s*(?=([^'\"`]*'[^'\"`]*')*[^'\"`]*$)");
-    for (int i = 0; i < multipleSqlArray.length; i++) {
-      String sqlToExecute = multipleSqlArray[i];
 
-      try {
+    try {
 
-        connection = getConnection(propertyKey, interpreterContext);
+      connection = getConnection(propertyKey, interpreterContext);
 
-        if (connection == null) {
-          return new InterpreterResult(Code.ERROR, "Prefix not found.");
-        }
+      if (connection == null) {
+        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+      }
 
+      String[] multipleSqlArray = sql.split("\\s*;\\s*(?=([^'\"`]*'[^'\"`]*')*[^'\"`]*$)");
+      for (int i = 0; i < multipleSqlArray.length; i++) {
+        String sqlToExecute = multipleSqlArray[i];
         statement = connection.createStatement();
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -484,9 +484,6 @@ public class JDBCInterpreter extends Interpreter {
                 "Query executed successfully. Affected rows : " +
                     updateCount);
           }
-          //In case user ran an insert/update/upsert statement
-          if (connection.getAutoCommit() != true) connection.commit();
-
         } finally {
           if (resultSet != null) {
             try {
@@ -498,28 +495,32 @@ public class JDBCInterpreter extends Interpreter {
               statement.close();
             } catch (SQLException e) { /*ignored*/ }
           }
-          if (connection != null) {
-            try {
-              connection.close();
-            } catch (SQLException e) { /*ignored*/ }
-          }
-          getJDBCConfiguration(user).removeStatement(paragraphId);
         }
-      } catch (Exception e) {
-        logger.error("Cannot run " + sqlToExecute, e);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        e.printStackTrace(ps);
-        String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-
-        try {
-          closeDBPool(user, propertyKey);
-        } catch (SQLException e1) {
-          e1.printStackTrace();
-        }
-
-        return new InterpreterResult(Code.ERROR, errorMsg);
       }
+      //In case user ran an insert/update/upsert statement
+      if (connection != null) {
+        try {
+          if (!connection.getAutoCommit()) {
+            connection.commit();
+          }
+          connection.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
+      getJDBCConfiguration(user).removeStatement(paragraphId);
+    } catch (Exception e) {
+      logger.error("Cannot run " + sql, e);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream ps = new PrintStream(baos);
+      e.printStackTrace(ps);
+      String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        e1.printStackTrace();
+      }
+
+      return new InterpreterResult(Code.ERROR, errorMsg);
     }
     return interpreterResult;
   }
