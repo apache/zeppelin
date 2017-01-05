@@ -15,9 +15,7 @@
 package org.apache.zeppelin.jdbc;
 
 import static java.lang.String.format;
-import static org.apache.zeppelin.interpreter.Interpreter.logger;
 import static org.apache.zeppelin.interpreter.Interpreter.register;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
@@ -29,19 +27,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.apache.zeppelin.scheduler.FIFOScheduler;
 import org.apache.zeppelin.scheduler.ParallelScheduler;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 import org.junit.Before;
@@ -173,19 +168,19 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
   @Test
   public void testSplitSqlQuery() throws SQLException, IOException {
-    String sqlQuery = "select * from test_table;" +
-        "select * from test_table WHERE ID = `;`;" +
-        "select * from test_table WHERE ID = \";\";" +
+    String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
+        "select * from test_table;" +
+        "select * from test_table WHERE ID = \";'\";" +
         "select * from test_table WHERE ID = ';';";
 
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
-    String[] multipleSqlArray = t.splitSqlQuery(sqlQuery);
+    String[] multipleSqlArray = t.splitSqlQueries(sqlQuery);
     assertEquals(4, multipleSqlArray.length);
-    assertEquals("select * from test_table", multipleSqlArray[0]);
-    assertEquals("select * from test_table WHERE ID = `;`", multipleSqlArray[1]);
-    assertEquals("select * from test_table WHERE ID = \";\"", multipleSqlArray[2]);
+    assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray[0]);
+    assertEquals("select * from test_table", multipleSqlArray[1]);
+    assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray[2]);
     assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray[3]);
   }
 

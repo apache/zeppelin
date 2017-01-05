@@ -433,8 +433,51 @@ public class JDBCInterpreter extends Interpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
-  protected String[] splitSqlQuery(String query) {
-    return query.split("\\s*;\\s*(?=([^'\"`]*['\"`][^'\"`]*['\"`])*[^'\"`]*$)");
+  protected String[] splitSqlQueries(String sql) {
+    ArrayList<String> queries = new ArrayList<>();
+    StringBuilder query = new StringBuilder();
+    Character c;
+
+    Boolean antiSlash = false;
+    Boolean quoteString = false;
+    Boolean doubleQuoteString = false;
+
+    for (int item = 0; item < sql.length(); item++) {
+      c = sql.charAt(item);
+
+      if (c.equals('\\')) {
+        antiSlash = true;
+      }
+      if (c.equals('\'')) {
+        if (antiSlash) {
+          antiSlash = false;
+        } else if (quoteString) {
+          quoteString = false;
+        } else if (!doubleQuoteString) {
+          quoteString = true;
+        }
+      }
+      if (c.equals('"')) {
+        if (antiSlash) {
+          antiSlash = false;
+        } else if (doubleQuoteString) {
+          doubleQuoteString = false;
+        } else if (!quoteString) {
+          doubleQuoteString = true;
+        }
+      }
+
+      if (c.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
+        queries.add(query.toString());
+        query = new StringBuilder();
+      } else {
+        query.append(c);
+      }
+    }
+    if (queries.size() == 0) {
+      queries.add(query.toString());
+    }
+    return queries.toArray(new String[queries.size()]);
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,
@@ -453,7 +496,7 @@ public class JDBCInterpreter extends Interpreter {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      String[] multipleSqlArray = splitSqlQuery(sql);
+      String[] multipleSqlArray = splitSqlQueries(sql);
       for (int i = 0; i < multipleSqlArray.length; i++) {
         String sqlToExecute = multipleSqlArray[i];
         statement = connection.createStatement();
