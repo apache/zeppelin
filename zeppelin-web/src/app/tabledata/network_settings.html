@@ -1,0 +1,88 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="row">
+  <form>
+    <fieldset class="form-group col-xs-6">
+      <h4>Force Atlas 2 Plugin</h4>
+      <div class="form-check">
+        <label for="{{$id}}_useForceAtlas2" class="form-check-label">
+          <input type="checkbox" id="{{$id}}_useForceAtlas2" ng-model="config.sigma.forceAtlas2.use" />
+          <b>Use Force Atlas 2 Plugin</b>
+        </label>
+      </div>
+      <div class="form-check">
+        <label for="{{$id}}_useBarnesHutOptimize" class="form-check-label">
+          <input type="checkbox" id="{{$id}}_useBarnesHutOptimize" ng-model="config.sigma.forceAtlas2.cfg.barnesHutOptimize" />
+          Use Barnes-Hut's repulsion algorithm
+        </label>
+      </div>
+      <div class="form-check">
+        Animation duration
+        <div class="col-xs-6 input-group input-group-sm">
+          <input type="text" class="form-control" ng-model="config.sigma.forceAtlas2.cfg.animationDuration" />
+          <span class="input-group-addon">ms</span>
+        </div>
+      </div>
+    </fieldset>
+  
+    <fieldset class="form-group col-xs-6">
+      <h4>No overlap Plugin</h4>
+      <div class="form-check">
+        <label for="{{$id}}_useNoOverlap">
+          <input type="checkbox" id="{{$id}}_useNoOverlap" ng-model="config.sigma.noOverlap.use" />
+          <b>Use No overlap Plugin</b>
+        </label>
+      </div>
+      <div class="form-check">
+        Animation duration
+        <div class="col-xs-6 input-group input-group-sm">
+          <input type="text" class="form-control" ng-model="config.sigma.noOverlap.cfg.duration" />
+          <span class="input-group-addon">ms</span>
+        </div>
+      </div>
+      <div class="form-check col-xs-6" style="padding: 0">
+        Easing
+        <select class="form-control" ng-model="config.sigma.noOverlap.cfg.easing">
+          <option ng-repeat="easingOpt in easingOpts track by $index" value="{{easingOpt.value}}">{{easingOpt.label}}</option>
+        </select>
+      </div>
+    </fieldset>
+  
+    <fieldset class="form-group col-xs-12">
+      <h4>Choose node labels</h4>
+      <div ng-if="isEmptyObject(config.properties)">
+      No properties
+      </div>
+      <div class="btn-group network-labels network-badge-settings"
+          ng-repeat="(key, value) in config.properties track by key">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{key}}:<i>{{config.properties[key].selected}}</i> <div class="caret"></div>
+        </button>
+        <ul class="dropdown-menu">
+          <li ng-repeat="val in value.keys" ng-click="setNetworkLabel(key, val)">
+            <a><i ng-if="config.properties[key].selected == val" class="glyphicon glyphicon-ok">
+            </i> {{val}}</a>
+          </li>
+        </ul>
+      </div>
+    </fieldset>
+  
+    <fieldset class="form-group col-xs-12">
+      <button type="submit" class="btn btn-primary btn-sm" ng-click="saveConfig()">
+        <span class="glyphicon glyphicon-floppy-disk"></span>
+        Save configuration
+      </button>
+    </fieldset>
+  </form>
+</div>

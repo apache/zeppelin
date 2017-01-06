@@ -47,36 +47,48 @@
       {
         id: 'table',   // paragraph.config.graph.mode
         name: 'Table', // human readable name. tooltip
-        icon: 'fa fa-table'
+        icon: 'fa fa-table',
+        supports: ['TABLE', 'NETWORK'] //this visualization supported the following dataset types
       },
       {
         id: 'multiBarChart',
         name: 'Bar Chart',
         icon: 'fa fa-bar-chart',
-        transformation: 'pivot'
+        transformation: 'pivot',
+        supports: ['TABLE', 'NETWORK']
       },
       {
         id: 'pieChart',
         name: 'Pie Chart',
         icon: 'fa fa-pie-chart',
-        transformation: 'pivot'
+        transformation: 'pivot',
+        supports: ['TABLE', 'NETWORK']
       },
       {
         id: 'stackedAreaChart',
         name: 'Area Chart',
         icon: 'fa fa-area-chart',
-        transformation: 'pivot'
+        transformation: 'pivot',
+        supports: ['TABLE', 'NETWORK']
       },
       {
         id: 'lineChart',
         name: 'Line Chart',
         icon: 'fa fa-line-chart',
-        transformation: 'pivot'
+        transformation: 'pivot',
+        supports: ['TABLE', 'NETWORK']
       },
       {
         id: 'scatterChart',
         name: 'Scatter Chart',
-        icon: 'cf cf-scatter-chart'
+        icon: 'cf cf-scatter-chart',
+        supports: ['TABLE', 'NETWORK']
+      },
+      {
+        id: 'network',
+        name: 'Network',
+        icon: 'fa fa-share-alt',
+        supports: ['NETWORK']
       }
     ];
 
@@ -106,6 +118,10 @@
       },
       'scatterChart': {
         class: zeppelin.ScatterchartVisualization,
+        instance: undefined
+      },
+      'network': {
+        class: zeppelin.NetworkVisualization,
         instance: undefined
       }
     };
@@ -218,12 +234,16 @@
       // enable only when it is last result
       enableHelium = (index === paragraphRef.results.msg.length - 1);
 
-      if ($scope.type === 'TABLE') {
-        var TableData = zeppelin.TableData;
-        tableData = new TableData();
+      if ($scope.type === 'TABLE' || $scope.type === 'NETWORK') {
+        tableData = new zeppelin.DatasetFactory().createDataset($scope.type);
         tableData.loadParagraphResult({type: $scope.type, msg: data});
         $scope.tableDataColumns = tableData.columns;
         $scope.tableDataComment = tableData.comment;
+        if ($scope.type === 'NETWORK') {
+          $scope.networkNodes = tableData.networkNodes;
+          $scope.networkRelationships = tableData.networkRelationships;
+          $scope.networkProperties = tableData.networkProperties;
+        }
       } else if ($scope.type === 'IMG') {
         $scope.imageData = data;
       }
@@ -241,7 +261,7 @@
         var app = _.find($scope.apps, {id: activeApp});
         renderApp(app);
       } else {
-        if (type === 'TABLE') {
+        if (type === 'TABLE' || type === 'NETWORK') {
           $scope.renderGraph($scope.graphMode, refresh);
         } else if (type === 'HTML') {
           renderHtml();
@@ -277,12 +297,13 @@
 
     var renderAngular = function() {
       var retryRenderer = function() {
-        if (angular.element('#p' + $scope.id + '_angular').length) {
+        var $angularElem = angular.element('#p' + $scope.id + '_angular');
+        if ($angularElem.length) {
           try {
-            angular.element('#p' + $scope.id + '_angular').html(data);
+            $angularElem.html(data);
 
             var paragraphScope = noteVarShareService.get(paragraph.id + '_paragraphScope');
-            $compile(angular.element('#p' + $scope.id + '_angular').contents())(paragraphScope);
+            $compile($angularElem.contents())(paragraphScope);
           } catch (err) {
             console.log('ANGULAR rendering error %o', err);
           }
@@ -380,7 +401,7 @@
             var targetEl = angular.element('#p' + $scope.id + '_' + type);
             var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
             var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
-            if (targetEl.length) {
+            if (targetEl.length && targetEl.is(':visible')) {
               try {
                 // set height
                 targetEl.height(height);
@@ -427,7 +448,7 @@
             var targetEl = angular.element('#p' + $scope.id + '_' + type);
             var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
             var visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-            if (targetEl.length) {
+            if (targetEl.length && targetEl.is(':visible')) {
               var config = getVizConfig(type);
               targetEl.height(height);
               var transformation = builtInViz.instance.getTransformation();
@@ -488,7 +509,6 @@
         newConfig.graph.optionOpen = true;
       }
       var newParams = angular.copy(paragraph.settings.params);
-
       commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
     };
 

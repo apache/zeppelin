@@ -23,7 +23,7 @@ zeppelin.NetworkData = function(graph) {
   zeppelin.TableData.call(this);
   this.graph = graph || {};
   if (this.graph.nodes) {
-    this.loadParagraphResult(JSON.stringify({msg: graph, type: zeppelin.DatasetTypes.NETWORK}));
+    this.loadParagraphResult({msg: JSON.stringify(graph), type: zeppelin.DatasetTypes.NETWORK});
   } else {
     this.comment = [];
     this.columns = [];
@@ -46,8 +46,13 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
     return;
   }
 
-  this.setNodesDefaults();
+  //this.setNodesDefaults();
   this.setEdgesDefaults();
+
+  this.networkNodes = angular.equals({}, this.graph.labels || {}) ?
+          null : {count: this.graph.nodes.length, labels: this.graph.labels};
+  this.networkRelationships = angular.equals([], this.graph.types || []) ?
+          null : {count: this.graph.edges.length, types: this.graph.types};
 
   var columnNames = [];
   var rows = [];
@@ -76,7 +81,7 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
       var name = columnNames[j].name;
       var value = name in entity && internalFieldsToJump.indexOf(name) === -1 ?
           entity[name] : entity.data[name];
-      var parsedValue = this.parseTableCell(value === null || value === undefined ? '' : value);
+      var parsedValue = value === null || value === undefined ? '' : value;
       col.push(parsedValue);
       col2.push({key: name, value: parsedValue});
     }
@@ -88,27 +93,19 @@ zeppelin.NetworkData.prototype.loadParagraphResult = function(paragraphResult) {
   this.rows = rows;
 };
 
-zeppelin.NetworkData.prototype.updateNodeLabel = function(defaultLabel, labelField) {
-  this.graph.nodes
-    .filter(function(node) {
-      return node.defaultLabel === defaultLabel;
-    })
-    .forEach(function(node) {
-      node.label = (labelField === 'label' ?
-              defaultLabel : labelField in node ? node[labelField] : node.data[labelField]) + '';
-    });
-};
-
 zeppelin.NetworkData.prototype.setNodesDefaults = function(config) {
+  var hasCfgNodesProperty = config && config.nodes;
+  var hasCfgPropertiesProperty = config && config.properties;
   this.graph.nodes
     .forEach(function(node) {
       node.defaultLabel = node.defaultLabel || node.label || '';
-      var properties = config ? config.network.properties[node.defaultLabel] || {} : {};
+      var properties = hasCfgPropertiesProperty && node.defaultLabel in config.properties ?
+          config.properties[node.defaultLabel] : {};
       var selected = properties.selected || 'id';
       node.label = (selected in node ? node[selected] : node.data[selected]) + '';
-      if (config && node.id in config.network.nodes) {
-        node.x = config.network.nodes[node.id].x;
-        node.y = config.network.nodes[node.id].y;
+      if (hasCfgNodesProperty && node.id in config.nodes) {//TODO delete this part
+        node.x = config.nodes[node.id].x;
+        node.y = config.nodes[node.id].y;
       } else {
         node.x = node.x || Math.random();
         node.y = node.y || Math.random();
@@ -126,4 +123,23 @@ zeppelin.NetworkData.prototype.setEdgesDefaults = function(config) {
       edge.count = edge.count || 1;
       edge.defaultLabel = edge.defaultLabel || edge.label || '';
     });
+};
+
+zeppelin.NetworkData.prototype.getNetworkProperties = function() {
+  var baseCols = ['id', 'defaultLabel'];
+  var properties = {};
+  this.graph.nodes.forEach(function(node) {
+    var hasLabel = 'defaultLabel' in node && node.defaultLabel !== '';
+    if (!hasLabel) {
+      return;
+    }
+    var hasKey = hasLabel && node.defaultLabel in properties;
+    var keys = _.uniq(Object.keys(node.data || {})
+            .concat(hasKey ? properties[node.defaultLabel].keys : baseCols));
+    if (!hasKey) {
+      properties[node.defaultLabel] = {selected: 'defaultLabel'};
+    }
+    properties[node.defaultLabel].keys = keys;
+  });
+  return properties;
 };

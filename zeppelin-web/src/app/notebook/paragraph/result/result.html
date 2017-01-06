@@ -23,7 +23,7 @@ limitations under the License.
 
     <!-- graph setting -->
     <div class="option lightBold" style="overflow: visible;"
-         ng-show="type=='TABLE' && graphMode!='table'
+         ng-show="(type == 'TABLE' || type == 'NETWORK') && graphMode != 'table'
                   && config.graph.optionOpen && !asIframe && !viewOnly">
       <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
            id="trsetting{{id}}_{{viz.id}}"
@@ -33,11 +33,31 @@ limitations under the License.
            ng-show="graphMode == viz.id"></div>
     </div>
 
+    <div id="p{{id}}_network_header"
+         ng-if="type == 'NETWORK' && graphMode == 'network' && networkNodes != null">
+       <ul class="list-inline">
+         <li>Nodes <span class="badge">{{networkNodes.count}}</span>:</li>
+         <li ng-repeat="(labelName, labelColor) in networkNodes.labels" style="padding: 0">
+           <span style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
+             {{labelName}}
+           </span>
+         </li>
+       </ul>
+       <ul class="list-inline">
+         <li ng-if="networkRelationships != null">Relationships <span class="badge">{{networkRelationships.count}}</span>:</li>
+         <li ng-repeat="type in networkRelationships.types" style="padding: 0">
+           <span class="label label-default network-badge">
+             {{type}}
+           </span>
+         </li>
+       </ul>
+    </div>
+
     <!-- graph -->
     <div id="p{{id}}_graph"
          class="graphContainer"
          ng-class="{'noOverflow': graphMode=='table'}"
-         ng-show="type =='TABLE'"
+         ng-show="type == 'TABLE' || type == 'NETWORK'"
          >
       <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
            id="p{{id}}_{{viz.id}}"
@@ -45,9 +65,15 @@ limitations under the License.
       </div>
     </div>
 
+    <div id="p{{id}}_network_footer"
+         ng-if="type == 'NETWORK' && graphMode == 'network'">
+      <ul class="list-inline">
+      </ul>
+    </div>
+
     <div id="{{id}}_comment"
          class="text"
-         ng-if="type == 'TABLE' && tableDataComment"
+         ng-if="(type == 'TABLE' || type == 'NETWORK') && tableDataComment"
          ng-bind-html="tableDataComment">
     </div>
 

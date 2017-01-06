@@ -39,6 +39,9 @@ public abstract class GraphEntity {
    */
   private String label;
   
+  /**
+   * The primary type
+   */
   private String defaultLabel;
 
   private String color;
@@ -51,7 +54,7 @@ public abstract class GraphEntity {
     this.setId(id);
     this.setData(data);
     this.setLabel(label);
-    this.setDefaultLabel(defaultLabel);
+    this.setDefaultLabel(label);
     this.setColor(color);
   }
 

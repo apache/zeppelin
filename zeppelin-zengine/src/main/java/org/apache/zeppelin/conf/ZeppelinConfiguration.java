@@ -117,11 +117,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   private String getStringValue(String name, String d) {
     List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.size() == 0) {
+    if (properties == null || properties.isEmpty()) {
       return d;
     }
     for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && p.getChildren("name").size() > 0
+      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
           && name.equals(p.getChildren("name").get(0).getValue())) {
         return (String) p.getChildren("value").get(0).getValue();
       }
@@ -131,11 +131,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   private int getIntValue(String name, int d) {
     List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.size() == 0) {
+    if (properties == null || properties.isEmpty()) {
       return d;
     }
     for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && p.getChildren("name").size() > 0
+      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
           && name.equals(p.getChildren("name").get(0).getValue())) {
         return Integer.parseInt((String) p.getChildren("value").get(0).getValue());
       }
@@ -145,11 +145,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   private long getLongValue(String name, long d) {
     List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.size() == 0) {
+    if (properties == null || properties.isEmpty()) {
       return d;
     }
     for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && p.getChildren("name").size() > 0
+      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
           && name.equals(p.getChildren("name").get(0).getValue())) {
         return Long.parseLong((String) p.getChildren("value").get(0).getValue());
       }
@@ -159,11 +159,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   private float getFloatValue(String name, float d) {
     List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.size() == 0) {
+    if (properties == null || properties.isEmpty()) {
       return d;
     }
     for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && p.getChildren("name").size() > 0
+      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
           && name.equals(p.getChildren("name").get(0).getValue())) {
         return Float.parseFloat((String) p.getChildren("value").get(0).getValue());
       }
@@ -173,11 +173,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   private boolean getBooleanValue(String name, boolean d) {
     List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.size() == 0) {
+    if (properties == null || properties.isEmpty()) {
       return d;
     }
     for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && p.getChildren("name").size() > 0
+      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
           && name.equals(p.getChildren("name").get(0).getValue())) {
         return Boolean.parseBoolean((String) p.getChildren("value").get(0).getValue());
       }

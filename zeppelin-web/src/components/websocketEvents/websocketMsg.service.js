@@ -59,6 +59,10 @@
         websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
       },
 
+      updatePersonalizedMode: function(noteId, modeValue) {
+        websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
+      },
+
       renameNote: function(noteId, noteName) {
         websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}});
       },
