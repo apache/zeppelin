@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -48,12 +49,15 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3EncryptionClient;
+import com.amazonaws.services.s3.model.CryptoConfiguration;
 import com.amazonaws.services.s3.model.EncryptionMaterialsProvider;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.KMSEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.Gson;
@@ -91,18 +95,24 @@ public class S3NotebookRepo implements NotebookRepo {
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
-
+    CryptoConfiguration cryptoConf = null;
+    String keyRegion = conf.getS3KMSKeyRegion();
+    if (StringUtils.isNotBlank(keyRegion)) {
+      cryptoConf = new CryptoConfiguration();
+      cryptoConf.setAwsKmsRegion(Region.getRegion(Regions.fromName(keyRegion)));
+    }
+    
     // see if we should be encrypting data in S3
     String kmsKeyID = conf.getS3KMSKeyID();
     if (kmsKeyID != null) {
       // use the AWS KMS to encrypt data
       KMSEncryptionMaterialsProvider emp = new KMSEncryptionMaterialsProvider(kmsKeyID);
-      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cryptoConf);
     }
     else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
       // use a custom encryption materials provider class
       EncryptionMaterialsProvider emp = createCustomProvider(conf);
-      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cryptoConf);
     }
     else {
       // regular S3
