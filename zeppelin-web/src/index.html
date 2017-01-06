@@ -76,7 +76,10 @@ limitations under the License.
     <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
     <toast></toast>
-    <div ng-include src="'components/navbar/navbar.html'"></div>
+    <div ng-include src="'components/navbar/navbar.html?v='+version"></div>
+    <!--
+    <div ng-include src="getNavBar()"></div>
+    -->
     <!-- Add your site or application content here -->
     <div id="main" class="container">
       <div ng-view></div>
