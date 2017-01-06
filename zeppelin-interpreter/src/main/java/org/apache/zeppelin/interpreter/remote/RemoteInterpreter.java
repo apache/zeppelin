@@ -92,7 +92,7 @@ public class RemoteInterpreter extends Interpreter {
    * Connect to existing process
    */
   public RemoteInterpreter(Properties property, String sessionKey, String className, String host,
-      int port, int connectTimeout, int maxPoolSize,
+      int port, String localRepoPath, int connectTimeout, int maxPoolSize,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate) {
     super(property);
@@ -101,6 +101,7 @@ public class RemoteInterpreter extends Interpreter {
     initialized = false;
     this.host = host;
     this.port = port;
+    this.localRepoPath = localRepoPath;
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
