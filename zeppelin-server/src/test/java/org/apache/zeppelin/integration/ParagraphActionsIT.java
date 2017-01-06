@@ -463,8 +463,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "FINISHED");
 
       collector.checkThat("Markdown editor is hidden after run ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if, 'paragraph.config.editorHide')]")).isDisplayed(),
-          CoreMatchers.equalTo(null));
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if, 'paragraph.config.editorHide')]")),
+          null);
 
       collector.checkThat("Markdown editor is shown after run ",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.tableHide')]")).isDisplayed(),
