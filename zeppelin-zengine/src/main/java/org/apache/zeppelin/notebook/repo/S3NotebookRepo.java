@@ -97,6 +97,7 @@ public class S3NotebookRepo implements NotebookRepo {
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
     CryptoConfiguration cryptoConf = null;
     String keyRegion = conf.getS3KMSKeyRegion();
+
     if (StringUtils.isNotBlank(keyRegion)) {
       cryptoConf = new CryptoConfiguration();
       cryptoConf.setAwsKmsRegion(Region.getRegion(Regions.fromName(keyRegion)));
@@ -107,12 +108,16 @@ public class S3NotebookRepo implements NotebookRepo {
     if (kmsKeyID != null) {
       // use the AWS KMS to encrypt data
       KMSEncryptionMaterialsProvider emp = new KMSEncryptionMaterialsProvider(kmsKeyID);
-      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cryptoConf);
+      if (cryptoConf != null) {
+        this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cryptoConf);
+      } else {
+        this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
+      }
     }
     else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
       // use a custom encryption materials provider class
       EncryptionMaterialsProvider emp = createCustomProvider(conf);
-      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cryptoConf);
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
     }
     else {
       // regular S3
