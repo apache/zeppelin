@@ -46,21 +46,21 @@ public class ZeppelinDevServer extends
   protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
     synchronized (this) {
       InterpreterGroup interpreterGroup = getInterpreterGroup();
-      if (interpreterGroup == null) {
+      if (interpreterGroup == null || interpreterGroup.isEmpty()) {
         createInterpreter(
             "dev",
             sessionKey,
             DevInterpreter.class.getName(),
             new HashMap<String, String>(),
             "anonymous");
-
-        Interpreter intp = super.getInterpreter(sessionKey, className);
-        interpreter = (DevInterpreter) (
-            ((LazyOpenInterpreter) intp).getInnerInterpreter());
-        interpreter.setInterpreterEvent(this);
         notify();
       }
     }
+
+    Interpreter intp = super.getInterpreter(sessionKey, className);
+    interpreter = (DevInterpreter) (
+        ((LazyOpenInterpreter) intp).getInnerInterpreter());
+    interpreter.setInterpreterEvent(this);
     return super.getInterpreter(sessionKey, className);
   }
 
