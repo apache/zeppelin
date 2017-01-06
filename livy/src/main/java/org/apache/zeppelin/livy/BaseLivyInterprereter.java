@@ -21,10 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -39,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base class for livy interpreters.
@@ -52,6 +50,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private String livyURL;
   private long sessionCreationTimeout;
   protected boolean displayAppInfo;
+  private boolean sessionExpired;
+  private AtomicBoolean isInitingSession = new AtomicBoolean(false);
 
   public BaseLivyInterprereter(Properties property) {
     super(property);
@@ -208,7 +208,22 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   public InterpreterResult interpret(String code, boolean displayAppInfo)
       throws LivyException {
-    StatementInfo stmtInfo = executeStatement(new ExecuteRequest(code));
+    StatementInfo stmtInfo = null;
+    try {
+      stmtInfo = executeStatement(new ExecuteRequest(code));
+    } catch (SessionNotFoundException e) {
+      LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
+      this.sessionExpired = true;
+      // we don't want to create multiple sessions because it is possible to have multiple thread
+      // to call this method, like LivySparkSQLInterpreter which use ParallelScheduler
+      synchronized (this) {
+        if (isInitingSession.compareAndSet(false, true)) {
+          initLivySession();
+          isInitingSession.set(false);
+        }
+      }
+      stmtInfo = executeStatement(new ExecuteRequest(code));
+    }
     // pull the statement status
     while (!stmtInfo.isAvailable()) {
       try {
@@ -219,7 +234,23 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
       stmtInfo = getStatementInfo(stmtInfo.id);
     }
-    return getResultFromStatementInfo(stmtInfo, displayAppInfo);
+    return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo));
+
+  }
+
+  private InterpreterResult appendSessionExpire(InterpreterResult result) {
+    if (sessionExpired) {
+      InterpreterResult result2 = new InterpreterResult(result.code());
+      for (InterpreterResultMessage message : result.message()) {
+        result2.add(message.getType(), message.getData());
+      }
+      result2.add(InterpreterResult.Type.HTML,
+          "<hr/><font color=\"red\">Previous session is expired, new session is created.</font>");
+      sessionExpired = false;
+      return result2;
+    } else {
+      return result;
+    }
   }
 
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
@@ -340,7 +371,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         || response.getStatusCode().value() == 201
         || response.getStatusCode().value() == 404) {
       String responseBody = response.getBody();
-      if (responseBody.matches("Session '\\d+' not found.")) {
+      if (responseBody.matches("\"Session '\\d+' not found.\"")) {
         throw new SessionNotFoundException(responseBody);
       } else {
         return responseBody;
