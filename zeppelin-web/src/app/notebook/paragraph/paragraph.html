@@ -36,7 +36,7 @@ limitations under the License.
   </div>
 
   <div>
-    <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
+    <div ng-if="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
       <code-editor
         paragraph-id="paragraph.id"
         paragraph-context="paragraph"
