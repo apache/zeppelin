@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin Configuration"
-description: "You can configure Apache Zeppelin with either"
+description: "This page will guide you to configure Apache Zeppelin using either environment variables or Java properties. Also, you can configure SSL for Zeppelin."
 group: install
 ---
 <!--
