@@ -51,7 +51,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final String delDstKey = "delDstNoteIds";
 
   private static ZeppelinConfiguration config;
-  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
+  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
@@ -92,6 +92,14 @@ public class NotebookRepoSync implements NotebookRepo {
     if (getRepoCount() == 0) {
       LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
+    }
+    // sync for anonymous mode on start
+    if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
+      try {
+        sync(AuthenticationInfo.ANONYMOUS);
+      } catch (IOException e) {
+        LOG.error("Couldn't sync on start ", e);
+      }
     }
   }
 

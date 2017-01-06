@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').directive('expandCollapse', expandCollapse);
@@ -26,7 +25,10 @@
             angular.element(element).find('i.icon-folder-alt').toggleClass('icon-folder icon-folder-alt');
           } else {
             angular.element(element).find('.expandable').first().slideToggle('200',function() {
-              angular.element(element).find('i').first().toggleClass('icon-folder icon-folder-alt');
+              // do not toggle trash folder
+              if (angular.element(element).find('.fa-trash-o').length === 0) {
+                angular.element(element).find('i').first().toggleClass('icon-folder icon-folder-alt');
+              }
             });
           }
           event.stopPropagation();

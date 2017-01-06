@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
   var zeppelinWebApp = angular.module('zeppelinWebApp', [
           'ngCookies',
@@ -102,7 +101,8 @@
             combineDuplications: true,
             timeout: 6000
           });
-        });
+        })
+        .constant('TRASH_FOLDER_ID', '~Trash');
 
   function auth() {
     var $http = angular.injector(['ng']).get('$http');

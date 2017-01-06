@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl);
@@ -101,6 +100,7 @@
     vm.getInterpreterSettings = function() {
       vm.websocketMsgSrv.getInterpreterSettings();
     };
+    
 
     $scope.$on('interpreterSettings', function(event, data) {
       $scope.interpreterSettings = data.interpreterSettings;
@@ -109,13 +109,6 @@
       $scope.note.defaultInterpreter = data.interpreterSettings[0];
     });
 
-    var init = function() {
-      if (!vm.clone) {
-        vm.getInterpreterSettings();
-      }
-    };
-
-    init();
   }
 
 })();

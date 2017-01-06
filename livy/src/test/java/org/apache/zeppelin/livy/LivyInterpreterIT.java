@@ -294,6 +294,15 @@ public class LivyInterpreterIT {
       assertEquals(1, result.message().size());
       assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]"));
 
+      // test magic api      
+      pysparkInterpreter.interpret("t = [{\"name\":\"userA\", \"role\":\"roleA\"},"
+          + "{\"name\":\"userB\", \"role\":\"roleB\"}]", context);
+      result = pysparkInterpreter.interpret("%table t", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());      
+      assertEquals(1, result.message().size());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      assertTrue(result.message().get(0).getData().contains("userA"));      
+      
       // error
       result = pysparkInterpreter.interpret("print(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());

@@ -307,6 +307,18 @@ public class Notebook implements NoteEventListener {
     }
   }
 
+  public Folder getFolder(String folderId) {
+    synchronized (folders) {
+      return folders.getFolder(folderId);
+    }
+  }
+
+  public boolean hasFolder(String folderId) {
+    synchronized (folders) {
+      return folders.hasFolder(folderId);
+    }
+  }
+
   public void removeNote(String id, AuthenticationInfo subject) {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
 

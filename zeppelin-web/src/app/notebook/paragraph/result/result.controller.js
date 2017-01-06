@@ -11,7 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
+
+import TableData from '../../../tabledata/tabledata';
+import TableVisualization from '../../../visualization/builtins/visualization-table';
+import BarchartVisualization from '../../../visualization/builtins/visualization-barchart';
+import PiechartVisualization from '../../../visualization/builtins/visualization-piechart';
+import AreachartVisualization from '../../../visualization/builtins/visualization-areachart';
+import LinechartVisualization from '../../../visualization/builtins/visualization-linechart';
+import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
 
 (function() {
 
@@ -85,27 +92,27 @@
      */
     var builtInVisualizations = {
       'table': {
-        class: zeppelin.TableVisualization,
+        class: TableVisualization,
         instance: undefined   // created from setGraphMode()
       },
       'multiBarChart': {
-        class: zeppelin.BarchartVisualization,
+        class: BarchartVisualization,
         instance: undefined
       },
       'pieChart': {
-        class: zeppelin.PiechartVisualization,
+        class: PiechartVisualization,
         instance: undefined
       },
       'stackedAreaChart': {
-        class: zeppelin.AreachartVisualization,
+        class: AreachartVisualization,
         instance: undefined
       },
       'lineChart': {
-        class: zeppelin.LinechartVisualization,
+        class: LinechartVisualization,
         instance: undefined
       },
       'scatterChart': {
-        class: zeppelin.ScatterchartVisualization,
+        class: ScatterchartVisualization,
         instance: undefined
       }
     };
@@ -219,7 +226,6 @@
       enableHelium = (index === paragraphRef.results.msg.length - 1);
 
       if ($scope.type === 'TABLE') {
-        var TableData = zeppelin.TableData;
         tableData = new TableData();
         tableData.loadParagraphResult({type: $scope.type, msg: data});
         $scope.tableDataColumns = tableData.columns;
@@ -293,10 +299,14 @@
       $timeout(retryRenderer);
     };
 
+    var getTextEl = function (paragraphId) {
+      return angular.element('#p' + $scope.id + '_text');
+    }
+
     var textRendererInitialized = false;
     var renderText = function() {
       var retryRenderer = function() {
-        var textEl = angular.element('#p' + $scope.id + '_text');
+        var textEl = getTextEl($scope.id);
         if (textEl.length) {
           // clear all lines before render
           clearTextOutput();
@@ -308,7 +318,7 @@
             flushAppendQueue();
           }
 
-          angular.element('#p' + $scope.id + '_text').bind('mousewheel', function(e) {
+          getTextEl($scope.id).bind('mousewheel', function(e) {
             $scope.keepScrollDown = false;
           });
         } else {
@@ -319,7 +329,7 @@
     };
 
     var clearTextOutput = function() {
-      var textEl = angular.element('#p' + $scope.id + '_text');
+      var textEl = getTextEl($scope.id);
       if (textEl.length) {
         textEl.children().remove();
       }
@@ -338,7 +348,7 @@
         textAppendQueueBeforeInitialize.push(msg);
       } else {
         flushAppendQueue();
-        var textEl = angular.element('#p' + $scope.id + '_text');
+        var textEl = getTextEl($scope.id);
         if (textEl.length) {
           var lines = msg.split('\n');
           for (var i = 0; i < lines.length; i++) {
@@ -346,7 +356,7 @@
           }
         }
         if ($scope.keepScrollDown) {
-          var doc = angular.element('#p' + $scope.id + '_text');
+          var doc = getTextEl($scope.id);
           doc[0].scrollTop = doc[0].scrollHeight;
         }
       }
@@ -477,7 +487,16 @@
       var newParagraphConfig = angular.copy(paragraph.config);
       newParagraphConfig.results = newParagraphConfig.results || [];
       newParagraphConfig.results[resultIndex] = config;
-      websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
+      if ($scope.revisionView === true) {
+        // local update without commit
+        updateData({
+          type: $scope.type,
+          data: data
+        }, newParagraphConfig.results[resultIndex], paragraph, resultIndex);
+        renderResult($scope.type, true);
+      } else {
+        websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
+      }
     };
 
     $scope.toggleGraphSetting = function() {
@@ -579,6 +598,9 @@
 
     $scope.exportToDSV = function(delimiter) {
       var dsv = '';
+      var dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
+      var exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
+
       for (var titleIndex in tableData.columns) {
         dsv += tableData.columns[titleIndex].name + delimiter;
       }
@@ -588,7 +610,7 @@
         var dsvRow = '';
         for (var index in row) {
           var stringValue =  (row[index]).toString();
-          if (stringValue.contains(delimiter)) {
+          if (stringValue.indexOf(delimiter) > -1) {
             dsvRow += '"' + stringValue + '"' + delimiter;
           } else {
             dsvRow += row[index] + delimiter;
@@ -602,7 +624,7 @@
       } else if (delimiter === ',') {
         extension = 'csv';
       }
-      saveAsService.saveAs(dsv, 'data', extension);
+      saveAsService.saveAs(dsv, exportedFileName, extension);
     };
 
     $scope.getBase64ImageSrc = function(base64Data) {

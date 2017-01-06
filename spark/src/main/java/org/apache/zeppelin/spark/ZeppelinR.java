@@ -57,7 +57,6 @@ public class ZeppelinR implements ExecuteResultHandler {
   boolean rScriptInitialized = false;
   Integer rScriptInitializeNotifier = new Integer(0);
 
-
   /**
    * Request to R repl
    */
@@ -102,8 +101,6 @@ public class ZeppelinR implements ExecuteResultHandler {
   Object rResponseValue = null;
   boolean rResponseError = false;
   Integer rResponseNotifier = new Integer(0);
-
-
 
   /**
    * Create ZeppelinR instance
@@ -216,7 +213,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-
   /**
    * Send request to r repl and return response
    * @return responseValue
@@ -257,7 +253,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-
   /**
    * Wait until src/main/resources/R/zeppelin_sparkr.R is initialized
    * and call onScriptInitialized()
@@ -286,13 +281,10 @@ public class ZeppelinR implements ExecuteResultHandler {
       e.printStackTrace();
     }
 
-
     if (rScriptInitialized == false) {
       throw new InterpreterException("sparkr is not responding " + errorMessage);
     }
   }
-
-
 
   /**
    * invoked by src/main/resources/R/zeppelin_sparkr.R
@@ -337,7 +329,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-
   /**
    * Create R script in tmp dir
    */
@@ -381,7 +372,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     return zeppelinR.get(hashcode);
   }
 
-
   /**
    * Pass InterpreterOutput to capture the repl output
    * @param out
@@ -389,8 +379,6 @@ public class ZeppelinR implements ExecuteResultHandler {
   public void setInterpreterOutput(InterpreterOutput out) {
     outputStream.setInterpreterOutput(out);
   }
-
-
 
   @Override
   public void onProcessComplete(int i) {
@@ -403,6 +391,4 @@ public class ZeppelinR implements ExecuteResultHandler {
     logger.error(e.getMessage(), e);
     rScriptRunning = false;
   }
-
-
 }

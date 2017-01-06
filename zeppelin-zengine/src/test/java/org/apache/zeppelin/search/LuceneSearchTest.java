@@ -275,13 +275,13 @@ public class LuceneSearchTest {
   }
 
   private Paragraph addParagraphWithText(Note note, String text) {
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(text);
     return p;
   }
 
   private Paragraph addParagraphWithTextAndTitle(Note note, String text, String title) {
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(text);
     p.setTitle(title);
     return p;

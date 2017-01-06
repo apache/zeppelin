@@ -20,8 +20,14 @@ limitations under the License.
   <expand-collapse>
       <div>
         <a class="notebook-list-item" href="javascript:void(0)">
-          <i style="font-size: 10px; margin-right: 5px;" class="icon-folder"></i>
-          <span>{{noteName(note)}}</span>
+          <div ng-if="note.id !== navbar.TRASH_FOLDER_ID">
+            <i style="font-size: 10px; margin-right: 5px;" class="icon-folder"></i>
+            <span>{{noteName(note)}}</span>
+          </div>
+          <div ng-if="note.id === navbar.TRASH_FOLDER_ID">
+            <i style="font-size: 12px; margin-right: 5px;" class="fa fa-trash-o"></i>
+            <span>Trash</span>
+          </div>
         </a>
       </div>
       <div class="expandable" style="color: black;">

@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
@@ -44,7 +43,10 @@
     $scope.editor = null;
 
     var editorSetting = {};
+    // flag that is used to set editor setting on paste percent sign
     var pastePercentSign = false;
+    // flag that is used to set editor setting on save interpreter bindings
+    var setInterpreterBindings = false;
     var paragraphScope = $rootScope.$new(true, $rootScope);
 
     // to keep backward compatibility
@@ -183,6 +185,22 @@
         message.height = newValue;
         message.url = $location.$$absUrl;
         $window.parent.postMessage(angular.toJson(message), '*');
+      }
+    });
+
+    $scope.getEditor = function() {
+      return $scope.editor;
+    };
+
+    $scope.$watch($scope.getEditor, function(newValue, oldValue) {
+      if (newValue === null || newValue === undefined) {
+        console.log('editor isnt loaded yet, returning');
+        return;
+      }
+      if ($scope.revisionView === true) {
+        $scope.editor.setReadOnly(true);
+      } else {
+        $scope.editor.setReadOnly(false);
       }
     });
 
@@ -557,6 +575,10 @@
 
         $scope.editor.commands.bindKey('ctrl-alt-l', null);
         $scope.editor.commands.bindKey('ctrl-alt-w', null);
+        $scope.editor.commands.bindKey('ctrl-alt-a', null);
+        $scope.editor.commands.bindKey('ctrl-alt-k', null);
+        $scope.editor.commands.bindKey('ctrl-alt-e', null);
+        $scope.editor.commands.bindKey('ctrl-alt-t', null);
 
         // autocomplete on 'ctrl+.'
         $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
@@ -642,7 +664,8 @@
       if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
           (pos.row === 1 && pos.column === 0) || pastePercentSign) {
         // If paragraph loading, use config value if exists
-        if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
+        if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode &&
+            !setInterpreterBindings) {
           session.setMode($scope.paragraph.config.editorMode);
         } else {
           var magic = getInterpreterName(paragraphText);
@@ -657,6 +680,7 @@
         }
       }
       pastePercentSign = false;
+      setInterpreterBindings = false;
     };
 
     var getInterpreterName = function(paragraphText) {
@@ -696,7 +720,7 @@
      * lastCursorMove : 1(down), 0, -1(up) last cursor move event
      **/
     $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
-      if (!$scope.editor.isFocused()) {
+      if (!$scope.editor || !$scope.editor.isFocused()) {
         // only make sense when editor is focused
         return;
       }
@@ -970,7 +994,7 @@
               $scope.dirtyText = undefined;
               $scope.originalText = angular.copy(data.paragraph.text);
             } else { // if there're local update, keep it.
-              $scope.paragraph.text = $scope.dirtyText;
+              $scope.paragraph.text = data.paragraph.text;
             }
           } else {
             $scope.paragraph.text = data.paragraph.text;
@@ -1135,9 +1159,16 @@
       }
     });
 
+    $scope.$on('saveInterpreterBindings', function(event, paragraphId) {
+      if ($scope.paragraph.id === paragraphId) {
+        setInterpreterBindings = true;
+        setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
+      }
+    });
+
     $scope.$on('doubleClickParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
-          $scope.paragraph.config.editorSetting.editOnDblClick) {
+          $scope.paragraph.config.editorSetting.editOnDblClick && $scope.revisionView !== true) {
         var deferred = $q.defer();
         openEditorAndCloseTable($scope.paragraph);
         $timeout(

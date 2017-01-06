@@ -110,7 +110,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     }
 
     // start interpreter process
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%md start remote interpreter process");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());

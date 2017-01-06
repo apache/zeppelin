@@ -11,12 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory);
 
-  function noteListDataFactory() {
+  noteListDataFactory.$inject = ['TRASH_FOLDER_ID'];
+
+  function noteListDataFactory(TRASH_FOLDER_ID) {
     var notes = {
       root: {children: []},
       flatList: [],
@@ -24,7 +25,11 @@
 
       setNotes: function(notesList) {
         // a flat list to boost searching
-        notes.flatList = angular.copy(notesList);
+        notes.flatList = _.map(notesList, (note) => {
+          note.isTrash = note.name ?
+            note.name.split('/')[0] === TRASH_FOLDER_ID : false;
+          return note;
+        });
 
         // construct the folder-based tree
         notes.root = {children: []};
@@ -46,7 +51,8 @@
         curDir.children.push({
           name: nodes[0],
           id: noteId,
-          path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0]
+          path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0],
+          isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
         });
       } else {  // a folder node
         var node = nodes.shift();
@@ -59,7 +65,8 @@
             id: curDir.id ? curDir.id + '/' + node : node,
             name: node,
             hidden: true,
-            children: []
+            children: [],
+            isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
           };
 
           // add the folder to flat folder map
