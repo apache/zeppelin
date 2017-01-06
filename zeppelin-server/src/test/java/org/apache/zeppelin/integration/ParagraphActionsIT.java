@@ -463,7 +463,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "FINISHED");
 
       collector.checkThat("Markdown editor is hidden after run ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if, 'paragraph.config.editorHide')]")).isDisplayed(),
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
           CoreMatchers.equalTo(false));
 
       collector.checkThat("Markdown editor is shown after run ",
@@ -477,7 +477,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       action.doubleClick(driver.findElement(By.xpath(getParagraphXPath(1)))).perform();
       ZeppelinITUtils.sleep(1000, false);
       collector.checkThat("Markdown editor is shown after double click ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if, 'paragraph.config.editorHide')]")).isDisplayed(),
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
           CoreMatchers.equalTo(true));
 
       collector.checkThat("Markdown editor is hidden after double click ",
