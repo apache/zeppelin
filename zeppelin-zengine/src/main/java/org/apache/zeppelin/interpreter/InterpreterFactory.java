@@ -789,8 +789,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       if (option.isRemote()) {
         if (option.isExistingProcess()) {
           interpreter =
-              connectToRemoteRepl(interpreterSessionKey, info.getClassName(), option.getHost(), option.getPort(),
-                  properties, interpreterSetting.getId(), user, option.isUserImpersonate);
+              connectToRemoteRepl(interpreterSessionKey, info.getClassName(), option.getHost(),
+                  option.getPort(), properties, interpreterSetting.getId(), user,
+                  option.isUserImpersonate);
         } else {
           interpreter = createRemoteRepl(path, interpreterSessionKey, info.getClassName(),
               properties, interpreterSetting.getId(), user, option.isUserImpersonate(), runner);
