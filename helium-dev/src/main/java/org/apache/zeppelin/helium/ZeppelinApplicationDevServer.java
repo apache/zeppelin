@@ -44,7 +44,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
 
   public ZeppelinApplicationDevServer(final String className, ResourceSet resourceSet) throws
       Exception {
-    this(ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT, className, resourceSet);
+    this(Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT, className, resourceSet);
   }
 
   public ZeppelinApplicationDevServer(int port, String className, ResourceSet resourceSet) throws

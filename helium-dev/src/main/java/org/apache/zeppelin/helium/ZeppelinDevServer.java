@@ -34,11 +34,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ZeppelinDevServer extends
     RemoteInterpreterServer implements InterpreterEvent, InterpreterOutputChangeListener {
-  final Logger logger = LoggerFactory.getLogger(ZeppelinDevServer.class);
-  public static final int DEFAULT_TEST_INTERPRETER_PORT = 29914;
+  private static final Logger logger = LoggerFactory.getLogger(ZeppelinDevServer.class);
 
-  DevInterpreter interpreter = null;
-  InterpreterOutput out;
+  private DevInterpreter interpreter = null;
+  private InterpreterOutput out;
   public ZeppelinDevServer(int port) throws TException {
     super(port);
   }
