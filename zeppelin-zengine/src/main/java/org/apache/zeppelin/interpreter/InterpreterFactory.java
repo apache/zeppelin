@@ -758,10 +758,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = (Properties) interpreterSetting.getProperties();
-    if (option.isExistingProcess) {
-      properties.put(Constants.ZEPPELIN_INTERPRETER_HOST, option.getHost());
-      properties.put(Constants.ZEPPELIN_INTERPRETER_PORT, option.getPort());
-    }
     // if interpreters are already there, wait until they're being removed
     synchronized (interpreterGroup) {
       long interpreterRemovalWaitStart = System.nanoTime();
