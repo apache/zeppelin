@@ -18,15 +18,15 @@
 package org.apache.zeppelin.spark
 
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
-import org.apache.zeppelin.interpreter.InterpreterResult.Code.{SUCCESS, ERROR}
+import org.apache.zeppelin.interpreter.InterpreterResult.Code.{SUCCESS}
 import org.apache.zeppelin.interpreter.InterpreterResult.Type
 import org.apache.zeppelin.interpreter.InterpreterResult.Type.{TEXT, HTML, TABLE, IMG}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.jsoup.nodes.Document
+import org.jsoup.nodes.Document.OutputSettings
+import org.jsoup.safety.Whitelist
 
 import scala.collection.JavaConversions._
-
 import scala.util.matching.Regex
 
 case class RDisplay(content: String, `type`: Type, code: Code)
@@ -64,11 +64,13 @@ object ZeppelinRDisplay {
     }
 
     return htmlDisplay(body, imageWidth)
-
   }
 
   private def textDisplay(body: Element): RDisplay = {
-    RDisplay(body.getElementsByTag("p").first().html(), TEXT, SUCCESS)
+    // remove HTML tag while preserving whitespaces and newlines
+    val text = Jsoup.clean(body.html(), "",
+      Whitelist.none(), new OutputSettings().prettyPrint(false))
+    RDisplay(text, TEXT, SUCCESS)
   }
 
   private def tableDisplay(body: Element): RDisplay = {
