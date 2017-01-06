@@ -24,7 +24,7 @@ limitations under the License.
       <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="runNote()"
+              ng-click="runAllParagraphs(note.id)"
               ng-class="{'disabled':isNoteRunning()}"
               tooltip-placement="bottom" tooltip="Run all paragraphs"
               ng-disabled="revisionView">
@@ -258,7 +258,7 @@ limitations under the License.
           <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
         </span>
       </span>
-      
+
       <span class="btn-group">
         <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                 data-toggle="dropdown">
