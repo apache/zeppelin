@@ -6,7 +6,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "zeppelin-tabledata": "0.7.0-SNAPSHOT",
-    "zeppelin-vis": "0.7.0-SNAPSHOT"
+    "zeppelin-tabledata": "*",
+    "zeppelin-vis": "*"
   }
 }
