@@ -478,7 +478,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 }
 
 /*
-  Paragaph Font CSS
+  Paragraph Font CSS
 */
 
 .lightBold {
@@ -560,4 +560,34 @@ table.table-striped {
 }
 .changeTypeMenu li:hover {
   background: #eee;
+}
+
+/*
+  Overwrite github-markdown-css for Markdown interpreter
+*/
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.markdown-body {
+  font-size: 14px;
+}
+
+.markdown-body h2 {
+  font-size: 26px;
+}
+
+.markdown-body h3 {
+  font-size: 20px;
+}
+
+.markdown-body h4 {
+  font-size: 16px;
 }
