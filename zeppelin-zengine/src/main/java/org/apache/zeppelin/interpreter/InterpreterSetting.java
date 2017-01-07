@@ -173,19 +173,21 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroup(String noteId) {
-    String key = getInterpreterProcessKey("", noteId);
+  void closeAndRemoveInterpreterGroup(String interpreterGroupId) {
+    String key = getInterpreterProcessKey("", interpreterGroupId);
 
-    InterpreterGroup groupToRemove = null;
+    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
+    InterpreterGroup groupKey;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
       if (intpKey.contains(key)) {
         interpreterGroupWriteLock.lock();
-        groupToRemove = interpreterGroupRef.remove(intpKey);
+        groupKey = interpreterGroupRef.remove(intpKey);
+        closeToGroupList.add(groupKey);
         interpreterGroupWriteLock.unlock();
       }
     }
 
-    if (groupToRemove != null) {
+    for (InterpreterGroup groupToRemove : closeToGroupList) {
       groupToRemove.close();
     }
   }
