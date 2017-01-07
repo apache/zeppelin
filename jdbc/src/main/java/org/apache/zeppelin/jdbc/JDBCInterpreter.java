@@ -15,12 +15,26 @@
 package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import java.security.PrivilegedExceptionAction;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
@@ -30,10 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
@@ -443,6 +454,57 @@ public class JDBCInterpreter extends Interpreter {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
 
+  /*
+  inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/
+    pgadmin/dlg/dlgProperty.cpp#L999-L1045
+   */
+  protected ArrayList<String> splitSqlQueries(String sql) {
+    ArrayList<String> queries = new ArrayList<>();
+    StringBuilder query = new StringBuilder();
+    Character character;
+
+    Boolean antiSlash = false;
+    Boolean quoteString = false;
+    Boolean doubleQuoteString = false;
+
+    for (int item = 0; item < sql.length(); item++) {
+      character = sql.charAt(item);
+
+      if (character.equals('\\')) {
+        antiSlash = true;
+      }
+      if (character.equals('\'')) {
+        if (antiSlash) {
+          antiSlash = false;
+        } else if (quoteString) {
+          quoteString = false;
+        } else if (!doubleQuoteString) {
+          quoteString = true;
+        }
+      }
+      if (character.equals('"')) {
+        if (antiSlash) {
+          antiSlash = false;
+        } else if (doubleQuoteString) {
+          doubleQuoteString = false;
+        } else if (!quoteString) {
+          doubleQuoteString = true;
+        }
+      }
+
+      if (character.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
+        queries.add(query.toString());
+        query = new StringBuilder();
+      } else if (item == sql.length() - 1) {
+        query.append(character);
+        queries.add(query.toString());
+      } else {
+        query.append(character);
+      }
+    }
+    return queries;
+  }
+
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
     Connection connection;
@@ -451,60 +513,68 @@ public class JDBCInterpreter extends Interpreter {
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
-    try {
-      String results = null;
-      connection = getConnection(propertyKey, interpreterContext);
+    InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
 
+    try {
+      connection = getConnection(propertyKey, interpreterContext);
       if (connection == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      statement = connection.createStatement();
-      if (statement == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
-      }
+      ArrayList<String> multipleSqlArray = splitSqlQueries(sql);
+      for (int i = 0; i < multipleSqlArray.size(); i++) {
+        String sqlToExecute = multipleSqlArray.get(i);
+        statement = connection.createStatement();
+        if (statement == null) {
+          return new InterpreterResult(Code.ERROR, "Prefix not found.");
+        }
 
-      try {
-        getJDBCConfiguration(user).saveStatement(paragraphId, statement);
+        try {
+          getJDBCConfiguration(user).saveStatement(paragraphId, statement);
 
-        boolean isResultSetAvailable = statement.execute(sql);
-        if (isResultSetAvailable) {
-          resultSet = statement.getResultSet();
+          boolean isResultSetAvailable = statement.execute(sqlToExecute);
+          if (isResultSetAvailable) {
+            resultSet = statement.getResultSet();
 
-          // Regards that the command is DDL.
-          if (isDDLCommand(statement.getUpdateCount(), resultSet.getMetaData().getColumnCount())) {
-            results = "Query executed successfully.";
+            // Regards that the command is DDL.
+            if (isDDLCommand(statement.getUpdateCount(),
+                resultSet.getMetaData().getColumnCount())) {
+              interpreterResult.add(InterpreterResult.Type.TEXT,
+                  "Query executed successfully.");
+            } else {
+              interpreterResult.add(
+                  getResults(resultSet, !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE)));
+            }
           } else {
-            results = getResults(resultSet, !containsIgnoreCase(sql, EXPLAIN_PREDICATE));
+            // Response contains either an update count or there are no results.
+            int updateCount = statement.getUpdateCount();
+            interpreterResult.add(InterpreterResult.Type.TEXT,
+                "Query executed successfully. Affected rows : " +
+                    updateCount);
           }
-        } else {
-          // Response contains either an update count or there are no results.
-          int updateCount = statement.getUpdateCount();
-          results = "Query executed successfully. Affected rows : " + updateCount;
+        } finally {
+          if (resultSet != null) {
+            try {
+              resultSet.close();
+            } catch (SQLException e) { /*ignored*/ }
+          }
+          if (statement != null) {
+            try {
+              statement.close();
+            } catch (SQLException e) { /*ignored*/ }
+          }
         }
-        //In case user ran an insert/update/upsert statement
-        if (connection.getAutoCommit() != true) connection.commit();
-
-      } finally {
-        if (resultSet != null) {
-          try {
-            resultSet.close();
-          } catch (SQLException e) { /*ignored*/ }
-        }
-        if (statement != null) {
-          try {
-            statement.close();
-          } catch (SQLException e) { /*ignored*/ }
-        }
-        if (connection != null) {
-          try {
-            connection.close();
-          } catch (SQLException e) { /*ignored*/ }
-        }
-        getJDBCConfiguration(user).removeStatement(paragraphId);
       }
-      return new InterpreterResult(Code.SUCCESS, results);
-
+      //In case user ran an insert/update/upsert statement
+      if (connection != null) {
+        try {
+          if (!connection.getAutoCommit()) {
+            connection.commit();
+          }
+          connection.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
+      getJDBCConfiguration(user).removeStatement(paragraphId);
     } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -517,9 +587,10 @@ public class JDBCInterpreter extends Interpreter {
       } catch (SQLException e1) {
         e1.printStackTrace();
       }
-
-      return new InterpreterResult(Code.ERROR, errorMsg);
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
     }
+    return interpreterResult;
   }
 
   /**
