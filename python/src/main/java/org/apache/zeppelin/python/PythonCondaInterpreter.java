@@ -36,12 +36,12 @@ public class PythonCondaInterpreter extends Interpreter {
   public static final String CONDA_PYTHON_PATH = "/bin/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
-  Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
-  Pattern listEnvPattern = Pattern.compile("env\\s*list\\s?");
-  Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
-  Pattern deactivatePattern = Pattern.compile("deactivate");
-  Pattern helpPattern = Pattern.compile("help");
-  Pattern infoPattern = Pattern.compile("info");
+  private Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
+  private Pattern listEnvPattern = Pattern.compile("env\\s*list\\s?");
+  private Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
+  private Pattern deactivatePattern = Pattern.compile("deactivate");
+  private Pattern helpPattern = Pattern.compile("help");
+  private Pattern infoPattern = Pattern.compile("info");
 
   public PythonCondaInterpreter(Properties property) {
     super(property);
