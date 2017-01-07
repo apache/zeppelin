@@ -12,10 +12,21 @@
  * limitations under the License.
  */
 
-// Used as globally shared variable in
-// `src/app/visualization/**/*js`
-// `src/app/tabledata/*.js`
-// `src/app/notebook/paragraph/result/result.controller.js`
-// see also: ProvidePlugin in webpack.config.js
+#searchTermId {  
+  min-width: 200px;
+}
 
-export default {};
+
+@media (min-width: 795px) and (max-width: 830px) {
+  input#searchTermId {  
+    width: 170px;
+    min-width: 170px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 794px) {
+  input#searchTermId {  
+    width: 140px;
+    min-width: 140px;
+  }
+}

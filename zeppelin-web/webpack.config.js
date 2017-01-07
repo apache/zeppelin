@@ -130,11 +130,6 @@ module.exports = function makeWebpackConfig () {
    * This handles most of the magic responsible for converting modules
    */
 
-  var jsLoaders = ['ng-annotate', 'babel-loader'];
-  if (isProd) {
-    jsLoaders.push('strip-loader?strip[]=console.log');
-  }
-
   // Initialize module
   config.module = {
     preLoaders: [],
@@ -144,7 +139,7 @@ module.exports = function makeWebpackConfig () {
       // Transpile .js files using babel-loader
       // Compiles ES6 and ES7 into ES5 code
       test: /\.js$/,
-      loaders: jsLoaders,
+      loaders: ['ng-annotate', 'babel-loader'],
       exclude: /(node_modules|bower_components)/,
     }, {
       // CSS LOADER
@@ -195,10 +190,6 @@ module.exports = function makeWebpackConfig () {
    * List: http://webpack.github.io/docs/list-of-plugins.html
    */
   config.plugins = [
-    // Enable global variable
-    new webpack.ProvidePlugin({
-      "zeppelin": "zeppelin"
-    })
   ];
 
   // Skip rendering index.html in test mode
@@ -231,12 +222,26 @@ module.exports = function makeWebpackConfig () {
 
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
       // Minify all javascript, switch loaders to minimizing mode
-      new webpack.optimize.UglifyJsPlugin(),
+      new webpack.optimize.UglifyJsPlugin({
+        mangle: { screw_ie8: true },
+        preserveComments: 'some',
+        compress: {
+          screw_ie8: true,
+          warnings: false,
+          sequences: true,
+          dead_code: true,
+          conditionals: true,
+          booleans: true,
+          unused: true,
+          if_return: true,
+          join_vars: true,
+          drop_console: true,
+        }
+      }),
 
       // Copy assets from the public folder
       // Reference: https://github.com/kevlened/copy-webpack-plugin
-      new CopyWebpackPlugin([
-      ])
+      new CopyWebpackPlugin([])
     )
   } else {
       config.plugins.push(new InsertLiveReloadPlugin())

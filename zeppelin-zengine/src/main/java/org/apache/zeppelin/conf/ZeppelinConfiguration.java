@@ -107,7 +107,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
     
     LOG.info("Server Host: " + conf.getServerAddress());
-    LOG.info("Server Port: " + conf.getServerPort());
+    if (conf.useSsl() == false) {
+      LOG.info("Server Port: " + conf.getServerPort());
+    } else {
+      LOG.info("Server SSL Port: " + conf.getServerSslPort());
+    }
     LOG.info("Context Path: " + conf.getServerContextPath());
     LOG.info("Zeppelin Version: " + Util.getVersion());
 
@@ -314,6 +318,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getTrustStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_PATH);
+    if (path == null) {
+      path = getKeyStorePath();
+    }
     if (path != null && path.startsWith("/") || isWindowsPath(path)) {
       return path;
     } else {
@@ -528,6 +535,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.livy.LivySparkInterpreter,"
         + "org.apache.zeppelin.livy.LivySparkSQLInterpreter,"
         + "org.apache.zeppelin.livy.LivyPySparkInterpreter,"
+        + "org.apache.zeppelin.livy.LivyPySpark3Interpreter,"
         + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.file.HDFSFileInterpreter,"

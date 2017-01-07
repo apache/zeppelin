@@ -67,6 +67,11 @@ table.dataTable.table-condensed .sorting_desc:after {
   right: 12px;
 }
 
+.plainTextContainer {
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
+}
+
 .graphContainer {
   position: relative;
   margin-bottom: 5px;
@@ -166,7 +171,6 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .paragraph .control span {
   margin-left: 4px;
-  margin-right: 4px;
 }
 
 .paragraph .control {
@@ -200,6 +204,16 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .dropdown-menu > li > a {
   cursor: pointer;
+}
+
+.dropdown-menu .shortcut-icon{
+  padding-right: 7px;
+  float: left;
+}
+
+.dropdown-menu .shortcut-keys{
+  float: right;
+  color: #999;
 }
 
 /*

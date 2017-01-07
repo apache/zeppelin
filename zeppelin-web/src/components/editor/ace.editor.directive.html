@@ -18,7 +18,7 @@ limitations under the License.
                require : ['ace/ext/language_tools']
              }"
      ng-model="paragraph.text"
-     ng-class="{'paragraph-disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING',
+     ng-class="{'paragraph-disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' || revisionView === true,
            'paragraph-text--dirty' : dirtyText !== originalText && dirtyText !== undefined}">
 
 </div>

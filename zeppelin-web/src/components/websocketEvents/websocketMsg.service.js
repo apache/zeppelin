@@ -34,8 +34,36 @@
         });
       },
 
+      moveNoteToTrash: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
+      },
+
+      moveFolderToTrash: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}});
+      },
+
+      restoreNote: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}});
+      },
+
+      restoreFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
+      },
+
+      restoreAll: function() {
+        websocketEvents.sendNewEvent({op: 'RESTORE_ALL'});
+      },
+
       deleteNote: function(noteId) {
         websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
+      },
+
+      removeFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
+      },
+
+      emptyTrash: function() {
+        websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'});
       },
 
       cloneNote: function(noteIdToClone, newNoteName) {

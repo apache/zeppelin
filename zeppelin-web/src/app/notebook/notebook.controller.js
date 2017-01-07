@@ -28,12 +28,13 @@
     'saveAsService',
     'ngToast',
     'noteActionSrv',
-    'noteVarShareService'
+    'noteVarShareService',
+    'TRASH_FOLDER_ID'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast, noteActionSrv, noteVarShareService) {
+                        ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID) {
 
     ngToast.dismiss();
 
@@ -68,7 +69,7 @@
 
     $scope.noteRevisions = [];
     $scope.currentRevision = 'Head';
-    $scope.revisionDisabled = !isRevisionPath($location.path());
+    $scope.revisionView = isRevisionPath($location.path());
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
@@ -91,31 +92,25 @@
     };
 
     $scope.blockAnonUsers = function() {
-      var principal = $rootScope.ticket.principal;
-      if (principal) {
-        $scope.isAnonymous = principal === 'anonymous' ? true : false;
-        if ($scope.isAnonymous) {
-          var zeppelinVersion = $rootScope.zeppelinVersion;
-          var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
-          var content = 'Only authenticated user can set the permission.' +
-            '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" href=' + url + '>' +
-            '<i class="icon-question" />' +
-            '</a>';
-          BootstrapDialog.show({
-            closable: false,
-            closeByBackdrop: false,
-            closeByKeyboard: false,
-            title: 'No permission',
-            message: content,
-            buttons: [{
-              label: 'Close',
-              action: function(dialog) {
-                dialog.close();
-              }
-            }]
-          });
-        }
-      }
+      var zeppelinVersion = $rootScope.zeppelinVersion;
+      var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
+      var content = 'Only authenticated user can set the permission.' +
+        '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" href=' + url + '>' +
+        '<i class="icon-question" />' +
+        '</a>';
+      BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'No permission',
+        message: content,
+        buttons: [{
+          label: 'Close',
+          action: function(dialog) {
+            dialog.close();
+          }
+        }]
+      });
     };
 
     /** Init the new controller */
@@ -170,7 +165,7 @@
 
     $scope.keyboardShortcut = function(keyEvent) {
       // handle keyevent
-      if (!$scope.viewOnly) {
+      if (!$scope.viewOnly && !$scope.revisionView) {
         $scope.$broadcast('keyEvent', keyEvent);
       }
     };
@@ -182,9 +177,18 @@
       $scope.$broadcast('doubleClickParagraph', paragraphId);
     };
 
-    // Remove the note and go back to the main page
+    // Move the note to trash and go back to the main page
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, true);
+    };
+
+    // Remove the note permanently if it's in the trash
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, true);
+    };
+
+    $scope.isTrash = function(note) {
+      return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
     };
 
     //Export notebook
@@ -256,6 +260,7 @@
       console.log('received note revision %o', data);
       if (data.note) {
         $scope.note = data.note;
+        initializeLookAndFeel();
       } else {
         $location.path('/');
       }
@@ -381,7 +386,11 @@
 
     $scope.setLookAndFeel = function(looknfeel) {
       $scope.note.config.looknfeel = looknfeel;
-      $scope.setConfig();
+      if ($scope.revisionView === true) {
+        $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
+      } else {
+        $scope.setConfig();
+      }
     };
 
     /** Set cron expression for this note **/
@@ -772,15 +781,20 @@
     };
 
     $scope.togglePermissions = function() {
-      $scope.blockAnonUsers();
-      if ($scope.showPermissions) {
-        $scope.closePermissions();
-        angular.element('#selectOwners').select2({});
-        angular.element('#selectReaders').select2({});
-        angular.element('#selectWriters').select2({});
+      var principal = $rootScope.ticket.principal;
+      $scope.isAnonymous = principal === 'anonymous' ? true : false;
+      if (!!principal && $scope.isAnonymous) {
+        $scope.blockAnonUsers();
       } else {
-        $scope.openPermissions();
-        $scope.closeSetting();
+        if ($scope.showPermissions) {
+          $scope.closePermissions();
+          angular.element('#selectOwners').select2({});
+          angular.element('#selectReaders').select2({});
+          angular.element('#selectWriters').select2({});
+        } else {
+          $scope.openPermissions();
+          $scope.closeSetting();
+        }
       }
     };
 
@@ -959,11 +973,7 @@
         $rootScope.$broadcast('setIframe', $scope.asIframe);
       }
 
-      if ($scope.note === null) {
-        $scope.note = note;
-      } else {
-        $scope.note.config.personalizedMode = note.config.personalizedMode;
-      }
+      $scope.note = note;
       initializeLookAndFeel();
       //open interpreter binding setting when there're none selected
       getInterpreterBindings();
