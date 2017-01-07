@@ -56,7 +56,7 @@ Two binary packages are available on the [Apache Zeppelin Download Page](http://
 
   Unpack and follow [install additional interpreters](../manual/interpreterinstallation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
 
-## Starting Apache Zeppelin 
+## Starting Apache Zeppelin
 
 #### Starting Apache Zeppelin from the Command Line
 
@@ -345,7 +345,7 @@ You can configure Apache Zeppelin with either **environment variables** in `conf
   <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
     <td>zeppelin.notebook.storage</td>
-    <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
+    <td>org.apache.zeppelin.notebook.repo.GitNotebookRepo</td>
     <td>Comma separated list of notebook storage locations</td>
   </tr>
   <tr>
@@ -488,7 +488,7 @@ The following properties needs to be updated in the **zeppeling-site.xml** in or
 #### Obfuscating Passwords using the Jetty Password Tool
 
 Security best practices advise to not use plain text passwords and Jetty provides a password tool to help obfuscating the passwords used to access the KeyStore and TrustStore.
- 
+
 The Password tool documentation can be found [here](http://www.eclipse.org/jetty/documentation/current/configuring-security-secure-passwords.html)
 
 After using the tool:
