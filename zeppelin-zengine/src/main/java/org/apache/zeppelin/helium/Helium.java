@@ -183,6 +183,10 @@ public class Helium {
     return null;
   }
 
+  public File recreateVisualizationBundle() throws IOException, TaskRunnerException {
+    return visualizationFactory.bundle(getVisualizationPackagesToBundle(), true);
+  }
+
   public void enable(String name, String artifact) throws IOException, TaskRunnerException {
     HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
 

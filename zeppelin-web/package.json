@@ -12,8 +12,10 @@
     "build": "grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
     "predev": "npm-run-all clean && grunt pre-webpack-dev",
     "dev:server": "webpack-dev-server --hot",
+    "visdev:server": "HELIUM_VIS_DEV=true webpack-dev-server --hot",
     "dev:watch": "grunt watch-webpack-dev",
     "dev": "npm-run-all --parallel dev:server dev:watch",
+    "visdev": "npm-run-all --parallel visdev:server dev:watch",
     "pretest": "npm install karma-phantomjs-launcher",
     "test": "karma start test/karma.conf.js"
   },

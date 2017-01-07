@@ -21,6 +21,9 @@
   function heliumService($http, baseUrlSrv) {
 
     var url = baseUrlSrv.getRestApiBase() + '/helium/visualizations/load';
+    if (process.env.HELIUM_VIS_DEV) {
+      url = url + '?refresh=true';
+    }
     var visualizations = [];
 
     // load should be promise

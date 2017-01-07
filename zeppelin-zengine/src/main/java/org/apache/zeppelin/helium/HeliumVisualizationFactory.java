@@ -21,11 +21,15 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -88,6 +92,11 @@ public class HeliumVisualizationFactory {
   }
 
   public File bundle(List<HeliumPackage> pkgs) throws IOException, TaskRunnerException {
+    return bundle(pkgs, false);
+  }
+
+  public File bundle(List<HeliumPackage> pkgs, boolean forceRefresh)
+      throws IOException, TaskRunnerException {
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
@@ -112,7 +121,7 @@ public class HeliumVisualizationFactory {
     pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
 
     // check if we can use previous bundle or not
-    if (dependencies.toString().equals(bundleCacheKey) && currentBundle.isFile()) {
+    if (dependencies.toString().equals(bundleCacheKey) && currentBundle.isFile() && !forceRefresh) {
       return currentBundle;
     }
 

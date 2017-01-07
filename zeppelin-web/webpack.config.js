@@ -205,7 +205,14 @@ module.exports = function makeWebpackConfig () {
       // Reference: https://github.com/webpack/extract-text-webpack-plugin
       // Extract css files
       // Disabled when in test mode or not in build mode
-      new ExtractTextPlugin('[name].[hash].css', {disable: !isProd})
+      new ExtractTextPlugin('[name].[hash].css', {disable: !isProd}),
+
+      // Reference: https://webpack.github.io/docs/list-of-plugins.html#defineplugin
+      new webpack.DefinePlugin({
+        'process.env': {
+          HELIUM_VIS_DEV: process.env.HELIUM_VIS_DEV
+        }
+      })
     )
   }
 

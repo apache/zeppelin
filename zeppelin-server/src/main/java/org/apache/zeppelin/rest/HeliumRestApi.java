@@ -108,11 +108,15 @@ public class HeliumRestApi {
   @GET
   @Path("visualizations/load")
   @Produces("text/javascript")
-  public Response visualizationLoad() {
-    List<HeliumPackage> packages = helium.getVisualizationPackagesToBundle();
-
+  public Response visualizationLoad(@QueryParam("refresh") String refresh) {
     try {
-      File bundle = helium.getVisualizationFactory().getCurrentBundle();
+      File bundle;
+      if (refresh != null && refresh.equals("true")) {
+        bundle = helium.recreateVisualizationBundle();
+      } else {
+        bundle = helium.getVisualizationFactory().getCurrentBundle();
+      }
+
       if (bundle == null) {
         return Response.ok().build();
       } else {
