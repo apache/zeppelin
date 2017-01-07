@@ -215,7 +215,7 @@ If both are defined, then the **environment variables** will take priority.
   <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
     <td>zeppelin.notebook.storage</td>
-    <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
+    <td>org.apache.zeppelin.notebook.repo.GitNotebookRepo</td>
     <td>Comma separated list of notebook storage locations</td>
   </tr>
   <tr>

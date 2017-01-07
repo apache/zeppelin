@@ -56,7 +56,7 @@ Two binary packages are available on the [Apache Zeppelin Download Page](http://
 
   Unpack and follow [install additional interpreters](../manual/interpreterinstallation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
 
-## Starting Apache Zeppelin 
+## Starting Apache Zeppelin
 
 #### Starting Apache Zeppelin from the Command Line
 
