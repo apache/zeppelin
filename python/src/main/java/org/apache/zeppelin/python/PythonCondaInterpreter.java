@@ -40,6 +40,7 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
   private Pattern listEnvPattern = Pattern.compile("env\\s*list\\s?");
+  private Pattern listPattern = Pattern.compile("list");
   private Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   private Pattern deactivatePattern = Pattern.compile("deactivate");
   private Pattern helpPattern = Pattern.compile("help");
@@ -68,6 +69,9 @@ public class PythonCondaInterpreter extends Interpreter {
       if (st == null || listEnvPattern.matcher(st).matches()) {
         runCondaEnvList(out, getCondaEnvs());
         return new InterpreterResult(Code.SUCCESS);
+      } else if (listPattern.matcher(st).matches()) {
+        String result = runCondaList();
+        return new InterpreterResult(Code.SUCCESS, Type.TEXT, result);
       } else if (activateMatcher.matches()) {
         String envName = activateMatcher.group(1);
         changePythonEnvironment(envName);
@@ -183,6 +187,16 @@ public class PythonCondaInterpreter extends Interpreter {
     out.write("<small><code>%python.conda help</code> for the usage</small>\n");
   }
 
+  private String runCondaList() throws IOException, InterruptedException {
+    StringBuilder out = createStringBuilder();
+    int exit = runCommand(out, "conda", "list");
+    if (exit != 0) {
+      throw new RuntimeException("Failed to execute conda list. exited with " + exit);
+    }
+
+    return out.toString();
+  }
+
   private String runCondaInfo() throws IOException, InterruptedException {
     StringBuilder out = createStringBuilder();
     int exit = runCommand(out, "conda", "info");
@@ -248,6 +262,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   protected StringBuilder createStringBuilder() {
+    // to support mocking in test
     return new StringBuilder();
   }
 }
