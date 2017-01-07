@@ -17,6 +17,8 @@
 package org.apache.zeppelin.python;
 
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,26 +67,25 @@ public class PythonCondaInterpreter extends Interpreter {
     try {
       if (st == null || listEnvPattern.matcher(st).matches()) {
         runCondaEnvList(out, getCondaEnvs());
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+        return new InterpreterResult(Code.SUCCESS);
       } else if (activateMatcher.matches()) {
         String envName = activateMatcher.group(1);
         changePythonEnvironment(envName);
         restartPythonProcess();
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+        return new InterpreterResult(Code.SUCCESS,
             "\"" + envName + "\" activated");
       } else if (deactivatePattern.matcher(st).matches()) {
         changePythonEnvironment(null);
         restartPythonProcess();
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
+        return new InterpreterResult(Code.SUCCESS, "Deactivated");
       } else if (helpPattern.matcher(st).matches()) {
         printCondaUsage(out);
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+        return new InterpreterResult(Code.SUCCESS);
       } else if (infoPattern.matcher(st).matches()) {
         String result = runCondaInfo();
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-            InterpreterResult.Type.TEXT, result);
+        return new InterpreterResult(Code.SUCCESS, Type.TEXT, result);
       } else {
-        return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
+        return new InterpreterResult(Code.ERROR, "Not supported command: " + st);
       }
     } catch (RuntimeException | IOException | InterruptedException e) {
       throw new InterpreterException(e);
@@ -121,7 +122,8 @@ public class PythonCondaInterpreter extends Interpreter {
   protected PythonInterpreter getPythonInterpreter() {
     LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
+    Interpreter p =
+        getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
 
     while (p instanceof WrappedInterpreter) {
       if (p instanceof LazyOpenInterpreter) {
