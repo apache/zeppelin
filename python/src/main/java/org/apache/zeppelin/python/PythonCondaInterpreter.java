@@ -63,7 +63,7 @@ public class PythonCondaInterpreter extends Interpreter {
     Matcher activateMatcher = activatePattern.matcher(st);
 
     if (st == null || listEnvPattern.matcher(st).matches()) {
-      listEnv(out, getCondaEnvs());
+      runCondaEnvList(out, getCondaEnvs());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
       String envName = activateMatcher.group(1);
@@ -75,10 +75,10 @@ public class PythonCondaInterpreter extends Interpreter {
       restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
     } else if (helpPattern.matcher(st).matches()) {
-      printUsage(out);
+      printCondaUsage(out);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (infoPattern.matcher(st).matches()) {
-      String result = getCondaInfoCommand();
+      String result = runCondaInfo();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS,
           InterpreterResult.Type.TEXT, result);
     } else {
@@ -158,7 +158,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return envList;
   }
 
-  private void listEnv(InterpreterOutput out, HashMap<String, String> envList) {
+  private void runCondaEnvList(InterpreterOutput out, HashMap<String, String> envList) {
     try {
       out.setType(InterpreterResult.Type.HTML);
       out.write("<h4>Conda environments</h4>\n");
@@ -182,7 +182,7 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  private String getCondaInfoCommand() {
+  private String runCondaInfo() {
     StringBuilder out = createStringBuilder();
     try {
       int exit = runCommand(out, "conda", "info");
@@ -196,7 +196,7 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  private void printUsage(InterpreterOutput out) {
+  private void printCondaUsage(InterpreterOutput out) {
     try {
       out.setType(InterpreterResult.Type.HTML);
       out.writeResource("output_templates/conda_usage.html");
