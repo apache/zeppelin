@@ -37,7 +37,7 @@ public class PythonCondaInterpreter extends Interpreter {
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
   Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
-  Pattern listPattern = Pattern.compile("env\\s*list\\s?");
+  Pattern listEnvPattern = Pattern.compile("env\\s*list\\s?");
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
@@ -60,12 +60,12 @@ public class PythonCondaInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterOutput out = context.out;
 
-    Matcher listMatcher = listPattern.matcher(st);
+    Matcher listEnvMatcher = listEnvPattern.matcher(st);
     Matcher activateMatcher = activatePattern.matcher(st);
     Matcher deactivateMatcher = deactivatePattern.matcher(st);
     Matcher helpMatcher = helpPattern.matcher(st);
 
-    if (st == null || st.isEmpty() || listMatcher.matches()) {
+    if (st == null || listEnvMatcher.matches()) {
       listEnv(out, getCondaEnvs());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
