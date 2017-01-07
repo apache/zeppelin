@@ -933,7 +933,7 @@
               <exclude>docs/_site/**</exclude>
               <exclude>docs/Gemfile.lock</exclude>
 
-              <exclude>**/horizontalbar_mockdata.txt</exclude>
+              <exclude>zeppelin-examples/zeppelin-example-horizontalbar/package.json</exclude>
 
               <!-- compiled R packages (binaries) -->
               <exclude>R/lib/**</exclude>
