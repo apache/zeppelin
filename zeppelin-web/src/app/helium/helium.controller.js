@@ -59,23 +59,65 @@
     init();
 
     $scope.enable = function(name, artifact) {
-      $http.post(baseUrlSrv.getRestApiBase() + '/helium/enable/' + name, artifact).
-        success(function(data, status) {
-          getAllPackageInfo();
-        }).
-        error(function(data, status) {
-          console.log('Failed to enable package %o %o', name, artifact);
-        });
+      var confirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Enable ' + name + '?',
+        callback: function(result) {
+          if (result) {
+            confirm.$modalFooter.find('button').addClass('disabled');
+            confirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
+            $http.post(baseUrlSrv.getRestApiBase() + '/helium/enable/' + name, artifact).
+              success(function(data, status) {
+                getAllPackageInfo();
+                confirm.close();
+              }).
+              error(function(data, status) {
+                confirm.close();
+                console.log('Failed to enable package %o %o', name, artifact);
+                BootstrapDialog.show({
+                  title: 'Error on enabling ' + name,
+                  message: data.message
+                });
+              });
+            return false;
+          }
+        }
+      });
     };
 
     $scope.disable = function(name) {
-      $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name).
-        success(function(data, status) {
-          getAllPackageInfo();
-        }).
-        error(function(data, status) {
-          console.log('Failed to disable package %o', name);
-        });
+      var confirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Disable ' + name + '?',
+        callback: function(result) {
+          if (result) {
+            confirm.$modalFooter.find('button').addClass('disabled');
+            confirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Disabling');
+            $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name).
+              success(function(data, status) {
+                getAllPackageInfo();
+                confirm.close();
+              }).
+              error(function(data, status) {
+                confirm.close();
+                console.log('Failed to disable package %o', name);
+                BootstrapDialog.show({
+                  title: 'Error on disabling ' + name,
+                  message: data.message
+                });
+              });
+            return false;
+          }
+        }
+      });
     };
   }
 })();
