@@ -101,10 +101,22 @@ public class ZeppelinServer extends Application {
     HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory();
     HeliumVisualizationFactory heliumVisualizationFactory;
 
-    heliumVisualizationFactory = new HeliumVisualizationFactory(
-        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
-        new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
-        new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")));
+    if (isBinaryPackage(conf)) {
+      /* In binary package, zeppelin-web/src/app/visualization and zeppelin-web/src/app/tabledata
+       * are copied to lib/node_modules/zeppelin-vis, lib/node_modules/zeppelin-tabledata directory.
+       * Check zeppelin/zeppelin-distribution/src/assemble/distribution.xml to see how they're
+       * packaged into binary package.
+       */
+      heliumVisualizationFactory = new HeliumVisualizationFactory(
+          new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")));
+    } else {
+      heliumVisualizationFactory = new HeliumVisualizationFactory(
+          new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
+          new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
+          new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")));
+    }
 
     this.helium = new Helium(
         conf.getHeliumConfPath(),
@@ -366,6 +378,14 @@ public class ZeppelinServer extends Application {
     singletons.add(settingsApi);
 
     return singletons;
+  }
+
+  /**
+   * Check if it is source build or binary package
+   * @return
+   */
+  private static boolean isBinaryPackage(ZeppelinConfiguration conf) {
+    return !new File(conf.getRelativeDir("zeppelin-web")).isDirectory();
   }
 }
 
