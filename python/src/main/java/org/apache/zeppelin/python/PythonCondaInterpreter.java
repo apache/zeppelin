@@ -41,6 +41,7 @@ public class PythonCondaInterpreter extends Interpreter {
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
+  Pattern infoPattern = Pattern.compile("info");
 
   public PythonCondaInterpreter(Properties property) {
     super(property);
@@ -59,7 +60,6 @@ public class PythonCondaInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterOutput out = context.out;
-
     Matcher activateMatcher = activatePattern.matcher(st);
 
     if (st == null || listEnvPattern.matcher(st).matches()) {
@@ -77,6 +77,10 @@ public class PythonCondaInterpreter extends Interpreter {
     } else if (helpPattern.matcher(st).matches()) {
       printUsage(out);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    } else if (infoPattern.matcher(st).matches()) {
+      String result = getCondaInfoCommand();
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+          InterpreterResult.Type.TEXT, result);
     } else {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
     }
@@ -174,6 +178,20 @@ public class PythonCondaInterpreter extends Interpreter {
       out.write("</div><br />\n");
       out.write("<small><code>%python.conda help</code> for the usage</small>\n");
     } catch  (IOException e) {
+      throw new InterpreterException(e);
+    }
+  }
+
+  private String getCondaInfoCommand() {
+    StringBuilder out = createStringBuilder();
+    try {
+      int exit = runCommand(out, "conda", "info");
+      if (exit != 0) {
+        throw new RuntimeException("Failed to execute conda info. exited with " + exit);
+      }
+
+      return out.toString();
+    } catch (RuntimeException | IOException | InterruptedException e) {
       throw new InterpreterException(e);
     }
   }
