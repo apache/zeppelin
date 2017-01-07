@@ -178,7 +178,6 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-
   private void printUsage(InterpreterOutput out) {
     try {
       out.setType(InterpreterResult.Type.HTML);
@@ -202,7 +201,6 @@ public class PythonCondaInterpreter extends Interpreter {
   public int getProgress(InterpreterContext context) {
     return 0;
   }
-
 
   /**
    * Use python interpreter's scheduler.

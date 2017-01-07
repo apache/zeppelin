@@ -64,7 +64,7 @@ public class PythonCondaInterpreterTest {
 
     // list available env
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = conda.interpret("", context);
+    InterpreterResult result = conda.interpret("env list", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context.out.flush();
