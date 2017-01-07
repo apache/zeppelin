@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -175,12 +176,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
-    String[] multipleSqlArray = t.splitSqlQueries(sqlQuery);
-    assertEquals(4, multipleSqlArray.length);
-    assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray[0]);
-    assertEquals("select * from test_table", multipleSqlArray[1]);
-    assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray[2]);
-    assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray[3]);
+    ArrayList<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    assertEquals(4, multipleSqlArray.size());
+    assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
+    assertEquals("select * from test_table", multipleSqlArray.get(1));
+    assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray.get(2));
+    assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray.get(3));
   }
 
   @Test

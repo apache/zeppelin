@@ -15,12 +15,26 @@
 package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import java.security.PrivilegedExceptionAction;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
@@ -30,10 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
@@ -437,7 +448,7 @@ public class JDBCInterpreter extends Interpreter {
   inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/
     pgadmin/dlg/dlgProperty.cpp#L999-L1045
    */
-  protected String[] splitSqlQueries(String sql) {
+  protected ArrayList<String> splitSqlQueries(String sql) {
     ArrayList<String> queries = new ArrayList<>();
     StringBuilder query = new StringBuilder();
     Character character;
@@ -481,7 +492,7 @@ public class JDBCInterpreter extends Interpreter {
         query.append(character);
       }
     }
-    return queries.toArray(new String[queries.size()]);
+    return queries;
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,
@@ -500,9 +511,9 @@ public class JDBCInterpreter extends Interpreter {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      String[] multipleSqlArray = splitSqlQueries(sql);
-      for (int i = 0; i < multipleSqlArray.length; i++) {
-        String sqlToExecute = multipleSqlArray[i];
+      ArrayList<String> multipleSqlArray = splitSqlQueries(sql);
+      for (int i = 0; i < multipleSqlArray.size(); i++) {
+        String sqlToExecute = multipleSqlArray.get(i);
         statement = connection.createStatement();
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -566,8 +577,8 @@ public class JDBCInterpreter extends Interpreter {
       } catch (SQLException e1) {
         e1.printStackTrace();
       }
-
-      return new InterpreterResult(Code.ERROR, errorMsg);
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
     }
     return interpreterResult;
   }
