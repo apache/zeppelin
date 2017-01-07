@@ -152,7 +152,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   private String createNoteForUser(String noteName, String user, String pwd) throws IOException {
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
     PostMethod post = httpPost("/notebook/", jsonRequest, user, pwd);
-    assertThat("test note create method:", post, isCreated());
+    assertThat("test note create method:", post, isAllowed());
     Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     post.releaseConnection();
