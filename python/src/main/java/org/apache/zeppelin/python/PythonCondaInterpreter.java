@@ -60,12 +60,9 @@ public class PythonCondaInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterOutput out = context.out;
 
-    Matcher listEnvMatcher = listEnvPattern.matcher(st);
     Matcher activateMatcher = activatePattern.matcher(st);
-    Matcher deactivateMatcher = deactivatePattern.matcher(st);
-    Matcher helpMatcher = helpPattern.matcher(st);
 
-    if (st == null || listEnvMatcher.matches()) {
+    if (st == null || listEnvPattern.matcher(st).matches()) {
       listEnv(out, getCondaEnvs());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else if (activateMatcher.matches()) {
@@ -73,11 +70,11 @@ public class PythonCondaInterpreter extends Interpreter {
       changePythonEnvironment(envName);
       restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + envName + "\" activated");
-    } else if (deactivateMatcher.matches()) {
+    } else if (deactivatePattern.matcher(st).matches()) {
       changePythonEnvironment(null);
       restartPythonProcess();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
-    } else if (helpMatcher.matches()) {
+    } else if (helpPattern.matcher(st).matches()) {
       printUsage(out);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } else {
