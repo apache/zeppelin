@@ -126,7 +126,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     Note note1 = ZeppelinServer.notebook.createNote(anonymous);
     PostMethod post = httpPost("/notebook/" + note1.getId(), "");
     LOG.info("testCloneNote response\n" + post.getResponseBodyAsString());
-    assertThat(post, isCreated());
+    assertThat(post, isAllowed());
     Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     String clonedNoteId = (String) resp.get("body");
