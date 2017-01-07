@@ -62,31 +62,37 @@ public class PythonCondaInterpreter extends Interpreter {
     InterpreterOutput out = context.out;
     Matcher activateMatcher = activatePattern.matcher(st);
 
-    if (st == null || listEnvPattern.matcher(st).matches()) {
-      runCondaEnvList(out, getCondaEnvs());
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
-    } else if (activateMatcher.matches()) {
-      String envName = activateMatcher.group(1);
-      changePythonEnvironment(envName);
-      restartPythonProcess();
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + envName + "\" activated");
-    } else if (deactivatePattern.matcher(st).matches()) {
-      changePythonEnvironment(null);
-      restartPythonProcess();
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
-    } else if (helpPattern.matcher(st).matches()) {
-      printCondaUsage(out);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
-    } else if (infoPattern.matcher(st).matches()) {
-      String result = runCondaInfo();
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.TEXT, result);
-    } else {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
+    try {
+      if (st == null || listEnvPattern.matcher(st).matches()) {
+        runCondaEnvList(out, getCondaEnvs());
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+      } else if (activateMatcher.matches()) {
+        String envName = activateMatcher.group(1);
+        changePythonEnvironment(envName);
+        restartPythonProcess();
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+            "\"" + envName + "\" activated");
+      } else if (deactivatePattern.matcher(st).matches()) {
+        changePythonEnvironment(null);
+        restartPythonProcess();
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "Deactivated");
+      } else if (helpPattern.matcher(st).matches()) {
+        printCondaUsage(out);
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+      } else if (infoPattern.matcher(st).matches()) {
+        String result = runCondaInfo();
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+            InterpreterResult.Type.TEXT, result);
+      } else {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
+      }
+    } catch (RuntimeException | IOException | InterruptedException e) {
+      throw new InterpreterException(e);
     }
   }
 
-  private void changePythonEnvironment(String envName) {
+  private void changePythonEnvironment(String envName)
+      throws IOException, InterruptedException {
     PythonInterpreter python = getPythonInterpreter();
     String binPath = null;
     if (envName == null) {
@@ -131,69 +137,58 @@ public class PythonCondaInterpreter extends Interpreter {
     return python;
   }
 
-  private HashMap getCondaEnvs() {
+  private HashMap getCondaEnvs() throws IOException, InterruptedException {
     HashMap envList = null;
 
     StringBuilder sb = createStringBuilder();
-    try {
-      int exit = runCommand(sb, "conda", "env", "list");
-      if (exit == 0) {
-        envList = new HashMap();
-        String[] lines = sb.toString().split("\n");
-        for (String s : lines) {
-          if (s == null || s.isEmpty() || s.startsWith("#")) {
-            continue;
-          }
-          Matcher match = condaEnvListPattern.matcher(s);
-
-          if (!match.matches()) {
-            continue;
-          }
-          envList.put(match.group(1), match.group(2));
+    int exit = runCommand(sb, "conda", "env", "list");
+    if (exit == 0) {
+      envList = new HashMap();
+      String[] lines = sb.toString().split("\n");
+      for (String s : lines) {
+        if (s == null || s.isEmpty() || s.startsWith("#")) {
+          continue;
         }
+        Matcher match = condaEnvListPattern.matcher(s);
+
+        if (!match.matches()) {
+          continue;
+        }
+        envList.put(match.group(1), match.group(2));
       }
-    } catch (IOException | InterruptedException e) {
-      throw new InterpreterException(e);
     }
     return envList;
   }
 
-  private void runCondaEnvList(InterpreterOutput out, HashMap<String, String> envList) {
-    try {
-      out.setType(InterpreterResult.Type.HTML);
-      out.write("<h4>Conda environments</h4>\n");
-      // start table
-      out.write("<div style=\"display:table\">\n");
+  private void runCondaEnvList(InterpreterOutput out, HashMap<String, String> envList)
+      throws IOException {
+    out.setType(InterpreterResult.Type.HTML);
+    out.write("<h4>Conda environments</h4>\n");
+    // start table
+    out.write("<div style=\"display:table\">\n");
 
-      for (String name : envList.keySet()) {
-        String path = envList.get(name);
+    for (String name : envList.keySet()) {
+      String path = envList.get(name);
 
-        out.write(String.format("<div style=\"display:table-row\">" +
-            "<div style=\"display:table-cell;width:150px\">%s</div>" +
-            "<div style=\"display:table-cell;\">%s</div>" +
-            "</div>\n",
+      out.write(String.format("<div style=\"display:table-row\">" +
+              "<div style=\"display:table-cell;width:150px\">%s</div>" +
+              "<div style=\"display:table-cell;\">%s</div>" +
+              "</div>\n",
           name, path));
-      }
-      // end table
-      out.write("</div><br />\n");
-      out.write("<small><code>%python.conda help</code> for the usage</small>\n");
-    } catch  (IOException e) {
-      throw new InterpreterException(e);
     }
+    // end table
+    out.write("</div><br />\n");
+    out.write("<small><code>%python.conda help</code> for the usage</small>\n");
   }
 
-  private String runCondaInfo() {
+  private String runCondaInfo() throws IOException, InterruptedException {
     StringBuilder out = createStringBuilder();
-    try {
-      int exit = runCommand(out, "conda", "info");
-      if (exit != 0) {
-        throw new RuntimeException("Failed to execute conda info. exited with " + exit);
-      }
-
-      return out.toString();
-    } catch (RuntimeException | IOException | InterruptedException e) {
-      throw new InterpreterException(e);
+    int exit = runCommand(out, "conda", "info");
+    if (exit != 0) {
+      throw new RuntimeException("Failed to execute conda info. exited with " + exit);
     }
+
+    return out.toString();
   }
 
   private void printCondaUsage(InterpreterOutput out) {
