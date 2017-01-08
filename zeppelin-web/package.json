@@ -10,7 +10,7 @@
     "postinstall": "bower install --silent && grunt googlefonts",
     "prebuild": "npm-run-all clean",
     "build": "grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
-    "predev": "npm-run-all clean && grunt pre-webpack-dev",
+    "predev": "grunt pre-webpack-dev",
     "dev:server": "webpack-dev-server --hot",
     "dev:watch": "grunt watch-webpack-dev",
     "dev": "npm-run-all --parallel dev:server dev:watch",
