@@ -45,7 +45,7 @@ public class PythonCondaInterpreter extends Interpreter {
   private Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   private Pattern deactivatePattern = Pattern.compile("deactivate");
   private Pattern installPattern = Pattern.compile("install\\s*(.*)");
-  private Pattern uninstallPattern = Pattern.compile("[uninstall|remove]\\s*(.*)");
+  private Pattern uninstallPattern = Pattern.compile("uninstall\\s*(.*)");
   private Pattern helpPattern = Pattern.compile("help");
   private Pattern infoPattern = Pattern.compile("info");
 
