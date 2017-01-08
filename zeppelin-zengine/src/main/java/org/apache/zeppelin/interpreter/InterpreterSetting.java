@@ -146,8 +146,7 @@ public class InterpreterSetting {
 
   private boolean isEqualInterpreterKey(String noteId, String interpreterGroupKey) {
     int modeKeyIndex = interpreterGroupKey.lastIndexOf(":");
-    String plainNoteId = interpreterGroupKey.substring(0, modeKeyIndex);
-    System.out.println("clover plainNote id " + plainNoteId);
+    String plainNoteId = interpreterGroupKey.substring(modeKeyIndex, interpreterGroupKey.length());
 
     if (noteId.equals(plainNoteId)) {
       return true;

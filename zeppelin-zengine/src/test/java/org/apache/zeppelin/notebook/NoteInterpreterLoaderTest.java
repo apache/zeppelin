@@ -174,8 +174,8 @@ public class NoteInterpreterLoaderTest {
     factory.getInterpreterSettings("yourFirstNote").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
 
     // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "FitstNote").get("FitstNote"));
-    assertNull(factory.getInterpreterSettings("noteAB").get(0).getInterpreterGroup("user", "yourFirstNote").get("yourFirstNote"));
+    assertNull(factory.getInterpreterSettings("FitstNote").get(0).getInterpreterGroup("user", "FitstNote").get("FitstNote"));
+    assertNull(factory.getInterpreterSettings("yourFirstNote").get(0).getInterpreterGroup("user", "yourFirstNote").get("yourFirstNote"));
 
     Interpreter firstNoteIntp = factory.getInterpreter("user", "FitstNote", "group1.mock1");
     Interpreter yourFirstNoteIntp = factory.getInterpreter("user", "yourFirstNote", "group1.mock1");
