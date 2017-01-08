@@ -119,6 +119,7 @@ public class Helium {
   public synchronized void save() throws IOException {
     String jsonString;
     synchronized (registry) {
+      clearNotExistsPackages();
       heliumConf.setRegistry(registry);
       jsonString = gson.toJson(heliumConf);
     }
@@ -129,6 +130,28 @@ public class Helium {
     }
 
     FileUtils.writeStringToFile(heliumConfFile, jsonString);
+  }
+
+  private void clearNotExistsPackages() {
+    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo();
+
+    // clear visualization display order
+    List<String> packageOrder = heliumConf.getVisualizationDisplayOrder();
+    List<String> clearedOrder = new LinkedList<>();
+    for (String pkgName : packageOrder) {
+      if (all.containsKey(pkgName)) {
+        clearedOrder.add(pkgName);
+      }
+    }
+    heliumConf.setVisualizationDisplayOrder(clearedOrder);
+
+    // clear enabled package
+    Map<String, String> enabledPackages = heliumConf.getEnabledPackages();
+    for (String pkgName : enabledPackages.keySet()) {
+      if (!all.containsKey(pkgName)) {
+        heliumConf.disablePackage(pkgName);
+      }
+    }
   }
 
   public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo() {
@@ -300,5 +323,30 @@ public class Helium {
     }
 
     return orderedVisualizationPackages;
+  }
+
+  /**
+   * Get enabled package list in order
+   * @return
+   */
+  public List<String> getVisualizationPackageOrder() {
+    List orderedPackageList = new LinkedList<>();
+    List<HeliumPackage> packages = getVisualizationPackagesToBundle();
+
+    for (HeliumPackage pkg : packages) {
+      orderedPackageList.add(pkg.getName());
+    }
+
+    return orderedPackageList;
+  }
+
+  public void setVisualizationPackageOrder(List<String> orderedPackageList)
+      throws IOException, TaskRunnerException {
+    heliumConf.setVisualizationDisplayOrder(orderedPackageList);
+
+    // if package is visualization, rebuild bundle
+    visualizationFactory.bundle(getVisualizationPackagesToBundle());
+
+    save();
   }
 }

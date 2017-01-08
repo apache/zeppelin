@@ -19,6 +19,7 @@ package org.apache.zeppelin.rest;
 
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -162,5 +163,27 @@ public class HeliumRestApi {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
+  }
+
+  @GET
+  @Path("visualizationOrder")
+  public Response getVisualizationPackageOrder() {
+    List<String> order = helium.getVisualizationPackageOrder();
+    return new JsonResponse(Response.Status.OK, order).build();
+  }
+
+  @POST
+  @Path("visualizationOrder")
+  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
+    List<String> orderedList = gson.fromJson(
+        orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
+
+    try {
+      helium.setVisualizationPackageOrder(orderedList);
+    } catch (IOException | TaskRunnerException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+    return new JsonResponse(Response.Status.OK).build();
   }
 }

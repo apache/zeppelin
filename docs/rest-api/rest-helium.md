@@ -310,3 +310,69 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
       </td>
     </tr>
   </table>
+<br />
+
+### Get visualization display order
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns display order of enabled visualization packages.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/visualizationOrder```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <code>{"status":"OK","body":["zeppelin_horizontalbar","zeppelin-bubblechart"]}</code>
+      </td>
+    </tr>
+  </table>
+
+
+<br />
+
+### Set visualization display order
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method set visualization packages display order.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/visualizationOrder```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON input</td>
+      <td>
+        <code>["zeppelin-bubblechart", "zeppelin_horizontalbar"]</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <code>{"status":"OK"}</code>
+      </td>
+    </tr>
+  </table>

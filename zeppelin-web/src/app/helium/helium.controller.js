@@ -16,12 +16,14 @@
 
   angular.module('zeppelinWebApp').controller('HeliumCtrl', HeliumCtrl);
 
-  HeliumCtrl.$inject = ['$scope', '$rootScope', '$http', '$sce', 'baseUrlSrv', 'ngToast'];
+  HeliumCtrl.$inject = ['$scope', '$rootScope', '$sce', 'baseUrlSrv', 'ngToast', 'heliumService'];
 
-  function HeliumCtrl($scope, $rootScope, $http, $sce, baseUrlSrv, ngToast) {
+  function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService) {
     $scope.packageInfos = {};
     $scope.defaultVersions = {};
     $scope.showVersions = {};
+    $scope.visualizationOrder = [];
+    $scope.visualizationOrderChanged = false;
 
     var buildDefaultVersionListToDisplay = function(packageInfos) {
       var defaultVersions = {};
@@ -48,7 +50,7 @@
     };
 
     var getAllPackageInfo = function() {
-      $http.get(baseUrlSrv.getRestApiBase() + '/helium/all').
+      heliumService.getAllPackageInfo().
         success(function(data, status) {
           $scope.packageInfos = data.body;
           buildDefaultVersionListToDisplay($scope.packageInfos);
@@ -58,11 +60,62 @@
         });
     };
 
+    var getVisualizationOrder = function() {
+      heliumService.getVisualizationOrder().
+        success(function(data, status) {
+          $scope.visualizationOrder = data.body;
+        }).
+        error(function(data, status) {
+          console.log('Can not get visualization order %o %o', status, data);
+        });
+    };
+
+    $scope.visualizationOrderListeners = {
+      accept: function(sourceItemHandleScope, destSortableScope) {return true;},
+      itemMoved: function(event) {},
+      orderChanged: function(event) {
+        $scope.visualizationOrderChanged = true;
+      }
+    };
+
     var init = function() {
       getAllPackageInfo();
+      getVisualizationOrder();
+      $scope.visualizationOrderChanged = false;
     };
 
     init();
+
+    $scope.saveVisualizationOrder = function() {
+      var confirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Save changes?',
+        callback: function(result) {
+          if (result) {
+            confirm.$modalFooter.find('button').addClass('disabled');
+            confirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
+            heliumService.setVisualizationOrder($scope.visualizationOrder).
+              success(function(data, status) {
+                init();
+                confirm.close();
+              }).
+              error(function(data, status) {
+                confirm.close();
+                console.log('Failed to save order');
+                BootstrapDialog.show({
+                  title: 'Error on saving order ',
+                  message: data.message
+                });
+              });
+            return false;
+          }
+        }
+      });
+    }
 
     $scope.enable = function(name, artifact) {
       var confirm = BootstrapDialog.confirm({
@@ -76,9 +129,9 @@
             confirm.$modalFooter.find('button').addClass('disabled');
             confirm.$modalFooter.find('button:contains("OK")')
               .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
-            $http.post(baseUrlSrv.getRestApiBase() + '/helium/enable/' + name, artifact).
+            heliumService.enable(name, artifact).
               success(function(data, status) {
-                getAllPackageInfo();
+                init();
                 confirm.close();
               }).
               error(function(data, status) {
@@ -107,9 +160,9 @@
             confirm.$modalFooter.find('button').addClass('disabled');
             confirm.$modalFooter.find('button:contains("OK")')
               .html('<i class="fa fa-circle-o-notch fa-spin"></i> Disabling');
-            $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name).
+            heliumService.disable(name).
               success(function(data, status) {
-                getAllPackageInfo();
+                init();
                 confirm.close();
               }).
               error(function(data, status) {

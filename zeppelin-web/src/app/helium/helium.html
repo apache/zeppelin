@@ -20,6 +20,26 @@ limitations under the License.
         </h3>
       </div>
     </div>
+    <div ng-show="visualizationOrder.length > 1"
+         class="row heliumVisualizationOrder">
+      <div class="col-md-12 sortable-row btn-group"
+           as-sortable="visualizationOrderListeners"
+           data-ng-model="visualizationOrder">
+        <div style="margin-bottom:5px">Visualization package display order (drag and drop to reorder)</div>
+        <div class="btn-group" data-ng-repeat="pkgName in visualizationOrder"
+             as-sortable-item>
+          <div class="btn btn-default btn-sm"
+               ng-bind-html='defaultVersions[pkgName].pkg.icon'
+               as-sortable-item-handle>
+          </div>
+        </div>
+        <a class="saveLink"
+           ng-show="visualizationOrderChanged"
+           ng-click="saveVisualizationOrder()">
+          save
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -30,7 +50,7 @@ limitations under the License.
       <div class="heliumPackageHead">
         <div class="heliumPackageIcon"
              ng-bind-html=pkgInfo.pkg.icon></div>
-        <div class="heliumPackageName">{{pkgName}}</div>
+        <div class="heliumPackageName">{{pkgName}} <span>{{pkgInfo.pkg.type}}</span></div>
         <div ng-show="!pkgInfo.enabled"
              ng-click="enable(pkgName, pkgInfo.pkg.artifact)"
              class="btn btn-success btn-xs"
@@ -43,8 +63,7 @@ limitations under the License.
       <div ng-class="{heliumPackageDisabledArtifact: !pkgInfo.enabled, heliumPackageEnabledArtifact: pkgInfo.enabled}">
         {{pkgInfo.pkg.artifact}}
         <span ng-show="packageInfos[pkgName].length > 0"
-              ng-click="toggleVersions(pkgName)"
-              style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
+              ng-click="toggleVersions(pkgName)">
           Versions
         </span>
       </div>

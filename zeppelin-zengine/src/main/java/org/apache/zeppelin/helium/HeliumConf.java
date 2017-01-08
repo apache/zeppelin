@@ -60,14 +60,14 @@ public class HeliumConf {
   }
 
   public List<String> getVisualizationDisplayOrder() {
-    return visualizationDisplayOrder;
+    if (visualizationDisplayOrder == null) {
+      return new LinkedList<String>();
+    } else {
+      return visualizationDisplayOrder;
+    }
   }
 
-  public void setVisualizationDisplayOrder(List<HeliumPackage> orderedPackageList) {
-    List<String> order = new LinkedList<>();
-    for (HeliumPackage pkg : orderedPackageList) {
-      order.add(pkg.getName());
-    }
-    visualizationDisplayOrder = order;
+  public void setVisualizationDisplayOrder(List<String> orderedPackageList) {
+    visualizationDisplayOrder = orderedPackageList;
   }
 }

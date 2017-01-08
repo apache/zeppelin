@@ -38,5 +38,25 @@
     this.get = function() {
       return visualizations;
     };
+
+    this.getVisualizationOrder = function() {
+      return $http.get(baseUrlSrv.getRestApiBase() + '/helium/visualizationOrder');
+    };
+
+    this.setVisualizationOrder = function(list) {
+      return $http.post(baseUrlSrv.getRestApiBase() + '/helium/visualizationOrder', list);
+    };
+
+    this.getAllPackageInfo = function() {
+      return $http.get(baseUrlSrv.getRestApiBase() + '/helium/all');
+    };
+
+    this.enable = function(name, artifact) {
+      return $http.post(baseUrlSrv.getRestApiBase() + '/helium/enable/' + name, artifact);
+    };
+
+    this.disable = function(name) {
+      return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
+    };
   };
 })();
