@@ -303,6 +303,9 @@ public class Helium {
     // add enabled packages in visOrder
     for (String name : visOrder) {
       List<HeliumPackageSearchResult> versions = allPackages.get(name);
+      if (versions == null) {
+        continue;
+      }
       for (HeliumPackageSearchResult pkgInfo : versions) {
         if (pkgInfo.getPkg().getType() == HeliumPackage.Type.VISUALIZATION && pkgInfo.isEnabled()) {
           orderedVisualizationPackages.add(pkgInfo.getPkg());
