@@ -44,6 +44,7 @@ public class PythonCondaInterpreter extends Interpreter {
   private Pattern createPattern = Pattern.compile("create\\s*(.*)");
   private Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   private Pattern deactivatePattern = Pattern.compile("deactivate");
+  private Pattern installPattern = Pattern.compile("install\\s*(.*)");
   private Pattern helpPattern = Pattern.compile("help");
   private Pattern infoPattern = Pattern.compile("info");
 
@@ -66,6 +67,7 @@ public class PythonCondaInterpreter extends Interpreter {
     InterpreterOutput out = context.out;
     Matcher activateMatcher = activatePattern.matcher(st);
     Matcher createMatcher = createPattern.matcher(st);
+    Matcher installMatcher = installPattern.matcher(st);
 
     try {
       if (st == null || listEnvPattern.matcher(st).matches()) {
@@ -87,6 +89,9 @@ public class PythonCondaInterpreter extends Interpreter {
         changePythonEnvironment(null);
         restartPythonProcess();
         return new InterpreterResult(Code.SUCCESS, "Deactivated");
+      } else if (installMatcher.matches()) {
+        String result = runCondaInstall(getRestArgsFromMatcher(installMatcher));
+        return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
       } else if (helpPattern.matcher(st).matches()) {
         runCondaHelp(out);
         return new InterpreterResult(Code.SUCCESS);
@@ -211,6 +216,24 @@ public class PythonCondaInterpreter extends Interpreter {
     }
 
     return wrapCondaBasicOutputStyle("Environment Created", sb.toString());
+  }
+
+  private String runCondaInstall(List<String> restArgs)
+      throws IOException, InterruptedException {
+
+    restArgs.add(0, "conda");
+    restArgs.add(1, "install");
+    restArgs.add(2, "--yes");
+
+    StringBuilder sb = new StringBuilder();
+    int exit = runCommand(sb, restArgs);
+    if (exit != 0) {
+      throw new RuntimeException("Failed to execute `" +
+          StringUtils.join(restArgs, " ") +
+          "` exited with " + exit);
+    }
+
+    return wrapCondaBasicOutputStyle("Package Installation", sb.toString());
   }
 
   private String wrapCondaBasicOutputStyle(String title, String content) {
