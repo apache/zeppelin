@@ -19,7 +19,7 @@ package org.apache.zeppelin.example.app.clock;
 import org.apache.zeppelin.helium.Application;
 import org.apache.zeppelin.helium.ApplicationContext;
 import org.apache.zeppelin.helium.ApplicationException;
-import org.apache.zeppelin.interpreter.dev.ZeppelinApplicationDevServer;
+import org.apache.zeppelin.helium.ZeppelinApplicationDevServer;
 import org.apache.zeppelin.resource.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
