@@ -21,15 +21,12 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.ILoggerFactory;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.WriterAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -54,6 +51,8 @@ public class HeliumVisualizationFactory {
   String bundleCacheKey = "";
   File currentBundle;
 
+  ByteArrayOutputStream out  = new ByteArrayOutputStream();
+
   public HeliumVisualizationFactory(
       File moduleDownloadPath,
       File tabledataModulePath,
@@ -74,6 +73,7 @@ public class HeliumVisualizationFactory {
     currentBundle = new File(workingDirectory, "vis.bundle.cache.js");
     gson = new Gson();
     installNodeAndNpm();
+    configureLogger();
   }
 
   private void installNodeAndNpm() throws InstallationException, TaskRunnerException {
@@ -95,12 +95,24 @@ public class HeliumVisualizationFactory {
     return bundle(pkgs, false);
   }
 
-  public File bundle(List<HeliumPackage> pkgs, boolean forceRefresh)
+  public synchronized File bundle(List<HeliumPackage> pkgs, boolean forceRefresh)
       throws IOException, TaskRunnerException {
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
     StringBuilder dependencies = new StringBuilder();
+
+    FileFilter npmPackageCopyFilter = new FileFilter() {
+      @Override
+      public boolean accept(File pathname) {
+        String fileName = pathname.getName();
+        if (fileName.startsWith(".") || fileName.startsWith("#") || fileName.startsWith("~")) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+    };
 
     for (HeliumPackage pkg : pkgs) {
       String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
@@ -114,8 +126,10 @@ public class HeliumVisualizationFactory {
       dependencies.append("\"" + moduleNameVersion[0] + "\": \"" + moduleNameVersion[1] + "\"");
 
       if (isLocalPackage(pkg)) {
-        FileUtils.copyDirectory(new File(pkg.getArtifact()),
-            new File(workingDirectory, "node_modules/" + pkg.getName()));
+        FileUtils.copyDirectory(
+            new File(pkg.getArtifact()),
+            new File(workingDirectory, "node_modules/" + pkg.getName()),
+            npmPackageCopyFilter);
       }
     }
     pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
@@ -133,19 +147,22 @@ public class HeliumVisualizationFactory {
     StringBuilder loadJsImport = new StringBuilder();
     StringBuilder loadJsRegister = new StringBuilder();
 
+    long idx = 0;
     for (HeliumPackage pkg : pkgs) {
-      String [] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
+      String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
       if (moduleNameVersion == null) {
         continue;
       }
+
+      String className = "vis" + idx++;
       loadJsImport.append(
-          "import " + moduleNameVersion[0] + " from \"" + moduleNameVersion[0] + "\"\n");
+          "import " + className + " from \"" + moduleNameVersion[0] + "\"\n");
 
       loadJsRegister.append("visualizations.push({\n");
       loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
       loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
       loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
-      loadJsRegister.append("class: " + moduleNameVersion[0] + "\n");
+      loadJsRegister.append("class: " + className + "\n");
       loadJsRegister.append("})\n");
     }
 
@@ -158,22 +175,30 @@ public class HeliumVisualizationFactory {
     File tabledataModuleInstallPath = new File(workingDirectory,
         "node_modules/zeppelin-tabledata");
     if (tabledataModulePath != null && !tabledataModuleInstallPath.exists()) {
-      FileUtils.copyDirectory(tabledataModulePath, tabledataModuleInstallPath);
+      FileUtils.copyDirectory(tabledataModulePath, tabledataModuleInstallPath, npmPackageCopyFilter);
     }
 
     // install visualization module
     File visModuleInstallPath = new File(workingDirectory,
         "node_modules/zeppelin-vis");
     if (visualizationModulePath != null && !visModuleInstallPath.exists()) {
-      FileUtils.copyDirectory(visualizationModulePath, visModuleInstallPath);
+      FileUtils.copyDirectory(visualizationModulePath, visModuleInstallPath, npmPackageCopyFilter);
     }
 
+    out.reset();
     npmCommand("install");
     npmCommand("run bundle");
 
     File visBundleJs = new File(workingDirectory, "vis.bundle.js");
     if (!visBundleJs.isFile()) {
-      throw new IOException("Failed to create visualization bundle");
+      throw new IOException(
+          "Can't create visualization bundle : \n" + new String(out.toByteArray()));
+    }
+
+    WebpackResult result = getWebpackResultFromOutput(new String(out.toByteArray()));
+    if (result.errors.length > 0) {
+      visBundleJs.delete();
+      throw new IOException(result.errors[0]);
     }
 
     synchronized (this) {
@@ -182,6 +207,43 @@ public class HeliumVisualizationFactory {
       bundleCacheKey = dependencies.toString();
     }
     return currentBundle;
+  }
+
+  private WebpackResult getWebpackResultFromOutput(String output) {
+    BufferedReader reader = new BufferedReader(new StringReader(output));
+
+    String line;
+    boolean webpackRunDetected = false;
+    boolean resultJsonDetected = false;
+    StringBuffer sb = new StringBuffer();
+    try {
+      while ((line = reader.readLine()) != null) {
+        if (!webpackRunDetected) {
+          if (line.contains("webpack.js") && line.endsWith("--json")) {
+            webpackRunDetected = true;
+          }
+          continue;
+        }
+
+        if (!resultJsonDetected) {
+          if (line.equals("{")) {
+            sb.append(line);
+            resultJsonDetected = true;
+          }
+          continue;
+        }
+
+        if (resultJsonDetected && webpackRunDetected) {
+          sb.append(line);
+        }
+      }
+
+      Gson gson = new Gson();
+      return gson.fromJson(sb.toString(), WebpackResult.class);
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+      return new WebpackResult();
+    }
   }
 
   public File getCurrentBundle() {
@@ -198,7 +260,7 @@ public class HeliumVisualizationFactory {
     return (pkg.getArtifact().startsWith(".") || pkg.getArtifact().startsWith("/"));
   }
 
-  private String [] getNpmModuleNameAndVersion(HeliumPackage pkg) {
+  private String[] getNpmModuleNameAndVersion(HeliumPackage pkg) {
     String artifact = pkg.getArtifact();
 
     if (isLocalPackage(pkg)) {
@@ -247,8 +309,20 @@ public class HeliumVisualizationFactory {
   private void npmCommand(String args) throws TaskRunnerException {
     npmCommand(args, new HashMap<String, String>());
   }
+
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
     NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), DEFAULT_NPM_REGISTRY_URL);
+
     npm.execute(args, env);
+  }
+
+  private void configureLogger() {
+    org.apache.log4j.Logger npmLogger = org.apache.log4j.Logger.getLogger(
+        "com.github.eirslett.maven.plugins.frontend.lib.DefaultNpmRunner");
+
+    npmLogger.addAppender(new WriterAppender(
+        new PatternLayout("%m%n"),
+        out
+    ));
   }
 }

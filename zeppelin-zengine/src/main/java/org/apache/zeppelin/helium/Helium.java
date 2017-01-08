@@ -214,6 +214,7 @@ public class Helium {
     }
 
     heliumConf.disablePackage(name);
+
     HeliumPackageSearchResult pkg = getPackageInfo(name, artifact);
     if (pkg == null || pkg.getPkg().getType() == HeliumPackage.Type.VISUALIZATION) {
       visualizationFactory.bundle(getVisualizationPackagesToBundle());

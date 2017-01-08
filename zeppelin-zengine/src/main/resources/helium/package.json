@@ -2,7 +2,7 @@
   "name": "zeppelin-vis-bundle",
   "main": "load",
   "scripts": {
-    "bundle": "node/node node_modules/webpack/bin/webpack.js --display-error-details"
+    "bundle": "node/node node_modules/webpack/bin/webpack.js --display-error-details --json"
   },
   "dependencies": {
     DEPENDENCIES

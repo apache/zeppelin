@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class HeliumVisualizationFactoryTest {
@@ -39,8 +40,9 @@ public class HeliumVisualizationFactoryTest {
 
   @Before
   public void setUp() throws InstallationException, TaskRunnerException {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    tmpDir.mkdirs();
+    //tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    tmpDir = new File("/tmp/npm");
+    //tmpDir.mkdirs();
 
     // get module dir
     URL res = Resources.getResource("helium/webpack.config.js");
@@ -54,7 +56,7 @@ public class HeliumVisualizationFactoryTest {
 
   @After
   public void tearDown() throws IOException {
-    FileUtils.deleteDirectory(tmpDir);
+    //FileUtils.deleteDirectory(tmpDir);
   }
 
   @Test
@@ -84,7 +86,7 @@ public class HeliumVisualizationFactoryTest {
         HeliumPackage.Type.VISUALIZATION,
         "lodash",
         "lodash",
-        "lodash^3.9.3",
+        "lodash^1.8.3",
         "",
         null,
         "icon"
@@ -120,5 +122,33 @@ public class HeliumVisualizationFactoryTest {
     pkgs.add(pkg);
     File bundle = hvf.bundle(pkgs);
     assertTrue(bundle.isFile());
+  }
+
+  @Test
+  public void bundleErrorPropagation() throws IOException, TaskRunnerException {
+    URL res = Resources.getResource("helium/webpack.config.js");
+    String resDir = new File(res.getFile()).getParent();
+    String localPkg = resDir + "/../../../src/test/resources/helium/vis2";
+
+    HeliumPackage pkg = new HeliumPackage(
+        HeliumPackage.Type.VISUALIZATION,
+        "vis2",
+        "vis2",
+        localPkg,
+        "",
+        null,
+        "fa fa-coffee"
+    );
+    List<HeliumPackage> pkgs = new LinkedList<>();
+    pkgs.add(pkg);
+    File bundle = null;
+    try {
+      bundle = hvf.bundle(pkgs);
+      // should throw exception
+      assertTrue(false);
+    } catch (IOException e) {
+      e.getMessage().contains("error in the package");
+    }
+    assertNull(bundle);
   }
 }

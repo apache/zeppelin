@@ -129,7 +129,7 @@ public class HeliumRestApi {
       // returning error will prevent zeppelin front-end render any notebook.
       // visualization load fail doesn't need to block notebook rendering work.
       // so it's better return ok instead of any error.
-      return Response.ok().build();
+      return Response.ok("ERROR: " + e.getMessage()).build();
     }
   }
 
@@ -142,10 +142,10 @@ public class HeliumRestApi {
       return new JsonResponse(Response.Status.OK).build();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
-      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR).build();
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     } catch (TaskRunnerException e) {
       logger.error(e.getMessage(), e);
-      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR).build();
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
 
@@ -157,10 +157,10 @@ public class HeliumRestApi {
       return new JsonResponse(Response.Status.OK).build();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
-      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR).build();
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     } catch (TaskRunnerException e) {
       logger.error(e.getMessage(), e);
-      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR).build();
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
 }

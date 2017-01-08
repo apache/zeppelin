@@ -16,9 +16,9 @@
 
   angular.module('zeppelinWebApp').service('heliumService', heliumService);
 
-  heliumService.$inject = ['$http', 'baseUrlSrv'];
+  heliumService.$inject = ['$http', 'baseUrlSrv', 'ngToast'];
 
-  function heliumService($http, baseUrlSrv) {
+  function heliumService($http, baseUrlSrv, ngToast) {
 
     var url = baseUrlSrv.getRestApiBase() + '/helium/visualizations/load';
     if (process.env.HELIUM_VIS_DEV) {
@@ -28,7 +28,11 @@
 
     // load should be promise
     this.load = $http.get(url).success(function(response) {
-      eval(response);
+      if (response.substring(0, 'ERROR:'.length) !== 'ERROR:') {
+        eval(response);
+      } else {
+        console.log(response);
+      }
     });
 
     this.get = function() {

@@ -77,7 +77,7 @@
               }).
               error(function(data, status) {
                 confirm.close();
-                console.log('Failed to enable package %o %o', name, artifact);
+                console.log('Failed to enable package %o %o. %o', name, artifact, data);
                 BootstrapDialog.show({
                   title: 'Error on enabling ' + name,
                   message: data.message
@@ -108,7 +108,7 @@
               }).
               error(function(data, status) {
                 confirm.close();
-                console.log('Failed to disable package %o', name);
+                console.log('Failed to disable package %o. %o', name, data);
                 BootstrapDialog.show({
                   title: 'Error on disabling ' + name,
                   message: data.message
