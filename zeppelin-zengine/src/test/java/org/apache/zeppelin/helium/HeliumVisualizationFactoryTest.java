@@ -146,7 +146,7 @@ public class HeliumVisualizationFactoryTest {
       // should throw exception
       assertTrue(false);
     } catch (IOException e) {
-      e.getMessage().contains("error in the package");
+      assertTrue(e.getMessage().contains("error in the package"));
     }
     assertNull(bundle);
   }

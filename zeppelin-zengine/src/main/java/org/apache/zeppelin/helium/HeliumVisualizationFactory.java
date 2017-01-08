@@ -21,17 +21,17 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
+import org.apache.log4j.spi.Filter;
+import org.apache.log4j.spi.LoggingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Load helium visualization
@@ -322,7 +322,24 @@ public class HeliumVisualizationFactory {
   private void configureLogger() {
     org.apache.log4j.Logger npmLogger = org.apache.log4j.Logger.getLogger(
         "com.github.eirslett.maven.plugins.frontend.lib.DefaultNpmRunner");
+    Enumeration appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
 
+    if (appenders != null) {
+      while (appenders.hasMoreElements()) {
+        Appender appender = (Appender) appenders.nextElement();
+        appender.addFilter(new Filter() {
+
+          @Override
+          public int decide(LoggingEvent loggingEvent) {
+            if (loggingEvent.getLoggerName().contains("DefaultNpmRunner")) {
+              return DENY;
+            } else {
+              return NEUTRAL;
+            }
+          }
+        });
+      }
+    }
     npmLogger.addAppender(new WriterAppender(
         new PatternLayout("%m%n"),
         out
