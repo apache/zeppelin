@@ -40,9 +40,8 @@ public class HeliumVisualizationFactoryTest {
 
   @Before
   public void setUp() throws InstallationException, TaskRunnerException {
-    //tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    tmpDir = new File("/tmp/npm");
-    //tmpDir.mkdirs();
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    tmpDir.mkdirs();
 
     // get module dir
     URL res = Resources.getResource("helium/webpack.config.js");
@@ -56,7 +55,7 @@ public class HeliumVisualizationFactoryTest {
 
   @After
   public void tearDown() throws IOException {
-    //FileUtils.deleteDirectory(tmpDir);
+    FileUtils.deleteDirectory(tmpDir);
   }
 
   @Test
@@ -84,9 +83,9 @@ public class HeliumVisualizationFactoryTest {
   public void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg = new HeliumPackage(
         HeliumPackage.Type.VISUALIZATION,
-        "lodash",
-        "lodash",
-        "lodash^1.8.3",
+        "zeppelin-bubblechart",
+        "zeppelin-bubblechart",
+        "zeppelin-bubblechart@0.0.3",
         "",
         null,
         "icon"
