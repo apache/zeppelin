@@ -20,12 +20,10 @@ package org.apache.zeppelin.interpreter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.gson.annotations.SerializedName;
@@ -178,7 +176,7 @@ public class InterpreterSetting {
   void closeAndRemoveInterpreterGroup(String interpreterGroupId) {
     String key = getInterpreterProcessKey("", interpreterGroupId);
 
-    Set<InterpreterGroup> closeToGroupList = new LinkedHashSet<>();
+    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
     InterpreterGroup groupKey;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
       if (intpKey.contains(key)) {
