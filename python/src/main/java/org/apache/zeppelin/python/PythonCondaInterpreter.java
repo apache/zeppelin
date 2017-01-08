@@ -82,15 +82,10 @@ public class PythonCondaInterpreter extends Interpreter {
         String result = runCondaCreate(getRestArgsFromMatcher(createMatcher));
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
       } else if (activateMatcher.matches()) {
-        String envName = activateMatcher.group(1);
-        changePythonEnvironment(envName);
-        restartPythonProcess();
-        return new InterpreterResult(Code.SUCCESS,
-            "\"" + envName + "\" activated");
+        String envName = activateMatcher.group(1).trim();
+        return runCondaActivate(envName);
       } else if (deactivatePattern.matcher(st).matches()) {
-        changePythonEnvironment(null);
-        restartPythonProcess();
-        return new InterpreterResult(Code.SUCCESS, "Deactivated");
+        return runCondaDeactivate();
       } else if (installMatcher.matches()) {
         String result = runCondaInstall(getRestArgsFromMatcher(installMatcher));
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
@@ -201,6 +196,27 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private String runCondaEnvList() throws IOException, InterruptedException {
     return wrapCondaTableOutputStyle("Environment List", getCondaEnvs());
+  }
+
+  private InterpreterResult runCondaActivate(String envName)
+      throws IOException, InterruptedException {
+
+    if (null == envName || envName.isEmpty()) {
+      return new InterpreterResult(Code.ERROR, "Env name should be specified");
+    }
+
+    changePythonEnvironment(envName);
+    restartPythonProcess();
+
+    return new InterpreterResult(Code.SUCCESS, "'" + envName + "' is activated");
+  }
+
+  private InterpreterResult runCondaDeactivate()
+      throws IOException, InterruptedException {
+
+    changePythonEnvironment(null);
+    restartPythonProcess();
+    return new InterpreterResult(Code.SUCCESS, "Deactivated");
   }
 
   private String runCondaList() throws IOException, InterruptedException {
