@@ -24,14 +24,13 @@ limitations under the License.
 </div>
 
 <div class="box width-full">
-  <div class="row"
-       ng-repeat="(pkgName, pkgInfo) in defaultVersions"
-       style="margin-bottom:20px">
+  <div class="row heliumPackageList"
+       ng-repeat="(pkgName, pkgInfo) in defaultVersions">
     <div class="col-md-12">
-      <div style="height:25px">
-        <div style="float:left;width:28px;height:22px;padding:2px;2px;2px;2px"
+      <div class="heliumPackageHead">
+        <div class="heliumPackageIcon"
              ng-bind-html=pkgInfo.pkg.icon></div>
-        <b style="float:left">{{pkgName}}</b>
+        <div class="heliumPackageName">{{pkgName}}</div>
         <div ng-show="!pkgInfo.enabled"
              ng-click="enable(pkgName, pkgInfo.pkg.artifact)"
              class="btn btn-success btn-xs"
@@ -41,7 +40,28 @@ limitations under the License.
              class="btn btn-info btn-xs"
              style="float:right">Disable</div>
       </div>
-      {{pkgInfo.pkg.description}}
+      <div ng-class="{heliumPackageDisabledArtifact: !pkgInfo.enabled, heliumPackageEnabledArtifact: pkgInfo.enabled}">
+        {{pkgInfo.pkg.artifact}}
+        <span ng-show="packageInfos[pkgName].length > 0"
+              ng-click="toggleVersions(pkgName)"
+              style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
+          Versions
+        </span>
+      </div>
+      <ul class="heliumPackageVersions"
+           ng-show="showVersions[pkgName]">
+        <li class="heliumPackageDisabledArtifact"
+             ng-repeat="pkg in packageInfos[pkgName]">
+          {{pkg.pkg.artifact}} -
+          <span ng-click="enable(pkgName, pkg.pkg.artifact)"
+                style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
+            enable
+          </span>
+        </li>
+      </ul>
+      <div class="heliumPackageDescription">
+        {{pkgInfo.pkg.description}}
+      </div>
     </div>
   </div>
 </div>

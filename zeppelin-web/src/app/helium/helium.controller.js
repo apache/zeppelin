@@ -21,6 +21,7 @@
   function HeliumCtrl($scope, $rootScope, $http, $sce, baseUrlSrv, ngToast) {
     $scope.packageInfos = {};
     $scope.defaultVersions = {};
+    $scope.showVersions = {};
 
     var buildDefaultVersionListToDisplay = function(packageInfos) {
       var defaultVersions = {};
@@ -32,12 +33,15 @@
           pkg.pkg.icon = $sce.trustAsHtml(pkg.pkg.icon);
           if (pkg.enabled) {
             defaultVersions[name] = pkg;
+            pkgs.splice(pkgIdx, 1);
+            break;
           }
         }
 
         // show first available version if package is not enabled
         if (!defaultVersions[name]) {
           defaultVersions[name] = pkgs[0];
+          pkgs.splice(0, 1);
         }
       }
       $scope.defaultVersions = defaultVersions;
@@ -66,7 +70,7 @@
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: '',
-        message: 'Enable ' + name + '?',
+        message: 'Enable ' + name + '? <div style="color:gray">' + artifact + '</div>',
         callback: function(result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');
@@ -120,6 +124,14 @@
           }
         }
       });
+    };
+
+    $scope.toggleVersions = function(pkgName) {
+      if ($scope.showVersions[pkgName]) {
+        $scope.showVersions[pkgName] = false;
+      } else {
+        $scope.showVersions[pkgName] = true;
+      }
     };
   }
 })();
