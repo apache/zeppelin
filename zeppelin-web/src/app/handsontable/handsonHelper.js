@@ -20,6 +20,7 @@ export default class HandsonHelper {
     this.columns = columns || [];
     this.rows = rows || [];
     this.comment = comment || '';
+    this._numericValidator = this._numericValidator.bind(this);
   };
 
   getHandsonTableConfig(columns, columnNames, resultRows) {
