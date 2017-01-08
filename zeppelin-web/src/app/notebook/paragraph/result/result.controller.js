@@ -299,10 +299,14 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
       $timeout(retryRenderer);
     };
 
+    var getTextEl = function (paragraphId) {
+      return angular.element('#p' + $scope.id + '_text');
+    }
+
     var textRendererInitialized = false;
     var renderText = function() {
       var retryRenderer = function() {
-        var textEl = angular.element('#p' + $scope.id + '_text');
+        var textEl = getTextEl($scope.id);
         if (textEl.length) {
           // clear all lines before render
           clearTextOutput();
@@ -314,7 +318,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
             flushAppendQueue();
           }
 
-          angular.element('#p' + $scope.id + '_text').bind('mousewheel', function(e) {
+          getTextEl($scope.id).bind('mousewheel', function(e) {
             $scope.keepScrollDown = false;
           });
         } else {
@@ -325,7 +329,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
     };
 
     var clearTextOutput = function() {
-      var textEl = angular.element('#p' + $scope.id + '_text');
+      var textEl = getTextEl($scope.id);
       if (textEl.length) {
         textEl.children().remove();
       }
@@ -344,7 +348,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
         textAppendQueueBeforeInitialize.push(msg);
       } else {
         flushAppendQueue();
-        var textEl = angular.element('#p' + $scope.id + '_text');
+        var textEl = getTextEl($scope.id);
         if (textEl.length) {
           var lines = msg.split('\n');
           for (var i = 0; i < lines.length; i++) {
@@ -352,7 +356,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
           }
         }
         if ($scope.keepScrollDown) {
-          var doc = angular.element('#p' + $scope.id + '_text');
+          var doc = getTextEl($scope.id);
           doc[0].scrollTop = doc[0].scrollHeight;
         }
       }
