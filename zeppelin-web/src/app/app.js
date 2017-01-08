@@ -47,9 +47,9 @@
           $httpProvider.defaults.withCredentials = true;
 
           var visBundleLoad = {
-            load: function(heliumService) {
+            load: ['heliumService', function(heliumService) {
               return heliumService.load;
-            }
+            }]
           };
 
           $routeProvider
