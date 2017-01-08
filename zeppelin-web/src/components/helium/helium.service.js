@@ -31,7 +31,7 @@
       if (response.substring(0, 'ERROR:'.length) !== 'ERROR:') {
         eval(response);
       } else {
-        console.log(response);
+        console.error(response);
       }
     });
 

@@ -16,9 +16,9 @@
 
   angular.module('zeppelinWebApp').controller('HeliumCtrl', HeliumCtrl);
 
-  HeliumCtrl.$inject = ['$scope', '$rootScope', '$http', 'baseUrlSrv', 'ngToast'];
+  HeliumCtrl.$inject = ['$scope', '$rootScope', '$http', '$sce', 'baseUrlSrv', 'ngToast'];
 
-  function HeliumCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+  function HeliumCtrl($scope, $rootScope, $http, $sce, baseUrlSrv, ngToast) {
     $scope.packageInfos = {};
     $scope.defaultVersions = {};
 
@@ -27,7 +27,9 @@
       // show enabled version if any version of package is enabled
       for (var name in packageInfos) {
         var pkgs = packageInfos[name];
-        for (var pkg in pkgs) {
+        for (var pkgIdx in pkgs) {
+          var pkg = pkgs[pkgIdx];
+          pkg.pkg.icon = $sce.trustAsHtml(pkg.pkg.icon);
           if (pkg.enabled) {
             defaultVersions[name] = pkg;
           }

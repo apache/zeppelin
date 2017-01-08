@@ -175,7 +175,10 @@ public class HeliumVisualizationFactory {
     File tabledataModuleInstallPath = new File(workingDirectory,
         "node_modules/zeppelin-tabledata");
     if (tabledataModulePath != null && !tabledataModuleInstallPath.exists()) {
-      FileUtils.copyDirectory(tabledataModulePath, tabledataModuleInstallPath, npmPackageCopyFilter);
+      FileUtils.copyDirectory(
+          tabledataModulePath,
+          tabledataModuleInstallPath,
+          npmPackageCopyFilter);
     }
 
     // install visualization module

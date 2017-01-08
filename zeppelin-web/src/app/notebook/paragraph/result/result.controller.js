@@ -36,6 +36,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
     '$http',
     '$q',
     '$templateRequest',
+    '$sce',
     'websocketMsgSrv',
     'baseUrlSrv',
     'ngToast',
@@ -45,7 +46,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
   ];
 
   function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
-                      $timeout, $compile, $http, $q, $templateRequest, websocketMsgSrv,
+                      $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
                       baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
 
     /**
@@ -161,7 +162,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
         $scope.builtInTableDataVisualizationList.push({
           id: vis.id,
           name: vis.name,
-          icon: vis.icon
+          icon: $sce.trustAsHtml(vis.icon)
         });
         builtInVisualizations[vis.id] = {
           class: vis.class
@@ -435,7 +436,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
                   builtInViz.instance.resize();
                 });
               } catch (err) {
-                console.log('Graph drawing error %o', err);
+                console.error('Graph drawing error %o', err);
               }
             } else {
               $timeout(retryRenderer, 10);
