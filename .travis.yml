@@ -106,8 +106,7 @@ after_success:
 
 after_failure:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
-  - cat target/rat.txt
-  - cat zeppelin-server/target/rat.txt
+  - find . -name rat.txt | xargs cat
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
   - cat zeppelin-web/npm-debug.log

@@ -933,7 +933,8 @@
               <exclude>docs/_site/**</exclude>
               <exclude>docs/Gemfile.lock</exclude>
 
-              <exclude>zeppelin-examples/zeppelin-example-horizontalbar/package.json</exclude>
+              <!-- package.json -->
+              <exclude>**/package.json</exclude>
 
               <!-- compiled R packages (binaries) -->
               <exclude>R/lib/**</exclude>
