@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -28,13 +29,17 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter11;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 public class NoteInterpreterLoaderTest {
@@ -158,6 +163,42 @@ public class NoteInterpreterLoaderTest {
     // interpreters are destroyed after close
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("shared_session"));
     assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("shared_session"));
+  }
+
+  @Test
+  public void testNoteInterpreterCloseForAll() throws IOException {
+    factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
+    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
+    factory.getInterpreterSettings("noteA").get(1).getOption().setPerNote(InterpreterOption.SCOPED);
+
+    List<InterpreterSetting> setting = factory.getInterpreterSettings("noteA");
+    // interpreters are not created before accessing it
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+
+    Interpreter mock1Intp = factory.getInterpreter("user", "noteA", "group1.mock1");
+    Interpreter mock11Intp = factory.getInterpreter("user", "noteA", "group1.mock11");
+    Interpreter mock2Intp = factory.getInterpreter("user", "noteA", "group2.mock2");
+
+    mock1Intp.open();
+    mock11Intp.open();
+    mock2Intp.open();
+
+    // per note interpreter process
+    assertTrue(((LazyOpenInterpreter)mock1Intp).isOpen());
+    assertTrue(((LazyOpenInterpreter)mock11Intp).isOpen());
+    assertTrue(((LazyOpenInterpreter)mock2Intp).isOpen());
+
+    // when
+    factory.close();
+
+    // interpreters are destroyed after close
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+
+    // per note interpreter process
+    assertFalse(((LazyOpenInterpreter)mock1Intp).isOpen());
+    assertFalse(((LazyOpenInterpreter)mock11Intp).isOpen());
+    assertFalse(((LazyOpenInterpreter)mock2Intp).isOpen());
+
   }
 
 
