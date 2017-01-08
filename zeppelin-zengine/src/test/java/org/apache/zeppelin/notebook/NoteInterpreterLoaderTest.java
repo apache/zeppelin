@@ -167,38 +167,29 @@ public class NoteInterpreterLoaderTest {
 
   @Test
   public void testNoteInterpreterCloseForAll() throws IOException {
-    factory.setInterpreters("user", "noteA", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("noteA").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
-    factory.getInterpreterSettings("noteA").get(1).getOption().setPerNote(InterpreterOption.SCOPED);
+    factory.setInterpreters("user", "FitstNote", factory.getDefaultInterpreterSettingList());
+    factory.getInterpreterSettings("FitstNote").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
 
-    List<InterpreterSetting> setting = factory.getInterpreterSettings("noteA");
+    factory.setInterpreters("user", "yourFirstNote", factory.getDefaultInterpreterSettingList());
+    factory.getInterpreterSettings("yourFirstNote").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
+
     // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "FitstNote").get("FitstNote"));
+    assertNull(factory.getInterpreterSettings("noteAB").get(0).getInterpreterGroup("user", "yourFirstNote").get("yourFirstNote"));
 
-    Interpreter mock1Intp = factory.getInterpreter("user", "noteA", "group1.mock1");
-    Interpreter mock11Intp = factory.getInterpreter("user", "noteA", "group1.mock11");
-    Interpreter mock2Intp = factory.getInterpreter("user", "noteA", "group2.mock2");
+    Interpreter firstNoteIntp = factory.getInterpreter("user", "FitstNote", "group1.mock1");
+    Interpreter yourFirstNoteIntp = factory.getInterpreter("user", "yourFirstNote", "group1.mock1");
 
-    mock1Intp.open();
-    mock11Intp.open();
-    mock2Intp.open();
+    firstNoteIntp.open();
+    yourFirstNoteIntp.open();
 
-    // per note interpreter process
-    assertTrue(((LazyOpenInterpreter)mock1Intp).isOpen());
-    assertTrue(((LazyOpenInterpreter)mock11Intp).isOpen());
-    assertTrue(((LazyOpenInterpreter)mock2Intp).isOpen());
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
 
-    // when
-    factory.close();
+    factory.closeNote("user", "FitstNote");
 
-    // interpreters are destroyed after close
-    assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
-
-    // per note interpreter process
-    assertFalse(((LazyOpenInterpreter)mock1Intp).isOpen());
-    assertFalse(((LazyOpenInterpreter)mock11Intp).isOpen());
-    assertFalse(((LazyOpenInterpreter)mock2Intp).isOpen());
-
+    assertFalse(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
   }
 
 
