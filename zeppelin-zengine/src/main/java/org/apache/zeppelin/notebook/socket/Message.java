@@ -171,7 +171,8 @@ public class Message {
     PARAGRAPH_ADDED,              // [s-c] paragraph is added
     PARAGRAPH_REMOVED,            // [s-c] paragraph deleted
     PARAGRAPH_MOVED,              // [s-c] paragraph moved
-    NOTE_UPDATED                  // [s-c] paragraph updated(name, config)
+    NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
+    RUN_ALL_PARAGRAPHS            // [c-s] run all paragraphs
   }
 
   public static final Message EMPTY = new Message(null);
