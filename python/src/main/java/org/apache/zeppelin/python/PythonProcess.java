@@ -110,10 +110,13 @@ public class PythonProcess {
     writer.println("\"" + STATEMENT_END + "\"");
     StringBuilder output = new StringBuilder();
     String line = null;
-    while (!(line = reader.readLine()).contains(STATEMENT_END)) {
+
+    while ((line = reader.readLine()) != null &&
+        !line.contains(STATEMENT_END)) {
       logger.debug("Read line from python shell : " + line);
       output.append(line + "\n");
     }
+
     return output.toString();
   }
 
