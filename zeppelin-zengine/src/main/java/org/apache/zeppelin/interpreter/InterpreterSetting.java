@@ -144,6 +144,18 @@ public class InterpreterSetting {
     return key;
   }
 
+  private boolean isEqualInterpreterKey(String noteId, String interpreterGroupKey) {
+    int modeKeyIndex = interpreterGroupKey.lastIndexOf(":");
+    String plainNoteId = interpreterGroupKey.substring(0, modeKeyIndex);
+    System.out.println("clover plainNote id " + plainNoteId);
+
+    if (noteId.equals(plainNoteId)) {
+      return true;
+    }
+
+    return false;
+  }
+
   public InterpreterGroup getInterpreterGroup(String user, String noteId) {
     String key = getInterpreterProcessKey(user, noteId);
     if (!interpreterGroupRef.containsKey(key)) {
@@ -173,19 +185,21 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroup(String noteId) {
-    String key = getInterpreterProcessKey("", noteId);
-
-    InterpreterGroup groupToRemove = null;
+  void closeAndRemoveInterpreterGroup(String interpreterGroupId) {
+    String key = getInterpreterProcessKey("", interpreterGroupId);
+    //clover
+    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
+    InterpreterGroup groupKey;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (intpKey.contains(key)) {
+      if (isEqualInterpreterKey(intpKey, key)) {
         interpreterGroupWriteLock.lock();
-        groupToRemove = interpreterGroupRef.remove(intpKey);
+        groupKey = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
+        closeToGroupList.add(groupKey);
       }
     }
 
-    if (groupToRemove != null) {
+    for (InterpreterGroup groupToRemove : closeToGroupList) {
       groupToRemove.close();
     }
   }
