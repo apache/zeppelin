@@ -158,6 +158,34 @@ public class PythonCondaInterpreter extends Interpreter {
     return python;
   }
 
+  private String runCondaCommandForTextOutput(String title, List<String> commands)
+      throws IOException, InterruptedException {
+
+    StringBuilder sb = new StringBuilder();
+    int exit = runCommand(sb, commands);
+    if (exit != 0) {
+      throw new RuntimeException("Failed to execute `" +
+          StringUtils.join(commands, " ") + "` exited with " + exit);
+    }
+
+    return wrapCondaBasicOutputStyle(title, sb.toString());
+  }
+
+  private String runCondaCommandForTableOutput(String title, List<String> commands)
+      throws IOException, InterruptedException {
+
+    StringBuilder sb = new StringBuilder();
+    int exit = runCommand(sb, commands);
+    if (exit != 0) {
+      throw new RuntimeException("Failed to execute `" +
+          StringUtils.join(commands, " ") + "` exited with " + exit);
+    }
+
+    // use table output for pretty output
+    Map<String, String> envPerName = parseCondaCommonStdout(sb.toString());
+    return wrapCondaTableOutputStyle(title, envPerName);
+  }
+
   protected Map<String, String> getCondaEnvs()
       throws IOException, InterruptedException {
     StringBuilder sb = new StringBuilder();
@@ -172,29 +200,15 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   private String runCondaEnvList() throws IOException, InterruptedException {
-    return wrapCondaTableOutputStyle("Conda Environment List", getCondaEnvs());
+    return wrapCondaTableOutputStyle("Environment List", getCondaEnvs());
   }
 
   private String runCondaList() throws IOException, InterruptedException {
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, "conda", "list");
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `conda list`. exited with " + exit);
-    }
+    List<String> commands = new ArrayList<String>();
+    commands.add("conda");
+    commands.add("list");
 
-    Map<String, String> envPerName = parseCondaCommonStdout(sb.toString());
-
-    return wrapCondaTableOutputStyle("Installed Package List", envPerName);
-  }
-
-  private String runCondaInfo() throws IOException, InterruptedException {
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, "conda", "info");
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `conda info`. exited with " + exit);
-    }
-
-    return wrapCondaBasicOutputStyle("Conda Information", sb.toString());
+    return runCondaCommandForTableOutput("Installed Package List", commands);
   }
 
   private void runCondaHelp(InterpreterOutput out) {
@@ -206,21 +220,21 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
+  private String runCondaInfo() throws IOException, InterruptedException {
+    List<String> commands = new ArrayList<String>();
+    commands.add("conda");
+    commands.add("info");
+
+    return runCondaCommandForTextOutput("Conda Information", commands);
+  }
+
   private String runCondaCreate(List<String> restArgs)
       throws IOException, InterruptedException {
     restArgs.add(0, "conda");
     restArgs.add(1, "create");
     restArgs.add(2, "--yes");
 
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, restArgs);
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `" +
-           StringUtils.join(restArgs, " ") +
-          "` exited with " + exit);
-    }
-
-    return wrapCondaBasicOutputStyle("Environment Created", sb.toString());
+    return runCondaCommandForTextOutput("Environment Creation", restArgs);
   }
 
   private String runCondaInstall(List<String> restArgs)
@@ -230,15 +244,7 @@ public class PythonCondaInterpreter extends Interpreter {
     restArgs.add(1, "install");
     restArgs.add(2, "--yes");
 
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, restArgs);
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `" +
-          StringUtils.join(restArgs, " ") +
-          "` exited with " + exit);
-    }
-
-    return wrapCondaBasicOutputStyle("Package Installation", sb.toString());
+    return runCondaCommandForTextOutput("Package Installation", restArgs);
   }
 
   private String runCondaUninstall(List<String> restArgs)
@@ -248,15 +254,7 @@ public class PythonCondaInterpreter extends Interpreter {
     restArgs.add(1, "uninstall");
     restArgs.add(2, "--yes");
 
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, restArgs);
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `" +
-          StringUtils.join(restArgs, " ") +
-          "` exited with " + exit);
-    }
-
-    return wrapCondaBasicOutputStyle("Package Uninstallation", sb.toString());
+    return runCondaCommandForTextOutput("Package Uninstallation", restArgs);
   }
 
   private String wrapCondaBasicOutputStyle(String title, String content) {
