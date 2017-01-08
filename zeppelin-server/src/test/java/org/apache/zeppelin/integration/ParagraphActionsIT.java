@@ -241,7 +241,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-control-play shortcut-icon']")).isDisplayed(), CoreMatchers.equalTo(false)
       );
 
-      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='runNote()']")).sendKeys(Keys.ENTER);
+      driver.findElement(By.xpath(".//*[@id='main']//button[contains(@ng-click, 'runAllParagraphs')]")).sendKeys(Keys.ENTER);
       ZeppelinITUtils.sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Run all paragraphs?')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
