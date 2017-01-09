@@ -139,7 +139,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
     factory.setInterpreters("user", note1.getId(),factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -184,7 +184,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
     factory.setInterpreters("user", note1.getId(), factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -223,7 +223,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
     notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -254,7 +254,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
 
     // add paragraph with invalid magic
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
@@ -290,7 +290,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       }
     }
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");

@@ -1,8 +1,6 @@
-'use strict';
-
 describe('Controller: ParagraphCtrl', function() {
 
-  beforeEach(module('zeppelinWebApp'));
+  beforeEach(angular.mock.module('zeppelinWebApp'));
 
   var scope;
   var websocketMsgSrvMock = {};

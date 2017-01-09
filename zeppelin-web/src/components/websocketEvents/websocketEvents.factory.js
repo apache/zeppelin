@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents);
@@ -70,13 +69,16 @@
       } else if (op === 'LIST_UPDATE_NOTE_JOBS') {
         $rootScope.$broadcast('setUpdateNoteJobs', data.noteRunningJobs);
       } else if (op === 'AUTH_INFO') {
-        BootstrapDialog.show({
-          closable: false,
-          closeByBackdrop: false,
-          closeByKeyboard: false,
-          title: 'Insufficient privileges',
-          message: data.info.toString(),
-          buttons: [{
+        var btn = [];
+        if ($rootScope.ticket.roles === '[]') {
+          btn = [{
+            label: 'Close',
+            action: function(dialog) {
+              dialog.close();
+            }
+          }];
+        } else {
+          btn = [{
             label: 'Login',
             action: function(dialog) {
               dialog.close();
@@ -90,8 +92,18 @@
               dialog.close();
               $location.path('/');
             }
-          }]
+          }];
+        }
+
+        BootstrapDialog.show({
+          closable: false,
+          closeByBackdrop: false,
+          closeByKeyboard: false,
+          title: 'Insufficient privileges',
+          message: data.info.toString(),
+          buttons: btn
         });
+
       } else if (op === 'PARAGRAPH') {
         $rootScope.$broadcast('updateParagraph', data);
       } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
@@ -149,6 +161,8 @@
         $rootScope.$broadcast('moveParagraph', data.id, data.index);
       } else if (op === 'NOTE_UPDATED') {
         $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
+      } else if (op === 'SET_NOTE_REVISION') {
+        $rootScope.$broadcast('setNoteRevisionResult', data);
       }
     });
 

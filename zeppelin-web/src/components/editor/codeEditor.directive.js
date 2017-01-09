@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').directive('codeEditor', codeEditor);
@@ -24,7 +23,8 @@
         paragraph: '=paragraphContext',
         dirtyText: '=dirtyText',
         originalText: '=originalText',
-        onLoad: '=onLoad'
+        onLoad: '=onLoad',
+        revisionView: '=revisionView'
       },
       link: function(scope, element, attrs, controller) {
         $templateRequest('components/editor/ace.editor.directive.html').then(function(editorHtml) {
@@ -32,6 +32,7 @@
           editor.attr('id', scope.paragraphId + '_editor');
           element.append(editor);
           $compile(editor)(scope);
+          console.log('codeEditor directive revision view is ' + scope.revisionView);
         });
       }
     };

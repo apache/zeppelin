@@ -106,7 +106,6 @@ public class RemoteInterpreterServer
     eventClient.waitForEventQueueBecomesEmpty();
     if (interpreterGroup != null) {
       interpreterGroup.close();
-      interpreterGroup.destroy();
     }
 
     server.stop();
@@ -403,6 +402,7 @@ public class RemoteInterpreterServer
     private String script;
     private InterpreterContext context;
     private Map<String, Object> infos;
+    private Object results;
 
     public InterpretJob(
         String jobId,
@@ -416,6 +416,11 @@ public class RemoteInterpreterServer
       this.interpreter = interpreter;
       this.script = script;
       this.context = context;
+    }
+
+    @Override
+    public Object getReturn() {
+      return results;
     }
 
     @Override
@@ -514,6 +519,11 @@ public class RemoteInterpreterServer
     @Override
     protected boolean jobAbort() {
       return false;
+    }
+
+    @Override
+    public void setResult(Object results) {
+      this.results = results;
     }
   }
 

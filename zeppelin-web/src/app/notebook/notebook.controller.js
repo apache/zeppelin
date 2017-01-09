@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
@@ -29,12 +28,13 @@
     'saveAsService',
     'ngToast',
     'noteActionSrv',
-    'noteVarShareService'
+    'noteVarShareService',
+    'TRASH_FOLDER_ID'
   ];
 
   function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                         $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                        ngToast, noteActionSrv, noteVarShareService) {
+                        ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID) {
 
     ngToast.dismiss();
 
@@ -62,9 +62,14 @@
     $scope.saveTimer = null;
 
     var connectedOnce = false;
+    var isRevisionPath = function(path) {
+      var pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
+      return pattern.test(path);
+    };
 
-    // user auto complete related
     $scope.noteRevisions = [];
+    $scope.currentRevision = 'Head';
+    $scope.revisionView = isRevisionPath($location.path());
 
     $scope.$on('setConnectedStatus', function(event, param) {
       if (connectedOnce && param) {
@@ -86,10 +91,36 @@
       return value;
     };
 
+    $scope.blockAnonUsers = function() {
+      var zeppelinVersion = $rootScope.zeppelinVersion;
+      var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
+      var content = 'Only authenticated user can set the permission.' +
+        '<a data-toggle="tooltip" data-placement="top" title="Learn more" target="_blank" href=' + url + '>' +
+        '<i class="icon-question" />' +
+        '</a>';
+      BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'No permission',
+        message: content,
+        buttons: [{
+          label: 'Close',
+          action: function(dialog) {
+            dialog.close();
+          }
+        }]
+      });
+    };
+
     /** Init the new controller */
     var initNotebook = function() {
       noteVarShareService.clear();
-      websocketMsgSrv.getNote($routeParams.noteId);
+      if ($routeParams.revisionId) {
+        websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
+      } else {
+        websocketMsgSrv.getNote($routeParams.noteId);
+      }
       websocketMsgSrv.listRevisionHistory($routeParams.noteId);
       var currentRoute = $route.current;
       if (currentRoute) {
@@ -103,11 +134,6 @@
               var top = $id.offset().top - 103;
               angular.element('html, body').scrollTo({top: top, left: 0});
             }
-
-            // force notebook reload on user change
-            $scope.$on('setNoteMenu', function(event, note) {
-              initNotebook();
-            });
           },
           1000
         );
@@ -115,6 +141,11 @@
     };
 
     initNotebook();
+
+    // force notebook reload on user change
+    $scope.$on('setNoteMenu', function(event, note) {
+      initNotebook();
+    });
 
     $scope.focusParagraphOnClick = function(clickEvent) {
       if (!$scope.note) {
@@ -134,7 +165,7 @@
 
     $scope.keyboardShortcut = function(keyEvent) {
       // handle keyevent
-      if (!$scope.viewOnly) {
+      if (!$scope.viewOnly && !$scope.revisionView) {
         $scope.$broadcast('keyEvent', keyEvent);
       }
     };
@@ -146,9 +177,18 @@
       $scope.$broadcast('doubleClickParagraph', paragraphId);
     };
 
-    // Remove the note and go back to the main page
+    // Move the note to trash and go back to the main page
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, true);
+    };
+
+    // Remove the note permanently if it's in the trash
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, true);
+    };
+
+    $scope.isTrash = function(note) {
+      return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
     };
 
     //Export notebook
@@ -187,16 +227,64 @@
       document.getElementById('note.checkpoint.message').value = '';
     };
 
+    // set notebook head to given revision
+    $scope.setNoteRevision = function() {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Set notebook head to current revision?',
+        callback: function(result) {
+          if (result) {
+            websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
+          }
+        }
+      });
+    };
+
     $scope.$on('listRevisionHistory', function(event, data) {
-      console.log('We got the revisions %o', data);
+      console.log('received list of revisions %o', data);
       $scope.noteRevisions = data.revisionList;
+      $scope.noteRevisions.splice(0, 0, {
+        id: 'Head',
+        message: 'Head'
+      });
+      if ($routeParams.revisionId) {
+        var index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId});
+        if (index > -1) {
+          $scope.currentRevision = $scope.noteRevisions[index].message;
+        }
+      }
     });
 
-    // receive certain revision of note
     $scope.$on('noteRevision', function(event, data) {
       console.log('received note revision %o', data);
-      //TODO(xxx): render it
+      if (data.note) {
+        $scope.note = data.note;
+        initializeLookAndFeel();
+      } else {
+        $location.path('/');
+      }
     });
+
+    $scope.$on('setNoteRevisionResult', function(event, data) {
+      console.log('received set note revision result %o', data);
+      if (data.status) {
+        $location.path('/notebook/' + $routeParams.noteId);
+      }
+    });
+
+    $scope.visitRevision = function(revision) {
+      if (revision.id) {
+        if (revision.id === 'Head') {
+          $location.path('/notebook/' + $routeParams.noteId);
+        } else {
+          $location.path('/notebook/' + $routeParams.noteId + '/revision/' + revision.id);
+        }
+      } else {
+        ngToast.danger({content: 'There is a problem with this Revision',
+          verticalPosition: 'top', dismissOnTimeout: false});
+      }
+    };
 
     $scope.runNote = function() {
       BootstrapDialog.confirm({
@@ -298,7 +386,11 @@
 
     $scope.setLookAndFeel = function(looknfeel) {
       $scope.note.config.looknfeel = looknfeel;
-      $scope.setConfig();
+      if ($scope.revisionView === true) {
+        $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
+      } else {
+        $scope.setConfig();
+      }
     };
 
     /** Set cron expression for this note **/
@@ -328,8 +420,10 @@
     };
 
     /** Update the note name */
-    $scope.sendNewName = function() {
-      if ($scope.note.name) {
+    $scope.updateNoteName = function(newName) {
+      const trimmedNewName = newName.trim();
+      if (trimmedNewName.length > 0 && $scope.note.name !== trimmedNewName) {
+        $scope.note.name = trimmedNewName;
         websocketMsgSrv.updateNote($scope.note.id, $scope.note.name, $scope.note.config);
       }
     };
@@ -340,7 +434,10 @@
       } else {
         $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
       }
-      $scope.note.paragraphs[0].focus = true;
+
+      if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
+        $scope.note.paragraphs[0].focus = true;
+      }
       $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
     };
 
@@ -556,6 +653,7 @@
           minimumInputLength: 3
         };
 
+        $scope.setIamOwner();
         angular.element('#selectOwners').select2(selectJson);
         angular.element('#selectReaders').select2(selectJson);
         angular.element('#selectWriters').select2(selectJson);
@@ -683,14 +781,53 @@
     };
 
     $scope.togglePermissions = function() {
-      if ($scope.showPermissions) {
-        $scope.closePermissions();
-        angular.element('#selectOwners').select2({});
-        angular.element('#selectReaders').select2({});
-        angular.element('#selectWriters').select2({});
+      var principal = $rootScope.ticket.principal;
+      $scope.isAnonymous = principal === 'anonymous' ? true : false;
+      if (!!principal && $scope.isAnonymous) {
+        $scope.blockAnonUsers();
       } else {
-        $scope.openPermissions();
-        $scope.closeSetting();
+        if ($scope.showPermissions) {
+          $scope.closePermissions();
+          angular.element('#selectOwners').select2({});
+          angular.element('#selectReaders').select2({});
+          angular.element('#selectWriters').select2({});
+        } else {
+          $scope.openPermissions();
+          $scope.closeSetting();
+        }
+      }
+    };
+
+    $scope.setIamOwner = function() {
+      if ($scope.permissions.owners.length > 0 &&
+          _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0) {
+        $scope.isOwner = false;
+        return false;
+      }
+      $scope.isOwner = true;
+      return true;
+    };
+
+    $scope.toggleNotePersonalizedMode = function() {
+      var personalizedMode = $scope.note.config.personalizedMode;
+      if ($scope.isOwner) {
+        BootstrapDialog.confirm({
+          closable: true,
+          title: 'Setting the result display',
+          message: function(dialog) {
+            var modeText = $scope.note.config.personalizedMode === 'true' ? 'collaborate' : 'personalize';
+            return 'Do you want to <span class="text-info">' + modeText + '</span> your analysis?';
+          },
+          callback: function(result) {
+            if (result) {
+              if ($scope.note.config.personalizedMode === undefined) {
+                $scope.note.config.personalizedMode = 'false';
+              }
+              $scope.note.config.personalizedMode = personalizedMode === 'true' ?  'false' : 'true';
+              websocketMsgSrv.updatePersonalizedMode($scope.note.id, $scope.note.config.personalizedMode);
+            }
+          }
+        });
       }
     };
 
@@ -836,12 +973,14 @@
         $rootScope.$broadcast('setIframe', $scope.asIframe);
       }
 
-      if ($scope.note === null) {
-        $scope.note = note;
-      }
+      $scope.note = note;
       initializeLookAndFeel();
       //open interpreter binding setting when there're none selected
       getInterpreterBindings();
+      getPermissions();
+      var isPersonalized = $scope.note.config.personalizedMode;
+      isPersonalized = isPersonalized === undefined ?  'false' : isPersonalized;
+      $scope.note.config.personalizedMode = isPersonalized;
     });
 
     $scope.$on('$destroy', function() {
@@ -851,6 +990,11 @@
 
       document.removeEventListener('click', $scope.focusParagraphOnClick);
       document.removeEventListener('keydown', $scope.keyboardShortcut);
+    });
+
+    angular.element(window).bind('resize', function() {
+      const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
+      angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
     });
   }
 

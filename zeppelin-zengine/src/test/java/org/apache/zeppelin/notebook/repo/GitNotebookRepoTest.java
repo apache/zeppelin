@@ -34,16 +34,20 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 
 public class GitNotebookRepoTest {
+  private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepoTest.class);
 
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
   private static final String TEST_NOTE_ID2 = "2A94M5J2Z";
@@ -85,7 +89,9 @@ public class GitNotebookRepoTest {
 
   @After
   public void tearDown() throws Exception {
-    //NotebookRepoSyncTest.delete(zeppelinDir);
+    if (!FileUtils.deleteQuietly(zeppelinDir)) {
+      LOG.error("Failed to delete {} ", zeppelinDir.getName());
+    }
   }
 
   @Test
@@ -141,7 +147,7 @@ public class GitNotebookRepoTest {
 
     //modify, save and checkpoint first note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
     p.setConfig(config);
@@ -156,7 +162,7 @@ public class GitNotebookRepoTest {
 
     //modify, save and checkpoint second note
     note = notebookRepo.get(TEST_NOTE_ID2, null);
-    p = note.addParagraph();
+    p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     config = p.getConfig();
     config.put("enabled", false);
     p.setConfig(config);
@@ -182,7 +188,7 @@ public class GitNotebookRepoTest {
     
     // add changes to note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
     p.setConfig(config);
@@ -221,7 +227,7 @@ public class GitNotebookRepoTest {
 
     // add paragraph and save
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -243,7 +249,7 @@ public class GitNotebookRepoTest {
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
 
     // add one more paragraph and save
-    Paragraph p2 = note.addParagraph();
+    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     config.put("enabled", false);
     p2.setConfig(config);
     p2.setText("get revision when modified note test text");
@@ -279,7 +285,7 @@ public class GitNotebookRepoTest {
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_1);
 
     // add one more paragraph and save
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -301,4 +307,64 @@ public class GitNotebookRepoTest {
     assertThat(note).isNull();
   }
 
+  @Test
+  public void setRevisionTest() throws IOException {
+    //create repo and check that note doesn't contain revisions
+    notebookRepo = new GitNotebookRepo(conf);
+    assertThat(notebookRepo.list(null)).isNotEmpty();
+    assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
+    
+    // get current note
+    Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    int paragraphCount_1 = note.getParagraphs().size();
+    LOG.info("initial paragraph count: {}", paragraphCount_1);
+    
+    // checkpoint revision1
+    Revision revision1 = notebookRepo.checkpoint(TEST_NOTE_ID, "set revision: first commit", null);
+    //TODO(khalid): change to EMPTY after rebase
+    assertThat(revision1).isNotNull();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
+    
+    // add one more paragraph and save
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Map<String, Object> config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
+    p1.setText("set revision sample text");
+    notebookRepo.save(note, null);
+    int paragraphCount_2 = note.getParagraphs().size();
+    assertThat(paragraphCount_2).isEqualTo(paragraphCount_1 + 1);
+    LOG.info("paragraph count after modification: {}", paragraphCount_2);
+    
+    // checkpoint revision2
+    Revision revision2 = notebookRepo.checkpoint(TEST_NOTE_ID, "set revision: second commit", null);
+    //TODO(khalid): change to EMPTY after rebase
+    assertThat(revision2).isNotNull();
+    assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
+    
+    // set note to revision1
+    Note returnedNote = notebookRepo.setNoteRevision(note.getId(), revision1.id, null);
+    assertThat(returnedNote).isNotNull();
+    assertThat(returnedNote.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    
+    // check note from repo
+    Note updatedNote = notebookRepo.get(note.getId(), null);
+    assertThat(updatedNote).isNotNull();
+    assertThat(updatedNote.getParagraphs().size()).isEqualTo(paragraphCount_1);
+    
+    // set back to revision2
+    returnedNote = notebookRepo.setNoteRevision(note.getId(), revision2.id, null);
+    assertThat(returnedNote).isNotNull();
+    assertThat(returnedNote.getParagraphs().size()).isEqualTo(paragraphCount_2);
+    
+    // check note from repo
+    updatedNote = notebookRepo.get(note.getId(), null);
+    assertThat(updatedNote).isNotNull();
+    assertThat(updatedNote.getParagraphs().size()).isEqualTo(paragraphCount_2);
+    
+    // try failure case - set to invalid revision
+    returnedNote = notebookRepo.setNoteRevision(note.getId(), "nonexistent_id", null);
+    assertThat(returnedNote).isNull();
+  }
 }

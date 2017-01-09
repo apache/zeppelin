@@ -12,68 +12,68 @@
  * limitations under the License.
  */
 
-'use strict';
+import Nvd3ChartVisualization from './visualization-nvd3chart';
+import PivotTransformation from '../../tabledata/pivot';
 
 /**
  * Visualize data in area chart
  */
-zeppelin.AreachartVisualization = function(targetEl, config) {
-  zeppelin.Nvd3ChartVisualization.call(this, targetEl, config);
+export default class AreachartVisualization extends Nvd3ChartVisualization {
+  constructor(targetEl, config) {
+    super(targetEl, config);
 
-  var PivotTransformation = zeppelin.PivotTransformation;
-  this.pivot = new PivotTransformation(config);
-  this.xLables = [];
-};
+    this.pivot = new PivotTransformation(config);
+    this.xLables = [];
+  };
 
-zeppelin.AreachartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
+  type() {
+    return 'stackedAreaChart';
+  };
 
-zeppelin.AreachartVisualization.prototype.type = function() {
-  return 'stackedAreaChart';
-};
+  getTransformation() {
+    return this.pivot;
+  };
 
-zeppelin.AreachartVisualization.prototype.getTransformation = function() {
-  return this.pivot;
-};
+  render(pivot) {
+    var d3Data = this.d3DataFromPivot(
+      pivot.schema,
+      pivot.rows,
+      pivot.keys,
+      pivot.groups,
+      pivot.values,
+      false,
+      true,
+      false);
 
-zeppelin.AreachartVisualization.prototype.render = function(pivot) {
-  var d3Data = this.d3DataFromPivot(
-    pivot.schema,
-    pivot.rows,
-    pivot.keys,
-    pivot.groups,
-    pivot.values,
-    false,
-    true,
-    false);
+    this.xLabels = d3Data.xLabels;
+    super.render(d3Data);
+  };
 
-  this.xLabels = d3Data.xLabels;
-  zeppelin.Nvd3ChartVisualization.prototype.render.call(this, d3Data);
-};
+  /**
+   * Set new config
+   */
+  setConfig(config) {
+    super.setConfig(config);
+    this.pivot.setConfig(config);
+  };
 
-/**
- * Set new config
- */
-zeppelin.AreachartVisualization.prototype.setConfig = function(config) {
-  zeppelin.Nvd3ChartVisualization.prototype.setConfig.call(this, config);
-  this.pivot.setConfig(config);
-};
+  configureChart(chart) {
+    var self = this;
+    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
+    chart.yAxisTickFormat(function(d) {return self.yAxisTickFormat(d);});
+    chart.yAxis.axisLabelDistance(50);
+    chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 
-zeppelin.AreachartVisualization.prototype.configureChart = function(chart) {
-  var self = this;
-  chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-  chart.yAxisTickFormat(function(d) {return self.yAxisTickFormat(d);});
-  chart.yAxis.axisLabelDistance(50);
-  chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+    this.chart.style(this.config.style || 'stack');
 
-  this.chart.style(this.config.style || 'stack');
+    var self = this;
+    this.chart.dispatch.on('stateChange', function(s) {
+      self.config.style = s.style;
 
-  var self = this;
-  this.chart.dispatch.on('stateChange', function(s) {
-    self.config.style = s.style;
-
-    // give some time to animation finish
-    setTimeout(function() {
-      self.emitConfig(self.config);
-    }, 500);
-  });
-};
+      // give some time to animation finish
+      setTimeout(function() {
+        self.emitConfig(self.config);
+      }, 500);
+    });
+  };
+}

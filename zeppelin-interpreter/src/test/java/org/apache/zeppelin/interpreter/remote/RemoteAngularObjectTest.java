@@ -103,7 +103,6 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   public void tearDown() throws Exception {
     intp.close();
     intpGroup.close();
-    intpGroup.destroy();
   }
 
   @Test

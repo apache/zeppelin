@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
@@ -183,6 +182,22 @@
         message.height = newValue;
         message.url = $location.$$absUrl;
         $window.parent.postMessage(angular.toJson(message), '*');
+      }
+    });
+
+    $scope.getEditor = function() {
+      return $scope.editor;
+    };
+
+    $scope.$watch($scope.getEditor, function(newValue, oldValue) {
+      if (newValue === null || newValue === undefined) {
+        console.log('editor isnt loaded yet, returning');
+        return;
+      }
+      if ($scope.revisionView === true) {
+        $scope.editor.setReadOnly(true);
+      } else {
+        $scope.editor.setReadOnly(false);
       }
     });
 
@@ -556,6 +571,11 @@
         $scope.editor.commands.removeCommand('showSettingsMenu');
 
         $scope.editor.commands.bindKey('ctrl-alt-l', null);
+        $scope.editor.commands.bindKey('ctrl-alt-w', null);
+        $scope.editor.commands.bindKey('ctrl-alt-a', null);
+        $scope.editor.commands.bindKey('ctrl-alt-k', null);
+        $scope.editor.commands.bindKey('ctrl-alt-e', null);
+        $scope.editor.commands.bindKey('ctrl-alt-t', null);
 
         // autocomplete on 'ctrl+.'
         $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
@@ -695,7 +715,7 @@
      * lastCursorMove : 1(down), 0, -1(up) last cursor move event
      **/
     $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
-      if (!$scope.editor.isFocused()) {
+      if (!$scope.editor || !$scope.editor.isFocused()) {
         // only make sense when editor is focused
         return;
       }
@@ -969,7 +989,7 @@
               $scope.dirtyText = undefined;
               $scope.originalText = angular.copy(data.paragraph.text);
             } else { // if there're local update, keep it.
-              $scope.paragraph.text = $scope.dirtyText;
+              $scope.paragraph.text = data.paragraph.text;
             }
           } else {
             $scope.paragraph.text = data.paragraph.text;
@@ -1092,10 +1112,12 @@
           } else {
             $scope.showTitle($scope.paragraph);
           }
-        }else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
+        } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
           $scope.copyPara('below');
         } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
           $scope.clearParagraphOutput($scope.paragraph);
+        } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 87) { // Ctrl + Alt + w
+          $scope.goToSingleParagraph();
         } else {
           noShortcutDefined = true;
         }
@@ -1134,7 +1156,7 @@
 
     $scope.$on('doubleClickParagraph', function(event, paragraphId) {
       if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
-          $scope.paragraph.config.editorSetting.editOnDblClick) {
+          $scope.paragraph.config.editorSetting.editOnDblClick && $scope.revisionView !== true) {
         var deferred = $q.defer();
         openEditorAndCloseTable($scope.paragraph);
         $timeout(

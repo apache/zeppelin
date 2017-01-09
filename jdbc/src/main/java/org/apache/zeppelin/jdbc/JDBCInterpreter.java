@@ -80,7 +80,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String JDBC_DEFAULT_PASSWORD_KEY = "default.password";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
-  static final String MAX_LINE_DEFAULT = "1000";
+  static final int MAX_LINE_DEFAULT = 1000;
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -121,12 +121,14 @@ public class JDBCInterpreter extends Interpreter {
       };
 
   private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
+  private int maxLineResults;
 
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
     propertyKeySqlCompleterMap = new HashMap<>();
     basePropretiesMap = new HashMap<>();
+    maxLineResults = MAX_LINE_DEFAULT;
   }
 
   public HashMap<String, Properties> getPropertiesMap() {
@@ -146,9 +148,9 @@ public class JDBCInterpreter extends Interpreter {
           prefixProperties = basePropretiesMap.get(keyValue[0]);
         } else {
           prefixProperties = new Properties();
-          basePropretiesMap.put(keyValue[0], prefixProperties);
+          basePropretiesMap.put(keyValue[0].trim(), prefixProperties);
         }
-        prefixProperties.put(keyValue[1], property.getProperty(propertyKey));
+        prefixProperties.put(keyValue[1].trim(), property.getProperty(propertyKey));
       }
     }
 
@@ -174,6 +176,14 @@ public class JDBCInterpreter extends Interpreter {
     }
     for (String propertyKey : basePropretiesMap.keySet()) {
       propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(null));
+    }
+    setMaxLineResults();
+  }
+
+  private void setMaxLineResults() {
+    if (basePropretiesMap.containsKey(COMMON_KEY) &&
+        basePropretiesMap.get(COMMON_KEY).containsKey(MAX_LINE_KEY)) {
+      maxLineResults = Integer.valueOf(basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY));
     }
   }
 
@@ -389,6 +399,50 @@ public class JDBCInterpreter extends Interpreter {
     return connection;
   }
 
+  private String getResults(ResultSet resultSet, boolean isTableType)
+      throws SQLException {
+    ResultSetMetaData md = resultSet.getMetaData();
+    StringBuilder msg;
+    if (isTableType) {
+      msg = new StringBuilder(TABLE_MAGIC_TAG);
+    } else {
+      msg = new StringBuilder();
+    }
+
+    for (int i = 1; i < md.getColumnCount() + 1; i++) {
+      if (i > 1) {
+        msg.append(TAB);
+      }
+      msg.append(replaceReservedChars(md.getColumnName(i)));
+    }
+    msg.append(NEWLINE);
+
+    int displayRowCount = 0;
+    while (resultSet.next() && displayRowCount < getMaxResult()) {
+      for (int i = 1; i < md.getColumnCount() + 1; i++) {
+        Object resultObject;
+        String resultValue;
+        resultObject = resultSet.getObject(i);
+        if (resultObject == null) {
+          resultValue = "null";
+        } else {
+          resultValue = resultSet.getString(i);
+        }
+        msg.append(replaceReservedChars(resultValue));
+        if (i != md.getColumnCount()) {
+          msg.append(TAB);
+        }
+      }
+      msg.append(NEWLINE);
+      displayRowCount++;
+    }
+    return msg.toString();
+  }
+
+  private boolean isDDLCommand(int updatedCount, int columnCount) throws SQLException {
+    return updatedCount < 0 && columnCount <= 0 ? true : false;
+  }
+
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
     Connection connection;
@@ -398,6 +452,7 @@ public class JDBCInterpreter extends Interpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
     try {
+      String results = null;
       connection = getConnection(propertyKey, interpreterContext);
 
       if (connection == null) {
@@ -409,61 +464,27 @@ public class JDBCInterpreter extends Interpreter {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      StringBuilder msg = null;
-      boolean isTableType = false;
-
-      if (containsIgnoreCase(sql, EXPLAIN_PREDICATE)) {
-        msg = new StringBuilder();
-      } else {
-        msg = new StringBuilder(TABLE_MAGIC_TAG);
-        isTableType = true;
-      }
-
       try {
         getJDBCConfiguration(user).saveStatement(paragraphId, statement);
 
         boolean isResultSetAvailable = statement.execute(sql);
-
         if (isResultSetAvailable) {
           resultSet = statement.getResultSet();
 
-          ResultSetMetaData md = resultSet.getMetaData();
-
-          for (int i = 1; i < md.getColumnCount() + 1; i++) {
-            if (i > 1) {
-              msg.append(TAB);
-            }
-            msg.append(replaceReservedChars(isTableType, md.getColumnName(i)));
-          }
-          msg.append(NEWLINE);
-
-          int displayRowCount = 0;
-          while (resultSet.next() && displayRowCount < getMaxResult()) {
-            for (int i = 1; i < md.getColumnCount() + 1; i++) {
-              Object resultObject;
-              String resultValue;
-              resultObject = resultSet.getObject(i);
-              if (resultObject == null) {
-                resultValue = "null";
-              } else {
-                resultValue = resultSet.getString(i);
-              }
-              msg.append(replaceReservedChars(isTableType, resultValue));
-              if (i != md.getColumnCount()) {
-                msg.append(TAB);
-              }
-            }
-            msg.append(NEWLINE);
-            displayRowCount++;
+          // Regards that the command is DDL.
+          if (isDDLCommand(statement.getUpdateCount(), resultSet.getMetaData().getColumnCount())) {
+            results = "Query executed successfully.";
+          } else {
+            results = getResults(resultSet, !containsIgnoreCase(sql, EXPLAIN_PREDICATE));
           }
         } else {
           // Response contains either an update count or there are no results.
           int updateCount = statement.getUpdateCount();
-          msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
-          msg.append(updateCount).append(NEWLINE);
+          results = "Query executed successfully. Affected rows : " + updateCount;
         }
         //In case user ran an insert/update/upsert statement
         if (connection.getAutoCommit() != true) connection.commit();
+
       } finally {
         if (resultSet != null) {
           try {
@@ -482,7 +503,7 @@ public class JDBCInterpreter extends Interpreter {
         }
         getJDBCConfiguration(user).removeStatement(paragraphId);
       }
-      return new InterpreterResult(Code.SUCCESS, msg.toString());
+      return new InterpreterResult(Code.SUCCESS, results);
 
     } catch (Exception e) {
       logger.error("Cannot run " + sql, e);
@@ -504,11 +525,11 @@ public class JDBCInterpreter extends Interpreter {
   /**
    * For %table response replace Tab and Newline characters from the content.
    */
-  private String replaceReservedChars(boolean isTableResponseType, String str) {
+  private String replaceReservedChars(String str) {
     if (str == null) {
       return EMPTY_COLUMN_VALUE;
     }
-    return (!isTableResponseType) ? str : str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
+    return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 
   @Override
@@ -589,8 +610,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   public int getMaxResult() {
-    return Integer.valueOf(
-        basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY, MAX_LINE_DEFAULT));
+    return maxLineResults;
   }
 
   boolean isConcurrentExecution() {

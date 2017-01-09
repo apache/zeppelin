@@ -408,4 +408,11 @@ public class ZeppelinHubRepo implements NotebookRepo {
     changeToken(instanceId, subject.getUser());
   }
 
+  @Override
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException {
+    // Auto-generated method stub
+    return null;
+  }
+
 }

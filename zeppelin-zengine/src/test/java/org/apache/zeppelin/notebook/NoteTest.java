@@ -70,14 +70,14 @@ public class NoteTest {
     String pText = "%spark sc.version";
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
 
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(pText);
     p.setAuthenticationInfo(anonymous);
     note.run(p.getId());
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, only()).getInterpreter(anyString(), anyString(), eq("spark"));
+    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString(), eq("spark"));
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }
@@ -86,7 +86,7 @@ public class NoteTest {
   public void addParagraphWithEmptyReplNameTest() {
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
 
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     assertNull(p.getText());
   }
 
@@ -95,9 +95,9 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
-    Paragraph p2 = note.addParagraph();
+    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     assertEquals("%spark\n", p2.getText());
   }
@@ -107,9 +107,9 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
-    Paragraph p2 = note.insertParagraph(note.getParagraphs().size());
+    Paragraph p2 = note.insertParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
 
     assertEquals("%spark\n", p2.getText());
   }
@@ -119,9 +119,9 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"))).thenReturn(null);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%invalid ");
-    Paragraph p2 = note.insertParagraph(note.getParagraphs().size());
+    Paragraph p2 = note.insertParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
 
     assertNull(p2.getText());
   }
@@ -132,11 +132,11 @@ public class NoteTest {
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
 
-    Paragraph p2 = note.addParagraph();
+    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setReturn(result, new Throwable());
 
     note.clearAllParagraphOutput();
@@ -174,5 +174,29 @@ public class NoteTest {
     assertEquals("note", note.getNameWithoutPath());
     note.setName("a/b/note");
     assertEquals("note", note.getNameWithoutPath());
+  }
+
+  @Test
+  public void isTrashTest() {
+    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    // Notes in the root folder
+    note.setName("noteOnRootFolder");
+    assertFalse(note.isTrash());
+    note.setName("/noteOnRootFolderStartsWithSlash");
+    assertFalse(note.isTrash());
+
+    // Notes in subdirectories
+    note.setName("/a/b/note");
+    assertFalse(note.isTrash());
+    note.setName("a/b/note");
+    assertFalse(note.isTrash());
+
+    // Notes in trash
+    note.setName(Folder.TRASH_FOLDER_ID + "/a");
+    assertTrue(note.isTrash());
+    note.setName("/" + Folder.TRASH_FOLDER_ID + "/a");
+    assertTrue(note.isTrash());
+    note.setName(Folder.TRASH_FOLDER_ID + "/a/b/c");
+    assertTrue(note.isTrash());
   }
 }

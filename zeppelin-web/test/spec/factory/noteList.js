@@ -1,11 +1,9 @@
-'use strict';
-
 describe('Factory: NoteList', function() {
 
   var noteList;
 
   beforeEach(function() {
-    module('zeppelinWebApp');
+    angular.mock.module('zeppelinWebApp');
 
     inject(function($injector) {
       noteList = $injector.get('noteListDataFactory');

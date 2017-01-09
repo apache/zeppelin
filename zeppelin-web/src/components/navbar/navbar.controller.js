@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('NavCtrl', NavCtrl);
@@ -26,12 +25,13 @@
     'baseUrlSrv',
     'websocketMsgSrv',
     'arrayOrderingSrv',
-    'searchService'
+    'searchService',
+    'TRASH_FOLDER_ID'
   ];
 
   function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
                    noteListDataFactory, baseUrlSrv, websocketMsgSrv,
-                   arrayOrderingSrv, searchService) {
+                   arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
     var vm = this;
     vm.arrayOrderingSrv = arrayOrderingSrv;
     vm.connected = websocketMsgSrv.isConnected();
@@ -41,6 +41,7 @@
     vm.search = search;
     vm.searchForm = searchService;
     vm.showLoginWindow = showLoginWindow;
+    vm.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
 
     $scope.query = {q: ''};
 

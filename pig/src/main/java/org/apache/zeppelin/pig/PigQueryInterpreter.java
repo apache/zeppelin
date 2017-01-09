@@ -93,7 +93,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
       if (schemaKnown) {
         for (int i = 0; i < schema.size(); ++i) {
           Schema.FieldSchema field = schema.getField(i);
-          resultBuilder.append(field.alias);
+          resultBuilder.append(field.alias != null ? field.alias : "col_" + i);
           if (i != schema.size() - 1) {
             resultBuilder.append("\t");
           }

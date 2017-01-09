@@ -29,20 +29,21 @@ limitations under the License.
            ng-blur="setTitle(paragraph); input.showEditor = false"
            ng-enter="setTitle(paragraph); input.showEditor = false"
            focus-if="input.showEditor" />
-    <div ng-click="input.showEditor = !asIframe && !viewOnly; oldTitle = paragraph.title;"
+    <div ng-click="input.showEditor = !asIframe && !viewOnly && !revisionView; oldTitle = paragraph.title;"
          ng-show="!input.showEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
   </div>
 
   <div>
-    <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
+    <div ng-if="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
       <code-editor
         paragraph-id="paragraph.id"
         paragraph-context="paragraph"
         dirty-text="dirtyText"
         original-text="originalText"
         on-load="aceLoaded"
+        revision-view="revisionView"
       ></code-editor>
     </div>
 

@@ -11,15 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
 
-  function arrayOrderingSrv() {
+  arrayOrderingSrv.$inject = ['TRASH_FOLDER_ID'];
+
+  function arrayOrderingSrv(TRASH_FOLDER_ID) {
     var arrayOrderingSrv = this;
 
     this.noteListOrdering = function(note) {
+      if (note.id === TRASH_FOLDER_ID) {
+        return '\uFFFF';
+      }
       return arrayOrderingSrv.getNoteName(note);
     };
 

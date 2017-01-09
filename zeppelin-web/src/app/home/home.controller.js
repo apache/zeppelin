@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
@@ -23,11 +22,12 @@
     '$rootScope',
     'arrayOrderingSrv',
     'ngToast',
-    'noteActionSrv'
+    'noteActionSrv',
+    'TRASH_FOLDER_ID'
   ];
 
   function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
-                    ngToast, noteActionSrv) {
+                    ngToast, noteActionSrv, TRASH_FOLDER_ID) {
     ngToast.dismiss();
     var vm = this;
     vm.notes = noteListDataFactory;
@@ -42,6 +42,7 @@
     }
 
     $scope.isReloading = false;
+    $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
 
     var initHome = function() {
       websocketMsgSrv.getHomeNote();
@@ -92,12 +93,40 @@
       noteActionSrv.renameNote(node.id, node.path);
     };
 
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, false);
+    };
+
+    $scope.moveFolderToTrash = function(folderId) {
+      noteActionSrv.moveFolderToTrash(folderId);
+    };
+
+    $scope.restoreNote = function(noteId) {
+      websocketMsgSrv.restoreNote(noteId);
+    };
+
+    $scope.restoreFolder = function(folderId) {
+      websocketMsgSrv.restoreFolder(folderId);
+    };
+
+    $scope.restoreAll = function() {
+      noteActionSrv.restoreAll();
+    };
+
     $scope.renameFolder = function(node) {
       noteActionSrv.renameFolder(node.id);
     };
 
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.removeFolder = function(folderId) {
+      noteActionSrv.removeFolder(folderId);
+    };
+
+    $scope.emptyTrash = function() {
+      noteActionSrv.emptyTrash();
     };
 
     $scope.clearAllParagraphOutput = function(noteId) {

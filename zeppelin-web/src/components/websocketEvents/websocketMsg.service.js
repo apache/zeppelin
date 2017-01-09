@@ -11,7 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 (function() {
 
   angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv);
@@ -35,8 +34,36 @@
         });
       },
 
+      moveNoteToTrash: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
+      },
+
+      moveFolderToTrash: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}});
+      },
+
+      restoreNote: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}});
+      },
+
+      restoreFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
+      },
+
+      restoreAll: function() {
+        websocketEvents.sendNewEvent({op: 'RESTORE_ALL'});
+      },
+
       deleteNote: function(noteId) {
         websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
+      },
+
+      removeFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
+      },
+
+      emptyTrash: function() {
+        websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'});
       },
 
       cloneNote: function(noteIdToClone, newNoteName) {
@@ -57,6 +84,10 @@
 
       updateNote: function(noteId, noteName, noteConfig) {
         websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
+      },
+
+      updatePersonalizedMode: function(noteId, modeValue) {
+        websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
       },
 
       renameNote: function(noteId, noteName) {
@@ -193,6 +224,16 @@
           data: {
             noteId: noteId,
             commitMessage: commitMessage
+          }
+        });
+      },
+
+      setNoteRevision: function(noteId, revisionId) {
+        websocketEvents.sendNewEvent({
+          op: 'SET_NOTE_REVISION',
+          data: {
+            noteId: noteId,
+            revisionId: revisionId
           }
         });
       },

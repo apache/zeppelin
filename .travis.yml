@@ -33,8 +33,6 @@ addons:
     - r-packages-precise
     packages:
     - r-base-dev
-    - r-cran-evaluate
-    - r-cran-base64enc
 
 matrix:
   include:
@@ -45,6 +43,10 @@ matrix:
     # Test all modules with spark 2.0.2 and scala 2.11
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
+
+    # Test all modules with spark 2.1.0 and scala 2.11
+    - jdk: "oraclejdk7"
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" TEST_PROJECTS=""
 
     # Test all modules with scala 2.10
     - jdk: "oraclejdk7"
@@ -80,7 +82,7 @@ matrix:
 
 before_install:
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
-  - ./testing/install_external_dependencies.sh > /dev/null 2>&1
+  - ./testing/install_external_dependencies.sh
   - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
@@ -92,10 +94,8 @@ install:
 
 before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
-  - if [[ -n $LIVY_VER ]]; then travis_retry ./testing/downloadLivy.sh $LIVY_VER; fi
+  - ./testing/setupLivy.sh
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
-  - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-server-$LIVY_VER; fi
-  - if [[ -n $LIVY_VER ]]; then export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER; fi
   - tail conf/zeppelin-env.sh
 
 script:
