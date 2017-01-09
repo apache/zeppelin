@@ -147,11 +147,11 @@
 </property>
 -->
 
-<!-- For versioning your local notebook storage using Git repository
+<!-- Notebook storage layer using local file system
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
+  <description>local notebook persistence layer implementation</description>
 </property>
 -->
 
@@ -159,15 +159,15 @@
 <!--
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
-  <description>two notebook persistence layers (local + ZeppelinHub)</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
+  <description>two notebook persistence layers (versioned local + ZeppelinHub)</description>
 </property>
 -->
 
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 
 <property>
