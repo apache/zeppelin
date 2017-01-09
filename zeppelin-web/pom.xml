@@ -93,7 +93,6 @@
             <exclude>src/fonts/roboto*</exclude>
             <exclude>src/fonts/Source-Code-Pro*</exclude>
             <exclude>src/fonts/source-code-pro*</exclude>
-            <exclude>src/fonts/google-fonts.css</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
             <exclude>*.md</exclude>
