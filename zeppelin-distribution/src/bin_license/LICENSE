@@ -104,7 +104,6 @@ The following components are provided under Apache License.
     (Apache 2.0) Alluxio Minicluster (org.alluxio:alluxio-minicluster:1.0.0 - http://alluxio.org)
     (Apache 2.0) Alluxio Underfs Local (org.alluxio:alluxio-underfs-local:1.0.0 - http://alluxio.org)
     (Apache 2.0) Microsoft Azure Storage Library for Java (com.microsoft.azure:azure-storage:4.0.0 - https://github.com/Azure/azure-storage-java)
-    (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
     (Apache 2.0) stream (com.clearspring.analytics:stream:2.7.0) - https://github.com/addthis/stream-lib/blob/v2.7.0/LICENSE.txt
     (Apache 2.0) io.dropwizard.metrics:3.1.2 - https://github.com/dropwizard/metrics/blob/v3.1.2/LICENSE
     (Apache 2.0) Google BigQuery API for Java (com.google.api.services.bigquery:v2-rev265-1.21.0 - https://cloud.google.com/bigquery/)
@@ -376,8 +375,6 @@ The following components are provided under the EPL License.
 SIL OPEN FONT LICENSE
 ========================================================================
 
-    (OFL 1.1) Patua One Font (see licenses/LICENSE-patuaOne-font)
-    (OFL 1.1) Source Code Pro Font (see licenses/LICENSE-source_code_pro-font)
 
 
 
