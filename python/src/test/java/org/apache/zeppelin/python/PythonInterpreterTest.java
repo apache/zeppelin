@@ -182,7 +182,7 @@ public class PythonInterpreterTest {
   }
 
   @Test
-  public void testInterpret2() {
+  public void testInterpretInvalidSyntax() {
     zeppelinPythonInterpreter.open();
     InterpreterResult result = zeppelinPythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\n\nz._displayhook()", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
