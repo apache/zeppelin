@@ -43,7 +43,10 @@
     $scope.editor = null;
 
     var editorSetting = {};
+    // flag that is used to set editor setting on paste percent sign
     var pastePercentSign = false;
+    // flag that is used to set editor setting on save interpreter bindings
+    var setInterpreterBindings = false;
     var paragraphScope = $rootScope.$new(true, $rootScope);
 
     // to keep backward compatibility
@@ -661,7 +664,8 @@
       if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
           (pos.row === 1 && pos.column === 0) || pastePercentSign) {
         // If paragraph loading, use config value if exists
-        if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
+        if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode &&
+            !setInterpreterBindings) {
           session.setMode($scope.paragraph.config.editorMode);
         } else {
           var magic = getInterpreterName(paragraphText);
@@ -676,6 +680,7 @@
         }
       }
       pastePercentSign = false;
+      setInterpreterBindings = false;
     };
 
     var getInterpreterName = function(paragraphText) {
@@ -1151,6 +1156,13 @@
         $scope.editor.blur();
         var isDigestPass = true;
         $scope.handleFocus(false, isDigestPass);
+      }
+    });
+
+    $scope.$on('saveInterpreterBindings', function(event, paragraphId) {
+      if ($scope.paragraph.id === paragraphId) {
+        setInterpreterBindings = true;
+        setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
       }
     });
 

@@ -582,6 +582,14 @@
       }
       websocketMsgSrv.saveInterpreterBindings($scope.note.id, selectedSettingIds);
       console.log('Interpreter bindings %o saved', selectedSettingIds);
+
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        var regExp = /^\s*%/g;
+        if (n.text && !regExp.exec(n.text)) {
+          $scope.$broadcast('saveInterpreterBindings', n.id);
+        }
+      });
+
       $scope.showSetting = false;
     };
 
