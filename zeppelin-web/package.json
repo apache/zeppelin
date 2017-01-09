@@ -7,7 +7,7 @@
   },
   "scripts": {
     "clean": "rimraf dist && rimraf .tmp",
-    "postinstall": "bower install --silent && grunt googlefonts",
+    "postinstall": "bower install --silent",
     "prebuild": "npm-run-all clean",
     "build": "grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
     "predev": "npm-run-all clean && grunt pre-webpack-dev",
@@ -47,7 +47,6 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-eslint": "^19.0.0",
     "grunt-filerev": "^0.2.1",
-    "grunt-google-fonts": "^0.4.0",
     "grunt-htmlhint": "^0.9.13",
     "grunt-newer": "^0.7.0",
     "grunt-ng-annotate": "^0.10.0",

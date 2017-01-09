@@ -94,36 +94,6 @@ module.exports = function(grunt) {
       }
     },
 
-    googlefonts: {
-      build: {
-        options: {
-          fontPath: '<%= yeoman.app %>/fonts/',
-          httpPath: '../fonts/',
-          cssFile: '<%= yeoman.app %>/fonts/google-fonts.css',
-          formats: {
-            eot: true,
-            ttf: true,
-            woff: true,
-            svg: true
-          },
-          fonts: [
-            {
-              family: 'Patua One',
-              styles: [400]
-            },
-            {
-              family: 'Source Code Pro',
-              styles: [300, 400, 500]
-            },
-            {
-              family: 'Roboto',
-              styles: [300, 400, 500]
-            }
-          ]
-        }
-      }
-    },
-
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
