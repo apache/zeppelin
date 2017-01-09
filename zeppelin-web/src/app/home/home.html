@@ -14,7 +14,7 @@ limitations under the License.
 <!-- Template of Home -->
 <script type="text/ng-template" id="note_renderer.html">
   <!-- note -->
-  <div ng-if="node.children == null" ng-mouseenter="showNoteButton=true"
+  <div ng-if="node.children == null && isFilterNote(node)" ng-mouseenter="showNoteButton=true"
        ng-mouseleave="showNoteButton=false">
     <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
       <i style="font-size: 10px;"

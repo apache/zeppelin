@@ -42,6 +42,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
 
   $scope.isReloading = false;
   $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
+  $scope.query = {q: ''};
 
   var initHome = function() {
     websocketMsgSrv.getHomeNote();
@@ -124,6 +125,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
     noteActionSrv.removeFolder(folderId);
   };
 
+<<<<<<< c41d4682afdce3bb5fb491229ec442e2617b6ca4
   $scope.emptyTrash = function() {
     noteActionSrv.emptyTrash();
   };
@@ -132,3 +134,22 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
     noteActionSrv.clearAllParagraphOutput(noteId);
   };
 }
+=======
+    $scope.clearAllParagraphOutput = function(noteId) {
+      noteActionSrv.clearAllParagraphOutput(noteId);
+    };
+
+    $scope.isFilterNote = function(note) {
+      if (!$scope.query.q) {
+        return true;
+      }
+
+      var noteName = note.name;
+      if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
+        return true;
+      }
+      return false;
+    };
+  }
+})();
+>>>>>>> fix for that filter of navbar and home don't work

@@ -68,6 +68,18 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     loadNotes();
   }
 
+  function isFilterNote(note) {
+    if (!$scope.query.q) {
+      return true;
+    }
+
+    var noteName = note.name;
+    if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
+      return true;
+    }
+    return false;
+  }
+
   function isActive(noteId) {
     return ($routeParams.noteId === noteId);
   }

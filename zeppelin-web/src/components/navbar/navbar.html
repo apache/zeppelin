@@ -32,9 +32,16 @@ limitations under the License.
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by $index"
+              <div ng-if="!query.q || query.q === ''">
+              <li ng-repeat="note in navbar.notes.root.children | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by note.id"
                   ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
+            </div>
+            <div ng-if="query.q">
+              <li ng-repeat="note in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by note.id"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+              </li>
+            </div>
             </div>
           </ul>
         </li>
