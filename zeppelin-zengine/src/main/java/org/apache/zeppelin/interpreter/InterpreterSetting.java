@@ -203,7 +203,7 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRmoveAllInterpreterGroups() {
+  void closeAndRemoveAllInterpreterGroups() {
     HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
     for (String key : groupsToRemove) {
       closeAndRemoveInterpreterGroup(key);
