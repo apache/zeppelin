@@ -1966,7 +1966,13 @@ public class NotebookServer extends WebSocketServlet
       }
 
       if (job.isTerminated()) {
-        LOG.info("Job {} is finished", job.getId());
+        if (job.getStatus() == Status.FINISHED) {
+          LOG.info("Job {} is finished successfully, status: {}", job.getId(), job.getStatus());
+        } else {
+          LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}" , job.getId(),
+              job.getStatus(), job.getException(), job.getReturn());
+        }
+
         try {
           //TODO(khalid): may change interface for JobListener and pass subject from interpreter
           note.persist(job instanceof Paragraph ? ((Paragraph) job).getAuthenticationInfo() : null);

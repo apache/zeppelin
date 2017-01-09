@@ -108,6 +108,13 @@ public class PigQueryInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("gender\tcount\nmale\t2\nfemale\t1\n", result.message().get(0).getData());
 
+    // generate alias with unknown schema
+    query = "b = group a by gender;\nforeach b generate group, COUNT($1);";
+    result = pigQueryInterpreter.interpret(query, context);
+    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("group\tcol_1\nmale\t2\nfemale\t1\n", result.message().get(0).getData());
+
     // syntax error in PigQueryInterpereter
     query = "b = group a by invalid_column;\nforeach b generate group as gender, COUNT($1) as count;";
     result = pigQueryInterpreter.interpret(query, context);

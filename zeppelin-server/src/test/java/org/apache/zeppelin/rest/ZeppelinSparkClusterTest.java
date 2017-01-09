@@ -183,7 +183,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p);
         System.err.println("sparkRTest=" + p.getResult().message().get(0).getData());
         assertEquals(Status.FINISHED, p.getStatus());
-        assertEquals("[1] 3", p.getResult().message().get(0).getData());
+        assertEquals("[1] 3", p.getResult().message().get(0).getData().trim());
       }
       ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
@@ -342,6 +342,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         waitForFinish(p0);
         assertEquals(Status.FINISHED, p0.getStatus());
 
+        // z.run is not blocking call. So p1 may not be finished when p0 is done.
+        waitForFinish(p1);
         note.run(p2.getId());
         waitForFinish(p2);
         assertEquals(Status.FINISHED, p2.getStatus());
