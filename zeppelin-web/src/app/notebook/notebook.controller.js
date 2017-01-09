@@ -584,7 +584,8 @@
       console.log('Interpreter bindings %o saved', selectedSettingIds);
 
       _.forEach($scope.note.paragraphs, function(n, key) {
-        if (n.text && !n.text.startsWith('%')) {
+        var regExp = /^\s*%/g;
+        if (n.text && !regExp.exec(n.text)) {
           $scope.$broadcast('saveInterpreterBindings', n.id);
         }
       });
