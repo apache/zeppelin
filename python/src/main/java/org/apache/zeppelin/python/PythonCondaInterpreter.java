@@ -38,17 +38,17 @@ public class PythonCondaInterpreter extends Interpreter {
   public static final String CONDA_PYTHON_PATH = "/bin/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
 
-  private Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
-  private Pattern listEnvPattern = Pattern.compile("env\\s*list\\s?");
-  private Pattern envPattern = Pattern.compile("env\\s*(.*)");
-  private Pattern listPattern = Pattern.compile("list");
-  private Pattern createPattern = Pattern.compile("create\\s*(.*)");
-  private Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
-  private Pattern deactivatePattern = Pattern.compile("deactivate");
-  private Pattern installPattern = Pattern.compile("install\\s*(.*)");
-  private Pattern uninstallPattern = Pattern.compile("uninstall\\s*(.*)");
-  private Pattern helpPattern = Pattern.compile("help");
-  private Pattern infoPattern = Pattern.compile("info");
+  public static final Pattern PATTERN_OUTPUT_ENV_LIST = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
+  public static final Pattern PATTERN_COMMAND_ENV_LIST = Pattern.compile("env\\s*list\\s?");
+  public static final Pattern PATTERN_COMMAND_ENV = Pattern.compile("env\\s*(.*)");
+  public static final Pattern PATTERN_COMMAND_LIST = Pattern.compile("list");
+  public static final Pattern PATTERN_COMMAND_CREATE = Pattern.compile("create\\s*(.*)");
+  public static final Pattern PATTERN_COMMAND_ACTIVATE = Pattern.compile("activate\\s*(.*)");
+  public static final Pattern PATTERN_COMMAND_DEACTIVATE = Pattern.compile("deactivate");
+  public static final Pattern PATTERN_COMMAND_INSTALL = Pattern.compile("install\\s*(.*)");
+  public static final Pattern PATTERN_COMMAND_UNINSTALL = Pattern.compile("uninstall\\s*(.*)");
+  public static final Pattern PATTERN_COMMAND_HELP = Pattern.compile("help");
+  public static final Pattern PATTERN_COMMAND_INFO = Pattern.compile("info");
 
   public PythonCondaInterpreter(Properties property) {
     super(property);
@@ -67,21 +67,21 @@ public class PythonCondaInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterOutput out = context.out;
-    Matcher activateMatcher = activatePattern.matcher(st);
-    Matcher createMatcher = createPattern.matcher(st);
-    Matcher installMatcher = installPattern.matcher(st);
-    Matcher uninstallMatcher = uninstallPattern.matcher(st);
-    Matcher envMatcher = envPattern.matcher(st);
+    Matcher activateMatcher = PATTERN_COMMAND_ACTIVATE.matcher(st);
+    Matcher createMatcher = PATTERN_COMMAND_CREATE.matcher(st);
+    Matcher installMatcher = PATTERN_COMMAND_INSTALL.matcher(st);
+    Matcher uninstallMatcher = PATTERN_COMMAND_UNINSTALL.matcher(st);
+    Matcher envMatcher = PATTERN_COMMAND_ENV.matcher(st);
 
     try {
-      if (listEnvPattern.matcher(st).matches()) {
+      if (PATTERN_COMMAND_ENV_LIST.matcher(st).matches()) {
         String result = runCondaEnvList();
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
       } else if (envMatcher.matches()) {
         // `envMatcher` should be used after `listEnvMatcher`
         String result = runCondaEnv(getRestArgsFromMatcher(envMatcher));
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
-      } else if (listPattern.matcher(st).matches()) {
+      } else if (PATTERN_COMMAND_LIST.matcher(st).matches()) {
         String result = runCondaList();
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
       } else if (createMatcher.matches()) {
@@ -90,7 +90,7 @@ public class PythonCondaInterpreter extends Interpreter {
       } else if (activateMatcher.matches()) {
         String envName = activateMatcher.group(1).trim();
         return runCondaActivate(envName);
-      } else if (deactivatePattern.matcher(st).matches()) {
+      } else if (PATTERN_COMMAND_DEACTIVATE.matcher(st).matches()) {
         return runCondaDeactivate();
       } else if (installMatcher.matches()) {
         String result = runCondaInstall(getRestArgsFromMatcher(installMatcher));
@@ -98,10 +98,10 @@ public class PythonCondaInterpreter extends Interpreter {
       } else if (uninstallMatcher.matches()) {
         String result = runCondaUninstall(getRestArgsFromMatcher(uninstallMatcher));
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
-      } else if (st == null || helpPattern.matcher(st).matches()) {
+      } else if (st == null || PATTERN_COMMAND_HELP.matcher(st).matches()) {
         runCondaHelp(out);
         return new InterpreterResult(Code.SUCCESS);
-      } else if (infoPattern.matcher(st).matches()) {
+      } else if (PATTERN_COMMAND_INFO.matcher(st).matches()) {
         String result = runCondaInfo();
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
       } else {
@@ -159,7 +159,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return python;
   }
 
-  private String runCondaCommandForTextOutput(String title, List<String> commands)
+  public static String runCondaCommandForTextOutput(String title, List<String> commands)
       throws IOException, InterruptedException {
 
     StringBuilder sb = new StringBuilder();
@@ -289,7 +289,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return runCondaCommandForTextOutput("Package Uninstallation", restArgs);
   }
 
-  private String wrapCondaBasicOutputStyle(String title, String content) {
+  public static String wrapCondaBasicOutputStyle(String title, String content) {
     StringBuilder sb = new StringBuilder();
     if (null != title && !title.isEmpty()) {
       sb.append("<h4>").append(title).append("</h4>\n");
@@ -299,7 +299,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return sb.toString();
   }
 
-  private String wrapCondaTableOutputStyle(String title, Map<String, String> kv) {
+  public static String wrapCondaTableOutputStyle(String title, Map<String, String> kv) {
     StringBuilder sb = new StringBuilder();
 
     if (null != title && !title.isEmpty()) {
@@ -321,7 +321,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return sb.toString();
   }
 
-  private Map<String, String> parseCondaCommonStdout(String out)
+  public static Map<String, String> parseCondaCommonStdout(String out)
       throws IOException, InterruptedException {
 
     Map<String, String> kv = new LinkedHashMap<String, String>();
@@ -330,7 +330,7 @@ public class PythonCondaInterpreter extends Interpreter {
       if (s == null || s.isEmpty() || s.startsWith("#")) {
         continue;
       }
-      Matcher match = condaEnvListPattern.matcher(s);
+      Matcher match = PATTERN_OUTPUT_ENV_LIST.matcher(s);
 
       if (!match.matches()) {
         continue;
@@ -370,7 +370,7 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  protected int runCommand(StringBuilder sb, List<String> command)
+  public static int runCommand(StringBuilder sb, List<String> command)
       throws IOException, InterruptedException {
 
     ProcessBuilder builder = new ProcessBuilder(command);
@@ -387,7 +387,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return r;
   }
 
-  protected int runCommand(StringBuilder sb, String ... command)
+  public static int runCommand(StringBuilder sb, String ... command)
       throws IOException, InterruptedException {
 
     List<String> list = new ArrayList<>(command.length);
@@ -398,7 +398,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return runCommand(sb, list);
   }
 
-  private List<String> getRestArgsFromMatcher(Matcher m) {
+  public static List<String> getRestArgsFromMatcher(Matcher m) {
     // Arrays.asList just returns fixed-size, so we should use ctor instead of
     return new ArrayList<>(Arrays.asList(m.group(1).split(" ")));
   }

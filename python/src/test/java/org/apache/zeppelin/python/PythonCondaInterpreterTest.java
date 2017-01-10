@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -87,6 +88,34 @@ public class PythonCondaInterpreterTest {
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand("python");
+  }
+
+  @Test
+  public void testParseCondaCommonStdout()
+      throws IOException, InterruptedException {
+
+    StringBuilder sb = new StringBuilder()
+        .append("# comment1\n")
+        .append("# comment2\n")
+        .append("env1     /location1\n")
+        .append("env2     /location2\n");
+
+    Map<String, String> locationPerEnv =
+        PythonCondaInterpreter.parseCondaCommonStdout(sb.toString());
+
+    assertEquals("/location1", locationPerEnv.get("env1"));
+    assertEquals("/location2", locationPerEnv.get("env2"));
+  }
+
+  @Test
+  public void testGetRestArgsFromMatcher() {
+    Matcher m =
+        PythonCondaInterpreter.PATTERN_COMMAND_ENV.matcher("env remove --name test --yes");
+    m.matches();
+
+    List<String> restArgs = PythonCondaInterpreter.getRestArgsFromMatcher(m);
+    List<String> expected = Arrays.asList(new String[]{"remove", "--name", "test", "--yes"});
+    assertEquals(expected, restArgs);
   }
 
   private InterpreterContext getInterpreterContext() {
