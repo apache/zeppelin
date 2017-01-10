@@ -162,41 +162,25 @@ public class PythonCondaInterpreter extends Interpreter {
   public static String runCondaCommandForTextOutput(String title, List<String> commands)
       throws IOException, InterruptedException {
 
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, commands);
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `" +
-          StringUtils.join(commands, " ") + "` exited with " + exit);
-    }
-
-    return wrapCondaBasicOutputStyle(title, sb.toString());
+    String result = runCommand(commands);
+    return wrapCondaBasicOutputStyle(title, result);
   }
 
   private String runCondaCommandForTableOutput(String title, List<String> commands)
       throws IOException, InterruptedException {
 
     StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, commands);
-    if (exit != 0) {
-      throw new RuntimeException("Failed to execute `" +
-          StringUtils.join(commands, " ") + "` exited with " + exit);
-    }
+    String result = runCommand(commands);
 
     // use table output for pretty output
-    Map<String, String> envPerName = parseCondaCommonStdout(sb.toString());
+    Map<String, String> envPerName = parseCondaCommonStdout(result);
     return wrapCondaTableOutputStyle(title, envPerName);
   }
 
   protected Map<String, String> getCondaEnvs()
       throws IOException, InterruptedException {
-    StringBuilder sb = new StringBuilder();
-    int exit = runCommand(sb, "conda", "env", "list");
-    if (exit != 0) {
-      throw new RuntimeException(
-          "Failed to execute `conda env list`. exited with " + exit);
-    }
-
-    Map<String, String> envList = parseCondaCommonStdout(sb.toString());
+    String result = runCommand("conda", "env", "list");
+    Map<String, String> envList = parseCondaCommonStdout(result);
     return envList;
   }
 
@@ -370,10 +354,12 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  public static int runCommand(StringBuilder sb, List<String> command)
+  public static String runCommand(List<String> commands)
       throws IOException, InterruptedException {
 
-    ProcessBuilder builder = new ProcessBuilder(command);
+    StringBuilder sb = new StringBuilder();
+
+    ProcessBuilder builder = new ProcessBuilder(commands);
     builder.redirectErrorStream(true);
     Process process = builder.start();
     InputStream stdout = process.getInputStream();
@@ -384,10 +370,16 @@ public class PythonCondaInterpreter extends Interpreter {
       sb.append("\n");
     }
     int r = process.waitFor(); // Let the process finish.
-    return r;
+
+    if (r != 0) {
+      throw new RuntimeException("Failed to execute `" +
+          StringUtils.join(commands, " ") + "` exited with " + r);
+    }
+
+    return sb.toString();
   }
 
-  public static int runCommand(StringBuilder sb, String ... command)
+  public static String runCommand(String ... command)
       throws IOException, InterruptedException {
 
     List<String> list = new ArrayList<>(command.length);
@@ -395,7 +387,7 @@ public class PythonCondaInterpreter extends Interpreter {
       list.add(arg);
     }
 
-    return runCommand(sb, list);
+    return runCommand(list);
   }
 
   public static List<String> getRestArgsFromMatcher(Matcher m) {

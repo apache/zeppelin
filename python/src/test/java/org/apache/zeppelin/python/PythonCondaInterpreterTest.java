@@ -49,10 +49,8 @@ public class PythonCondaInterpreterTest {
 
   private void setMockCondaEnvList() throws IOException, InterruptedException {
     Map<String, String> envList = new LinkedHashMap<String, String>();
-
     envList.put("env1", "/path1");
     envList.put("env2", "/path2");
-
     doReturn(envList).when(conda).getCondaEnvs();
   }
 
@@ -74,6 +72,7 @@ public class PythonCondaInterpreterTest {
   @Test
   public void testActivateEnv() throws IOException, InterruptedException {
     setMockCondaEnvList();
+
     InterpreterContext context = getInterpreterContext();
     conda.interpret("activate env1", context);
     verify(python, times(1)).open();
