@@ -16,47 +16,76 @@ limitations under the License.
 <div id="content" class="notebookContent">
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
-    <div>
-      <h4>Settings</h4>
-    </div>
+    <div><h4>Interpreter Binding</h4></div>
     <hr />
+
     <div>
-      <h5>Interpreter binding</h5>
       <p>
         Bind interpreter for this note.
         Click to Bind/Unbind interpreter.
         Drag and drop to reorder interpreters. <br />
-        The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="#/interpreter">Interpreter</a> menu.
+        <strong>The first interpreter on the list becomes default.</strong>
+        To create/remove interpreters, go to <a href="#/interpreter">Interpreter</a> menu.
       </p>
 
-      <div class="interpreterSettings"
+      <div class="interpreterSearchBox" style="margin: 15px 0px 15px 0px;">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="input-group pull-left" style="width:300px">
+              <input type="text" placeholder="Search bindable interpreters"
+                     ng-model="bindingFilterKeyword"
+                     class="form-control ng-pristine ng-untouched ng-valid ng-empty" />
+              <span class="input-group-btn">
+            <button type="submit" class="btn btn-default">
+              <i class="glyphicon glyphicon-search"></i>
+            </button>
+          </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="interpreterSettings" style="overflow-y:auto; height:320px;"
            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-        <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
+        <div style="margin: 0px 3px 0px 3px"
+             data-ng-repeat="item in interpreterBindings | filter: {name:bindingFilterKeyword}" as-sortable-item>
           <div>
-            <a ng-click="restartInterpreter(item)"
-               ng-class="{'inactivelink': !item.selected}"
-               tooltip="Restart">
-              <span class="glyphicon glyphicon-refresh btn-md"></span>
-            </a>&nbsp
-            <div as-sortable-item-handle
-                 ng-click="item.selected = !item.selected"
-                 class="btn"
-                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
-              <font style="font-size:16px">{{item.name}}</font>
-              <small>
-                <span style="display:inline-block" ng-repeat="intp in item.interpreters">
-                  <span ng-show="!$first">, </span>
-                  %<span ng-show="!$parent.$first || $first">{{item.name}}</span
-                  ><span ng-show="(!$parent.$first || $first) && !$first">.</span
-                  ><span ng-show="!$first">{{intp.name}}</span>
-                  <span ng-show="$parent.$first && $first">(default)</span>
-                </span>
-              </small>
+            <div class="btn-group">
+              <button type="button" class="btn" as-sortable-item-handle
+                      ng-click="item.selected = !item.selected"
+                      ng-class="isDefaultInterpreterBinding($first, item, bindingFilterKeyword) ? 'btn-success' : item.selected ? 'btn-info' : 'btn-default'">
+                <span style="font-weight: bold; font-size: 14px; margin-right: 5px;">{{item.name}}</span>
+                <small>
+                  <span style="display:inline-block" ng-repeat="intp in item.interpreters">
+                    <span ng-show="!$first">, </span>
+                    %<span ng-show="!$parent.$first || $first">{{item.name}}</span
+                    ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+                    ><span ng-show="!$first">{{intp.name}}</span>
+                    <span ng-show="isDefaultInterpreterBinding($parent.$first && $first, item, bindingFilterKeyword)">(default)</span>
+                  </span>
+                </small>
+              </button>
+              <button type="button" class="btn"
+                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                      ng-class="isDefaultInterpreterBinding($first, item, bindingFilterKeyword) ? 'btn-success' : item.selected ? 'btn-info' : 'btn-default'">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu" style="padding-top: 2px; padding-bottom: 2px;">
+                <li>
+                  <a ng-click="restartInterpreter(item)" ng-class="{'inactivelink': !item.selected}"
+                     style="padding: 0px 0px 0px 5px;">
+                    <span class="glyphicon glyphicon-refresh btn-sm"></span>
+                    <span style="margin-left: 3px; font-size: 13px;">restart</span>
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </div>
     </div>
+
     <br />
     <div>
       <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
@@ -127,5 +156,5 @@ limitations under the License.
       <h4 class="plus-sign">&#43;</h4>
     </div>
   </div>
-  <div style="clear:both;height:10px"></div>
 </div>
+<div style="clear:both;height:10px"></div>
