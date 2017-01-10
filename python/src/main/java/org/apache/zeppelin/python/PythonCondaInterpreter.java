@@ -276,9 +276,12 @@ public class PythonCondaInterpreter extends Interpreter {
   public static String wrapCondaBasicOutputStyle(String title, String content) {
     StringBuilder sb = new StringBuilder();
     if (null != title && !title.isEmpty()) {
-      sb.append("<h4>").append(title).append("</h4>\n");
+      sb.append("<h4>").append(title).append("</h4>\n")
+          .append("</div><br />\n");
     }
-    sb.append("</div><br />\n").append(content);
+    sb.append("<div style=\"white-space:pre-wrap;\">\n")
+        .append(content)
+        .append("</div>");
 
     return sb.toString();
   }
