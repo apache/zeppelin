@@ -23,13 +23,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 public class PythonCondaInterpreterTest {
@@ -49,35 +47,32 @@ public class PythonCondaInterpreterTest {
     doReturn(python).when(conda).getPythonInterpreter();
   }
 
-  private void setCondaEnvs() throws IOException, InterruptedException {
-    StringBuilder sb = new StringBuilder();
-    sb.append("#comment\n\nenv1   *  /path1\nenv2\t/path2\n");
-
-    doReturn(sb).when(conda).createStringBuilder();
-    doReturn(0).when(conda)
-      .runCommand(any(StringBuilder.class), anyString(), anyString(), anyString());
+  private void setMockCondaEnvList() throws IOException, InterruptedException {
+    Map<String, String> envList = new LinkedHashMap<String, String>();
+    envList.put("env1", "/path1");
+    envList.put("env2", "/path2");
+    doReturn(envList).when(conda).getCondaEnvs();
   }
 
   @Test
   public void testListEnv() throws IOException, InterruptedException {
-    setCondaEnvs();
+    setMockCondaEnvList();
 
     // list available env
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = conda.interpret("", context);
+    InterpreterResult result = conda.interpret("env list", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    context.out.flush();
-    String out = new String(context.out.toByteArray());
-    assertTrue(out.contains(">env1<"));
-    assertTrue(out.contains(">/path1<"));
-    assertTrue(out.contains(">env2<"));
-    assertTrue(out.contains(">/path2<"));
+    assertTrue(result.toString().contains(">env1<"));
+    assertTrue(result.toString().contains("/path1<"));
+    assertTrue(result.toString().contains(">env2<"));
+    assertTrue(result.toString().contains("/path2<"));
   }
 
   @Test
   public void testActivateEnv() throws IOException, InterruptedException {
-    setCondaEnvs();
+    setMockCondaEnvList();
+
     InterpreterContext context = getInterpreterContext();
     conda.interpret("activate env1", context);
     verify(python, times(1)).open();
@@ -92,6 +87,34 @@ public class PythonCondaInterpreterTest {
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand("python");
+  }
+
+  @Test
+  public void testParseCondaCommonStdout()
+      throws IOException, InterruptedException {
+
+    StringBuilder sb = new StringBuilder()
+        .append("# comment1\n")
+        .append("# comment2\n")
+        .append("env1     /location1\n")
+        .append("env2     /location2\n");
+
+    Map<String, String> locationPerEnv =
+        PythonCondaInterpreter.parseCondaCommonStdout(sb.toString());
+
+    assertEquals("/location1", locationPerEnv.get("env1"));
+    assertEquals("/location2", locationPerEnv.get("env2"));
+  }
+
+  @Test
+  public void testGetRestArgsFromMatcher() {
+    Matcher m =
+        PythonCondaInterpreter.PATTERN_COMMAND_ENV.matcher("env remove --name test --yes");
+    m.matches();
+
+    List<String> restArgs = PythonCondaInterpreter.getRestArgsFromMatcher(m);
+    List<String> expected = Arrays.asList(new String[]{"remove", "--name", "test", "--yes"});
+    assertEquals(expected, restArgs);
   }
 
   private InterpreterContext getInterpreterContext() {
