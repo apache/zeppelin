@@ -39,7 +39,7 @@
 
   <properties>
     <node.version>v6.9.1</node.version>
-    <npm.version>3.10.8</npm.version>
+    <yarn.version>v0.18.1</yarn.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--plugin versions-->
@@ -94,6 +94,7 @@
             <exclude>bower.json</exclude>
             <exclude>**/package.json</exclude>
             <exclude>**/.npmignore</exclude>
+            <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
           </excludes>
         </configuration>
@@ -106,30 +107,30 @@
         <executions>
 
           <execution>
-            <id>install node and npm</id>
+            <id>install node and yarn</id>
             <goals>
-              <goal>install-node-and-npm</goal>
+              <goal>install-node-and-yarn</goal>
             </goals>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
-              <npmVersion>${npm.version}</npmVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
             </configuration>
           </execution>
 
           <execution>
-            <id>npm install</id>
+            <id>yarn install</id>
             <goals>
-              <goal>npm</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
-              <arguments>install</arguments>
+              <arguments>install --no-lockfile</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>npm build</id>
+            <id>yarn build</id>
             <goals>
-              <goal>npm</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
               <arguments>run build</arguments>
@@ -137,9 +138,9 @@
           </execution>
 
           <execution>
-            <id>npm test</id>
+            <id>yarn test</id>
             <goals>
-              <goal>npm</goal>
+              <goal>yarn</goal>
             </goals>
             <phase>test</phase>
             <configuration>

@@ -21,17 +21,18 @@ All build commands are described in [package.json](./package.json)
 
 ```sh
 # install required depepdencies and bower packages (only once)
-$ npm install
+$ npm install -g yarn
+$ yarn install
 
 # build zeppelin-web for production
-$ npm run build
+$ yarn run build
 
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
-$ npm run dev
+$ yarn run dev
 
 # execute tests
-$ npm run test
+$ yarn run test
 ```
 
 ## Troubleshooting
@@ -50,12 +51,12 @@ Try to add to the `.bowerrc` file the following content:
   "https-proxy" : "http://<host>:<port>"
 ```
 
-also try to add proxy info  to npm install command:
+also try to add proxy info to yarn install command:
 ```xml
 <execution>
-	<id>npm install</id>
+	<id>yarn install</id>
 	<goals>
-    	<goal>npm</goal>
+    	<goal>yarn</goal>
     </goals>
     <configuration>
     	<arguments>--proxy=http://<host>:<port> --https-proxy=http://<host>:<port></arguments>

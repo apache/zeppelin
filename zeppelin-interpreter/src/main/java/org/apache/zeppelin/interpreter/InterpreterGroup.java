@@ -208,6 +208,28 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     }
   }
 
+  /**
+   * Close all interpreter instances in this group
+   */
+  public void shutdown() {
+    LOGGER.info("Close interpreter group " + getId());
+
+    // make sure remote interpreter process terminates
+    if (remoteInterpreterProcess != null) {
+      while (remoteInterpreterProcess.referenceCount() > 0) {
+        remoteInterpreterProcess.dereference();
+      }
+      remoteInterpreterProcess = null;
+    }
+    allInterpreterGroups.remove(id);
+
+    List<Interpreter> intpToClose = new LinkedList<>();
+    for (List<Interpreter> intpGroupForSession : this.values()) {
+      intpToClose.addAll(intpGroupForSession);
+    }
+    close(intpToClose);
+  }
+
   public void setResourcePool(ResourcePool resourcePool) {
     this.resourcePool = resourcePool;
   }

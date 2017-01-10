@@ -12,6 +12,13 @@
  * limitations under the License.
  */
 
+.result-chart-selector {
+    margin-bottom: 10px; 
+    position: relative; 
+    display: inline-block; 
+    vertical-align: middle;
+}
+
 .result-chart-selector button {
   width: 35px;
   height: 30px;

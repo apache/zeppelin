@@ -286,16 +286,23 @@
       }
     };
 
-    $scope.runNote = function() {
+    $scope.runAllParagraphs = function(noteId) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
         message: 'Run all paragraphs?',
         callback: function(result) {
           if (result) {
-            _.forEach($scope.note.paragraphs, function(n, key) {
-              angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
+            const paragraphs = $scope.note.paragraphs.map(p => {
+              return {
+                id: p.id,
+                title: p.title,
+                paragraph: p.text,
+                config: p.config,
+                params: p.settings.params
+              };
             });
+            websocketMsgSrv.runAllParagraphs(noteId, paragraphs);
           }
         }
       });
@@ -582,6 +589,14 @@
       }
       websocketMsgSrv.saveInterpreterBindings($scope.note.id, selectedSettingIds);
       console.log('Interpreter bindings %o saved', selectedSettingIds);
+
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        var regExp = /^\s*%/g;
+        if (n.text && !regExp.exec(n.text)) {
+          $scope.$broadcast('saveInterpreterBindings', n.id);
+        }
+      });
+
       $scope.showSetting = false;
     };
 

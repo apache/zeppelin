@@ -88,7 +88,6 @@ object ZeppelinRDisplay {
   }
 
   private def htmlDisplay(body: Element, imageWidth: String): RDisplay = {
-
     var div = new String()
 
     for (element <- body.children) {
@@ -101,7 +100,6 @@ object ZeppelinRDisplay {
       val r = (pattern findFirstIn eHtml).getOrElse("")
 
       div = div + eOuterHtml.replace(r, "")
-
     }
 
     val content =  div
@@ -115,7 +113,5 @@ object ZeppelinRDisplay {
     }
 
     RDisplay(body.html, HTML, SUCCESS)
-
   }
-
 }
