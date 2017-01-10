@@ -296,7 +296,7 @@ public class SparkInterpreter extends Interpreter {
     return (DepInterpreter) p;
   }
 
-  private boolean isYarnMode() {
+  public boolean isYarnMode() {
     return getProperty("master").startsWith("yarn");
   }
 

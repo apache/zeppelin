@@ -155,12 +155,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     urls = urlList.toArray(urls);
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {
-      // Get additional class paths when using SPARK_SUBMIT
-      // Should get current class Path before setting new class loader
-      // Also, add all packages to PYTHONPATH
-      // since there might be transitive dependencies
+      // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
+      // SHOULD get current class path before setting new class loader
+      // also, add all packages to PYTHONPATH since there might be transitive dependencies
       StringBuilder sparkSubmitPythonPaths = new StringBuilder();
-      if (SparkInterpreter.useSparkSubmit()) {
+      if (SparkInterpreter.useSparkSubmit() &&
+          !getSparkInterpreter().isYarnMode()) {
         List<File> paths = SparkInterpreter.currentClassPath();
         for (File f : paths) {
           sparkSubmitPythonPaths.append(f.getAbsolutePath()).append(":");
