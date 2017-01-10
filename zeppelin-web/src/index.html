@@ -76,24 +76,24 @@ limitations under the License.
     <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
     <toast></toast>
-    <div ng-include src="'components/navbar/navbar.html?v='+version"></div>
+    <div ng-include src="'components/navbar/navbar.html?v=@@buildtimestamp'"></div>
     <!-- Add your site or application content here -->
     <div id="main" class="container">
       <div ng-view></div>
     </div>
     <!-- Modal ::  Keyboard shortcuts -->
-    <div ng-include src="'components/modal-shortcut/modal-shortcut.html?v='+version"></div>
+    <div ng-include src="'components/modal-shortcut/modal-shortcut.html?v=@@buildtimestamp'"></div>
     <div ng-controller="NotenameCtrl as notenamectrl">
-      <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html?v='+version"></div>
+      <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html?v=@@buildtimestamp'"></div>
     </div>
     <div ng-controller="NoteImportCtrl as noteimportctrl">
-      <div id="note-import-container" ng-include src="'components/noteName-import/note-import-dialog.html?v='+version"></div>
+      <div id="note-import-container" ng-include src="'components/noteName-import/note-import-dialog.html?v=@@buildtimestamp'"></div>
     </div>
     <div ng-controller="LoginCtrl as noteimportctrl">
-      <div id="login-container" ng-include src="'components/login/login.html?v='+version"></div>
+      <div id="login-container" ng-include src="'components/login/login.html?v=@@buildtimestamp'"></div>
     </div>
     <div ng-controller="RenameCtrl">
-      <div ng-include src="'components/rename/rename.html?v='+version"></div>
+      <div ng-include src="'components/rename/rename.html?v=@@buildtimestamp'"></div>
     </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>

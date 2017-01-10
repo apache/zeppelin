@@ -45,51 +45,50 @@
         .config(function($httpProvider, $routeProvider, ngToastProvider) {
           // withCredentials when running locally via grunt
           $httpProvider.defaults.withCredentials = true;
-          var version = Date.now();
 
           $routeProvider
             .when('/', {
-              templateUrl: 'app/home/home.html?v=' + version
+              templateUrl: 'app/home/home.html?v=@@buildtimestamp'
             })
             .when('/notebook/:noteId', {
-              templateUrl: 'app/notebook/notebook.html',
+              templateUrl: 'app/notebook/notebook.html?v=@@buildtimestamp',
               controller: 'NotebookCtrl'
             })
             .when('/notebook/:noteId/paragraph?=:paragraphId', {
-              templateUrl: 'app/notebook/notebook.html',
+              templateUrl: 'app/notebook/notebook.html?v=@@buildtimestamp',
               controller: 'NotebookCtrl'
             })
             .when('/notebook/:noteId/paragraph/:paragraphId?', {
-              templateUrl: 'app/notebook/notebook.html',
+              templateUrl: 'app/notebook/notebook.html?v=@@buildtimestamp',
               controller: 'NotebookCtrl'
             })
             .when('/notebook/:noteId/revision/:revisionId', {
-              templateUrl: 'app/notebook/notebook.html',
+              templateUrl: 'app/notebook/notebook.html?v=@@buildtimestamp',
               controller: 'NotebookCtrl'
             })
             .when('/jobmanager', {
-              templateUrl: 'app/jobmanager/jobmanager.html',
+              templateUrl: 'app/jobmanager/jobmanager.html?v=@@buildtimestamp',
               controller: 'JobmanagerCtrl'
             })
             .when('/interpreter', {
-              templateUrl: 'app/interpreter/interpreter.html',
+              templateUrl: 'app/interpreter/interpreter.html?v=@@buildtimestamp',
               controller: 'InterpreterCtrl'
             })
             .when('/notebookRepos', {
-              templateUrl: 'app/notebookRepos/notebookRepos.html',
+              templateUrl: 'app/notebookRepos/notebookRepos.html?v=@@buildtimestamp',
               controller: 'NotebookReposCtrl',
               controllerAs: 'noterepo'
             })
             .when('/credential', {
-              templateUrl: 'app/credential/credential.html',
+              templateUrl: 'app/credential/credential.html?v=@@buildtimestamp',
               controller: 'CredentialCtrl'
             })
             .when('/configuration', {
-              templateUrl: 'app/configuration/configuration.html',
+              templateUrl: 'app/configuration/configuration.html?v=@@buildtimestamp',
               controller: 'ConfigurationCtrl'
             })
             .when('/search/:searchTerm', {
-              templateUrl: 'app/search/result-list.html',
+              templateUrl: 'app/search/result-list.html?v=@@buildtimestamp',
               controller: 'SearchResultCtrl'
             })
             .otherwise({

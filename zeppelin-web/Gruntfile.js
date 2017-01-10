@@ -31,6 +31,8 @@ module.exports = function(grunt) {
   // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
+  require('grunt-replace')(grunt);
+
   // Configurable paths for the application
   var appConfig = {
     app: require('./bower.json').appPath || 'src',
@@ -415,6 +417,23 @@ module.exports = function(grunt) {
       ],
     },
 
+    replace: {
+      dist: {
+        options: {
+          patterns: [
+            {
+              match: 'buildtimestamp',
+              replacement: '<%= new Date().getTime() %>'
+            }
+          ]
+        },
+        files: [
+          {src: ['src/index.html'], dest: 'dist/index.html'},
+          {src: ['dist/*.js'], dest: '<%= yeoman.app %>'}
+        ]
+      }
+    },
+
     // Test settings
     karma: {
       unit: {
@@ -438,6 +457,7 @@ module.exports = function(grunt) {
     'eslint',
     'htmlhint',
     'wiredep',
+    'replace',
   ]);
 
   grunt.registerTask('post-webpack-dist', [
@@ -451,7 +471,7 @@ module.exports = function(grunt) {
     'uglify',
     'usemin',
     'htmlmin',
-    'cacheBust'
+    'cacheBust',
   ]);
 
   grunt.registerTask('default', [

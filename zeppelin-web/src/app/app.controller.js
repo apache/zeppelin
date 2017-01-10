@@ -19,7 +19,6 @@
 
   function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
     $scope.looknfeel = 'default';
-    $scope.version = Date.now();
 
     var init = function() {
       $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
