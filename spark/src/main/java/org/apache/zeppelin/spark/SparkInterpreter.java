@@ -488,8 +488,9 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
+    //TODO(zjffdu), this is not maintainable when new version is added.
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
+      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip", "py4j-0.10.4-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -1476,8 +1477,8 @@ public class SparkInterpreter extends Interpreter {
   }
 
   /**
-   * Constructor signature of SecurityManager changes in spark 2.10, so we use this method to create
-   * Security properly for different versions of spark
+   * Constructor signature of SecurityManager changes in spark 2.1.0, so we use this method to
+   * create SecurityManager properly for different versions of spark
    *
    * @param conf
    * @return
@@ -1494,12 +1495,14 @@ public class SparkInterpreter extends Interpreter {
     try {
       Constructor<?> smConstructor = getClass().getClassLoader()
           .loadClass("org.apache.spark.SecurityManager")
-          .getConstructor(new Class[]{ SparkConf.class });
-    } catch (NoSuchMethodException e) {
-      Constructor<?> smConstructor = getClass().getClassLoader()
-          .loadClass("org.apache.spark.SecurityManager")
           .getConstructor(new Class[]{ SparkConf.class, scala.Option.class });
       securityManager = smConstructor.newInstance(conf, null);
+    } catch (NoSuchMethodException e) {
+
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class });
+      securityManager = smConstructor.newInstance(conf);
     }
     return securityManager;
   }
