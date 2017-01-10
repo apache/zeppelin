@@ -428,8 +428,8 @@ module.exports = function(grunt) {
           ]
         },
         files: [
-          {src: ['src/index.html'], dest: 'dist/index.html'},
-          {src: ['dist/*.js'], dest: '<%= yeoman.app %>'}
+          {src: ['*/index.html'], dest: './'},
+          {src: ['*/*.js'], dest: './'}
         ]
       }
     },
@@ -457,7 +457,6 @@ module.exports = function(grunt) {
     'eslint',
     'htmlhint',
     'wiredep',
-    'replace',
   ]);
 
   grunt.registerTask('post-webpack-dist', [
@@ -466,6 +465,7 @@ module.exports = function(grunt) {
     'postcss',
     'concat',
     'ngAnnotate',
+    'replace',
     'copy:dist',
     'cssmin',
     'uglify',
