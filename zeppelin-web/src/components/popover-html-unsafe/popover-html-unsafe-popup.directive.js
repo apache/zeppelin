@@ -11,17 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').directive('popoverHtmlUnsafePopup', popoverHtmlUnsafePopup);
+angular.module('zeppelinWebApp').directive('popoverHtmlUnsafePopup', popoverHtmlUnsafePopup);
 
-  function popoverHtmlUnsafePopup() {
-    return {
-      restrict: 'EA',
-      replace: true,
-      scope: {title: '@', content: '@', placement: '@', animation: '&', isOpen: '&'},
-      templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
-    };
-  }
+function popoverHtmlUnsafePopup() {
+  return {
+    restrict: 'EA',
+    replace: true,
+    scope: {title: '@', content: '@', placement: '@', animation: '&', isOpen: '&'},
+    templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
+  };
+}
 
-})();

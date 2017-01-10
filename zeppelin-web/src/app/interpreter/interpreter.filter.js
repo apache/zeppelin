@@ -11,15 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').filter('sortByKey', sortByKey);
+angular.module('zeppelinWebApp').filter('sortByKey', sortByKey);
 
-  function sortByKey() {
-    return function(properties) {
-      var sortedKeys = properties ? Object.keys(properties) : [];
-      return sortedKeys.sort();
-    };
-  }
-
-})();
+function sortByKey() {
+  return function(properties) {
+    var sortedKeys = properties ? Object.keys(properties) : [];
+    return sortedKeys.sort();
+  };
+}
