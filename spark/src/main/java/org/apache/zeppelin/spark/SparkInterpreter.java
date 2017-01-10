@@ -1452,8 +1452,10 @@ public class SparkInterpreter extends Interpreter {
           .getConstructor(new Class[]{
             SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
 
-      return constructor.newInstance(new Object[] {
-        conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+      Object securityManager = createSecurityManager(conf);
+      return constructor.newInstance(new Object[]{
+        conf, outputDir, securityManager, 0, "HTTP Server"});
+
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
       // fallback to old constructor
@@ -1464,12 +1466,41 @@ public class SparkInterpreter extends Interpreter {
             .getConstructor(new Class[]{
               File.class, SecurityManager.class, int.class, String.class});
         return constructor.newInstance(new Object[] {
-          outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+          outputDir, createSecurityManager(conf), 0, "HTTP Server"});
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
           InstantiationException | InvocationTargetException e1) {
         logger.error(e1.getMessage(), e1);
         return null;
       }
     }
+  }
+
+  /**
+   * Constructor signature of SecurityManager changes in spark 2.10, so we use this method to create
+   * Security properly for different versions of spark
+   *
+   * @param conf
+   * @return
+   * @throws ClassNotFoundException
+   * @throws NoSuchMethodException
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   * @throws InstantiationException
+   */
+  private Object createSecurityManager(SparkConf conf) throws ClassNotFoundException,
+      NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException {
+    Object securityManager = null;
+    try {
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class });
+    } catch (NoSuchMethodException e) {
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class, scala.Option.class });
+      securityManager = smConstructor.newInstance(conf, null);
+    }
+    return securityManager;
   }
 }
