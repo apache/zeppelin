@@ -21,10 +21,10 @@ limitations under the License.
            tooltip-placement="bottom" tooltip="Reload notes from storage">
          </i>
       </h4>
-            <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
-              <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-            <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
-              <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
+        <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
+           <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
+         <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+           <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
        <ul id="notebook-names">
          <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
          <div ng-if="!query.q || query.q === ''">
@@ -36,6 +36,7 @@ limitations under the License.
                ng-include src="'app/home/home-template.html'" ng-class="notebook_folder_renderer" />
          </div>
        </ul>
+    </div>
   </div>
   <br/><br/><br/>
 </div>
