@@ -11,25 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
-  angular.module('zeppelinWebApp').controller('clipboardCtrl', clipboardCtrl);
-  clipboardCtrl.$inject = ['$scope'];
+angular.module('zeppelinWebApp').controller('clipboardCtrl', clipboardCtrl);
+clipboardCtrl.$inject = ['$scope'];
 
-  function clipboardCtrl($scope) {
-    $scope.complete = function(e) {
-      $scope.copied = true;
-      $scope.tooltip = 'Copied!';
-      setTimeout(function() {
-        $scope.tooltip = 'Copy to clipboard';
-      }, 400);
-    };
-    $scope.$watch('input', function() {
-      $scope.copied = false;
+function clipboardCtrl($scope) {
+  $scope.complete = function(e) {
+    $scope.copied = true;
+    $scope.tooltip = 'Copied!';
+    setTimeout(function() {
       $scope.tooltip = 'Copy to clipboard';
-    });
-    $scope.clipError = function(e) {
-      console.log('Error: ' + e.name + ' - ' + e.message);
-      $scope.tooltip = 'Not supported browser';
-    };
-  }
-})();
+    }, 400);
+  };
+  $scope.$watch('input', function() {
+    $scope.copied = false;
+    $scope.tooltip = 'Copy to clipboard';
+  });
+  $scope.clipError = function(e) {
+    console.log('Error: ' + e.name + ' - ' + e.message);
+    $scope.tooltip = 'Not supported browser';
+  };
+}

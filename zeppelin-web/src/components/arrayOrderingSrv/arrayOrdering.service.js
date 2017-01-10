@@ -11,29 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
+angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
 
-  arrayOrderingSrv.$inject = ['TRASH_FOLDER_ID'];
+arrayOrderingSrv.$inject = ['TRASH_FOLDER_ID'];
 
-  function arrayOrderingSrv(TRASH_FOLDER_ID) {
-    var arrayOrderingSrv = this;
+function arrayOrderingSrv(TRASH_FOLDER_ID) {
+  var arrayOrderingSrv = this;
 
-    this.noteListOrdering = function(note) {
-      if (note.id === TRASH_FOLDER_ID) {
-        return '\uFFFF';
-      }
-      return arrayOrderingSrv.getNoteName(note);
-    };
+  this.noteListOrdering = function(note) {
+    if (note.id === TRASH_FOLDER_ID) {
+      return '\uFFFF';
+    }
+    return arrayOrderingSrv.getNoteName(note);
+  };
 
-    this.getNoteName = function(note) {
-      if (note.name === undefined || note.name.trim() === '') {
-        return 'Note ' + note.id;
-      } else {
-        return note.name;
-      }
-    };
-  }
+  this.getNoteName = function(note) {
+    if (note.name === undefined || note.name.trim() === '') {
+      return 'Note ' + note.id;
+    } else {
+      return note.name;
+    }
+  };
+}
 
-})();
