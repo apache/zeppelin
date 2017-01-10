@@ -123,7 +123,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
           CoreMatchers.equalTo(3));
 
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -162,7 +161,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Remove : Number of paragraphs are",
           newNosOfParas,
           CoreMatchers.equalTo(oldNosOfParas - 1));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -215,7 +213,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The paragraph1 value contains",
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo("2"));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -251,7 +248,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           getParagraphStatus(1), CoreMatchers.equalTo("READY")
       );
 
-
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -285,7 +281,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Clear  Output field contains ",
           driver.findElements(By.xpath(xpathToOutputField)).size(),
           CoreMatchers.equalTo(0));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -315,6 +310,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
             driver.findElement(By.xpath("//div[contains(@class,'col-md-" + newWidth + "')]")).isDisplayed(),
             CoreMatchers.equalTo(true));
       }
+      deleteTestNotebook(driver);
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testWidth ", e);
     }
@@ -384,7 +380,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Page Refresh : The title field contains ",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo("NEW TITLE"));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -434,7 +429,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After \"Hide line number\" the Line Number is Enabled",
           driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(false));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
