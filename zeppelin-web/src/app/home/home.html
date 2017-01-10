@@ -18,7 +18,7 @@ limitations under the License.
        ng-mouseleave="showNoteButton=false">
     <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
       <i style="font-size: 10px;"
-         ng-class="query.q && node.isTrash ? 'fa fa-trash-o' : 'icon-doc'" /> {{noteName(node)}}
+         ng-class="query.q && node.isTrash ? 'fa fa-trash-o' : 'icon-doc'"></i> {{noteName(node)}}
     </a>
     <!-- if note is not in trash -->
     <a ng-if="!node.isTrash" style="text-decoration: none;">
@@ -56,7 +56,7 @@ limitations under the License.
     <div ng-mouseenter="showFolderButton=true"
          ng-mouseleave="showFolderButton=false">
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
-        <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
+        <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'"></i> {{noteName(node)}}
       </a>
       <a ng-if="!node.isTrash" style="text-decoration: none;">
         <i style="margin-left: 10px;"
@@ -84,7 +84,7 @@ limitations under the License.
     </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'note_renderer.html'" />
+        <li ng-repeat="node in node.children" ng-include="'note_renderer.html'"></li>
       </ul>
     </div>
   </div>
@@ -93,7 +93,7 @@ limitations under the License.
     <div ng-mouseenter="showFolderButton=true"
          ng-mouseleave="showFolderButton=false">
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
-        <i style="font-size: 14px;" class="fa fa-trash-o" /> Trash
+        <i style="font-size: 14px;" class="fa fa-trash-o"></i> Trash
       </a>
       <a style="text-decoration: none;">
         <i style="margin-left: 10px"
@@ -108,14 +108,13 @@ limitations under the License.
       </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'note_renderer.html'" />
+        <li ng-repeat="node in node.children" ng-include="'note_renderer.html'"></li>
       </ul>
     </div>
   </div>
 </script>
 
-<!-- HomeCtrl -->
-<div ng-controller="HomeCtrl as home">
+<div ng-controller="HomeCtrl as home" data-ng-init="initHome()">
   <div ng-show="home.staticHome" class="box width-full home">
     <div class="zeppelin">
       <div class="zeppelin2"></div>
@@ -150,11 +149,10 @@ limitations under the License.
               </li>
               <div ng-if="!query.q || query.q === ''">
                 <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
-                    ng-include="'note_renderer.html'" />
-              </div>
+                    ng-include="'note_renderer.html'"></li>
               <div ng-if="query.q">
                 <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
-                    ng-include="'note_renderer.html'" />
+                    ng-include="'note_renderer.html'"></li>
              </div>
             </ul>
           </div>
