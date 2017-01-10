@@ -40,6 +40,7 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private Pattern condaEnvListPattern = Pattern.compile("([^\\s]*)[\\s*]*\\s(.*)");
   private Pattern listEnvPattern = Pattern.compile("env\\s*list\\s?");
+  private Pattern envPattern = Pattern.compile("env\\s*(.*)");
   private Pattern listPattern = Pattern.compile("list");
   private Pattern createPattern = Pattern.compile("create\\s*(.*)");
   private Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
@@ -70,10 +71,15 @@ public class PythonCondaInterpreter extends Interpreter {
     Matcher createMatcher = createPattern.matcher(st);
     Matcher installMatcher = installPattern.matcher(st);
     Matcher uninstallMatcher = uninstallPattern.matcher(st);
+    Matcher envMatcher = envPattern.matcher(st);
 
     try {
-      if (st == null || listEnvPattern.matcher(st).matches()) {
+      if (listEnvPattern.matcher(st).matches()) {
         String result = runCondaEnvList();
+        return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
+      } else if (envMatcher.matches()) {
+        // `envMatcher` should be used after `listEnvMatcher`
+        String result = runCondaEnv(getRestArgsFromMatcher(envMatcher));
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
       } else if (listPattern.matcher(st).matches()) {
         String result = runCondaList();
@@ -92,7 +98,7 @@ public class PythonCondaInterpreter extends Interpreter {
       } else if (uninstallMatcher.matches()) {
         String result = runCondaUninstall(getRestArgsFromMatcher(uninstallMatcher));
         return new InterpreterResult(Code.SUCCESS, Type.HTML, result);
-      } else if (helpPattern.matcher(st).matches()) {
+      } else if (st == null || helpPattern.matcher(st).matches()) {
         runCondaHelp(out);
         return new InterpreterResult(Code.SUCCESS);
       } else if (infoPattern.matcher(st).matches()) {
@@ -198,6 +204,16 @@ public class PythonCondaInterpreter extends Interpreter {
     return wrapCondaTableOutputStyle("Environment List", getCondaEnvs());
   }
 
+  private String runCondaEnv(List<String> restArgs)
+      throws IOException, InterruptedException {
+
+    restArgs.add(0, "conda");
+    restArgs.add(1, "env");
+    restArgs.add(3, "--yes"); // --yes should be inserted after command
+
+    return runCondaCommandForTextOutput(null, restArgs);
+  }
+
   private InterpreterResult runCondaActivate(String envName)
       throws IOException, InterruptedException {
 
@@ -278,9 +294,7 @@ public class PythonCondaInterpreter extends Interpreter {
     if (null != title && !title.isEmpty()) {
       sb.append("<h4>").append(title).append("</h4>\n");
     }
-    sb.append("</div><br />\n");
-    sb.append("<span style=\"white-space:pre-wrap;\">")
-        .append(content).append("</span>\n");
+    sb.append("</div><br />\n").append(content);
 
     return sb.toString();
   }
