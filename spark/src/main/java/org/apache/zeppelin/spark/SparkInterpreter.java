@@ -488,8 +488,9 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
+    //TODO(zjffdu), this is not maintainable when new version is added.
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
+      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip", "py4j-0.10.4-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -1452,8 +1453,10 @@ public class SparkInterpreter extends Interpreter {
           .getConstructor(new Class[]{
             SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
 
-      return constructor.newInstance(new Object[] {
-        conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+      Object securityManager = createSecurityManager(conf);
+      return constructor.newInstance(new Object[]{
+        conf, outputDir, securityManager, 0, "HTTP Server"});
+
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
       // fallback to old constructor
@@ -1464,12 +1467,42 @@ public class SparkInterpreter extends Interpreter {
             .getConstructor(new Class[]{
               File.class, SecurityManager.class, int.class, String.class});
         return constructor.newInstance(new Object[] {
-          outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+          outputDir, createSecurityManager(conf), 0, "HTTP Server"});
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
           InstantiationException | InvocationTargetException e1) {
         logger.error(e1.getMessage(), e1);
         return null;
       }
     }
+  }
+
+  /**
+   * Constructor signature of SecurityManager changes in spark 2.1.0, so we use this method to
+   * create SecurityManager properly for different versions of spark
+   *
+   * @param conf
+   * @return
+   * @throws ClassNotFoundException
+   * @throws NoSuchMethodException
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   * @throws InstantiationException
+   */
+  private Object createSecurityManager(SparkConf conf) throws ClassNotFoundException,
+      NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException {
+    Object securityManager = null;
+    try {
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class, scala.Option.class });
+      securityManager = smConstructor.newInstance(conf, null);
+    } catch (NoSuchMethodException e) {
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class });
+      securityManager = smConstructor.newInstance(conf);
+    }
+    return securityManager;
   }
 }
