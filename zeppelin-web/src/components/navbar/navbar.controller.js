@@ -41,6 +41,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
   vm.searchForm = searchService;
   vm.showLoginWindow = showLoginWindow;
   vm.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
+  vm.isFilterNote = isFilterNote;
 
   $scope.query = {q: ''};
 
