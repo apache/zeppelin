@@ -15,12 +15,12 @@
 package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -40,10 +40,12 @@ import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.alias.CredentialProvider;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -87,8 +89,6 @@ public class JDBCInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
   static final String INTERPRETER_NAME = "jdbc";
-  static final String JDBC_DEFAULT_USER_KEY = "default.user";
-  static final String JDBC_DEFAULT_PASSWORD_KEY = "default.password";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final int MAX_LINE_DEFAULT = 1000;
@@ -98,6 +98,8 @@ public class JDBCInterpreter extends Interpreter {
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
+  static final String JDBC_JCEKS_FILE = "jceks.file";
+  static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -105,7 +107,6 @@ public class JDBCInterpreter extends Interpreter {
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
-  private static final String UPDATE_COUNT_HEADER = "Update Count";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
@@ -182,7 +183,7 @@ public class JDBCInterpreter extends Interpreter {
     }
     logger.debug("JDBC PropretiesMap: {}", basePropretiesMap);
 
-    if (!StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+    if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       JDBCSecurityImpl.createSecureConfiguration(property);
     }
     for (String propertyKey : basePropretiesMap.keySet()) {
@@ -261,9 +262,9 @@ public class JDBCInterpreter extends Interpreter {
     return driverName.toString();
   }
 
-  private boolean existAccountInBaseProperty() {
-    return property.containsKey(JDBC_DEFAULT_USER_KEY) &&
-      property.containsKey(JDBC_DEFAULT_PASSWORD_KEY);
+  private boolean existAccountInBaseProperty(String propertyKey) {
+    return basePropretiesMap.get(propertyKey).containsKey(USER_KEY) &&
+        basePropretiesMap.get(propertyKey).containsKey(PASSWORD_KEY);
   }
 
   private UsernamePassword getUsernamePassword(InterpreterContext interpreterContext,
@@ -295,15 +296,22 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private void setUserProperty(String propertyKey, InterpreterContext interpreterContext)
-      throws SQLException {
+      throws SQLException, IOException {
 
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
     JDBCUserConfigurations jdbcUserConfigurations =
       getJDBCConfiguration(user);
+    if (basePropretiesMap.get(propertyKey).containsKey(USER_KEY) &&
+        !basePropretiesMap.get(propertyKey).getProperty(USER_KEY).isEmpty()) {
+      String password = getPassword(basePropretiesMap.get(propertyKey));
+      if (!isEmpty(password)) {
+        basePropretiesMap.get(propertyKey).setProperty(PASSWORD_KEY, password);
+      }
+    }
     jdbcUserConfigurations.setPropertyMap(propertyKey, basePropretiesMap.get(propertyKey));
 
-    if (existAccountInBaseProperty()) {
+    if (existAccountInBaseProperty(propertyKey)) {
       return;
     }
     jdbcUserConfigurations.cleanUserProperty(propertyKey);
@@ -344,7 +352,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   public Connection getConnection(String propertyKey, InterpreterContext interpreterContext)
-      throws ClassNotFoundException, SQLException, InterpreterException {
+      throws ClassNotFoundException, SQLException, InterpreterException, IOException {
     final String user =  interpreterContext.getAuthenticationInfo().getUser();
     Connection connection;
     if (propertyKey == null || basePropretiesMap.get(propertyKey) == null) {
@@ -357,7 +365,7 @@ public class JDBCInterpreter extends Interpreter {
     final Properties properties = jdbcUserConfigurations.getPropertyMap(propertyKey);
     final String url = properties.getProperty(URL_KEY);
 
-    if (StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+    if (isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       connection = getConnectionFromPool(url, user, propertyKey, properties);
     } else {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
@@ -408,6 +416,34 @@ public class JDBCInterpreter extends Interpreter {
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
     return connection;
+  }
+
+  private String getPassword(Properties properties) throws IOException {
+    if (isNotEmpty(properties.getProperty(PASSWORD_KEY))) {
+      return properties.getProperty(PASSWORD_KEY);
+    } else if (isNotEmpty(properties.getProperty(JDBC_JCEKS_FILE))
+        && isNotEmpty(properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY))) {
+      try {
+        Configuration configuration = new Configuration();
+        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
+            properties.getProperty(JDBC_JCEKS_FILE));
+        CredentialProvider provider = CredentialProviderFactory.getProviders(configuration).get(0);
+        CredentialProvider.CredentialEntry credEntry =
+            provider.getCredentialEntry(properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY));
+        if (credEntry != null) {
+          return new String(credEntry.getCredential());
+        } else {
+          throw new InterpreterException("Failed to retrieve password from JCEKS from key: "
+              + properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY));
+        }
+      } catch (Exception e) {
+        logger.error("Failed to retrieve password from JCEKS \n" +
+            "For file: " + properties.getProperty(JDBC_JCEKS_FILE) +
+            "\nFor key: " + properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY), e);
+        throw e;
+      }
+    }
+    return null;
   }
 
   private String getResults(ResultSet resultSet, boolean isTableType)
