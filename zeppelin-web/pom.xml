@@ -71,6 +71,7 @@
             <exclude>.editorconfig</exclude>
             <exclude>.jscsrc</exclude>
             <exclude>.eslintrc</exclude>
+            <exclude>.eslintignore</exclude>
             <exclude>.tmp/**</exclude>
             <exclude>**/.settings/*</exclude>
             <exclude>**/.classpath</exclude>
