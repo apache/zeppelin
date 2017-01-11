@@ -1498,7 +1498,6 @@ public class SparkInterpreter extends Interpreter {
           .getConstructor(new Class[]{ SparkConf.class, scala.Option.class });
       securityManager = smConstructor.newInstance(conf, null);
     } catch (NoSuchMethodException e) {
-
       Constructor<?> smConstructor = getClass().getClassLoader()
           .loadClass("org.apache.spark.SecurityManager")
           .getConstructor(new Class[]{ SparkConf.class });
