@@ -46,6 +46,7 @@ zeppelin-web/src/fonts/patua-one*
 zeppelin-web/src/fonts/google-fonts.css
 zeppelin-web/.sass-cache
 zeppelin-web/npm-debug.log
+zeppelin-web/yarn-error.log
 zeppelin-web/bower_components
 zeppelin-web/yarn.lock
 **nbproject/

@@ -11,24 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').service('renameSrv', renameSrv);
+angular.module('zeppelinWebApp').service('renameSrv', renameSrv);
 
-  renameSrv.$inject = ['$rootScope'];
+renameSrv.$inject = ['$rootScope'];
 
-  function renameSrv($rootScope) {
-    var self = this;
+function renameSrv($rootScope) {
+  var self = this;
 
-    /**
-     * <options schema>
-     * title: string - Modal title
-     * oldName: string - name to initialize input
-     * callback: (newName: string)=>void - callback onButtonClick
-     * validator: (str: string)=>boolean - input validator
-     */
-    self.openRenameModal = function(options) {
-      $rootScope.$broadcast('openRenameModal', options);
-    };
-  }
-})();
+  /**
+   * <options schema>
+   * title: string - Modal title
+   * oldName: string - name to initialize input
+   * callback: (newName: string)=>void - callback onButtonClick
+   * validator: (str: string)=>boolean - input validator
+   */
+  self.openRenameModal = function(options) {
+    $rootScope.$broadcast('openRenameModal', options);
+  };
+}

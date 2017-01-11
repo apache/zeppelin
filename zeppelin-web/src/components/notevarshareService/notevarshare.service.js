@@ -11,31 +11,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').service('noteVarShareService', noteVarShareService);
+angular.module('zeppelinWebApp').service('noteVarShareService', noteVarShareService);
 
-  noteVarShareService.$inject = [];
+noteVarShareService.$inject = [];
 
-  function noteVarShareService() {
-    var store = {};
+function noteVarShareService() {
+  var store = {};
 
-    this.clear = function() {
-      store = {};
-    };
-
-    this.put = function(key, value) {
-      store[key] = value;
-    };
-
-    this.get = function(key) {
-      return store[key];
-    };
-
-    this.del = function(key) {
-      var v = store[key];
-      delete store[key];
-      return v;
-    };
+  this.clear = function() {
+    store = {};
   };
-})();
+
+  this.put = function(key, value) {
+    store[key] = value;
+  };
+
+  this.get = function(key) {
+    return store[key];
+  };
+
+  this.del = function(key) {
+    var v = store[key];
+    delete store[key];
+    return v;
+  };
+}
