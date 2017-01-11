@@ -428,9 +428,9 @@ public class JDBCInterpreter extends Interpreter {
               + properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY));
         }
       } catch (Exception e) {
-        logger.error("Failed to retrieve password from JCEKS", e);
-        logger.error("For file: " + properties.getProperty(JDBC_JCEKS_FILE));
-        logger.error("For key: " + properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY));
+        logger.error("Failed to retrieve password from JCEKS \n" +
+            "For file: " + properties.getProperty(JDBC_JCEKS_FILE) +
+            "\nFor key: " + properties.getProperty(JDBC_JCEKS_CREDENTIAL_KEY), e);
         throw e;
       }
     }
