@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.pig;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.BackendException;
@@ -97,4 +98,21 @@ public abstract class BasePigInterpreter extends Interpreter {
   }
 
   public abstract PigServer getPigServer();
+
+  /**
+   * Use paragraph title if it exists, else use the last line of pig script.
+   * @param cmd
+   * @param context
+   * @return
+   */
+  protected String createJobName(String cmd, InterpreterContext context) {
+    String pTitle = context.getParagraphTitle();
+    if (!StringUtils.isEmpty(pTitle)) {
+      return pTitle;
+    } else {
+      // use the last line of pig script as the job name.
+      String[] lines = cmd.split("\n");
+      return lines[lines.length - 1];
+    }
+  }
 }

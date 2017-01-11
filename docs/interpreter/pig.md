@@ -47,6 +47,8 @@ group: manual
 ### How to configure interpreter
 
 At the Interpreters menu, you have to create a new Pig interpreter. Pig interpreter has below properties by default.
+And you can set any pig properties here which will be passed to pig engine. (like tez.queue.name & mapred.job.queue.name).
+Besides, we use paragraph title as job name if it exists, else use the last line of pig script. So you can use that to find app running in YARN RM UI.
 
 <table class="table-configuration">
     <tr>
@@ -68,6 +70,16 @@ At the Interpreters menu, you have to create a new Pig interpreter. Pig interpre
         <td>zeppelin.pig.maxResult</td>
         <td>1000</td>
         <td>max row number displayed in <code>%pig.query</code></td>
+    </tr>
+    <tr>
+        <td>tez.queue.name</td>
+        <td>default</td>
+        <td>queue name for tez engine</td>
+    </tr>
+    <tr>
+        <td>mapred.job.queue.name</td>
+        <td>default</td>
+        <td>queue name for mapreduce engine</td>
     </tr>
 </table>  
 
