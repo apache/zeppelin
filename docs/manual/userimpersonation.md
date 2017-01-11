@@ -72,4 +72,4 @@ whoami
 ```
 
 
-Note that usage of "User Impersonate" option will enable Spark interpreter to use `--proxy-user` option with current user by default.
+Note that usage of "User Impersonate" option will enable Spark interpreter to use `--proxy-user` option with current user by default. If you want to disable `--proxy-user` option, then refer to `ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER` variable in `conf/zeppelin-env.sh`
