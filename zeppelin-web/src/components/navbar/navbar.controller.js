@@ -41,6 +41,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
   vm.searchForm = searchService;
   vm.showLoginWindow = showLoginWindow;
   vm.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
+  vm.isFilterNote = isFilterNote;
 
   $scope.query = {q: ''};
 
@@ -66,6 +67,18 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
 
     getZeppelinVersion();
     loadNotes();
+  }
+
+  function isFilterNote(note) {
+    if (!$scope.query.q) {
+      return true;
+    }
+
+    var noteName = note.name;
+    if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
+      return true;
+    }
+    return false;
   }
 
   function isActive(noteId) {
