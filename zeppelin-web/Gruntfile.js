@@ -424,11 +424,11 @@ module.exports = function(grunt) {
         options: {
           patterns: [
             {
-              match: /(templateUrl:"[a-zA-Z\-\_\/]+\.html)/g,
+              match: /(templateUrl:"[^\.\s]+\.html)/g,
               replacement: '$1' + '?v=' + buildtime
             },
             {
-              match: /(ng-include src="'[a-zA-Z\-\_\/]+\.html)/g,
+              match: /(ng-include src="'[^\.\s]+\.html)/g,
               replacement: '$1' + '?v=' + buildtime
             }
           ]
