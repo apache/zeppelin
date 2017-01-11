@@ -12,40 +12,24 @@
  * limitations under the License.
  */
 
-.chart-selector {
-    margin-bottom: 10px; 
-    position: relative; 
-    display: inline-block; 
-    vertical-align: middle;
-}
+/**
+ * The abstract dataset rapresentation
+ */
+class Dataset {
+  /**
+   * load the paragraph result
+   */
+  loadParagraphResult(paragraphResult) {
+    // override this
+  };
+};
 
-.network-badge-settings {
-  margin: 0.2em;
-}
+/**
+ * Dataset types
+ */
+const DatasetType = Object.freeze({
+  NETWORK: 'NETWORK',
+  TABLE: 'TABLE'
+});
 
-/* D3 Graph Configuration */
-marker#suit {
-  fill: #D3D3D3;
-}
-path.link {
-  fill: none;
-  stroke-width: 3px;
-}
-path.textpath {
- fill: none;
- stroke: none;
-}
-
-text {
-  font-size: 12px;
-  pointer-events: none;
-}
-text.shadow {
-  stroke: #fff;
-  stroke-width: 3px;
-  stroke-opacity: .8;
-}
-text.nodeLabel {
-  font-size: 1em;
-  pointer-events: none;
-}
+export {Dataset, DatasetType};
