@@ -1133,6 +1133,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   });
 
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
+    if (!$scope.editor) {
+      return;
+    }
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
@@ -1177,8 +1180,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         ), 1000);
 
       deferred.promise.then(function(data) {
-        $scope.editor.focus();
-        $scope.goToEnd($scope.editor);
+        if ($scope.editor) {
+          $scope.editor.focus();
+          $scope.goToEnd($scope.editor);
+        }
       });
     }
   });
