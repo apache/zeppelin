@@ -19,7 +19,7 @@ function popoverHtmlUnsafePopup() {
     restrict: 'EA',
     replace: true,
     scope: {title: '@', content: '@', placement: '@', animation: '&', isOpen: '&'},
-    templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
+    templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html',
   };
 }
 

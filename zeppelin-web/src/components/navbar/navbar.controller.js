@@ -25,13 +25,13 @@ NavCtrl.$inject = [
   'websocketMsgSrv',
   'arrayOrderingSrv',
   'searchService',
-  'TRASH_FOLDER_ID'
+  'TRASH_FOLDER_ID',
 ];
 
 function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
                  noteListDataFactory, baseUrlSrv, websocketMsgSrv,
                  arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
-  var vm = this;
+  let vm = this;
   vm.arrayOrderingSrv = arrayOrderingSrv;
   vm.connected = websocketMsgSrv.isConnected();
   vm.isActive = isActive;
@@ -77,19 +77,19 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
   }
 
   function logout() {
-    var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
+    let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
-    //for firefox and safari
+    // for firefox and safari
     logoutURL = logoutURL.replace('//', '//false:false@');
     $http.post(logoutURL).error(function() {
-      //force authcBasic (if configured) to logout
+      // force authcBasic (if configured) to logout
       $http.post(logoutURL).error(function() {
         $rootScope.userName = '';
         $rootScope.ticket.principal = '';
         $rootScope.ticket.ticket = '';
         $rootScope.ticket.roles = '';
         BootstrapDialog.show({
-          message: 'Logout Success'
+          message: 'Logout Success',
         });
         setTimeout(function() {
           window.location.replace('/');

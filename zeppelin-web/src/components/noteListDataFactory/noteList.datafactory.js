@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFact
 noteListDataFactory.$inject = ['TRASH_FOLDER_ID'];
 
 function noteListDataFactory(TRASH_FOLDER_ID) {
-  var notes = {
+  let notes = {
     root: {children: []},
     flatList: [],
     flatFolderMap: {},
@@ -34,38 +34,40 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
       notes.root = {children: []};
       notes.flatFolderMap = {};
       _.reduce(notesList, function(root, note) {
-        var noteName = note.name || note.id;
-        var nodes = noteName.match(/([^\/][^\/]*)/g);
+        let noteName = note.name || note.id;
+        let nodes = noteName.match(/([^\/][^\/]*)/g);
 
         // recursively add nodes
         addNode(root, nodes, note.id);
 
         return root;
       }, notes.root);
-    }
+    },
   };
 
-  var addNode = function(curDir, nodes, noteId) {
+  let addNode = function(curDir, nodes, noteId) {
     if (nodes.length === 1) {  // the leaf
       curDir.children.push({
         name: nodes[0],
         id: noteId,
         path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0],
-        isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
+        isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false,
       });
     } else {  // a folder node
-      var node = nodes.shift();
-      var dir = _.find(curDir.children,
-        function(c) {return c.name === node && c.children !== undefined;});
+      let node = nodes.shift();
+      let dir = _.find(curDir.children,
+        function(c) {
+return c.name === node && c.children !== undefined;
+});
       if (dir !== undefined) { // found an existing dir
         addNode(dir, nodes, noteId);
       } else {
-        var newDir = {
+        let newDir = {
           id: curDir.id ? curDir.id + '/' + node : node,
           name: node,
           hidden: true,
           children: [],
-          isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
+          isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false,
         };
 
         // add the folder to flat folder map

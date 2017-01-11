@@ -22,13 +22,13 @@ HomeCtrl.$inject = [
   'arrayOrderingSrv',
   'ngToast',
   'noteActionSrv',
-  'TRASH_FOLDER_ID'
+  'TRASH_FOLDER_ID',
 ];
 
 function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
                   ngToast, noteActionSrv, TRASH_FOLDER_ID) {
   ngToast.dismiss();
-  var vm = this;
+  let vm = this;
   vm.notes = noteListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
@@ -43,7 +43,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   $scope.isReloading = false;
   $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
 
-  var initHome = function() {
+  let initHome = function() {
     websocketMsgSrv.getHomeNote();
   };
 

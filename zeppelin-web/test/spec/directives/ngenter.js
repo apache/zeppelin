@@ -1,10 +1,9 @@
 describe('Directive: ngEnter', function() {
-
   // load the directive's module
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var element;
-  var scope;
+  let element;
+  let scope;
 
   beforeEach(inject(function($rootScope) {
     scope = $rootScope.$new();
@@ -16,7 +15,7 @@ describe('Directive: ngEnter', function() {
     expect(element.text()).toBeDefined();
   }));
 
-  //Test the rest of function in ngEnter
+  // Test the rest of function in ngEnter
   /*  it('should make hidden element visible', inject(function ($compile) {
       element = angular.element('<ng-enter></ng-enter>');
       element = $compile(element)(scope);

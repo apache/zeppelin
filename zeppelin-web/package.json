@@ -10,6 +10,7 @@
     "postinstall": "bower install --silent && grunt googlefonts",
     "prebuild": "npm-run-all clean",
     "lint:js": "eslint src test Gruntfile.js",
+    "lint:js-fix": "eslint src test Gruntfile.js --fix",
     "build": "npm-run-all lint:js && grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
     "predev": "grunt pre-webpack-dev",
     "dev:server": "webpack-dev-server --hot",

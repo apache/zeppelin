@@ -21,7 +21,7 @@ function dropdownInput() {
       element.bind('click', function(event) {
         event.stopPropagation();
       });
-    }
+    },
   };
 }
 

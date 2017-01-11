@@ -17,9 +17,9 @@ angular.module('zeppelinWebApp').controller('SearchResultCtrl', SearchResultCtrl
 SearchResultCtrl.$inject = ['$scope', '$routeParams', 'searchService'];
 
 function SearchResultCtrl($scope, $routeParams, searchService) {
-  $scope.isResult = true ;
+  $scope.isResult = true;
   $scope.searchTerm = $routeParams.searchTerm;
-  var results = searchService.search({'q': $routeParams.searchTerm}).query();
+  let results = searchService.search({'q': $routeParams.searchTerm}).query();
 
   results.$promise.then(function(result) {
     $scope.notes = result.body.map(function(note) {
@@ -53,13 +53,13 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
   $scope.highlightSearchResults = function(note) {
     return function(_editor) {
       function getEditorMode(text) {
-        var editorModes = {
+        let editorModes = {
           'ace/mode/scala': /^%(\w*\.)?spark/,
           'ace/mode/python': /^%(\w*\.)?(pyspark|python)/,
           'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)/,
           'ace/mode/sql': /^%(\w*\.)?\wql/,
           'ace/mode/markdown': /^%md/,
-          'ace/mode/sh': /^%sh/
+          'ace/mode/sh': /^%sh/,
         };
 
         return Object.keys(editorModes).reduce(function(res, mode) {
@@ -67,7 +67,7 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
         }, 'ace/mode/scala');
       }
 
-      var Range = ace.require('ace/range').Range;
+      let Range = ace.require('ace/range').Range;
 
       _editor.setOption('highlightActiveLine', false);
       _editor.$blockScrolling = Infinity;
@@ -78,8 +78,8 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
 
       function getIndeces(term) {
         return function(str) {
-          var indeces = [];
-          var i = -1;
+          let indeces = [];
+          let i = -1;
           while ((i = str.indexOf(term, i + 1)) >= 0) {
             indeces.push(i);
           }
@@ -87,33 +87,32 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
         };
       }
 
-      var result = '';
+      let result = '';
       if (note.header !== '') {
         result = note.header + '\n\n' + note.snippet;
       } else {
         result = note.snippet;
       }
 
-      var lines = result
+      let lines = result
         .split('\n')
         .map(function(line, row) {
-
-          var match = line.match(/<B>(.+?)<\/B>/);
+          let match = line.match(/<B>(.+?)<\/B>/);
 
           // return early if nothing to highlight
           if (!match) {
             return line;
           }
 
-          var term = match[1];
-          var __line = line
+          let term = match[1];
+          let __line = line
             .replace(/<B>/g, '')
             .replace(/<\/B>/g, '');
 
-          var indeces = getIndeces(term)(__line);
+          let indeces = getIndeces(term)(__line);
 
           indeces.forEach(function(start) {
-            var end = start + term.length;
+            let end = start + term.length;
             if (note.header !== '' && row === 0) {
               _editor
                 .getSession()
@@ -145,11 +144,12 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       // resize editor based on content length
       _editor.setOption(
         'maxLines',
-        lines.reduce(function(len, line) {return len + line.length;}, 0)
+        lines.reduce(function(len, line) {
+return len + line.length;
+}, 0)
       );
 
       _editor.getSession().setValue(lines.join('\n'));
-
     };
   };
 }

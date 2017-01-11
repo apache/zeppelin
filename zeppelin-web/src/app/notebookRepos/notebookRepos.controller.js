@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').controller('NotebookReposCtrl', NotebookReposCt
 NotebookReposCtrl.$inject = ['$http', 'baseUrlSrv', 'ngToast'];
 
 function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
-  var vm = this;
+  let vm = this;
   vm.notebookRepos = [];
   vm.showDropdownSelected = showDropdownSelected;
   vm.saveNotebookRepo = saveNotebookRepo;
@@ -30,9 +30,9 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
     console.log('data %o', data);
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook-repositories', {
       'name': repo.className,
-      'settings': data
+      'settings': data,
     }).success(function(data) {
-      var index = _.findIndex(vm.notebookRepos, {'className': repo.className});
+      let index = _.findIndex(vm.notebookRepos, {'className': repo.className});
       if (index >= 0) {
         vm.notebookRepos[index] = data.body;
         console.log('repos %o, data %o', vm.notebookRepos, data.body);
@@ -42,7 +42,7 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
       ngToast.danger({
         content: 'We couldn\'t save that NotebookRepo\'s settings',
         verticalPosition: 'bottom',
-        timeout: '3000'
+        timeout: '3000',
       });
       valueform.$show();
     });
@@ -51,7 +51,7 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
   }
 
   function showDropdownSelected(setting) {
-    var index = _.findIndex(setting.value, {'value': setting.selected});
+    let index = _.findIndex(setting.value, {'value': setting.selected});
     if (index < 0) {
       return 'No value';
     } else {
@@ -71,7 +71,7 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
         ngToast.danger({
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
-          timeout: '3000'
+          timeout: '3000',
         });
         setTimeout(function() {
           window.location.replace('/');

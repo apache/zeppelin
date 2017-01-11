@@ -34,7 +34,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   };
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -58,7 +58,9 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   configureChart(chart) {
     var self = this;
     chart.yAxis.axisLabelDistance(50);
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+    chart.yAxis.tickFormat(function(d) {
+return self.yAxisTickFormat(d);
+});
 
     this.chart.stacked(this.config.stacked);
 

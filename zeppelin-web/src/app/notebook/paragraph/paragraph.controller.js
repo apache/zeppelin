@@ -29,24 +29,24 @@ ParagraphCtrl.$inject = [
   'baseUrlSrv',
   'ngToast',
   'saveAsService',
-  'noteVarShareService'
+  'noteVarShareService',
 ];
 
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
                        baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
-  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
 
-  var editorSetting = {};
+  let editorSetting = {};
   // flag that is used to set editor setting on paste percent sign
-  var pastePercentSign = false;
+  let pastePercentSign = false;
   // flag that is used to set editor setting on save interpreter bindings
-  var setInterpreterBindings = false;
-  var paragraphScope = $rootScope.$new(true, $rootScope);
+  let setInterpreterBindings = false;
+  let paragraphScope = $rootScope.$new(true, $rootScope);
 
   // to keep backward compatibility
   $scope.compiledScope = paragraphScope;
@@ -55,10 +55,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     // z.runParagraph('20150213-231621_168813393')
     runParagraph: function(paragraphId) {
       if (paragraphId) {
-        var filtered = $scope.parentNote.paragraphs.filter(function(x) {
-          return x.id === paragraphId;});
+        let filtered = $scope.parentNote.paragraphs.filter(function(x) {
+          return x.id === paragraphId;
+});
         if (filtered.length === 1) {
-          var paragraph = filtered[0];
+          let paragraph = filtered[0];
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
             paragraph.config, paragraph.settings.params);
         } else {
@@ -96,10 +97,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           'z.angularUnbind(varName, \'PUT_HERE_PARAGRAPH_ID\')',
           verticalPosition: 'top', dismissOnTimeout: false});
       }
-    }
+    },
   };
 
-  var angularObjectRegistry = {};
+  let angularObjectRegistry = {};
 
   // Controller init
   $scope.init = function(newParagraph, note) {
@@ -122,7 +123,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     initializeDefault($scope.paragraph.config);
   };
 
-  var initializeDefault = function(config) {
+  let initializeDefault = function(config) {
     if (!config.colWidth) {
       config.colWidth = 12;
     }
@@ -151,11 +152,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.paragraph.results.msg = [];
       }
 
-      var update = ($scope.paragraph.results.msg[data.index]) ? true : false;
+      let update = ($scope.paragraph.results.msg[data.index]) ? true : false;
 
       $scope.paragraph.results.msg[data.index] = {
         data: data.data,
-        type: data.type
+        type: data.type,
       };
 
       if (update) {
@@ -171,8 +172,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.getIframeDimensions = function() {
     if ($scope.asIframe) {
-      var paragraphid = '#' + $routeParams.paragraphId + '_container';
-      var height = angular.element(paragraphid).height();
+      let paragraphid = '#' + $routeParams.paragraphId + '_container';
+      let height = angular.element(paragraphid).height();
       return height;
     }
     return 0;
@@ -180,7 +181,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$watch($scope.getIframeDimensions, function(newValue, oldValue) {
     if ($scope.asIframe && newValue) {
-      var message = {};
+      let message = {};
       message.height = newValue;
       message.url = $location.$$absUrl;
       $window.parent.postMessage(angular.toJson(message), '*');
@@ -203,7 +204,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  var isEmpty = function(object) {
+  let isEmpty = function(object) {
     return !object;
   };
 
@@ -267,17 +268,17 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.copyPara = function(position) {
-    var editorValue = $scope.editor.getValue();
+    let editorValue = $scope.editor.getValue();
     if (editorValue) {
       $scope.copyParagraph(editorValue, position);
     }
   };
 
   $scope.copyParagraph = function(data, position) {
-    var newIndex = -1;
-    for (var i = 0; i < $scope.note.paragraphs.length; i++) {
+    let newIndex = -1;
+    for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === $scope.paragraph.id) {
-        //determine position of where to add new paragraph; default is below
+        // determine position of where to add new paragraph; default is below
         if (position === 'above') {
           newIndex = i;
         } else {
@@ -291,7 +292,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       return;
     }
 
-    var config = angular.copy($scope.paragraph.config);
+    let config = angular.copy($scope.paragraph.config);
     config.editorHide = false;
 
     websocketMsgSrv.copyParagraph(newIndex, $scope.paragraph.title, data,
@@ -299,7 +300,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.removeParagraph = function(paragraph) {
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+    let paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
     if (paragraphs[paragraphs.length - 1].id.indexOf(paragraph.id) === 0) {
       BootstrapDialog.alert({
         closable: true,
@@ -308,7 +309,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           if (result) {
             $scope.editor.focus();
           }
-        }
+        },
       });
     } else {
       BootstrapDialog.confirm({
@@ -321,7 +322,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
             websocketMsgSrv.removeParagraph(paragraph.id);
             $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
           }
-        }
+        },
       });
     }
   };
@@ -362,19 +363,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     commitParagraph(paragraph);
   };
 
-  var openEditorAndCloseTable = function(paragraph) {
+  let openEditorAndCloseTable = function(paragraph) {
     manageEditorAndTableState(paragraph, false, true);
   };
 
-  var closeEditorAndOpenTable = function(paragraph) {
+  let closeEditorAndOpenTable = function(paragraph) {
     manageEditorAndTableState(paragraph, true, false);
   };
 
-  var openEditorAndOpenTable = function(paragraph) {
+  let openEditorAndOpenTable = function(paragraph) {
     manageEditorAndTableState(paragraph, false, false);
   };
 
-  var manageEditorAndTableState = function(paragraph, hideEditor, hideTable) {
+  let manageEditorAndTableState = function(paragraph, hideEditor, hideTable) {
     paragraph.config.editorHide = hideEditor;
     paragraph.config.tableHide = hideTable;
     commitParagraph(paragraph);
@@ -428,7 +429,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.loadForm = function(formulaire, params) {
-    var value = formulaire.defaultValue;
+    let value = formulaire.defaultValue;
     if (params[formulaire.name]) {
       value = params[formulaire.name];
     }
@@ -437,7 +438,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.toggleCheckbox = function(formulaire, option) {
-    var idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
+    let idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
     if (idx > -1) {
       $scope.paragraph.settings.params[formulaire.name].splice(idx, 1);
     } else {
@@ -446,16 +447,16 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.aceChanged = function(_, editor) {
-    var session = editor.getSession();
-    var dirtyText = session.getValue();
+    let session = editor.getSession();
+    let dirtyText = session.getValue();
     $scope.dirtyText = dirtyText;
     $scope.startSaveTimer();
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
   };
 
   $scope.aceLoaded = function(_editor) {
-    var langTools = ace.require('ace/ext/language_tools');
-    var Range = ace.require('ace/range').Range;
+    let langTools = ace.require('ace/ext/language_tools');
+    let Range = ace.require('ace/range').Range;
 
     _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
@@ -488,32 +489,32 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      var remoteCompleter = {
+      let remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
           if (!editor.isFocused()) {
             return;
           }
 
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
-          var buf = session.getValue();
+          let buf = session.getValue();
 
           websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
             if (data.completions) {
-              var completions = [];
-              for (var c in data.completions) {
-                var v = data.completions[c];
+              let completions = [];
+              for (let c in data.completions) {
+                let v = data.completions[c];
                 completions.push({
                   name: v.name,
                   value: v.value,
-                  score: 300
+                  score: 300,
                 });
               }
               callback(null, completions);
             }
           });
-        }
+        },
       };
 
       langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter,
@@ -522,7 +523,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.editor.setOptions({
         enableBasicAutocompletion: true,
         enableSnippets: false,
-        enableLiveAutocompletion: false
+        enableLiveAutocompletion: false,
       });
 
       $scope.handleFocus = function(value, isDigestPass) {
@@ -583,9 +584,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
-      var keyBindingEditorFocusAction = function(scrollValue) {
-        var numRows = $scope.editor.getSession().getLength();
-        var currentRow = $scope.editor.getCursorPosition().row;
+      let keyBindingEditorFocusAction = function(scrollValue) {
+        let numRows = $scope.editor.getSession().getLength();
+        let currentRow = $scope.editor.getCursorPosition().row;
         if (currentRow === 0 && scrollValue <= 0) {
           // move focus to previous paragraph
           $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
@@ -604,13 +605,13 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
           if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea')
               .css('top').replace('px', '')) < 0) {
-            var position = $scope.editor.getCursorPosition();
-            var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+            let position = $scope.editor.getCursorPosition();
+            let cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
             angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
           }
 
-          var ROW_UP = -1;
-          var ROW_DOWN = 1;
+          let ROW_UP = -1;
+          let ROW_DOWN = 1;
 
           switch (keyCode) {
             case 38:
@@ -636,8 +637,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  var getEditorSetting = function(paragraph, interpreterName) {
-    var deferred = $q.defer();
+  let getEditorSetting = function(paragraph, interpreterName) {
+    let deferred = $q.defer();
     websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName);
     $timeout(
       $scope.$on('editorSetting', function(event, data) {
@@ -649,14 +650,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     return deferred.promise;
   };
 
-  var setEditorLanguage = function(session, language) {
-    var mode = 'ace/mode/';
+  let setEditorLanguage = function(session, language) {
+    let mode = 'ace/mode/';
     mode += language;
     $scope.paragraph.config.editorMode = mode;
     session.setMode(mode);
   };
 
-  var setParagraphMode = function(session, paragraphText, pos) {
+  let setParagraphMode = function(session, paragraphText, pos) {
     // Evaluate the mode only if the the position is undefined
     // or the first 30 characters of the paragraph have been modified
     // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
@@ -667,7 +668,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         !setInterpreterBindings) {
         session.setMode($scope.paragraph.config.editorMode);
       } else {
-        var magic = getInterpreterName(paragraphText);
+        let magic = getInterpreterName(paragraphText);
         if (editorSetting.magic !== magic) {
           editorSetting.magic = magic;
           getEditorSetting($scope.paragraph, magic)
@@ -682,9 +683,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     setInterpreterBindings = false;
   };
 
-  var getInterpreterName = function(paragraphText) {
-    var intpNameRegexp = /^\s*%(.+?)\s/g;
-    var match = intpNameRegexp.exec(paragraphText);
+  let getInterpreterName = function(paragraphText) {
+    let intpNameRegexp = /^\s*%(.+?)\s/g;
+    let match = intpNameRegexp.exec(paragraphText);
     if (match) {
       return match[1].trim();
       // get default interpreter name if paragraph text doesn't start with '%'
@@ -695,8 +696,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     return '';
   };
 
-  var autoAdjustEditorHeight = function(editor) {
-    var height =
+  let autoAdjustEditorHeight = function(editor) {
+    let height =
       editor.getSession().getScreenLength() *
       editor.renderer.lineHeight +
       editor.renderer.scrollBar.getWidth();
@@ -707,7 +708,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $rootScope.$on('scrollToCursor', function(event) {
     // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+    let paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
     if (paragraphs[paragraphs.length - 1].id.indexOf($scope.paragraph.id) === 0) {
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
@@ -723,21 +724,21 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       // only make sense when editor is focused
       return;
     }
-    var lineHeight = $scope.editor.renderer.lineHeight;
-    var headerHeight = 103; // menubar, notebook titlebar
-    var scrollTriggerEdgeMargin = 50;
+    let lineHeight = $scope.editor.renderer.lineHeight;
+    let headerHeight = 103; // menubar, notebook titlebar
+    let scrollTriggerEdgeMargin = 50;
 
-    var documentHeight = angular.element(document).height();
-    var windowHeight = angular.element(window).height();  // actual viewport height
+    let documentHeight = angular.element(document).height();
+    let windowHeight = angular.element(window).height();  // actual viewport height
 
-    var scrollPosition = angular.element(document).scrollTop();
-    var editorPosition = angular.element('#' + paragraphId + '_editor').offset();
-    var position = $scope.editor.getCursorPosition();
-    var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+    let scrollPosition = angular.element(document).scrollTop();
+    let editorPosition = angular.element('#' + paragraphId + '_editor').offset();
+    let position = $scope.editor.getCursorPosition();
+    let lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
 
-    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + lineHeight * lastCursorMove;
+    let calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + lineHeight * lastCursorMove;
 
-    var scrollTargetPos;
+    let scrollTargetPos;
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
       scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight - headerHeight) / 3);
       if (scrollTargetPos < 0) {
@@ -752,7 +753,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
 
     // cancel previous scroll animation
-    var bodyEl = angular.element('body');
+    let bodyEl = angular.element('body');
     bodyEl.stop();
     bodyEl.finish();
 
@@ -769,15 +770,15 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.getExecutionTime = function(pdata) {
-    var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
+    let timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
     if (isNaN(timeMs) || timeMs < 0) {
       if ($scope.isResultOutdated(pdata)) {
         return 'outdated';
       }
       return '';
     }
-    var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
-    var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
+    let user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
+    let desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
       '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated(pdata)) {
       desc += ' (outdated)';
@@ -801,7 +802,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.getResultType = function(paragraph) {
-    var pdata = (paragraph) ? paragraph : $scope.paragraph;
+    let pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.results && pdata.results.type) {
       return pdata.results.type;
     } else {
@@ -817,14 +818,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         return Number(cell);
       }
     }
-    var d = moment(cell);
+    let d = moment(cell);
     if (d.isValid()) {
       return d;
     }
     return cell;
   };
 
-  var commitParagraph = function(paragraph) {
+  let commitParagraph = function(paragraph) {
     const {
       id,
       title,
@@ -838,14 +839,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   /** Utility function */
   $scope.goToSingleParagraph = function() {
-    var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
+    let noteId = $route.current.pathParams.noteId;
+    let redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
       '/paragraph/' + $scope.paragraph.id + '?asIframe';
     $window.open(redirectToUrl);
   };
 
   $scope.showScrollDownIcon = function(id) {
-    var doc = angular.element('#p' + id + '_text');
+    let doc = angular.element('#p' + id + '_text');
     if (doc[0]) {
       return doc[0].scrollHeight > doc.innerHeight();
     }
@@ -853,7 +854,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.scrollParagraphDown = function(id) {
-    var doc = angular.element('#p' + id + '_text');
+    let doc = angular.element('#p' + id + '_text');
     doc.animate({scrollTop: doc[0].scrollHeight}, 500);
     $scope.keepScrollDown = true;
   };
@@ -863,20 +864,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       return angular.element('#p' + id + '_text')[0].scrollTop !== 0;
     }
     return false;
-
   };
 
   $scope.scrollParagraphUp = function(id) {
-    var doc = angular.element('#p' + id + '_text');
+    let doc = angular.element('#p' + id + '_text');
     doc.animate({scrollTop: 0}, 500);
     $scope.keepScrollDown = false;
   };
 
   $scope.$on('angularObjectUpdate', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
+    let noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
-      var scope;
-      var registry;
+      let scope;
+      let registry;
 
       if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
         scope = paragraphScope;
@@ -884,7 +884,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       } else {
         return;
       }
-      var varName = data.angularObject.name;
+      let varName = data.angularObject.name;
 
       if (angular.equals(data.angularObject.object, scope[varName])) {
         // return when update has no change
@@ -895,7 +895,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         registry[varName] = {
           interpreterGroupId: data.interpreterGroupId,
           noteId: data.noteId,
-          paragraphId: data.paragraphId
+          paragraphId: data.paragraphId,
         };
       } else {
         registry[varName].noteId = registry[varName].noteId || data.noteId;
@@ -924,7 +924,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       // create proxy for AngularFunction
       if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = function() {
           scope[varName] = arguments;
           console.log('angular function (paragraph) invoked %o', arguments);
@@ -936,10 +936,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   });
 
   $scope.$on('angularObjectRemove', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
+    let noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
-      var scope;
-      var registry;
+      let scope;
+      let registry;
 
       if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
         scope = paragraphScope;
@@ -948,7 +948,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         return;
       }
 
-      var varName = data.name;
+      let varName = data.name;
 
       // clear watcher
       if (registry[varName]) {
@@ -961,7 +961,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       // remove proxy for AngularFunction
       if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = undefined;
       }
     }
@@ -981,8 +981,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
       !angular.equals(data.paragraph.config, $scope.paragraph.config))
     ) {
-      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
+      let statusChanged = (data.paragraph.status !== $scope.paragraph.status);
+      let resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
         isEmpty(data.paragraph.results) !== isEmpty($scope.paragraph.results) ||
         data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
 
@@ -1003,12 +1003,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       /** broadcast update to result controller **/
       if (data.paragraph.results && data.paragraph.results.msg) {
-        for (var i in data.paragraph.results.msg) {
-          var newResult = data.paragraph.results.msg ? data.paragraph.results.msg[i] : {};
-          var oldResult = ($scope.paragraph.results && $scope.paragraph.results.msg) ?
+        for (let i in data.paragraph.results.msg) {
+          let newResult = data.paragraph.results.msg ? data.paragraph.results.msg[i] : {};
+          let oldResult = ($scope.paragraph.results && $scope.paragraph.results.msg) ?
             $scope.paragraph.results.msg[i] : {};
-          var newConfig = data.paragraph.config.results ? data.paragraph.config.results[i] : {};
-          var oldConfig = $scope.paragraph.config.results ? $scope.paragraph.config.results[i] : {};
+          let newConfig = data.paragraph.config.results ? data.paragraph.config.results[i] : {};
+          let oldConfig = $scope.paragraph.config.results ? $scope.paragraph.config.results[i] : {};
           if (!angular.equals(newResult, oldResult) ||
             !angular.equals(newConfig, oldConfig)) {
             $rootScope.$broadcast('updateResult', newResult, newConfig, data.paragraph, parseInt(i));
@@ -1049,7 +1049,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+        let paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
         if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
           // rendering output can took some time. So delay scrolling event firing for sometime.
           setTimeout(function() {
@@ -1068,11 +1068,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('keyEvent', function(event, keyEvent) {
     if ($scope.paragraphFocused) {
-
-      var paragraphId = $scope.paragraph.id;
-      var keyCode = keyEvent.keyCode;
-      var noShortcutDefined = false;
-      var editorHide = $scope.paragraph.config.editorHide;
+      let paragraphId = $scope.paragraph.id;
+      let keyCode = keyEvent.keyCode;
+      let noShortcutDefined = false;
+      let editorHide = $scope.paragraph.config.editorHide;
 
       if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey && !keyEvent.altKey))) { // up
         // move focus to previous paragraph
@@ -1139,7 +1138,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         if (!mouseEvent) {
           $scope.editor.focus();
           // move cursor to the first row (or the last row)
-          var row;
+          let row;
           if (cursorPos >= 0) {
             row = cursorPos;
             $scope.editor.gotoLine(row, 0);
@@ -1153,7 +1152,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.handleFocus(true);
     } else {
       $scope.editor.blur();
-      var isDigestPass = true;
+      let isDigestPass = true;
       $scope.handleFocus(false, isDigestPass);
     }
   });
@@ -1168,7 +1167,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.$on('doubleClickParagraph', function(event, paragraphId) {
     if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
       $scope.paragraph.config.editorSetting.editOnDblClick && $scope.revisionView !== true) {
-      var deferred = $q.defer();
+      let deferred = $q.defer();
       openEditorAndCloseTable($scope.paragraph);
       $timeout(
         $scope.$on('updateParagraph', function(event, data) {

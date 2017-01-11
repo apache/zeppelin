@@ -24,7 +24,7 @@ export default class HandsonHelper {
   };
 
   getHandsonTableConfig(columns, columnNames, resultRows) {
-    var self = this;
+    let self = this;
     return {
       colHeaders: columnNames,
       data: resultRows,
@@ -42,17 +42,17 @@ export default class HandsonHelper {
       fragmentSelection: true,
       disableVisualSelection: true,
       cells: function(ro, co, pro) {
-        var cellProperties = {};
-        var colType = columns[co].type;
+        let cellProperties = {};
+        let colType = columns[co].type;
         cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
           self._cellRenderer(instance, td, row, col, prop, value, cellProperties, colType);
         };
         return cellProperties;
       },
       afterGetColHeader: function(col, TH) {
-        var instance = this;
-        var menu = self._buildDropDownMenu(columns[col].type);
-        var button = self._buildTypeSwitchButton();
+        let instance = this;
+        let menu = self._buildDropDownMenu(columns[col].type);
+        let button = self._buildTypeSwitchButton();
 
         self._addButtonMenuEvent(button, menu);
 
@@ -66,7 +66,7 @@ export default class HandsonHelper {
         }
         TH.firstChild.appendChild(button);
         TH.style['white-space'] = 'normal';
-      }
+      },
     };
   };
 
@@ -76,9 +76,9 @@ export default class HandsonHelper {
 
   _addButtonMenuEvent(button, menu) {
     Handsontable.Dom.addEvent(button, 'click', function(event) {
-      var changeTypeMenu;
-      var position;
-      var removeMenu;
+      let changeTypeMenu;
+      let position;
+      let removeMenu;
 
       document.body.appendChild(menu);
 
@@ -87,7 +87,7 @@ export default class HandsonHelper {
 
       changeTypeMenu = document.querySelectorAll('.changeTypeMenu');
 
-      for (var i = 0, len = changeTypeMenu.length; i < len; i++) {
+      for (let i = 0, len = changeTypeMenu.length; i < len; i++) {
         changeTypeMenu[i].style.display = 'none';
       }
       menu.style.display = 'block';
@@ -107,13 +107,13 @@ export default class HandsonHelper {
   }
 
   _buildDropDownMenu(activeCellType) {
-    var menu = document.createElement('UL');
-    var types = ['text', 'numeric', 'date'];
-    var item;
+    let menu = document.createElement('UL');
+    let types = ['text', 'numeric', 'date'];
+    let item;
 
     menu.className = 'changeTypeMenu';
 
-    for (var i = 0, len = types.length; i < len; i++) {
+    for (let i = 0, len = types.length; i < len; i++) {
       item = document.createElement('LI');
       if ('innerText' in item) {
         item.innerText = types[i];
@@ -133,7 +133,7 @@ export default class HandsonHelper {
   }
 
   _buildTypeSwitchButton() {
-    var button = document.createElement('BUTTON');
+    let button = document.createElement('BUTTON');
 
     button.innerHTML = '\u25BC';
     button.className = 'changeType';
@@ -165,7 +165,7 @@ export default class HandsonHelper {
   }
 
   _dateValidator(value, callback) {
-    var d = moment(value);
+    let d = moment(value);
     return callback(d.isValid());
   }
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-var zeppelinWebApp = angular.module('zeppelinWebApp', [
+let zeppelinWebApp = angular.module('zeppelinWebApp', [
   'ngCookies',
   'ngAnimate',
   'ngRoute',
@@ -33,7 +33,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
   'ngToast',
   'focus-if',
   'ngResource',
-  'ngclipboard'
+  'ngclipboard',
 ])
   .filter('breakFilter', function() {
     return function(text) {
@@ -48,73 +48,73 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
 
     $routeProvider
       .when('/', {
-        templateUrl: 'app/home/home.html'
+        templateUrl: 'app/home/home.html',
       })
       .when('/notebook/:noteId', {
         templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
+        controller: 'NotebookCtrl',
       })
       .when('/notebook/:noteId/paragraph?=:paragraphId', {
         templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
+        controller: 'NotebookCtrl',
       })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
+        controller: 'NotebookCtrl',
       })
       .when('/notebook/:noteId/revision/:revisionId', {
         templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
+        controller: 'NotebookCtrl',
       })
       .when('/jobmanager', {
         templateUrl: 'app/jobmanager/jobmanager.html',
-        controller: 'JobmanagerCtrl'
+        controller: 'JobmanagerCtrl',
       })
       .when('/interpreter', {
         templateUrl: 'app/interpreter/interpreter.html',
-        controller: 'InterpreterCtrl'
+        controller: 'InterpreterCtrl',
       })
       .when('/notebookRepos', {
         templateUrl: 'app/notebookRepos/notebookRepos.html',
         controller: 'NotebookReposCtrl',
-        controllerAs: 'noterepo'
+        controllerAs: 'noterepo',
       })
       .when('/credential', {
         templateUrl: 'app/credential/credential.html',
-        controller: 'CredentialCtrl'
+        controller: 'CredentialCtrl',
       })
       .when('/configuration', {
         templateUrl: 'app/configuration/configuration.html',
-        controller: 'ConfigurationCtrl'
+        controller: 'ConfigurationCtrl',
       })
       .when('/search/:searchTerm', {
         templateUrl: 'app/search/result-list.html',
-        controller: 'SearchResultCtrl'
+        controller: 'SearchResultCtrl',
       })
       .otherwise({
-        redirectTo: '/'
+        redirectTo: '/',
       });
 
     ngToastProvider.configure({
       dismissButton: true,
       dismissOnClick: false,
       combineDuplications: true,
-      timeout: 6000
+      timeout: 6000,
     });
   })
   .constant('TRASH_FOLDER_ID', '~Trash');
 
 function auth() {
-  var $http = angular.injector(['ng']).get('$http');
-  var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
+  let $http = angular.injector(['ng']).get('$http');
+  let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
   // withCredentials when running locally via grunt
   $http.defaults.withCredentials = true;
   jQuery.ajaxSetup({
     dataType: 'json',
     xhrFields: {
-      withCredentials: true
+      withCredentials: true,
     },
-    crossDomain: true
+    crossDomain: true,
   });
   return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function(response) {
     zeppelinWebApp.run(function($rootScope) {

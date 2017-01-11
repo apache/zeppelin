@@ -1,22 +1,22 @@
 describe('Controller: NotebookCtrl', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var scope;
+  let scope;
 
-  var websocketMsgSrvMock = {
+  let websocketMsgSrvMock = {
     getNote: function() {},
     listRevisionHistory: function() {},
     getInterpreterBindings: function() {},
-    updateNote: function() {}
+    updateNote: function() {},
   };
 
-  var baseUrlSrvMock = {
+  let baseUrlSrvMock = {
     getRestApiBase: function() {
       return 'http://localhost:8080';
-    }
+    },
   };
 
-  var noteMock = {
+  let noteMock = {
     id: 1,
     name: 'my note',
     config: {},
@@ -27,7 +27,7 @@ describe('Controller: NotebookCtrl', function() {
     $controller('NotebookCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
-      baseUrlSrv: baseUrlSrvMock
+      baseUrlSrv: baseUrlSrvMock,
     });
   }));
 
@@ -35,7 +35,7 @@ describe('Controller: NotebookCtrl', function() {
     scope.note = noteMock;
   });
 
-  var functions = ['getCronOptionNameFromValue', 'removeNote', 'runAllParagraphs', 'saveNote', 'toggleAllEditor',
+  let functions = ['getCronOptionNameFromValue', 'removeNote', 'runAllParagraphs', 'saveNote', 'toggleAllEditor',
     'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
     'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'updateNoteName',
     'openSetting', 'closeSetting', 'saveSetting', 'toggleSetting'];
@@ -61,14 +61,14 @@ describe('Controller: NotebookCtrl', function() {
   });
 
   it('should return the correct value for getCronOptionNameFromValue()', function() {
-    var none = scope.getCronOptionNameFromValue();
-    var oneMin = scope.getCronOptionNameFromValue('0 0/1 * * * ?');
-    var fiveMin = scope.getCronOptionNameFromValue('0 0/5 * * * ?');
-    var oneHour = scope.getCronOptionNameFromValue('0 0 0/1 * * ?');
-    var threeHours = scope.getCronOptionNameFromValue('0 0 0/3 * * ?');
-    var sixHours = scope.getCronOptionNameFromValue('0 0 0/6 * * ?');
-    var twelveHours =  scope.getCronOptionNameFromValue('0 0 0/12 * * ?');
-    var oneDay = scope.getCronOptionNameFromValue('0 0 0 * * ?');
+    let none = scope.getCronOptionNameFromValue();
+    let oneMin = scope.getCronOptionNameFromValue('0 0/1 * * * ?');
+    let fiveMin = scope.getCronOptionNameFromValue('0 0/5 * * * ?');
+    let oneHour = scope.getCronOptionNameFromValue('0 0 0/1 * * ?');
+    let threeHours = scope.getCronOptionNameFromValue('0 0 0/3 * * ?');
+    let sixHours = scope.getCronOptionNameFromValue('0 0 0/6 * * ?');
+    let twelveHours = scope.getCronOptionNameFromValue('0 0 0/12 * * ?');
+    let oneDay = scope.getCronOptionNameFromValue('0 0 0 * * ?');
 
     expect(none).toEqual('');
     expect(oneMin).toEqual('1m');
@@ -114,7 +114,7 @@ describe('Controller: NotebookCtrl', function() {
 
   it('should update note name when updateNoteName() is called with a valid name', function() {
     spyOn(websocketMsgSrvMock, 'updateNote');
-    var newName = 'Your Note';
+    let newName = 'Your Note';
     scope.updateNoteName(newName);
     expect(scope.note.name).toEqual(newName);
     expect(websocketMsgSrvMock.updateNote).toHaveBeenCalled();

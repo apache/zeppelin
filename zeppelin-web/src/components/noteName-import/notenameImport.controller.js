@@ -17,12 +17,12 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 NoteImportCtrl.$inject = ['$scope', '$timeout', 'websocketMsgSrv'];
 
 function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
-  var vm = this;
+  let vm = this;
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
   $scope.maxLimit = '';
-  var limit = 0;
+  let limit = 0;
 
   websocketMsgSrv.listConfigurations();
   $scope.$on('configurationsInfo', function(scope, event) {
@@ -44,8 +44,8 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
   $scope.importFile = function(element) {
     $scope.note.errorText = '';
     $scope.note.importFile = element.files[0];
-    var file = $scope.note.importFile;
-    var reader = new FileReader();
+    let file = $scope.note.importFile;
+    let reader = new FileReader();
 
     if (file.size > limit) {
       $scope.note.errorText = 'File size limit Exceeded!';
@@ -87,7 +87,7 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
         dataType: 'json',
         jsonp: false,
         xhrFields: {
-          withCredentials: false
+          withCredentials: false,
         },
         error: function(xhr, ajaxOptions, thrownError) {
           $scope.note.errorText = 'Unable to Fetch URL';
@@ -110,7 +110,6 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
         $scope.$apply();
         return;
       }
-
     }
     if (result.paragraphs && result.paragraphs.length > 0) {
       if (!$scope.note.noteImportName) {
@@ -119,7 +118,7 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
         result.name = $scope.note.noteImportName;
       }
       websocketMsgSrv.importNote(result);
-      //angular.element('#noteImportModal').modal('hide');
+      // angular.element('#noteImportModal').modal('hide');
     } else {
       $scope.note.errorText = 'Invalid JSON';
     }

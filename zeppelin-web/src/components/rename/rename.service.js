@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').service('renameSrv', renameSrv);
 renameSrv.$inject = ['$rootScope'];
 
 function renameSrv($rootScope) {
-  var self = this;
+  let self = this;
 
   /**
    * <options schema>

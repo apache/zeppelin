@@ -23,17 +23,17 @@ function codeEditor($templateRequest, $compile) {
       dirtyText: '=dirtyText',
       originalText: '=originalText',
       onLoad: '=onLoad',
-      revisionView: '=revisionView'
+      revisionView: '=revisionView',
     },
     link: function(scope, element, attrs, controller) {
       $templateRequest('components/editor/ace.editor.directive.html').then(function(editorHtml) {
-        var editor = angular.element(editorHtml);
+        let editor = angular.element(editorHtml);
         editor.attr('id', scope.paragraphId + '_editor');
         element.append(editor);
         $compile(editor)(scope);
         console.log('codeEditor directive revision view is ' + scope.revisionView);
       });
-    }
+    },
   };
 }
 

@@ -32,22 +32,22 @@ export default class TableVisualization extends Visualization {
   };
 
   render(tableData) {
-    var height = this.targetEl.height();
-    var container = this.targetEl.css('height', height).get(0);
-    var resultRows = tableData.rows;
-    var columnNames = _.pluck(tableData.columns, 'name');
+    let height = this.targetEl.height();
+    let container = this.targetEl.css('height', height).get(0);
+    let resultRows = tableData.rows;
+    let columnNames = _.pluck(tableData.columns, 'name');
 
     if (this.hot) {
       this.hot.destroy();
     }
 
     if (!this.columns) {
-      this.columns = Array.apply(null, Array(tableData.columns.length)).map(function() {
+      this.columns = Array(...Array(tableData.columns.length)).map(function() {
         return {type: 'text'};
       });
     }
 
-    var handsonHelper = new HandsonHelper();
+    let handsonHelper = new HandsonHelper();
 
     this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
       this.columns, columnNames, resultRows));

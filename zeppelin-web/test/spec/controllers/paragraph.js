@@ -1,18 +1,17 @@
 describe('Controller: ParagraphCtrl', function() {
-
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var scope;
-  var websocketMsgSrvMock = {};
-  var paragraphMock = {
-    config: {}
+  let scope;
+  let websocketMsgSrvMock = {};
+  let paragraphMock = {
+    config: {},
   };
-  var route = {
+  let route = {
     current: {
       pathParams: {
-        noteId: 'noteId'
-      }
-    }
+        noteId: 'noteId',
+      },
+    },
   };
 
   beforeEach(inject(function($controller, $rootScope) {
@@ -23,13 +22,13 @@ describe('Controller: ParagraphCtrl', function() {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
       $element: {},
-      $route: route
+      $route: route,
     });
 
     scope.init(paragraphMock);
   }));
 
-  var functions = ['isRunning', 'getIframeDimensions', 'cancelParagraph', 'runParagraph', 'saveParagraph',
+  let functions = ['isRunning', 'getIframeDimensions', 'cancelParagraph', 'runParagraph', 'saveParagraph',
     'moveUp', 'moveDown', 'insertNew', 'removeParagraph', 'toggleEditor', 'closeEditor', 'openEditor',
     'closeTable', 'openTable', 'showTitle', 'hideTitle', 'setTitle', 'showLineNumbers', 'hideLineNumbers',
     'changeColWidth', 'columnWidthClass', 'toggleOutput', 'loadForm',

@@ -19,18 +19,17 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) 
   $scope.SigningIn = false;
   $scope.loginParams = {};
   $scope.login = function() {
-
     $scope.SigningIn = true;
     $http({
       method: 'POST',
       url: baseUrlSrv.getRestApiBase() + '/login',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       data: $httpParamSerializer({
         'userName': $scope.loginParams.userName,
-        'password': $scope.loginParams.password
-      })
+        'password': $scope.loginParams.password,
+      }),
     }).then(function successCallback(response) {
       $rootScope.ticket = response.data.body;
       angular.element('#loginModal').modal('toggle');
@@ -40,13 +39,12 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) 
       $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
       $scope.SigningIn = false;
     });
-
   };
 
-  var initValues = function() {
+  let initValues = function() {
     $scope.loginParams = {
       userName: '',
-      password: ''
+      password: '',
     };
   };
 

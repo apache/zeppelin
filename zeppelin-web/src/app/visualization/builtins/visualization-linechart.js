@@ -39,7 +39,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   };
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -68,9 +68,13 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   };
 
   configureChart(chart) {
-    var self = this;
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d, self.xLabels);});
+    let self = this;
+    chart.xAxis.tickFormat(function(d) {
+return self.xAxisTickFormat(d, self.xLabels);
+});
+    chart.yAxis.tickFormat(function(d) {
+return self.yAxisTickFormat(d, self.xLabels);
+});
     chart.yAxis.axisLabelDistance(50);
     if (chart.useInteractiveGuideline) {   // lineWithFocusChart hasn't got useInteractiveGuideline
       chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
@@ -83,8 +87,8 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   };
 
   getSetting(chart) {
-    var self = this;
-    var configObj = self.config;
+    let self = this;
+    let configObj = self.config;
 
     return {
       template: `<div>
@@ -107,8 +111,8 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
         config: configObj,
         save: function() {
           self.emitConfig(configObj);
-        }
-      }
+        },
+      },
     };
   };
 }

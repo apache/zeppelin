@@ -35,7 +35,7 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
   };
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -59,8 +59,12 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
   configureChart(chart) {
     var self = this;
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-    chart.yAxisTickFormat(function(d) {return self.yAxisTickFormat(d);});
+    chart.xAxis.tickFormat(function(d) {
+return self.xAxisTickFormat(d, self.xLabels);
+});
+    chart.yAxisTickFormat(function(d) {
+return self.yAxisTickFormat(d);
+});
     chart.yAxis.axisLabelDistance(50);
     chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 

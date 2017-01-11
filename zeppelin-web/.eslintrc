@@ -1,5 +1,5 @@
 {
-  "preset": "google",
+  "extends": ["google"],
   "env": {
     "browser": true,
     "jasmine": true,
@@ -43,6 +43,10 @@
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
     "strict": [2, "global"],
-    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}],
+    "require-jsdoc": [1],
+    "valid-jsdoc": [1],
+    "guard-for-in": [1],
+    "no-invalid-this": [1]
   }
 }

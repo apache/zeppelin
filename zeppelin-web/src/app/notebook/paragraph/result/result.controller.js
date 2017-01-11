@@ -38,13 +38,12 @@ ResultCtrl.$inject = [
   'baseUrlSrv',
   'ngToast',
   'saveAsService',
-  'noteVarShareService'
+  'noteVarShareService',
 ];
 
 function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                     $timeout, $compile, $http, $q, $templateRequest, websocketMsgSrv,
                     baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
-
   /**
    * Built-in visualizations
    */
@@ -52,74 +51,74 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     {
       id: 'table',   // paragraph.config.graph.mode
       name: 'Table', // human readable name. tooltip
-      icon: 'fa fa-table'
+      icon: 'fa fa-table',
     },
     {
       id: 'multiBarChart',
       name: 'Bar Chart',
       icon: 'fa fa-bar-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
     },
     {
       id: 'pieChart',
       name: 'Pie Chart',
       icon: 'fa fa-pie-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
     },
     {
       id: 'stackedAreaChart',
       name: 'Area Chart',
       icon: 'fa fa-area-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
     },
     {
       id: 'lineChart',
       name: 'Line Chart',
       icon: 'fa fa-line-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
     },
     {
       id: 'scatterChart',
       name: 'Scatter Chart',
-      icon: 'cf cf-scatter-chart'
-    }
+      icon: 'cf cf-scatter-chart',
+    },
   ];
 
   /**
    * Holds class and actual runtime instance and related infos of built-in visualizations
    */
-  var builtInVisualizations = {
+  let builtInVisualizations = {
     'table': {
       class: TableVisualization,
-      instance: undefined   // created from setGraphMode()
+      instance: undefined,   // created from setGraphMode()
     },
     'multiBarChart': {
       class: BarchartVisualization,
-      instance: undefined
+      instance: undefined,
     },
     'pieChart': {
       class: PiechartVisualization,
-      instance: undefined
+      instance: undefined,
     },
     'stackedAreaChart': {
       class: AreachartVisualization,
-      instance: undefined
+      instance: undefined,
     },
     'lineChart': {
       class: LinechartVisualization,
-      instance: undefined
+      instance: undefined,
     },
     'scatterChart': {
       class: ScatterchartVisualization,
-      instance: undefined
-    }
+      instance: undefined,
+    },
   };
 
   // type
   $scope.type;
 
   // Data of the result
-  var data;
+  let data;
 
   // config
   $scope.config;
@@ -128,19 +127,19 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   $scope.id;
 
   // referece to paragraph
-  var paragraph;
+  let paragraph;
 
   // index of the result
-  var resultIndex;
+  let resultIndex;
 
   // TableData instance
-  var tableData;
+  let tableData;
 
   // available columns in tabledata
   $scope.tableDataColumns = [];
 
   // enable helium
-  var enableHelium = false;
+  let enableHelium = false;
 
   // graphMode
   $scope.graphMode;
@@ -159,7 +158,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       return;
     }
     console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
-    var refresh = !angular.equals(newConfig, $scope.config) ||
+    let refresh = !angular.equals(newConfig, $scope.config) ||
       !angular.equals(result.type, $scope.type) ||
       !angular.equals(result.data, data);
 
@@ -191,7 +190,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  var updateData = function(result, config, paragraphRef, index) {
+  let updateData = function(result, config, paragraphRef, index) {
     data = result.data;
     paragraph = paragraphRef;
     resultIndex = parseInt(index);
@@ -233,8 +232,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  var renderResult = function(type, refresh) {
-    var activeApp;
+  let renderResult = function(type, refresh) {
+    let activeApp;
     if (enableHelium) {
       getSuggestions();
       getApplicationStates();
@@ -242,7 +241,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     if (activeApp) {
-      var app = _.find($scope.apps, {id: activeApp});
+      let app = _.find($scope.apps, {id: activeApp});
       renderApp(app);
     } else {
       if (type === 'TABLE') {
@@ -257,9 +256,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  var renderHtml = function() {
-    var retryRenderer = function() {
-      var htmlEl = angular.element('#p' + $scope.id + '_html');
+  let renderHtml = function() {
+    let retryRenderer = function() {
+      let htmlEl = angular.element('#p' + $scope.id + '_html');
       if (htmlEl.length) {
         try {
           htmlEl.html(data);
@@ -267,7 +266,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
           htmlEl.find('pre code').each(function(i, e) {
             hljs.highlightBlock(e);
           });
-          /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
+          /* eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
           MathJax.Hub.Queue(['Typeset', MathJax.Hub, htmlEl[0]]);
         } catch (err) {
           console.log('HTML rendering error %o', err);
@@ -279,13 +278,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $timeout(retryRenderer);
   };
 
-  var renderAngular = function() {
-    var retryRenderer = function() {
+  let renderAngular = function() {
+    let retryRenderer = function() {
       if (angular.element('#p' + $scope.id + '_angular').length) {
         try {
           angular.element('#p' + $scope.id + '_angular').html(data);
 
-          var paragraphScope = noteVarShareService.get(paragraph.id + '_paragraphScope');
+          let paragraphScope = noteVarShareService.get(paragraph.id + '_paragraphScope');
           $compile(angular.element('#p' + $scope.id + '_angular').contents())(paragraphScope);
         } catch (err) {
           console.log('ANGULAR rendering error %o', err);
@@ -297,14 +296,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $timeout(retryRenderer);
   };
 
-  var getTextEl = function (paragraphId) {
+  let getTextEl = function(paragraphId) {
     return angular.element('#p' + $scope.id + '_text');
-  }
+  };
 
-  var textRendererInitialized = false;
-  var renderText = function() {
-    var retryRenderer = function() {
-      var textEl = getTextEl($scope.id);
+  let textRendererInitialized = false;
+  let renderText = function() {
+    let retryRenderer = function() {
+      let textEl = getTextEl($scope.id);
       if (textEl.length) {
         // clear all lines before render
         clearTextOutput();
@@ -326,35 +325,35 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $timeout(retryRenderer);
   };
 
-  var clearTextOutput = function() {
-    var textEl = getTextEl($scope.id);
+  let clearTextOutput = function() {
+    let textEl = getTextEl($scope.id);
     if (textEl.length) {
       textEl.children().remove();
     }
   };
 
-  var textAppendQueueBeforeInitialize = [];
+  let textAppendQueueBeforeInitialize = [];
 
-  var flushAppendQueue = function() {
+  let flushAppendQueue = function() {
     while (textAppendQueueBeforeInitialize.length > 0) {
       appendTextOutput(textAppendQueueBeforeInitialize.pop());
     }
   };
 
-  var appendTextOutput = function(msg) {
+  let appendTextOutput = function(msg) {
     if (!textRendererInitialized) {
       textAppendQueueBeforeInitialize.push(msg);
     } else {
       flushAppendQueue();
-      var textEl = getTextEl($scope.id);
+      let textEl = getTextEl($scope.id);
       if (textEl.length) {
-        var lines = msg.split('\n');
-        for (var i = 0; i < lines.length; i++) {
+        let lines = msg.split('\n');
+        for (let i = 0; i < lines.length; i++) {
           textEl.append(angular.element('<div></div>').text(lines[i]));
         }
       }
       if ($scope.keepScrollDown) {
-        var doc = getTextEl($scope.id);
+        let doc = getTextEl($scope.id);
         doc[0].scrollTop = doc[0].scrollHeight;
       }
     }
@@ -362,19 +361,19 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.renderGraph = function(type, refresh) {
     // set graph height
-    var height = $scope.config.graph.height;
-    var graphContainerEl = angular.element('#p' + $scope.id + '_graph');
+    let height = $scope.config.graph.height;
+    let graphContainerEl = angular.element('#p' + $scope.id + '_graph');
     graphContainerEl.height(height);
 
     if (!type) {
       type = 'table';
     }
 
-    var builtInViz = builtInVisualizations[type];
+    let builtInViz = builtInVisualizations[type];
     if (builtInViz) {
       // deactive previsouly active visualization
-      for (var t in builtInVisualizations) {
-        var v = builtInVisualizations[t].instance;
+      for (let t in builtInVisualizations) {
+        let v = builtInVisualizations[t].instance;
 
         if (t !== type && v && v.isActive()) {
           v.deactivate();
@@ -385,34 +384,34 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       if (!builtInViz.instance) { // not instantiated yet
         // render when targetEl is available
         var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
+          let targetEl = angular.element('#p' + $scope.id + '_' + type);
+          let transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
+          let visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
           if (targetEl.length) {
             try {
               // set height
               targetEl.height(height);
 
               // instantiate visualization
-              var config = getVizConfig(type);
-              var Visualization = builtInViz.class;
+              let config = getVizConfig(type);
+              let Visualization = builtInViz.class;
               builtInViz.instance = new Visualization(targetEl, config);
 
               // inject emitter, $templateRequest
-              var emitter = function(graphSetting) {
+              let emitter = function(graphSetting) {
                 commitVizConfigChange(graphSetting, type);
               };
               builtInViz.instance._emitter = emitter;
               builtInViz.instance._compile = $compile;
               builtInViz.instance._createNewScope = createNewScope;
-              var transformation = builtInViz.instance.getTransformation();
+              let transformation = builtInViz.instance.getTransformation();
               transformation._emitter = emitter;
               transformation._templateRequest = $templateRequest;
               transformation._compile = $compile;
               transformation._createNewScope = createNewScope;
 
               // render
-              var transformed = transformation.transform(tableData);
+              let transformed = transformation.transform(tableData);
               transformation.renderSetting(transformationSettingTargetEl);
               builtInViz.instance.render(transformed);
               builtInViz.instance.renderSetting(visualizationSettingTargetEl);
@@ -432,15 +431,15 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         console.log('Refresh data %o', tableData);
         // when graph options or data are changed
         var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
+          let targetEl = angular.element('#p' + $scope.id + '_' + type);
+          let transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
+          let visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
           if (targetEl.length) {
-            var config = getVizConfig(type);
+            let config = getVizConfig(type);
             targetEl.height(height);
-            var transformation = builtInViz.instance.getTransformation();
+            let transformation = builtInViz.instance.getTransformation();
             transformation.setConfig(config);
-            var transformed = transformation.transform(tableData);
+            let transformed = transformation.transform(tableData);
             transformation.renderSetting(transformationSettingTargetEl);
             builtInViz.instance.setConfig(config);
             builtInViz.instance.render(transformed);
@@ -452,7 +451,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         $timeout(retryRenderer);
       } else {
         var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
+          let targetEl = angular.element('#p' + $scope.id + '_' + type);
           if (targetEl.length) {
             targetEl.height(height);
             builtInViz.instance.activate();
@@ -465,8 +464,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
   $scope.switchViz = function(newMode) {
-    var newConfig = angular.copy($scope.config);
-    var newParams = angular.copy(paragraph.settings.params);
+    let newConfig = angular.copy($scope.config);
+    let newParams = angular.copy(paragraph.settings.params);
 
     // graph options
     newConfig.graph.mode = newMode;
@@ -477,19 +476,19 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
-  var createNewScope = function() {
+  let createNewScope = function() {
     return $rootScope.$new(true);
   };
 
-  var commitParagraphResult = function(title, text, config, params) {
-    var newParagraphConfig = angular.copy(paragraph.config);
+  let commitParagraphResult = function(title, text, config, params) {
+    let newParagraphConfig = angular.copy(paragraph.config);
     newParagraphConfig.results = newParagraphConfig.results || [];
     newParagraphConfig.results[resultIndex] = config;
     if ($scope.revisionView === true) {
       // local update without commit
       updateData({
         type: $scope.type,
-        data: data
+        data: data,
       }, newParagraphConfig.results[resultIndex], paragraph, resultIndex);
       renderResult($scope.type, true);
     } else {
@@ -498,20 +497,20 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.toggleGraphSetting = function() {
-    var newConfig = angular.copy($scope.config);
+    let newConfig = angular.copy($scope.config);
     if (newConfig.graph.optionOpen) {
       newConfig.graph.optionOpen = false;
     } else {
       newConfig.graph.optionOpen = true;
     }
-    var newParams = angular.copy(paragraph.settings.params);
+    let newParams = angular.copy(paragraph.settings.params);
 
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
-  var getVizConfig = function(vizId) {
-    var config;
-    var graph = $scope.config.graph;
+  let getVizConfig = function(vizId) {
+    let config;
+    let graph = $scope.config.graph;
     if (graph) {
       // copy setting for vizId
       if (graph.setting) {
@@ -530,7 +529,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         config.common.pivot = {
           keys: angular.copy(graph.keys),
           groups: angular.copy(graph.groups),
-          values: angular.copy(graph.values)
+          values: angular.copy(graph.values),
         };
       }
     }
@@ -538,8 +537,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return config;
   };
 
-  var commitVizConfigChange = function(config, vizId) {
-    var newConfig = angular.copy($scope.config);
+  let commitVizConfigChange = function(config, vizId) {
+    let newConfig = angular.copy($scope.config);
     if (!newConfig.graph) {
       newConfig.graph = {};
     }
@@ -564,14 +563,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       delete newConfig.graph.commonSetting.pivot;
     }
     console.log('committVizConfig', newConfig);
-    var newParams = angular.copy(paragraph.settings.params);
+    let newParams = angular.copy(paragraph.settings.params);
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
   $scope.$on('paragraphResized', function(event, paragraphId) {
     // paragraph col width changed
     if (paragraphId === paragraph.id) {
-      var builtInViz = builtInVisualizations[$scope.graphMode];
+      let builtInViz = builtInVisualizations[$scope.graphMode];
       if (builtInViz && builtInViz.instance) {
         builtInViz.instance.resize();
       }
@@ -584,9 +583,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }, 200);
   };
 
-  var changeHeight = function(width, height) {
-    var newParams = angular.copy(paragraph.settings.params);
-    var newConfig = angular.copy($scope.config);
+  let changeHeight = function(width, height) {
+    let newParams = angular.copy(paragraph.settings.params);
+    let newConfig = angular.copy($scope.config);
 
     newConfig.graph.height = height;
     paragraph.config.colWidth = width;
@@ -595,19 +594,19 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.exportToDSV = function(delimiter) {
-    var dsv = '';
-    var dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
-    var exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
+    let dsv = '';
+    let dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
+    let exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
 
-    for (var titleIndex in tableData.columns) {
+    for (let titleIndex in tableData.columns) {
       dsv += tableData.columns[titleIndex].name + delimiter;
     }
     dsv = dsv.substring(0, dsv.length - 1) + '\n';
-    for (var r in tableData.rows) {
-      var row = tableData.rows[r];
-      var dsvRow = '';
-      for (var index in row) {
-        var stringValue =  (row[index]).toString();
+    for (let r in tableData.rows) {
+      let row = tableData.rows[r];
+      let dsvRow = '';
+      for (let index in row) {
+        let stringValue = (row[index]).toString();
         if (stringValue.indexOf(delimiter) > -1) {
           dsvRow += '"' + stringValue + '"' + delimiter;
         } else {
@@ -616,7 +615,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
       dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
     }
-    var extension = '';
+    let extension = '';
     if (delimiter === '\t') {
       extension = 'tsv';
     } else if (delimiter === ',') {
@@ -630,7 +629,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   // Helium ----------------
-  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
 
   // app states
   $scope.apps = [];
@@ -639,8 +638,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   $scope.suggestion = {};
 
   $scope.switchApp = function(appId) {
-    var newConfig = angular.copy($scope.config);
-    var newParams = angular.copy(paragraph.settings.params);
+    let newConfig = angular.copy($scope.config);
+    let newParams = angular.copy(paragraph.settings.params);
 
     // 'helium.activeApp' can be cleared by switchViz()
     _.set(newConfig, 'helium.activeApp', appId);
@@ -649,7 +648,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.loadApp = function(heliumPackage) {
-    var noteId = $route.current.pathParams.noteId;
+    let noteId = $route.current.pathParams.noteId;
     $http.post(baseUrlSrv.getRestApiBase() + '/helium/load/' + noteId + '/' + paragraph.id, heliumPackage)
       .success(function(data, status, headers, config) {
         console.log('Load app %o', data);
@@ -659,12 +658,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       });
   };
 
-  var commitConfig = function(config, params) {
+  let commitConfig = function(config, params) {
     commitParagraphResult(paragraph.title, paragraph.text, config, params);
   };
 
-  var getApplicationStates = function() {
-    var appStates = [];
+  let getApplicationStates = function() {
+    let appStates = [];
 
     // Display ApplicationState
     if (paragraph.apps) {
@@ -673,14 +672,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
           id: app.id,
           pkg: app.pkg,
           status: app.status,
-          output: app.output
+          output: app.output,
         });
       });
     }
 
     // update or remove app states no longer exists
     _.forEach($scope.apps, function(currentAppState, idx) {
-      var newAppState = _.find(appStates, {id: currentAppState.id});
+      let newAppState = _.find(appStates, {id: currentAppState.id});
       if (newAppState) {
         angular.extend($scope.apps[idx], newAppState);
       } else {
@@ -696,9 +695,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     });
   };
 
-  var getSuggestions = function() {
+  let getSuggestions = function() {
     // Get suggested apps
-    var noteId = $route.current.pathParams.noteId;
+    let noteId = $route.current.pathParams.noteId;
     $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + paragraph.id)
       .success(function(data, status, headers, config) {
         $scope.suggestion = data.body;
@@ -708,9 +707,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       });
   };
 
-  var renderApp = function(appState) {
-    var retryRenderer = function() {
-      var targetEl = angular.element(document.getElementById('p' + appState.id));
+  let renderApp = function(appState) {
+    let retryRenderer = function() {
+      let targetEl = angular.element(document.getElementById('p' + appState.id));
       console.log('retry renderApp %o', targetEl);
       if (targetEl.length) {
         try {
@@ -732,14 +731,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
    */
   $scope.$on('appendAppOutput', function(event, data) {
     if (paragraph.id === data.paragraphId) {
-      var app = _.find($scope.apps, {id: data.appId});
+      let app = _.find($scope.apps, {id: data.appId});
       if (app) {
         app.output += data.data;
 
-        var paragraphAppState = _.find(paragraph.apps, {id: data.appId});
+        let paragraphAppState = _.find(paragraph.apps, {id: data.appId});
         paragraphAppState.output = app.output;
 
-        var targetEl = angular.element(document.getElementById('p' + app.id));
+        let targetEl = angular.element(document.getElementById('p' + app.id));
         targetEl.html(app.output);
         $compile(targetEl.contents())(getAppScope(app));
         console.log('append app output %o', $scope.apps);
@@ -749,14 +748,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.$on('updateAppOutput', function(event, data) {
     if (paragraph.id === data.paragraphId) {
-      var app = _.find($scope.apps, {id: data.appId});
+      let app = _.find($scope.apps, {id: data.appId});
       if (app) {
         app.output = data.data;
 
-        var paragraphAppState = _.find(paragraph.apps, {id: data.appId});
+        let paragraphAppState = _.find(paragraph.apps, {id: data.appId});
         paragraphAppState.output = app.output;
 
-        var targetEl = angular.element(document.getElementById('p' + app.id));
+        let targetEl = angular.element(document.getElementById('p' + app.id));
         targetEl.html(app.output);
         $compile(targetEl.contents())(getAppScope(app));
         console.log('append app output');
@@ -766,13 +765,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.$on('appLoad', function(event, data) {
     if (paragraph.id === data.paragraphId) {
-      var app = _.find($scope.apps, {id: data.appId});
+      let app = _.find($scope.apps, {id: data.appId});
       if (!app) {
         app = {
           id: data.appId,
           pkg: data.pkg,
           status: 'UNLOADED',
-          output: ''
+          output: '',
         };
 
         $scope.apps.push(app);
@@ -784,16 +783,16 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.$on('appStatusChange', function(event, data) {
     if (paragraph.id === data.paragraphId) {
-      var app = _.find($scope.apps, {id: data.appId});
+      let app = _.find($scope.apps, {id: data.appId});
       if (app) {
         app.status = data.status;
-        var paragraphAppState = _.find(paragraph.apps, {id: data.appId});
+        let paragraphAppState = _.find(paragraph.apps, {id: data.appId});
         paragraphAppState.status = app.status;
       }
     }
   });
 
-  var getAppRegistry = function(appState) {
+  let getAppRegistry = function(appState) {
     if (!appState.registry) {
       appState.registry = {};
     }
@@ -801,7 +800,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return appState.registry;
   };
 
-  var getAppScope = function(appState) {
+  let getAppScope = function(appState) {
     if (!appState.scope) {
       appState.scope = $rootScope.$new(true, $rootScope);
     }
@@ -809,12 +808,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.$on('angularObjectUpdate', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
+    let noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
-      var scope;
-      var registry;
+      let scope;
+      let registry;
 
-      var app = _.find($scope.apps, {id: data.paragraphId});
+      let app = _.find($scope.apps, {id: data.paragraphId});
       if (app) {
         scope = getAppScope(app);
         registry = getAppRegistry(app);
@@ -823,7 +822,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         return;
       }
 
-      var varName = data.angularObject.name;
+      let varName = data.angularObject.name;
 
       if (angular.equals(data.angularObject.object, scope[varName])) {
         // return when update has no change
@@ -834,7 +833,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         registry[varName] = {
           interpreterGroupId: data.interpreterGroupId,
           noteId: data.noteId,
-          paragraphId: data.paragraphId
+          paragraphId: data.paragraphId,
         };
       } else {
         registry[varName].noteId = registry[varName].noteId || data.noteId;
@@ -863,7 +862,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
       // create proxy for AngularFunction
       if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = function() {
           scope[varName] = arguments;
           console.log('angular function (paragraph) invoked %o', arguments);
@@ -875,12 +874,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   });
 
   $scope.$on('angularObjectRemove', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
+    let noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
-      var scope;
-      var registry;
+      let scope;
+      let registry;
 
-      var app = _.find($scope.apps, {id: data.paragraphId});
+      let app = _.find($scope.apps, {id: data.paragraphId});
       if (app) {
         scope = getAppScope(app);
         registry = getAppRegistry(app);
@@ -889,7 +888,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         return;
       }
 
-      var varName = data.name;
+      let varName = data.name;
 
       // clear watcher
       if (registry[varName]) {
@@ -902,7 +901,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
       // remove proxy for AngularFunction
       if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = undefined;
       }
     }

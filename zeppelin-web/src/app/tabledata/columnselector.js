@@ -32,8 +32,8 @@ export default class ColumnselectorTransformation extends Transformation {
   };
 
   getSetting() {
-    var self = this;
-    var configObj = self.config;
+    let self = this;
+    let configObj = self.config;
     return {
       template: 'app/tabledata/columnselector_settings.html',
       scope: {
@@ -46,8 +46,8 @@ export default class ColumnselectorTransformation extends Transformation {
         remove: function(selectorName) {
           configObj[selectorName] = null;
           self.emitConfig(configObj);
-        }
-      }
+        },
+      },
     };
   };
 
@@ -61,13 +61,13 @@ export default class ColumnselectorTransformation extends Transformation {
   };
 
   removeUnknown() {
-    var fields = this.config;
-    for (var f in fields) {
+    let fields = this.config;
+    for (let f in fields) {
       if (fields[f]) {
-        var found = false;
-        for (var i = 0; i < this.tableDataColumns.length; i++) {
-          var a = fields[f];
-          var b = this.tableDataColumns[i];
+        let found = false;
+        for (let i = 0; i < this.tableDataColumns.length; i++) {
+          let a = fields[f];
+          let b = this.tableDataColumns[i];
           if (a.index === b.index && a.name === b.name) {
             found = true;
             break;
