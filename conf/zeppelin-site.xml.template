@@ -108,6 +108,16 @@
 </property>
 -->
 
+<!-- provide region of your KMS key -->
+<!-- See http://docs.aws.amazon.com/general/latest/gr/rande.html#kms_region for region codes names -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.kmsKeyRegion</name>
+  <value>us-east-1</value>
+  <description>AWS KMS key region in your AWS account</description>
+</property>
+-->
+
 <!-- Use a custom encryption materials provider to encrypt data -->
 <!-- No configuration is given to the provider, so you must use system properties or another means to configure -->
 <!-- See https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html -->

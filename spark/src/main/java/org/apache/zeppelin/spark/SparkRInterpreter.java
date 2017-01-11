@@ -230,5 +230,4 @@ public class SparkRInterpreter extends Interpreter {
       return false;
     }
   }
-
 }

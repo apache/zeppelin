@@ -130,6 +130,23 @@ Or using the following setting in **zeppelin-site.xml**:
 </property>
 ```
 
+In order to set custom KMS key region, set the following environment variable in the file **zeppelin-env.sh**:
+
+```
+export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION = kms-key-region
+```
+
+Or using the following setting in **zeppelin-site.xml**:
+
+```
+<property>
+  <name>zeppelin.notebook.s3.kmsKeyRegion</name>
+  <value>target-region</value>
+  <description>AWS KMS key region in your AWS account</description>
+</property>
+```
+Format of `target-region` is described in more details [here](http://docs.aws.amazon.com/general/latest/gr/rande.html#kms_region) in second `Region` column (e.g. `us-east-1`).
+
 #### Custom Encryption Materials Provider class
 
 You may use a custom [``EncryptionMaterialsProvider``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html) class as long as it is available in the classpath and able to initialize itself from system properties or another mechanism.  To use this, set the following environment variable in the file **zeppelin-env.sh**:
