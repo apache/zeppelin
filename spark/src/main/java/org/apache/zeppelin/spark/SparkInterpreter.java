@@ -975,7 +975,7 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  public static List<File> currentClassPath() {
+  public List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
     String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
     if (cps != null) {
@@ -986,7 +986,7 @@ public class SparkInterpreter extends Interpreter {
     return paths;
   }
 
-  private static List<File> classPath(ClassLoader cl) {
+  private List<File> classPath(ClassLoader cl) {
     List<File> paths = new LinkedList<>();
     if (cl == null) {
       return paths;

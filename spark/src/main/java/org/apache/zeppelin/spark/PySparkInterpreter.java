@@ -155,21 +155,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     urls = urlList.toArray(urls);
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {
-      // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
-      // SHOULD get current class path before setting new class loader
-      // also, add all packages to PYTHONPATH since there might be transitive dependencies
-      StringBuilder sparkSubmitPythonPaths = new StringBuilder();
-      if (SparkInterpreter.useSparkSubmit() &&
-          !getSparkInterpreter().isYarnMode()) {
-        List<File> paths = SparkInterpreter.currentClassPath();
-        for (File f : paths) {
-          sparkSubmitPythonPaths.append(f.getAbsolutePath()).append(":");
-        }
-      }
-
       URLClassLoader newCl = new URLClassLoader(urls, oldCl);
       Thread.currentThread().setContextClassLoader(newCl);
-      createGatewayServerAndStartScript(sparkSubmitPythonPaths.toString());
+      createGatewayServerAndStartScript();
     } catch (Exception e) {
       logger.error("Error", e);
       throw new InterpreterException(e);
@@ -178,7 +166,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  private Map setupPySparkEnv(String sparkSubmitPaths) throws IOException{
+  private Map setupPySparkEnv() throws IOException{
     Map env = EnvironmentUtils.getProcEnvironment();
 
     if (!env.containsKey("PYTHONPATH")) {
@@ -187,15 +175,22 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
               ":../interpreter/lib/python");
     }
 
-    // Configure PYTHONPATH after comparing `!env.containsKey("PATHONPATH")`
-    if (!"".equals(sparkSubmitPaths)) {
-      env.put("PYTHONPATH", env.get("PYTHONPATH") + sparkSubmitPaths);
+    // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
+    // also, add all packages to PYTHONPATH since there might be transitive dependencies
+    if (SparkInterpreter.useSparkSubmit() &&
+        !getSparkInterpreter().isYarnMode()) {
+
+      String sparkSubmitJars = getSparkConf().get("spark.jars").replace(",", ":");
+
+      if (!"".equals(sparkSubmitJars)) {
+        env.put("PYTHONPATH", env.get("PYTHONPATH") + sparkSubmitJars);
+      }
     }
 
     return env;
   }
 
-  private void createGatewayServerAndStartScript(String sparkSubmitPaths) {
+  private void createGatewayServerAndStartScript() {
     // create python script
     createPythonScript();
 
@@ -227,7 +222,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
 
     try {
-      Map env = setupPySparkEnv(sparkSubmitPaths);
+      Map env = setupPySparkEnv();
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
     } catch (IOException e) {
