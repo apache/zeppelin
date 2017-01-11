@@ -45,7 +45,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
   $scope.query = {q: ''};
 
-  var initHome = function() {
+  $scope.initHome = function() {
     websocketMsgSrv.getHomeNote();
     vm.noteCustomHome = false;
   };
