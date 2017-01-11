@@ -6,8 +6,6 @@
 var webpackConfig = require('../webpack.config');
 
 module.exports = function(config) {
-  'use strict';
-
   config.set({
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
