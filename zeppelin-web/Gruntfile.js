@@ -39,6 +39,8 @@ module.exports = function(grunt) {
     dist: 'dist'
   };
 
+  var buildtime = Date.now();
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
@@ -422,14 +424,18 @@ module.exports = function(grunt) {
         options: {
           patterns: [
             {
-              match: 'buildtimestamp',
-              replacement: '<%= new Date().getTime() %>'
+              match: /(templateUrl:"[a-zA-Z\-\_\/]+\.html)/g,
+              replacement: '$1' + '?v=' + buildtime
+            },
+            {
+              match: /(ng-include src="'[a-zA-Z\-\_\/]+\.html)/g,
+              replacement: '$1' + '?v=' + buildtime
             }
           ]
         },
         files: [
-          {src: ['*/index.html'], dest: './'},
-          {src: ['*/*.js'], dest: './'}
+          {src: ['dist/**/*.html'], dest: './'},
+          {src: ['dist/*.js'], dest: './'}
         ]
       }
     },
@@ -465,12 +471,12 @@ module.exports = function(grunt) {
     'postcss',
     'concat',
     'ngAnnotate',
-    'replace',
     'copy:dist',
     'cssmin',
     'uglify',
     'usemin',
     'htmlmin',
+    'replace',
     'cacheBust',
   ]);
 
