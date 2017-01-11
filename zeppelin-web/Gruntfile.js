@@ -31,11 +31,15 @@ module.exports = function(grunt) {
   // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
+  require('grunt-replace')(grunt);
+
   // Configurable paths for the application
   var appConfig = {
     app: require('./bower.json').appPath || 'src',
     dist: 'dist'
   };
+
+  var buildtime = Date.now();
 
   // Define the configuration for all the tasks
   grunt.initConfig({
@@ -415,6 +419,27 @@ module.exports = function(grunt) {
       ],
     },
 
+    replace: {
+      dist: {
+        options: {
+          patterns: [
+            {
+              match: /(templateUrl:"[^\.\s]+\.html)/g,
+              replacement: '$1' + '?v=' + buildtime
+            },
+            {
+              match: /(ng-include src="'[^\.\s]+\.html)/g,
+              replacement: '$1' + '?v=' + buildtime
+            }
+          ]
+        },
+        files: [
+          {src: ['dist/**/*.html'], dest: './'},
+          {src: ['dist/*.js'], dest: './'}
+        ]
+      }
+    },
+
     // Test settings
     karma: {
       unit: {
@@ -451,7 +476,8 @@ module.exports = function(grunt) {
     'uglify',
     'usemin',
     'htmlmin',
-    'cacheBust'
+    'replace',
+    'cacheBust',
   ]);
 
   grunt.registerTask('default', [
