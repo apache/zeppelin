@@ -70,7 +70,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     return p;
   }
-  
+
   @Before
   public void setUp() throws Exception {
     Class.forName("org.h2.Driver");
@@ -91,28 +91,28 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testForParsePropertyKey() throws IOException {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
-    
+
     assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
         "fake");
-    
+
     assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
         "");
-    
+
     assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
         "default");
-        
+
     // when you use a %jdbc(prefix1), prefix1 is the propertyKey as form part of the cmd string
     assertEquals(t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"),
         "prefix1");
-    
+
     assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
             "prefix2");
-    
+
     // when you use a %jdbc, prefix is the default
     assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
             "default");
   }
-  
+
   @Test
   public void testForMapPrefix() throws SQLException, IOException {
     Properties properties = new Properties();
@@ -290,13 +290,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("SEL", 0);
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 1);
 
-    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("SELECT", "SELECT");
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ");
 
-    assertEquals(2, completionList.size());
+    assertEquals(1, completionList.size());
     assertEquals(true, completionList.contains(correctCompletionKeyword));
-    assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
   }
 
   private Properties getDBProperty(String dbUser, String dbPassowrd) throws IOException {
