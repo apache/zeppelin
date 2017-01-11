@@ -192,6 +192,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.$watch($scope.getEditor, function(newValue, oldValue) {
+    if (!$scope.editor) {
+      return;
+    }
     if (newValue === null || newValue === undefined) {
       console.log('editor isnt loaded yet, returning');
       return;
@@ -1035,7 +1038,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.results = data.paragraph.results;
       $scope.paragraph.settings = data.paragraph.settings;
-      $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
+      if ($scope.editor) {
+        $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
+      }
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
