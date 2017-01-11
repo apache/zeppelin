@@ -435,7 +435,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('pre-webpack-dist', [
-    'eslint',
     'htmlhint',
     'wiredep',
   ]);
