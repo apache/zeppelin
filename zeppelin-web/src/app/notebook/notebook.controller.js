@@ -632,7 +632,7 @@ return true;
 
             if (data.body.users.length !== 0) {
               let users = [];
-              for (var len = 0; len < data.body.users.length; len++) {
+              for (let len = 0; len < data.body.users.length; len++) {
                 users.push({
                   'id': data.body.users[len],
                   'text': data.body.users[len],
@@ -645,7 +645,7 @@ return true;
             }
             if (data.body.roles.length !== 0) {
               let roles = [];
-              for (var len = 0; len < data.body.roles.length; len++) {
+              for (let len = 0; len < data.body.roles.length; len++) {
                 roles.push({
                   'id': data.body.roles[len],
                   'text': data.body.roles[len],

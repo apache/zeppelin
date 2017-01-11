@@ -49,13 +49,13 @@ export default class Transformation {
 
     // already readered
     if (this._scope) {
-      var self = this;
+      let self = this;
       this._scope.$apply(function() {
-        for (var k in setting.scope) {
+        for (let k in setting.scope) {
           self._scope[k] = setting.scope[k];
         }
 
-        for (var k in self._prevSettingScope) {
+        for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
             self._scope[k] = setting.scope[k];
           }
@@ -74,7 +74,7 @@ export default class Transformation {
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      var self = this;
+      let self = this;
       this._templateRequest(template).then(function(t) {
         self._render(targetEl, t, scope);
       });

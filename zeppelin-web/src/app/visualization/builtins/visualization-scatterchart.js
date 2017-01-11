@@ -131,7 +131,7 @@ return self.yAxisTickFormat(d, self.yLabels);
       };
     }
 
-    for (var i = 0; i < data.rows.length; i++) {
+    for (let i = 0; i < data.rows.length; i++) {
       row = data.rows[i];
       if (xAxis) {
         xValue = row[xAxis.index];
@@ -167,7 +167,7 @@ return self.yAxisTickFormat(d, self.yLabels);
       grpName = size.name;
     }
 
-    for (i = 0; i < rows.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
       row = rows[i];
       if (xAxis) {
         xValue = row[xAxis.index];

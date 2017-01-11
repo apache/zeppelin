@@ -222,7 +222,7 @@ export default class Nvd3ChartVisualization extends Visualization {
         }
       }
     } else {
-      for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
+      for (let d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
         colName = d3g[d3gIndex].key;
         withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1) {
@@ -232,7 +232,7 @@ export default class Nvd3ChartVisualization extends Visualization {
 
       // use group name instead of group.value as a column name, if there're only one group and one value selected.
       if (groups.length === 1 && values.length === 1) {
-        for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
+        for (let d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           colName = d3g[d3gIndex].key;
           colName = colName.split('.').slice(0, -1).join('.');
           d3g[d3gIndex].key = colName;

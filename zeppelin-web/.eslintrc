@@ -47,6 +47,7 @@
     "require-jsdoc": [1],
     "valid-jsdoc": [1],
     "guard-for-in": [1],
-    "no-invalid-this": [1]
+    "no-invalid-this": [1],
+    "prefer-rest-params": [1]
   }
 }

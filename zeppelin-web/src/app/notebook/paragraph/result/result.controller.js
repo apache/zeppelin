@@ -383,7 +383,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
       if (!builtInViz.instance) { // not instantiated yet
         // render when targetEl is available
-        var retryRenderer = function() {
+        let retryRenderer = function() {
           let targetEl = angular.element('#p' + $scope.id + '_' + type);
           let transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
           let visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
@@ -430,7 +430,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       } else if (refresh) {
         console.log('Refresh data %o', tableData);
         // when graph options or data are changed
-        var retryRenderer = function() {
+        let retryRenderer = function() {
           let targetEl = angular.element('#p' + $scope.id + '_' + type);
           let transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
           let visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
@@ -450,7 +450,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         };
         $timeout(retryRenderer);
       } else {
-        var retryRenderer = function() {
+        let retryRenderer = function() {
           let targetEl = angular.element('#p' + $scope.id + '_' + type);
           if (targetEl.length) {
             targetEl.height(height);

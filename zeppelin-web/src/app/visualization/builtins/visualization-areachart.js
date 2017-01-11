@@ -58,19 +58,20 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
   };
 
   configureChart(chart) {
-    var self = this;
+    let self = this;
     chart.xAxis.tickFormat(function(d) {
-return self.xAxisTickFormat(d, self.xLabels);
-});
+      return self.xAxisTickFormat(d, self.xLabels);
+    });
+
     chart.yAxisTickFormat(function(d) {
-return self.yAxisTickFormat(d);
-});
+      return self.yAxisTickFormat(d);
+    });
+
     chart.yAxis.axisLabelDistance(50);
     chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 
     this.chart.style(this.config.style || 'stack');
 
-    var self = this;
     this.chart.dispatch.on('stateChange', function(s) {
       self.config.style = s.style;
 

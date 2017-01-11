@@ -131,11 +131,11 @@ export default class Visualization {
     if (this._scope) {
       let self = this;
       this._scope.$apply(function() {
-        for (var k in setting.scope) {
+        for (let k in setting.scope) {
           self._scope[k] = setting.scope[k];
         }
 
-        for (var k in self._prevSettingScope) {
+        for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
             self._scope[k] = setting.scope[k];
           }
