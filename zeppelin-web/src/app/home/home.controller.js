@@ -42,6 +42,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
 
   $scope.isReloading = false;
   $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
+  $scope.query = {q: ''};
 
   var initHome = function() {
     websocketMsgSrv.getHomeNote();
@@ -88,8 +89,8 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
     }
   });
 
-  $scope.renameNote = function(node) {
-    noteActionSrv.renameNote(node.id, node.path);
+  $scope.renameNote = function(nodeId, nodePath) {
+    noteActionSrv.renameNote(nodeId, nodePath);
   };
 
   $scope.moveNoteToTrash = function(noteId) {
@@ -130,5 +131,17 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
 
   $scope.clearAllParagraphOutput = function(noteId) {
     noteActionSrv.clearAllParagraphOutput(noteId);
+  };
+
+  $scope.isFilterNote = function(note) {
+    if (!$scope.query.q) {
+      return true;
+    }
+
+    var noteName = note.name;
+    if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
+      return true;
+    }
+    return false;
   };
 }
