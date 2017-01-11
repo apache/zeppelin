@@ -24,15 +24,15 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
     this.pivot = new PivotTransformation(config);
     this.xLables = [];
-  };
+  }
 
   type() {
     return 'stackedAreaChart';
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
     let d3Data = this.d3DataFromPivot(
@@ -47,7 +47,7 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
     this.xLabels = d3Data.xLabels;
     super.render(d3Data);
-  };
+  }
 
   /**
    * Set new config
@@ -55,7 +55,7 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
   setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart(chart) {
     let self = this;
@@ -80,5 +80,5 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
         self.emitConfig(self.config);
       }, 500);
     });
-  };
+  }
 }

@@ -29,7 +29,7 @@ export default class ColumnselectorTransformation extends Transformation {
   constructor(config, columnSelectorProp) {
     super(config);
     this.props = columnSelectorProp;
-  };
+  }
 
   getSetting() {
     let self = this;
@@ -49,7 +49,7 @@ export default class ColumnselectorTransformation extends Transformation {
         },
       },
     };
-  };
+  }
 
   /**
    * Method will be invoked when tableData or config changes
@@ -58,7 +58,7 @@ export default class ColumnselectorTransformation extends Transformation {
     this.tableDataColumns = tableData.columns;
     this.removeUnknown();
     return tableData;
-  };
+  }
 
   removeUnknown() {
     let fields = this.config;
@@ -78,5 +78,5 @@ export default class ColumnselectorTransformation extends Transformation {
         }
       }
     }
-  };
+  }
 }

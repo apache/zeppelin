@@ -37,7 +37,7 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', [
 ])
   .filter('breakFilter', function() {
     return function(text) {
-      if (!!text) {
+      if (text) {
         return text.replace(/\n/g, '<br />');
       }
     };

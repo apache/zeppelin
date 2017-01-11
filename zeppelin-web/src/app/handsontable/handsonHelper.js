@@ -21,7 +21,7 @@ export default class HandsonHelper {
     this.rows = rows || [];
     this.comment = comment || '';
     this._numericValidator = this._numericValidator.bind(this);
-  };
+  }
 
   getHandsonTableConfig(columns, columnNames, resultRows) {
     let self = this;
@@ -68,7 +68,7 @@ export default class HandsonHelper {
         TH.style['white-space'] = 'normal';
       },
     };
-  };
+  }
 
   /*
   ** Private Service Functions

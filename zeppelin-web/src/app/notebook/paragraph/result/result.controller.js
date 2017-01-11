@@ -906,4 +906,4 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
     }
   });
-};
+}

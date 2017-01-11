@@ -24,7 +24,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
 
     this.pivot = new PivotTransformation(config);
     this.xLables = [];
-  };
+  }
 
   type() {
     if (this.config.lineWithFocus) {
@@ -32,11 +32,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     } else {
       return 'lineChart';
     }
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
     let d3Data = this.d3DataFromPivot(
@@ -51,7 +51,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
 
     this.xLabels = d3Data.xLabels;
     super.render(d3Data);
-  };
+  }
 
   /**
    * Set new config
@@ -65,7 +65,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       super.destroy();
       this.currentMode = config.lineWithFocus;
     }
-  };
+  }
 
   configureChart(chart) {
     let self = this;
@@ -84,7 +84,7 @@ return self.yAxisTickFormat(d, self.xLabels);
     } else {
       chart.forceY([]);
     }
-  };
+  }
 
   getSetting(chart) {
     let self = this;
@@ -114,5 +114,5 @@ return self.yAxisTickFormat(d, self.xLabels);
         },
       },
     };
-  };
+  }
 }

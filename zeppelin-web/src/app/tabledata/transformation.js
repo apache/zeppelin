@@ -19,7 +19,7 @@ export default class Transformation {
   constructor(config) {
     this.config = config;
     this._emitter;
-  };
+  }
 
   /**
    * return {
@@ -29,14 +29,14 @@ export default class Transformation {
    */
   getSetting() {
     // override this
-  };
+  }
 
   /**
    * Method will be invoked when tableData or config changes
    */
   transform(tableData) {
     // override this
-  };
+  }
 
   /**
    * render setting
@@ -81,23 +81,23 @@ export default class Transformation {
     } else {
       this._render(targetEl, template, scope);
     }
-  };
+  }
 
   _render(targetEl, template, scope) {
     this._targetEl = targetEl;
     targetEl.html(template);
     this._compile(targetEl.contents())(scope);
     this._scope = scope;
-  };
+  }
 
   setConfig(config) {
     this.config = config;
-  };
+  }
 
   /**
    * Emit config. config will sent to server and saved.
    */
   emitConfig(config) {
     this._emitter(config);
-  };
+  }
 }

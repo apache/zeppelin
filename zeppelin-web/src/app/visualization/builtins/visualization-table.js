@@ -25,11 +25,11 @@ export default class TableVisualization extends Visualization {
     console.log('Init table viz');
     targetEl.addClass('table');
     this.passthrough = new PassthroughTransformation(config);
-  };
+  }
 
   refresh() {
     this.hot.render();
-  };
+  }
 
   render(tableData) {
     let height = this.targetEl.height();
@@ -52,15 +52,15 @@ export default class TableVisualization extends Visualization {
     this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
       this.columns, columnNames, resultRows));
     this.hot.validateCells(null);
-  };
+  }
 
   destroy() {
     if (this.hot) {
       this.hot.destroy();
     }
-  };
+  }
 
   getTransformation() {
     return this.passthrough;
-  };
+  }
 }

@@ -43,15 +43,15 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       },
     ];
     this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps);
-  };
+  }
 
   type() {
     return 'scatterChart';
-  };
+  }
 
   getTransformation() {
     return this.columnselector;
-  };
+  }
 
   render(tableData) {
     this.tableData = tableData;
@@ -61,7 +61,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     this.yLabels = d3Data.yLabels;
 
     super.render(d3Data);
-  };
+  }
 
   configureChart(chart) {
     let self = this;
@@ -86,7 +86,7 @@ return self.yAxisTickFormat(d, self.yLabels);
 
     chart.showDistX(true).showDistY(true);
     // handle the problem of tooltip not showing when muliple points have same value.
-  };
+  }
 
   selectDefault() {
     if (!this.config.xAxis && !this.config.yAxis) {
@@ -97,7 +97,7 @@ return self.yAxisTickFormat(d, self.yLabels);
         this.config.xAxis = this.tableData.columns[0];
       }
     }
-  };
+  }
 
   setScatterChart(data, refresh) {
     let xAxis = this.config.xAxis;
@@ -214,7 +214,7 @@ return self.yAxisTickFormat(d, self.yLabels);
       yLabels: colIndexValue,
       d3g: d3g,
     };
-  };
+  }
 
   setDiscreteScatterData(data) {
     let xAxis = this.config.xAxis;
@@ -270,7 +270,7 @@ return self.yAxisTickFormat(d, self.yLabels);
       newRows.push(newRow);
     }
     return newRows;
-  };
+  }
 
   isDiscrete(field) {
     let getUnique = function(f) {
@@ -301,7 +301,7 @@ return self.yAxisTickFormat(d, self.yLabels);
     } else {
       return false;
     }
-  };
+  }
 
   isValidSizeOption(options) {
     let xValues = [];
@@ -337,5 +337,5 @@ return self.yAxisTickFormat(d, self.yLabels);
     }
 
     return true;
-  };
+  }
 }

@@ -20,7 +20,7 @@ export default class TableData {
     this.columns = columns || [];
     this.rows = rows || [];
     this.comment = comment || '';
-  };
+  }
 
   loadParagraphResult(paragraphResult) {
     if (!paragraphResult || paragraphResult.type !== 'TABLE') {
@@ -68,5 +68,5 @@ export default class TableData {
     this.comment = comment;
     this.columns = columnNames;
     this.rows = rows;
-  };
+  }
 }

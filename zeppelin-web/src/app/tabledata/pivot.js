@@ -20,7 +20,7 @@ import Transformation from './transformation';
 export default class PivotTransformation extends Transformation {
   constructor(config) {
     super(config);
-  };
+  }
 
   getSetting() {
     let self = this;
@@ -53,7 +53,7 @@ export default class PivotTransformation extends Transformation {
         },
       },
     };
-  };
+  }
 
   /**
    * Method will be invoked when tableData or config changes
@@ -78,7 +78,7 @@ export default class PivotTransformation extends Transformation {
       config.keys,
       config.groups,
       config.values);
-  };
+  }
 
   removeUnknown() {
     let config = this.config.common.pivot;
@@ -116,7 +116,7 @@ export default class PivotTransformation extends Transformation {
     unique(config.groups);
     removeUnknown(config.groups);
     removeUnknown(config.values);
-  };
+  }
 
   selectDefault() {
     let config = this.config.common.pivot;
@@ -131,7 +131,7 @@ export default class PivotTransformation extends Transformation {
         config.values.push(this.tableDataColumns[1]);
       }
     }
-  };
+  }
 
   pivot(data, keys, groups, values) {
     let aggrFunc = {
@@ -258,5 +258,5 @@ export default class PivotTransformation extends Transformation {
       schema: schema,
       rows: rows,
     };
-  };
+  }
 }

@@ -53,7 +53,7 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             // success
           }, function errorCallback(errorResponse) {
             let errorText = 'SERVER ERROR';
-            if (!!errorResponse.data.message) {
+            if (errorResponse.data.message) {
               errorText = errorResponse.data.message;
             }
             BootstrapDialog.alert({
@@ -84,7 +84,7 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             // success
           }, function errorCallback(errorResponse) {
             let errorText = 'SERVER ERROR';
-            if (!!errorResponse.data.message) {
+            if (errorResponse.data.message) {
               errorText = errorResponse.data.message;
             }
             BootstrapDialog.alert({

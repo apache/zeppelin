@@ -21,13 +21,13 @@ export default class Nvd3ChartVisualization extends Visualization {
   constructor(targetEl, config) {
     super(targetEl, config);
     this.targetEl.append('<svg></svg>');
-  };
+  }
 
   refresh() {
     if (this.chart) {
       this.chart.update();
     }
-  };
+  }
 
   render(data) {
     let type = this.type();
@@ -50,6 +50,7 @@ export default class Nvd3ChartVisualization extends Visualization {
         animationDuration = 0;
       }
     } catch (ignoreErr) {
+      /** do nothing */
     }
 
     d3.select('#' + this.targetEl[0].id + ' svg')
@@ -59,19 +60,19 @@ export default class Nvd3ChartVisualization extends Visualization {
       .duration(animationDuration)
       .call(this.chart);
     d3.select('#' + this.targetEl[0].id + ' svg').style.height = height + 'px';
-  };
+  }
 
   type() {
     // override this and return chart type
-  };
+  }
 
   configureChart(chart) {
     // override this to configure chart
-  };
+  }
 
   groupedThousandsWith3DigitsFormatter(x) {
     return d3.format(',')(d3.round(x, 3));
-  };
+  }
 
   customAbbrevFormatter(x) {
     let s = d3.format('.3s')(x);
@@ -79,7 +80,7 @@ export default class Nvd3ChartVisualization extends Visualization {
       case 'G': return s.slice(0, -1) + 'B';
     }
     return s;
-  };
+  }
 
   xAxisTickFormat(d, xLabels) {
     if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
@@ -87,14 +88,14 @@ export default class Nvd3ChartVisualization extends Visualization {
     } else {
       return d;
     }
-  };
+  }
 
   yAxisTickFormat(d) {
     if (Math.abs(d) >= Math.pow(10, 6)) {
       return this.customAbbrevFormatter(d);
     }
     return this.groupedThousandsWith3DigitsFormatter(d);
-  };
+  }
 
   d3DataFromPivot(
     schema, rows, keys, groups, values, allowTextXAxis, fillMissingValues, multiBarChart) {
@@ -244,7 +245,7 @@ export default class Nvd3ChartVisualization extends Visualization {
       xLabels: rowIndexValue,
       d3g: d3g,
     };
-  };
+  }
 
   /**
    * method will be invoked when visualization need to be destroyed.
@@ -255,5 +256,5 @@ export default class Nvd3ChartVisualization extends Visualization {
       d3.selectAll('#' + this.targetEl[0].id + ' svg > *').remove();
       this.chart = undefined;
     }
-  };
+  }
 }

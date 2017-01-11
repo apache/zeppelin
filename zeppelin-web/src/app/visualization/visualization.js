@@ -22,28 +22,28 @@ export default class Visualization {
     this._dirty = false;
     this._active = false;
     this._emitter;
-  };
+  }
 
   /**
    * get transformation
    */
   getTransformation() {
     // override this
-  };
+  }
 
   /**
    * Method will be invoked when data or configuration changed
    */
   render(tableData) {
     // override this
-  };
+  }
 
   /**
    * Refresh visualization.
    */
   refresh() {
     // override this
-  };
+  }
 
   /**
    * method will be invoked when visualization need to be destroyed.
@@ -51,7 +51,7 @@ export default class Visualization {
    */
   destroy() {
     // override this
-  };
+  }
 
   /**
    * return {
@@ -61,7 +61,7 @@ export default class Visualization {
    */
   getSetting() {
     // override this
-  };
+  }
 
   /**
    * Activate. invoked when visualization is selected
@@ -72,21 +72,21 @@ export default class Visualization {
       this._dirty = false;
     }
     this._active = true;
-  };
+  }
 
   /**
    * Activate. invoked when visualization is de selected
    */
   deactivate() {
     this._active = false;
-  };
+  }
 
   /**
    * Is active
    */
   isActive() {
     return this._active;
-  };
+  }
 
   /**
    * When window or paragraph is resized
@@ -97,7 +97,7 @@ export default class Visualization {
     } else {
       this._dirty = true;
     }
-  };
+  }
 
   /**
    * Set new config
@@ -109,14 +109,14 @@ export default class Visualization {
     } else {
       this._dirty = true;
     }
-  };
+  }
 
   /**
    * Emit config. config will sent to server and saved.
    */
   emitConfig(config) {
     this._emitter(config);
-  };
+  }
 
   /**
    * render setting
@@ -160,7 +160,7 @@ export default class Visualization {
     } else {
       _renderSetting(this, targetEl, template, scope);
     }
-  };
+  }
 }
 
 function _renderSetting(instance, targetEl, template, scope) {
@@ -168,4 +168,4 @@ function _renderSetting(instance, targetEl, template, scope) {
   targetEl.html(template);
   instance._compile(targetEl.contents())(scope);
   instance._scope = scope;
-};
+}

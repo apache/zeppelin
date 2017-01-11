@@ -23,15 +23,15 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
-  };
+  }
 
   type() {
     return 'pieChart';
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
     let d3Data = this.d3DataFromPivot(
@@ -56,7 +56,7 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
       }
     }
     super.render({d3g: d3g});
-  };
+  }
 
   /**
    * Set new config
@@ -64,7 +64,7 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart(chart) {
     chart.x(function(d) {
@@ -72,5 +72,5 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
 }).y(function(d) {
  return d.value;
 });
-  };
+  }
 }
