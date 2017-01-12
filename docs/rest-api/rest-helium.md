@@ -349,7 +349,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method set visualization packages display order.</td>
+      <td>This ```POST``` method sets visualization packages display order.</td>
     </tr>
     <tr>
       <td>URL</td>

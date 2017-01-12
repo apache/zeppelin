@@ -123,7 +123,7 @@
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: '',
-        message: 'Enable ' + name + '? <div style="color:gray">' + artifact + '</div>',
+        message: 'Do you want to enable ' + name + '? <div style="color:gray">' + artifact + '</div>',
         callback: function(result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');
@@ -154,7 +154,7 @@
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: '',
-        message: 'Disable ' + name + '?',
+        message: 'Do you want to disable ' + name + '?',
         callback: function(result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');

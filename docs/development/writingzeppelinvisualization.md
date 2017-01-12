@@ -32,7 +32,7 @@ Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded
 
 
 #### 1. Load Helium package files from registry
-Zeppelin need to know what Visualization packages are available. Zeppelin searches _Helium package file_ from local registry (by default helium/ directory) by default.
+Zeppelin needs to know what Visualization packages are available. Zeppelin searches _Helium package file_ from local registry (by default helium/ directory) by default.
 _Helium package file_ provides informations like name, artifact, and so on. It's similar to _package.json_ in npm package.
 
 Here's an example `helium/zeppelin-example-horizontalbar.json`
@@ -53,7 +53,7 @@ Check [Create helium package file](#3-create-helium-package-file) section to lea
 #### 2. Enable packages
 Once Zeppelin loads _Helium package files_ from local registry, available packages are displayed in Helium menu.
 
-User simply click 'enable' button to enable.
+Click 'enable' button.
 
 <img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_visualization_helium_menu.png" />
 
@@ -99,7 +99,7 @@ Here's an example
 
 To create your own visualization, you need to create a js file and import [Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js) class from [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization) package and extend the class. [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/tabledata) package provides some useful transformations, like pivot, you can use in your visualization. (you can create your own transformation, too).
 
-[Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js) class, there're several methods that you need to override and implement. Here's simple visualition that just prints `Hello world`.
+[Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js) class, there're several methods that you need to override and implement. Here's simple visualization that just prints `Hello world`.
 
 ```
 import Visualization from 'zeppelin-vis'
@@ -159,7 +159,7 @@ A short description about visualization.
 
 ##### artifact
 
-Localtion of the visualization npm package. Support npm package with version or local filesystem path.
+Location of the visualization npm package. Support npm package with version or local filesystem path.
 
 e.g.
 
@@ -194,7 +194,7 @@ Run Zeppelin. And then run zeppelin-web in visualization dev mode.
 
 ```
 cd zeppelin-web
-npm run visdev
+yarn run visdev
 ```
 
 You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
