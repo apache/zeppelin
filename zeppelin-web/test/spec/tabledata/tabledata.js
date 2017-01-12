@@ -15,7 +15,7 @@
 import TableData from '../../../src/app/tabledata/tabledata.js';
 
 describe('TableData build', function() {
-  var td;
+  let td;
 
   beforeEach(function() {
     console.log(TableData);
@@ -31,7 +31,7 @@ describe('TableData build', function() {
   it('should able to create Tabledata from paragraph result', function() {
     td.loadParagraphResult({
       type: 'TABLE',
-      msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
+      msg: 'key\tvalue\na\t10\nb\t20\n\nhello',
     });
 
     expect(td.columns.length).toBe(2);

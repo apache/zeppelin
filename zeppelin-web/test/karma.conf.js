@@ -3,11 +3,9 @@
 // Generated on 2014-08-29 using
 // generator-karma 0.8.3
 
-var webpackConfig = require('../webpack.config');
+let webpackConfig = require('../webpack.config');
 
 module.exports = function(config) {
-  'use strict';
-
   config.set({
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
@@ -80,7 +78,7 @@ module.exports = function(config) {
 
     // list of files / patterns to exclude
     exclude: [
-      '.tmp/app/visualization/builtins/*.js'
+      '.tmp/app/visualization/builtins/*.js',
     ],
 
     // web server port
@@ -95,26 +93,26 @@ module.exports = function(config) {
     // - PhantomJS
     // - IE (only Windows)
     browsers: [
-      'PhantomJS'
+      'PhantomJS',
     ],
 
-    reporters: ['coverage','progress'],
+    reporters: ['coverage', 'progress'],
 
     webpack: webpackConfig,
     webpackMiddleware: {
-      stats: 'errors-only'
+      stats: 'errors-only',
     },
 
     preprocessors: {
       'src/*/{*.js,!(test)/**/*.js}': 'coverage',
-      'src/index.js': ['webpack', 'sourcemap',],
-      'test/spec/**/*.js': ['webpack', 'sourcemap',],
+      'src/index.js': ['webpack', 'sourcemap'],
+      'test/spec/**/*.js': ['webpack', 'sourcemap'],
     },
 
     coverageReporter: {
       type: 'html',
       dir: '../reports/zeppelin-web-coverage',
-      subdir: '.'
+      subdir: '.',
     },
 
     // Which plugins to enable

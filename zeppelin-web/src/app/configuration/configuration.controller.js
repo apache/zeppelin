@@ -21,7 +21,7 @@ function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope._ = _;
   ngToast.dismiss();
 
-  var getConfigurations = function() {
+  let getConfigurations = function() {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').
     success(function(data, status, headers, config) {
       $scope.configurations = data.body;
@@ -31,7 +31,7 @@ function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
         ngToast.danger({
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
-          timeout: '3000'
+          timeout: '3000',
         });
         setTimeout(function() {
           window.location.replace('/');
@@ -41,7 +41,7 @@ function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     });
   };
 
-  var init = function() {
+  let init = function() {
     getConfigurations();
   };
 

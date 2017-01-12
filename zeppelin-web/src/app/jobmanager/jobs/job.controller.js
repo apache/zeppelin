@@ -22,17 +22,17 @@ function JobCtrl($scope, $http, baseUrlSrv) {
   };
 
   $scope.getProgress = function() {
-    var statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
-    var runningJob = _.countBy(statusList, function(status) {
+    let statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
+    let runningJob = _.countBy(statusList, function(status) {
       if (status === 'FINISHED' || status === 'RUNNING') {
         return 'matchCount';
       } else {
         return 'none';
       }
     });
-    var totalCount = statusList.length;
-    var runningJobCount = runningJob.matchCount;
-    var result = Math.ceil(runningJobCount / totalCount * 100);
+    let totalCount = statusList.length;
+    let runningJobCount = runningJob.matchCount;
+    let result = Math.ceil(runningJobCount / totalCount * 100);
     return isNaN(result) ? 0 : result;
   };
 
@@ -47,23 +47,23 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             method: 'POST',
             url: baseUrlSrv.getRestApiBase() + '/notebook/job/' + notebookId,
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
           }).then(function successCallback(response) {
             // success
           }, function errorCallback(errorResponse) {
-            var errorText = 'SERVER ERROR';
-            if (!!errorResponse.data.message) {
+            let errorText = 'SERVER ERROR';
+            if (errorResponse.data.message) {
               errorText = errorResponse.data.message;
             }
             BootstrapDialog.alert({
               closable: true,
               title: 'Execution Failure',
-              message: errorText
+              message: errorText,
             });
           });
         }
-      }
+      },
     });
   };
 
@@ -78,30 +78,28 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             method: 'DELETE',
             url: baseUrlSrv.getRestApiBase() + '/notebook/job/' + notebookId,
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
           }).then(function successCallback(response) {
             // success
           }, function errorCallback(errorResponse) {
-            var errorText = 'SERVER ERROR';
-            if (!!errorResponse.data.message) {
-
+            let errorText = 'SERVER ERROR';
+            if (errorResponse.data.message) {
               errorText = errorResponse.data.message;
             }
             BootstrapDialog.alert({
               closable: true,
               title: 'Stop Failure',
-              message: errorText
+              message: errorText,
             });
           });
         }
-      }
+      },
     });
   };
 
   $scope.lastExecuteTime = function(unixtime) {
     return moment.unix(unixtime / 1000).fromNow();
   };
-
 }
 

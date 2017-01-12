@@ -1,14 +1,14 @@
 describe('Controller: MainCtrl', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var scope;
-  var rootScope;
+  let scope;
+  let rootScope;
 
   beforeEach(inject(function($controller, $rootScope) {
     rootScope = $rootScope;
     scope = $rootScope.$new();
     $controller('MainCtrl', {
-      $scope: scope
+      $scope: scope,
     });
   }));
 
@@ -25,5 +25,4 @@ describe('Controller: MainCtrl', function() {
     rootScope.$broadcast('setIframe', true);
     expect(scope.asIframe).toEqual(true);
   });
-
 });

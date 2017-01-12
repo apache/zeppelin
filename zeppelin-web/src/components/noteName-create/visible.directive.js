@@ -20,17 +20,17 @@ function modalvisible() {
     scope: {
       preVisibleCallback: '&previsiblecallback',
       postVisibleCallback: '&postvisiblecallback',
-      targetinput: '@targetinput'
+      targetinput: '@targetinput',
     },
     link: function(scope, element, attrs) {
       // Add some listeners
-      var previsibleMethod = scope.preVisibleCallback;
-      var postVisibleMethod = scope.postVisibleCallback;
-      element.on('show.bs.modal',function(e) {
-        var relatedTarget = angular.element(e.relatedTarget);
-        var clone = relatedTarget.data('clone');
-        var sourceNoteName = relatedTarget.data('source-note-name');
-        var cloneNote = clone ? true : false;
+      let previsibleMethod = scope.preVisibleCallback;
+      let postVisibleMethod = scope.postVisibleCallback;
+      element.on('show.bs.modal', function(e) {
+        let relatedTarget = angular.element(e.relatedTarget);
+        let clone = relatedTarget.data('clone');
+        let sourceNoteName = relatedTarget.data('source-note-name');
+        let cloneNote = clone ? true : false;
         previsibleMethod()(cloneNote, sourceNoteName);
       });
       element.on('shown.bs.modal', function(e) {
@@ -39,7 +39,7 @@ function modalvisible() {
         }
         postVisibleMethod();
       });
-    }
+    },
   };
 }
 

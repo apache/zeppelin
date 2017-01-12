@@ -24,7 +24,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
 
     this.pivot = new PivotTransformation(config);
     this.xLables = [];
-  };
+  }
 
   type() {
     if (this.config.lineWithFocus) {
@@ -32,14 +32,14 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     } else {
       return 'lineChart';
     }
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -51,7 +51,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
 
     this.xLabels = d3Data.xLabels;
     super.render(d3Data);
-  };
+  }
 
   /**
    * Set new config
@@ -65,12 +65,16 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       super.destroy();
       this.currentMode = config.lineWithFocus;
     }
-  };
+  }
 
   configureChart(chart) {
-    var self = this;
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d, self.xLabels);});
+    let self = this;
+    chart.xAxis.tickFormat(function(d) {
+return self.xAxisTickFormat(d, self.xLabels);
+});
+    chart.yAxis.tickFormat(function(d) {
+return self.yAxisTickFormat(d, self.xLabels);
+});
     chart.yAxis.axisLabelDistance(50);
     if (chart.useInteractiveGuideline) {   // lineWithFocusChart hasn't got useInteractiveGuideline
       chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
@@ -80,11 +84,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     } else {
       chart.forceY([]);
     }
-  };
+  }
 
   getSetting(chart) {
-    var self = this;
-    var configObj = self.config;
+    let self = this;
+    let configObj = self.config;
 
     return {
       template: `<div>
@@ -107,8 +111,8 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
         config: configObj,
         save: function() {
           self.emitConfig(configObj);
-        }
-      }
+        },
+      },
     };
-  };
+  }
 }

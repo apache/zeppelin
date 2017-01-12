@@ -19,7 +19,7 @@ export default class Transformation {
   constructor(config) {
     this.config = config;
     this._emitter;
-  };
+  }
 
   /**
    * return {
@@ -29,33 +29,33 @@ export default class Transformation {
    */
   getSetting() {
     // override this
-  };
+  }
 
   /**
    * Method will be invoked when tableData or config changes
    */
   transform(tableData) {
     // override this
-  };
+  }
 
   /**
    * render setting
    */
   renderSetting(targetEl) {
-    var setting = this.getSetting();
+    let setting = this.getSetting();
     if (!setting) {
       return;
     }
 
     // already readered
     if (this._scope) {
-      var self = this;
+      let self = this;
       this._scope.$apply(function() {
-        for (var k in setting.scope) {
+        for (let k in setting.scope) {
           self._scope[k] = setting.scope[k];
         }
 
-        for (var k in self._prevSettingScope) {
+        for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
             self._scope[k] = setting.scope[k];
           }
@@ -66,38 +66,38 @@ export default class Transformation {
       this._prevSettingScope = setting.scope;
     }
 
-    var scope = this._createNewScope();
-    for (var k in setting.scope) {
+    let scope = this._createNewScope();
+    for (let k in setting.scope) {
       scope[k] = setting.scope[k];
     }
-    var template = setting.template;
+    let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      var self = this;
+      let self = this;
       this._templateRequest(template).then(function(t) {
         self._render(targetEl, t, scope);
       });
     } else {
       this._render(targetEl, template, scope);
     }
-  };
+  }
 
   _render(targetEl, template, scope) {
     this._targetEl = targetEl;
     targetEl.html(template);
     this._compile(targetEl.contents())(scope);
     this._scope = scope;
-  };
+  }
 
   setConfig(config) {
     this.config = config;
-  };
+  }
 
   /**
    * Emit config. config will sent to server and saved.
    */
   emitConfig(config) {
     this._emitter(config);
-  };
+  }
 }

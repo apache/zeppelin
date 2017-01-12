@@ -24,10 +24,10 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope.showAddNewCredentialInfo = false;
   $scope.availableInterpreters = [];
 
-  var getCredentialInfo = function() {
+  let getCredentialInfo = function() {
     $http.get(baseUrlSrv.getRestApiBase() + '/credential').
     success(function(data, status, headers, config) {
-      $scope.credentialInfo  = _.map(data.body.userCredentials, function(value, prop) {
+      $scope.credentialInfo = _.map(data.body.userCredentials, function(value, prop) {
         return {entity: prop, password: value.password, username: value.username};
       });
       console.log('Success %o %o', status, $scope.credentialInfo);
@@ -37,7 +37,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
         ngToast.danger({
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
-          timeout: '3000'
+          timeout: '3000',
         });
         setTimeout(function() {
           window.location.replace('/');
@@ -53,15 +53,15 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       ngToast.danger({
         content: 'Username \\ Entity can not be empty.',
         verticalPosition: 'bottom',
-        timeout: '3000'
+        timeout: '3000',
       });
       return;
     }
 
-    var newCredential  = {
+    let newCredential = {
       'entity': $scope.entity,
       'username': $scope.username,
-      'password': $scope.password
+      'password': $scope.password,
     };
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential', newCredential).
@@ -69,7 +69,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       ngToast.success({
         content: 'Successfully saved credentials.',
         verticalPosition: 'bottom',
-        timeout: '3000'
+        timeout: '3000',
       });
       $scope.credentialInfo.push(newCredential);
       resetCredentialInfo();
@@ -80,16 +80,16 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       ngToast.danger({
         content: 'Error saving credentials',
         verticalPosition: 'bottom',
-        timeout: '3000'
+        timeout: '3000',
       });
       console.log('Error %o %o', status, data.message);
     });
   };
 
-  var getAvailableInterpreters = function() {
+  let getAvailableInterpreters = function() {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
       .success(function(data, status, headers, config) {
-        for (var setting = 0; setting < data.body.length; setting++) {
+        for (let setting = 0; setting < data.body.length; setting++) {
           $scope.availableInterpreters.push(
             data.body[setting].group + '.' + data.body[setting].name);
         }
@@ -98,7 +98,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
           select: function(event, selected) {
             $scope.entity = selected.item.value;
             return false;
-          }
+          },
         });
       }).error(function(data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
@@ -118,7 +118,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     resetCredentialInfo();
   };
 
-  var resetCredentialInfo = function() {
+  let resetCredentialInfo = function() {
     $scope.entity = '';
     $scope.username = '';
     $scope.password = '';
@@ -128,20 +128,20 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     ngToast.info({
       content: 'Since entity is a unique key, you can edit only username & password',
       verticalPosition: 'bottom',
-      timeout: '3000'
+      timeout: '3000',
     });
   };
 
   $scope.updateCredentialInfo = function(form, data, entity) {
-    var request = {
+    let request = {
       entity: entity,
       username: data.username,
-      password: data.password
+      password: data.password,
     };
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential/', request).
     success(function(data, status, headers, config) {
-      var index = _.findIndex($scope.credentialInfo, {'entity': entity});
+      let index = _.findIndex($scope.credentialInfo, {'entity': entity});
       $scope.credentialInfo[index] = request;
       return true;
     }).
@@ -150,7 +150,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       ngToast.danger({
         content: 'We couldn\'t save the credential',
         verticalPosition: 'bottom',
-        timeout: '3000'
+        timeout: '3000',
       });
       form.$show();
     });
@@ -168,7 +168,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/credential/' + entity).
           success(function(data, status, headers, config) {
-            var index = _.findIndex($scope.credentialInfo, {'entity': entity});
+            let index = _.findIndex($scope.credentialInfo, {'entity': entity});
             $scope.credentialInfo.splice(index, 1);
             console.log('Success %o %o', status, data.message);
           }).
@@ -176,11 +176,11 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
             console.log('Error %o %o', status, data.message);
           });
         }
-      }
+      },
     });
   };
 
-  var init = function() {
+  let init = function() {
     getAvailableInterpreters();
     getCredentialInfo();
   };

@@ -24,18 +24,18 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
     this.pivot = new PivotTransformation(config);
     this.xLables = [];
-  };
+  }
 
   type() {
     return 'stackedAreaChart';
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -47,7 +47,7 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
     this.xLabels = d3Data.xLabels;
     super.render(d3Data);
-  };
+  }
 
   /**
    * Set new config
@@ -55,18 +55,23 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
   setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart(chart) {
-    var self = this;
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-    chart.yAxisTickFormat(function(d) {return self.yAxisTickFormat(d);});
+    let self = this;
+    chart.xAxis.tickFormat(function(d) {
+      return self.xAxisTickFormat(d, self.xLabels);
+    });
+
+    chart.yAxisTickFormat(function(d) {
+      return self.yAxisTickFormat(d);
+    });
+
     chart.yAxis.axisLabelDistance(50);
     chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 
     this.chart.style(this.config.style || 'stack');
 
-    var self = this;
     this.chart.dispatch.on('stateChange', function(s) {
       self.config.style = s.style;
 
@@ -75,5 +80,5 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
         self.emitConfig(self.config);
       }, 500);
     });
-  };
+  }
 }

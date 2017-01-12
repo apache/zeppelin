@@ -23,18 +23,18 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
-  };
+  }
 
   type() {
     return 'multiBarChart';
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -45,7 +45,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       true);
 
     super.render(d3Data);
-  };
+  }
 
   /**
    * Set new config
@@ -53,16 +53,17 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart(chart) {
-    var self = this;
+    let self = this;
     chart.yAxis.axisLabelDistance(50);
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+    chart.yAxis.tickFormat(function(d) {
+      return self.yAxisTickFormat(d);
+    });
 
     this.chart.stacked(this.config.stacked);
 
-    var self = this;
     this.chart.dispatch.on('stateChange', function(s) {
       self.config.stacked = s.stacked;
 
@@ -71,5 +72,5 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
         self.emitConfig(self.config);
       }, 500);
     });
-  };
+  }
 }

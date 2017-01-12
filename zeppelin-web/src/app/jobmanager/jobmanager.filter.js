@@ -16,9 +16,9 @@ angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter);
 
 function jobManagerFilter() {
   function filterContext(jobItems, filterConfig) {
-    var filterValueInterpreter = filterConfig.filterValueInterpreter;
-    var filterValueNotebookName = filterConfig.filterValueNotebookName;
-    var filterItems = jobItems;
+    let filterValueInterpreter = filterConfig.filterValueInterpreter;
+    let filterValueNotebookName = filterConfig.filterValueNotebookName;
+    let filterItems = jobItems;
 
     if (filterValueInterpreter === undefined) {
       filterItems = _.filter(filterItems, function(jobItem) {
@@ -30,8 +30,8 @@ function jobManagerFilter() {
 
     if (filterValueNotebookName !== '') {
       filterItems = _.filter(filterItems, function(jobItem) {
-        var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
-        var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
+        let lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
+        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
         return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
       });
     }

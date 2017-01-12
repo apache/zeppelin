@@ -20,7 +20,7 @@ export default class TableData {
     this.columns = columns || [];
     this.rows = rows || [];
     this.comment = comment || '';
-  };
+  }
 
   loadParagraphResult(paragraphResult) {
     if (!paragraphResult || paragraphResult.type !== 'TABLE') {
@@ -28,15 +28,15 @@ export default class TableData {
       return;
     }
 
-    var columnNames = [];
-    var rows = [];
-    var array = [];
-    var textRows = paragraphResult.msg.split('\n');
-    var comment = '';
-    var commentRow = false;
+    let columnNames = [];
+    let rows = [];
+    let array = [];
+    let textRows = paragraphResult.msg.split('\n');
+    let comment = '';
+    let commentRow = false;
 
-    for (var i = 0; i < textRows.length; i++) {
-      var textRow = textRows[i];
+    for (let i = 0; i < textRows.length; i++) {
+      let textRow = textRows[i];
       if (commentRow) {
         comment += textRow;
         continue;
@@ -48,11 +48,11 @@ export default class TableData {
         }
         continue;
       }
-      var textCols = textRow.split('\t');
-      var cols = [];
-      var cols2 = [];
-      for (var j = 0; j < textCols.length; j++) {
-        var col = textCols[j];
+      let textCols = textRow.split('\t');
+      let cols = [];
+      let cols2 = [];
+      for (let j = 0; j < textCols.length; j++) {
+        let col = textCols[j];
         if (i === 0) {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
@@ -68,5 +68,5 @@ export default class TableData {
     this.comment = comment;
     this.columns = columnNames;
     this.rows = rows;
-  };
+  }
 }

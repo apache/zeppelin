@@ -1,26 +1,26 @@
 describe('Controller: NotenameCtrl', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var scope;
-  var ctrl;
-  var noteList;
+  let scope;
+  let ctrl;
+  let noteList;
 
   beforeEach(inject(function($injector, $rootScope, $controller) {
     noteList = $injector.get('noteListDataFactory');
     scope = $rootScope.$new();
     ctrl = $controller('NotenameCtrl', {
       $scope: scope,
-      noteListDataFactory: noteList
+      noteListDataFactory: noteList,
     });
   }));
 
   it('should create a new name from current name when cloneNoteName is called', function() {
-    var notesList = [
+    let notesList = [
       {name: 'dsds 1', id: '1'},
       {name: 'dsds 2', id: '2'},
       {name: 'test name', id: '3'},
       {name: 'aa bb cc', id: '4'},
-      {name: 'Untitled Note 6', id: '4'}
+      {name: 'Untitled Note 6', id: '4'},
     ];
 
     noteList.setNotes(notesList);
@@ -36,5 +36,4 @@ describe('Controller: NotenameCtrl', function() {
     ctrl.sourceNoteName = 'dsds 2';
     expect(ctrl.cloneNoteName()).toEqual('dsds 3');
   });
-
 });

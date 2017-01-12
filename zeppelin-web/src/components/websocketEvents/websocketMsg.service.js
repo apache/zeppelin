@@ -28,8 +28,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         op: 'NEW_NOTE',
         data: {
           name: noteName,
-          defaultInterpreterId: defaultInterpreterId
-        }
+          defaultInterpreterId: defaultInterpreterId,
+        },
       });
     },
 
@@ -114,8 +114,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
-        }
+          params: paragraphParams,
+        },
       });
     },
 
@@ -127,8 +127,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
           paragraphId: paragraphId,
           name: name,
           value: value,
-          interpreterGroupId: interpreterGroupId
-        }
+          interpreterGroupId: interpreterGroupId,
+        },
       });
     },
 
@@ -139,8 +139,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
           noteId: noteId,
           name: name,
           value: value,
-          paragraphId: paragraphId
-        }
+          paragraphId: paragraphId,
+        },
       });
     },
 
@@ -150,8 +150,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         data: {
           noteId: noteId,
           name: name,
-          paragraphId: paragraphId
-        }
+          paragraphId: paragraphId,
+        },
       });
     },
 
@@ -167,8 +167,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
-        }
+          params: paragraphParams,
+        },
       });
     },
 
@@ -177,8 +177,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         op: 'RUN_ALL_PARAGRAPHS',
         data: {
           noteId: noteId,
-          paragraphs: JSON.stringify(paragraphs)
-        }
+          paragraphs: JSON.stringify(paragraphs),
+        },
       });
     },
 
@@ -200,8 +200,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         data: {
           id: paragraphId,
           buf: buf,
-          cursor: cursor
-        }
+          cursor: cursor,
+        },
       });
     },
 
@@ -213,8 +213,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
-        }
+          params: paragraphParams,
+        },
       });
     },
 
@@ -222,8 +222,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({
         op: 'IMPORT_NOTE',
         data: {
-          note: note
-        }
+          note: note,
+        },
       });
     },
 
@@ -232,8 +232,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         op: 'CHECKPOINT_NOTE',
         data: {
           noteId: noteId,
-          commitMessage: commitMessage
-        }
+          commitMessage: commitMessage,
+        },
       });
     },
 
@@ -242,8 +242,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         op: 'SET_NOTE_REVISION',
         data: {
           noteId: noteId,
-          revisionId: revisionId
-        }
+          revisionId: revisionId,
+        },
       });
     },
 
@@ -251,8 +251,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({
         op: 'LIST_REVISION_HISTORY',
         data: {
-          noteId: noteId
-        }
+          noteId: noteId,
+        },
       });
     },
 
@@ -261,8 +261,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         op: 'NOTE_REVISION',
         data: {
           noteId: noteId,
-          revisionId: revisionId
-        }
+          revisionId: revisionId,
+        },
       });
     },
 
@@ -271,8 +271,8 @@ function websocketMsgSrv($rootScope, websocketEvents) {
         op: 'EDITOR_SETTING',
         data: {
           paragraphId: paragraphId,
-          magic: replName
-        }
+          magic: replName,
+        },
       });
     },
 
@@ -309,7 +309,7 @@ function websocketMsgSrv($rootScope, websocketEvents) {
 
     getInterpreterSettings: function() {
       websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
-    }
+    },
 
   };
 }

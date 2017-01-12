@@ -20,12 +20,12 @@ import Transformation from './transformation';
 export default class PassthroughTransformation extends Transformation {
   constructor(config) {
     super(config);
-  };
+  }
 
   /**
    * Method will be invoked when tableData or config changes
    */
   transform(tableData) {
     return tableData;
-  };
+  }
 }

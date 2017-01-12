@@ -22,28 +22,28 @@ export default class Visualization {
     this._dirty = false;
     this._active = false;
     this._emitter;
-  };
+  }
 
   /**
    * get transformation
    */
   getTransformation() {
     // override this
-  };
+  }
 
   /**
    * Method will be invoked when data or configuration changed
    */
   render(tableData) {
     // override this
-  };
+  }
 
   /**
    * Refresh visualization.
    */
   refresh() {
     // override this
-  };
+  }
 
   /**
    * method will be invoked when visualization need to be destroyed.
@@ -51,7 +51,7 @@ export default class Visualization {
    */
   destroy() {
     // override this
-  };
+  }
 
   /**
    * return {
@@ -61,7 +61,7 @@ export default class Visualization {
    */
   getSetting() {
     // override this
-  };
+  }
 
   /**
    * Activate. invoked when visualization is selected
@@ -72,21 +72,21 @@ export default class Visualization {
       this._dirty = false;
     }
     this._active = true;
-  };
+  }
 
   /**
    * Activate. invoked when visualization is de selected
    */
   deactivate() {
     this._active = false;
-  };
+  }
 
   /**
    * Is active
    */
   isActive() {
     return this._active;
-  };
+  }
 
   /**
    * When window or paragraph is resized
@@ -97,7 +97,7 @@ export default class Visualization {
     } else {
       this._dirty = true;
     }
-  };
+  }
 
   /**
    * Set new config
@@ -109,33 +109,33 @@ export default class Visualization {
     } else {
       this._dirty = true;
     }
-  };
+  }
 
   /**
    * Emit config. config will sent to server and saved.
    */
   emitConfig(config) {
     this._emitter(config);
-  };
+  }
 
   /**
    * render setting
    */
   renderSetting(targetEl) {
-    var setting = this.getSetting();
+    let setting = this.getSetting();
     if (!setting) {
       return;
     }
 
     // already readered
     if (this._scope) {
-      var self = this;
+      let self = this;
       this._scope.$apply(function() {
-        for (var k in setting.scope) {
+        for (let k in setting.scope) {
           self._scope[k] = setting.scope[k];
         }
 
-        for (var k in self._prevSettingScope) {
+        for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
             self._scope[k] = setting.scope[k];
           }
@@ -146,21 +146,21 @@ export default class Visualization {
       this._prevSettingScope = setting.scope;
     }
 
-    var scope = this._createNewScope();
-    for (var k in setting.scope) {
+    let scope = this._createNewScope();
+    for (let k in setting.scope) {
       scope[k] = setting.scope[k];
     }
-    var template = setting.template;
+    let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      this._templateRequest(template).then(t =>
+      this._templateRequest(template).then((t) =>
       _renderSetting(this, targetEl, t, scope)
       );
     } else {
       _renderSetting(this, targetEl, template, scope);
     }
-  };
+  }
 }
 
 function _renderSetting(instance, targetEl, template, scope) {
@@ -168,4 +168,4 @@ function _renderSetting(instance, targetEl, template, scope) {
   targetEl.html(template);
   instance._compile(targetEl.contents())(scope);
   instance._scope = scope;
-};
+}

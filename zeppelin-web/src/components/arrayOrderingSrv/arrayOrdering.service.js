@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
 arrayOrderingSrv.$inject = ['TRASH_FOLDER_ID'];
 
 function arrayOrderingSrv(TRASH_FOLDER_ID) {
-  var arrayOrderingSrv = this;
+  let arrayOrderingSrv = this;
 
   this.noteListOrdering = function(note) {
     if (note.id === TRASH_FOLDER_ID) {

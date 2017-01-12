@@ -1,5 +1,5 @@
 {
-  "preset": "google",
+  "extends": ["eslint:recommended", "google"],
   "env": {
     "browser": true,
     "jasmine": true,
@@ -26,7 +26,8 @@
     "BootstrapDialog": false,
     "Handsontable": false,
     "moment": false,
-    "zeppelin" : false
+    "zeppelin" : false,
+    "inject" : false
   },
   "rules": {
     "no-bitwise": 2,
@@ -42,6 +43,12 @@
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
     "strict": [2, "global"],
-    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}],
+    "guard-for-in": [1],
+    "no-invalid-this": [1],
+    "prefer-rest-params": [1],
+    "no-console": [0],
+    "require-jsdoc": [0],
+    "valid-jsdoc": [0]
   }
 }

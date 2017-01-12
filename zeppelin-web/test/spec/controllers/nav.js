@@ -1,13 +1,13 @@
 describe('Controller: NavCtrl', function() {
   // load the controller's module
   beforeEach(angular.mock.module('zeppelinWebApp'));
-  var NavCtrl;
-  var scope;
+  let NavCtrl;
+  let scope;
   // Initialize the controller and a mock scope
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
     NavCtrl = $controller('NavCtrl', {
-      $scope: scope
+      $scope: scope,
     });
 
     it('NavCtrl to toBeDefined', function() {

@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').service('noteVarShareService', noteVarShareServ
 noteVarShareService.$inject = [];
 
 function noteVarShareService() {
-  var store = {};
+  let store = {};
 
   this.clear = function() {
     store = {};
@@ -32,7 +32,7 @@ function noteVarShareService() {
   };
 
   this.del = function(key) {
-    var v = store[key];
+    let v = store[key];
     delete store[key];
     return v;
   };

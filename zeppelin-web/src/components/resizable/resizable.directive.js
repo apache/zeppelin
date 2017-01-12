@@ -15,26 +15,26 @@
 angular.module('zeppelinWebApp').directive('resizable', resizable);
 
 function resizable() {
-  var resizableConfig = {
+  let resizableConfig = {
     autoHide: true,
     handles: 'se',
     helper: 'resizable-helper',
     stop: function() {
       angular.element(this).css({'width': '100%', 'height': '100%'});
-    }
+    },
   };
 
   return {
     restrict: 'A',
     scope: {
-      callback: '&onResize'
+      callback: '&onResize',
     },
     link: function postLink(scope, elem, attrs) {
       attrs.$observe('resize', function(resize) {
-        var resetResize = function(elem, resize) {
-          var colStep = window.innerWidth / 12;
+        let resetResize = function(elem, resize) {
+          let colStep = window.innerWidth / 12;
           elem.off('resizestop');
-          var conf = angular.copy(resizableConfig);
+          let conf = angular.copy(resizableConfig);
           if (resize.graphType === 'TABLE' || resize.graphType === 'TEXT') {
             conf.grid = [colStep, 10];
             conf.minHeight = 100;
@@ -47,7 +47,7 @@ function resizable() {
           elem.resizable(conf);
           elem.on('resizestop', function() {
             if (scope.callback) {
-              var height = elem.height();
+              let height = elem.height();
               if (height < 50) {
                 height = 300;
               }
@@ -64,7 +64,7 @@ function resizable() {
           });
         }
       });
-    }
+    },
   };
 }
 

@@ -23,18 +23,18 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
-  };
+  }
 
   type() {
     return 'pieChart';
-  };
+  }
 
   getTransformation() {
     return this.pivot;
-  };
+  }
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -44,19 +44,19 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
       false,
       false);
 
-    var d = d3Data.d3g;
-    var d3g = [];
+    let d = d3Data.d3g;
+    let d3g = [];
     if (d.length > 0) {
-      for (var i = 0; i < d[0].values.length ; i++) {
-        var e = d[0].values[i];
+      for (let i = 0; i < d[0].values.length; i++) {
+        let e = d[0].values[i];
         d3g.push({
           label: e.x,
-          value: e.y
+          value: e.y,
         });
       }
     }
     super.render({d3g: d3g});
-  };
+  }
 
   /**
    * Set new config
@@ -64,9 +64,13 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart(chart) {
-    chart.x(function(d) { return d.label;}).y(function(d) { return d.value;});
-  };
+    chart.x(function(d) {
+ return d.label;
+}).y(function(d) {
+ return d.value;
+});
+  }
 }

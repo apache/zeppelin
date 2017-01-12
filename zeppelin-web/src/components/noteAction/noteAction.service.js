@@ -29,7 +29,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
             $location.path('/');
           }
         }
-      }
+      },
     });
   };
 
@@ -42,7 +42,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
         if (result) {
           websocketMsgSrv.moveFolderToTrash(folderId);
         }
-      }
+      },
     });
   };
 
@@ -59,7 +59,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
             $location.path('/');
           }
         }
-      }
+      },
     });
   };
 
@@ -73,7 +73,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
         if (result) {
           websocketMsgSrv.removeFolder(folderId);
         }
-      }
+      },
     });
   };
 
@@ -87,7 +87,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
         if (result) {
           websocketMsgSrv.restoreAll();
         }
-      }
+      },
     });
   };
 
@@ -101,7 +101,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
         if (result) {
           websocketMsgSrv.emptyTrash();
         }
-      }
+      },
     });
   };
 
@@ -114,7 +114,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
         if (result) {
           websocketMsgSrv.clearAllParagraphOutput(noteId);
         }
-      }
+      },
     });
   };
 
@@ -124,7 +124,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
       oldName: notePath,
       callback: function(newName) {
         websocketMsgSrv.renameNote(noteId, newName);
-      }
+      },
     });
   };
 
@@ -133,7 +133,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
       title: 'Rename folder',
       oldName: folderId,
       callback: function(newName) {
-        var newFolderId = normalizeFolderId(newName);
+        let newFolderId = normalizeFolderId(newName);
         if (_.has(noteListDataFactory.flatFolderMap, newFolderId)) {
           BootstrapDialog.confirm({
             type: BootstrapDialog.TYPE_WARNING,
@@ -144,12 +144,12 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
               if (result) {
                 websocketMsgSrv.renameFolder(folderId, newFolderId);
               }
-            }
+            },
           });
         } else {
           websocketMsgSrv.renameFolder(folderId, newFolderId);
         }
-      }
+      },
     });
   };
 

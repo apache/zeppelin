@@ -17,8 +17,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents);
 websocketEvents.$inject = ['$rootScope', '$websocket', '$location', 'baseUrlSrv'];
 
 function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
-  var websocketCalls = {};
-  var pingIntervalId;
+  let websocketCalls = {};
+  let pingIntervalId;
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
   websocketCalls.ws.reconnectIfNotNormalClose = true;
@@ -50,13 +50,13 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
   };
 
   websocketCalls.ws.onMessage(function(event) {
-    var payload;
+    let payload;
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
     console.log('Receive << %o, %o', payload.op, payload);
-    var op = payload.op;
-    var data = payload.data;
+    let op = payload.op;
+    let data = payload.data;
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NEW_NOTE') {
@@ -68,13 +68,13 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
     } else if (op === 'LIST_UPDATE_NOTE_JOBS') {
       $rootScope.$broadcast('setUpdateNoteJobs', data.noteRunningJobs);
     } else if (op === 'AUTH_INFO') {
-      var btn = [];
+      let btn = [];
       if ($rootScope.ticket.roles === '[]') {
         btn = [{
           label: 'Close',
           action: function(dialog) {
             dialog.close();
-          }
+          },
         }];
       } else {
         btn = [{
@@ -82,15 +82,15 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
           action: function(dialog) {
             dialog.close();
             angular.element('#loginModal').modal({
-              show: 'true'
+              show: 'true',
             });
-          }
+          },
         }, {
           label: 'Cancel',
           action: function(dialog) {
             dialog.close();
             $location.path('/');
-          }
+          },
         }];
       }
 
@@ -100,9 +100,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
         closeByKeyboard: false,
         title: 'Insufficient privileges',
         message: data.info.toString(),
-        buttons: btn
+        buttons: btn,
       });
-
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
@@ -145,8 +144,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
           label: 'Close',
           action: function() {
             BootstrapDialog.closeAll();
-          }
-        }]
+          },
+        }],
       });
     } else if (op === 'CONFIGURATIONS_INFO') {
       $rootScope.$broadcast('configurationsInfo', data);

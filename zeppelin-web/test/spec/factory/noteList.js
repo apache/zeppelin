@@ -1,6 +1,5 @@
 describe('Factory: NoteList', function() {
-
-  var noteList;
+  let noteList;
 
   beforeEach(function() {
     angular.mock.module('zeppelinWebApp');
@@ -11,7 +10,7 @@ describe('Factory: NoteList', function() {
   });
 
   it('should generate both flat list and folder-based list properly', function() {
-    var notesList = [
+    let notesList = [
       {name: 'A', id: '000001'},
       {name: 'B', id: '000002'},
       {id: '000003'},                     // note without name
@@ -20,11 +19,11 @@ describe('Factory: NoteList', function() {
       {name: '/C/CB/CBA', id: '000006'},  // same name with a dir
       {name: '/C/CB/CBA', id: '000007'},  // same name with another note
       {name: 'C///CB//CBB', id: '000008'},
-      {name: 'D/D[A/DA]B', id: '000009'}   // check if '[' and ']' considered as folder seperator
+      {name: 'D/D[A/DA]B', id: '000009'},   // check if '[' and ']' considered as folder seperator
     ];
     noteList.setNotes(notesList);
 
-    var flatList = noteList.flatList;
+    let flatList = noteList.flatList;
     expect(flatList.length).toBe(9);
     expect(flatList[0].name).toBe('A');
     expect(flatList[0].id).toBe('000001');
@@ -37,7 +36,7 @@ describe('Factory: NoteList', function() {
     expect(flatList[7].name).toBe('C///CB//CBB');
     expect(flatList[8].name).toBe('D/D[A/DA]B');
 
-    var folderList = noteList.root.children;
+    let folderList = noteList.root.children;
     expect(folderList.length).toBe(5);
     expect(folderList[0].name).toBe('A');
     expect(folderList[0].id).toBe('000001');
@@ -73,5 +72,4 @@ describe('Factory: NoteList', function() {
     expect(folderList[4].children[0].children[0].id).toBe('000009');
     expect(folderList[4].children[0].children[0].children).toBeUndefined();
   });
-
 });
