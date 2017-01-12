@@ -183,7 +183,7 @@ public class Helium {
       Collections.sort(packages, new Comparator<HeliumPackageSearchResult>() {
         @Override
         public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
-          return o1.getPkg().getArtifact().compareTo(o2.getPkg().getArtifact());
+          return o2.getPkg().getArtifact().compareTo(o1.getPkg().getArtifact());
         }
       });
     }
