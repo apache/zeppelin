@@ -33,17 +33,17 @@ limitations under the License.
                as-sortable-item-handle>
           </div>
         </div>
-        <a class="saveLink"
+        <span class="saveLink"
            ng-show="visualizationOrderChanged"
            ng-click="saveVisualizationOrder()">
           save
-        </a>
+        </span>
       </div>
     </div>
   </div>
 </div>
 
-<div class="box width-full">
+<div class="box width-full heliumPackageContainer">
   <div class="row heliumPackageList"
        ng-repeat="(pkgName, pkgInfo) in defaultVersions">
     <div class="col-md-12">
@@ -64,7 +64,7 @@ limitations under the License.
         {{pkgInfo.pkg.artifact}}
         <span ng-show="packageInfos[pkgName].length > 0"
               ng-click="toggleVersions(pkgName)">
-          Versions
+          versions
         </span>
       </div>
       <ul class="heliumPackageVersions"

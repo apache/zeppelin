@@ -12,13 +12,28 @@
  * limitations under the License.
  */
 
+.heliumPackageContainer {
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
 .heliumPackageList {
   min-height: 25px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #EFEFEF;
+  padding-bottom: 13px;
+}
+
+.heliumPackageList:last-child {
+  border-bottom: none;
 }
 
 .heliumPackageList .heliumPackageHead {
   height: 30px;
+}
+
+.heliumPackageList .heliumPackageHead .btn {
+  margin-top: 5px;
 }
 
 .heliumPackageList .heliumPackageIcon {
@@ -87,5 +102,6 @@
   margin-top:5px;
   cursor:pointer;
   text-decoration:
-  underline;color:#3071a9
+  underline;color:#3071a9;
+  display: inline-block;
 }
