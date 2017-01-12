@@ -750,8 +750,12 @@ public class SparkInterpreter extends Interpreter {
      *
      * In Spark 2.x, REPL generated wrapper class name should compatible with the pattern
      * ^(\$line(?:\d+)\.\$read)(?:\$\$iw)+$
+     *
+     * As hashCode() can return a negative integer value and the minus character '-' is invalid
+     * in a package name we change it to a numeric value '0' which still conforms to the regexp.
+     * 
      */
-    System.setProperty("scala.repl.name.line", "$line" + this.hashCode());
+    System.setProperty("scala.repl.name.line", ("$line" + this.hashCode()).replace('-', '0'));
 
     // To prevent 'File name too long' error on some file system.
     MutableSettings.IntSetting numClassFileSetting = settings.maxClassfileName();
