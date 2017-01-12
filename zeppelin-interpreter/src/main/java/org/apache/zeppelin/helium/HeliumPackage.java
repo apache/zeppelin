@@ -30,14 +30,17 @@ public class HeliumPackage {
   private String className;      // entry point
   private String [][] resources; // resource classnames that requires
                                  // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  private String license;
   private String icon;
+
   /**
    * Type of package
    */
   public static enum Type {
     INTERPRETER,
     NOTEBOOK_REPO,
-    APPLICATION
+    APPLICATION,
+    VISUALIZATION
   }
 
   public HeliumPackage(Type type,
@@ -45,13 +48,17 @@ public class HeliumPackage {
                        String description,
                        String artifact,
                        String className,
-                       String[][] resources) {
+                       String[][] resources,
+                       String license,
+                       String icon) {
     this.type = type;
     this.name = name;
     this.description = description;
     this.artifact = artifact;
     this.className = className;
     this.resources = resources;
+    this.license = license;
+    this.icon = icon;
   }
 
   @Override
@@ -93,6 +100,9 @@ public class HeliumPackage {
     return resources;
   }
 
+  public String getLicense() {
+    return license;
+  }
   public String getIcon() {
     return icon;
   }

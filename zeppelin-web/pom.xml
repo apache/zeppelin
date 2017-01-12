@@ -92,7 +92,8 @@
             <exclude>src/fonts/source-code-pro*</exclude>
             <exclude>src/fonts/google-fonts.css</exclude>
             <exclude>bower.json</exclude>
-            <exclude>package.json</exclude>
+            <exclude>**/package.json</exclude>
+            <exclude>**/.npmignore</exclude>
             <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
           </excludes>

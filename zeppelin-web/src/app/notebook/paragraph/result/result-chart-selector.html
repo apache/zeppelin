@@ -14,13 +14,14 @@ limitations under the License.
 
 <div id="{{id}}_switch"
      ng-if="(type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
-     class="chart-selector">
+     class="result-chart-selector">
 
   <div ng-if="type == 'TABLE'" class="btn-group">
     <button type="button" class="btn btn-default btn-sm"
             ng-repeat="viz in builtInTableDataVisualizationList track by $index"
             ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
-            ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
+            ng-click="switchViz(viz.id)"
+            ng-bind-html="viz.icon">
     </button>
   </div>
 

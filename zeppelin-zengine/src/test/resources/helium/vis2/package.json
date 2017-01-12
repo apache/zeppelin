@@ -1,0 +1,12 @@
+{
+  "name": "vis2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "vis2",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "zeppelin-tabledata": "*",
+    "zeppelin-vis": "*"
+  }
+}

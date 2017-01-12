@@ -17,33 +17,9 @@
 package org.apache.zeppelin.helium;
 
 /**
- * search result
+ * Represetns webpack json format result
  */
-public class HeliumPackageSearchResult {
-  private final String registry;
-  private final HeliumPackage pkg;
-  private final boolean enabled;
-
-  /**
-   * Create search result item
-   * @param registry registry name
-   * @param pkg package information
-   */
-  public HeliumPackageSearchResult(String registry, HeliumPackage pkg, boolean enabled) {
-    this.registry = registry;
-    this.pkg = pkg;
-    this.enabled = enabled;
-  }
-
-  public String getRegistry() {
-    return registry;
-  }
-
-  public HeliumPackage getPkg() {
-    return pkg;
-  }
-
-  public boolean isEnabled() {
-    return enabled;
-  }
+public class WebpackResult {
+  public final String [] errors = new String[0];
+  public final String [] warnings = new String[0];
 }
