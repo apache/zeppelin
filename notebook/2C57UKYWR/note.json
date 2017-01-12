@@ -286,7 +286,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/Basic Features (Pig)",
+  "name": "Zeppelin Tutorial/Using Pig for querying data",
   "id": "2C57UKYWR",
   "angularObjects": {
     "2C3DR183X:shared_process": [],
