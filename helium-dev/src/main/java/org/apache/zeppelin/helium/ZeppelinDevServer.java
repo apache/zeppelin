@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter.dev;
+
+package org.apache.zeppelin.helium;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.helium.DevInterpreter.InterpreterEvent;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.dev.DevInterpreter.InterpreterEvent;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.slf4j.Logger;
@@ -34,11 +34,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ZeppelinDevServer extends
     RemoteInterpreterServer implements InterpreterEvent, InterpreterOutputChangeListener {
-  final Logger logger = LoggerFactory.getLogger(ZeppelinDevServer.class);
-  public static final int DEFAULT_TEST_INTERPRETER_PORT = 29914;
+  private static final Logger logger = LoggerFactory.getLogger(ZeppelinDevServer.class);
 
-  DevInterpreter interpreter = null;
-  InterpreterOutput out;
+  private DevInterpreter interpreter = null;
+  private InterpreterOutput out;
   public ZeppelinDevServer(int port) throws TException {
     super(port);
   }
@@ -47,21 +46,21 @@ public class ZeppelinDevServer extends
   protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
     synchronized (this) {
       InterpreterGroup interpreterGroup = getInterpreterGroup();
-      if (interpreterGroup == null) {
+      if (interpreterGroup == null || interpreterGroup.isEmpty()) {
         createInterpreter(
             "dev",
             sessionKey,
             DevInterpreter.class.getName(),
             new HashMap<String, String>(),
             "anonymous");
-
-        Interpreter intp = super.getInterpreter(sessionKey, className);
-        interpreter = (DevInterpreter) (
-            ((LazyOpenInterpreter) intp).getInnerInterpreter());
-        interpreter.setInterpreterEvent(this);
         notify();
       }
     }
+
+    Interpreter intp = super.getInterpreter(sessionKey, className);
+    interpreter = (DevInterpreter) (
+        ((LazyOpenInterpreter) intp).getInnerInterpreter());
+    interpreter.setInterpreterEvent(this);
     return super.getInterpreter(sessionKey, className);
   }
 

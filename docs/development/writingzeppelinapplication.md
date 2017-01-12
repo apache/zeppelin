@@ -60,7 +60,7 @@ You can check example applications under [./zeppelin-examples](https://github.co
 
 In the development mode, you can run your Application in your IDE as a normal java application and see the result inside of Zeppelin notebook.
 
-`org.apache.zeppelin.interpreter.dev.ZeppelinApplicationDevServer` can run Zeppelin Application in development mode.
+`org.apache.zeppelin.helium.ZeppelinApplicationDevServer` can run Zeppelin Application in development mode.
 
 ```java
 
@@ -73,7 +73,7 @@ public static void main(String[] args) throws Exception {
 
   // run application in devlopment mode with given resource
   // in this case, Clock.class.getName() will be the application class name  
-  ZeppelinApplicationDevServer devServer = new ZeppelinApplicationDevServer(
+  org.apache.zeppelin.helium.ZeppelinApplicationDevServer devServer = new org.apache.zeppelin.helium.ZeppelinApplicationDevServer(
     Clock.class.getName(), pool.getAll());
 
   // start development mode
