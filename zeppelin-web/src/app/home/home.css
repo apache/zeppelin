@@ -381,13 +381,13 @@ a.navbar-brand:hover {
 }
 
 .zeppelin {
-  background: url('../assets/images/zepLogo.png') no-repeat right;
+  background: url('/assets/images/zepLogo.png') no-repeat right;
   height: 380px;
   opacity: 0.2;
 }
 
 .zeppelin2 {
-  background: url('../assets/images/zepLogo.png') no-repeat right;
+  background: url('/assets/images/zepLogo.png') no-repeat right;
   background-position-y: 12px;
   height: 380px;
   opacity: 0.2;
