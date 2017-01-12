@@ -78,6 +78,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
 
     StringBuilder resultBuilder = new StringBuilder("%table ");
     try {
+      pigServer.setJobName(createJobName(st, context));
       File tmpScriptFile = PigUtils.createTempPigScript(queries);
       // each thread should its own ScriptState & PigStats
       ScriptState.start(pigServer.getPigContext().getExecutionEngine().instantiateScriptState());

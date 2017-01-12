@@ -45,6 +45,7 @@ public class PigInterpreterTezTest {
     Properties properties = new Properties();
     properties.put("zeppelin.pig.execType", "tez_local");
     properties.put("zeppelin.pig.includeJobStats", includeJobStats + "");
+    properties.put("tez.queue.name", "test");
     pigInterpreter = new PigInterpreter(properties);
     pigInterpreter.open();
     context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null, null,
@@ -60,6 +61,10 @@ public class PigInterpreterTezTest {
   public void testBasics() throws IOException {
     setUpTez(false);
 
+    assertEquals("test",
+        pigInterpreter.getPigServer().getPigContext().getProperties()
+            .getProperty("tez.queue.name"));
+    
     String content = "1\tandy\n"
         + "2\tpeter\n";
     File tmpFile = File.createTempFile("zeppelin", "test");
