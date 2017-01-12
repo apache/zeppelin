@@ -330,8 +330,7 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private Map<String, List<String>> notesCheckDiff(List<NoteInfo> sourceNotes,
       NotebookRepo sourceRepo, List<NoteInfo> destNotes, NotebookRepo destRepo,
-      AuthenticationInfo subject)
-      throws IOException {
+      AuthenticationInfo subject) {
     List <String> pushIDs = new ArrayList<>();
     List <String> pullIDs = new ArrayList<>();
     List <String> delDstIDs = new ArrayList<>();
@@ -341,9 +340,14 @@ public class NotebookRepoSync implements NotebookRepo {
     for (NoteInfo snote : sourceNotes) {
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
-        /* note exists in source and destination storage systems */
-        sdate = lastModificationDate(sourceRepo.get(snote.getId(), subject));
-        ddate = lastModificationDate(destRepo.get(dnote.getId(), subject));
+        try {
+          /* note exists in source and destination storage systems */
+          sdate = lastModificationDate(sourceRepo.get(snote.getId(), subject));
+          ddate = lastModificationDate(destRepo.get(dnote.getId(), subject));
+        } catch (IOException e) {
+          LOG.error("Cannot access previously listed note {} from storage ", dnote.getId(), e);
+          continue;
+        }
 
         if (sdate.compareTo(ddate) != 0) {
           if (sdate.after(ddate) || oneWaySync) {
