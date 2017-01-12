@@ -150,6 +150,7 @@ limitations under the License.
               <div ng-if="!query.q || query.q === ''">
                 <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
                     ng-include="'note_renderer.html'"></li>
+              </div>
               <div ng-if="query.q">
                 <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
                     ng-include="'note_renderer.html'"></li>
