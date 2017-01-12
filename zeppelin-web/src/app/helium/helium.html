@@ -22,10 +22,10 @@ limitations under the License.
     </div>
     <div ng-show="visualizationOrder.length > 1"
          class="row heliumVisualizationOrder">
+      <div style="margin:0 0 5px 15px">Visualization package display order (drag and drop to reorder)</div>
       <div class="col-md-12 sortable-row btn-group"
            as-sortable="visualizationOrderListeners"
            data-ng-model="visualizationOrder">
-        <div style="margin-bottom:5px">Visualization package display order (drag and drop to reorder)</div>
         <div class="btn-group" data-ng-repeat="pkgName in visualizationOrder"
              as-sortable-item>
           <div class="btn btn-default btn-sm"

@@ -34,7 +34,6 @@
   color: #3071a9;
   float: left;
   margin-top: 0;
-  float: left;
 }
 
 .heliumPackageList .heliumPackageName span {
@@ -73,20 +72,12 @@
   float: left;
 }
 
-.heliumVisualizationOrder .as-sortable-item-handle {
+.sortable-row .as-sortable-item-handle {
   width: 35px;
   height: 30px;
 }
 
-.heliumVisualizationOrder .sortable-row:after {
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
-.heliumVisualizationOrder .as-sortable-item svg {
+.sortable-row .as-sortable-item svg {
   width: 100%;
   height: 100%;
 }
