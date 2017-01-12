@@ -107,12 +107,18 @@ public abstract class BasePigInterpreter extends Interpreter {
    */
   protected String createJobName(String cmd, InterpreterContext context) {
     String pTitle = context.getParagraphTitle();
-    if (!StringUtils.isEmpty(pTitle)) {
+    if (!StringUtils.isBlank(pTitle)) {
       return pTitle;
     } else {
-      // use the last line of pig script as the job name.
+      // use the last non-empty line of pig script as the job name.
       String[] lines = cmd.split("\n");
-      return lines[lines.length - 1];
+      for (int i = lines.length - 1; i >= 0; --i) {
+        if (!StringUtils.isBlank(lines[i])) {
+          return lines[i];
+        }
+      }
+      // in case all the lines are empty, but usually it is almost impossible
+      return "empty_job";
     }
   }
 }
