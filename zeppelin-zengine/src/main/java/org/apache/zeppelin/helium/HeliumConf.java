@@ -16,8 +16,7 @@
  */
 package org.apache.zeppelin.helium;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Helium config. This object will be persisted to conf/heliumc.conf
@@ -25,11 +24,50 @@ import java.util.List;
 public class HeliumConf {
   List<HeliumRegistry> registry = new LinkedList<>();
 
+  // enabled packages {name, version}
+  Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
+
+  // enabled visualization package display order
+  List<String> visualizationDisplayOrder = new LinkedList<>();
+
+
   public List<HeliumRegistry> getRegistry() {
     return registry;
   }
 
   public void setRegistry(List<HeliumRegistry> registry) {
     this.registry = registry;
+  }
+
+  public Map<String, String> getEnabledPackages() {
+    return new HashMap<>(enabled);
+  }
+
+  public void enablePackage(HeliumPackage pkg) {
+    enablePackage(pkg.getName(), pkg.getArtifact());
+  }
+
+  public void enablePackage(String name, String artifact) {
+    enabled.put(name, artifact);
+  }
+
+  public void disablePackage(HeliumPackage pkg) {
+    disablePackage(pkg.getName());
+  }
+
+  public void disablePackage(String name) {
+    enabled.remove(name);
+  }
+
+  public List<String> getVisualizationDisplayOrder() {
+    if (visualizationDisplayOrder == null) {
+      return new LinkedList<String>();
+    } else {
+      return visualizationDisplayOrder;
+    }
+  }
+
+  public void setVisualizationDisplayOrder(List<String> orderedPackageList) {
+    visualizationDisplayOrder = orderedPackageList;
   }
 }

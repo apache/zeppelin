@@ -14,36 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.helium;
+import Visualization from 'zeppelin-vis'
+import PassthroughTransformation from 'zeppelin-tabledata/passthrough'
 
 /**
- * search result
+ * Base class for visualization
  */
-public class HeliumPackageSearchResult {
-  private final String registry;
-  private final HeliumPackage pkg;
-  private final boolean enabled;
-
-  /**
-   * Create search result item
-   * @param registry registry name
-   * @param pkg package information
-   */
-  public HeliumPackageSearchResult(String registry, HeliumPackage pkg, boolean enabled) {
-    this.registry = registry;
-    this.pkg = pkg;
-    this.enabled = enabled;
+export default class vis1 extends Visualization {
+  constructor(targetEl, config) {
+    super(targetEl, config)
+    this.passthrough = new PassthroughTransformation(config);
+    console.log('passthrough %o', this.passthrough);
   }
 
-  public String getRegistry() {
-    return registry;
+  render(tableData) {
+    this.targetEl.html('Vis1')
   }
 
-  public HeliumPackage getPkg() {
-    return pkg;
-  }
-
-  public boolean isEnabled() {
-    return enabled;
+  getTransformation() {
+    return this.passthrough
   }
 }

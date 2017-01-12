@@ -21,5 +21,6 @@
   "artifact" : "zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
   "className" : "org.apache.zeppelin.example.app.clock.Clock",
   "resources" : [[":java.util.Date"]],
+  "license" : "Apache-2.0",
   "icon" : '<i class="fa fa-clock-o"></i>'
 }

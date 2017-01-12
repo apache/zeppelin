@@ -14,36 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.helium;
-
-/**
- * search result
- */
-public class HeliumPackageSearchResult {
-  private final String registry;
-  private final HeliumPackage pkg;
-  private final boolean enabled;
-
-  /**
-   * Create search result item
-   * @param registry registry name
-   * @param pkg package information
-   */
-  public HeliumPackageSearchResult(String registry, HeliumPackage pkg, boolean enabled) {
-    this.registry = registry;
-    this.pkg = pkg;
-    this.enabled = enabled;
-  }
-
-  public String getRegistry() {
-    return registry;
-  }
-
-  public HeliumPackage getPkg() {
-    return pkg;
-  }
-
-  public boolean isEnabled() {
-    return enabled;
-  }
+module.exports = {
+    entry: ['./'],
+    output: {
+        path: './',
+        filename: 'vis.bundle.js',
+    },
+    resolve: {
+        root: __dirname + "/node_modules",
+        extensions: [".js"]
+    },
+    module: {
+        loaders: [{
+            test: /\.js$/,
+            //exclude: /node_modules/,
+            loader: 'babel-loader'
+        }]
+    }
 }

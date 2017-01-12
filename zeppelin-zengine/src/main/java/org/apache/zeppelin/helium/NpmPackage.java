@@ -16,34 +16,13 @@
  */
 package org.apache.zeppelin.helium;
 
+import java.util.Map;
+
 /**
- * search result
+ * To read package.json
  */
-public class HeliumPackageSearchResult {
-  private final String registry;
-  private final HeliumPackage pkg;
-  private final boolean enabled;
-
-  /**
-   * Create search result item
-   * @param registry registry name
-   * @param pkg package information
-   */
-  public HeliumPackageSearchResult(String registry, HeliumPackage pkg, boolean enabled) {
-    this.registry = registry;
-    this.pkg = pkg;
-    this.enabled = enabled;
-  }
-
-  public String getRegistry() {
-    return registry;
-  }
-
-  public HeliumPackage getPkg() {
-    return pkg;
-  }
-
-  public boolean isEnabled() {
-    return enabled;
-  }
+public class NpmPackage {
+  public String name;
+  public String version;
+  public Map<String, String> dependencies;
 }
