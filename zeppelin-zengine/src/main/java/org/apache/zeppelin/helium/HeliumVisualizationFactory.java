@@ -56,14 +56,13 @@ public class HeliumVisualizationFactory {
   public HeliumVisualizationFactory(
       File moduleDownloadPath,
       File tabledataModulePath,
-      File visualizationModulePath) throws InstallationException, TaskRunnerException {
+      File visualizationModulePath) throws TaskRunnerException {
     this(moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
   }
 
-  public HeliumVisualizationFactory(File moduleDownloadPath)
-      throws InstallationException, TaskRunnerException {
+  public HeliumVisualizationFactory(File moduleDownloadPath) throws TaskRunnerException {
     this.workingDirectory = new File(moduleDownloadPath, "vis");
     File installDirectory = workingDirectory;
 
@@ -76,14 +75,18 @@ public class HeliumVisualizationFactory {
     configureLogger();
   }
 
-  private void installNodeAndNpm() throws InstallationException, TaskRunnerException {
-    NPMInstaller npmInstaller = frontEndPluginFactory.getNPMInstaller(getProxyConfig());
-    npmInstaller.setNpmVersion(NPM_VERSION);
-    npmInstaller.install();
+  private void installNodeAndNpm() {
+    try {
+      NPMInstaller npmInstaller = frontEndPluginFactory.getNPMInstaller(getProxyConfig());
+      npmInstaller.setNpmVersion(NPM_VERSION);
+      npmInstaller.install();
 
-    NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
-    nodeInstaller.setNodeVersion(NODE_VERSION);
-    nodeInstaller.install();
+      NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
+      nodeInstaller.setNodeVersion(NODE_VERSION);
+      nodeInstaller.install();
+    } catch (InstallationException e) {
+      logger.error(e.getMessage(), e);
+    }
   }
 
   private ProxyConfig getProxyConfig() {
