@@ -80,6 +80,7 @@ public class ApplicationLoaderTest {
         artifact,
         className,
         new String[][]{{}},
+        "license",
         "icon");
     return app1;
   }

@@ -30,7 +30,9 @@ public class HeliumPackage {
   private String className;      // entry point
   private String [][] resources; // resource classnames that requires
                                  // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  private String license;
   private String icon;
+
   /**
    * Type of package
    */
@@ -47,6 +49,7 @@ public class HeliumPackage {
                        String artifact,
                        String className,
                        String[][] resources,
+                       String license,
                        String icon) {
     this.type = type;
     this.name = name;
@@ -54,6 +57,7 @@ public class HeliumPackage {
     this.artifact = artifact;
     this.className = className;
     this.resources = resources;
+    this.license = license;
     this.icon = icon;
   }
 
@@ -96,6 +100,9 @@ public class HeliumPackage {
     return resources;
   }
 
+  public String getLicense() {
+    return license;
+  }
   public String getIcon() {
     return icon;
   }

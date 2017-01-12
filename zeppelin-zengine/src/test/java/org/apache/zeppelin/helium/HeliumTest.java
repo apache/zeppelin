@@ -90,6 +90,7 @@ public class HeliumTest {
         "artifact1",
         "className1",
         new String[][]{},
+        "",
         ""));
 
     registry2.add(new HeliumPackage(
@@ -99,6 +100,7 @@ public class HeliumTest {
         "artifact2",
         "className2",
         new String[][]{},
+        "",
         ""));
 
     // then

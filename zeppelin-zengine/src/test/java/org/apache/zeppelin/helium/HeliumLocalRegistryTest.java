@@ -56,6 +56,7 @@ public class HeliumLocalRegistryTest {
         "artifact1",
         "classname1",
         new String[][]{},
+        "license",
         "");
     FileUtils.writeStringToFile(new File(r1Path, "pkg1.json"), gson.toJson(pkg1));
 

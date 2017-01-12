@@ -43,6 +43,7 @@ Here's an example `helium/zeppelin-example-horizontalbar.json`
   "name" : "zeppelin_horizontalbar",
   "description" : "Horizontal Bar chart (example)",
   "artifact" : "./zeppelin-examples/zeppelin-example-horizontalbar",
+  "license" : "Apache-2.0",
   "icon" : "<i class='fa fa-bar-chart rotate90flipX'></i>"
 }
 ```
@@ -138,6 +139,7 @@ Json file contains the following information
   "type" : "VISUALIZATION",
   "name" : "zeppelin_horizontalbar",
   "description" : "Horizontal Bar chart (example)",
+  "license" : "Apache-2.0",
   "artifact" : "./zeppelin-examples/zeppelin-example-horizontalbar",
   "icon" : "<i class='fa fa-bar-chart rotate90flipX'></i>"
 }
@@ -174,6 +176,16 @@ When artifact exists in local file system
 
 ```
 artifact: "/path/to/my/visualization"
+```
+
+##### license
+
+License information.
+
+e.g.
+
+```
+license: "Apache-2.0"
 ```
 
 ##### icon

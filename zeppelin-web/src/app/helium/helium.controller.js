@@ -117,13 +117,42 @@
       });
     }
 
+    var getLicense = function(name, artifact) {
+      var pkg = _.filter($scope.defaultVersions[name], function(p) {
+        return p.artifact === artifact;
+      });
+
+      var license;
+      if (pkg.length === 0) {
+        pkg = _.filter($scope.packageInfos[name], function(p) {
+          return p.pkg.artifact === artifact;
+        });
+
+        if (pkg.length > 0) {
+          license  = pkg[0].pkg.license;
+        }
+      } else {
+        license = pkg[0].license;
+      }
+
+      if (!license) {
+        license = 'Unknown';
+      }
+      return license;
+    }
+
     $scope.enable = function(name, artifact) {
+      var license = getLicense(name, artifact);
+
       var confirm = BootstrapDialog.confirm({
         closable: false,
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: '',
-        message: 'Do you want to enable ' + name + '? <div style="color:gray">' + artifact + '</div>',
+        message: 'Do you want to enable ' + name + '?' +
+          '<div style="color:gray">' + artifact + '</div>' +
+          '<div style="border-top: 1px solid #efefef; margin-top: 10px; padding-top: 5px;">License</div>' +
+          '<div style="color:gray">' + license + '</div>',
         callback: function(result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');

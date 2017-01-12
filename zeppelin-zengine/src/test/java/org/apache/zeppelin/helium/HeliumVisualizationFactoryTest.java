@@ -73,6 +73,7 @@ public class HeliumVisualizationFactoryTest {
         "lodash@3.9.3",
         "",
         null,
+        "license",
         "icon"
     );
     hvf.install(pkg);
@@ -88,6 +89,7 @@ public class HeliumVisualizationFactoryTest {
         "zeppelin-bubblechart@0.0.3",
         "",
         null,
+        "license",
         "icon"
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
@@ -115,6 +117,7 @@ public class HeliumVisualizationFactoryTest {
         localPkg,
         "",
         null,
+        "license",
         "fa fa-coffee"
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
@@ -136,6 +139,7 @@ public class HeliumVisualizationFactoryTest {
         localPkg,
         "",
         null,
+        "license",
         "fa fa-coffee"
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
