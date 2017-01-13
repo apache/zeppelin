@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -1402,6 +1404,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
   public void addRepository(String id, String url, boolean snapshot, Authentication auth,
       Proxy proxy) throws IOException {
+
+    Pattern r = Pattern.compile("^[a-zA-Z0-9]*$");
+    Matcher m = r.matcher(id);
+    if (!m.find()) {
+      throw new IOException("id is not allow the special characters.");
+    }
+
     depResolver.addRepo(id, url, snapshot, auth, proxy);
     saveToFile();
   }
