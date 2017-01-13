@@ -401,6 +401,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   /** Set cron expression for this note **/
   $scope.setCronScheduler = function(cronExpr) {
+    if (cronExpr) {
+      if (!$scope.note.config.cronExecutingUser) {
+        $scope.note.config.cronExecutingUser = $rootScope.ticket.principal;
+      }
+    } else {
+      $scope.note.config.cronExecutingUser = '';
+    }
     $scope.note.config.cron = cronExpr;
     $scope.setConfig();
   };
@@ -1011,4 +1018,3 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
   });
 }
-
