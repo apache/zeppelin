@@ -259,7 +259,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     if (sessionExpired) {
       InterpreterResult result2 = new InterpreterResult(result.code());
       result2.add(InterpreterResult.Type.HTML,
-          "<font color=\"red\">Previous session is expired, new session is created.</font>");
+          "<font color=\"red\">Previous livy session is expired, new livy session is created. " +
+              "Paragraphs that depend on this paragraph need to be re-executed!" + "</font>");
       for (InterpreterResultMessage message : result.message()) {
         result2.add(message.getType(), message.getData());
       }
