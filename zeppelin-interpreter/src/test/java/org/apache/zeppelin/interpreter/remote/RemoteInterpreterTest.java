@@ -171,6 +171,110 @@ public class RemoteInterpreterTest {
   }
 
   @Test
+  public void testExistsRemoteInterperterCall() throws TTransportException, IOException, InterruptedException {
+    String intpGroupName = "mockIntp";
+    String host = "localhost";
+    int port = 20000;
+
+    RemoteInterpreterProcessListener listener = new RemoteInterpreterProcessListener() {
+      @Override
+      public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
+
+      }
+
+      @Override
+      public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
+
+      }
+
+      @Override
+      public void onOutputClear(String noteId, String paragraphId) {
+
+      }
+
+      @Override
+      public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+
+      }
+
+      @Override
+      public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
+
+      }
+
+      @Override
+      public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+
+      }
+    };
+
+    RemoteInterpreter remoteintp = new RemoteInterpreter(
+            new Properties(),
+            "note",
+            MockInterpreterA.class.getName(),
+            host,
+            port,
+            "fakerepo",
+            10 * 1000,
+            10,
+            listener,
+            null,
+            "anonymous",
+            false);
+
+    RemoteInterpreterRunningProcess existsIntpProcess = new RemoteInterpreterRunningProcess(
+            10 * 1000, listener, null, host, port);
+
+    InterpreterGroup remoteInterpreterGroup = new InterpreterGroup(intpGroupName);
+    remoteInterpreterGroup.setRemoteInterpreterProcess(existsIntpProcess);
+    remoteInterpreterGroup.put("note", new LinkedList<Interpreter>());
+    remoteInterpreterGroup.get("note").add(remoteintp);
+
+    existsIntpProcess.start("anonymous", false);
+
+    RemoteInterpreterServer server = new RemoteInterpreterServer(port);
+
+    remoteInterpreterGroup.put(intpGroupName, new LinkedList<Interpreter>());
+    remoteInterpreterGroup.get(intpGroupName).add(remoteintp);
+    remoteintp.setInterpreterGroup(remoteInterpreterGroup);
+    remoteInterpreterGroup.setRemoteInterpreterProcess(existsIntpProcess);
+
+    server.start();
+    boolean running = false;
+    long startTime = System.currentTimeMillis();
+    while (System.currentTimeMillis() - startTime < 10 * 1000) {
+      if (server.isRunning()) {
+        running = true;
+        break;
+      } else {
+        Thread.sleep(200);
+      }
+    }
+
+    existsIntpProcess.reference(remoteInterpreterGroup, "anonymous", false);
+
+    InterpreterResult ret = remoteintp.interpret("10",
+      new InterpreterContext(
+        "noteId",
+        "id",
+        null,
+        "title",
+        "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("pool1"),
+        new LinkedList<InterpreterContextRunner>(), null));
+
+    assertTrue(ret.message().get(0).getData().equals("10"));
+    assertTrue(remoteInterpreterGroup.getRemoteInterpreterProcess().getHost().equals(host));
+    assertTrue(remoteInterpreterGroup.getRemoteInterpreterProcess().getPort() == port);
+
+    existsIntpProcess.dereference();
+  }
+
+  @Test
   public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
     Properties p = new Properties();
 
