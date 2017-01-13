@@ -192,6 +192,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.$watch($scope.getEditor, function(newValue, oldValue) {
+    if (!$scope.editor) {
+      return;
+    }
     if (newValue === null || newValue === undefined) {
       console.log('editor isnt loaded yet, returning');
       return;
@@ -267,7 +270,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.copyPara = function(position) {
-    var editorValue = $scope.editor.getValue();
+    var editorValue = $scope.getEditorValue();
     if (editorValue) {
       $scope.copyParagraph(editorValue, position);
     }
@@ -395,15 +398,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.showLineNumbers = function(paragraph) {
-    paragraph.config.lineNumbers = true;
-    $scope.editor.renderer.setShowGutter(true);
-    commitParagraph(paragraph);
+    if ($scope.editor) {
+      paragraph.config.lineNumbers = true;
+      $scope.editor.renderer.setShowGutter(true);
+      commitParagraph(paragraph);
+    }
   };
 
   $scope.hideLineNumbers = function(paragraph) {
-    paragraph.config.lineNumbers = false;
-    $scope.editor.renderer.setShowGutter(false);
-    commitParagraph(paragraph);
+    if ($scope.editor) {
+      paragraph.config.lineNumbers = false;
+      $scope.editor.renderer.setShowGutter(false);
+      commitParagraph(paragraph);
+    }
   };
 
   $scope.columnWidthClass = function(n) {
@@ -761,7 +768,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.getEditorValue = function() {
-    return $scope.editor.getValue();
+    return !$scope.editor ? $scope.paragraph.text : $scope.editor.getValue();
   };
 
   $scope.getProgress = function() {
@@ -1035,7 +1042,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.results = data.paragraph.results;
       $scope.paragraph.settings = data.paragraph.settings;
-      $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
+      if ($scope.editor) {
+        $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
+      }
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
@@ -1081,7 +1090,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
-        $scope.run($scope.paragraph, $scope.editor.getValue());
+        $scope.run($scope.paragraph, $scope.getEditorValue());
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph($scope.paragraph);
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
@@ -1133,6 +1142,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   });
 
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
+    if (!$scope.editor) {
+      return;
+    }
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
@@ -1159,7 +1171,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   });
 
   $scope.$on('saveInterpreterBindings', function(event, paragraphId) {
-    if ($scope.paragraph.id === paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.editor) {
       setInterpreterBindings = true;
       setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
     }
@@ -1177,8 +1189,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         ), 1000);
 
       deferred.promise.then(function(data) {
-        $scope.editor.focus();
-        $scope.goToEnd($scope.editor);
+        if ($scope.editor) {
+          $scope.editor.focus();
+          $scope.goToEnd($scope.editor);
+        }
       });
     }
   });
