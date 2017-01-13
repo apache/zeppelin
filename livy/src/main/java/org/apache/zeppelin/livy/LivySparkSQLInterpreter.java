@@ -51,7 +51,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {
-      InterpreterResult result = sparkInterpreter.interpret("spark", false);
+      InterpreterResult result = sparkInterpreter.interpret("spark", false, false);
       if (result.code() == InterpreterResult.Code.SUCCESS &&
           result.message().get(0).getData().contains("org.apache.spark.sql.SparkSession")) {
         LOGGER.info("SparkSession is detected so we are using spark 2.x for session {}",
@@ -59,7 +59,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
         isSpark2 = true;
       } else {
         // spark 1.x
-        result = sparkInterpreter.interpret("sqlContext", false);
+        result = sparkInterpreter.interpret("sqlContext", false, false);
         if (result.code() == InterpreterResult.Code.SUCCESS) {
           LOGGER.info("sqlContext is detected.");
         } else if (result.code() == InterpreterResult.Code.ERROR) {
@@ -68,7 +68,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
           LOGGER.info("sqlContext is not detected, try to create SQLContext by ourselves");
           result = sparkInterpreter.interpret(
               "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-                  + "import sqlContext.implicits._", false);
+                  + "import sqlContext.implicits._", false, false);
           if (result.code() == InterpreterResult.Code.ERROR) {
             throw new LivyException("Fail to create SQLContext," +
                 result.message().get(0).getData());
@@ -113,37 +113,44 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       } else {
         sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
       }
-      InterpreterResult res = sparkInterpreter.interpret(sqlQuery, this.displayAppInfo);
+      InterpreterResult result = sparkInterpreter.interpret(sqlQuery, this.displayAppInfo, true);
 
-      if (res.code() == InterpreterResult.Code.SUCCESS) {
-        StringBuilder resMsg = new StringBuilder();
-        resMsg.append("%table ");
-        String[] rows = res.message().get(0).getData().split("\n");
-        String[] headers = rows[1].split("\\|");
-        for (int head = 1; head < headers.length; head++) {
-          resMsg.append(headers[head].trim()).append("\t");
-        }
-        resMsg.append("\n");
-        if (rows[3].indexOf("+") == 0) {
-
-        } else {
-          for (int cols = 3; cols < rows.length - 1; cols++) {
-            String[] col = rows[cols].split("\\|");
-            for (int data = 1; data < col.length; data++) {
-              resMsg.append(col[data].trim()).append("\t");
+      if (result.code() == InterpreterResult.Code.SUCCESS) {
+        InterpreterResult result2 = new InterpreterResult(InterpreterResult.Code.SUCCESS);
+        for (InterpreterResultMessage message : result.message()) {
+          // convert Text type to Table type. We assume the text type must be the sql output. This
+          // assumption is correct for now. Ideally livy should return table type. We may do it in
+          // the future release of livy.
+          if (message.getType() == InterpreterResult.Type.TEXT) {
+            StringBuilder resMsg = new StringBuilder();
+            String[] rows = message.getData().split("\n");
+            String[] headers = rows[1].split("\\|");
+            for (int head = 1; head < headers.length; head++) {
+              resMsg.append(headers[head].trim()).append("\t");
             }
             resMsg.append("\n");
+            if (rows[3].indexOf("+") == 0) {
+
+            } else {
+              for (int cols = 3; cols < rows.length - 1; cols++) {
+                String[] col = rows[cols].split("\\|");
+                for (int data = 1; data < col.length; data++) {
+                  resMsg.append(col[data].trim()).append("\t");
+                }
+                resMsg.append("\n");
+              }
+            }
+            if (rows[rows.length - 1].indexOf("only") == 0) {
+              resMsg.append("<font color=red>" + rows[rows.length - 1] + ".</font>");
+            }
+            result2.add(InterpreterResult.Type.TABLE, resMsg.toString());
+          } else {
+            result2.add(message.getType(), message.getData());
           }
         }
-        if (rows[rows.length - 1].indexOf("only") == 0) {
-          resMsg.append("<font color=red>" + rows[rows.length - 1] + ".</font>");
-        }
-
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-            resMsg.toString()
-        );
+        return result2;
       } else {
-        return res;
+        return result;
       }
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);

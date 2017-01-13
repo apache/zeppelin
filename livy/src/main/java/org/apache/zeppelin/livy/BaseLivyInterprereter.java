@@ -21,10 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -39,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base class for livy interpreters.
@@ -48,10 +46,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterprereter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-  protected SessionInfo sessionInfo;
+  protected volatile SessionInfo sessionInfo;
   private String livyURL;
   private long sessionCreationTimeout;
   protected boolean displayAppInfo;
+  private AtomicBoolean sessionExpired = new AtomicBoolean(false);
 
   public BaseLivyInterprereter(Properties property) {
     super(property);
@@ -90,16 +89,17 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         // livy 0.2 don't return appId and sparkUiUrl in response so that we need to get it
         // explicitly by ourselves.
         sessionInfo.appId = extractStatementResult(
-            interpret("sc.applicationId", false).message()
+            interpret("sc.applicationId", false, false).message()
                 .get(0).getData());
       }
 
       interpret(
-          "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get", false);
+          "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
+          false, false);
       if (StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
         sessionInfo.webUIAddress = extractStatementResult(
             interpret(
-                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", false)
+                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", false, false)
                 .message().get(0).getData());
       } else {
         sessionInfo.webUIAddress = sessionInfo.appInfo.get("sparkUiUrl");
@@ -120,7 +120,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     }
 
     try {
-      return interpret(st, this.displayAppInfo);
+      return interpret(st, this.displayAppInfo, true);
     } catch (LivyException e) {
       LOGGER.error("Fail to interpret:" + st, e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -206,9 +206,26 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     return SessionInfo.fromJson(callRestAPI("/sessions/" + sessionId, "GET"));
   }
 
-  public InterpreterResult interpret(String code, boolean displayAppInfo)
+  public InterpreterResult interpret(String code, boolean displayAppInfo,
+                                     boolean appendSessionExpired)
       throws LivyException {
-    StatementInfo stmtInfo = executeStatement(new ExecuteRequest(code));
+    StatementInfo stmtInfo = null;
+    boolean sessionExpired = false;
+    try {
+      stmtInfo = executeStatement(new ExecuteRequest(code));
+    } catch (SessionNotFoundException e) {
+      LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
+      sessionExpired = true;
+      // we don't want to create multiple sessions because it is possible to have multiple thread
+      // to call this method, like LivySparkSQLInterpreter which use ParallelScheduler. So we need
+      // to check session status again in this sync block
+      synchronized (this) {
+        if (isSessionExpired()) {
+          initLivySession();
+        }
+      }
+      stmtInfo = executeStatement(new ExecuteRequest(code));
+    }
     // pull the statement status
     while (!stmtInfo.isAvailable()) {
       try {
@@ -219,7 +236,38 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
       stmtInfo = getStatementInfo(stmtInfo.id);
     }
-    return getResultFromStatementInfo(stmtInfo, displayAppInfo);
+    if (appendSessionExpired) {
+      return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
+          sessionExpired);
+    } else {
+      return getResultFromStatementInfo(stmtInfo, displayAppInfo);
+    }
+  }
+
+  private boolean isSessionExpired() throws LivyException {
+    try {
+      getSessionInfo(sessionInfo.id);
+      return false;
+    } catch (SessionNotFoundException e) {
+      return true;
+    } catch (LivyException e) {
+      throw e;
+    }
+  }
+
+  private InterpreterResult appendSessionExpire(InterpreterResult result, boolean sessionExpired) {
+    if (sessionExpired) {
+      InterpreterResult result2 = new InterpreterResult(result.code());
+      result2.add(InterpreterResult.Type.HTML,
+          "<font color=\"red\">Previous livy session is expired, new livy session is created. " +
+              "Paragraphs that depend on this paragraph need to be re-executed!" + "</font>");
+      for (InterpreterResultMessage message : result.message()) {
+        result2.add(message.getType(), message.getData());
+      }
+      return result2;
+    } else {
+      return result;
+    }
   }
 
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
@@ -340,7 +388,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         || response.getStatusCode().value() == 201
         || response.getStatusCode().value() == 404) {
       String responseBody = response.getBody();
-      if (responseBody.matches("Session '\\d+' not found.")) {
+      if (responseBody.matches("\"Session '\\d+' not found.\"")) {
         throw new SessionNotFoundException(responseBody);
       } else {
         return responseBody;
