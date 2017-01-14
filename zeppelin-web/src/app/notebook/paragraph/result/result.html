@@ -24,7 +24,7 @@ limitations under the License.
     <div ng-if="type=='TABLE'">
       <!-- graph setting -->
       <div class="option lightBold" style="overflow: visible;"
-           ng-if="graphMode!='table'
+           ng-show="graphMode!='table'
                     && config.graph.optionOpen && !asIframe && !viewOnly">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="trsetting{{id}}_{{viz.id}}"
