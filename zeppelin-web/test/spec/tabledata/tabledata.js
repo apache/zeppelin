@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-'use strict';
+import TableData from '../../../src/app/tabledata/tabledata.js';
 
 describe('TableData build', function() {
   var td;
 
   beforeEach(function() {
-    var TableData = zeppelin.TableData;
+    console.log(TableData);
     td = new TableData();
   });
 
@@ -30,7 +30,7 @@ describe('TableData build', function() {
 
   it('should able to create Tabledata from paragraph result', function() {
     td.loadParagraphResult({
-      type: zeppelin.DatasetTypes.TABLE,
+      type: 'TABLE',
       msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
     });
 

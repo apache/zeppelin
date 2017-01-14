@@ -298,6 +298,17 @@ public class RemoteInterpreterTest {
 
     long start = System.currentTimeMillis();
     Job jobA = new Job("jobA", null) {
+      private Object r;
+
+      @Override
+      public Object getReturn() {
+        return r;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.r = results;
+      }
 
       @Override
       public int progress() {
@@ -335,6 +346,18 @@ public class RemoteInterpreterTest {
     intpA.getScheduler().submit(jobA);
 
     Job jobB = new Job("jobB", null) {
+
+      private Object r;
+
+      @Override
+      public Object getReturn() {
+        return r;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.r = results;
+      }
 
       @Override
       public int progress() {
@@ -403,6 +426,17 @@ public class RemoteInterpreterTest {
     for (int i = 0; i < concurrency; i++) {
       final String jobId = Integer.toString(i);
       scheduler.submit(new Job(jobId, Integer.toString(i), null, 200) {
+        private Object r;
+
+        @Override
+        public Object getReturn() {
+          return r;
+        }
+
+        @Override
+        public void setResult(Object results) {
+          this.r = results;
+        }
 
         @Override
         public int progress() {
@@ -483,6 +517,17 @@ public class RemoteInterpreterTest {
     for (int i = 0; i < concurrency; i++) {
       final String jobId = Integer.toString(i);
       scheduler.submit(new Job(jobId, Integer.toString(i), null, 300) {
+        private Object r;
+
+        @Override
+        public Object getReturn() {
+          return r;
+        }
+
+        @Override
+        public void setResult(Object results) {
+          this.r = results;
+        }
 
         @Override
         public int progress() {
@@ -586,6 +631,17 @@ public class RemoteInterpreterTest {
     intpA.open();
 
     Job jobA = new Job("jobA", null) {
+      private Object r;
+
+      @Override
+      public Object getReturn() {
+        return r;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.r = results;
+      }
 
       @Override
       public int progress() {

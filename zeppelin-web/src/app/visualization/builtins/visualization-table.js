@@ -12,54 +12,55 @@
  * limitations under the License.
  */
 
-'use strict';
+import Visualization from '../visualization';
+import PassthroughTransformation from '../../tabledata/passthrough';
+import HandsonHelper from '../../handsontable/handsonHelper';
 
 /**
  * Visualize data in table format
  */
-zeppelin.TableVisualization = function(targetEl, config) {
-  zeppelin.Visualization.call(this, targetEl, config);
-  console.log('Init table viz');
-  targetEl.addClass('table');
-  var PassthroughTransformation = zeppelin.PassthroughTransformation;
-  this.passthrough = new PassthroughTransformation(config);
-};
+export default class TableVisualization extends Visualization {
+  constructor(targetEl, config) {
+    super(targetEl, config);
+    console.log('Init table viz');
+    targetEl.addClass('table');
+    this.passthrough = new PassthroughTransformation(config);
+  };
 
-zeppelin.TableVisualization.prototype = Object.create(zeppelin.Visualization.prototype);
+  refresh() {
+    this.hot.render();
+  };
 
-zeppelin.TableVisualization.prototype.refresh = function() {
-  this.hot.render();
-};
+  render(tableData) {
+    var height = this.targetEl.height();
+    var container = this.targetEl.css('height', height).get(0);
+    var resultRows = tableData.rows;
+    var columnNames = _.pluck(tableData.columns, 'name');
 
-zeppelin.TableVisualization.prototype.render = function(tableData) {
-  var height = this.targetEl.height();
-  var container = this.targetEl.css('height', height).get(0);
-  var resultRows = tableData.rows;
-  var columnNames = _.pluck(tableData.columns, 'name');
+    if (this.hot) {
+      this.hot.destroy();
+    }
 
-  if (this.hot) {
-    this.hot.destroy();
-  }
+    if (!this.columns) {
+      this.columns = Array.apply(null, Array(tableData.columns.length)).map(function() {
+        return {type: 'text'};
+      });
+    }
 
-  if (!this.columns) {
-    this.columns = Array.apply(null, Array(tableData.columns.length)).map(function() {
-      return {type: 'text'};
-    });
-  }
+    var handsonHelper = new HandsonHelper();
 
-  var handsonHelper = new zeppelin.HandsonHelper();
+    this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
+      this.columns, columnNames, resultRows));
+    this.hot.validateCells(null);
+  };
 
-  this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
-    this.columns, columnNames, resultRows));
-  this.hot.validateCells(null);
-};
+  destroy() {
+    if (this.hot) {
+      this.hot.destroy();
+    }
+  };
 
-zeppelin.TableVisualization.prototype.destroy = function() {
-  if (this.hot) {
-    this.hot.destroy();
-  }
-};
-
-zeppelin.TableVisualization.prototype.getTransformation = function() {
-  return this.passthrough;
-};
+  getTransformation() {
+    return this.passthrough;
+  };
+}

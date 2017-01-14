@@ -93,6 +93,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         10);
 
     Job job = new Job("jobId", "jobName", null, 200) {
+      Object results;
+      @Override
+      public Object getReturn() {
+        return results;
+      }
 
       @Override
       public int progress() {
@@ -124,6 +129,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       protected boolean jobAbort() {
         return false;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
       }
     };
     scheduler.submit(job);
@@ -185,6 +195,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         10);
 
     Job job1 = new Job("jobId1", "jobName1", null, 200) {
+      Object results;
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId1",
@@ -199,6 +210,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
       public int progress() {
         return 0;
       }
@@ -221,9 +237,15 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         }
         return true;
       }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
+      }
     };
 
     Job job2 = new Job("jobId2", "jobName2", null, 200) {
+      public Object results;
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId2",
@@ -238,6 +260,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
       public int progress() {
         return 0;
       }
@@ -259,6 +286,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           intpA.cancel(context);
         }
         return true;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
       }
     };
 

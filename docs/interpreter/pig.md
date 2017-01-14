@@ -26,6 +26,7 @@ group: manual
 ## Supported runtime mode
   - Local
   - MapReduce
+  - Tez_Local (Only Tez 0.7 is supported)
   - Tez  (Only Tez 0.7 is supported)
 
 ## How to use
@@ -40,6 +41,10 @@ group: manual
 
     HADOOP\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
 
+- Tez Local Mode
+    
+    Nothing needs to be done for tez local mode
+    
 - Tez Mode
 
     HADOOP\_CONF\_DIR and TEZ\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
@@ -57,7 +62,7 @@ At the Interpreters menu, you have to create a new Pig interpreter. Pig interpre
     <tr>
         <td>zeppelin.pig.execType</td>
         <td>mapreduce</td>
-        <td>Execution mode for pig runtime. local | mapreduce | tez </td>
+        <td>Execution mode for pig runtime. local | mapreduce | tez_local | tez </td>
     </tr>
     <tr>
         <td>zeppelin.pig.includeJobStats</td>
@@ -94,4 +99,6 @@ c = group b by Category;
 foreach c generate group as category, COUNT($1) as count;
 ```
 
-Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`.
+Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`. 
+Besides, we recommend you to specify alias explicitly so that the visualization can display the column name correctly. Here, we name `COUNT($1)` as `count`, if you don't do this,
+then we will name it using position, here we will use `col_1` to represent `COUNT($1)` if you don't specify alias for it. There's one pig tutorial note in zeppelin for your reference.

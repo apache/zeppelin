@@ -67,6 +67,15 @@ table.dataTable.table-condensed .sorting_desc:after {
   right: 12px;
 }
 
+.plainTextContainer {
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
+}
+
+.plainTextContent{
+  white-space:pre-wrap; /** to preserve white-space and newlines of result */
+}
+
 .graphContainer {
   position: relative;
   margin-bottom: 5px;
@@ -166,7 +175,6 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .paragraph .control span {
   margin-left: 4px;
-  margin-right: 4px;
 }
 
 .paragraph .control {
@@ -200,6 +208,16 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .dropdown-menu > li > a {
   cursor: pointer;
+}
+
+.dropdown-menu .shortcut-icon{
+  padding-right: 7px;
+  float: left;
+}
+
+.dropdown-menu .shortcut-keys{
+  float: right;
+  color: #999;
 }
 
 /*
@@ -464,7 +482,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 }
 
 /*
-  Paragaph Font CSS
+  Paragraph Font CSS
 */
 
 .lightBold {
@@ -548,10 +566,32 @@ table.table-striped {
   background: #eee;
 }
 
-.network-badge {
-  margin: 0.2em;
+/*
+  Overwrite github-markdown-css for Markdown interpreter
+*/
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 
-.network-badge {
-  margin: 0.2em;
+.markdown-body {
+  font-size: 14px;
+}
+
+.markdown-body h2 {
+  font-size: 26px;
+}
+
+.markdown-body h3 {
+  font-size: 20px;
+}
+
+.markdown-body h4 {
+  font-size: 16px;
 }

@@ -171,6 +171,15 @@ public class PigUtils {
   private static String extractFromTezPigStats(TezPigScriptStats stats) {
 
     try {
+      if (stats.getReturnCode() == PigRunner.ReturnCode.UNKNOWN) {
+        LOGGER.warn("unknown return code, can't display the results");
+        return null;
+      }
+      if (stats.getPigContext() == null) {
+        LOGGER.warn("unknown exec type, don't display the results");
+        return null;
+      }
+
       Field userIdField = PigStats.class.getDeclaredField("userId");
       userIdField.setAccessible(true);
       String userId = (String) (userIdField.get(stats));

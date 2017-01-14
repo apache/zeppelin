@@ -30,6 +30,8 @@ import java.util.*;
  */
 public class Folder {
   public static final String ROOT_FOLDER_ID = "/";
+  public static final String TRASH_FOLDER_ID = "~Trash";
+  public static final String TRASH_FOLDER_CONFLICT_INFIX = " ";
 
   private String id;
 
@@ -52,7 +54,7 @@ public class Folder {
   }
 
   public String getName() {
-    if (getId().equals(ROOT_FOLDER_ID))
+    if (isRoot())
       return ROOT_FOLDER_ID;
 
     String path = getId();
@@ -66,7 +68,7 @@ public class Folder {
   }
 
   public String getParentFolderId() {
-    if (getId().equals(ROOT_FOLDER_ID))
+    if (isRoot())
       return ROOT_FOLDER_ID;
 
     int lastSlashIndex = getId().lastIndexOf("/");
@@ -106,7 +108,7 @@ public class Folder {
    * @param newId
    */
   public void rename(String newId) {
-    if (getId().equals(ROOT_FOLDER_ID))   // root folder cannot be renamed
+    if (isRoot())   // root folder cannot be renamed
       return;
 
     String oldId = getId();
@@ -220,5 +222,16 @@ public class Folder {
 
   public boolean hasChild() {
     return children.size() > 0;
+  }
+
+  boolean isRoot() {
+    return getId().equals(ROOT_FOLDER_ID);
+  }
+
+  public boolean isTrash() {
+    if (isRoot())
+      return false;
+
+    return getId().split("/")[0].equals(TRASH_FOLDER_ID);
   }
 }

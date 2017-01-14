@@ -28,13 +28,20 @@ limitations under the License.
         <li class="dropdown notebook-list-dropdown" dropdown>
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu navbar-dropdown-maxHeight" role="menu">
-            <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
+            <li ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by $index"
+              <div ng-if="!query.q || query.q === ''">
+              <li ng-repeat="note in navbar.notes.root.children | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by note.id"
                   ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
+            </div>
+            <div ng-if="query.q">
+              <li ng-repeat="note in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by note.id"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+              </li>
+            </div>
             </div>
           </ul>
         </li>
@@ -52,7 +59,6 @@ limitations under the License.
             <div class="input-group">
               <input
                 type="text"
-                style="min-width:200px;"
                 ng-model="navbar.searchForm.searchTerm"
                 id="searchTermId"
                 ng-disabled="!navbar.connected"

@@ -12,64 +12,64 @@
  * limitations under the License.
  */
 
-'use strict';
+import Nvd3ChartVisualization from './visualization-nvd3chart';
+import PivotTransformation from '../../tabledata/pivot';
 
 /**
  * Visualize data in bar char
  */
-zeppelin.BarchartVisualization = function(targetEl, config) {
-  zeppelin.Nvd3ChartVisualization.call(this, targetEl, config);
+export default class BarchartVisualization extends Nvd3ChartVisualization {
+  constructor(targetEl, config) {
+    super(targetEl, config);
 
-  var PivotTransformation = zeppelin.PivotTransformation;
-  this.pivot = new PivotTransformation(config);
-};
+    this.pivot = new PivotTransformation(config);
+  };
 
-zeppelin.BarchartVisualization.prototype = Object.create(zeppelin.Nvd3ChartVisualization.prototype);
+  type() {
+    return 'multiBarChart';
+  };
 
-zeppelin.BarchartVisualization.prototype.type = function() {
-  return 'multiBarChart';
-};
+  getTransformation() {
+    return this.pivot;
+  };
 
-zeppelin.BarchartVisualization.prototype.getTransformation = function() {
-  return this.pivot;
-};
+  render(pivot) {
+    var d3Data = this.d3DataFromPivot(
+      pivot.schema,
+      pivot.rows,
+      pivot.keys,
+      pivot.groups,
+      pivot.values,
+      true,
+      false,
+      true);
 
-zeppelin.BarchartVisualization.prototype.render = function(pivot) {
-  var d3Data = this.d3DataFromPivot(
-    pivot.schema,
-    pivot.rows,
-    pivot.keys,
-    pivot.groups,
-    pivot.values,
-    true,
-    false,
-    true);
+    super.render(d3Data);
+  };
 
-  zeppelin.Nvd3ChartVisualization.prototype.render.call(this, d3Data);
-};
+  /**
+   * Set new config
+   */
+  setConfig(config) {
+    super.setConfig(config);
+    this.pivot.setConfig(config);
+  };
 
-/**
- * Set new config
- */
-zeppelin.BarchartVisualization.prototype.setConfig = function(config) {
-  zeppelin.Nvd3ChartVisualization.prototype.setConfig.call(this, config);
-  this.pivot.setConfig(config);
-};
+  configureChart(chart) {
+    var self = this;
+    chart.yAxis.axisLabelDistance(50);
+    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
 
-zeppelin.BarchartVisualization.prototype.configureChart = function(chart) {
-  var self = this;
-  chart.yAxis.axisLabelDistance(50);
-  chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+    this.chart.stacked(this.config.stacked);
 
-  this.chart.stacked(this.config.stacked);
+    var self = this;
+    this.chart.dispatch.on('stateChange', function(s) {
+      self.config.stacked = s.stacked;
 
-  var self = this;
-  this.chart.dispatch.on('stateChange', function(s) {
-    self.config.stacked = s.stacked;
-
-    // give some time to animation finish
-    setTimeout(function() {
-      self.emitConfig(self.config);
-    }, 500);
-  });
-};
+      // give some time to animation finish
+      setTimeout(function() {
+        self.emitConfig(self.config);
+      }, 500);
+    });
+  };
+}

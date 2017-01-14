@@ -156,8 +156,9 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterFactory().close();
+          notebook.getInterpreterFactory().shutdown();
           notebook.close();
+          Thread.sleep(3000);
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
@@ -187,10 +188,14 @@ public class ZeppelinServer extends Application {
     ServerConnector connector;
 
     if (conf.useSsl()) {
+      LOG.debug("Enabling SSL for Zeppelin Server on port " + conf.getServerSslPort());
       HttpConfiguration httpConfig = new HttpConfiguration();
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(conf.getServerSslPort());
       httpConfig.setOutputBufferSize(32768);
+      httpConfig.setRequestHeaderSize(8192);
+      httpConfig.setResponseHeaderSize(8192);
+      httpConfig.setSendServerVersion(true);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       SecureRequestCustomizer src = new SecureRequestCustomizer();
@@ -212,7 +217,11 @@ public class ZeppelinServer extends Application {
     connector.setIdleTimeout(timeout);
     connector.setSoLingerTime(-1);
     connector.setHost(conf.getServerAddress());
-    connector.setPort(conf.getServerPort());
+    if (conf.useSsl()) {
+      connector.setPort(conf.getServerSslPort());
+    } else {
+      connector.setPort(conf.getServerPort());
+    }
 
     server.addConnector(connector);
 
@@ -241,12 +250,14 @@ public class ZeppelinServer extends Application {
     sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
     sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
 
-    // Set truststore
-    sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
-    sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
-    sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+    if (conf.useClientAuth()) {
+      sslContextFactory.setNeedClientAuth(conf.useClientAuth());
 
-    sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+      // Set truststore
+      sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
+      sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
+      sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+    }
 
     return sslContextFactory;
   }

@@ -46,6 +46,8 @@ If someone who doesn't have **read** permission is trying to access the notebook
 
 <center><img src="../assets/themes/zeppelin/img/docs-img/insufficient_privileges.png"></center>
 
+By default when you create a new note, the owner is the user who create it. And the readers/writers is empty which means it is shared publicly. But if you don't want it to be shared by default. You can set `zeppelin.notebook.public` to be false in `zeppelin-site.xml`.
+
 ## How it works
 In this section, we will explain the detail about how the notebook authorization works in backend side.
 

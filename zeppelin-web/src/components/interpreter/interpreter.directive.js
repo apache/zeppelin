@@ -11,25 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-(function() {
 
-  angular.module('zeppelinWebApp').directive('interpreterDirective', interpreterDirective);
+angular.module('zeppelinWebApp').directive('interpreterDirective', interpreterDirective);
 
-  interpreterDirective.$inject = ['$timeout'];
+interpreterDirective.$inject = ['$timeout'];
 
-  function interpreterDirective($timeout) {
-    return {
-      restrict: 'A',
-      link: function(scope, element, attr) {
-        if (scope.$last === true) {
-          $timeout(function() {
-            var id = 'ngRenderFinished';
-            scope.$emit(id);
-          });
-        }
+function interpreterDirective($timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attr) {
+      if (scope.$last === true) {
+        $timeout(function() {
+          var id = 'ngRenderFinished';
+          scope.$emit(id);
+        });
       }
-    };
-  }
+    }
+  };
+}
 
-})();
