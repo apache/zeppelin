@@ -35,7 +35,6 @@
     "select2": "^4.0.3",
     "github-markdown-css": "^2.4.0",
     "MathJax": "2.7.0",
-    "sigma.js": "sigma#^1.2.0",
     "ngclipboard": "^1.1.1"
   },
   "devDependencies": {
@@ -66,20 +65,6 @@
       ],
       "version": "9.4.0",
       "name": "highlightjs"
-    },
-    "sigma.js": {
-      "main": [
-        "build/sigma.min.js",
-        "build/plugins/sigma.plugins.animate.min.js",
-        "build/plugins/sigma.layout.noverlap.min.js",
-        "build/plugins/sigma.layout.forceAtlas2.min.js",
-        "build/plugins/sigma.plugins.dragNodes.min.js",
-        "build/plugins/sigma.plugins.dragNodes.min.js",
-        "build/plugins/sigma.renderers.edgeLabels.min.js",
-        "build/plugins/sigma.renderers.parallelEdges.min.js"
-      ],
-      "version": "1.2.0",
-      "name": "sigma.js"
     }
   },
   "resolutions": {

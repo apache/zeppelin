@@ -12,13 +12,14 @@
  * limitations under the License.
  */
 
-import TableData from '../../../tabledata/tabledata';
+import DatasetFactory from '../../../tabledata/datasetfactory';
 import TableVisualization from '../../../visualization/builtins/visualization-table';
 import BarchartVisualization from '../../../visualization/builtins/visualization-barchart';
 import PiechartVisualization from '../../../visualization/builtins/visualization-piechart';
 import AreachartVisualization from '../../../visualization/builtins/visualization-areachart';
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart';
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
+import NetworkVisualization from '../../../visualization/builtins/visualization-d3network';
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
@@ -52,36 +53,48 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     {
       id: 'table',   // paragraph.config.graph.mode
       name: 'Table', // human readable name. tooltip
-      icon: 'fa fa-table'
+      icon: 'fa fa-table',
+      supports: ['TABLE', 'NETWORK'] //this visualization support the following dataset types
     },
     {
       id: 'multiBarChart',
       name: 'Bar Chart',
       icon: 'fa fa-bar-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: ['TABLE', 'NETWORK']
     },
     {
       id: 'pieChart',
       name: 'Pie Chart',
       icon: 'fa fa-pie-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: ['TABLE', 'NETWORK']
     },
     {
       id: 'stackedAreaChart',
       name: 'Area Chart',
       icon: 'fa fa-area-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: ['TABLE', 'NETWORK']
     },
     {
       id: 'lineChart',
       name: 'Line Chart',
       icon: 'fa fa-line-chart',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: ['TABLE', 'NETWORK']
     },
     {
       id: 'scatterChart',
       name: 'Scatter Chart',
-      icon: 'cf cf-scatter-chart'
+      icon: 'cf cf-scatter-chart',
+      supports: ['TABLE', 'NETWORK']
+    },
+    {
+      id: 'network',
+      name: 'Network',
+      icon: 'fa fa-share-alt',
+      supports: ['NETWORK']
     }
   ];
 
@@ -112,6 +125,10 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     'scatterChart': {
       class: ScatterchartVisualization,
       instance: undefined
+      },
+      'network': {
+        class: NetworkVisualization,
+        instance: undefined
     }
   };
 
@@ -223,11 +240,16 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     // enable only when it is last result
     enableHelium = (index === paragraphRef.results.msg.length - 1);
 
-    if ($scope.type === 'TABLE') {
-      tableData = new TableData();
+    if ($scope.type === 'TABLE' || $scope.type === 'NETWORK') {
+      tableData = new DatasetFactory().createDataset($scope.type);
       tableData.loadParagraphResult({type: $scope.type, msg: data});
       $scope.tableDataColumns = tableData.columns;
       $scope.tableDataComment = tableData.comment;
+        if ($scope.type === 'NETWORK') {
+          $scope.networkNodes = tableData.networkNodes;
+          $scope.networkRelationships = tableData.networkRelationships;
+          $scope.networkProperties = tableData.networkProperties;
+        }
     } else if ($scope.type === 'IMG') {
       $scope.imageData = data;
     }
@@ -245,7 +267,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       var app = _.find($scope.apps, {id: activeApp});
       renderApp(app);
     } else {
-      if (type === 'TABLE') {
+      if (type === 'TABLE' || type === 'NETWORK') {
         $scope.renderGraph($scope.graphMode, refresh);
       } else if (type === 'HTML') {
         renderHtml();
