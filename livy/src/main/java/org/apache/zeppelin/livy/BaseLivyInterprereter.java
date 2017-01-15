@@ -49,7 +49,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   protected volatile SessionInfo sessionInfo;
   private String livyURL;
-  private long sessionCreationTimeout;
+  private int sessionCreationTimeout;
+  private int pullStatusInterval;
   protected boolean displayAppInfo;
   private AtomicBoolean sessionExpired = new AtomicBoolean(false);
   private LivyVersion livyVersion;
@@ -61,8 +62,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   public BaseLivyInterprereter(Properties property) {
     super(property);
     this.livyURL = property.getProperty("zeppelin.livy.url");
-    this.sessionCreationTimeout = Long.parseLong(
+    this.sessionCreationTimeout = Integer.parseInt(
         property.getProperty("zeppelin.livy.create.session.timeout", 120 + ""));
+    this.pullStatusInterval = Integer.parseInt(
+        property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
   }
 
   public abstract String getSessionKind();
@@ -217,7 +220,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           LOGGER.error(msg);
           throw new LivyException(msg);
         }
-        Thread.sleep(1000);
+        Thread.sleep(pullStatusInterval);
         sessionInfo = getSessionInfo(sessionInfo.id);
       }
       return sessionInfo;
@@ -259,7 +262,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       // pull the statement status
       while (!stmtInfo.isAvailable()) {
         try {
-          Thread.sleep(1000);
+          Thread.sleep(pullStatusInterval);
         } catch (InterruptedException e) {
           LOGGER.error("InterruptedException when pulling statement status.", e);
           throw new LivyException(e);

@@ -77,6 +77,11 @@
         "defaultValue": "",
         "description": "Kerberos keytab to authenticate livy"
       },
+      "zeppelin.livy.pull_status.interval.millis": {
+        "propertyName": "zeppelin.livy.pull_status.interval.millis",
+        "defaultValue": "1000",
+        "description": "The interval for checking paragraph execution status"
+      },
       "livy.spark.jars.packages": {
         "propertyName": "livy.spark.jars.packages",
         "defaultValue": "",
