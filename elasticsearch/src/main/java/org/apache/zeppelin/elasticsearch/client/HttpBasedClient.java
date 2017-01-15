@@ -56,9 +56,6 @@ public class HttpBasedClient implements ElasticsearchClient {
   private final String password;
 
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//  private HttpHost elasticHost;
-//  private HttpClientContext context;
-//  private CredentialsProvider credsProvider;
 
   public HttpBasedClient(Properties props) {
     this.host = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_HOST);
