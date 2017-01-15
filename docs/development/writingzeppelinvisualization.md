@@ -56,7 +56,7 @@ Once Zeppelin loads _Helium package files_ from local registry, available packag
 
 Click 'enable' button.
 
-<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_visualization_helium_menu.png" />
+<img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_visualization_helium_menu.png" />
 
 
 #### 3. Create and load visualization bundle on the fly
@@ -69,7 +69,7 @@ Once a Visualization package is enabled, [HeliumVisualizationFactory](https://gi
 Zeppelin shows additional button for loaded Visualizations.
 User can use just like any other built-in visualizations.
 
-<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_visualization_example.png" />
+<img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_visualization_example.png" />
 
 
 
