@@ -30,9 +30,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class HeliumVisualizationFactoryTest {
   private File tmpDir;
@@ -153,5 +151,43 @@ public class HeliumVisualizationFactoryTest {
       assertTrue(e.getMessage().contains("error in the package"));
     }
     assertNull(bundle);
+  }
+
+  @Test
+  public void switchVersion() throws IOException, TaskRunnerException {
+    URL res = Resources.getResource("helium/webpack.config.js");
+    String resDir = new File(res.getFile()).getParent();
+
+    HeliumPackage pkgV1 = new HeliumPackage(
+        HeliumPackage.Type.VISUALIZATION,
+        "zeppelin-bubblechart",
+        "zeppelin-bubblechart",
+        "zeppelin-bubblechart@0.0.3",
+        "",
+        null,
+        "license",
+        "icon"
+    );
+
+    HeliumPackage pkgV2 = new HeliumPackage(
+        HeliumPackage.Type.VISUALIZATION,
+        "zeppelin-bubblechart",
+        "zeppelin-bubblechart",
+        "zeppelin-bubblechart@0.0.1",
+        "",
+        null,
+        "license",
+        "icon"
+    );
+    List<HeliumPackage> pkgsV1 = new LinkedList<>();
+    pkgsV1.add(pkgV1);
+
+    List<HeliumPackage> pkgsV2 = new LinkedList<>();
+    pkgsV2.add(pkgV2);
+
+    File bundle1 = hvf.bundle(pkgsV1);
+    File bundle2 = hvf.bundle(pkgsV2);
+
+    assertNotSame(bundle1.lastModified(), bundle2.lastModified());
   }
 }
