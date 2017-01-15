@@ -28,8 +28,8 @@ limitations under the License.
 Apache Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
 There are few notebook storage systems available for a use out of the box:
 
-  * (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
-  * use local file system and version it using local Git repository - `GitNotebookRepo`
+  * (default) use local file system and version it using local Git repository - `GitNotebookRepo`
+  * all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
 
@@ -100,13 +100,13 @@ Uncomment the next property for use S3NotebookRepo class:
 </property>
 ```
 
-Comment out the next property to disable local notebook storage (the default):
+Comment out the next property to disable local git notebook storage (the default):
 
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 ```
 
@@ -191,8 +191,8 @@ Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-si
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 ```
 
@@ -206,12 +206,12 @@ and commenting out:
 </property>
 ```
 
-In case you want to use simultaneously your local storage with Azure storage use the following property instead:
+In case you want to use simultaneously your local git storage with Azure storage use the following property instead:
 
  ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
 ```
@@ -236,7 +236,7 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 <!--
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
   <description>two notebook persistence layers (local + ZeppelinHub)</description>
 </property>
 -->
@@ -245,7 +245,7 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 or set the environment variable in the file **zeppelin-env.sh**:
 
 ```
-export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
+export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
 ```
 
 Secondly, you need to set the environment variables in the file **zeppelin-env.sh**:
