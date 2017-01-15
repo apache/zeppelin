@@ -133,7 +133,7 @@ public class SqlCompleter extends StringsCompleter {
       } finally {
         schemas.close();
       }
-    } catch (Throwable t) {
+    } catch (SQLException t) {
       logger.error("Failed to retrieve the schema names", t);
     }
     return res;
