@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.helium;
 
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
@@ -31,8 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
 /**
@@ -54,7 +51,7 @@ public class Helium {
       String defaultLocalRegistryPath,
       HeliumVisualizationFactory visualizationFactory,
       HeliumApplicationFactory applicationFactory)
-      throws IOException, TaskRunnerException {
+      throws IOException {
     this.heliumConfPath = heliumConfPath;
     this.defaultLocalRegistryPath = defaultLocalRegistryPath;
     this.visualizationFactory = visualizationFactory;
@@ -206,11 +203,11 @@ public class Helium {
     return null;
   }
 
-  public File recreateVisualizationBundle() throws IOException, TaskRunnerException {
+  public File recreateVisualizationBundle() throws IOException {
     return visualizationFactory.bundle(getVisualizationPackagesToBundle(), true);
   }
 
-  public void enable(String name, String artifact) throws IOException, TaskRunnerException {
+  public void enable(String name, String artifact) throws IOException {
     HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
 
     // no package found.
@@ -229,7 +226,7 @@ public class Helium {
     save();
   }
 
-  public void disable(String name) throws IOException, TaskRunnerException {
+  public void disable(String name) throws IOException {
     String artifact = heliumConf.getEnabledPackages().get(name);
 
     if (artifact == null) {
@@ -344,7 +341,7 @@ public class Helium {
   }
 
   public void setVisualizationPackageOrder(List<String> orderedPackageList)
-      throws IOException, TaskRunnerException {
+      throws IOException {
     heliumConf.setVisualizationDisplayOrder(orderedPackageList);
 
     // if package is visualization, rebuild bundle
