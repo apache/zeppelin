@@ -148,11 +148,7 @@ public class InterpreterSetting {
     int modeKeyIndex = interpreterGroupKey.lastIndexOf(":");
     String plainNoteId = interpreterGroupKey.substring(modeKeyIndex, interpreterGroupKey.length());
 
-    if (noteId.equals(plainNoteId)) {
-      return true;
-    }
-
-    return false;
+    return noteId.equals(plainNoteId);
   }
 
   public InterpreterGroup getInterpreterGroup(String user, String noteId) {
