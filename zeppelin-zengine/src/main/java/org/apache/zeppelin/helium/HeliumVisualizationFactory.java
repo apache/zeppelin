@@ -104,6 +104,7 @@ public class HeliumVisualizationFactory {
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
     StringBuilder dependencies = new StringBuilder();
+    StringBuilder cacheKeyBuilder = new StringBuilder();
 
     FileFilter npmPackageCopyFilter = new FileFilter() {
       @Override
@@ -127,18 +128,25 @@ public class HeliumVisualizationFactory {
         dependencies.append(",\n");
       }
       dependencies.append("\"" + moduleNameVersion[0] + "\": \"" + moduleNameVersion[1] + "\"");
+      cacheKeyBuilder.append(pkg.getName() + pkg.getArtifact());
+
+      File pkgInstallDir = new File(workingDirectory, "node_modules/" + pkg.getName());
+      if (pkgInstallDir.exists()) {
+        FileUtils.deleteDirectory(pkgInstallDir);
+      }
 
       if (isLocalPackage(pkg)) {
         FileUtils.copyDirectory(
             new File(pkg.getArtifact()),
-            new File(workingDirectory, "node_modules/" + pkg.getName()),
+            pkgInstallDir,
             npmPackageCopyFilter);
       }
     }
     pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
 
     // check if we can use previous bundle or not
-    if (dependencies.toString().equals(bundleCacheKey) && currentBundle.isFile() && !forceRefresh) {
+    if (cacheKeyBuilder.toString().equals(bundleCacheKey)
+        && currentBundle.isFile() && !forceRefresh) {
       return currentBundle;
     }
 
@@ -177,7 +185,10 @@ public class HeliumVisualizationFactory {
     // install tabledata module
     File tabledataModuleInstallPath = new File(workingDirectory,
         "node_modules/zeppelin-tabledata");
-    if (tabledataModulePath != null && !tabledataModuleInstallPath.exists()) {
+    if (tabledataModulePath != null) {
+      if (tabledataModuleInstallPath.exists()) {
+        FileUtils.deleteDirectory(tabledataModuleInstallPath);
+      }
       FileUtils.copyDirectory(
           tabledataModulePath,
           tabledataModuleInstallPath,
@@ -187,7 +198,17 @@ public class HeliumVisualizationFactory {
     // install visualization module
     File visModuleInstallPath = new File(workingDirectory,
         "node_modules/zeppelin-vis");
-    if (visualizationModulePath != null && !visModuleInstallPath.exists()) {
+    if (visualizationModulePath != null) {
+      if (visModuleInstallPath.exists()) {
+        // when zeppelin-vis and zeppelin-table package is published to npm repository
+        // we don't need to remove module because npm install command will take care
+        // dependency version change. However, when two dependencies are copied manually
+        // into node_modules directory, changing vis package version results inconsistent npm
+        // install behavior.
+        //
+        // Remote vis package everytime and let npm download every time bundle as a workaround
+        FileUtils.deleteDirectory(visModuleInstallPath);
+      }
       FileUtils.copyDirectory(visualizationModulePath, visModuleInstallPath, npmPackageCopyFilter);
     }
 
@@ -210,7 +231,7 @@ public class HeliumVisualizationFactory {
     synchronized (this) {
       currentBundle.delete();
       FileUtils.moveFile(visBundleJs, currentBundle);
-      bundleCacheKey = dependencies.toString();
+      bundleCacheKey = cacheKeyBuilder.toString();
     }
     return currentBundle;
   }
