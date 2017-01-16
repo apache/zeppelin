@@ -168,18 +168,16 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   @Override
   public void cancel(InterpreterContext context) {
     if (livyVersion.isCancelSupported()) {
+      String paraId = context.getParagraphId();
+      Integer stmtId = paragraphId2StmtIdMapping.get(paraId);
       try {
-        if (paragraphId2StmtIdMapping.containsKey(context.getParagraphId())) {
-          cancelStatement(paragraphId2StmtIdMapping.get(context.getParagraphId()));
+        if (stmtId != null) {
+          cancelStatement(stmtId);
         }
       } catch (LivyException e) {
-        LOGGER.error("Fail to cancel statement " +
-            paragraphId2StmtIdMapping.get(context.getParagraphId()) + " for paragraph " +
-            context.getParagraphId(), e);
+        LOGGER.error("Fail to cancel statement " + stmtId + " for paragraph " + paraId, e);
       } finally {
-        if (paragraphId2StmtIdMapping.containsKey(context.getParagraphId())) {
-          paragraphId2StmtIdMapping.remove(context.getParagraphId());
-        }
+        paragraphId2StmtIdMapping.remove(paraId);
       }
     } else {
       LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
