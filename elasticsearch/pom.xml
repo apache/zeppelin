@@ -31,7 +31,7 @@
   <name>Zeppelin: Elasticsearch interpreter</name>
 
   <properties>
-    <elasticsearch.version>2.3.3</elasticsearch.version>
+    <elasticsearch.version>2.4.3</elasticsearch.version>
     <httpasyncclient.version>4.0.2</httpasyncclient.version>
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
