@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -176,38 +177,7 @@ public class RemoteInterpreterTest {
     String host = "localhost";
     int port = 20000;
 
-    RemoteInterpreterProcessListener listener = new RemoteInterpreterProcessListener() {
-      @Override
-      public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
-
-      }
-
-      @Override
-      public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
-
-      }
-
-      @Override
-      public void onOutputClear(String noteId, String paragraphId) {
-
-      }
-
-      @Override
-      public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
-
-      }
-
-      @Override
-      public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
-
-      }
-
-      @Override
-      public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
-
-      }
-    };
-
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     RemoteInterpreter remoteintp = new RemoteInterpreter(
             new Properties(),
             "note",
@@ -861,7 +831,7 @@ public class RemoteInterpreterTest {
   @Test
   public void should_push_local_angular_repo_to_remote() throws Exception {
     //Given
-    final Client client = Mockito.mock(Client.class);
+    final Client client = mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
         MockInterpreterA.class.getName(), "runner", "path", "localRepo", env, 10 * 1000, null,
         null, "anonymous", false);
