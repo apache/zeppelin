@@ -21,8 +21,7 @@ module.exports = {
         filename: 'vis.bundle.js',
     },
     resolve: {
-        root: __dirname + "/node_modules",
-        extensions: [".js"]
+        root: __dirname + "/node_modules"
     },
     module: {
         loaders: [{
