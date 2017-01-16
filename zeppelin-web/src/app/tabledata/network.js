@@ -42,6 +42,9 @@ export default class NetworkTransformation extends Transformation {
       }
     };
   };
+  
+  setConfig(config) {
+  };
 
   transform(networkData) {
     this.networkData;
