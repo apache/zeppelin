@@ -34,16 +34,18 @@ ResultCtrl.$inject = [
   '$http',
   '$q',
   '$templateRequest',
+  '$sce',
   'websocketMsgSrv',
   'baseUrlSrv',
   'ngToast',
   'saveAsService',
-  'noteVarShareService'
+  'noteVarShareService',
+  'heliumService'
 ];
 
 function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
-                    $timeout, $compile, $http, $q, $templateRequest, websocketMsgSrv,
-                    baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
+                    $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
+                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
 
   /**
    * Built-in visualizations
@@ -52,36 +54,36 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     {
       id: 'table',   // paragraph.config.graph.mode
       name: 'Table', // human readable name. tooltip
-      icon: 'fa fa-table'
+      icon: '<i class="fa fa-table"></i>'
     },
     {
       id: 'multiBarChart',
       name: 'Bar Chart',
-      icon: 'fa fa-bar-chart',
+      icon: '<i class="fa fa-bar-chart"></i>',
       transformation: 'pivot'
     },
     {
       id: 'pieChart',
       name: 'Pie Chart',
-      icon: 'fa fa-pie-chart',
+      icon: '<i class="fa fa-pie-chart"></i>',
       transformation: 'pivot'
     },
     {
       id: 'stackedAreaChart',
       name: 'Area Chart',
-      icon: 'fa fa-area-chart',
+      icon: '<i class="fa fa-area-chart"></i>',
       transformation: 'pivot'
     },
     {
       id: 'lineChart',
       name: 'Line Chart',
-      icon: 'fa fa-line-chart',
+      icon: '<i class="fa fa-line-chart"></i>',
       transformation: 'pivot'
     },
     {
       id: 'scatterChart',
       name: 'Scatter Chart',
-      icon: 'cf cf-scatter-chart'
+      icon: '<i class="cf cf-scatter-chart"></i>'
     }
   ];
 
@@ -150,6 +152,21 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.init = function(result, config, paragraph, index) {
     console.log('result controller init %o %o %o', result, config, index);
+
+    // register helium plugin vis
+    var heliumVis = heliumService.get();
+    console.log('Helium visualizations %o', heliumVis);
+    heliumVis.forEach(function(vis) {
+      $scope.builtInTableDataVisualizationList.push({
+        id: vis.id,
+        name: vis.name,
+        icon: $sce.trustAsHtml(vis.icon)
+      });
+      builtInVisualizations[vis.id] = {
+        class: vis.class
+      };
+    });
+    
     updateData(result, config, paragraph, index);
     renderResult($scope.type);
   };
@@ -421,7 +438,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
                 builtInViz.instance.resize();
               });
             } catch (err) {
-              console.log('Graph drawing error %o', err);
+              console.error('Graph drawing error %o', err);
             }
           } else {
             $timeout(retryRenderer, 10);

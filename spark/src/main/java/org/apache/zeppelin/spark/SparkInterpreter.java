@@ -295,7 +295,7 @@ public class SparkInterpreter extends Interpreter {
     return (DepInterpreter) p;
   }
 
-  private boolean isYarnMode() {
+  public boolean isYarnMode() {
     return getProperty("master").startsWith("yarn");
   }
 
@@ -555,7 +555,7 @@ public class SparkInterpreter extends Interpreter {
     return (o instanceof String) ? (String) o : "";
   }
 
-  private boolean useSparkSubmit() {
+  public static boolean useSparkSubmit() {
     return null != System.getenv("SPARK_SUBMIT");
   }
 
@@ -726,7 +726,6 @@ public class SparkInterpreter extends Interpreter {
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
-
     // set classloader for scala compiler
     settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
         .getContextClassLoader()));
@@ -745,8 +744,12 @@ public class SparkInterpreter extends Interpreter {
      *
      * In Spark 2.x, REPL generated wrapper class name should compatible with the pattern
      * ^(\$line(?:\d+)\.\$read)(?:\$\$iw)+$
+     *
+     * As hashCode() can return a negative integer value and the minus character '-' is invalid
+     * in a package name we change it to a numeric value '0' which still conforms to the regexp.
+     * 
      */
-    System.setProperty("scala.repl.name.line", "$line" + this.hashCode());
+    System.setProperty("scala.repl.name.line", ("$line" + this.hashCode()).replace('-', '0'));
 
     // To prevent 'File name too long' error on some file system.
     MutableSettings.IntSetting numClassFileSetting = settings.maxClassfileName();
@@ -975,7 +978,7 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private List<File> currentClassPath() {
+  public List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
     String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
     if (cps != null) {

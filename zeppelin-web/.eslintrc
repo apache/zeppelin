@@ -26,7 +26,8 @@
     "BootstrapDialog": false,
     "Handsontable": false,
     "moment": false,
-    "zeppelin" : false
+    "zeppelin" : false,
+    "process": false
   },
   "rules": {
     "no-bitwise": 2,

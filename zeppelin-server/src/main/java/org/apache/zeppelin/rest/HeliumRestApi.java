@@ -17,9 +17,11 @@
 
 package org.apache.zeppelin.rest;
 
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.helium.Helium;
-import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -30,6 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Helium Rest Api
@@ -40,18 +45,14 @@ public class HeliumRestApi {
   Logger logger = LoggerFactory.getLogger(HeliumRestApi.class);
 
   private Helium helium;
-  private HeliumApplicationFactory applicationFactory;
   private Notebook notebook;
   private Gson gson = new Gson();
 
   public HeliumRestApi() {
   }
 
-  public HeliumRestApi(Helium helium,
-                       HeliumApplicationFactory heliumApplicationFactory,
-                       Notebook notebook) {
+  public HeliumRestApi(Helium helium, Notebook notebook) {
     this.helium  = helium;
-    this.applicationFactory = heliumApplicationFactory;
     this.notebook = notebook;
   }
 
@@ -101,8 +102,88 @@ public class HeliumRestApi {
     }
     HeliumPackage pkg = gson.fromJson(heliumPackage, HeliumPackage.class);
 
-    String appId = applicationFactory.loadAndRun(pkg, paragraph);
+    String appId = helium.getApplicationFactory().loadAndRun(pkg, paragraph);
     return new JsonResponse(Response.Status.OK, "", appId).build();
   }
 
+  @GET
+  @Path("visualizations/load")
+  @Produces("text/javascript")
+  public Response visualizationLoad(@QueryParam("refresh") String refresh) {
+    try {
+      File bundle;
+      if (refresh != null && refresh.equals("true")) {
+        bundle = helium.recreateVisualizationBundle();
+      } else {
+        bundle = helium.getVisualizationFactory().getCurrentBundle();
+      }
+
+      if (bundle == null) {
+        return Response.ok().build();
+      } else {
+        String visBundle = FileUtils.readFileToString(bundle);
+        return Response.ok(visBundle).build();
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+
+      // returning error will prevent zeppelin front-end render any notebook.
+      // visualization load fail doesn't need to block notebook rendering work.
+      // so it's better return ok instead of any error.
+      return Response.ok("ERROR: " + e.getMessage()).build();
+    }
+  }
+
+  @POST
+  @Path("enable/{packageName}")
+  public Response enablePackage(@PathParam("packageName") String packageName,
+                                String artifact) {
+    try {
+      helium.enable(packageName, artifact);
+      return new JsonResponse(Response.Status.OK).build();
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    } catch (TaskRunnerException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @POST
+  @Path("disable/{packageName}")
+  public Response enablePackage(@PathParam("packageName") String packageName) {
+    try {
+      helium.disable(packageName);
+      return new JsonResponse(Response.Status.OK).build();
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    } catch (TaskRunnerException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("visualizationOrder")
+  public Response getVisualizationPackageOrder() {
+    List<String> order = helium.getVisualizationPackageOrder();
+    return new JsonResponse(Response.Status.OK, order).build();
+  }
+
+  @POST
+  @Path("visualizationOrder")
+  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
+    List<String> orderedList = gson.fromJson(
+        orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
+
+    try {
+      helium.setVisualizationPackageOrder(orderedList);
+    } catch (IOException | TaskRunnerException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+    return new JsonResponse(Response.Status.OK).build();
+  }
 }
