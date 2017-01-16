@@ -94,12 +94,12 @@ public class HeliumVisualizationFactory {
     return new ProxyConfig(proxy);
   }
 
-  public File bundle(List<HeliumPackage> pkgs) throws IOException, TaskRunnerException {
+  public File bundle(List<HeliumPackage> pkgs) throws IOException {
     return bundle(pkgs, false);
   }
 
   public synchronized File bundle(List<HeliumPackage> pkgs, boolean forceRefresh)
-      throws IOException, TaskRunnerException {
+      throws IOException {
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
@@ -213,8 +213,12 @@ public class HeliumVisualizationFactory {
     }
 
     out.reset();
-    npmCommand("install");
-    npmCommand("run bundle");
+    try {
+      npmCommand("install");
+      npmCommand("run bundle");
+    } catch (TaskRunnerException e) {
+      throw new IOException(new String(out.toByteArray()));
+    }
 
     File visBundleJs = new File(workingDirectory, "vis.bundle.js");
     if (!visBundleJs.isFile()) {
