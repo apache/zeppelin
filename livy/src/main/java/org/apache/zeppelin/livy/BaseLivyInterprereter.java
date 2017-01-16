@@ -115,6 +115,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
       LOGGER.info("Create livy session successfully with sessionId: {}, appId: {}, webUI: {}",
           sessionInfo.id, sessionInfo.appId, sessionInfo.webUIAddress);
+    } else {
+      LOGGER.info("Create livy session successfully with sessionId: {}", this.sessionInfo.id);
     }
     // check livy version
     try {
@@ -167,12 +169,17 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   public void cancel(InterpreterContext context) {
     if (livyVersion.isCancelSupported()) {
       try {
-        cancelStatement(paragraphId2StmtIdMapping.get(context.getParagraphId()));
+        if (paragraphId2StmtIdMapping.containsKey(context.getParagraphId())) {
+          cancelStatement(paragraphId2StmtIdMapping.get(context.getParagraphId()));
+        }
       } catch (LivyException e) {
-        LOGGER.warn("Fail to cancel statement {} for paragraph {} ",
-            paragraphId2StmtIdMapping.get(context.getParagraphId()), context.getParagraphId());
+        LOGGER.error("Fail to cancel statement " +
+            paragraphId2StmtIdMapping.get(context.getParagraphId()) + " for paragraph " +
+            context.getParagraphId(), e);
       } finally {
-        paragraphId2StmtIdMapping.remove(context.getParagraphId());
+        if (paragraphId2StmtIdMapping.containsKey(context.getParagraphId())) {
+          paragraphId2StmtIdMapping.remove(context.getParagraphId());
+        }
       }
     } else {
       LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
