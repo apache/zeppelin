@@ -200,15 +200,20 @@ public class IgniteInterpreter extends Interpreter {
   }
 
   private void initIgnite() {
-    imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    Map<String, Object> binder = (Map<String, Object>) getLastObject();
+    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+      Map<String, Object> binder = (Map<String, Object>) getLastObject();
 
-    if (getIgnite() != null) {
-      binder.put("ignite", ignite);
+      if (getIgnite() != null) {
+        binder.put("ignite", ignite);
 
-      imain.interpret("@transient val ignite = "
-              + "_binder.get(\"ignite\")"
-              + ".asInstanceOf[org.apache.ignite.Ignite]");
+        imain.interpret("@transient val ignite = "
+            + "_binder.get(\"ignite\")"
+            + ".asInstanceOf[org.apache.ignite.Ignite]");
+      }
+    } finally {
+      Thread.currentThread().setContextClassLoader(contextClassLoader);
     }
   }
 
@@ -279,11 +284,14 @@ public class IgniteInterpreter extends Interpreter {
         }
       }
 
+      ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
       try {
         code = getResultCode(imain.interpret(incomplete + s));
       } catch (Exception e) {
         logger.info("Interpreter exception", e);
         return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
+      } finally {
+        Thread.currentThread().setContextClassLoader(contextClassLoader);
       }
 
       if (code == Code.ERROR) {
