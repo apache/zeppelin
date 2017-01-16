@@ -42,6 +42,7 @@ public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
 
   private static String renderOptions;
+  private SparkInterpreter sparkInterpreter;
   private ZeppelinR zeppelinR;
   private SparkContext sc;
 
@@ -70,7 +71,7 @@ public class SparkRInterpreter extends Interpreter {
 
     int port = SparkRBackend.port();
 
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    this.sparkInterpreter = getSparkInterpreter();
     this.sc = sparkInterpreter.getSparkContext();
     SparkVersion sparkVersion = new SparkVersion(sc.version());
     ZeppelinRContext.setSparkContext(sc);
@@ -185,7 +186,11 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
-    return 0;
+    if (sparkInterpreter != null) {
+      return sparkInterpreter.getProgress(context);
+    } else {
+      return 0;
+    }
   }
 
   @Override
@@ -225,5 +230,4 @@ public class SparkRInterpreter extends Interpreter {
       return false;
     }
   }
-
 }

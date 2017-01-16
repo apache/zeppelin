@@ -41,10 +41,10 @@ public class PigInterpreterTest {
   private PigInterpreter pigInterpreter;
   private InterpreterContext context;
 
-  @Before
-  public void setUp() {
+  private void setUpLocal(boolean includeJobStats) {
     Properties properties = new Properties();
     properties.put("zeppelin.pig.execType", "local");
+    properties.put("zeppelin.pig.includeJobStats", includeJobStats + "");
     pigInterpreter = new PigInterpreter(properties);
     pigInterpreter.open();
     context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null, null,
@@ -58,6 +58,8 @@ public class PigInterpreterTest {
 
   @Test
   public void testBasics() throws IOException {
+    setUpLocal(false);
+
     String content = "1\tandy\n"
             + "2\tpeter\n";
     File tmpFile = File.createTempFile("zeppelin", "test");
@@ -101,11 +103,7 @@ public class PigInterpreterTest {
 
   @Test
   public void testIncludeJobStats() throws IOException {
-    Properties properties = new Properties();
-    properties.put("zeppelin.pig.execType", "local");
-    properties.put("zeppelin.pig.includeJobStats", "true");
-    pigInterpreter = new PigInterpreter(properties);
-    pigInterpreter.open();
+    setUpLocal(true);
 
     String content = "1\tandy\n"
             + "2\tpeter\n";
@@ -152,4 +150,5 @@ public class PigInterpreterTest {
     assertTrue(result.message().get(0).getData().contains("Counters:"));
     assertTrue(result.message().get(0).getData().contains("Input path does not exist"));
   }
+
 }

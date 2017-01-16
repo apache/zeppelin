@@ -120,7 +120,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     Note note = notebook.createNote(anonymous);
     factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);

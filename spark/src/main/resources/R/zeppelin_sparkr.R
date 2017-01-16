@@ -31,7 +31,7 @@ print(paste("LibPath ", libPath))
 library(SparkR)
 
 
-SparkR:::connectBackend("localhost", port)
+SparkR:::connectBackend("localhost", port, 6000)
 
 # scStartTime is needed by R/pkg/R/sparkR.R
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)

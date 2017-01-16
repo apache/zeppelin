@@ -11,30 +11,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-(function() {
 
-  angular.module('zeppelinWebApp').directive('codeEditor', codeEditor);
+angular.module('zeppelinWebApp').directive('codeEditor', codeEditor);
 
-  function codeEditor($templateRequest, $compile) {
-    return {
-      restrict: 'AE',
-      scope: {
-        paragraphId: '=paragraphId',
-        paragraph: '=paragraphContext',
-        dirtyText: '=dirtyText',
-        originalText: '=originalText',
-        onLoad: '=onLoad'
-      },
-      link: function(scope, element, attrs, controller) {
-        $templateRequest('components/editor/ace.editor.directive.html').then(function(editorHtml) {
-          var editor = angular.element(editorHtml);
-          editor.attr('id', scope.paragraphId + '_editor');
-          element.append(editor);
-          $compile(editor)(scope);
-        });
-      }
-    };
-  }
+function codeEditor($templateRequest, $compile) {
+  return {
+    restrict: 'AE',
+    scope: {
+      paragraphId: '=paragraphId',
+      paragraph: '=paragraphContext',
+      dirtyText: '=dirtyText',
+      originalText: '=originalText',
+      onLoad: '=onLoad',
+      revisionView: '=revisionView'
+    },
+    link: function(scope, element, attrs, controller) {
+      $templateRequest('components/editor/ace.editor.directive.html').then(function(editorHtml) {
+        var editor = angular.element(editorHtml);
+        editor.attr('id', scope.paragraphId + '_editor');
+        element.append(editor);
+        $compile(editor)(scope);
+        console.log('codeEditor directive revision view is ' + scope.revisionView);
+      });
+    }
+  };
+}
 
-})();

@@ -70,9 +70,9 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
   @Override
   public void destroyObject(PooledObject<Client> p) {
     synchronized (clientSocketMap) {
-      if (clientSocketMap.containsKey(p)) {
-        clientSocketMap.get(p).close();
-        clientSocketMap.remove(p);
+      if (clientSocketMap.containsKey(p.getObject())) {
+        clientSocketMap.get(p.getObject()).close();
+        clientSocketMap.remove(p.getObject());
       }
     }
   }

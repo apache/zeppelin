@@ -11,22 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-(function() {
 
-  angular.module('zeppelinWebApp').directive('ngEscape', ngEscape);
+angular.module('zeppelinWebApp').directive('ngEscape', ngEscape);
 
-  function ngEscape() {
-    return function(scope, element, attrs) {
-      element.bind('keydown keyup', function(event) {
-        if (event.which === 27) {
-          scope.$apply(function() {
-            scope.$eval(attrs.ngEscape);
-          });
-          event.preventDefault();
-        }
-      });
-    };
-  }
+function ngEscape() {
+  return function(scope, element, attrs) {
+    element.bind('keydown keyup', function(event) {
+      if (event.which === 27) {
+        scope.$apply(function() {
+          scope.$eval(attrs.ngEscape);
+        });
+        event.preventDefault();
+      }
+    });
+  };
+}
 
-})();

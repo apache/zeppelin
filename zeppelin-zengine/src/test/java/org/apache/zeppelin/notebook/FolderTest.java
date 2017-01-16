@@ -30,6 +30,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FolderTest {
@@ -185,5 +187,24 @@ public class FolderTest {
     assertEquals("/", rootFolder.getName());
     assertEquals("a", aFolder.getName());
     assertEquals("b", abFolder.getName());
+  }
+
+  @Test
+  public void isTrashTest() {
+    Folder folder;
+    // Not trash
+    folder = new Folder(Folder.ROOT_FOLDER_ID);
+    assertFalse(folder.isTrash());
+    folder = new Folder("a");
+    assertFalse(folder.isTrash());
+    folder = new Folder("a/b");
+    assertFalse(folder.isTrash());
+    // trash
+    folder = new Folder(Folder.TRASH_FOLDER_ID);
+    assertTrue(folder.isTrash());
+    folder = new Folder(Folder.TRASH_FOLDER_ID + "/a");
+    assertTrue(folder.isTrash());
+    folder = new Folder(Folder.TRASH_FOLDER_ID + "/a/b");
+    assertTrue(folder.isTrash());
   }
 }

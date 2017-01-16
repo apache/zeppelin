@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-'use strict';
+import TableData from '../../../src/app/tabledata/tabledata.js';
 
 describe('TableData build', function() {
   var td;
 
   beforeEach(function() {
-    var TableData = zeppelin.TableData;
+    console.log(TableData);
     td = new TableData();
   });
 

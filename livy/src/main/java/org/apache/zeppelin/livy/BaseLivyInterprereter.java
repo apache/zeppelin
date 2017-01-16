@@ -17,15 +17,26 @@
 
 package org.apache.zeppelin.livy;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.kerberos.client.KerberosRestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Base class for livy interpreters.
@@ -33,76 +44,85 @@ import java.util.Properties;
 public abstract class BaseLivyInterprereter extends Interpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterprereter.class);
+  private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-  // -1 means session is not created yet, valid sessionId start from 0
-  protected int sessionId = -1;
-  protected String appId;
-  protected String webUIAddress;
+  protected volatile SessionInfo sessionInfo;
+  private String livyURL;
+  private long sessionCreationTimeout;
   protected boolean displayAppInfo;
-  protected LivyOutputStream out;
-  protected LivyHelper livyHelper;
+  private AtomicBoolean sessionExpired = new AtomicBoolean(false);
 
   public BaseLivyInterprereter(Properties property) {
     super(property);
-    this.out = new LivyOutputStream();
-    this.livyHelper = new LivyHelper(property);
+    this.livyURL = property.getProperty("zeppelin.livy.url");
+    this.sessionCreationTimeout = Long.parseLong(
+        property.getProperty("zeppelin.livy.create.session.timeout", 120 + ""));
   }
 
   public abstract String getSessionKind();
 
   @Override
   public void open() {
-    // TODO(zjffdu) move session creation here.
+    try {
+      initLivySession();
+    } catch (LivyException e) {
+      String msg = "Fail to create session, please check livy interpreter log and " +
+          "livy server log";
+      LOGGER.error(msg);
+      throw new RuntimeException(msg, e);
+    }
   }
 
   @Override
   public void close() {
-    if (sessionId != -1) {
-      livyHelper.closeSession(sessionId);
-      // reset sessionId to -1
-      sessionId = -1;
+    if (sessionInfo != null) {
+      closeSession(sessionInfo.id);
+      // reset sessionInfo to null so that we won't close it twice.
+      sessionInfo = null;
     }
   }
 
-  protected void createSession(InterpreterContext context) throws Exception {
-    sessionId = livyHelper.createSession(context, getSessionKind());
+  protected void initLivySession() throws LivyException {
+    this.sessionInfo = createSession(getUserName(), getSessionKind());
     if (displayAppInfo) {
-      this.appId = extractStatementResult(
-          livyHelper.interpret("sc.applicationId", context, sessionId).message().get(0).getData());
-      livyHelper.interpret(
+      if (sessionInfo.appId == null) {
+        // livy 0.2 don't return appId and sparkUiUrl in response so that we need to get it
+        // explicitly by ourselves.
+        sessionInfo.appId = extractStatementResult(
+            interpret("sc.applicationId", false, false).message()
+                .get(0).getData());
+      }
+
+      interpret(
           "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-          context, sessionId);
-      this.webUIAddress = extractStatementResult(
-          livyHelper.interpret(
-              "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
-              context, sessionId).message().get(0).getData());
-      LOGGER.info("Create livy session with sessionId: {}, appId: {}, webUI: {}",
-          sessionId, appId, webUIAddress);
+          false, false);
+      if (StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
+        sessionInfo.webUIAddress = extractStatementResult(
+            interpret(
+                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", false, false)
+                .message().get(0).getData());
+      } else {
+        sessionInfo.webUIAddress = sessionInfo.appInfo.get("sparkUiUrl");
+      }
+      LOGGER.info("Create livy session successfully with sessionId: {}, appId: {}, webUI: {}",
+          sessionInfo.id, sessionInfo.appId, sessionInfo.webUIAddress);
     }
+  }
+
+  public SessionInfo getSessionInfo() {
+    return sessionInfo;
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    try {
-      // add synchronized, because LivySparkSQLInterperter will use ParallelScheduler
-      synchronized (this) {
-        if (sessionId == -1) {
-          try {
-            createSession(context);
-          } catch (Exception e) {
-            LOGGER.error("Exception while creating livy session", e);
-            return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-          }
-        }
-      }
-      if (StringUtils.isEmpty(st)) {
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
-      }
+    if (StringUtils.isEmpty(st)) {
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
+    }
 
-      return livyHelper.interpretInput(st, context, sessionId, out,
-          appId, webUIAddress, displayAppInfo);
-    } catch (Exception e) {
-      LOGGER.error("Exception in LivyInterpreter.", e);
+    try {
+      return interpret(st, this.displayAppInfo, true);
+    } catch (LivyException e) {
+      LOGGER.error("Fail to interpret:" + st, e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
     }
@@ -116,7 +136,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
    * @param result
    * @return
    */
-  private static String extractStatementResult(String result) {
+  private String extractStatementResult(String result) {
     int pos = -1;
     if ((pos = result.indexOf("=")) >= 0) {
       return result.substring(pos + 1).trim();
@@ -128,7 +148,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    livyHelper.cancelHTTP(context.getParagraphId());
+    //TODO(zjffdu). Use livy cancel api which is available in livy 0.3
   }
 
   @Override
@@ -140,4 +160,387 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   public int getProgress(InterpreterContext context) {
     return 0;
   }
+
+  private SessionInfo createSession(String user, String kind)
+      throws LivyException {
+    try {
+      Map<String, String> conf = new HashMap<>();
+      for (Map.Entry<Object, Object> entry : property.entrySet()) {
+        if (entry.getKey().toString().startsWith("livy.spark.") &&
+            !entry.getValue().toString().isEmpty())
+          conf.put(entry.getKey().toString().substring(5), entry.getValue().toString());
+      }
+
+      CreateSessionRequest request = new CreateSessionRequest(kind, user, conf);
+      SessionInfo sessionInfo = SessionInfo.fromJson(
+          callRestAPI("/sessions", "POST", request.toJson()));
+      long start = System.currentTimeMillis();
+      // pull the session status until it is idle or timeout
+      while (!sessionInfo.isReady()) {
+        LOGGER.info("Session {} is in state {}, appId {}", sessionInfo.id, sessionInfo.state,
+            sessionInfo.appId);
+        if (sessionInfo.isFinished()) {
+          String msg = "Session " + sessionInfo.id + " is finished, appId: " + sessionInfo.appId
+              + ", log: " + sessionInfo.log;
+          LOGGER.error(msg);
+          throw new LivyException(msg);
+        }
+        if ((System.currentTimeMillis() - start) / 1000 > sessionCreationTimeout) {
+          String msg = "The creation of session " + sessionInfo.id + " is timeout within "
+              + sessionCreationTimeout + " seconds, appId: " + sessionInfo.appId
+              + ", log: " + sessionInfo.log;
+          LOGGER.error(msg);
+          throw new LivyException(msg);
+        }
+        Thread.sleep(1000);
+        sessionInfo = getSessionInfo(sessionInfo.id);
+      }
+      return sessionInfo;
+    } catch (Exception e) {
+      LOGGER.error("Error when creating livy session for user " + user, e);
+      throw new LivyException(e);
+    }
+  }
+
+  private SessionInfo getSessionInfo(int sessionId) throws LivyException {
+    return SessionInfo.fromJson(callRestAPI("/sessions/" + sessionId, "GET"));
+  }
+
+  public InterpreterResult interpret(String code, boolean displayAppInfo,
+                                     boolean appendSessionExpired)
+      throws LivyException {
+    StatementInfo stmtInfo = null;
+    boolean sessionExpired = false;
+    try {
+      stmtInfo = executeStatement(new ExecuteRequest(code));
+    } catch (SessionNotFoundException e) {
+      LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
+      sessionExpired = true;
+      // we don't want to create multiple sessions because it is possible to have multiple thread
+      // to call this method, like LivySparkSQLInterpreter which use ParallelScheduler. So we need
+      // to check session status again in this sync block
+      synchronized (this) {
+        if (isSessionExpired()) {
+          initLivySession();
+        }
+      }
+      stmtInfo = executeStatement(new ExecuteRequest(code));
+    }
+    // pull the statement status
+    while (!stmtInfo.isAvailable()) {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        LOGGER.error("InterruptedException when pulling statement status.", e);
+        throw new LivyException(e);
+      }
+      stmtInfo = getStatementInfo(stmtInfo.id);
+    }
+    if (appendSessionExpired) {
+      return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
+          sessionExpired);
+    } else {
+      return getResultFromStatementInfo(stmtInfo, displayAppInfo);
+    }
+  }
+
+  private boolean isSessionExpired() throws LivyException {
+    try {
+      getSessionInfo(sessionInfo.id);
+      return false;
+    } catch (SessionNotFoundException e) {
+      return true;
+    } catch (LivyException e) {
+      throw e;
+    }
+  }
+
+  private InterpreterResult appendSessionExpire(InterpreterResult result, boolean sessionExpired) {
+    if (sessionExpired) {
+      InterpreterResult result2 = new InterpreterResult(result.code());
+      result2.add(InterpreterResult.Type.HTML,
+          "<font color=\"red\">Previous livy session is expired, new livy session is created. " +
+              "Paragraphs that depend on this paragraph need to be re-executed!" + "</font>");
+      for (InterpreterResultMessage message : result.message()) {
+        result2.add(message.getType(), message.getData());
+      }
+      return result2;
+    } else {
+      return result;
+    }
+  }
+
+  private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
+                                                       boolean displayAppInfo) {
+    if (stmtInfo.output.isError()) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, stmtInfo.output.evalue);
+    } else {
+      //TODO(zjffdu) support other types of data (like json, image and etc)
+      String result = stmtInfo.output.data.plain_text;
+      
+      // check table magic result first
+      if (stmtInfo.output.data.application_livy_table_json != null) {
+        StringBuilder outputBuilder = new StringBuilder();
+        boolean notFirstColumn = false;
+        
+        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
+          if (notFirstColumn) {
+            outputBuilder.append("\t");
+          }
+          outputBuilder.append(header.get("name"));
+          notFirstColumn = true;
+        }
+        
+        outputBuilder.append("\n");
+        for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
+          outputBuilder.append(StringUtils.join(row, "\t"));
+          outputBuilder.append("\n");          
+        }        
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+          InterpreterResult.Type.TABLE, outputBuilder.toString());
+      } else if (stmtInfo.output.data.image_png != null) {        
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+          InterpreterResult.Type.IMG, (String) stmtInfo.output.data.image_png);
+      } else if (result != null) {
+        result = result.trim();
+        if (result.startsWith("<link")
+            || result.startsWith("<script")
+            || result.startsWith("<style")
+            || result.startsWith("<div")) {
+          result = "%html " + result;
+        }
+      }
+
+      if (displayAppInfo) {
+        //TODO(zjffdu), use multiple InterpreterResult to display appInfo
+        StringBuilder outputBuilder = new StringBuilder();
+        outputBuilder.append("%angular ");
+        outputBuilder.append("<pre><code>");
+        outputBuilder.append(result);
+        outputBuilder.append("</code></pre>");
+        outputBuilder.append("<hr/>");
+        outputBuilder.append("Spark Application Id:" + sessionInfo.appId + "<br/>");
+        outputBuilder.append("Spark WebUI: <a href=" + sessionInfo.webUIAddress + ">"
+            + sessionInfo.webUIAddress + "</a>");
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputBuilder.toString());
+      } else {
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS, result);
+      }
+    }
+  }
+
+  private StatementInfo executeStatement(ExecuteRequest executeRequest)
+      throws LivyException {
+    return StatementInfo.fromJson(callRestAPI("/sessions/" + sessionInfo.id + "/statements", "POST",
+        executeRequest.toJson()));
+  }
+
+  private StatementInfo getStatementInfo(int statementId)
+      throws LivyException {
+    return StatementInfo.fromJson(
+        callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId, "GET"));
+  }
+
+  private RestTemplate getRestTemplate() {
+    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
+    String principal = property.getProperty("zeppelin.livy.principal");
+    if (StringUtils.isNotEmpty(keytabLocation) && StringUtils.isNotEmpty(principal)) {
+      return new KerberosRestTemplate(keytabLocation, principal);
+    }
+    return new RestTemplate();
+  }
+
+  private String callRestAPI(String targetURL, String method) throws LivyException {
+    return callRestAPI(targetURL, method, "");
+  }
+
+  private String callRestAPI(String targetURL, String method, String jsonData)
+      throws LivyException {
+    targetURL = livyURL + targetURL;
+    LOGGER.debug("Call rest api in {}, method: {}, jsonData: {}", targetURL, method, jsonData);
+    RestTemplate restTemplate = getRestTemplate();
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Type", "application/json");
+    headers.add("X-Requested-By", "zeppelin");
+    ResponseEntity<String> response = null;
+    try {
+      if (method.equals("POST")) {
+        HttpEntity<String> entity = new HttpEntity<>(jsonData, headers);
+        response = restTemplate.exchange(targetURL, HttpMethod.POST, entity, String.class);
+      } else if (method.equals("GET")) {
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        response = restTemplate.exchange(targetURL, HttpMethod.GET, entity, String.class);
+      } else if (method.equals("DELETE")) {
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
+      }
+    } catch (HttpClientErrorException e) {
+      response = new ResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
+      LOGGER.error(String.format("Error with %s StatusCode: %s",
+          response.getStatusCode().value(), e.getResponseBodyAsString()));
+    }
+    if (response == null) {
+      throw new LivyException("No http response returned");
+    }
+    LOGGER.debug("Get response, StatusCode: {}, responseBody: {}", response.getStatusCode(),
+        response.getBody());
+    if (response.getStatusCode().value() == 200
+        || response.getStatusCode().value() == 201
+        || response.getStatusCode().value() == 404) {
+      String responseBody = response.getBody();
+      if (responseBody.matches("\"Session '\\d+' not found.\"")) {
+        throw new SessionNotFoundException(responseBody);
+      } else {
+        return responseBody;
+      }
+    } else {
+      String responseString = response.getBody();
+      if (responseString.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
+        return responseString;
+      }
+      LOGGER.error(String.format("Error with %s StatusCode: %s",
+          response.getStatusCode().value(), responseString));
+      throw new LivyException(String.format("Error with %s StatusCode: %s",
+          response.getStatusCode().value(), responseString));
+    }
+  }
+
+  private void closeSession(int sessionId) {
+    try {
+      callRestAPI("/sessions/" + sessionId, "DELETE");
+    } catch (Exception e) {
+      LOGGER.error(String.format("Error closing session for user with session ID: %s",
+          sessionId), e);
+    }
+  }
+
+  /*
+  * We create these POJO here to accommodate livy 0.3 which is not released yet. livy rest api has
+  * some changes from version to version. So we create these POJO in zeppelin side to accommodate
+  * incompatibility between versions. Later, when livy become more stable, we could just depend on
+  * livy client jar.
+  */
+  private static class CreateSessionRequest {
+    public final String kind;
+    @SerializedName("proxyUser")
+    public final String user;
+    public final Map<String, String> conf;
+
+    public CreateSessionRequest(String kind, String user, Map<String, String> conf) {
+      this.kind = kind;
+      this.user = user;
+      this.conf = conf;
+    }
+
+    public String toJson() {
+      return gson.toJson(this);
+    }
+  }
+
+  /**
+   *
+   */
+  public static class SessionInfo {
+
+    public final int id;
+    public String appId;
+    public String webUIAddress;
+    public final String owner;
+    public final String proxyUser;
+    public final String state;
+    public final String kind;
+    public final Map<String, String> appInfo;
+    public final List<String> log;
+
+    public SessionInfo(int id, String appId, String owner, String proxyUser, String state,
+                       String kind, Map<String, String> appInfo, List<String> log) {
+      this.id = id;
+      this.appId = appId;
+      this.owner = owner;
+      this.proxyUser = proxyUser;
+      this.state = state;
+      this.kind = kind;
+      this.appInfo = appInfo;
+      this.log = log;
+    }
+
+    public boolean isReady() {
+      return state.equals("idle");
+    }
+
+    public boolean isFinished() {
+      return state.equals("error") || state.equals("dead") || state.equals("success");
+    }
+
+    public static SessionInfo fromJson(String json) {
+      return gson.fromJson(json, SessionInfo.class);
+    }
+  }
+
+  private static class ExecuteRequest {
+    public final String code;
+
+    public ExecuteRequest(String code) {
+      this.code = code;
+    }
+
+    public String toJson() {
+      return gson.toJson(this);
+    }
+  }
+
+  private static class StatementInfo {
+    public Integer id;
+    public String state;
+    public StatementOutput output;
+
+    public StatementInfo() {
+    }
+
+    public static StatementInfo fromJson(String json) {
+      return gson.fromJson(json, StatementInfo.class);
+    }
+
+    public boolean isAvailable() {
+      return state.equals("available");
+    }
+
+    private static class StatementOutput {
+      public String status;
+      public String execution_count;
+      public Data data;
+      public String ename;
+      public String evalue;
+      public Object traceback;
+      public TableMagic tableMagic;
+
+      public boolean isError() {
+        return status.equals("error");
+      }
+
+      public String toJson() {
+        return gson.toJson(this);
+      }
+
+      private static class Data {
+        @SerializedName("text/plain")
+        public String plain_text;
+        @SerializedName("image/png")
+        public String image_png;
+        @SerializedName("application/json")
+        public String application_json;
+        @SerializedName("application/vnd.livy.table.v1+json")
+        public TableMagic application_livy_table_json;
+      }
+      
+      private static class TableMagic {
+        @SerializedName("headers")
+        List<Map> headers;
+        
+        @SerializedName("data")
+        List<List> records;
+      }
+    }
+  }
+
 }

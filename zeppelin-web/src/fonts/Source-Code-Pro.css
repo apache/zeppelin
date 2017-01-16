@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Source Code Pro Light'), local('SourceCodePro-Light'), url(../fonts/Source-Code-Pro-Light.ttf) format('truetype'), url(../fonts/Source-Code-Pro-Light.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/Source-Code-Pro.eot);
+  src: local('Source Code Pro'), local('SourceCodePro-Regular'), url(../fonts/Source-Code-Pro.eot?#iefix) format('embedded-opentype'), url(../fonts/Source-Code-Pro.svg#SourceCodePro) format('svg'), url(../fonts/Source-Code-Pro.ttf) format('truetype'), url(../fonts/Source-Code-Pro.woff) format('woff');
+}
+

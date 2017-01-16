@@ -84,9 +84,4 @@ if not exist %ZEPPELIN_PID_DIR% (
     mkdir "%ZEPPELIN_PID_DIR%"
 )
 
-if not exist %ZEPPELIN_NOTEBOOK_DIR% (
-    echo Notebook dir doesn't exist, create %ZEPPELIN_NOTEBOOK_DIR%
-    mkdir "%ZEPPELIN_NOTEBOOK_DIR%"
-)
-
 "%ZEPPELIN_RUNNER%" %JAVA_OPTS% -cp %CLASSPATH% %ZEPPELIN_SERVER% "%*"

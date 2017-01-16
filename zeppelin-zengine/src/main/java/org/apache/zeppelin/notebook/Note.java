@@ -121,6 +121,21 @@ public class Note implements Serializable, ParagraphJobListener {
     return null != setting ? setting.getName() : StringUtils.EMPTY;
   }
 
+  public boolean isPersonalizedMode() {
+    Object v = getConfig().get("personalizedMode");
+    return null != v && "true".equals(v);
+  }
+
+  public void setPersonalizedMode(Boolean value) {
+    String valueString = StringUtils.EMPTY;
+    if (value) {
+      valueString = "true";
+    } else {
+      valueString = "false";
+    }
+    getConfig().put("personalizedMode", valueString);
+  }
+
   public String getId() {
     return id;
   }
@@ -208,9 +223,9 @@ public class Note implements Serializable, ParagraphJobListener {
   public void initializeJobListenerForParagraph(Paragraph paragraph) {
     final Note paragraphNote = paragraph.getNote();
     if (paragraphNote.getId().equals(this.getId())) {
-      throw new IllegalArgumentException(format("The paragraph %s from note %s " +
-              "does not belong to note %s", paragraph.getId(), paragraphNote.getId(),
-              this.getId()));
+      throw new IllegalArgumentException(
+          format("The paragraph %s from note %s " + "does not belong to note %s", paragraph.getId(),
+              paragraphNote.getId(), this.getId()));
     }
 
     boolean foundParagraph = false;
@@ -222,8 +237,9 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     if (!foundParagraph) {
-      throw new IllegalArgumentException(format("Cannot find paragraph %s " +
-                      "from note %s", paragraph.getId(), paragraphNote.getId()));
+      throw new IllegalArgumentException(
+          format("Cannot find paragraph %s " + "from note %s", paragraph.getId(),
+              paragraphNote.getId()));
     }
   }
 
@@ -255,8 +271,9 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Add paragraph last.
    */
-  public Paragraph addParagraph() {
+  public Paragraph addParagraph(AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory);
+    p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, paragraphs.size());
     synchronized (paragraphs) {
       paragraphs.add(p);
@@ -311,8 +328,9 @@ public class Note implements Serializable, ParagraphJobListener {
    *
    * @param index index of paragraphs
    */
-  public Paragraph insertParagraph(int index) {
+  public Paragraph insertParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory);
+    p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, index);
     synchronized (paragraphs) {
       paragraphs.add(index, p);
@@ -404,8 +422,8 @@ public class Note implements Serializable, ParagraphJobListener {
 
       if (index < 0 || index >= paragraphs.size()) {
         if (throwWhenIndexIsOutOfBound) {
-          throw new IndexOutOfBoundsException("paragraph size is " + paragraphs.size() +
-              " , index is " + index);
+          throw new IndexOutOfBoundsException(
+              "paragraph size is " + paragraphs.size() + " , index is " + index);
         } else {
           return;
         }
@@ -514,21 +532,19 @@ public class Note implements Serializable, ParagraphJobListener {
   /**
    * Run all paragraphs sequentially.
    */
-  public void runAll() {
+  public synchronized void runAll() {
     String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        if (!p.isEnabled()) {
-          continue;
-        }
-        AuthenticationInfo authenticationInfo = new AuthenticationInfo();
-        authenticationInfo.setUser(cronExecutingUser);
-        p.setAuthenticationInfo(authenticationInfo);
-        run(p.getId());
+    for (Paragraph p : getParagraphs()) {
+      if (!p.isEnabled()) {
+        continue;
       }
+      AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+      authenticationInfo.setUser(cronExecutingUser);
+      p.setAuthenticationInfo(authenticationInfo);
+      run(p.getId());
     }
   }
 
@@ -578,6 +594,14 @@ public class Note implements Serializable, ParagraphJobListener {
     }
 
     return true;
+  }
+
+  public boolean isTrash() {
+    String path = getName();
+    if (path.charAt(0) == '/') {
+      path = path.substring(1);
+    }
+    return path.split("/")[0].equals(Folder.TRASH_FOLDER_ID);
   }
 
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
@@ -665,6 +689,31 @@ public class Note implements Serializable, ParagraphJobListener {
     repo.remove(getId(), subject);
   }
 
+
+  /**
+   * Return new note for specific user. this inserts and replaces user paragraph which doesn't
+   * exists in original paragraph
+   *
+   * @param user specific user
+   * @return new Note for the user
+   */
+  public Note getUserNote(String user) {
+    Note newNote = new Note();
+    newNote.id = getId();
+    newNote.config = getConfig();
+    newNote.angularObjects = getAngularObjects();
+
+    Paragraph newParagraph;
+    for (Paragraph p : paragraphs) {
+      newParagraph = p.getUserParagraph(user);
+      if (null == newParagraph) {
+        newParagraph = p.cloneParagraphForUser(user);
+      }
+      newNote.paragraphs.add(newParagraph);
+    }
+
+    return newNote;
+  }
 
   private void startDelayedPersistTimer(int maxDelaySec, final AuthenticationInfo subject) {
     synchronized (this) {

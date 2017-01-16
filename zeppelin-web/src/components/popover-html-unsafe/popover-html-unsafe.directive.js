@@ -11,15 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-(function() {
 
-  angular.module('zeppelinWebApp').directive('popoverHtmlUnsafe', popoverHtmlUnsafe);
+angular.module('zeppelinWebApp').directive('popoverHtmlUnsafe', popoverHtmlUnsafe);
 
-  popoverHtmlUnsafe.$inject = ['$tooltip'];
+popoverHtmlUnsafe.$inject = ['$tooltip'];
 
-  function popoverHtmlUnsafe($tooltip) {
-    return $tooltip('popoverHtmlUnsafe', 'popover', 'click');
-  }
+function popoverHtmlUnsafe($tooltip) {
+  return $tooltip('popoverHtmlUnsafe', 'popover', 'click');
+}
 
-})();

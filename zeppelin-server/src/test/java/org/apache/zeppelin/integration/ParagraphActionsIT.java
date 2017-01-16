@@ -123,7 +123,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
           CoreMatchers.equalTo(3));
 
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -162,7 +161,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Remove : Number of paragraphs are",
           newNosOfParas,
           CoreMatchers.equalTo(oldNosOfParas - 1));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -215,7 +213,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The paragraph1 value contains",
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
           CoreMatchers.equalTo("2"));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -238,10 +235,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       clickAndWait(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='toggleEnableDisable(paragraph)']"));
       collector.checkThat("The play button class was ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-control-play']")).isDisplayed(), CoreMatchers.equalTo(false)
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-control-play shortcut-icon']")).isDisplayed(), CoreMatchers.equalTo(false)
       );
 
-      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='runNote()']")).sendKeys(Keys.ENTER);
+      driver.findElement(By.xpath(".//*[@id='main']//button[contains(@ng-click, 'runAllParagraphs')]")).sendKeys(Keys.ENTER);
       ZeppelinITUtils.sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Run all paragraphs?')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
@@ -250,7 +247,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Paragraph status is ",
           getParagraphStatus(1), CoreMatchers.equalTo("READY")
       );
-
 
       deleteTestNotebook(driver);
 
@@ -285,7 +281,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Clear  Output field contains ",
           driver.findElements(By.xpath(xpathToOutputField)).size(),
           CoreMatchers.equalTo(0));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -315,6 +310,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
             driver.findElement(By.xpath("//div[contains(@class,'col-md-" + newWidth + "')]")).isDisplayed(),
             CoreMatchers.equalTo(true));
       }
+      deleteTestNotebook(driver);
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testWidth ", e);
     }
@@ -344,9 +340,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.turnOnImplicitWaits(driver);
 
       clickAndWait(By.xpath(xpathToSettingIcon));
-      collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as  ",
+      collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToShowTitle)).getText(),
-          CoreMatchers.equalTo("Show title"));
+          CoreMatchers.allOf(CoreMatchers.startsWith("Show title"), CoreMatchers.containsString("Ctrl+"),
+              CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
+              CoreMatchers.containsString("+t")));
 
       clickAndWait(By.xpath(xpathToShowTitle));
       collector.checkThat("After Show Title : The title field contains",
@@ -356,7 +354,9 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
-          CoreMatchers.equalTo("Hide title"));
+          CoreMatchers.allOf(CoreMatchers.startsWith("Hide title"), CoreMatchers.containsString("Ctrl+"),
+              CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
+              CoreMatchers.containsString("+t")));
 
       clickAndWait(By.xpath(xpathToHideTitle));
       ZeppelinITUtils.turnOffImplicitWaits(driver);
@@ -380,7 +380,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Page Refresh : The title field contains ",
           driver.findElement(By.xpath(xpathToTitle)).getText(),
           CoreMatchers.equalTo("NEW TITLE"));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -405,23 +404,31 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Before \"Show line number\" the Line Number is Enabled ",
           driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(false));
+
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("Before \"Show line number\" The option panel in paragraph has button labeled ",
           driver.findElement(By.xpath(xpathToShowLineNumberButton)).getText(),
-          CoreMatchers.equalTo("Show line numbers"));
+          CoreMatchers.allOf(CoreMatchers.startsWith("Show line numbers"), CoreMatchers.containsString("Ctrl+"),
+              CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
+              CoreMatchers.containsString("+m")));
+
+
       clickAndWait(By.xpath(xpathToShowLineNumberButton));
       collector.checkThat("After \"Show line number\" the Line Number is Enabled ",
           driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(true));
+
       clickAndWait(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
       collector.checkThat("After \"Show line number\" The option panel in paragraph has button labeled ",
           driver.findElement(By.xpath(xpathToHideLineNumberButton)).getText(),
-          CoreMatchers.equalTo("Hide line numbers"));
+          CoreMatchers.allOf(CoreMatchers.startsWith("Hide line numbers"), CoreMatchers.containsString("Ctrl+"),
+              CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
+              CoreMatchers.containsString("+m")));
+
       clickAndWait(By.xpath(xpathToHideLineNumberButton));
       collector.checkThat("After \"Hide line number\" the Line Number is Enabled",
           driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(false));
-      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
@@ -450,8 +457,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "FINISHED");
 
       collector.checkThat("Markdown editor is hidden after run ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
-          CoreMatchers.equalTo(false));
+          driver.findElements(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if, 'paragraph.config.editorHide')]")).size(),
+          CoreMatchers.equalTo(0));
 
       collector.checkThat("Markdown editor is shown after run ",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.tableHide')]")).isDisplayed(),
@@ -464,7 +471,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       action.doubleClick(driver.findElement(By.xpath(getParagraphXPath(1)))).perform();
       ZeppelinITUtils.sleep(1000, false);
       collector.checkThat("Markdown editor is shown after double click ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-show, 'paragraph.config.editorHide')]")).isDisplayed(),
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if, 'paragraph.config.editorHide')]")).isDisplayed(),
           CoreMatchers.equalTo(true));
 
       collector.checkThat("Markdown editor is hidden after double click ",
