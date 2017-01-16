@@ -145,7 +145,8 @@ public class HeliumVisualizationFactory {
     pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
 
     // check if we can use previous bundle or not
-    if (cacheKeyBuilder.toString().equals(bundleCacheKey) && currentBundle.isFile() && !forceRefresh) {
+    if (cacheKeyBuilder.toString().equals(bundleCacheKey)
+        && currentBundle.isFile() && !forceRefresh) {
       return currentBundle;
     }
 
