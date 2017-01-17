@@ -149,6 +149,7 @@ public class InterpreterSetting {
     String plainNoteId = interpreterGroupKey.substring(modeKeyIndex, interpreterGroupKey.length());
 
     return noteId.equals(plainNoteId);
+  }
 
   private String getInterpreterSessionKey(String user, String noteId) {
     InterpreterOption option = getOption();
