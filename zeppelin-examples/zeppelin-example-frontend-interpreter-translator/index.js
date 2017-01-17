@@ -40,7 +40,7 @@ export default class TranslatorInterpreter extends AbstractFrontendInterpreter {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer YOUR_ACCESS_KEY_HERE',
+                'Authorization': 'Bearer YOUR_ACCESS_KEY',
             },
             body: JSON.stringify({
                 'q': text,
@@ -48,16 +48,16 @@ export default class TranslatorInterpreter extends AbstractFrontendInterpreter {
                 'target': 'ko',
                 'format': 'text'
             })
-        }).then((response) => {
+        }).then(response => {
             if (response.status === 200) {
                 return response.json()
             }
             throw new Error(`https://translation.googleapis.com/language/translate/v2 ${response.status} (${response.statusText})`);
         }).then((json) => {
-          const extracted = json.data.translations.map(t => {
-            return t.translatedText;
-          });
-          return extracted.join('\n');
+            const extracted = json.data.translations.map(t => {
+                return t.translatedText;
+            });
+            return extracted.join('\n');
         });
     }
 }

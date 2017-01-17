@@ -19,6 +19,10 @@ import PiechartVisualization from '../../../visualization/builtins/visualization
 import AreachartVisualization from '../../../visualization/builtins/visualization-areachart';
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart';
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
+import {
+  DefaultDisplayType,
+  FrontendInterpreterResult,
+} from '../../../frontend-interpreter'
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
@@ -149,14 +153,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   // image data
   $scope.imageData;
+  $scope.textRendererInitialized = false;
 
   $scope.init = function(result, config, paragraph, index) {
-    console.log('result controller init %o %o %o', result, config, index);
-
     // register helium plugin vis
-    var heliumVis = heliumService.get();
-    console.log('Helium visualizations %o', heliumVis);
-    heliumVis.forEach(function(vis) {
+    var visBundles = heliumService.getVisualizationBundles();
+    visBundles.forEach(function(vis) {
       $scope.builtInTableDataVisualizationList.push({
         id: vis.id,
         name: vis.name,
@@ -166,7 +168,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         class: vis.class
       };
     });
-    
+
     updateData(result, config, paragraph, index);
     renderResult($scope.type);
   };
@@ -259,92 +261,170 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     if (activeApp) {
-      var app = _.find($scope.apps, {id: activeApp});
-      renderApp(app);
+      const app = _.find($scope.apps, {id: activeApp});
+      renderApp(app, `p${appState.id}`);
     } else {
-      if (type === 'TABLE') {
+
+      /**
+       * find proper interpreter which can handle the non-default display type
+       * the displayed type which is generated from `display()`
+       * should be one of the default interpreter type
+       */
+      // const isDefaultDisplayType = DefaultDisplayType[type];
+      // if (!isDefaultDisplayType) {
+      //   const intp = heliumService.getFrontendInterpreterWithDisplayType(type);
+      //
+      //   if (intp) {
+      //     // currently display only accepts `Object` data not
+      //     // doesn't support function and promise
+      //     const result = intp.display(data);
+      //     type = result.getType();
+      //     data = result.getData();
+      //   }
+      // }
+
+      if (type === DefaultDisplayType.TABLE) {
         $scope.renderGraph($scope.graphMode, refresh);
-      } else if (type === 'HTML') {
-        renderHtml();
-      } else if (type === 'ANGULAR') {
-        renderAngular();
-      } else if (type === 'TEXT') {
-        renderText();
+      } else if (type === DefaultDisplayType.HTML) {
+        renderHtml(`p${$scope.id}_html`, data);
+      } else if (type === DefaultDisplayType.ANGULAR) {
+        renderAngular(`p${$scope.id}_angular`, data);
+      } else if (type === DefaultDisplayType.TEXT) {
+        renderText(`p${$scope.id}_text`, data);
+      } else if (type === DefaultDisplayType.ELEMENT) {
+        renderElem(`p${$scope.id}_elem`, data);
+      } else {
+        console.error(`Unknown Display Type: ${type}`);
       }
     }
   };
 
-  var renderHtml = function() {
-    var retryRenderer = function() {
-      var htmlEl = angular.element('#p' + $scope.id + '_html');
-      if (htmlEl.length) {
-        try {
-          htmlEl.html(data);
+  /**
+   * generates actually object which will be consumed from `data` property
+   * feed it to the success callback.
+   * if error occurs, the error is passed to the failure callback
+   *
+   * @param generator {Object or Promise or Function}
+   * @param type {string} Display Type
+   * @param successCallback
+   * @param failureCallback
+   */
+  const generateData = function(generator, type, successCallback, failureCallback) {
+    if (FrontendInterpreterResult.isFunctionGenerator(generator)) {
+      try {
+        successCallback(generator());
+      } catch (error) {
+        failureCallback(error);
+        console.error(`Failed to handle ${type} type, function generator\n`, error);
+      }
+    } else if (FrontendInterpreterResult.isPromiseGenerator(generator)) {
+      generator
+        .then((generated) => { successCallback(generated); })
+        .catch((error) => {
+          failureCallback(error);
+          console.error(`Failed to handle ${type} type, promise generator\n`, error);
+        });
+    } else if (FrontendInterpreterResult.isObjectGenerator(generator)) {
+      try {
+        successCallback(generator);
+      } catch (error) {
+        console.error(`Failed to handle ${type} type, object generator\n`, error);
+      }
+    }
+  };
 
-          htmlEl.find('pre code').each(function(i, e) {
+  const renderElem = function(targetElemId, generator) {
+    function retryRenderer() {
+      const elem = angular.element(`#${targetElemId}`);
+      if (!elem.length) {
+        $timeout(retryRenderer, 10);
+        return;
+      }
+
+      generateData(() => { generator(targetElemId) }, DefaultDisplayType.ELEMENT,
+        () => {}, /** HTML element will be filled in generator . thus pass empty success callback */
+        (error) => {  elem.html(`${error.stack}`); }
+      );
+    }
+
+    $timeout(retryRenderer);
+  };
+
+  const renderHtml = function(targetElemId, generator) {
+    function retryRenderer() {
+      const elem = angular.element(`#${targetElemId}`);
+      if (!elem.length) {
+        $timeout(retryRenderer, 10);
+        return;
+      }
+
+      generateData(generator, DefaultDisplayType.HTML,
+        (generated) => {
+          elem.html(generated);
+          elem.find('pre code').each(function(i, e) {
             hljs.highlightBlock(e);
           });
           /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
-          MathJax.Hub.Queue(['Typeset', MathJax.Hub, htmlEl[0]]);
-        } catch (err) {
-          console.log('HTML rendering error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer, 10);
-      }
-    };
+          MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
+        },
+        (error) => {  elem.html(`${error.stack}`); }
+      );
+    }
+
     $timeout(retryRenderer);
   };
 
-  var renderAngular = function() {
-    var retryRenderer = function() {
-      if (angular.element('#p' + $scope.id + '_angular').length) {
-        try {
-          angular.element('#p' + $scope.id + '_angular').html(data);
-
-          var paragraphScope = noteVarShareService.get(paragraph.id + '_paragraphScope');
-          $compile(angular.element('#p' + $scope.id + '_angular').contents())(paragraphScope);
-        } catch (err) {
-          console.log('ANGULAR rendering error %o', err);
-        }
-      } else {
+  const renderAngular = function(targetElemId, generator) {
+    function retryRenderer() {
+      const elem = angular.element(`#${targetElemId}`);
+      if (!elem.length) {
         $timeout(retryRenderer, 10);
+        return;
       }
-    };
+
+      const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
+      generateData(generator, DefaultDisplayType.ANGULAR,
+        (generated) => {
+          elem.html(generated);
+          $compile(elem.contents())(paragraphScope);
+        },
+        (error) => {  elem.html(`${error.stack}`); }
+      );
+    }
+
     $timeout(retryRenderer);
   };
 
-  var getTextEl = function (paragraphId) {
-    return angular.element('#p' + $scope.id + '_text');
+  const getTextResultElem = function (resultId) {
+    return angular.element('#p' + resultId + '_text');
+  };
+
+  const renderText = function(targetElemId, generator) {
+    function retryRenderer() {
+      const elem = angular.element(`#${targetElemId}`);
+      if (!elem.length) {
+        $timeout(retryRenderer, 10);
+        return;
+      }
+
+      generateData(generator, DefaultDisplayType.TEXT,
+        (generated) => {
+          // clear all lines before render
+          clearTextOutput();
+          $scope.textRendererInitialized = true;
+          if (generated) { appendTextOutput(generated); }
+          else { flushAppendQueue(); }
+          elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false; });
+        },
+        (error) => {  elem.html(`${error.stack}`); }
+      );
+    }
+
+    $timeout(retryRenderer);
   }
 
-  var textRendererInitialized = false;
-  var renderText = function() {
-    var retryRenderer = function() {
-      var textEl = getTextEl($scope.id);
-      if (textEl.length) {
-        // clear all lines before render
-        clearTextOutput();
-        textRendererInitialized = true;
-
-        if (data) {
-          appendTextOutput(data);
-        } else {
-          flushAppendQueue();
-        }
-
-        getTextEl($scope.id).bind('mousewheel', function(e) {
-          $scope.keepScrollDown = false;
-        });
-      } else {
-        $timeout(retryRenderer, 10);
-      }
-    };
-    $timeout(retryRenderer);
-  };
-
   var clearTextOutput = function() {
-    var textEl = getTextEl($scope.id);
+    var textEl = getTextResultElem($scope.id);
     if (textEl.length) {
       textEl.children().remove();
     }
@@ -359,11 +439,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   var appendTextOutput = function(msg) {
-    if (!textRendererInitialized) {
+    if (!$scope.textRendererInitialized) {
       textAppendQueueBeforeInitialize.push(msg);
     } else {
       flushAppendQueue();
-      var textEl = getTextEl($scope.id);
+      var textEl = getTextResultElem($scope.id);
       if (textEl.length) {
         var lines = msg.split('\n');
         for (var i = 0; i < lines.length; i++) {
@@ -371,7 +451,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         }
       }
       if ($scope.keepScrollDown) {
-        var doc = getTextEl($scope.id);
+        var doc = getTextResultElem($scope.id);
         doc[0].scrollTop = doc[0].scrollHeight;
       }
     }
@@ -725,22 +805,23 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       });
   };
 
-  var renderApp = function(appState) {
-    var retryRenderer = function() {
-      var targetEl = angular.element(document.getElementById('p' + appState.id));
-      console.log('retry renderApp %o', targetEl);
-      if (targetEl.length) {
+  const renderApp = function(targetElemId, appState) {
+    function retryRenderer() {
+      var elem = angular.element(document.getElementById(elememId));
+      console.log('retry renderApp %o', elem);
+      if (!elem.length) {
+        $timeout(retryRenderer, 1000);
+      } else {
         try {
           console.log('renderApp %o', appState);
-          targetEl.html(appState.output);
-          $compile(targetEl.contents())(getAppScope(appState));
+          elem.html(appState.output);
+          $compile(elem.contents())(getAppScope(appState));
         } catch (err) {
           console.log('App rendering error %o', err);
         }
-      } else {
-        $timeout(retryRenderer, 1000);
       }
-    };
+    }
+
     $timeout(retryRenderer);
   };
 

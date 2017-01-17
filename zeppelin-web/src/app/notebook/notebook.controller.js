@@ -28,12 +28,14 @@ NotebookCtrl.$inject = [
   'ngToast',
   'noteActionSrv',
   'noteVarShareService',
-  'TRASH_FOLDER_ID'
+  'TRASH_FOLDER_ID',
+  'heliumService',
 ];
 
 function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                      ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID) {
+                      ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID,
+                      heliumService) {
 
   ngToast.dismiss();
 

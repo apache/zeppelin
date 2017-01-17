@@ -108,5 +108,5 @@ import {
     this.disable = function(name) {
       return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
     };
-  };
+  }
 })();

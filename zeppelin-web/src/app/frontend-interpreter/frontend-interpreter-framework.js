@@ -70,7 +70,7 @@ export class AbstractFrontendInterpreter {
    * Currently, `display` only allows DefaultDisplayType
    * as a type of result to avoid to recursive evaluation of display results.
    *
-   * @param paragraphText {string}
+   * @param paragraphText {string} which doesn't include magic
    * @return {FrontendInterpreterResult}
    */
   display(paragraphText) {

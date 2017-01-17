@@ -58,9 +58,7 @@ limitations under the License.
          ng-init="init(result, paragraph.config.results[$index], paragraph, $index)"
          ng-include src="'app/notebook/paragraph/result/result.html'">
     </div>
-    <div id="{{paragraph.id}}_error"
-         class="error text"
-         ng-if="paragraph.status == 'ERROR'"
+    <div id="{{paragraph.id}}_error" class="error text"
          ng-bind="paragraph.errorMessage">
     </div>
   </div>

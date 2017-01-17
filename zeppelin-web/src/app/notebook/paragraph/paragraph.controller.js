@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import { AbstractFrontendInterpreter } from '../../frontend-interpreter'
+
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
 ParagraphCtrl.$inject = [
@@ -29,15 +31,19 @@ ParagraphCtrl.$inject = [
   'baseUrlSrv',
   'ngToast',
   'saveAsService',
-  'noteVarShareService'
+  'noteVarShareService',
+  'heliumService'
 ];
 
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
-                       baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
+                       baseUrlSrv, ngToast, saveAsService, noteVarShareService,
+                       heliumService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
-  $scope.paragraph = null;
+  $scope.paragraph = {};
+  $scope.paragraph.results = {};
+  $scope.paragraph.results.msg = [];
   $scope.originalText = '';
   $scope.editor = null;
 
@@ -219,21 +225,30 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
 
-  $scope.runParagraph = function(data) {
-    websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
-      data, $scope.paragraph.config, $scope.paragraph.settings.params);
-    $scope.originalText = angular.copy(data);
-    $scope.dirtyText = undefined;
+  $scope.runParagraphUsingFrontendInterpreter = function(intp, paragraphText, magic) {
+    // clear results which is watched by `ng-repeat`. without this,
+    // frontend interpreter results cannot be rendered in view twice more
+    $scope.paragraph.results = {};
+    $scope.$digest();
 
-    if ($scope.paragraph.config.editorSetting.editOnDblClick) {
-      closeEditorAndOpenTable($scope.paragraph);
-    } else if (editorSetting.isOutputHidden &&
-      !$scope.paragraph.config.editorSetting.editOnDblClick) {
-      // %md/%angular repl make output to be hidden by default after running
-      // so should open output if repl changed from %md/%angular to another
-      openEditorAndOpenTable($scope.paragraph);
+    try {
+      // remove magic from paragraphText
+      const splited = paragraphText.split(magic);
+      const textWithoutMagic = splited[1];
+      $scope.paragraph.status = 'FINISHED';
+      $scope.paragraph.results.msg = intp.interpret(textWithoutMagic);
+      $scope.paragraph.config.tableHide = false;
+      // TODO(1ambda): broadcast to other clients
+    } catch (error) {
+      $scope.paragraph.status = 'ERROR';
+      $scope.paragraph.errorMessage = error.stack;
+      console.error('Failed to execute FrontendInterpreter.interpret\n', error);
     }
-    editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
+  };
+
+  $scope.runParagraphUsingBackendInterpreter = function(paragraphText) {
+    websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
+      paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params);
   };
 
   $scope.saveParagraph = function(paragraph) {
@@ -251,10 +266,43 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     commitParagraph(paragraph);
   };
 
-  $scope.run = function(paragraph, editorValue) {
-    if (editorValue && !$scope.isRunning(paragraph)) {
-      $scope.runParagraph(editorValue);
+  $scope.runParagraph = function(paragraphText) {
+    if (!paragraphText || $scope.isRunning($scope.paragraph)) {
+      return;
     }
+
+    const magic = AbstractFrontendInterpreter.extractMagic(paragraphText);
+    const frontendIntp = heliumService.getFrontendInterpreterUsingMagic(magic);
+
+    if (frontendIntp) {
+      $scope.runParagraphUsingFrontendInterpreter(frontendIntp, paragraphText, magic);
+    } else {
+      $scope.runParagraphUsingBackendInterpreter(paragraphText);
+    }
+
+    $scope.originalText = angular.copy(paragraphText);
+    $scope.dirtyText = undefined;
+
+    if ($scope.paragraph.config.editorSetting.editOnDblClick) {
+      closeEditorAndOpenTable($scope.paragraph);
+    } else if (editorSetting.isOutputHidden &&
+      !$scope.paragraph.config.editorSetting.editOnDblClick) {
+      // %md/%angular repl make output to be hidden by default after running
+      // so should open output if repl changed from %md/%angular to another
+      openEditorAndOpenTable($scope.paragraph);
+    }
+    editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick;
+  };
+
+  $scope.runParagraphFromShortcut = function(paragraphText) {
+    // we need to call `$digest()` to update view immediately
+    $scope.runParagraph(paragraphText);
+    $scope.$digest();
+  };
+
+  $scope.runParagraphFromButton = function(paragraphText) {
+    // we come here from `$scope.on`, so we don't need to call `$digest()`
+    $scope.runParagraph(paragraphText)
   };
 
   $scope.moveUp = function(paragraph) {
@@ -452,6 +500,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
+  // $scope.text = asdasd
+  // dirtyText =
+
+  // originalText
   $scope.aceChanged = function(_, editor) {
     var session = editor.getSession();
     var dirtyText = session.getValue();
@@ -807,15 +859,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     editor.navigateFileEnd();
   };
 
-  $scope.getResultType = function(paragraph) {
-    var pdata = (paragraph) ? paragraph : $scope.paragraph;
-    if (pdata.results && pdata.results.type) {
-      return pdata.results.type;
-    } else {
-      return 'TEXT';
-    }
-  };
-
   $scope.parseTableCell = function(cell) {
     if (!isNaN(cell)) {
       if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
@@ -1092,7 +1135,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
-        $scope.run($scope.paragraph, $scope.getEditorValue());
+        $scope.runParagraphFromShortcut($scope.getEditorValue());
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph($scope.paragraph);
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
