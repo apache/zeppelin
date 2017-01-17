@@ -15,9 +15,6 @@
 package org.apache.zeppelin.jdbc;
 
 import static java.lang.String.format;
-import static org.apache.zeppelin.interpreter.Interpreter.logger;
-import static org.apache.zeppelin.interpreter.Interpreter.register;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
@@ -29,19 +26,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.apache.zeppelin.scheduler.FIFOScheduler;
 import org.apache.zeppelin.scheduler.ParallelScheduler;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 import org.junit.Before;
@@ -169,6 +164,49 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message().get(0).getData());
+  }
+
+  @Test
+  public void testSplitSqlQuery() throws SQLException, IOException {
+    String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
+        "select * from test_table;" +
+        "select * from test_table WHERE ID = \";'\";" +
+        "select * from test_table WHERE ID = ';'";
+
+    Properties properties = new Properties();
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+    ArrayList<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    assertEquals(4, multipleSqlArray.size());
+    assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
+    assertEquals("select * from test_table", multipleSqlArray.get(1));
+    assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray.get(2));
+    assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray.get(3));
+  }
+
+  @Test
+  public void testSelectMultipleQuries() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select * from test_table;" +
+        "select * from test_table WHERE ID = ';';";
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(2, interpreterResult.message().size());
+
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n", interpreterResult.message().get(0).getData());
+
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
+    assertEquals("ID\tNAME\n", interpreterResult.message().get(1).getData());
   }
 
   @Test

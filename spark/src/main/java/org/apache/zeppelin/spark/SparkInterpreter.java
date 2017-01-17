@@ -295,7 +295,7 @@ public class SparkInterpreter extends Interpreter {
     return (DepInterpreter) p;
   }
 
-  private boolean isYarnMode() {
+  public boolean isYarnMode() {
     return getProperty("master").startsWith("yarn");
   }
 
@@ -488,8 +488,9 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
+    //TODO(zjffdu), this is not maintainable when new version is added.
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip"};
+      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip", "py4j-0.10.4-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -555,7 +556,7 @@ public class SparkInterpreter extends Interpreter {
     return (o instanceof String) ? (String) o : "";
   }
 
-  private boolean useSparkSubmit() {
+  public static boolean useSparkSubmit() {
     return null != System.getenv("SPARK_SUBMIT");
   }
 
@@ -726,7 +727,6 @@ public class SparkInterpreter extends Interpreter {
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
-
     // set classloader for scala compiler
     settings.explicitParentLoader_$eq(new Some<>(Thread.currentThread()
         .getContextClassLoader()));
@@ -745,8 +745,12 @@ public class SparkInterpreter extends Interpreter {
      *
      * In Spark 2.x, REPL generated wrapper class name should compatible with the pattern
      * ^(\$line(?:\d+)\.\$read)(?:\$\$iw)+$
+     *
+     * As hashCode() can return a negative integer value and the minus character '-' is invalid
+     * in a package name we change it to a numeric value '0' which still conforms to the regexp.
+     * 
      */
-    System.setProperty("scala.repl.name.line", "$line" + this.hashCode());
+    System.setProperty("scala.repl.name.line", ("$line" + this.hashCode()).replace('-', '0'));
 
     // To prevent 'File name too long' error on some file system.
     MutableSettings.IntSetting numClassFileSetting = settings.maxClassfileName();
@@ -975,7 +979,7 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private List<File> currentClassPath() {
+  public List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
     String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
     if (cps != null) {
@@ -1449,8 +1453,10 @@ public class SparkInterpreter extends Interpreter {
           .getConstructor(new Class[]{
             SparkConf.class, File.class, SecurityManager.class, int.class, String.class});
 
-      return constructor.newInstance(new Object[] {
-        conf, outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+      Object securityManager = createSecurityManager(conf);
+      return constructor.newInstance(new Object[]{
+        conf, outputDir, securityManager, 0, "HTTP Server"});
+
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
         InstantiationException | InvocationTargetException e) {
       // fallback to old constructor
@@ -1461,12 +1467,42 @@ public class SparkInterpreter extends Interpreter {
             .getConstructor(new Class[]{
               File.class, SecurityManager.class, int.class, String.class});
         return constructor.newInstance(new Object[] {
-          outputDir, new SecurityManager(conf), 0, "HTTP Server"});
+          outputDir, createSecurityManager(conf), 0, "HTTP Server"});
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
           InstantiationException | InvocationTargetException e1) {
         logger.error(e1.getMessage(), e1);
         return null;
       }
     }
+  }
+
+  /**
+   * Constructor signature of SecurityManager changes in spark 2.1.0, so we use this method to
+   * create SecurityManager properly for different versions of spark
+   *
+   * @param conf
+   * @return
+   * @throws ClassNotFoundException
+   * @throws NoSuchMethodException
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   * @throws InstantiationException
+   */
+  private Object createSecurityManager(SparkConf conf) throws ClassNotFoundException,
+      NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException {
+    Object securityManager = null;
+    try {
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class, scala.Option.class });
+      securityManager = smConstructor.newInstance(conf, null);
+    } catch (NoSuchMethodException e) {
+      Constructor<?> smConstructor = getClass().getClassLoader()
+          .loadClass("org.apache.spark.SecurityManager")
+          .getConstructor(new Class[]{ SparkConf.class });
+      securityManager = smConstructor.newInstance(conf);
+    }
+    return securityManager;
   }
 }

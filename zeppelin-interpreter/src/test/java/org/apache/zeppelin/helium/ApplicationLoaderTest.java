@@ -79,7 +79,9 @@ public class ApplicationLoaderTest {
         "desc1",
         artifact,
         className,
-        new String[][]{{}});
+        new String[][]{{}},
+        "license",
+        "icon");
     return app1;
   }
 

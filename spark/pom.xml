@@ -515,13 +515,23 @@
 
     <profile>
       <id>spark-2.0</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <spark.version>2.0.2</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <py4j.version>0.10.3</py4j.version>
+        <scala.version>2.11.8</scala.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-2.1</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <spark.version>2.1.0</spark.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <py4j.version>0.10.4</py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>

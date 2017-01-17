@@ -57,9 +57,11 @@ limitations under the License.
     <link rel="stylesheet" href="app/search/search.css" />
     <link rel="stylesheet" href="app/notebook/notebook.css" />
     <link rel="stylesheet" href="app/notebook/paragraph/paragraph.css" />
+    <link rel="stylesheet" href="app/notebook/paragraph/result/result.css" />
     <link rel="stylesheet" href="app/jobmanager/jobmanager.css" />
     <link rel="stylesheet" href="app/jobmanager/jobs/job.css" />
     <link rel="stylesheet" href="app/interpreter/interpreter.css" />
+    <link rel="stylesheet" href="app/helium/helium.css" />
     <link rel="stylesheet" href="app/credential/credential.css" />
     <link rel="stylesheet" href="app/configuration/configuration.css" />
     <link rel="stylesheet" href="components/expandCollapse/expandCollapse.css" />
@@ -103,7 +105,7 @@ limitations under the License.
     <!-- endbuild -->
 
     <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
+      var config = {
         extensions: ["tex2jax.js"],
         jax: ["input/TeX", "output/HTML-CSS"],
         tex2jax: {
@@ -113,7 +115,12 @@ limitations under the License.
         },
         "HTML-CSS": { availableFonts: ["TeX"] },
         messageStyle: "none"
-      });
+      }
+      // add root only if it's not dev mode
+      if (Number(location.port) !== 9000) {
+        config.root = '.';
+      }
+      MathJax.Hub.Config(config);
     </script>
 
     <!-- build:js(.) scripts/vendor.js -->

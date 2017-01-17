@@ -30,6 +30,7 @@ conf/interpreter.json
 conf/notebook-authorization.json
 conf/shiro.ini
 conf/credentials.json
+conf/helium.json
 
 # other generated files
 spark/dependency-reduced-pom.xml
@@ -39,13 +40,11 @@ reports
 zeppelin-web/node_modules
 zeppelin-web/dist
 zeppelin-web/.tmp
-zeppelin-web/src/fonts/roboto*
-zeppelin-web/src/fonts/source-code-pro*
-zeppelin-web/src/fonts/patua-one*
-zeppelin-web/src/fonts/google-fonts.css
 zeppelin-web/.sass-cache
 zeppelin-web/npm-debug.log
+zeppelin-web/yarn-error.log
 zeppelin-web/bower_components
+zeppelin-web/yarn.lock
 **nbproject/
 **node/
 

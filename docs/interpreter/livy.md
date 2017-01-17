@@ -66,6 +66,11 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>Whether to display app info</td>
   </tr>
   <tr>
+    <td>zeppelin.livy.pull_status.interval.millis</td>
+    <td>1000</td>
+    <td>The interval for checking paragraph execution status</td>
+  </tr>
+  <tr>
     <td>livy.spark.driver.cores</td>
     <td></td>
     <td>Driver cores. ex) 1, 2.</td>
