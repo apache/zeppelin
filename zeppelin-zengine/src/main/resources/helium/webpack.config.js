@@ -18,7 +18,7 @@ module.exports = {
     entry: ['./'],
     output: {
         path: './',
-        filename: 'vis.bundle.js',
+        filename: 'helium.bundle.js',
     },
     resolve: {
         root: __dirname + "/node_modules"

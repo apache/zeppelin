@@ -26,7 +26,7 @@ public class HeliumConf {
   Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
 
   // enabled visualization package display order
-  List<String> visualizationDisplayOrder = new LinkedList<>();
+  List<String> bundleDisplayOrder = new LinkedList<>();
 
   public Map<String, String> getEnabledPackages() {
     return new HashMap<>(enabled);
@@ -48,15 +48,15 @@ public class HeliumConf {
     enabled.remove(name);
   }
 
-  public List<String> getVisualizationDisplayOrder() {
-    if (visualizationDisplayOrder == null) {
+  public List<String> getBundleDisplayOrder() {
+    if (bundleDisplayOrder == null) {
       return new LinkedList<String>();
     } else {
-      return visualizationDisplayOrder;
+      return bundleDisplayOrder;
     }
   }
 
-  public void setVisualizationDisplayOrder(List<String> orderedPackageList) {
-    visualizationDisplayOrder = orderedPackageList;
+  public void setBundleDisplayOrder(List<String> orderedPackageList) {
+    bundleDisplayOrder = orderedPackageList;
   }
 }

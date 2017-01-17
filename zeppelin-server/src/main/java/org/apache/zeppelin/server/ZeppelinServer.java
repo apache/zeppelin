@@ -35,7 +35,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
-import org.apache.zeppelin.helium.HeliumVisualizationFactory;
+import org.apache.zeppelin.helium.HeliumBundleFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.notebook.Notebook;
@@ -102,7 +102,7 @@ public class ZeppelinServer extends Application {
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
     HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory();
-    HeliumVisualizationFactory heliumVisualizationFactory;
+    HeliumBundleFactory heliumBundleFactory;
 
     if (isBinaryPackage(conf)) {
       /* In binary package, zeppelin-web/src/app/visualization and zeppelin-web/src/app/tabledata
@@ -110,28 +110,30 @@ public class ZeppelinServer extends Application {
        * Check zeppelin/zeppelin-distribution/src/assemble/distribution.xml to see how they're
        * packaged into binary package.
        */
-      heliumVisualizationFactory = new HeliumVisualizationFactory(
+      heliumBundleFactory = new HeliumBundleFactory(
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
-          new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")));
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")),
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-frontend-interpreter")));
     } else {
-      heliumVisualizationFactory = new HeliumVisualizationFactory(
+      heliumBundleFactory = new HeliumBundleFactory(
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
-          new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")));
+          new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")),
+          new File(conf.getRelativeDir("zeppelin-web/src/app/frontend-interpreter")));
     }
 
     this.helium = new Helium(
         conf.getHeliumConfPath(),
         conf.getHeliumRegistry(),
-        new File(
-            conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium_registry_cache"),
-        heliumVisualizationFactory,
+        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO),
+            "helium_registry_cache"),
+        heliumBundleFactory,
         heliumApplicationFactory);
 
-    // create visualization bundle
+    // create bundle
     try {
-      heliumVisualizationFactory.bundle(helium.getVisualizationPackagesToBundle());
+      heliumBundleFactory.buildBundle(helium.getBundlePackagesToBundle());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }

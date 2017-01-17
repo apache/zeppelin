@@ -107,22 +107,22 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("visualizations/load")
+  @Path("bundle/load")
   @Produces("text/javascript")
-  public Response visualizationLoad(@QueryParam("refresh") String refresh) {
+  public Response bundleLoad(@QueryParam("refresh") String refresh) {
     try {
       File bundle;
       if (refresh != null && refresh.equals("true")) {
-        bundle = helium.recreateVisualizationBundle();
+        bundle = helium.recreateBundle();
       } else {
-        bundle = helium.getVisualizationFactory().getCurrentBundle();
+        bundle = helium.getBundleFactory().getCurrentCacheBundle();
       }
 
       if (bundle == null) {
         return Response.ok().build();
       } else {
-        String visBundle = FileUtils.readFileToString(bundle);
-        return Response.ok(visBundle).build();
+        String stringifiedBundle = FileUtils.readFileToString(bundle);
+        return Response.ok(stringifiedBundle).build();
       }
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
@@ -160,15 +160,15 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("visualizationOrder")
-  public Response getVisualizationPackageOrder() {
-    List<String> order = helium.getVisualizationPackageOrder();
+  @Path("bundleOrder")
+  public Response getBundlePackageOrder() {
+    List<String> order = helium.getBundlePackageOrder();
     return new JsonResponse(Response.Status.OK, order).build();
   }
 
   @POST
-  @Path("visualizationOrder")
-  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
+  @Path("bundleOrder")
+  public Response setBundlePackageOrder(String orderedPackageNameList) {
     List<String> orderedList = gson.fromJson(
         orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
 

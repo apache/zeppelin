@@ -1,5 +1,5 @@
 {
-  "name": "zeppelin-vis-bundle",
+  "name": "zeppelin-helium-bundle",
   "main": "load",
   "scripts": {
     "bundle": "node/node node_modules/webpack/bin/webpack.js --display-error-details --json"

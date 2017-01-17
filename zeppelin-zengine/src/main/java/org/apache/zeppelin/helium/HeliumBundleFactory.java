@@ -36,40 +36,47 @@ import java.util.*;
 /**
  * Load helium visualization
  */
-public class HeliumVisualizationFactory {
-  Logger logger = LoggerFactory.getLogger(HeliumVisualizationFactory.class);
+public class HeliumBundleFactory {
+  Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
   private final String NODE_VERSION = "v6.9.1";
   private final String NPM_VERSION = "3.10.8";
   private final String DEFAULT_NPM_REGISTRY_URL = "http://registry.npmjs.org/";
+  public static final String HELIUM_LOCAL_REPO = "helium-bundle";
+  public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
+  public static final String HELIUM_BUNDLE = "helium.bundle.js";
+  public static final String HELIUM_BUNDLES_VAR = "heliumBundles";
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File workingDirectory;
   private File tabledataModulePath;
   private File visualizationModulePath;
+  private File frontendInterpreterModulePath;
   private Gson gson;
 
   String bundleCacheKey = "";
-  File currentBundle;
+  File currentCacheBundle;
 
   ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
-  public HeliumVisualizationFactory(
+  public HeliumBundleFactory(
       File moduleDownloadPath,
       File tabledataModulePath,
-      File visualizationModulePath) throws TaskRunnerException {
+      File visualizationModulePath,
+      File frontendInterpreterModulePath) throws TaskRunnerException {
     this(moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
+    this.frontendInterpreterModulePath = frontendInterpreterModulePath;
   }
 
-  public HeliumVisualizationFactory(File moduleDownloadPath) throws TaskRunnerException {
-    this.workingDirectory = new File(moduleDownloadPath, "vis");
+  public HeliumBundleFactory(File moduleDownloadPath) throws TaskRunnerException {
+    this.workingDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
     File installDirectory = workingDirectory;
 
     frontEndPluginFactory = new FrontendPluginFactory(
         workingDirectory, installDirectory);
 
-    currentBundle = new File(workingDirectory, "vis.bundle.cache.js");
+    currentCacheBundle = new File(workingDirectory, HELIUM_BUNDLE_CACHE);
     gson = new Gson();
     installNodeAndNpm();
     configureLogger();
@@ -94,11 +101,11 @@ public class HeliumVisualizationFactory {
     return new ProxyConfig(proxy);
   }
 
-  public File bundle(List<HeliumPackage> pkgs) throws IOException {
-    return bundle(pkgs, false);
+  public File buildBundle(List<HeliumPackage> pkgs) throws IOException {
+    return buildBundle(pkgs, false);
   }
 
-  public synchronized File bundle(List<HeliumPackage> pkgs, boolean forceRefresh)
+  public synchronized File buildBundle(List<HeliumPackage> pkgs, boolean forceRefresh)
       throws IOException {
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
@@ -144,10 +151,10 @@ public class HeliumVisualizationFactory {
     }
     pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
 
-    // check if we can use previous bundle or not
-    if (cacheKeyBuilder.toString().equals(bundleCacheKey)
-        && currentBundle.isFile() && !forceRefresh) {
-      return currentBundle;
+    // check if we can use previous buildBundle or not
+    if (cacheKeyBuilder.toString().equals(bundleCacheKey) &&
+        currentCacheBundle.isFile() && !forceRefresh) {
+      return currentCacheBundle;
     }
 
     // webpack.config.js
@@ -165,14 +172,15 @@ public class HeliumVisualizationFactory {
         continue;
       }
 
-      String className = "vis" + idx++;
+      String className = "bundles" + idx++;
       loadJsImport.append(
           "import " + className + " from \"" + moduleNameVersion[0] + "\"\n");
 
-      loadJsRegister.append("visualizations.push({\n");
+      loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
       loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
       loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
       loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
+      loadJsRegister.append("type: \"" + pkg.getType() + "\",\n");
       loadJsRegister.append("class: " + className + "\n");
       loadJsRegister.append("})\n");
     }
@@ -182,6 +190,38 @@ public class HeliumVisualizationFactory {
     FileUtils.write(new File(workingDirectory, "load.js"),
         loadJsImport.append(loadJsRegister).toString());
 
+    copyFrameworkModuleToInstallPath(npmPackageCopyFilter);
+
+    out.reset();
+    try {
+      npmCommand("install");
+      npmCommand("run bundle");
+    } catch (TaskRunnerException e) {
+      throw new IOException(new String(out.toByteArray()));
+    }
+
+    File heliumBundle = new File(workingDirectory, HELIUM_BUNDLE);
+    if (!heliumBundle.isFile()) {
+      throw new IOException(
+          "Can't create bundle: \n" + new String(out.toByteArray()));
+    }
+
+    WebpackResult result = getWebpackResultFromOutput(new String(out.toByteArray()));
+    if (result.errors.length > 0) {
+      heliumBundle.delete();
+      throw new IOException(result.errors[0]);
+    }
+
+    synchronized (this) {
+      currentCacheBundle.delete();
+      FileUtils.moveFile(heliumBundle, currentCacheBundle);
+      bundleCacheKey = cacheKeyBuilder.toString();
+    }
+    return currentCacheBundle;
+  }
+
+  private void copyFrameworkModuleToInstallPath(FileFilter npmPackageCopyFilter)
+      throws IOException {
     // install tabledata module
     File tabledataModuleInstallPath = new File(workingDirectory,
         "node_modules/zeppelin-tabledata");
@@ -212,32 +252,19 @@ public class HeliumVisualizationFactory {
       FileUtils.copyDirectory(visualizationModulePath, visModuleInstallPath, npmPackageCopyFilter);
     }
 
-    out.reset();
-    try {
-      npmCommand("install");
-      npmCommand("run bundle");
-    } catch (TaskRunnerException e) {
-      throw new IOException(new String(out.toByteArray()));
-    }
+    // install frontend-interpreter module
+    File frontendInterpreterModuleInstallPath = new File(workingDirectory,
+        "node_modules/zeppelin-frontend-interpreter");
+    if (frontendInterpreterModulePath != null) {
+      if (frontendInterpreterModuleInstallPath.exists()) {
+        FileUtils.deleteDirectory(frontendInterpreterModuleInstallPath);
+      }
 
-    File visBundleJs = new File(workingDirectory, "vis.bundle.js");
-    if (!visBundleJs.isFile()) {
-      throw new IOException(
-          "Can't create visualization bundle : \n" + new String(out.toByteArray()));
+      FileUtils.copyDirectory(
+          frontendInterpreterModulePath,
+          frontendInterpreterModuleInstallPath,
+          npmPackageCopyFilter);
     }
-
-    WebpackResult result = getWebpackResultFromOutput(new String(out.toByteArray()));
-    if (result.errors.length > 0) {
-      visBundleJs.delete();
-      throw new IOException(result.errors[0]);
-    }
-
-    synchronized (this) {
-      currentBundle.delete();
-      FileUtils.moveFile(visBundleJs, currentBundle);
-      bundleCacheKey = cacheKeyBuilder.toString();
-    }
-    return currentBundle;
   }
 
   private WebpackResult getWebpackResultFromOutput(String output) {
@@ -277,10 +304,10 @@ public class HeliumVisualizationFactory {
     }
   }
 
-  public File getCurrentBundle() {
+  public File getCurrentCacheBundle() {
     synchronized (this) {
-      if (currentBundle.isFile()) {
-        return currentBundle;
+      if (currentCacheBundle.isFile()) {
+        return currentCacheBundle;
       } else {
         return null;
       }
