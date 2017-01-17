@@ -200,7 +200,7 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroup(String interpreterGroupId) {
+  void closeAndRemoveInterpreterGroupByNoteId(String interpreterGroupId) {
     String key = getInterpreterProcessKey("", interpreterGroupId);
 
     List<InterpreterGroup> closeToGroupList = new LinkedList<>();
