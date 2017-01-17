@@ -63,6 +63,7 @@ public class RemoteInterpreter extends Interpreter {
   private int port;
   private String userName;
   private Boolean isUserImpersonate;
+  private int outputLimit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
 
   /**
    * Remote interpreter and manage interpreter process
@@ -70,7 +71,8 @@ public class RemoteInterpreter extends Interpreter {
   public RemoteInterpreter(Properties property, String sessionKey, String className,
       String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
       int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate) {
+      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
+      int outputLimit) {
     super(property);
     this.sessionKey = sessionKey;
     this.className = className;
@@ -85,6 +87,7 @@ public class RemoteInterpreter extends Interpreter {
     this.applicationEventListener = appListener;
     this.userName = userName;
     this.isUserImpersonate = isUserImpersonate;
+    this.outputLimit = outputLimit;
   }
 
 
@@ -94,7 +97,8 @@ public class RemoteInterpreter extends Interpreter {
   public RemoteInterpreter(Properties property, String sessionKey, String className, String host,
       int port, String localRepoPath, int connectTimeout, int maxPoolSize,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate) {
+      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
+      int outputLimit) {
     super(property);
     this.sessionKey = sessionKey;
     this.className = className;
@@ -108,6 +112,7 @@ public class RemoteInterpreter extends Interpreter {
     this.applicationEventListener = appListener;
     this.userName = userName;
     this.isUserImpersonate = isUserImpersonate;
+    this.outputLimit = outputLimit;
   }
 
 
@@ -217,6 +222,8 @@ public class RemoteInterpreter extends Interpreter {
         if (localRepoPath != null) {
           property.put("zeppelin.interpreter.localRepo", localRepoPath);
         }
+
+        property.put("zeppelin.interpreter.output.limit", Integer.toString(outputLimit));
         client.createInterpreter(groupId, sessionKey,
             getClassName(), (Map) property, userName);
         // Push angular object loaded from JSON file to remote interpreter
