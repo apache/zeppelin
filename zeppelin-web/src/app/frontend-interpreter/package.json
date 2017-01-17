@@ -1,0 +1,13 @@
+{
+  "name": "zeppelin-frontend-interpreter",
+  "description": "Frontend Interpreter API",
+  "version": "0.7.0-SNAPSHOT",
+  "main": "index",
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/zeppelin"
+  },
+  "license": "Apache-2.0"
+}
