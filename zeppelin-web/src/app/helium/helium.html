@@ -20,13 +20,13 @@ limitations under the License.
         </h3>
       </div>
     </div>
-    <div ng-show="visualizationOrder.length > 1"
-         class="row heliumVisualizationOrder">
-      <div style="margin:0 0 5px 15px">Visualization package display order (drag and drop to reorder)</div>
+    <div ng-show="bundleOrder.length > 1"
+         class="row heliumBundleOrder">
+      <div style="margin:0 0 5px 15px">Bundle package display order (drag and drop to reorder)</div>
       <div class="col-md-12 sortable-row btn-group"
-           as-sortable="visualizationOrderListeners"
-           data-ng-model="visualizationOrder">
-        <div class="btn-group" data-ng-repeat="pkgName in visualizationOrder"
+           as-sortable="bundleOrderListeners"
+           data-ng-model="bundleOrder">
+        <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
              as-sortable-item>
           <div class="btn btn-default btn-sm"
                ng-bind-html='defaultVersions[pkgName].pkg.icon'
@@ -34,8 +34,8 @@ limitations under the License.
           </div>
         </div>
         <span class="saveLink"
-           ng-show="visualizationOrderChanged"
-           ng-click="saveVisualizationOrder()">
+           ng-show="bundleOrderChanged"
+           ng-click="saveBundleOrder()">
           save
         </span>
       </div>

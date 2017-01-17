@@ -77,12 +77,12 @@
   margin-top: 10px;
 }
 
-.heliumVisualizationOrder {
+.heliumBundleOrder {
   display: inline-block;
 }
 
-.heliumVisualizationOrder .as-sortable-item,
-.heliumVisualizationOrder .as-sortable-placeholder {
+.heliumBundleOrder .as-sortable-item,
+.heliumBundleOrder .as-sortable-placeholder {
   display: inline-block;
   float: left;
 }
@@ -97,7 +97,7 @@
   height: 100%;
 }
 
-.heliumVisualizationOrder .saveLink {
+.heliumBundleOrder .saveLink {
   margin-left:10px;
   margin-top:5px;
   cursor:pointer;

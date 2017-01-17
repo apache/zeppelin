@@ -22,8 +22,8 @@
     $scope.packageInfos = {};
     $scope.defaultVersions = {};
     $scope.showVersions = {};
-    $scope.visualizationOrder = [];
-    $scope.visualizationOrderChanged = false;
+    $scope.bundleOrder = [];
+    $scope.bundleOrderChanged = false;
 
     var buildDefaultVersionListToDisplay = function(packageInfos) {
       var defaultVersions = {};
@@ -60,33 +60,33 @@
         });
     };
 
-    var getVisualizationOrder = function() {
-      heliumService.getVisualizationOrder().
+    var getBundleOrder = function() {
+      heliumService.getBundleOrder().
         success(function(data, status) {
-          $scope.visualizationOrder = data.body;
+          $scope.bundleOrder = data.body;
         }).
         error(function(data, status) {
-          console.log('Can not get visualization order %o %o', status, data);
+          console.log('Can not get bundle order %o %o', status, data);
         });
     };
 
-    $scope.visualizationOrderListeners = {
+    $scope.bundleOrderListeners = {
       accept: function(sourceItemHandleScope, destSortableScope) {return true;},
       itemMoved: function(event) {},
       orderChanged: function(event) {
-        $scope.visualizationOrderChanged = true;
+        $scope.bundleOrderChanged = true;
       }
     };
 
     var init = function() {
       getAllPackageInfo();
-      getVisualizationOrder();
-      $scope.visualizationOrderChanged = false;
+      getBundleOrder();
+      $scope.bundleOrderChanged = false;
     };
 
     init();
 
-    $scope.saveVisualizationOrder = function() {
+    $scope.saveBundleOrder = function() {
       var confirm = BootstrapDialog.confirm({
         closable: false,
         closeByBackdrop: false,
@@ -98,7 +98,7 @@
             confirm.$modalFooter.find('button').addClass('disabled');
             confirm.$modalFooter.find('button:contains("OK")')
               .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
-            heliumService.setVisualizationOrder($scope.visualizationOrder).
+            heliumService.setBundleOrder($scope.bundleOrder).
               success(function(data, status) {
                 init();
                 confirm.close();
