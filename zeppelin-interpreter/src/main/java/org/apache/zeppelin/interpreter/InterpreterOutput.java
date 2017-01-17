@@ -45,6 +45,13 @@ public class InterpreterOutput extends OutputStream {
   private final InterpreterOutputListener flushListener;
   private final InterpreterOutputChangeListener changeListener;
 
+  private int size = 0;
+
+  // change static var to set interpreter output limit
+  // limit will be applied to all InterpreterOutput object.
+  // so we can expect the consistent behavior
+  public static int limit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
+
   public InterpreterOutput(InterpreterOutputListener flushListener) {
     this.flushListener = flushListener;
     changeListener = null;
@@ -52,7 +59,8 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public InterpreterOutput(InterpreterOutputListener flushListener,
-                           InterpreterOutputChangeListener listener) throws IOException {
+                           InterpreterOutputChangeListener listener)
+      throws IOException {
     this.flushListener = flushListener;
     this.changeListener = listener;
     clear();
@@ -74,6 +82,7 @@ public class InterpreterOutput extends OutputStream {
       out.setResourceSearchPaths(resourceSearchPaths);
 
       buffer.reset();
+      size = 0;
 
       if (currentOut != null) {
         currentOut.flush();
@@ -125,6 +134,8 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public void clear() {
+    size = 0;
+    truncated = false;
     buffer.reset();
 
     synchronized (resultMessageOutputs) {
@@ -157,11 +168,31 @@ public class InterpreterOutput extends OutputStream {
   boolean startOfTheNewLine = true;
   boolean firstCharIsPercentSign = false;
 
+  boolean truncated = false;
+
   @Override
   public void write(int b) throws IOException {
     InterpreterResultMessageOutput out;
+    if (truncated) {
+      return;
+    }
 
     synchronized (resultMessageOutputs) {
+      currentOut = getCurrentOutput();
+
+      if (++size > limit) {
+        if (b == NEW_LINE_CHAR && currentOut != null) {
+          InterpreterResult.Type type = currentOut.getType();
+          if (type == InterpreterResult.Type.TEXT || type == InterpreterResult.Type.TABLE) {
+
+            setType(InterpreterResult.Type.TEXT);
+            getCurrentOutput().write("Output exceeds " + limit + ". Truncated.\n");
+            truncated = true;
+            return;
+          }
+        }
+      }
+
       if (startOfTheNewLine) {
         if (b == '%') {
           startOfTheNewLine = false;
@@ -175,7 +206,6 @@ public class InterpreterOutput extends OutputStream {
       }
 
       if (b == NEW_LINE_CHAR) {
-        currentOut = getCurrentOutput();
         if (currentOut != null && currentOut.getType() == InterpreterResult.Type.TABLE) {
           if (previousChar == NEW_LINE_CHAR) {
             startOfTheNewLine = true;

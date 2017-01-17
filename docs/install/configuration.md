@@ -251,26 +251,32 @@ If both are defined, then the **environment variables** will take priority.
     <td>Interpreter directory</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_INTERPRETER_DEP_MVNREPO</h6></td>
-    <td><h6 class="properties">zeppelin.interpreter.dep.mvnRepo</h6></td>
+    <td>ZEPPELIN_INTERPRETER_DEP_MVNREPO</td>
+    <td>zeppelin.interpreter.dep.mvnRepo</td>
     <td>http://repo1.maven.org/maven2/</td>
     <td>Remote principal repository for interpreter's additional dependency loading</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
-    <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
+    <td>ZEPPELIN_DEP_LOCALREPO</td>
+    <td>zeppelin.dep.localrepo</td>
     <td>local-repo</td>
     <td>Local repository for dependency loader.<br>ex)visualiztion modules of npm.</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_HELIUM_NPM_REGISTRY</h6></td>
-    <td><h6 class="properties">zeppelin.helium.npm.registry</h6></td>
+    <td>ZEPPELIN_HELIUM_NPM_REGISTRY</td>
+    <td>zeppelin.helium.npm.registry</td>
     <td>http://registry.npmjs.org/</td>
     <td>Remote Npm registry for Helium dependency loader</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>
-    <td><h6 class="properties">zeppelin.websocket.max.text.message.size</h6></td>
+    <td>ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</td>
+    <td>zeppelin.interpreter.output.limit</td>
+    <td>102400</td>
+    <td>Output message from interpreter exceeding the limit will be truncated</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
+    <td>zeppelin.websocket.max.text.message.size</td>
     <td>1024000</td>
     <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
