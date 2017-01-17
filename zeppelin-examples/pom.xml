@@ -36,6 +36,8 @@
   <modules>
     <module>zeppelin-example-clock</module>
     <module>zeppelin-example-horizontalbar</module>
+    <module>zeppelin-example-frontend-interpreter-flowchart</module>
+    <module>zeppelin-example-frontend-interpreter-translator</module>
   </modules>
   
   <build>

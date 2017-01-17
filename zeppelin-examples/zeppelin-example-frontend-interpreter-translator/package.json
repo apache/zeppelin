@@ -1,0 +1,12 @@
+{
+  "name": "translator-frontend-interpreter",
+  "description": "Frontend Translator Interpreter (example)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "whatwg-fetch": "^2.0.1",
+    "zeppelin-frontend-interpreter": "*"
+  }
+}
