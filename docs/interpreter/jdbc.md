@@ -159,6 +159,14 @@ There are more JDBC interpreter properties you can specify like below.
     <td>zeppelin.jdbc.keytab.location</td>
     <td>The path to the keytab file</td>
   </tr>
+  <tr>
+    <td>default.jceks.file</td>
+    <td>jceks store path (e.g: jceks://file/tmp/zeppelin.jceks)</td>
+  </tr>
+  <tr>
+    <td>default.jceks.credentialKey</td>
+    <td>jceks credential key</td>
+  </tr>
 </table>
 
 You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
