@@ -146,7 +146,7 @@ public class InterpreterSetting {
   }
 
   private boolean isEqualInterpreterKey(String refKey, String compareKey) {
-    List<String> refKeyList = Arrays.asList(refKey.split(":"))
+    List<String> refKeyList = Arrays.asList(refKey.split(":"));
     List<String> compareTextList = Arrays.asList(compareKey.split(":"));
 
     for (String value : compareTextList) {
@@ -232,17 +232,19 @@ public class InterpreterSetting {
     }
     String processKey = getInterpreterProcessKey(user, "");
     String sessionKey = getInterpreterSessionKey(user, "");
-    InterpreterGroup groupToRemove = null;
+    List<InterpreterGroup> groupToRemove = new LinkedList<>();
+    InterpreterGroup groupItem;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
       if (isEqualInterpreterKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
-        groupToRemove = interpreterGroupRef.remove(intpKey);
+        groupItem = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
+        groupToRemove.add(groupItem);
       }
     }
 
-    if (groupToRemove != null) {
-      groupToRemove.close(sessionKey);
+    for (InterpreterGroup groupToClose : groupToRemove) {
+      groupToClose.close(sessionKey);
     }
   }
 
