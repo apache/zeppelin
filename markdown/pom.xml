@@ -33,6 +33,7 @@
   <name>Zeppelin: Markdown interpreter</name>
 
   <properties>
+    <commons.lang3.version>3.4</commons.lang3.version>
     <markdown4j.version>2.2-cj-1.0</markdown4j.version>
     <pegdown.version>1.6.0</pegdown.version>
   </properties>
@@ -65,6 +66,12 @@
       <groupId>org.pegdown</groupId>
       <artifactId>pegdown</artifactId>
       <version>${pegdown.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons.lang3.version}</version>
     </dependency>
 
     <dependency>
