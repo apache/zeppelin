@@ -163,7 +163,8 @@ module.exports = function makeWebpackConfig () {
       // Pass along the updated reference to your code
       // You can add here any file extension you want to get copied to your output
       test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
-      loader: 'file'
+      //loader: 'file'
+      loader: 'file-loader?name=[name].[ext]&outputPath=styles/images/'
     }, {
       // HTML LOADER
       // Reference: https://github.com/webpack/raw-loader
@@ -267,9 +268,13 @@ module.exports = function makeWebpackConfig () {
     progress: true,
     contentBase: './src',
     setup: function(app) {
-      app.use(
-        '/bower_components/',
-        require('express').static(path.join(__dirname, './bower_components/')));
+      app.use('**/bower_components/',
+        require('express').static(path.resolve(__dirname, './bower_components/')));
+      app.use('**/app/', require('express').static(path.resolve(__dirname, './src/app/')));
+      app.use('**/assets/', require('express').static(path.resolve(__dirname, './src/assets/')));
+      app.use('**/fonts/', require('express').static(path.resolve(__dirname, './src/fonts/')));
+      app.use('**/components/',
+        require('express').static(path.resolve(__dirname, './src/components/')));
     },
     stats: 'minimal',
   };
