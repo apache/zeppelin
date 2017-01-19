@@ -454,7 +454,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      repl.cancel(getInterpreterContext(null));
+      repl.cancel(getInterpreterContextWithoutRunner(null));
     }
     return true;
   }
@@ -496,6 +496,34 @@ public class Paragraph extends Job implements Serializable, Cloneable {
         setReturn(result, null);
       }
     }));
+  }
+
+  private InterpreterContext getInterpreterContextWithoutRunner(InterpreterOutput output) {
+    AngularObjectRegistry registry = null;
+    ResourcePool resourcePool = null;
+
+    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
+      registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
+    }
+
+    List<InterpreterContextRunner> runners = new LinkedList<>();
+
+    final Paragraph self = this;
+
+    Credentials credentials = note.getCredentials();
+    if (authenticationInfo != null) {
+      UserCredentials userCredentials =
+              credentials.getUserCredentials(authenticationInfo.getUser());
+      authenticationInfo.setUserCredentials(userCredentials);
+    }
+
+    InterpreterContext interpreterContext =
+            new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
+            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
+            resourcePool, runners, output);
+    return interpreterContext;
   }
 
   private InterpreterContext getInterpreterContext(InterpreterOutput output) {

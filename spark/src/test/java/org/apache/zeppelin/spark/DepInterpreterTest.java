@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -31,28 +31,27 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class DepInterpreterTest {
+
+  @Rule
+  public TemporaryFolder tmpDir = new TemporaryFolder();
+
   private DepInterpreter dep;
   private InterpreterContext context;
-  private File tmpDir;
-  private SparkInterpreter repl;
 
-  private Properties getTestProperties() {
+  private Properties getTestProperties() throws IOException {
     Properties p = new Properties();
-    p.setProperty("zeppelin.dep.localrepo", "local-repo");
+    p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
     p.setProperty("zeppelin.dep.additionalRemoteRepository", "spark-packages,http://dl.bintray.com/spark-packages/maven,false;");
     return p;
   }
 
   @Before
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
-    System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
-
-    tmpDir.mkdirs();
-
     Properties p = getTestProperties();
 
     dep = new DepInterpreter(p);
@@ -74,20 +73,6 @@ public class DepInterpreterTest {
   @After
   public void tearDown() throws Exception {
     dep.close();
-    delete(tmpDir);
-  }
-
-  private void delete(File file) {
-    if (file.isFile()) file.delete();
-    else if (file.isDirectory()) {
-      File[] files = file.listFiles();
-      if (files != null && files.length > 0) {
-        for (File f : files) {
-          delete(f);
-        }
-      }
-      file.delete();
-    }
   }
 
   @Test

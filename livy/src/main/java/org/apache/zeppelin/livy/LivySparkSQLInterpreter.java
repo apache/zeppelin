@@ -51,7 +51,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {
-      InterpreterResult result = sparkInterpreter.interpret("spark", false, false);
+      InterpreterResult result = sparkInterpreter.interpret("spark", null, false, false);
       if (result.code() == InterpreterResult.Code.SUCCESS &&
           result.message().get(0).getData().contains("org.apache.spark.sql.SparkSession")) {
         LOGGER.info("SparkSession is detected so we are using spark 2.x for session {}",
@@ -59,7 +59,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
         isSpark2 = true;
       } else {
         // spark 1.x
-        result = sparkInterpreter.interpret("sqlContext", false, false);
+        result = sparkInterpreter.interpret("sqlContext", null, false, false);
         if (result.code() == InterpreterResult.Code.SUCCESS) {
           LOGGER.info("sqlContext is detected.");
         } else if (result.code() == InterpreterResult.Code.ERROR) {
@@ -68,7 +68,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
           LOGGER.info("sqlContext is not detected, try to create SQLContext by ourselves");
           result = sparkInterpreter.interpret(
               "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-                  + "import sqlContext.implicits._", false, false);
+                  + "import sqlContext.implicits._", null, false, false);
           if (result.code() == InterpreterResult.Code.ERROR) {
             throw new LivyException("Fail to create SQLContext," +
                 result.message().get(0).getData());
@@ -113,7 +113,8 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       } else {
         sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
       }
-      InterpreterResult result = sparkInterpreter.interpret(sqlQuery, this.displayAppInfo, true);
+      InterpreterResult result = sparkInterpreter.interpret(sqlQuery, context.getParagraphId(),
+          this.displayAppInfo, true);
 
       if (result.code() == InterpreterResult.Code.SUCCESS) {
         InterpreterResult result2 = new InterpreterResult(InterpreterResult.Code.SUCCESS);

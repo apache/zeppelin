@@ -14,13 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-{
-  "type" : "APPLICATION",
-  "name" : "zeppelin.clock",
-  "description" : "Clock (example)",
-  "artifact" : "zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.8.0-SNAPSHOT.jar",
-  "className" : "org.apache.zeppelin.example.app.clock.Clock",
-  "resources" : [[":java.util.Date"]],
-  "license" : "Apache-2.0",
-  "icon" : '<i class="fa fa-clock-o"></i>'
+
+package org.apache.zeppelin.livy;
+
+/**
+ * APINotFoundException happens because we may introduce new apis in new livy version.
+ */
+public class APINotFoundException extends LivyException {
+  public APINotFoundException() {
+  }
+
+  public APINotFoundException(String message) {
+    super(message);
+  }
+
+  public APINotFoundException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public APINotFoundException(Throwable cause) {
+    super(cause);
+  }
+
+  public APINotFoundException(String message, Throwable cause, boolean enableSuppression,
+                              boolean writableStackTrace) {
+    super(message, cause, enableSuppression, writableStackTrace);
+  }
 }
