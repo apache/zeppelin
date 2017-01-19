@@ -32,7 +32,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
 import org.apache.zeppelin.elasticsearch.action.HitWrapper;
@@ -56,8 +56,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.wnameless.json.flattener.JsonFlattener;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 
 /**
@@ -99,7 +97,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_BASIC_AUTH_USERNAME = "elasticsearch.basicauth.username";
   public static final String ELASTICSEARCH_BASIC_AUTH_PASSWORD = "elasticsearch.basicauth.password";
 
-  private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private ElasticsearchClient elsClient;
   private int resultSize = 10;
 
@@ -200,13 +197,13 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     try {
       if ("get".equalsIgnoreCase(method)) {
-        return processGet(urlItems);
+        return processGet(urlItems, interpreterContext);
       }
       else if ("count".equalsIgnoreCase(method)) {
-        return processCount(urlItems, data);
+        return processCount(urlItems, data, interpreterContext);
       }
       else if ("search".equalsIgnoreCase(method)) {
-        return processSearch(urlItems, data, currentResultSize);
+        return processSearch(urlItems, data, currentResultSize, interpreterContext);
       }
       else if ("index".equalsIgnoreCase(method)) {
         return processIndex(urlItems, data);
@@ -249,6 +246,31 @@ public class ElasticsearchInterpreter extends Interpreter {
     return suggestions;
   }
 
+  private void addAngularObject(InterpreterContext interpreterContext, String prefix, Object obj) {
+    interpreterContext.getAngularObjectRegistry().add(
+        prefix + "_" + interpreterContext.getParagraphId().replace("-", "_"),
+        obj, null, null);
+  }
+
+  private String[] getIndexTypeId(String[] urlItems) {
+
+    if (urlItems.length < 3) {
+      return null;
+    }
+
+    final String index = urlItems[0];
+    final String type = urlItems[1];
+    final String id = String.join("/", Arrays.copyOfRange(urlItems, 2, urlItems.length));
+
+    if (StringUtils.isEmpty(index)
+        || StringUtils.isEmpty(type)
+        || StringUtils.isEmpty(id)) {
+      return null;
+    }
+
+    return new String[] { index, type, id };
+  }
+
   private InterpreterResult processHelp(InterpreterResult.Code code, String additionalMessage) {
     final StringBuffer buffer = new StringBuffer();
 
@@ -265,22 +287,24 @@ public class ElasticsearchInterpreter extends Interpreter {
    * Processes a "get" request.
    *
    * @param urlItems Items of the URL
+   * @param interpreterContext Instance of the context
    * @return Result of the get request, it contains a JSON-formatted string
    */
-  private InterpreterResult processGet(String[] urlItems) {
+  private InterpreterResult processGet(String[] urlItems, InterpreterContext interpreterContext) {
 
-    if (urlItems.length != 3
-        || StringUtils.isEmpty(urlItems[0])
-        || StringUtils.isEmpty(urlItems[1])
-        || StringUtils.isEmpty(urlItems[2])) {
+    final String[] indexTypeId = getIndexTypeId(urlItems);
+
+    if (indexTypeId == null) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index/type/id)");
     }
 
-    final ActionResponse response = elsClient.get(urlItems[0], urlItems[1], urlItems[2]);
+    final ActionResponse response = elsClient.get(indexTypeId[0], indexTypeId[1], indexTypeId[2]);
 
     if (response.isSucceeded()) {
-      final String json = gson.toJson(response.getHit().getSourceAsString());
+      final String json = response.getHit().getSourceAsString();
+
+      addAngularObject(interpreterContext, "get", json);
 
       return new InterpreterResult(
           InterpreterResult.Code.SUCCESS,
@@ -296,9 +320,11 @@ public class ElasticsearchInterpreter extends Interpreter {
    *
    * @param urlItems Items of the URL
    * @param data May contains the JSON of the request
+   * @param interpreterContext Instance of the context
    * @return Result of the count request, it contains the total hits
    */
-  private InterpreterResult processCount(String[] urlItems, String data) {
+  private InterpreterResult processCount(String[] urlItems, String data,
+      InterpreterContext interpreterContext) {
 
     if (urlItems.length > 2) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -306,6 +332,8 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     final ActionResponse response = searchData(urlItems, data, 0);
+
+    addAngularObject(interpreterContext, "count", response.getTotalHits());
 
     return new InterpreterResult(
         InterpreterResult.Code.SUCCESS,
@@ -319,9 +347,11 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @param urlItems Items of the URL
    * @param data May contains the JSON of the request
    * @param size Limit of result set
+   * @param interpreterContext Instance of the context
    * @return Result of the search request, it contains a tab-formatted string of the matching hits
    */
-  private InterpreterResult processSearch(String[] urlItems, String data, int size) {
+  private InterpreterResult processSearch(String[] urlItems, String data, int size,
+      InterpreterContext interpreterContext) {
 
     if (urlItems.length > 2) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -329,6 +359,10 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     final ActionResponse response = searchData(urlItems, data, size);
+
+    addAngularObject(interpreterContext, "search",
+        (response.getAggregations() != null && response.getAggregations().size() > 0) ?
+            response.getAggregations() : response.getHits());
 
     return buildResponseMessage(response);
   }
@@ -364,15 +398,15 @@ public class ElasticsearchInterpreter extends Interpreter {
    */
   private InterpreterResult processDelete(String[] urlItems) {
 
-    if (urlItems.length != 3
-        || StringUtils.isEmpty(urlItems[0])
-        || StringUtils.isEmpty(urlItems[1])
-        || StringUtils.isEmpty(urlItems[2])) {
+    final String[] indexTypeId = getIndexTypeId(urlItems);
+
+    if (indexTypeId == null) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index/type/id)");
     }
 
-    final ActionResponse response = elsClient.delete(urlItems[0], urlItems[1], urlItems[2]);
+    final ActionResponse response =
+        elsClient.delete(indexTypeId[0], indexTypeId[1], indexTypeId[2]);
 
     if (response.isSucceeded()) {
       return new InterpreterResult(

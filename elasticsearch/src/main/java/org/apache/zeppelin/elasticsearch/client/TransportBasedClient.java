@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
@@ -58,7 +58,7 @@ import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 
 /**
  * Elasticsearch client using the transport protocol.
@@ -152,7 +152,7 @@ public class TransportBasedClient implements ElasticsearchClient {
         final Map source = gson.fromJson(query, Map.class);
         reqBuilder.setExtraSource(source);
       }
-      catch (final JsonParseException e) {
+      catch (final JsonSyntaxException e) {
         // This is not a JSON (or maybe not well formatted...)
         reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
       }

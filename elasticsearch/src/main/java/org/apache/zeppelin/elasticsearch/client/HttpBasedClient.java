@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.elasticsearch.client;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -83,7 +85,11 @@ public class HttpBasedClient implements ElasticsearchClient {
   }
 
   private String getFieldAsString(HttpResponse<JsonNode> response, String field) {
-    return response.getBody().getObject().get(field).toString();
+    return getFieldAsString(response.getBody(), field);
+  }
+
+  private String getFieldAsString(JsonNode json, String field) {
+    return json.getObject().get(field).toString();
   }
 
   private long getFieldAsLong(HttpResponse<JsonNode> response, String field) {
@@ -92,47 +98,94 @@ public class HttpBasedClient implements ElasticsearchClient {
     return obj.getLong(fields[fields.length - 1]);
   }
 
-  private String getUrl(String index, String type, String id) {
-    final StringBuilder buffer = new StringBuilder();
-    buffer.append("http://").append(host).append(":").append(port).append("/");
-    if (StringUtils.isNotEmpty(index)) {
-      buffer.append(index);
+  private String getUrl(String index, String type, String id, boolean useSearch) {
+    try {
+      final StringBuilder buffer = new StringBuilder();
+      buffer.append("http://").append(host).append(":").append(port).append("/");
+      if (StringUtils.isNotEmpty(index)) {
+        buffer.append(index);
 
-      if (StringUtils.isNotEmpty(type)) {
-        buffer.append("/").append(type);
+        if (StringUtils.isNotEmpty(type)) {
+          buffer.append("/").append(type);
 
-        if (StringUtils.isNotEmpty(id)) {
-          buffer.append("/").append(id);
+          if (StringUtils.isNotEmpty(id)) {
+            if (useSearch) {
+              final String encodedId = URLEncoder.encode(id, "UTF-8");
+              if (id.equals(encodedId)) {
+                // No difference, use directly the id
+                buffer.append("/").append(id);
+              }
+              else {
+                // There are differences: to avoid problems with some special characters
+                // such as / and # in id, use a "terms" query
+                buffer.append("/_search?source=")
+                  .append(URLEncoder
+                      .encode("{\"query\":{\"terms\":{\"_id\":[\"" + id + "\"]}}}", "UTF-8"));
+              }
+            }
+            else {
+              buffer.append("/").append(id);
+            }
+          }
         }
       }
+      return buffer.toString();
     }
-    return buffer.toString();
+    catch (final UnsupportedEncodingException e) {
+      throw new ActionException(e);
+    }
   }
 
   private String getUrl(String[] indices, String[] types) {
     final String inds = indices == null ? null : Joiner.on(",").join(indices);
     final String typs = types == null ? null : Joiner.on(",").join(types);
-    return getUrl(inds, typs, null);
+    return getUrl(inds, typs, null, false);
   }
 
   @Override
   public ActionResponse get(String index, String type, String id) {
     ActionResponse response = null;
     try {
-      final HttpRequest request = Unirest.get(getUrl(index, type, id));
+      final HttpRequest request = Unirest.get(getUrl(index, type, id, true));
       if (StringUtils.isNotEmpty(username)) {
         request.basicAuth(username, password);
       }
 
-      final HttpResponse<JsonNode> result = request.asJson();
+      final HttpResponse<String> result = request.asString();
+      final boolean isSucceeded = isSucceeded(result);
 
-      response = new ActionResponse()
-          .succeeded(isSucceeded(result))
-          .hit(new HitWrapper(
-              getFieldAsString(result, "_index"),
-              getFieldAsString(result, "_type"),
-              getFieldAsString(result, "_id"),
-              getFieldAsString(result, "_source")));
+      if (isSucceeded) {
+        final JsonNode body = new JsonNode(result.getBody());
+        if (body.getObject().has("_index")) {
+          response = new ActionResponse()
+              .succeeded(true)
+              .hit(new HitWrapper(
+                  getFieldAsString(body, "_index"),
+                  getFieldAsString(body, "_type"),
+                  getFieldAsString(body, "_id"),
+                  getFieldAsString(body, "_source")));
+        }
+        else {
+          final JSONArray hits = getFieldAsArray(body.getObject(), "hits/hits");
+          final JSONObject hit = (JSONObject) hits.iterator().next();
+          response = new ActionResponse()
+              .succeeded(true)
+              .hit(new HitWrapper(
+                  hit.getString("_index"),
+                  hit.getString("_type"),
+                  hit.getString("_id"),
+                  hit.opt("_source").toString()));
+        }
+      }
+      else {
+        if (result.getStatus() == 404) {
+          response = new ActionResponse()
+              .succeeded(false);
+        }
+        else {
+          throw new ActionException(result.getBody());
+        }
+      }
     }
     catch (final UnirestException e) {
       throw new ActionException(e);
@@ -144,20 +197,27 @@ public class HttpBasedClient implements ElasticsearchClient {
   public ActionResponse delete(String index, String type, String id) {
     ActionResponse response = null;
     try {
-      final HttpRequest request = Unirest.delete(getUrl(index, type, id));
+      final HttpRequest request = Unirest.delete(getUrl(index, type, id, true));
       if (StringUtils.isNotEmpty(username)) {
         request.basicAuth(username, password);
       }
 
-      final HttpResponse<JsonNode> result = request.asJson();
+      final HttpResponse<String> result = request.asString();
+      final boolean isSucceeded = isSucceeded(result);
 
-      response = new ActionResponse()
-          .hit(new HitWrapper(
-              getFieldAsString(result, "_index"),
-              getFieldAsString(result, "_type"),
-              getFieldAsString(result, "_id"),
-              null))
-          .succeeded(isSucceeded(result));
+      if (isSucceeded) {
+        final JsonNode body = new JsonNode(result.getBody());
+        response = new ActionResponse()
+            .succeeded(true)
+            .hit(new HitWrapper(
+                getFieldAsString(body, "_index"),
+                getFieldAsString(body, "_type"),
+                getFieldAsString(body, "_id"),
+                null));
+      }
+      else {
+        throw new ActionException(result.getBody());
+      }
     }
     catch (final UnirestException e) {
       throw new ActionException(e);
@@ -171,10 +231,10 @@ public class HttpBasedClient implements ElasticsearchClient {
     try {
       HttpRequestWithBody request = null;
       if (StringUtils.isEmpty(id)) {
-        request = Unirest.post(getUrl(index, type, id));
+        request = Unirest.post(getUrl(index, type, id, false));
       }
       else {
-        request = Unirest.put(getUrl(index, type, id));
+        request = Unirest.put(getUrl(index, type, id, false));
       }
       request
           .header("Accept", "application/json")
@@ -185,14 +245,20 @@ public class HttpBasedClient implements ElasticsearchClient {
       }
 
       final HttpResponse<JsonNode> result = request.asJson();
+      final boolean isSucceeded = isSucceeded(result);
 
-      response = new ActionResponse()
-          .hit(new HitWrapper(
-              getFieldAsString(result, "_index"),
-              getFieldAsString(result, "_type"),
-              getFieldAsString(result, "_id"),
-              null))
-          .succeeded(isSucceeded(result));
+      if (isSucceeded) {
+        response = new ActionResponse()
+            .succeeded(true)
+            .hit(new HitWrapper(
+                getFieldAsString(result, "_index"),
+                getFieldAsString(result, "_type"),
+                getFieldAsString(result, "_id"),
+                null));
+      }
+      else {
+        throw new ActionException(result.getBody().toString());
+      }
     }
     catch (final UnirestException e) {
       throw new ActionException(e);
@@ -217,7 +283,6 @@ public class HttpBasedClient implements ElasticsearchClient {
     }
 
     try {
-
       final HttpRequestWithBody request = Unirest
           .post(getUrl(indices, types) + "/_search?size=" + size)
           .header("Content-Type", "application/json");
