@@ -44,5 +44,5 @@ if [[ -n "$PYTHON" ]] ; then
   conda update -q conda
   conda info -a
   conda config --add channels conda-forge
-  conda install -q matplotlib=1.5.3 pandasql
+  conda install -q matplotlib pandasql
 fi
