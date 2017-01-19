@@ -94,9 +94,9 @@ function publish_to_maven() {
 
   # build with scala-2.10
   echo "mvn clean install -DskipTests \
-    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 \
+    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -DskipTests -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 \
+  mvn clean install -DskipTests -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.10 failed."
