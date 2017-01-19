@@ -56,6 +56,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.wnameless.json.flattener.JsonFlattener;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 
 /**
@@ -97,6 +100,7 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_BASIC_AUTH_USERNAME = "elasticsearch.basicauth.username";
   public static final String ELASTICSEARCH_BASIC_AUTH_PASSWORD = "elasticsearch.basicauth.password";
 
+  private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private ElasticsearchClient elsClient;
   private int resultSize = 10;
 
@@ -260,7 +264,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     final String index = urlItems[0];
     final String type = urlItems[1];
-    final String id = String.join("/", Arrays.copyOfRange(urlItems, 2, urlItems.length));
+    final String id = StringUtils.join(Arrays.copyOfRange(urlItems, 2, urlItems.length), '/');
 
     if (StringUtils.isEmpty(index)
         || StringUtils.isEmpty(type)
@@ -302,14 +306,15 @@ public class ElasticsearchInterpreter extends Interpreter {
     final ActionResponse response = elsClient.get(indexTypeId[0], indexTypeId[1], indexTypeId[2]);
 
     if (response.isSucceeded()) {
-      final String json = response.getHit().getSourceAsString();
+      final JsonObject json = response.getHit().getSourceAsJsonObject();
+      final String jsonStr = gson.toJson(json);
 
       addAngularObject(interpreterContext, "get", json);
 
       return new InterpreterResult(
           InterpreterResult.Code.SUCCESS,
           InterpreterResult.Type.TEXT,
-          json);
+          jsonStr);
     }
 
     return new InterpreterResult(InterpreterResult.Code.ERROR, "Document not found");

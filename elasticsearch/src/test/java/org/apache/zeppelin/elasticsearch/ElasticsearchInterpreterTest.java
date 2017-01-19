@@ -126,6 +126,10 @@ public class ElasticsearchInterpreterTest {
         .get();
     }
 
+    try {
+      Thread.sleep(3600000);
+    } catch (final Exception e) {}
+
     final Properties props = new Properties();
     props.put(ElasticsearchInterpreter.ELASTICSEARCH_HOST, ELS_HOST);
     props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
