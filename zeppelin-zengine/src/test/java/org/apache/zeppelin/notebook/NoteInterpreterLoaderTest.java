@@ -122,6 +122,11 @@ public class NoteInterpreterLoaderTest {
     assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
     assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
+    // invalid close
+    factory.closeNote("user", "note");
+    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
+    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
+
     // when
     factory.closeNote("user", "noteA");
     factory.closeNote("user", "noteB");
@@ -189,6 +194,24 @@ public class NoteInterpreterLoaderTest {
     factory.closeNote("user", "FitstNote");
 
     assertFalse(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    //reopen
+    firstNoteIntp.open();
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    // invalid check
+    factory.closeNote("invalid", "Note");
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    // invalid contains value check
+    factory.closeNote("u", "Note");
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
     assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
   }
 

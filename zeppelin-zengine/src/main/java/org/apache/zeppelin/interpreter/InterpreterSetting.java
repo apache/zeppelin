@@ -145,16 +145,31 @@ public class InterpreterSetting {
     return key;
   }
 
-  private boolean isEqualInterpreterKey(String refKey, String compareKey) {
-    List<String> refKeyList = Arrays.asList(refKey.split(":"));
-    List<String> compareTextList = Arrays.asList(compareKey.split(":"));
+  private boolean isEqualInterpreterKeyProcessKey(String refKey, String processKey) {
+    InterpreterOption option = getOption();
+    int validCount = 0;
+    if (getOption().isProcess()
+        && !(option.perUserIsolated() == true && option.perNoteIsolated() == true)) {
 
-    for (String value : compareTextList) {
-      if (refKeyList.contains(value)) {
-        return true;
+      List<String> processList = Arrays.asList(processKey.split(":"));
+      List<String> refList = Arrays.asList(refKey.split(":"));
+
+      if (refList.size() <= 1 || processList.size() <= 1) {
+        return refKey.equals(processKey);
       }
+
+      if (processList.get(0).equals("") || processList.get(0).equals(refList.get(0))) {
+        validCount = validCount + 1;
+      }
+
+      if (processList.get(1).equals("") || processList.get(1).equals(refList.get(1))) {
+        validCount = validCount + 1;
+      }
+
+      return (validCount >= 2);
+    } else {
+      return refKey.equals(processKey);
     }
-    return false;
   }
 
   private String getInterpreterSessionKey(String user, String noteId) {
@@ -208,12 +223,10 @@ public class InterpreterSetting {
 
   void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
     String processKey = getInterpreterProcessKey("", noteId);
-    logger.info("clover intpKey - in");
     List<InterpreterGroup> closeToGroupList = new LinkedList<>();
     InterpreterGroup groupKey;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      logger.info("clover intpKey {} - {}", intpKey, processKey);
-      if (isEqualInterpreterKey(intpKey, processKey)) {
+      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
         groupKey = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
@@ -235,7 +248,7 @@ public class InterpreterSetting {
     List<InterpreterGroup> groupToRemove = new LinkedList<>();
     InterpreterGroup groupItem;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKey(intpKey, processKey)) {
+      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
         groupItem = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
@@ -261,7 +274,7 @@ public class InterpreterSetting {
     List<InterpreterGroup> groupToRemove = new LinkedList<>();
     InterpreterGroup groupItem;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKey(intpKey, key)) {
+      if (isEqualInterpreterKeyProcessKey(intpKey, key)) {
         interpreterGroupWriteLock.lock();
         groupItem = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
