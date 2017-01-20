@@ -56,6 +56,18 @@ function build_docker_image() {
   docker build -t ${DOCKER_USERNAME}/zeppelin-release:"${RELEASE_VERSION}" .
 }
 
+function build_docker_base() {
+  # build base image
+  docker build -t ${DOCKER_USERNAME}/zeppelin-base:latest "${BASEDIR}/../scripts/docker/zeppelin-base"
+}
+function build_docker_image() {
+  # build release image
+  echo "FROM ${DOCKER_USERNAME}/zeppelin-base:latest
+  RUN mkdir /usr/local/zeppelin/
+  ADD zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME} /usr/local/zeppelin/" > "Dockerfile"
+  docker build -t ${DOCKER_USERNAME}/zeppelin-release:"${RELEASE_VERSION}" .
+}
+
 function make_source_package() {
   # create source package
   cd ${WORKING_DIR}
