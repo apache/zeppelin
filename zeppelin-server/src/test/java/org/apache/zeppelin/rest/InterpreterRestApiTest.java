@@ -121,7 +121,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
-    assertThat("test create method:", post, isCreated());
+    assertThat("test create method:", post, isAllowed());
     post.releaseConnection();
 
     // when: call read setting API
@@ -168,7 +168,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
         "    }]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
     PostMethod post = httpPost("/interpreter/setting", reqBody1);
-    assertThat("test create method:", post, isCreated());
+    assertThat("test create method:", post, isAllowed());
     post.releaseConnection();
 
     String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
@@ -179,7 +179,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
         "    }]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
     post = httpPost("/interpreter/setting", reqBody2);
-    assertThat("test create method:", post, isCreated());
+    assertThat("test create method:", post, isAllowed());
     post.releaseConnection();
 
     // 1. Call settings API
@@ -242,7 +242,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // when: create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
-    note.addParagraph();
+    note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
     config.put("enabled", true);
@@ -269,7 +269,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
 
     // when: run markdown paragraph, again
-    p = note.addParagraph();
+    p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p.setConfig(config);
     p.setText("%md markdown restarted");
     p.setAuthenticationInfo(anonymous);
@@ -287,7 +287,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     // when: create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
-    note.addParagraph();
+    note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
     config.put("enabled", true);
@@ -349,7 +349,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
         "\",\"url\":\"https://repo1.maven.org/maven2\",\"snapshot\":\"false\"}";
 
     PostMethod post = httpPost("/interpreter/repository/", jsonRequest);
-    assertThat("Test create method:", post, isCreated());
+    assertThat("Test create method:", post, isAllowed());
     post.releaseConnection();
 
     // Call delete repository API

@@ -46,6 +46,13 @@ public class Message {
     NEW_NOTE,         // [c-s] create new notebook
     DEL_NOTE,         // [c-s] delete notebook
                       // @param id note id
+    REMOVE_FOLDER,
+    MOVE_NOTE_TO_TRASH,
+    MOVE_FOLDER_TO_TRASH,
+    RESTORE_FOLDER,
+    RESTORE_NOTE,
+    RESTORE_ALL,
+    EMPTY_TRASH,
     CLONE_NOTE,       // [c-s] clone new notebook
                       // @param id id of note to clone
                       // @param name name for the cloned note
@@ -54,6 +61,9 @@ public class Message {
     NOTE_UPDATE,
 
     NOTE_RENAME,
+
+    UPDATE_PERSONALIZED_MODE, // [c-s] update personalized mode (boolean)
+                              // @param note id and boolean personalized mode value
 
     FOLDER_RENAME,
 
@@ -161,7 +171,8 @@ public class Message {
     PARAGRAPH_ADDED,              // [s-c] paragraph is added
     PARAGRAPH_REMOVED,            // [s-c] paragraph deleted
     PARAGRAPH_MOVED,              // [s-c] paragraph moved
-    NOTE_UPDATED                  // [s-c] paragraph updated(name, config)
+    NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
+    RUN_ALL_PARAGRAPHS            // [c-s] run all paragraphs
   }
 
   public static final Message EMPTY = new Message(null);

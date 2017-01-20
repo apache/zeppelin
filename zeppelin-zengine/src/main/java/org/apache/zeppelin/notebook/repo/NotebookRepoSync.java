@@ -51,7 +51,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final String delDstKey = "delDstNoteIds";
 
   private static ZeppelinConfiguration config;
-  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
+  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
@@ -92,6 +92,14 @@ public class NotebookRepoSync implements NotebookRepo {
     if (getRepoCount() == 0) {
       LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
+    }
+    // sync for anonymous mode on start
+    if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
+      try {
+        sync(AuthenticationInfo.ANONYMOUS);
+      } catch (IOException e) {
+        LOG.error("Couldn't sync on start ", e);
+      }
     }
   }
 
@@ -322,8 +330,7 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private Map<String, List<String>> notesCheckDiff(List<NoteInfo> sourceNotes,
       NotebookRepo sourceRepo, List<NoteInfo> destNotes, NotebookRepo destRepo,
-      AuthenticationInfo subject)
-      throws IOException {
+      AuthenticationInfo subject) {
     List <String> pushIDs = new ArrayList<>();
     List <String> pullIDs = new ArrayList<>();
     List <String> delDstIDs = new ArrayList<>();
@@ -333,9 +340,14 @@ public class NotebookRepoSync implements NotebookRepo {
     for (NoteInfo snote : sourceNotes) {
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
-        /* note exists in source and destination storage systems */
-        sdate = lastModificationDate(sourceRepo.get(snote.getId(), subject));
-        ddate = lastModificationDate(destRepo.get(dnote.getId(), subject));
+        try {
+          /* note exists in source and destination storage systems */
+          sdate = lastModificationDate(sourceRepo.get(snote.getId(), subject));
+          ddate = lastModificationDate(destRepo.get(dnote.getId(), subject));
+        } catch (IOException e) {
+          LOG.error("Cannot access previously listed note {} from storage ", dnote.getId(), e);
+          continue;
+        }
 
         if (sdate.compareTo(ddate) != 0) {
           if (sdate.after(ddate) || oneWaySync) {

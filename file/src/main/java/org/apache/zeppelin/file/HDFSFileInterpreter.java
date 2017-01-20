@@ -23,9 +23,7 @@ import java.util.*;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
@@ -75,19 +73,19 @@ public class HDFSFileInterpreter extends FileInterpreter {
     public String type;
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("\nAccessTime = " + accessTime);
-      sb.append("\nBlockSize = " + blockSize);
-      sb.append("\nChildrenNum = " + childrenNum);
-      sb.append("\nFileId = " + fileId);
-      sb.append("\nGroup = " + group);
-      sb.append("\nLength = " + length);
-      sb.append("\nModificationTime = " + modificationTime);
-      sb.append("\nOwner = " + owner);
-      sb.append("\nPathSuffix = " + pathSuffix);
-      sb.append("\nPermission = " + permission);
-      sb.append("\nReplication = " + replication);
-      sb.append("\nStoragePolicy = " + storagePolicy);
-      sb.append("\nType = " + type);
+      sb.append("\nAccessTime = ").append(accessTime);
+      sb.append("\nBlockSize = ").append(blockSize);
+      sb.append("\nChildrenNum = ").append(childrenNum);
+      sb.append("\nFileId = ").append(fileId);
+      sb.append("\nGroup = ").append(group);
+      sb.append("\nLength = ").append(length);
+      sb.append("\nModificationTime = ").append(modificationTime);
+      sb.append("\nOwner = ").append(owner);
+      sb.append("\nPathSuffix = ").append(pathSuffix);
+      sb.append("\nPermission = ").append(permission);
+      sb.append("\nReplication = ").append(replication);
+      sb.append("\nStoragePolicy = ").append(storagePolicy);
+      sb.append("\nType = ").append(type);
       return sb.toString();
     }
   }
@@ -162,7 +160,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   private String listDate(OneFileStatus fs) {
     return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(fs.modificationTime));
   }
-  private String ListOne(String path, OneFileStatus fs) {
+  private String listOne(String path, OneFileStatus fs) {
     if (args.flags.contains(new Character('l'))) {
       StringBuilder sb = new StringBuilder();
       sb.append(listPermission(fs) + "\t");
@@ -194,7 +192,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       String str = cmd.runCommand(cmd.getFileStatus, filePath, null);
       SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
       if (sfs != null) {
-        return ListOne(filePath, sfs.FileStatus);
+        return listOne(filePath, sfs.FileStatus);
       }
     } catch (Exception e) {
       logger.error("listFile: " + filePath, e);
@@ -218,7 +216,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
                   allFiles.FileStatuses.FileStatus != null)
           {
             for (OneFileStatus fs : allFiles.FileStatuses.FileStatus)
-              all = all + ListOne(path, fs) + '\n';
+              all = all + listOne(path, fs) + '\n';
           }
         }
         return all;

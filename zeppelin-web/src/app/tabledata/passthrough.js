@@ -12,22 +12,20 @@
  * limitations under the License.
  */
 
-'use strict';
-
-var zeppelin = zeppelin || {};
+import Transformation from './transformation';
 
 /**
  * passthough the data
  */
-zeppelin.PassthroughTransformation = function(config) {
-  zeppelin.Transformation.call(this, config);
-};
+export default class PassthroughTransformation extends Transformation {
+  constructor(config) {
+    super(config);
+  };
 
-zeppelin.PassthroughTransformation.prototype = Object.create(zeppelin.Transformation.prototype);
-
-/**
- * Method will be invoked when tableData or config changes
- */
-zeppelin.PassthroughTransformation.prototype.transform = function(tableData) {
-  return tableData;
-};
+  /**
+   * Method will be invoked when tableData or config changes
+   */
+  transform(tableData) {
+    return tableData;
+  };
+}

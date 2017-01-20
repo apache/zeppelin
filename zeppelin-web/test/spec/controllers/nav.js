@@ -1,7 +1,6 @@
-'use strict';
 describe('Controller: NavCtrl', function() {
   // load the controller's module
-  beforeEach(module('zeppelinWebApp'));
+  beforeEach(angular.mock.module('zeppelinWebApp'));
   var NavCtrl;
   var scope;
   // Initialize the controller and a mock scope

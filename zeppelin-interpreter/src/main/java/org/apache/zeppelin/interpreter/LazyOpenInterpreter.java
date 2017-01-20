@@ -31,7 +31,7 @@ public class LazyOpenInterpreter
     extends Interpreter
     implements WrappedInterpreter {
   private Interpreter intp;
-  boolean opened = false;
+  volatile boolean opened = false;
 
   public LazyOpenInterpreter(Interpreter intp) {
     super(new Properties());
@@ -59,7 +59,7 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public void open() {
+  public synchronized void open() {
     if (opened == true) {
       return;
     }
@@ -107,8 +107,11 @@ public class LazyOpenInterpreter
 
   @Override
   public int getProgress(InterpreterContext context) {
-    open();
-    return intp.getProgress(context);
+    if (opened) {
+      return intp.getProgress(context);
+    } else {
+      return 0;
+    }
   }
 
   @Override

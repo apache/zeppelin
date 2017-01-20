@@ -11,40 +11,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
-(function() {
 
-  angular.module('zeppelinWebApp').controller('RenameCtrl', RenameCtrl);
+angular.module('zeppelinWebApp').controller('RenameCtrl', RenameCtrl);
 
-  RenameCtrl.$inject = ['$scope'];
+RenameCtrl.$inject = ['$scope'];
 
-  function RenameCtrl($scope) {
-    var self = this;
+function RenameCtrl($scope) {
+  var self = this;
 
-    $scope.params = {newName: ''};
-    $scope.isValid = true;
+  $scope.params = {newName: ''};
+  $scope.isValid = true;
 
-    $scope.rename = function() {
-      angular.element('#renameModal').modal('hide');
-      self.callback($scope.params.newName);
+  $scope.rename = function() {
+    angular.element('#renameModal').modal('hide');
+    self.callback($scope.params.newName);
+  };
+
+  $scope.$on('openRenameModal', function(event, options) {
+    self.validator = options.validator || defaultValidator;
+    self.callback = options.callback || function() {};
+
+    $scope.title = options.title || 'Rename';
+    $scope.params.newName = options.oldName || '';
+    $scope.validate = function() {
+      $scope.isValid = self.validator($scope.params.newName);
     };
 
-    $scope.$on('openRenameModal', function(event, options) {
-      self.validator = options.validator || defaultValidator;
-      self.callback = options.callback || function() {};
+    angular.element('#renameModal').modal('show');
+  });
 
-      $scope.title = options.title || 'Rename';
-      $scope.params.newName = options.oldName || '';
-      $scope.validate = function() {
-        $scope.isValid = self.validator($scope.params.newName);
-      };
-
-      angular.element('#renameModal').modal('show');
-    });
-
-    function defaultValidator(str) {
-      return !!str.trim();
-    }
+  function defaultValidator(str) {
+    return !!str.trim();
   }
+}
 
-})();

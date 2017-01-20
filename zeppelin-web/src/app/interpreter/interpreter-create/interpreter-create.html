@@ -59,7 +59,7 @@ limitations under the License.
                     Per Note
                   </a>
                 </li>
-                <li ng-if="ticket.ticket !== 'anonymous' && ticket.roles !== '[]'">
+                <li ng-if="ticket.principal !== 'anonymous'">
                   <a style="cursor:pointer"
                      ng-click="setInterpreterRunningOption(setting.id, 'shared', 'scoped')">
                     Per User
@@ -126,7 +126,7 @@ limitations under the License.
               </ul>
             </span>
               process.
-            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.ticket !== 'anonymous' && ticket.roles !== '[]'">
+            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
               <span ng-if="getPerNoteOption(setting.id) === 'shared'">
                 <button type="button" class="btn btn-default btn-xs"
                         ng-click="setPerNoteOption(setting.id, 'scoped')"
@@ -143,8 +143,7 @@ limitations under the License.
           <div class="row interpreter"
                style="margin-top: 6px;"
                ng-if="getInterpreterRunningOption(setting.id) === 'Per User'
-                      && ticket.ticket !== 'anonymous'
-                      && ticket.roles !== '[]'
+                      && ticket.principal !== 'anonymous'
                       && getPerNoteOption(setting.id) !== 'shared'">
             <div class="col-md-12">
               <span>
@@ -202,7 +201,7 @@ limitations under the License.
             <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
             <label>
-              <input type="checkbox" style="width:20px" ng-model="setting.option.isUserImpersonate" />
+              <input type="checkbox" style="width:20px" ng-model="newInterpreterSetting.option.isUserImpersonate" />
                 User Impersonate
             </label>
           </span>

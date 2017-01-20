@@ -38,6 +38,7 @@ import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
  * Interpreter settings
  */
 public class InterpreterSetting {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterSetting.class);
   private static final String SHARED_PROCESS = "shared_process";
   private String id;
@@ -49,24 +50,29 @@ public class InterpreterSetting {
   /**
    * properties can be either Properties or Map<String, InterpreterProperty>
    * properties should be:
-   *  - Properties when Interpreter instances are saved to `conf/interpreter.json` file
-   *  - Map<String, InterpreterProperty> when Interpreters are registered
-   *    : this is needed after https://github.com/apache/zeppelin/pull/1145
-   *      which changed the way of getting default interpreter setting AKA interpreterSettingsRef
+   * - Properties when Interpreter instances are saved to `conf/interpreter.json` file
+   * - Map<String, InterpreterProperty> when Interpreters are registered
+   * : this is needed after https://github.com/apache/zeppelin/pull/1145
+   * which changed the way of getting default interpreter setting AKA interpreterSettingsRef
    * Note(mina): In order to simplify the implementation, I chose to change properties
-   *             from Properties to Object instead of creating new classes.
+   * from Properties to Object instead of creating new classes.
    */
   private Object properties;
   private Status status;
   private String errorReason;
 
-  @SerializedName("interpreterGroup") private List<InterpreterInfo> interpreterInfos;
+  @SerializedName("interpreterGroup")
+  private List<InterpreterInfo> interpreterInfos;
   private final transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
   private List<Dependency> dependencies;
   private InterpreterOption option;
   private transient String path;
 
-  @Deprecated private transient InterpreterGroupFactory interpreterGroupFactory;
+  @SerializedName("runner")
+  private InterpreterRunner interpreterRunner;
+
+  @Deprecated
+  private transient InterpreterGroupFactory interpreterGroupFactory;
 
   private final transient ReentrantReadWriteLock.ReadLock interpreterGroupReadLock;
   private final transient ReentrantReadWriteLock.WriteLock interpreterGroupWriteLock;
@@ -79,7 +85,7 @@ public class InterpreterSetting {
 
   public InterpreterSetting(String id, String name, String group,
       List<InterpreterInfo> interpreterInfos, Object properties, List<Dependency> dependencies,
-      InterpreterOption option, String path) {
+      InterpreterOption option, String path, InterpreterRunner runner) {
     this();
     this.id = id;
     this.name = name;
@@ -90,11 +96,14 @@ public class InterpreterSetting {
     this.option = option;
     this.path = path;
     this.status = Status.READY;
+    this.interpreterRunner = runner;
   }
 
   public InterpreterSetting(String name, String group, List<InterpreterInfo> interpreterInfos,
-      Object properties, List<Dependency> dependencies, InterpreterOption option, String path) {
-    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path);
+      Object properties, List<Dependency> dependencies, InterpreterOption option, String path,
+      InterpreterRunner runner) {
+    this(generateId(), name, group, interpreterInfos, properties, dependencies, option, path,
+        runner);
   }
 
   /**
@@ -104,7 +113,7 @@ public class InterpreterSetting {
    */
   public InterpreterSetting(InterpreterSetting o) {
     this(generateId(), o.getName(), o.getGroup(), o.getInterpreterInfos(), o.getProperties(),
-        o.getDependencies(), o.getOption(), o.getPath());
+        o.getDependencies(), o.getOption(), o.getPath(), o.getInterpreterRunner());
   }
 
   public String getId() {
@@ -132,6 +141,26 @@ public class InterpreterSetting {
 
     logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
         key, getId(), getName());
+    return key;
+  }
+
+  private String getInterpreterSessionKey(String user, String noteId) {
+    InterpreterOption option = getOption();
+    String key;
+    if (option.isExistingProcess()) {
+      key = Constants.EXISTING_PROCESS;
+    } else if (option.perNoteScoped() && option.perUserScoped()) {
+      key = user + ":" + noteId;
+    } else if (option.perUserScoped()) {
+      key = user;
+    } else if (option.perNoteScoped()) {
+      key = noteId;
+    } else {
+      key = "shared_session";
+    }
+
+    logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
+        "{}", key, noteId, user, getName());
     return key;
   }
 
@@ -164,7 +193,7 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroup(String noteId) {
+  void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
     String key = getInterpreterProcessKey("", noteId);
 
     InterpreterGroup groupToRemove = null;
@@ -181,10 +210,56 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRmoveAllInterpreterGroups() {
+  void closeAndRemoveInterpreterGroupByUser(String user) {
+    if (user.equals("anonymous")) {
+      user = "";
+    }
+    String processKey = getInterpreterProcessKey(user, "");
+    String sessionKey = getInterpreterSessionKey(user, "");
+    InterpreterGroup groupToRemove = null;
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (intpKey.contains(processKey)) {
+        interpreterGroupWriteLock.lock();
+        groupToRemove = interpreterGroupRef.remove(intpKey);
+        interpreterGroupWriteLock.unlock();
+      }
+    }
+
+    if (groupToRemove != null) {
+      groupToRemove.close(sessionKey);
+    }
+  }
+
+  void closeAndRemoveAllInterpreterGroups() {
     HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
     for (String key : groupsToRemove) {
-      closeAndRemoveInterpreterGroup(key);
+      closeAndRemoveInterpreterGroupByNoteId(key);
+    }
+  }
+
+  void shutdownAndRemoveInterpreterGroup(String interpreterGroupKey) {
+    String key = getInterpreterProcessKey("", interpreterGroupKey);
+
+    List<InterpreterGroup> groupToRemove = new LinkedList<>();
+    InterpreterGroup groupItem;
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (intpKey.contains(key)) {
+        interpreterGroupWriteLock.lock();
+        groupItem = interpreterGroupRef.remove(intpKey);
+        interpreterGroupWriteLock.unlock();
+        groupToRemove.add(groupItem);
+      }
+    }
+
+    for (InterpreterGroup groupToClose : groupToRemove) {
+      groupToClose.shutdown();
+    }
+  }
+
+  void shutdownAndRemoveAllInterpreterGroups() {
+    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
+    for (String interpreterGroupKey : groupsToRemove) {
+      shutdownAndRemoveInterpreterGroup(interpreterGroupKey);
     }
   }
 
@@ -286,5 +361,13 @@ public class InterpreterSetting {
 
   public Map<String, String> getInfos() {
     return infos;
+  }
+
+  public InterpreterRunner getInterpreterRunner() {
+    return interpreterRunner;
+  }
+
+  public void setInterpreterRunner(InterpreterRunner interpreterRunner) {
+    this.interpreterRunner = interpreterRunner;
   }
 }

@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -54,7 +56,13 @@ import org.quartz.SchedulerException;
 import org.sonatype.aether.RepositoryException;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+
 import org.mockito.Mock;
 
 public class InterpreterFactoryTest {
@@ -159,6 +167,79 @@ public class InterpreterFactoryTest {
     assertEquals("value_2", remoteInterpreter.getProperty("property_2"));
   }
 
+  /**
+   * 2 users' interpreters in scoped mode. Each user has one session. Restarting user1's interpreter
+   * won't affect user2's interpreter
+   * @throws Exception
+   */
+  @Test
+  public void testRestartInterpreterInScopedMode() throws Exception {
+    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, false);
+    List<InterpreterSetting> all = factory.get();
+    InterpreterSetting mock1Setting = null;
+    for (InterpreterSetting setting : all) {
+      if (setting.getName().equals("mock1")) {
+        mock1Setting = setting;
+        break;
+      }
+    }
+    mock1Setting.getOption().setPerUser("scoped");
+    mock1Setting.getOption().setPerNote("shared");
+    // set remote as false so that we won't create new remote interpreter process
+    mock1Setting.getOption().setRemote(false);
+    mock1Setting.getOption().setHost("localhost");
+    mock1Setting.getOption().setPort(2222);
+    InterpreterGroup interpreterGroup = mock1Setting.getInterpreterGroup("user1", "sharedProcess");
+    factory.createInterpretersForNote(mock1Setting, "user1", "sharedProcess", "user1");
+    factory.createInterpretersForNote(mock1Setting, "user2", "sharedProcess", "user2");
+
+    LazyOpenInterpreter interpreter1 = (LazyOpenInterpreter)interpreterGroup.get("user1").get(0);
+    interpreter1.open();
+    LazyOpenInterpreter interpreter2 = (LazyOpenInterpreter)interpreterGroup.get("user2").get(0);
+    interpreter2.open();
+
+    mock1Setting.closeAndRemoveInterpreterGroupByUser("user1");
+    assertFalse(interpreter1.isOpen());
+    assertTrue(interpreter2.isOpen());
+  }
+
+  /**
+   * 2 users' interpreters in isolated mode. Each user has one interpreterGroup. Restarting user1's interpreter
+   * won't affect user2's interpreter
+   * @throws Exception
+   */
+  @Test
+  public void testRestartInterpreterInIsolatedMode() throws Exception {
+    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, false);
+    List<InterpreterSetting> all = factory.get();
+    InterpreterSetting mock1Setting = null;
+    for (InterpreterSetting setting : all) {
+      if (setting.getName().equals("mock1")) {
+        mock1Setting = setting;
+        break;
+      }
+    }
+    mock1Setting.getOption().setPerUser("isolated");
+    mock1Setting.getOption().setPerNote("shared");
+    // set remote as false so that we won't create new remote interpreter process
+    mock1Setting.getOption().setRemote(false);
+    mock1Setting.getOption().setHost("localhost");
+    mock1Setting.getOption().setPort(2222);
+    InterpreterGroup interpreterGroup1 = mock1Setting.getInterpreterGroup("user1", "note1");
+    InterpreterGroup interpreterGroup2 = mock1Setting.getInterpreterGroup("user2", "note2");
+    factory.createInterpretersForNote(mock1Setting, "user1", "note1", "shared_session");
+    factory.createInterpretersForNote(mock1Setting, "user2", "note2", "shared_session");
+
+    LazyOpenInterpreter interpreter1 = (LazyOpenInterpreter)interpreterGroup1.get("shared_session").get(0);
+    interpreter1.open();
+    LazyOpenInterpreter interpreter2 = (LazyOpenInterpreter)interpreterGroup2.get("shared_session").get(0);
+    interpreter2.open();
+
+    mock1Setting.closeAndRemoveInterpreterGroupByUser("user1");
+    assertFalse(interpreter1.isOpen());
+    assertTrue(interpreter2.isOpen());
+  }
+
   @Test
   public void testFactoryDefaultList() throws IOException, RepositoryException {
     // get default settings
@@ -171,12 +252,12 @@ public class InterpreterFactoryTest {
     List<String> all = factory.getDefaultInterpreterSettingList();
     // add setting with null option & properties expected nullArgumentException.class
     try {
-      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "");
+      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "", null);
     } catch(NullArgumentException e) {
       assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
     }
     try {
-      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "");
+      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "", null);
     } catch (NullArgumentException e){
       assertEquals("Test null properties" , e.getMessage(),new NullArgumentException("properties").getMessage());
     }
@@ -236,10 +317,10 @@ public class InterpreterFactoryTest {
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>() {{
       add(info1);
-    }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1");
+    }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1", null);
     factory.add("group2", new ArrayList<InterpreterInfo>(){{
       add(info2);
-    }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path2");
+    }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path2", null);
 
     final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
     final InterpreterSetting setting2 = factory.createNewSetting("test-group2", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
@@ -259,7 +340,7 @@ public class InterpreterFactoryTest {
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     factory.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);
-    }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1");
+    }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1", null);
 
     InterpreterOption perUserInterpreterOption = new InterpreterOption(true, InterpreterOption.ISOLATED, InterpreterOption.SHARED);
     final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), perUserInterpreterOption, new Properties());
@@ -309,5 +390,52 @@ public class InterpreterFactoryTest {
     // when interpreter is not bound to note
     editor = factory.getEditorSetting("user1", note.getId(), "mock2");
     assertEquals("text", editor.get("language"));
+  }
+
+  @Test
+  public void registerCustomInterpreterRunner() throws IOException {
+    InterpreterFactory spyFactory = spy(factory);
+
+    doNothing().when(spyFactory).saveToFile();
+
+    ArrayList<InterpreterInfo> interpreterInfos1 = new ArrayList<>();
+    interpreterInfos1.add(new InterpreterInfo("name1.class", "name1", true, Maps.<String, Object>newHashMap()));
+
+    spyFactory.add("normalGroup1", interpreterInfos1, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/normalGroup1", null);
+
+    spyFactory.createNewSetting("normalGroup1", "normalGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
+
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo("name1.class", "name1", true, Maps.<String, Object>newHashMap()));
+
+    InterpreterRunner mockInterpreterRunner = mock(InterpreterRunner.class);
+
+    when(mockInterpreterRunner.getPath()).thenReturn("custom-linux-path.sh");
+
+    spyFactory.add("customGroup1", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/customGroup1", mockInterpreterRunner);
+
+    spyFactory.createNewSetting("customGroup1", "customGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
+
+    spyFactory.setInterpreters("anonymous", "noteCustome", spyFactory.getDefaultInterpreterSettingList());
+
+    spyFactory.getInterpreter("anonymous", "noteCustome", "customGroup1");
+
+    verify(mockInterpreterRunner, times(1)).getPath();
+  }
+
+  @Test
+  public void interpreterRunnerTest() {
+    InterpreterRunner mockInterpreterRunner = mock(InterpreterRunner.class);
+    String testInterpreterRunner = "relativePath.sh";
+    when(mockInterpreterRunner.getPath()).thenReturn(testInterpreterRunner); // This test only for Linux
+    Interpreter i = factory.createRemoteRepl("path1", "sessionKey", "className", new Properties(), "settingId", "userName", false, mockInterpreterRunner);
+    String interpreterRunner = ((RemoteInterpreter) ((LazyOpenInterpreter) i).getInnerInterpreter()).getInterpreterRunner();
+    assertNotEquals(interpreterRunner, testInterpreterRunner);
+
+    testInterpreterRunner = "/AbsolutePath.sh";
+    when(mockInterpreterRunner.getPath()).thenReturn(testInterpreterRunner);
+    i = factory.createRemoteRepl("path1", "sessionKey", "className", new Properties(), "settingId", "userName", false, mockInterpreterRunner);
+    interpreterRunner = ((RemoteInterpreter) ((LazyOpenInterpreter) i).getInnerInterpreter()).getInterpreterRunner();
+    assertEquals(interpreterRunner, testInterpreterRunner);
   }
 }

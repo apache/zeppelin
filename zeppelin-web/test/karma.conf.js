@@ -3,6 +3,8 @@
 // Generated on 2014-08-29 using
 // generator-karma 0.8.3
 
+var webpackConfig = require('../webpack.config');
+
 module.exports = function(config) {
   'use strict';
 
@@ -68,25 +70,12 @@ module.exports = function(config) {
       'bower_components/MathJax/MathJax.js',
       'bower_components/clipboard/dist/clipboard.js',
       'bower_components/ngclipboard/dist/ngclipboard.js',
-      'bower_components/sigma.js/build/sigma.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.plugins.animate.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.layout.noverlap.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.plugins.dragNodes.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.renderers.edgeLabels.min.js',
-      'bower_components/sigma.js/build/plugins/sigma.renderers.parallelEdges.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
-      '.tmp/app/app.js',
-      '.tmp/app/app.controller.js',
-      '.tmp/app/dataset/transformation.js',
-      '.tmp/app/dataset/dataset.js',
-      '.tmp/app/dataset/tabledata.js',
-      '.tmp/app/dataset/networkdata.js',
-      '.tmp/app/dataset/datasetfactory.js',
-      '.tmp/app/**/*.js',
-      '.tmp/components/**/*.js',
-      'test/spec/**/*.js'
+
+      'src/index.js',
+      // 'test/spec/**/*.js',
+      {pattern: 'test/spec/**/*.js', watched: false},
     ],
 
     // list of files / patterns to exclude
@@ -111,8 +100,15 @@ module.exports = function(config) {
 
     reporters: ['coverage','progress'],
 
+    webpack: webpackConfig,
+    webpackMiddleware: {
+      stats: 'errors-only'
+    },
+
     preprocessors: {
-      'src/*/{*.js,!(test)/**/*.js}': 'coverage'
+      'src/*/{*.js,!(test)/**/*.js}': 'coverage',
+      'src/index.js': ['webpack', 'sourcemap',],
+      'test/spec/**/*.js': ['webpack', 'sourcemap',],
     },
 
     coverageReporter: {
@@ -125,12 +121,14 @@ module.exports = function(config) {
     plugins: [
       'karma-phantomjs-launcher',
       'karma-jasmine',
-      'karma-coverage'
+      'karma-coverage',
+      'karma-webpack',
+      'karma-sourcemap-loader',
     ],
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false,
+    singleRun: true,
 
     colors: true,
 

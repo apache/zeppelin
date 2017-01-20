@@ -33,6 +33,7 @@ public class SleepingJob extends Job{
 	private int count;
 
 	static Logger LOGGER = LoggerFactory.getLogger(SleepingJob.class);
+	private Object results;
 
 
 	public SleepingJob(String jobName, JobListener listener, int time){
@@ -59,6 +60,16 @@ public class SleepingJob extends Job{
   public boolean jobAbort() {
 		abort = true;
 		return true;
+	}
+
+	@Override
+	public void setResult(Object results) {
+		this.results = results;
+	}
+
+	@Override
+	public Object getReturn() {
+		return results;
 	}
 
 	@Override
