@@ -20,7 +20,7 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +62,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   public BaseLivyInterprereter(Properties property) {
     super(property);
     this.livyURL = property.getProperty("zeppelin.livy.url");
+    this.displayAppInfo = Boolean.parseBoolean(
+        property.getProperty("zeppelin.livy.displayAppInfo", "false"));
     this.sessionCreationTimeout = Integer.parseInt(
-        property.getProperty("zeppelin.livy.create.session.timeout", 120 + ""));
+        property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
   }
@@ -77,7 +79,6 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     } catch (LivyException e) {
       String msg = "Fail to create session, please check livy interpreter log and " +
           "livy server log";
-      LOGGER.error(msg);
       throw new RuntimeException(msg, e);
     }
   }
@@ -102,10 +103,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
                 .get(0).getData());
       }
 
-      interpret(
-          "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-          null, false, false);
-      if (StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
+      if (sessionInfo.appInfo == null ||
+          StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
+        interpret(
+            "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
+            null, false, false);
         sessionInfo.webUIAddress = extractStatementResult(
             interpret(
                 "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false)
@@ -215,14 +217,12 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         if (sessionInfo.isFinished()) {
           String msg = "Session " + sessionInfo.id + " is finished, appId: " + sessionInfo.appId
               + ", log: " + sessionInfo.log;
-          LOGGER.error(msg);
           throw new LivyException(msg);
         }
         if ((System.currentTimeMillis() - start) / 1000 > sessionCreationTimeout) {
           String msg = "The creation of session " + sessionInfo.id + " is timeout within "
               + sessionCreationTimeout + " seconds, appId: " + sessionInfo.appId
               + ", log: " + sessionInfo.log;
-          LOGGER.error(msg);
           throw new LivyException(msg);
         }
         Thread.sleep(pullStatusInterval);
@@ -361,16 +361,14 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
       if (displayAppInfo) {
         //TODO(zjffdu), use multiple InterpreterResult to display appInfo
-        StringBuilder outputBuilder = new StringBuilder();
-        outputBuilder.append("%angular ");
-        outputBuilder.append("<pre><code>");
-        outputBuilder.append(result);
-        outputBuilder.append("</code></pre>");
-        outputBuilder.append("<hr/>");
-        outputBuilder.append("Spark Application Id:" + sessionInfo.appId + "<br/>");
-        outputBuilder.append("Spark WebUI: <a href=" + sessionInfo.webUIAddress + ">"
-            + sessionInfo.webUIAddress + "</a>");
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputBuilder.toString());
+        InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
+        interpreterResult.add(InterpreterResult.Type.TEXT, result);
+        String appInfoHtml = "<hr/>Spark Application Id: " + sessionInfo.appId + "<br/>"
+            + "Spark WebUI: <a href=\"" + sessionInfo.webUIAddress + "\">"
+            + sessionInfo.webUIAddress + "</a>";
+        LOGGER.info("appInfoHtml:" + appInfoHtml);
+        interpreterResult.add(InterpreterResult.Type.HTML, appInfoHtml);
+        return interpreterResult;
       } else {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, result);
       }

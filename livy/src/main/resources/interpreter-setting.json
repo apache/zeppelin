@@ -11,9 +11,9 @@
         "defaultValue": "http://localhost:8998",
         "description": "The URL for Livy Server."
       },
-      "zeppelin.livy.create.session.retries": {
-        "envName": "ZEPPELIN_LIVY_CREATE_SESSION_RETRIES",
-        "propertyName": "zeppelin.livy.create.session.timeout",
+      "zeppelin.livy.session.create_timeout": {
+        "envName": "ZEPPELIN_LIVY_SESSION_CREATE_TIMEOUT",
+        "propertyName": "zeppelin.livy.session.create_timeout",
         "defaultValue": "120",
         "description": "Livy Server create session timeout (seconds)."
       },
@@ -87,7 +87,7 @@
         "defaultValue": "",
         "description": "Adding extra libraries to livy interpreter"
       },
-      "livy.spark.displayAppInfo": {
+      "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
         "defaultValue": "false",
         "description": "Whether display app info"
