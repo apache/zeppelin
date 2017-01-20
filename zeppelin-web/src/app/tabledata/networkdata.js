@@ -40,6 +40,7 @@ export default class NetworkData extends TableData {
       return;
     }
 
+    this.setNodesDefaults();
     this.setEdgesDefaults();
 
     this.networkNodes = angular.equals({}, this.graph.labels || {}) ?
@@ -86,30 +87,29 @@ export default class NetworkData extends TableData {
     this.rows = rows;
   };
 
-  setNodesDefaults(config) {
-    var hasCfgPropertiesProperty = config && config.properties;
+  setNodesDefaults() {
     this.graph.nodes
       .forEach(function(node) {
-        var properties = hasCfgPropertiesProperty && node.label in config.properties ?
-            config.properties[node.label] : {selected: 'id'};
-        var selected = properties.selected;
-        node.label = (selected in node ? node[selected] : node.data[selected]) + '';
         node.x = node.x || Math.random();
         node.y = node.y || Math.random();
         node.size = node.size || 10;
-        node.weight = 1;
+        node.weight = node.weight || 1;
       });
   };
 
-  setEdgesDefaults(config) {
+  setEdgesDefaults() {
     let nodes = this.graph.nodes; 
     this.graph.edges
       .forEach(function(edge) {
         edge.type = edge.type || 'arrow';
         edge.color = edge.color || '#D3D3D3';
         edge.count = edge.count || 1;
-        edge.source = nodes.filter((node) => edge.source === node.id)[0] || null;
-        edge.target = nodes.filter((node) => edge.target === node.id)[0] || null;
+        if (typeof +edge.source === 'number') {
+          edge.source = nodes.filter((node) => edge.source === node.id)[0] || null;
+        }
+        if (typeof +edge.target === 'number') {
+          edge.target = nodes.filter((node) => edge.target === node.id)[0] || null;
+        }
       });
   };
 

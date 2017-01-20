@@ -41,6 +41,7 @@ export default class NetworkVisualization extends Visualization {
     this.targetEl.addClass('network');
     this.containerId = this.targetEl.prop('id');
     this.force = null;
+    this.svg = null;
     this.$timeout = angular.injector(['ng']).get('$timeout');
     this.$interpolate = angular.injector(['ng']).get('$interpolate');
     this.transformation = new NetworkTransformation(config);
@@ -56,19 +57,22 @@ export default class NetworkVisualization extends Visualization {
       return;
     }
     console.log('Render Graph Visualization');
-    if (this.config && angular.equals({}, this.config.properties)) {
-      this.transformation.config.properties = networkData.getNetworkProperties();
+    
+    let transformationConfig = this.transformation.getSetting().scope.config;
+    console.log('cfg', transformationConfig);
+    if (transformationConfig && angular.equals({}, transformationConfig.properties)) {
+    	transformationConfig.properties = networkData.getNetworkProperties();
     }
-    networkData.setNodesDefaults(this.config);
 
     this.targetEl.empty().append('<svg></svg>');
     
-    var width = this.targetEl.width();
-    var height = this.targetEl.height();
-    var self = this;
+    let width = this.targetEl.width();
+    let height = this.targetEl.height();
+    let self = this;
+    let defaultOpacity = 0;
     
-    var arcPath = (leftHand, d) => {
-        var start = leftHand ? d.source : d.target,
+    let arcPath = (leftHand, d) => {
+        let start = leftHand ? d.source : d.target,
           end = leftHand ? d.target : d.source,
           dx = end.x - start.x,
           dy = end.y - start.y,
@@ -78,10 +82,10 @@ export default class NetworkVisualization extends Visualization {
         return 'M' + start.x + ',' + start.y + 'A' + dr + ',' + dr + ' 0 0,' + sweep + ' ' + end.x + ',' + end.y;
     };
     // Use elliptical arc path segments to doubly-encode directionality.
-    var tick = () => {
+    let tick = () => {
       //Links
       linkPath.attr('d', function(d) {
-        return arcPath(false, d);
+        return arcPath(true, d);
       });
       textPath.attr('d', function(d) {
         return arcPath(d.source.x < d.target.x, d);
@@ -94,24 +98,49 @@ export default class NetworkVisualization extends Visualization {
         return 'translate(' + d.x + ',' + d.y + ')';
       });
     };
+    
+    let setOpacity = (scale) => {
+      let opacity = scale >= +transformationConfig.d3Graph.zoom.minScale ? 1 : 0;
+      this.svg.selectAll('.nodeLabel')
+        .style('opacity', opacity);
+      this.svg.selectAll('textPath')
+        .style('opacity', opacity);
+    };
+
+    let zoom = d3.behavior.zoom()
+      .scaleExtent([1, 10])
+      .on('zoom', () => {
+        console.log('zoom');
+        setOpacity(d3.event.scale);
+        container.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
+      });
+    
+    this.svg = d3.select('#' + this.containerId + ' svg')
+      .attr('width', width)
+      .attr('height', height)
+      .call(zoom);
 
     this.force = d3.layout.force()
-      .charge(this.config.d3Graph.forceLayout.charge)
-      .linkDistance(this.config.d3Graph.forceLayout.linkDistance)
+      .charge(transformationConfig.d3Graph.forceLayout.charge)
+      .linkDistance(transformationConfig.d3Graph.forceLayout.linkDistance)
       .on('tick', tick)
       .nodes(networkData.graph.nodes)
       .links(networkData.graph.edges)
       .size([width, height])
       .on('start', () => {
         console.log('force layout start');
-        this.$timeout(() => { this.force.stop() }, this.config.d3Graph.forceLayout.timeout);
+        this.$timeout(() => { this.force.stop(); }, transformationConfig.d3Graph.forceLayout.timeout);
+      })
+      .on('end', () => {
+        console.log('force layout stop');
+        setOpacity(zoom.scale());
       })
       .start();
-    
-    var renderFooterOnClick = (entity, type) => {
-      var footerId = this.containerId + '_footer';
-      var obj = {id: entity.id, label: entity.defaultLabel || entity.label, type: type};
-      var html = [this.$interpolate(['<li><b>{{type}}_id:</b>&nbsp;{{id}}</li>',
+
+    let renderFooterOnClick = (entity, type) => {
+      let footerId = this.containerId + '_footer';
+      let obj = {id: entity.id, label: entity.defaultLabel || entity.label, type: type};
+      let html = [this.$interpolate(['<li><b>{{type}}_id:</b>&nbsp;{{id}}</li>',
                               '<li><b>{{type}}_type:</b>&nbsp;{{label}}</li>'].join(''))(obj)];
       html = html.concat(_.map(entity.data, (v, k) => {
         return this.$interpolate('<li><b>{{field}}:</b>&nbsp;{{value}}</li>')({field: k, value: v});
@@ -121,20 +150,8 @@ export default class NetworkVisualization extends Visualization {
         .empty()
         .append(html.join(''));
     };
-
-    var zoom = d3.behavior.zoom()
-      .scaleExtent([1, 10])
-      .on('zoom', () => {
-        console.log('zoom');
-        var opacity = d3.event.scale >= this.config.d3Graph.zoom.minScale ? 1 : 0;
-        d3.selectAll('.nodeLabel')
-          .style('opacity', opacity);
-        d3.selectAll('textPath')
-          .style('opacity', opacity);
-        container.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
-      });
     
-    var drag = d3.behavior.drag()
+    let drag = d3.behavior.drag()
       .origin((d) => d)
       .on('dragstart', function(d) {
         console.log('dragstart');
@@ -156,12 +173,7 @@ export default class NetworkVisualization extends Visualization {
         self.force.resume();
       });
 
-    var svg = d3.select('#' + this.containerId + ' svg')
-      .attr('width', width)
-      .attr('height', height)
-      .call(zoom);
-
-    var container = svg.append('g');
+    let container = this.svg.append('g');
     container.append('svg:defs').selectAll('marker')
       .data(['suit'])
       .enter()
@@ -176,7 +188,7 @@ export default class NetworkVisualization extends Visualization {
       .append('svg:path')
       .attr('d', 'M0,-5L10,0L0,5');
     //Links
-    var link = container.append('svg:g')
+    let link = container.append('svg:g')
       .on('click', () => {
         renderFooterOnClick(d3.select(d3.event.target).datum(), 'edge');
       })
@@ -184,14 +196,14 @@ export default class NetworkVisualization extends Visualization {
       .data(self.force.links())
       .enter()
       .append('g');
-    var getPathId = (d) => this.containerId + '_' + d.source.index + '_' + d.target.index + '_' + d.count;
-    var showLabel = (d) => this._showNodeLabel(d);
-    var linkPath = link.append('svg:path')
+    let getPathId = (d) => this.containerId + '_' + d.source.index + '_' + d.target.index + '_' + d.count;
+    let showLabel = (d) => this._showNodeLabel(d);
+    let linkPath = link.append('svg:path')
       .attr('class', 'link')
       .attr('size', 10)
       .attr('stroke', (d) => d.color)
       .attr('marker-end', 'url(#suit)');
-    var textPath = link.append('svg:path')
+    let textPath = link.append('svg:path')
       .attr('id', getPathId)
       .attr('class', 'textpath');
     container.append('svg:g')
@@ -204,10 +216,10 @@ export default class NetworkVisualization extends Visualization {
       .attr('startOffset', '50%')
       .attr('text-anchor', 'middle')
       .attr('xlink:href', (d) => '#' + getPathId(d))
-      .style('opacity', 0)
-      .text((d) => d.label);
+      .text((d) => d.label)
+      .style('opacity', defaultOpacity);
     //Nodes
-    var circle = container.append('svg:g')
+    let circle = container.append('svg:g')
       .on('click', () => {
         renderFooterOnClick(d3.select(d3.event.target).datum(), 'node');
       })
@@ -217,7 +229,7 @@ export default class NetworkVisualization extends Visualization {
       .attr('r', (d) => d.size)
       .attr('fill', (d) => d.color)
       .call(drag);
-    var text = container.append('svg:g').selectAll('g')
+    let text = container.append('svg:g').selectAll('g')
       .data(self.force.nodes())
       .enter().append('svg:g');
     text.append('svg:text')
@@ -225,22 +237,23 @@ export default class NetworkVisualization extends Visualization {
         .attr('size', 10)
         .attr('y', '.31em')
         .attr('class', (d) => 'nodeLabel shadow label-' + d.label)
-        .text((d) => d.label)
-        .style('opacity', 0);
+        .text(showLabel)
+        .style('opacity', defaultOpacity);
     text.append('svg:text')
         .attr('x',(d) => d.size + 3)
         .attr('size', 10)
         .attr('y', '.31em')
         .attr('class', (d) => 'nodeLabel label-' + d.label)
         .text(showLabel)
-        .style('opacity', 0);
+        .style('opacity', defaultOpacity);
   };
 
   destroy() {
   };
   
   _showNodeLabel(d) {
-    let selectedLabel = (this.transformation.config.properties[d.label] || {selected: 'label'}).selected;
+	let transformationConfig = this.transformation.getSetting().scope.config;
+    let selectedLabel = (transformationConfig.properties[d.label] || {selected: 'label'}).selected;
     return d.data[selectedLabel] || d[selectedLabel];
   };
 

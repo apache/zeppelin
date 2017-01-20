@@ -2,12 +2,12 @@
   "paragraphs": [
     {
       "text": "%md\n\n### The [Apache Mahout](http://mahout.apache.org/)™ project\u0027s goal is to build an environment for quickly creating scalable performant machine learning applications.\n\n#### Apache Mahout software provides three major features:\n\n- A simple and extensible programming environment and framework for building scalable algorithms\n- A wide variety of premade algorithms for Scala + Apache Spark, H2O, Apache Flink\n- Samsara, a vector math experimentation environment with R-like syntax which works at scale\n\n#### In other words:\n\n*Apache Mahout provides a unified API for quickly creating machine learning algorithms on a variety of engines.*\n\n#### Getting Started\n\nApache Mahout is a collection of Libraries that enhance Apache Flink, Apache Spark, and others. Currently Zeppelin support the Flink and Spark Engines. A convenience script is provided to setup the nessecary imports and configurations to run Mahout on Spark and Flink. \n\nWe can use Apache Mahout\u0027s R-Like Domain Specific Language (DSL) inline with native Flink or Spark code.  We must however, first declare a few imports that are different for Spark and Flink\n\n__References:__\n\n[Mahout-Samsara\u0027s In-Core Linear Algebra DSL Reference](http://mahout.apache.org/users/environment/in-core-reference.html)\n[Mahout-Samsara\u0027s Distributed Linear Algebra DSL Reference](http://mahout.apache.org/users/environment/out-of-core-reference.html)\n[Getting Started with the Mahout-Samsara Shell](http://mahout.apache.org/users/sparkbindings/play-with-shell.html)\n",
-      "dateUpdated": "Sep 28, 2016 10:01:52 AM",
+      "dateUpdated": "Jan 6, 2017 6:42:45 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "editorMode": "ace/mode/scala",
-        "editorHide": true,
+        "editorHide": false,
         "results": [
           {
             "graph": {
@@ -25,7 +25,8 @@
               }
             }
           }
-        ]
+        ],
+        "editorSetting": {}
       },
       "settings": {
         "params": {},
@@ -51,12 +52,12 @@
     },
     {
       "text": "%md\n\n#### \"Installing\" the Apache Mahout dependencies and configuring a new Spark and Flink interpreter\n\nThe following two paragraphs are convenience paragraphs. You **only need to run them once** to create two new interpreters `%spark.mahout` and `%flink.mahout`. These are intended for users who don\u0027t have Apache Mahout already installed. They assume you started Apache Zeppelin from the top level directory or from the bin.  You can tell which one is you by weather you started Zeppelin by typing `./zeppelin-daemon.sh start` or `bin/zeppelin-daemon.sh start`.  If you started Zeppelin from somewhere else you will also need to run them from the command line.\n\nThey both run a python script which may be found at `ZEPPELIN_HOME/scripts/mahout/add_mahout.py`\n\nIn short this script:\n- Downloads Apache Mahout\n- Creates a new Flink interpreter with dependencies.\n- Creates a new Spark interpreter with dependencies and modified configuration to use Kryo serialization.\n\n__You only need to run this script once ever.__ (Maybe again if for some reason you delete `conf/interpreter.json`) \n",
-      "dateUpdated": "Sep 27, 2016 4:31:15 AM",
+      "dateUpdated": "Jan 6, 2017 6:42:50 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "editorMode": "ace/mode/scala",
-        "editorHide": true,
+        "editorHide": false,
         "results": [
           {
             "graph": {
@@ -74,7 +75,8 @@
               }
             }
           }
-        ]
+        ],
+        "editorSetting": {}
       },
       "settings": {
         "params": {},
@@ -862,25 +864,26 @@
   "name": "Zeppelin Tutorial/Using Mahout",
   "id": "2BYEZ5EVK",
   "angularObjects": {
-    "2C6WUGPNH:shared_process": [],
-    "2C4A8RJNB:shared_process": [],
-    "2C4DTK2ZT:shared_process": [],
-    "2C6XKJWBR:shared_process": [],
-    "2C6AHZPMK:shared_process": [],
-    "2C5SU66WQ:shared_process": [],
-    "2C6AMJ98Q:shared_process": [],
-    "2C4AJZK72:shared_process": [],
-    "2C3STPSD7:shared_process": [],
-    "2C4FJN9CK:shared_process": [],
-    "2C3CW6JBY:shared_process": [],
-    "2C5UPQX6Q:shared_process": [],
-    "2C5873KN4:shared_process": [],
-    "2C5719XN4:shared_process": [],
-    "2C52DE5G3:shared_process": [],
-    "2C4G28E63:shared_process": [],
-    "2C6CU96BC:shared_process": [],
-    "2C49A6WY3:shared_process": [],
-    "2C3NE73HG:shared_process": []
+    "2C7K5EPST:shared_process": [],
+    "2C542Q8CT:shared_process": [],
+    "2C755V6VY:shared_process": [],
+    "2C6WAH5WV:shared_process": [],
+    "2C7KNQD3Q:shared_process": [],
+    "2C6K5QZ3U:shared_process": [],
+    "2C79WM7M5:shared_process": [],
+    "2C73S4FNX:shared_process": [],
+    "2C593SE9P:shared_process": [],
+    "2C668ZQYF:shared_process": [],
+    "2C4YQ9MX9:shared_process": [],
+    "2C6DCGVSD:shared_process": [],
+    "2C6BFT71F:shared_process": [],
+    "2C5GRM543:shared_process": [],
+    "2C3YPSC1B:shared_process": [],
+    "2C4JJ2DNC:shared_process": [],
+    "2C46NXCTQ:shared_process": [],
+    "2C6P66TTY:shared_process": [],
+    "2C5UERF9V:shared_process": [],
+    "2C5KH1SXQ:shared_process": []
   },
   "config": {},
   "info": {}
