@@ -16,7 +16,7 @@
  */
 
 package org.apache.zeppelin.dep;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
