@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by s.sotnichenko on 10.01.2017.
+ * SQL completer unit tests
  */
 public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
 
