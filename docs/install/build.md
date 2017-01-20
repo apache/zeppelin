@@ -97,6 +97,7 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-2.1
 -Pspark-2.0
 -Pspark-1.6
 -Pspark-1.5
@@ -185,6 +186,10 @@ Bulid examples under zeppelin-examples directory
 Here are some examples with several options:
 
 ```bash
+# build with spark-2.1, scala-2.11
+./dev/change_scala_version.sh 2.11
+mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11 -DskipTests
+
 # build with spark-2.0, scala-2.11
 ./dev/change_scala_version.sh 2.11
 mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pscala-2.11 -DskipTests
@@ -205,7 +210,7 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 Ignite Interpreter
 
 ```bash
-mvn clean package -Dignite.version=1.6.0 -DskipTests
+mvn clean package -Dignite.version=1.8.0 -DskipTests
 ```
 
 Scalding Interpreter

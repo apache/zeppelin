@@ -13,31 +13,35 @@ limitations under the License.
 -->
 
 <div id="{{id}}_switch"
-     ng-if="(type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
-     class="btn-group"
-     style="margin-bottom: 10px;">
+     ng-if="(type == 'TABLE' || type == 'NETWORK' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+     class="result-chart-selector">
 
-  <button type="button" class="btn btn-default btn-sm"
-          ng-if="type == 'TABLE'"
-          ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-          ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
-          ng-click="switchViz(viz.id)"><i ng-class="viz.icon"></i>
-  </button>
+  <div ng-if="type == 'TABLE' || type == 'NETWORK'" class="btn-group">
+    <button type="button" class="btn btn-default btn-sm"
+            ng-repeat="viz in builtInTableDataVisualizationList track by $index"
+            ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
+            ng-if="viz.supports.indexOf(type) > -1"
+            ng-click="switchViz(viz.id)"
+            ng-bind-html="viz.icon">
+    </button>
+  </div>
 
-  <button type="button"
-          ng-if="type != 'TABLE'"
-          ng-click="switchApp()"
-          ng-class="{'active' : !config.helium.activeApp}"
-          class="btn btn-default btn-sm"><i class="fa fa-terminal"></i>
-  </button>
+  <div class="btn-group">
+    <button type="button"
+            ng-if="type != 'TABLE' && type != 'NETWORK'"
+            ng-click="switchApp()"
+            ng-class="{'active' : !config.helium.activeApp}"
+            class="btn btn-default btn-sm"><i class="fa fa-terminal"></i>
+    </button>
 
-  <button type="button"
-          class="btn btn-default btn-sm"
-          ng-repeat="app in apps"
-          ng-click="switchApp(app.id)"
-          ng-class="{'active' : app.id == config.helium.activeApp}"
-          ng-bind-html="app.pkg.icon">
-  </button>
+    <button type="button"
+            class="btn btn-default btn-sm"
+            ng-repeat="app in apps"
+            ng-click="switchApp(app.id)"
+            ng-class="{'active' : app.id == config.helium.activeApp}"
+            ng-bind-html="app.pkg.icon">
+    </button>
+  </div>
 </div>
 
 <div id="{{paragraph.id}}_helium"
@@ -46,7 +50,6 @@ limitations under the License.
      style="margin-bottom: 10px;">
   <button type="button"
           class="btn btn-default btn-sm dropdown-toggle"
-          ng-if="suggestion.available && suggestion.available.length > 0"
           data-toggle="dropdown"
           style="font-weight:bold; background-color:#ffdf96; border: 1px solid #FED233">
     He
@@ -70,7 +73,7 @@ limitations under the License.
 </div>
 
 <div class="btn-group"
-     ng-if="type == 'TABLE' && !asIframe && !viewOnly"
+     ng-if="(type == 'TABLE' || type == 'NETWORK') && !asIframe && !viewOnly"
      style="margin-bottom: 10px;">
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
@@ -90,7 +93,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="type=='TABLE' && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
+   ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphSetting()">
     settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>

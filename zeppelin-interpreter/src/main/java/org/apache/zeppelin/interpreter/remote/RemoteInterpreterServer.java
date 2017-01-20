@@ -17,16 +17,13 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.rmi.server.RemoteServer;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -39,7 +36,6 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
 import org.apache.zeppelin.interpreter.InterpreterHookListener;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
@@ -144,7 +140,7 @@ public class RemoteInterpreterServer
   public static void main(String[] args)
       throws TTransportException, InterruptedException {
 
-    int port = ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT;
+    int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     if (args.length > 0) {
       port = Integer.parseInt(args[0]);
     }
@@ -167,6 +163,11 @@ public class RemoteInterpreterServer
       interpreterGroup.setResourcePool(resourcePool);
 
       String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
+      if (properties.containsKey("zeppelin.interpreter.output.limit")) {
+        InterpreterOutput.limit = Integer.parseInt(
+            properties.get("zeppelin.interpreter.output.limit"));
+      }
+
       depLoader = new DependencyResolver(localRepoPath);
       appLoader = new ApplicationLoader(resourcePool, depLoader);
     }
@@ -402,6 +403,7 @@ public class RemoteInterpreterServer
     private String script;
     private InterpreterContext context;
     private Map<String, Object> infos;
+    private Object results;
 
     public InterpretJob(
         String jobId,
@@ -415,6 +417,11 @@ public class RemoteInterpreterServer
       this.interpreter = interpreter;
       this.script = script;
       this.context = context;
+    }
+
+    @Override
+    public Object getReturn() {
+      return results;
     }
 
     @Override
@@ -436,7 +443,7 @@ public class RemoteInterpreterServer
         public void onPreExecute(String script) {
           String cmdDev = interpreter.getHook(noteId, HookType.PRE_EXEC_DEV);
           String cmdUser = interpreter.getHook(noteId, HookType.PRE_EXEC);
-          
+
           // User defined hook should be executed before dev hook
           List<String> cmds = Arrays.asList(cmdDev, cmdUser);
           for (String cmd : cmds) {
@@ -444,15 +451,15 @@ public class RemoteInterpreterServer
               script = cmd + '\n' + script;
             }
           }
-          
+
           InterpretJob.this.script = script;
         }
-        
+
         @Override
         public void onPostExecute(String script) {
           String cmdDev = interpreter.getHook(noteId, HookType.POST_EXEC_DEV);
           String cmdUser = interpreter.getHook(noteId, HookType.POST_EXEC);
-          
+
           // User defined hook should be executed after dev hook
           List<String> cmds = Arrays.asList(cmdUser, cmdDev);
           for (String cmd : cmds) {
@@ -460,7 +467,7 @@ public class RemoteInterpreterServer
               script += '\n' + cmd;
             }
           }
-          
+
           InterpretJob.this.script = script;
         }
       };
@@ -472,7 +479,7 @@ public class RemoteInterpreterServer
     protected Object jobRun() throws Throwable {
       try {
         InterpreterContext.set(context);
-        
+
         // Open the interpreter instance prior to calling interpret().
         // This is necessary because the earliest we can register a hook
         // is from within the open() method.
@@ -480,7 +487,7 @@ public class RemoteInterpreterServer
         if (!lazy.isOpen()) {
           lazy.open();
         }
-        
+
         // Add hooks to script from registry.
         // Global scope first, followed by notebook scope
         processInterpreterHooks(null);
@@ -513,6 +520,11 @@ public class RemoteInterpreterServer
     @Override
     protected boolean jobAbort() {
       return false;
+    }
+
+    @Override
+    public void setResult(Object results) {
+      this.results = results;
     }
   }
 
@@ -941,6 +953,73 @@ public class RemoteInterpreterServer
         logger.error(e.getMessage(), e);
         return ByteBuffer.allocate(0);
       }
+    }
+  }
+
+  @Override
+  public ByteBuffer resourceInvokeMethod(
+      String noteId, String paragraphId, String resourceName, String invokeMessage) {
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeMessage, InvokeResourceMethodEventMessage.class);
+
+    Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
+    if (resource == null || resource.get() == null) {
+      return ByteBuffer.allocate(0);
+    } else {
+      try {
+        Object o = resource.get();
+        Method method = o.getClass().getMethod(
+            message.methodName,
+            message.getParamTypes());
+        Object ret = method.invoke(o, message.params);
+        if (message.shouldPutResultIntoResourcePool()) {
+          // if return resource name is specified,
+          // then put result into resource pool
+          // and return empty byte buffer
+          resourcePool.put(
+              noteId,
+              paragraphId,
+              message.returnResourceName,
+              ret);
+          return ByteBuffer.allocate(0);
+        } else {
+          // if return resource name is not specified,
+          // then return serialized result
+          ByteBuffer serialized = Resource.serializeObject(ret);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
+        }
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+        return ByteBuffer.allocate(0);
+      }
+    }
+  }
+
+  /**
+   * Get payload of resource from remote
+   * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
+   * @param object java serialized of the object
+   * @throws TException
+   */
+  @Override
+  public void resourceResponseInvokeMethod(
+      String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeResourceMethodEventMessage, InvokeResourceMethodEventMessage.class);
+
+    if (message.shouldPutResultIntoResourcePool()) {
+      Resource resource = resourcePool.get(
+          message.resourceId.getNoteId(),
+          message.resourceId.getParagraphId(),
+          message.returnResourceName,
+          true);
+      eventClient.putResponseInvokeMethod(message, resource);
+    } else {
+      eventClient.putResponseInvokeMethod(message, object);
     }
   }
 

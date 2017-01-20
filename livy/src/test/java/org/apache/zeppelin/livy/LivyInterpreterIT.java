@@ -51,7 +51,7 @@ public class LivyInterpreterIT {
     LOGGER.info("Starting livy at {}", cluster.livyEndpoint());
     properties = new Properties();
     properties.setProperty("zeppelin.livy.url", cluster.livyEndpoint());
-    properties.setProperty("zeppelin.livy.create.session.timeout", "120");
+    properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "100");
   }
 
@@ -157,7 +157,7 @@ public class LivyInterpreterIT {
     }
   }
 
-  @Test
+//  @Test
   public void testSparkInterpreterDataFrame() {
     if (!checkPreCondition()) {
       return;
@@ -196,14 +196,12 @@ public class LivyInterpreterIT {
       result = sqlInterpreter.interpret("select * from df where col_1='hello'", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
-      // TODO(zjffdu), \t at the end of each line is not necessary,
-      // it is a bug of LivySparkSQLInterpreter
-      assertEquals("col_1\tcol_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      assertEquals("col_1\tcol_2\nhello\t20", result.message().get(0).getData());
       // double quotes
       result = sqlInterpreter.interpret("select * from df where col_1=\"hello\"", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
-      assertEquals("col_1\tcol_2\t\nhello\t20\t\n", result.message().get(0).getData());
+      assertEquals("col_1\tcol_2\nhello\t20", result.message().get(0).getData());
       // double quotes inside attribute value
       // TODO(zjffdu). This test case would fail on spark-1.5, would uncomment it when upgrading to
       // livy-0.3 and spark-1.6
@@ -294,6 +292,15 @@ public class LivyInterpreterIT {
       assertEquals(1, result.message().size());
       assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]"));
 
+      // test magic api      
+      pysparkInterpreter.interpret("t = [{\"name\":\"userA\", \"role\":\"roleA\"},"
+          + "{\"name\":\"userB\", \"role\":\"roleB\"}]", context);
+      result = pysparkInterpreter.interpret("%table t", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());      
+      assertEquals(1, result.message().size());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      assertTrue(result.message().get(0).getData().contains("userA"));      
+      
       // error
       result = pysparkInterpreter.interpret("print(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
@@ -305,6 +312,38 @@ public class LivyInterpreterIT {
   }
 
   @Test
+  public void testSparkInterpreterWithDisplayAppInfo() {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    Properties properties2 = new Properties(properties);
+    properties2.put("zeppelin.livy.displayAppInfo", "true");
+    // enable spark ui because it is disabled by livy integration test
+    properties2.put("livy.spark.ui.enabled", "true");
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties2);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    try {
+      InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(2, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("1.5.2"));
+      assertTrue(result.message().get(1).getData().contains("Spark Application Id"));
+    } finally {
+      sparkInterpreter.close();
+    }
+  }
+
+  @Test
   public void testSparkRInterpreter() {
     if (!checkPreCondition()) {
       return;
@@ -312,7 +351,7 @@ public class LivyInterpreterIT {
     // TODO(zjffdu),  Livy's SparkRIntepreter has some issue, do it after livy-0.3 release.
   }
 
-  @Test
+//  @Test
   public void testLivyTutorialNote() throws IOException {
     if (!checkPreCondition()) {
       return;

@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 
@@ -51,7 +53,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {
-      InterpreterResult result = sparkInterpreter.interpret("spark", false);
+      InterpreterResult result = sparkInterpreter.interpret("spark", null, false, false);
       if (result.code() == InterpreterResult.Code.SUCCESS &&
           result.message().get(0).getData().contains("org.apache.spark.sql.SparkSession")) {
         LOGGER.info("SparkSession is detected so we are using spark 2.x for session {}",
@@ -59,7 +61,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
         isSpark2 = true;
       } else {
         // spark 1.x
-        result = sparkInterpreter.interpret("sqlContext", false);
+        result = sparkInterpreter.interpret("sqlContext", null, false, false);
         if (result.code() == InterpreterResult.Code.SUCCESS) {
           LOGGER.info("sqlContext is detected.");
         } else if (result.code() == InterpreterResult.Code.ERROR) {
@@ -68,7 +70,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
           LOGGER.info("sqlContext is not detected, try to create SQLContext by ourselves");
           result = sparkInterpreter.interpret(
               "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-                  + "import sqlContext.implicits._", false);
+                  + "import sqlContext.implicits._", null, false, false);
           if (result.code() == InterpreterResult.Code.ERROR) {
             throw new LivyException("Fail to create SQLContext," +
                 result.message().get(0).getData());
@@ -113,42 +115,83 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       } else {
         sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
       }
-      InterpreterResult res = sparkInterpreter.interpret(sqlQuery, this.displayAppInfo);
+      InterpreterResult result = sparkInterpreter.interpret(sqlQuery, context.getParagraphId(),
+          this.displayAppInfo, true);
 
-      if (res.code() == InterpreterResult.Code.SUCCESS) {
-        StringBuilder resMsg = new StringBuilder();
-        resMsg.append("%table ");
-        String[] rows = res.message().get(0).getData().split("\n");
-        String[] headers = rows[1].split("\\|");
-        for (int head = 1; head < headers.length; head++) {
-          resMsg.append(headers[head].trim()).append("\t");
-        }
-        resMsg.append("\n");
-        if (rows[3].indexOf("+") == 0) {
-
-        } else {
-          for (int cols = 3; cols < rows.length - 1; cols++) {
-            String[] col = rows[cols].split("\\|");
-            for (int data = 1; data < col.length; data++) {
-              resMsg.append(col[data].trim()).append("\t");
+      if (result.code() == InterpreterResult.Code.SUCCESS) {
+        InterpreterResult result2 = new InterpreterResult(InterpreterResult.Code.SUCCESS);
+        for (InterpreterResultMessage message : result.message()) {
+          // convert Text type to Table type. We assume the text type must be the sql output. This
+          // assumption is correct for now. Ideally livy should return table type. We may do it in
+          // the future release of livy.
+          if (message.getType() == InterpreterResult.Type.TEXT) {
+            List<String> rows = parseSQLOutput(message.getData());
+            result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
+            if (rows.size() >= (maxResult + 1)) {
+              result2.add(InterpreterResult.Type.HTML,
+                  "<font color=red>Results are limited by " + maxResult + ".</font>");
             }
-            resMsg.append("\n");
+          } else {
+            result2.add(message.getType(), message.getData());
           }
         }
-        if (rows[rows.length - 1].indexOf("only") == 0) {
-          resMsg.append("<font color=red>" + rows[rows.length - 1] + ".</font>");
-        }
-
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-            resMsg.toString()
-        );
+        return result2;
       } else {
-        return res;
+        return result;
       }
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
+    }
+  }
+
+  protected List<String> parseSQLOutput(String output) {
+    List<String> rows = new ArrayList<>();
+    String[] lines = output.split("\n");
+    // at least 4 lines, even for empty sql output
+    //    +---+---+
+    //    |  a|  b|
+    //    +---+---+
+    //    +---+---+
+
+    // use the first line to determinte the position of feach cell
+    String[] tokens = StringUtils.split(lines[0], "\\+");
+    // pairs keeps the start/end position of each cell. We parse it from the first row
+    // which use '+' as separator
+    List<Pair> pairs = new ArrayList<>();
+    int start = 0;
+    int end = 0;
+    for (String token : tokens) {
+      start = end + 1;
+      end = start + token.length();
+      pairs.add(new Pair(start, end));
+    }
+
+    for (String line : lines) {
+      // Only match format "|....|"
+      // skip line like "+---+---+" and "only showing top 1 row"
+      if (line.matches("^\\|.*\\|$")) {
+        List<String> cells = new ArrayList<>();
+        for (Pair pair : pairs) {
+          // strip the blank space around the cell
+          cells.add(line.substring(pair.start, pair.end).trim());
+        }
+        rows.add(StringUtils.join(cells, "\t"));
+      }
+    }
+    return rows;
+  }
+
+  /**
+   * Represent the start and end index of each cell
+   */
+  private static class Pair {
+    private int start;
+    private int end;
+    public Pair(int start, int end) {
+      this.start = start;
+      this.end = end;
     }
   }
 
@@ -176,5 +219,17 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
   @Override
   public void close() {
     this.sparkInterpreter.close();
+  }
+
+  @Override
+  protected String extractAppId() throws LivyException {
+    // it wont' be called because it would delegate to LivySparkInterpreter
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  protected String extractWebUIAddress() throws LivyException {
+    // it wont' be called because it would delegate to LivySparkInterpreter
+    throw new UnsupportedOperationException();
   }
 }

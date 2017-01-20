@@ -24,7 +24,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.apache.org</url>
@@ -63,7 +63,6 @@
     <module>livy</module>
     <module>hbase</module>
     <module>pig</module>
-    <module>postgresql</module>
     <module>jdbc</module>
     <module>file</module>
     <module>flink</module>
@@ -728,6 +727,13 @@
     </profile>
 
     <profile>
+      <id>helium-dev</id>
+      <modules>
+        <module>helium-dev</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -887,6 +893,7 @@
               <exclude>conf/notebook-authorization.json</exclude>
               <exclude>conf/credentials.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
+              <exclude>conf/helium.json</exclude>
               <exclude>spark-*-bin*/**</exclude>
               <exclude>.spark-dist/**</exclude>
               <exclude>**/interpreter-setting.json</exclude>
@@ -934,7 +941,8 @@
               <exclude>docs/_site/**</exclude>
               <exclude>docs/Gemfile.lock</exclude>
 
-              <exclude>**/horizontalbar_mockdata.txt</exclude>
+              <!-- package.json -->
+              <exclude>**/package.json</exclude>
 
               <!-- compiled R packages (binaries) -->
               <exclude>R/lib/**</exclude>

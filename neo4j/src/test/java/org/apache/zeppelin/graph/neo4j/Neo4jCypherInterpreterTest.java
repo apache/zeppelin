@@ -28,14 +28,15 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.graph.GraphResult;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -51,7 +52,7 @@ public class Neo4jCypherInterpreterTest {
   
   private InterpreterContext context;
   
-  private ServerControls server;
+  private static ServerControls server;
   
   private static final Gson gson = new Gson();
   
@@ -66,13 +67,22 @@ public class Neo4jCypherInterpreterTest {
   
   private static final String EXPECTED_TABLE = "name\tage\n\"name1\"\t1\n";
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUpNeo4jServer() throws Exception {
     server = TestServerBuilders.newInProcessBuilder()
                 .withConfig("dbms.security.auth_enabled","false")
                 .withFixture(String.format(CYPHER_FOREACH, LABEL_PERSON, "x % 10"))
                 .withFixture(String.format(CHPHER_UNWIND, REL_KNOWS))
                 .newServer();
+  }
+
+  @AfterClass
+  public static void tearDownNeo4jServer() throws Exception {
+    server.close();
+  }
+  
+  @Before
+  public void setUpZeppelin() {
     Properties p = new Properties();
     p.setProperty(Neo4jCypherInterpreter.NEO4J_SERVER_URL, server.boltURI().toString());
     interpreter = new Neo4jCypherInterpreter(p);
@@ -83,22 +93,11 @@ public class Neo4jCypherInterpreterTest {
             new AngularObjectRegistry(new InterpreterGroup().getId(), null),
             new LocalResourcePool("id"),
             new LinkedList<InterpreterContextRunner>(),
-            new InterpreterOutput(new InterpreterOutputListener() {
-              @Override
-              public void onAppend(InterpreterOutput out, byte[] line) {
-
-              }
-
-              @Override
-              public void onUpdate(InterpreterOutput out, byte[] output) {
-
-              }
-            }));
+            new InterpreterOutput(null));
   }
 
   @After
-  public void tearDown() throws Exception {
-    server.close();
+  public void tearDownZeppelin() throws Exception {
     interpreter.close();
   }
 
@@ -106,7 +105,7 @@ public class Neo4jCypherInterpreterTest {
   public void testRenderTable() {
     interpreter.open();
     InterpreterResult result = interpreter.interpret("MATCH (n:Person{name: 'name1'}) RETURN n.name AS name, n.age AS age", context);
-    assertEquals(EXPECTED_TABLE, result.message());
+    assertEquals(EXPECTED_TABLE, result.toString().replace("%table ", ""));
     assertEquals(Code.SUCCESS, result.code());
   }
 
@@ -114,9 +113,11 @@ public class Neo4jCypherInterpreterTest {
   public void testRenderNetwork() {
     interpreter.open();
     InterpreterResult result = interpreter.interpret("MATCH (n)-[r:KNOWS]-(m) RETURN n, r, m LIMIT 1", context);
-    GraphResult.Graph graph = gson.fromJson(result.message(), GraphResult.Graph.class);
+    GraphResult.Graph graph = gson.fromJson(result.toString().replace("%network ", ""), GraphResult.Graph.class);
     assertEquals(2, graph.getNodes().size());
+    assertEquals(true, graph.getNodes().iterator().next().getLabel().equals(LABEL_PERSON));
     assertEquals(1, graph.getEdges().size());
+    assertEquals(true, graph.getEdges().iterator().next().getLabel().equals(REL_KNOWS));
     assertEquals(1, graph.getLabels().size());
     assertEquals(1, graph.getTypes().size());
     assertEquals(true, graph.getLabels().containsKey(LABEL_PERSON));
@@ -127,11 +128,14 @@ public class Neo4jCypherInterpreterTest {
   @Test
   public void testFallingQuery() {
     interpreter.open();
+    final String ERROR_MSG_EMPTY = "%text Cypher query is Empty";
     InterpreterResult result = interpreter.interpret("", context);
     assertEquals(Code.ERROR, result.code());
+    assertEquals(ERROR_MSG_EMPTY, result.toString());
 
     result = interpreter.interpret(null, context);
     assertEquals(Code.ERROR, result.code());
+    assertEquals(ERROR_MSG_EMPTY, result.toString());
 
     result = interpreter.interpret("MATCH (n:Person{name: }) RETURN n.name AS name, n.age AS age", context);
     assertEquals(Code.ERROR, result.code());

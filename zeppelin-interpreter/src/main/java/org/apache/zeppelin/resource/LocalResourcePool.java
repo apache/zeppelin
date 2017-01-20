@@ -72,7 +72,7 @@ public class LocalResourcePool implements ResourcePool {
   public void put(String name, Object object) {
     ResourceId resourceId = new ResourceId(resourcePoolId, name);
 
-    Resource resource = new Resource(resourceId, object);
+    Resource resource = new Resource(this, resourceId, object);
     resources.put(resourceId, resource);
   }
 
@@ -80,7 +80,7 @@ public class LocalResourcePool implements ResourcePool {
   public void put(String noteId, String paragraphId, String name, Object object) {
     ResourceId resourceId = new ResourceId(resourcePoolId, noteId, paragraphId, name);
 
-    Resource resource = new Resource(resourceId, object);
+    Resource resource = new Resource(this, resourceId, object);
     resources.put(resourceId, resource);
   }
 

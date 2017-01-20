@@ -18,7 +18,8 @@
 package org.apache.zeppelin.pig;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.tools.pigstats.*;
@@ -58,6 +59,12 @@ public class PigInterpreter extends BasePigInterpreter {
     }
     try {
       pigServer = new PigServer(execType);
+      for (Map.Entry entry : getProperty().entrySet()) {
+        if (!entry.getKey().toString().startsWith("zeppelin.")) {
+          pigServer.getPigContext().getProperties().setProperty(entry.getKey().toString(),
+              entry.getValue().toString());
+        }
+      }
     } catch (IOException e) {
       LOGGER.error("Fail to initialize PigServer", e);
       throw new RuntimeException("Fail to initialize PigServer", e);
@@ -78,6 +85,7 @@ public class PigInterpreter extends BasePigInterpreter {
     ByteArrayOutputStream bytesOutput = new ByteArrayOutputStream();
     File tmpFile = null;
     try {
+      pigServer.setJobName(createJobName(cmd, contextInterpreter));
       tmpFile = PigUtils.createTempPigScript(cmd);
       System.setOut(new PrintStream(bytesOutput));
       // each thread should its own ScriptState & PigStats

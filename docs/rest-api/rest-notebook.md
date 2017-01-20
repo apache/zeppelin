@@ -27,14 +27,11 @@ limitations under the License.
 Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
 All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
 Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
-
 If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
 
+Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following tables.
 
-## Notebook REST API List
-
-  Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following tables.
-
+## Note operations
 ### List of the notes
   <table class="table-configuration">
     <col width="200">
@@ -92,7 +89,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
@@ -126,6 +123,52 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   "status": "CREATED",
   "message": "",
   "body": "2AZPHY918"
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Get the status of all paragraphs
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets the status of all paragraphs by the given note id.
+          The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "body": [
+    {
+      "id":"20151121-212654\_766735423",
+      "status":"FINISHED",
+      "finished":"Tue Nov 24 14:21:40 KST 2015",
+      "started":"Tue Nov 24 14:21:39 KST 2015"
+    },
+    {
+      "progress":"1",
+      "id":"20151121-212657\_730976687",
+      "status":"RUNNING",
+      "finished":"Tue Nov 24 14:21:35 KST 2015",
+      "started":"Tue Nov 24 14:21:40 KST 2015"
+    }
+  ]
 }</pre></td>
     </tr>
   </table>
@@ -275,7 +318,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
@@ -296,7 +339,117 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
   </table>
 
-<br/>
+<br />
+### Export a note
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method exports a note by the given id and gernerates a JSON
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/export/[noteId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>201</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <td> sample JSON response </td>
+      <td><pre>{
+  "paragraphs": [
+    {
+      "text": "%md This is my new paragraph in my new note",
+      "dateUpdated": "Jan 8, 2016 4:49:38 PM",
+      "config": {
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph\_1452300578795\_1196072540",
+      "id": "20160108-164938\_1685162144",
+      "dateCreated": "Jan 8, 2016 4:49:38 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "source note for export",
+  "id": "2B82H3RR1",
+  "angularObjects": {},
+  "config": {},
+  "info": {}
+}</pre></td>
+    </tr>
+  </table>
+
+<br />
+### Import a note
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method imports a note from the note JSON input
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/import```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>201</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>sample JSON input</td>
+      <td><pre>
+{
+  "paragraphs": [
+    {
+      "text": "%md This is my new paragraph in my new note",
+      "dateUpdated": "Jan 8, 2016 4:49:38 PM",
+      "config": {
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph\_1452300578795\_1196072540",
+      "id": "20160108-164938\_1685162144",
+      "dateCreated": "Jan 8, 2016 4:49:38 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "source note for export",
+  "id": "2B82H3RR1",
+  "angularObjects": {},
+  "config": {},
+  "info": {}
+}</pre></td>
+    </tr>
+    <tr>
+      <td>sample JSON response</td>
+      <td><pre>
+{
+  "status": "CREATED",
+  "message": "",
+  "body": "2AZPHY918"
+}</pre></td>
+    </tr>
+  </table>
+
 ### Run all paragraphs
   <table class="table-configuration">
     <col width="200">
@@ -370,330 +523,44 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
   </table>
 
-<br/>
-### Get the status of all paragraphs
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```GET``` method gets the status of all paragraphs by the given note id.
-          The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>
-{
-  "status": "OK",
-  "body": [
-    {
-      "id":"20151121-212654\_766735423",
-      "status":"FINISHED",
-      "finished":"Tue Nov 24 14:21:40 KST 2015",
-      "started":"Tue Nov 24 14:21:39 KST 2015"
-    },
-    {
-      "progress":"1",
-      "id":"20151121-212657\_730976687",
-      "status":"RUNNING",
-      "finished":"Tue Nov 24 14:21:35 KST 2015",
-      "started":"Tue Nov 24 14:21:40 KST 2015"
-    }
-  ]
-}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-### Get the status of a single paragraph
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```GET``` method gets the status of a single paragraph by the given note and paragraph id.
-          The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>
-{
-  "status": "OK",
-  "body": {
-      "id":"20151121-212654\_766735423",
-      "status":"FINISHED",
-      "finished":"Tue Nov 24 14:21:40 KST 2015",
-      "started":"Tue Nov 24 14:21:39 KST 2015"
-    }
-}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-### Run a paragraph asynchronously
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```POST``` method runs the paragraph asynchronously by given note and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
-      <td><pre>
-{
-  "name": "name of new note",
-  "params": {
-    "formLabel1": "value1",
-    "formLabel2": "value2"
-  }
-}</pre></td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-### Run a paragraph synchronously
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/run/[noteId]/[paragraphId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
-      <td><pre>
-{
-  "name": "name of new note",
-  "params": {
-    "formLabel1": "value1",
-    "formLabel2": "value2"
-  }
-}</pre></td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
-    </tr>    
-    <tr>
-      <td> sample JSON error </td>
-      <td><pre>
-{
-   "status": "INTERNAL\_SERVER\_ERROR",
-   "body": {
-       "code": "ERROR",
-       "type": "TEXT",
-       "msg": "bash: -c: line 0: unexpected EOF while looking for matching ``'\nbash: -c: line 1: syntax error: unexpected end of file\nExitValue: 2"
-   }
-}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-### Stop a paragraph
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```DELETE``` method stops the paragraph by given note and paragraph id.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-### Add Cron Job
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```POST``` method adds cron job by the given note id.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON input </td>
-      <td><pre>{"cron": "cron expression of note"}</pre></td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-
-### Remove Cron Job
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```DELETE``` method removes cron job by the given note id.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK"}</pre></td>
-    </tr>
-  </table>
-
-<br/>
-
-### Get Cron Job
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```GET``` method gets cron job expression of given note id.
-          The body field of the returned JSON contains the cron expression.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK", "body": "* * * * * ?"}</pre></td>
-    </tr>
-  </table>
-
 <br />
-### Full text search through the paragraphs in all notes
+### Clear all paragraph result
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>```GET``` request will return list of matching paragraphs
+      <td>This ```PUT``` method clear all paragraph results from note of given id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/search?q=[query]```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/clear```</td>
     </tr>
     <tr>
       <td>Success code</td>
       <td>200</td>
+    </tr>
+    <tr>
+      <td>Forbidden code</td>
+      <td>401</td>
+    </tr>
+    <tr>
+      <td>Not Found code</td>
+      <td>404</td>
     </tr>
     <tr>
       <td>Fail code</td>
-      <td> 500 </td>
+      <td>500</td>
     </tr>
     <tr>
-      <td>Sample JSON response </td>
-      <td><pre>
-{
-  "status": "OK",
-  "body": [
-    {
-      "id": "<noteId>/paragraph/<paragraphId>",
-      "name":"Note Name", 
-      "snippet":"",
-      "text":""
-    }
-  ]
-}</pre></td>
+      <td>sample JSON response</td>
+      <td><pre>{"status": "OK"}</pre></td>
+    </tr>
     </tr>
   </table>
 
+
+## Paragraph operations 
 <br/>
 ### Create a new paragraph
   <table class="table-configuration">
@@ -812,6 +679,43 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     "status": "FINISHED",
     "progressUpdateIntervalMs": 500
   }
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Get the status of a single paragraph
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets the status of a single paragraph by the given note and paragraph id.
+          The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "body": {
+      "id":"20151121-212654\_766735423",
+      "status":"FINISHED",
+      "finished":"Tue Nov 24 14:21:40 KST 2015",
+      "started":"Tue Nov 24 14:21:39 KST 2015"
+    }
 }</pre></td>
     </tr>
   </table>
@@ -942,33 +846,6 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Move a paragraph to the specific index
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```POST``` method moves a paragraph to the specific index (order) from the note.
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/move/[newIndex]```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response </td>
-      <td><pre>{"status": "OK","message": ""}</pre></td>
-    </tr>
-  </table>
-
-<br/>
 ### Delete a paragraph
   <table class="table-configuration">
     <col width="200">
@@ -995,129 +872,291 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
   </table>
 
-<br />
-### Export a note
+<br/>
+### Run a paragraph asynchronously
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method exports a note by the given id and gernerates a JSON
+      <td>This ```POST``` method runs the paragraph asynchronously by given note and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/export/[noteId]```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <td> sample JSON response </td>
-      <td><pre>{
-  "paragraphs": [
-    {
-      "text": "%md This is my new paragraph in my new note",
-      "dateUpdated": "Jan 8, 2016 4:49:38 PM",
-      "config": {
-        "enabled": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "jobName": "paragraph\_1452300578795\_1196072540",
-      "id": "20160108-164938\_1685162144",
-      "dateCreated": "Jan 8, 2016 4:49:38 PM",
-      "status": "READY",
-      "progressUpdateIntervalMs": 500
-    }
-  ],
-  "name": "source note for export",
-  "id": "2B82H3RR1",
-  "angularObjects": {},
-  "config": {},
-  "info": {}
-}</pre></td>
-    </tr>
-  </table>
-
-<br />
-### Import a note
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```POST``` method imports a note from the note JSON input
-      </td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/import```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td> Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td>sample JSON input</td>
+      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
       <td><pre>
 {
-  "paragraphs": [
-    {
-      "text": "%md This is my new paragraph in my new note",
-      "dateUpdated": "Jan 8, 2016 4:49:38 PM",
-      "config": {
-        "enabled": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "jobName": "paragraph\_1452300578795\_1196072540",
-      "id": "20160108-164938\_1685162144",
-      "dateCreated": "Jan 8, 2016 4:49:38 PM",
-      "status": "READY",
-      "progressUpdateIntervalMs": 500
-    }
-  ],
-  "name": "source note for export",
-  "id": "2B82H3RR1",
-  "angularObjects": {},
-  "config": {},
-  "info": {}
+  "name": "name of new note",
+  "params": {
+    "formLabel1": "value1",
+    "formLabel2": "value2"
+  }
 }</pre></td>
     </tr>
     <tr>
-      <td>sample JSON response</td>
-      <td><pre>
-{
-  "status": "CREATED",
-  "message": "",
-  "body": "2AZPHY918"
-}</pre></td>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK"}</pre></td>
     </tr>
   </table>
 
-<br />
-### Clear all paragraph result
+<br/>
+### Run a paragraph synchronously
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method clear all paragraph results from note of given id.
+      <td>This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/clear```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/run/[noteId]/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
+      <td><pre>
+{
+  "name": "name of new note",
+  "params": {
+    "formLabel1": "value1",
+    "formLabel2": "value2"
+  }
+}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK"}</pre></td>
+    </tr>    
+    <tr>
+      <td> sample JSON error </td>
+      <td><pre>
+{
+   "status": "INTERNAL\_SERVER\_ERROR",
+   "body": {
+       "code": "ERROR",
+       "type": "TEXT",
+       "msg": "bash: -c: line 0: unexpected EOF while looking for matching ``'\nbash: -c: line 1: syntax error: unexpected end of file\nExitValue: 2"
+   }
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Stop a paragraph
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```DELETE``` method stops the paragraph by given note and paragraph id.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK"}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+### Move a paragraph to the specific index
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method moves a paragraph to the specific index (order) from the note.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/move/[newIndex]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK","message": ""}</pre></td>
+    </tr>
+  </table>
+
+<br />
+### Full text search through the paragraphs in all notes
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>```GET``` request will return list of matching paragraphs
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/search?q=[query]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "body": [
+    {
+      "id": "<noteId>/paragraph/<paragraphId>",
+      "name":"Note Name", 
+      "snippet":"",
+      "text":""
+    }
+  ]
+}</pre></td>
+    </tr>
+  </table>
+
+## Cron jobs
+<br/>
+### Add Cron Job
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method adds cron job by the given note id.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON input </td>
+      <td><pre>{"cron": "cron expression of note"}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK"}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+
+### Remove Cron Job
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```DELETE``` method removes cron job by the given note id.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK"}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+
+### Get Cron Job
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets cron job expression of given note id.
+          The body field of the returned JSON contains the cron expression.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status": "OK", "body": "* * * * * ?"}</pre></td>
+    </tr>
+  </table>
+
+## Permission
+
+
+
+### Get a note permission information
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets a note authorization information.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/permissions```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1125,19 +1164,82 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Forbidden code</td>
-      <td>401</td>
-    </tr>
-    <tr>
-      <td>Not Found code</td>
-      <td>404</td>
+      <td>403</td>
     </tr>
     <tr>
       <td>Fail code</td>
       <td>500</td>
     </tr>
     <tr>
-      <td>sample JSON response</td>
-      <td><pre>{"status": "OK"}</pre></td>
-    </tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{  
+   "status":"OK",
+   "message":"",
+   "body":{  
+      "readers":[  
+         "user2"
+      ],
+      "owners":[  
+         "user1"
+      ],
+      "writers":[  
+         "user2"
+      ]
+   }
+}
+      </pre></td>
     </tr>
   </table>
+
+<br/>
+### Set note permission
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method set note authorization information.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/permissions```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Forbidden code</td>
+      <td>403</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td> sample JSON input </td>
+      <td><pre>
+{
+  "readers": [
+    "user1"
+  ],
+  "owners": [
+    "user2"
+  ],
+  "writers": [
+    "user1"
+  ]
+}
+</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK"
+}</pre></td>
+    </tr>
+  </table>
+
+

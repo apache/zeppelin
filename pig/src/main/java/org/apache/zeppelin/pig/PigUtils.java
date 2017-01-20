@@ -19,8 +19,8 @@ package org.apache.zeppelin.pig;
 
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigRunner;
 import org.apache.pig.backend.hadoop.executionengine.tez.TezExecType;
 import org.apache.pig.tools.pigstats.InputStats;
@@ -171,6 +171,15 @@ public class PigUtils {
   private static String extractFromTezPigStats(TezPigScriptStats stats) {
 
     try {
+      if (stats.getReturnCode() == PigRunner.ReturnCode.UNKNOWN) {
+        LOGGER.warn("unknown return code, can't display the results");
+        return null;
+      }
+      if (stats.getPigContext() == null) {
+        LOGGER.warn("unknown exec type, don't display the results");
+        return null;
+      }
+
       Field userIdField = PigStats.class.getDeclaredField("userId");
       userIdField.setAccessible(true);
       String userId = (String) (userIdField.get(stats));

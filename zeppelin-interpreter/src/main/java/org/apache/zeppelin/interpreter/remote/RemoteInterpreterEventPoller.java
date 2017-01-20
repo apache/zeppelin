@@ -38,6 +38,8 @@ import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,7 +54,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RemoteInterpreterEventPoller extends Thread {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventPoller.class);
-  private static final ScheduledExecutorService appendService =
+  private final ScheduledExecutorService appendService =
       Executors.newSingleThreadScheduledExecutor();
   private final RemoteInterpreterProcessListener listener;
   private final ApplicationEventListener appListener;
@@ -61,6 +63,8 @@ public class RemoteInterpreterEventPoller extends Thread {
 
   private RemoteInterpreterProcess interpreterProcess;
   private InterpreterGroup interpreterGroup;
+
+  Gson gson = new Gson();
 
   public RemoteInterpreterEventPoller(
       RemoteInterpreterProcessListener listener,
@@ -117,8 +121,6 @@ public class RemoteInterpreterEventPoller extends Thread {
         interpreterProcess.releaseClient(client, broken);
       }
 
-      Gson gson = new Gson();
-
       AngularObjectRegistry angularObjectRegistry = interpreterGroup.getAngularObjectRegistry();
 
       try {
@@ -160,6 +162,12 @@ public class RemoteInterpreterEventPoller extends Thread {
           logger.debug("RESOURCE_GET {} {}", resourceId.getResourcePoolId(), resourceId.getName());
           Object o = getResource(resourceId);
           sendResourceResponseGet(resourceId, o);
+        } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD) {
+          String message = event.getData();
+          InvokeResourceMethodEventMessage invokeMethodMessage =
+              gson.fromJson(message, InvokeResourceMethodEventMessage.class);
+          Object ret = invokeResourceMethod(invokeMethodMessage);
+          sendInvokeMethodResult(invokeMethodMessage, ret);
         } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_APPEND) {
           // on output append
           Map<String, String> outputAppend = gson.fromJson(
@@ -235,10 +243,20 @@ public class RemoteInterpreterEventPoller extends Thread {
           Map<String, String> metaInfos = gson.fromJson(event.getData(),
               new TypeToken<Map<String, String>>() {
               }.getType());
-          String id = interpreterGroup.getId();
-          int indexOfColon = id.indexOf(":");
-          String settingId = id.substring(0, indexOfColon);
+          String settingId = RemoteInterpreterUtils.
+              getInterpreterSettingId(interpreterGroup.getId());
           listener.onMetaInfosReceived(settingId, metaInfos);
+        } else if (event.getType() == RemoteInterpreterEventType.PARA_INFOS) {
+          Map<String, String> paraInfos = gson.fromJson(event.getData(),
+              new TypeToken<Map<String, String>>() {
+              }.getType());
+          String noteId = paraInfos.get("noteId");
+          String paraId = paraInfos.get("paraId");
+          String settingId = RemoteInterpreterUtils.
+              getInterpreterSettingId(interpreterGroup.getId());
+          if (noteId != null && paraId != null && settingId != null) {
+            listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
+          }
         }
         logger.debug("Event from remote process {}", event.getType());
       } catch (Exception e) {
@@ -383,8 +401,6 @@ public class RemoteInterpreterEventPoller extends Thread {
     return resourceSet;
   }
 
-
-
   private void sendResourceResponseGet(ResourceId resourceId, Object o) {
     Client client = null;
     boolean broken = false;
@@ -430,6 +446,87 @@ public class RemoteInterpreterEventPoller extends Thread {
             resourceId.getNoteId(),
             resourceId.getParagraphId(),
             resourceId.getName());
+        Object o = Resource.deserializeObject(res);
+        return o;
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+        broken = true;
+      } finally {
+        if (client != null) {
+          intpGroup.getRemoteInterpreterProcess().releaseClient(client, broken);
+        }
+      }
+    }
+    return null;
+  }
+
+  public void sendInvokeMethodResult(InvokeResourceMethodEventMessage message, Object o) {
+    Client client = null;
+    boolean broken = false;
+    try {
+      client = interpreterProcess.getClient();
+      Gson gson = new Gson();
+      String invokeMessage = gson.toJson(message);
+      ByteBuffer obj;
+      if (o == null) {
+        obj = ByteBuffer.allocate(0);
+      } else {
+        obj = Resource.serializeObject(o);
+      }
+      client.resourceResponseInvokeMethod(invokeMessage, obj);
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+      broken = true;
+    } finally {
+      if (client != null) {
+        interpreterProcess.releaseClient(client, broken);
+      }
+    }
+  }
+
+  private Object invokeResourceMethod(InvokeResourceMethodEventMessage message) {
+    ResourceId resourceId = message.resourceId;
+    InterpreterGroup intpGroup = InterpreterGroup.getByInterpreterGroupId(
+        resourceId.getResourcePoolId());
+    if (intpGroup == null) {
+      return null;
+    }
+
+    RemoteInterpreterProcess remoteInterpreterProcess = intpGroup.getRemoteInterpreterProcess();
+    if (remoteInterpreterProcess == null) {
+      ResourcePool localPool = intpGroup.getResourcePool();
+      if (localPool != null) {
+        Resource res = localPool.get(resourceId.getName());
+        if (res != null) {
+          try {
+            return res.invokeMethod(
+                message.methodName,
+                message.getParamTypes(),
+                message.params,
+                message.returnResourceName);
+          } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return null;
+          }
+        } else {
+          // object is null. can't invoke any method
+          logger.error("Can't invoke method {} on null object", message.methodName);
+          return null;
+        }
+      } else {
+        logger.error("no resource pool");
+        return null;
+      }
+    } else if (interpreterProcess.isRunning()) {
+      Client client = null;
+      boolean broken = false;
+      try {
+        client = remoteInterpreterProcess.getClient();
+        ByteBuffer res = client.resourceInvokeMethod(
+            resourceId.getNoteId(),
+            resourceId.getParagraphId(),
+            resourceId.getName(),
+            gson.toJson(message));
         Object o = Resource.deserializeObject(res);
         return o;
       } catch (Exception e) {

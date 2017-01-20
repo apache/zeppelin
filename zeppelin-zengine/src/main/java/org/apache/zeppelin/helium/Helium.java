@@ -30,12 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages helium packages
@@ -46,12 +41,25 @@ public class Helium {
 
   private final HeliumConf heliumConf;
   private final String heliumConfPath;
-  private final String defaultLocalRegistryPath;
-  private final Gson gson;
+  private final String registryPaths;
+  private final File registryCacheDir;
 
-  public Helium(String heliumConfPath, String defaultLocalRegistryPath) throws IOException {
+  private final Gson gson;
+  private final HeliumBundleFactory bundleFactory;
+  private final HeliumApplicationFactory applicationFactory;
+
+  public Helium(
+      String heliumConfPath,
+      String registryPaths,
+      File registryCacheDir,
+      HeliumBundleFactory bundleFactory,
+      HeliumApplicationFactory applicationFactory)
+      throws IOException {
     this.heliumConfPath = heliumConfPath;
-    this.defaultLocalRegistryPath = defaultLocalRegistryPath;
+    this.registryPaths = registryPaths;
+    this.registryCacheDir = registryCacheDir;
+    this.bundleFactory = bundleFactory;
+    this.applicationFactory = applicationFactory;
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -83,20 +91,37 @@ public class Helium {
     }
   }
 
+  public HeliumApplicationFactory getApplicationFactory() {
+    return applicationFactory;
+  }
+
+  public HeliumBundleFactory getBundleFactory() {
+    return bundleFactory;
+  }
+
   private synchronized HeliumConf loadConf(String path) throws IOException {
+    // add registry
+    if (registryPaths != null && !registryPaths.isEmpty()) {
+      String[] paths = registryPaths.split(",");
+      for (String uri : paths) {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+          logger.info("Add helium online registry {}", uri);
+          registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir));
+        } else {
+          logger.info("Add helium local registry {}", uri);
+          registry.add(new HeliumLocalRegistry(uri, uri));
+        }
+      }
+    }
+
     File heliumConfFile = new File(path);
     if (!heliumConfFile.isFile()) {
       logger.warn("{} does not exists", path);
       HeliumConf conf = new HeliumConf();
-      LinkedList<HeliumRegistry> defaultRegistry = new LinkedList<>();
-      defaultRegistry.add(new HeliumLocalRegistry("local", defaultLocalRegistryPath));
-      conf.setRegistry(defaultRegistry);
-      this.registry = conf.getRegistry();
       return conf;
     } else {
       String jsonString = FileUtils.readFileToString(heliumConfFile);
       HeliumConf conf = gson.fromJson(jsonString, HeliumConf.class);
-      this.registry = conf.getRegistry();
       return conf;
     }
   }
@@ -104,7 +129,7 @@ public class Helium {
   public synchronized void save() throws IOException {
     String jsonString;
     synchronized (registry) {
-      heliumConf.setRegistry(registry);
+      clearNotExistsPackages();
       jsonString = gson.toJson(heliumConf);
     }
 
@@ -116,20 +141,118 @@ public class Helium {
     FileUtils.writeStringToFile(heliumConfFile, jsonString);
   }
 
-  public List<HeliumPackageSearchResult> getAllPackageInfo() {
-    List<HeliumPackageSearchResult> list = new LinkedList<>();
+  private void clearNotExistsPackages() {
+    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo();
+
+    // clear visualization display order
+    List<String> packageOrder = heliumConf.getBundleDisplayOrder();
+    List<String> clearedOrder = new LinkedList<>();
+    for (String pkgName : packageOrder) {
+      if (all.containsKey(pkgName)) {
+        clearedOrder.add(pkgName);
+      }
+    }
+    heliumConf.setBundleDisplayOrder(clearedOrder);
+
+    // clear enabled package
+    Map<String, String> enabledPackages = heliumConf.getEnabledPackages();
+    for (String pkgName : enabledPackages.keySet()) {
+      if (!all.containsKey(pkgName)) {
+        heliumConf.disablePackage(pkgName);
+      }
+    }
+  }
+
+  public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo() {
+    Map<String, String> enabledPackageInfo = heliumConf.getEnabledPackages();
+
+    Map<String, List<HeliumPackageSearchResult>> map = new HashMap<>();
     synchronized (registry) {
       for (HeliumRegistry r : registry) {
         try {
           for (HeliumPackage pkg : r.getAll()) {
-            list.add(new HeliumPackageSearchResult(r.name(), pkg));
+            String name = pkg.getName();
+            String artifact = enabledPackageInfo.get(name);
+            boolean enabled = (artifact != null && artifact.equals(pkg.getArtifact()));
+
+            if (!map.containsKey(name)) {
+              map.put(name, new LinkedList<HeliumPackageSearchResult>());
+            }
+            map.get(name).add(new HeliumPackageSearchResult(r.name(), pkg, enabled));
           }
         } catch (IOException e) {
           logger.error(e.getMessage(), e);
         }
       }
     }
-    return list;
+
+    // sort version (artifact)
+    for (String name : map.keySet()) {
+      List<HeliumPackageSearchResult> packages = map.get(name);
+      Collections.sort(packages, new Comparator<HeliumPackageSearchResult>() {
+        @Override
+        public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
+          return o2.getPkg().getArtifact().compareTo(o1.getPkg().getArtifact());
+        }
+      });
+    }
+    return map;
+  }
+
+  public HeliumPackageSearchResult getPackageInfo(String name, String artifact) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo();
+    List<HeliumPackageSearchResult> packages = infos.get(name);
+    if (artifact == null) {
+      return packages.get(0);
+    } else {
+      for (HeliumPackageSearchResult pkg : packages) {
+        if (pkg.getPkg().getArtifact().equals(artifact)) {
+          return pkg;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  public File recreateBundle() throws IOException {
+    return bundleFactory.buildBundle(getBundlePackagesToBundle(), true);
+  }
+
+  public void enable(String name, String artifact) throws IOException {
+    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
+
+    // no package found.
+    if (pkgInfo == null) {
+      return;
+    }
+
+    // enable package
+    heliumConf.enablePackage(name, artifact);
+
+    // if package is visualization, rebuild bundle
+    if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
+      bundleFactory.buildBundle(getBundlePackagesToBundle());
+    }
+
+    save();
+  }
+
+  public void disable(String name) throws IOException {
+    String artifact = heliumConf.getEnabledPackages().get(name);
+
+    if (artifact == null) {
+      return;
+    }
+
+    heliumConf.disablePackage(name);
+
+    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
+    if (pkgInfo == null || HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
+      bundleFactory.buildBundle(getBundlePackagesToBundle());
+    }
+
+    save();
   }
 
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
@@ -153,20 +276,96 @@ public class Helium {
       allResources = ResourcePoolUtils.getAllResources();
     }
 
-    for (HeliumPackageSearchResult pkg : getAllPackageInfo()) {
-      ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
-          pkg.getPkg().getResources(),
-          paragraph.getNote().getId(),
-          paragraph.getId(),
-          allResources);
-      if (resources == null) {
-        continue;
-      } else {
-        suggestion.addAvailablePackage(pkg);
+    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo().values()) {
+      for (HeliumPackageSearchResult pkg : pkgs) {
+        if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
+          ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
+              pkg.getPkg().getResources(),
+              paragraph.getNote().getId(),
+              paragraph.getId(),
+              allResources);
+          if (resources == null) {
+            continue;
+          } else {
+            suggestion.addAvailablePackage(pkg);
+          }
+          break;
+        }
       }
     }
 
     suggestion.sort();
     return suggestion;
+  }
+
+  /**
+   * Get enabled buildBundle packages
+   *
+   * @return ordered list of enabled buildBundle package
+   */
+  public List<HeliumPackage> getBundlePackagesToBundle() {
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo();
+    List<String> visOrder = heliumConf.getBundleDisplayOrder();
+
+    List<HeliumPackage> orderedBundlePackages = new LinkedList<>();
+
+    // add enabled packages in visOrder
+    for (String name : visOrder) {
+      List<HeliumPackageSearchResult> versions = allPackages.get(name);
+      if (versions == null) {
+        continue;
+      }
+      for (HeliumPackageSearchResult pkgInfo : versions) {
+        if (canBundle(pkgInfo)) {
+          orderedBundlePackages.add(pkgInfo.getPkg());
+          allPackages.remove(name);
+          break;
+        }
+      }
+    }
+
+    // add enabled packages not in visOrder
+    for (List<HeliumPackageSearchResult> pkgInfos : allPackages.values()) {
+      for (HeliumPackageSearchResult pkgInfo : pkgInfos) {
+        if (canBundle(pkgInfo)) {
+          orderedBundlePackages.add(pkgInfo.getPkg());
+          break;
+        }
+      }
+    }
+
+    return orderedBundlePackages;
+  }
+
+  public boolean canBundle(HeliumPackageSearchResult pkgInfo) {
+    return (pkgInfo.isEnabled() &&
+        HeliumPackage.isBundleType(pkgInfo.getPkg().getType()));
+  }
+
+  /**
+   * Get enabled package list in order
+   * @return
+   */
+  public List<String> setVisualizationPackageOrder() {
+    List orderedPackageList = new LinkedList<>();
+    List<HeliumPackage> packages = getBundlePackagesToBundle();
+
+    for (HeliumPackage pkg : packages) {
+      if (HeliumType.VISUALIZATION == pkg.getType()) {
+        orderedPackageList.add(pkg.getName());
+      }
+    }
+
+    return orderedPackageList;
+  }
+
+  public void setVisualizationPackageOrder(List<String> orderedPackageList)
+      throws IOException {
+    heliumConf.setBundleDisplayOrder(orderedPackageList);
+
+    // if package is visualization, rebuild buildBundle
+    bundleFactory.buildBundle(getBundlePackagesToBundle());
+
+    save();
   }
 }

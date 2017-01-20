@@ -1,0 +1,16 @@
+{
+  "name": "markdown-spell",
+  "description" : "Parse markdown using https://github.com/evilstreak/markdown-js (example)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "markdown": "0.5.0",
+    "zeppelin-spell": "*"
+  },
+  "spell": {
+    "magic": "%markdown",
+    "usage": "%markdown <TEXT>"
+  }
+}

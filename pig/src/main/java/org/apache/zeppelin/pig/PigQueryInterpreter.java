@@ -19,8 +19,8 @@
 package org.apache.zeppelin.pig;
 
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
@@ -78,6 +78,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
 
     StringBuilder resultBuilder = new StringBuilder("%table ");
     try {
+      pigServer.setJobName(createJobName(st, context));
       File tmpScriptFile = PigUtils.createTempPigScript(queries);
       // each thread should its own ScriptState & PigStats
       ScriptState.start(pigServer.getPigContext().getExecutionEngine().instantiateScriptState());
@@ -93,7 +94,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
       if (schemaKnown) {
         for (int i = 0; i < schema.size(); ++i) {
           Schema.FieldSchema field = schema.getField(i);
-          resultBuilder.append(field.alias);
+          resultBuilder.append(field.alias != null ? field.alias : "col_" + i);
           if (i != schema.size() - 1) {
             resultBuilder.append("\t");
           }
@@ -113,7 +114,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
           resultBuilder.append("\n");
           firstRow = false;
         }
-        resultBuilder.append(StringUtils.join(tuple, "\t"));
+        resultBuilder.append(StringUtils.join(tuple.iterator(), "\t"));
         resultBuilder.append("\n");
       }
       if (index >= maxResult && iter.hasNext()) {

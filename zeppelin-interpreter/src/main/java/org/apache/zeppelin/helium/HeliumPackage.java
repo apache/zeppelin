@@ -23,35 +23,34 @@ import org.apache.zeppelin.annotation.Experimental;
  */
 @Experimental
 public class HeliumPackage {
-  private Type type;
+  private HeliumType type;
   private String name;           // user friendly name of this application
   private String description;    // description
   private String artifact;       // artifact name e.g) groupId:artifactId:versionId
   private String className;      // entry point
   private String [][] resources; // resource classnames that requires
                                  // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  private String license;
   private String icon;
-  /**
-   * Type of package
-   */
-  public static enum Type {
-    INTERPRETER,
-    NOTEBOOK_REPO,
-    APPLICATION
-  }
 
-  public HeliumPackage(Type type,
+  public SpellPackageInfo spell;
+
+  public HeliumPackage(HeliumType type,
                        String name,
                        String description,
                        String artifact,
                        String className,
-                       String[][] resources) {
+                       String[][] resources,
+                       String license,
+                       String icon) {
     this.type = type;
     this.name = name;
     this.description = description;
     this.artifact = artifact;
     this.className = className;
     this.resources = resources;
+    this.license = license;
+    this.icon = icon;
   }
 
   @Override
@@ -69,8 +68,13 @@ public class HeliumPackage {
     return type == info.type && artifact.equals(info.artifact) && className.equals(info.className);
   }
 
-  public Type getType() {
+  public HeliumType getType() {
     return type;
+  }
+
+  public static boolean isBundleType(HeliumType type) {
+    return (type == HeliumType.VISUALIZATION ||
+        type == HeliumType.SPELL);
   }
 
   public String getName() {
@@ -93,7 +97,14 @@ public class HeliumPackage {
     return resources;
   }
 
+  public String getLicense() {
+    return license;
+  }
   public String getIcon() {
     return icon;
+  }
+
+  public SpellPackageInfo getSpellInfo() {
+    return spell;
   }
 }

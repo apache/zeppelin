@@ -64,6 +64,7 @@ public class IgniteInterpreterTest {
     props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
     props.setProperty(IgniteInterpreter.IGNITE_CLIENT_MODE, "false");
     props.setProperty(IgniteInterpreter.IGNITE_PEER_CLASS_LOADING_ENABLED, "false");
+    props.setProperty(IgniteInterpreter.IGNITE_ADDRESSES, HOST);
 
     intp = new IgniteInterpreter(props);
     intp.open();

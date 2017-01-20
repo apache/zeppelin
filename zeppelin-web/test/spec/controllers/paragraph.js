@@ -1,8 +1,6 @@
-'use strict';
-
 describe('Controller: ParagraphCtrl', function() {
 
-  beforeEach(module('zeppelinWebApp'));
+  beforeEach(angular.mock.module('zeppelinWebApp'));
 
   var scope;
   var websocketMsgSrvMock = {};
@@ -41,10 +39,6 @@ describe('Controller: ParagraphCtrl', function() {
     it('check for scope functions to be defined : ' + fn, function() {
       expect(scope[fn]).toBeDefined();
     });
-  });
-
-  it('should return "TEXT" by default when getResultType() is called with no parameter', function() {
-    expect(scope.getResultType()).toEqual('TEXT');
   });
 
   it('should have this array of values for "colWidthOption"', function() {

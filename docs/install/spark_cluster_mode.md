@@ -208,3 +208,30 @@ Don't forget to set Spark `master` as `mesos://127.0.1.1:5050` in Zeppelin **Int
 After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:5050/#/frameworks` and check Zeppelin application is running well or not.
 
 <img src="../assets/themes/zeppelin/img/docs-img/mesos_frameworks.png" />
+
+### Troubleshooting for Spark on Mesos
+
+- If you have problem with hostname, use `--add-host` option when executing `dockerrun`
+
+```
+## use `--add-host=moby:127.0.0.1` option to resolve
+## since docker container couldn't resolve `moby`
+
+: java.net.UnknownHostException: moby: moby: Name or service not known
+        at java.net.InetAddress.getLocalHost(InetAddress.java:1496)
+        at org.apache.spark.util.Utils$.findLocalInetAddress(Utils.scala:789)
+        at org.apache.spark.util.Utils$.org$apache$spark$util$Utils$$localIpAddress$lzycompute(Utils.scala:782)
+        at org.apache.spark.util.Utils$.org$apache$spark$util$Utils$$localIpAddress(Utils.scala:782)
+```
+
+- If you have problem with mesos master, try `mesos://127.0.0.1` instead of `mesos://127.0.1.1`
+
+```
+I0103 20:17:22.329269   340 sched.cpp:330] New master detected at master@127.0.1.1:5050
+I0103 20:17:22.330749   340 sched.cpp:341] No credentials provided. Attempting to register without authentication
+W0103 20:17:22.333531   340 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:24.040252   339 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:26.150250   339 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:26.737604   339 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:35.241714   336 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+```

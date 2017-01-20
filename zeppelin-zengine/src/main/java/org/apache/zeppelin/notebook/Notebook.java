@@ -307,6 +307,18 @@ public class Notebook implements NoteEventListener {
     }
   }
 
+  public Folder getFolder(String folderId) {
+    synchronized (folders) {
+      return folders.getFolder(folderId);
+    }
+  }
+
+  public boolean hasFolder(String folderId) {
+    synchronized (folders) {
+      return folders.hasFolder(folderId);
+    }
+  }
+
   public void removeNote(String id, AuthenticationInfo subject) {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
 
@@ -468,6 +480,7 @@ public class Notebook implements NoteEventListener {
       if (p.getDateFinished() != null && lastUpdatedDate.before(p.getDateFinished())) {
         lastUpdatedDate = p.getDateFinished();
       }
+      p.clearRuntimeInfo(null);
     }
 
     Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();

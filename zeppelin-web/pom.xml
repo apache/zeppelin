@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
@@ -39,7 +39,7 @@
 
   <properties>
     <node.version>v6.9.1</node.version>
-    <npm.version>3.10.8</npm.version>
+    <yarn.version>v0.18.1</yarn.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--plugin versions-->
@@ -66,6 +66,7 @@
             <exclude>**/*.iml</exclude>
             <exclude>.git/</exclude>
             <exclude>.gitignore</exclude>
+            <exclude>.babelrc</exclude>
             <exclude>.bowerrc</exclude>
             <exclude>.editorconfig</exclude>
             <exclude>.jscsrc</exclude>
@@ -86,12 +87,16 @@
             <exclude>src/styles/font-awesome*</exclude>
             <exclude>src/fonts/Simple-Line*</exclude>
             <exclude>src/fonts/simple-line*</exclude>
+            <exclude>src/fonts/Patua-One*</exclude>
             <exclude>src/fonts/patua-one*</exclude>
+            <exclude>src/fonts/Roboto*</exclude>
             <exclude>src/fonts/roboto*</exclude>
+            <exclude>src/fonts/Source-Code-Pro*</exclude>
             <exclude>src/fonts/source-code-pro*</exclude>
-            <exclude>src/fonts/google-fonts.css</exclude>
             <exclude>bower.json</exclude>
-            <exclude>package.json</exclude>
+            <exclude>**/package.json</exclude>
+            <exclude>**/.npmignore</exclude>
+            <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
           </excludes>
         </configuration>
@@ -104,30 +109,30 @@
         <executions>
 
           <execution>
-            <id>install node and npm</id>
+            <id>install node and yarn</id>
             <goals>
-              <goal>install-node-and-npm</goal>
+              <goal>install-node-and-yarn</goal>
             </goals>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
-              <npmVersion>${npm.version}</npmVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
             </configuration>
           </execution>
 
           <execution>
-            <id>npm install</id>
+            <id>yarn install</id>
             <goals>
-              <goal>npm</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
-              <arguments>install</arguments>
+              <arguments>install --no-lockfile</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>npm build</id>
+            <id>yarn build</id>
             <goals>
-              <goal>npm</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
               <arguments>run build</arguments>
@@ -135,9 +140,9 @@
           </execution>
 
           <execution>
-            <id>npm test</id>
+            <id>yarn test</id>
             <goals>
-              <goal>npm</goal>
+              <goal>yarn</goal>
             </goals>
             <phase>test</phase>
             <configuration>
@@ -172,11 +177,18 @@
       </plugin>
 
       <plugin>
+        <!-- clean task will be executed by front-end-maven plugin -->
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
           <filesets>
             <fileset>
               <directory>bower_components</directory>
+            </fileset>
+            <fileset>
+              <directory>node</directory>
+            </fileset>
+            <fileset>
+              <directory>node_modules</directory>
             </fileset>
           </filesets>
         </configuration>

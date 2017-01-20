@@ -20,8 +20,6 @@ package org.apache.zeppelin.helium;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.After;
 import org.junit.Before;
@@ -74,12 +72,14 @@ public class ApplicationLoaderTest {
 
   public HeliumPackage createPackageInfo(String className, String artifact) {
     HeliumPackage app1 = new HeliumPackage(
-        HeliumPackage.Type.APPLICATION,
+        HeliumType.APPLICATION,
         "name1",
         "desc1",
         artifact,
         className,
-        new String[][]{{}});
+        new String[][]{{}},
+        "license",
+        "icon");
     return app1;
   }
 

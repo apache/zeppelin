@@ -35,7 +35,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
+import org.apache.zeppelin.helium.HeliumBundleFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
@@ -82,7 +84,6 @@ public class ZeppelinServer extends Application {
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
   public static Helium helium;
-  public static HeliumApplicationFactory heliumApplicationFactory;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
@@ -98,8 +99,45 @@ public class ZeppelinServer extends Application {
     this.depResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
-    this.helium = new Helium(conf.getHeliumConfPath(), conf.getHeliumDefaultLocalRegistryPath());
-    this.heliumApplicationFactory = new HeliumApplicationFactory();
+    InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
+
+    HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory();
+    HeliumBundleFactory heliumBundleFactory;
+
+    if (isBinaryPackage(conf)) {
+      /* In binary package, zeppelin-web/src/app/visualization and zeppelin-web/src/app/tabledata
+       * are copied to lib/node_modules/zeppelin-vis, lib/node_modules/zeppelin-tabledata directory.
+       * Check zeppelin/zeppelin-distribution/src/assemble/distribution.xml to see how they're
+       * packaged into binary package.
+       */
+      heliumBundleFactory = new HeliumBundleFactory(
+          new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")),
+          new File(conf.getRelativeDir("lib/node_modules/zeppelin-spell")));
+    } else {
+      heliumBundleFactory = new HeliumBundleFactory(
+          new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
+          new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
+          new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")),
+          new File(conf.getRelativeDir("zeppelin-web/src/app/spell")));
+    }
+
+    this.helium = new Helium(
+        conf.getHeliumConfPath(),
+        conf.getHeliumRegistry(),
+        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO),
+            "helium-registry-cache"),
+        heliumBundleFactory,
+        heliumApplicationFactory);
+
+    // create bundle
+    try {
+      heliumBundleFactory.buildBundle(helium.getBundlePackagesToBundle());
+    } catch (Exception e) {
+      LOG.error(e.getMessage(), e);
+    }
+
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated());
@@ -156,8 +194,9 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterFactory().close();
+          notebook.getInterpreterFactory().shutdown();
           notebook.close();
+          Thread.sleep(3000);
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
@@ -187,10 +226,14 @@ public class ZeppelinServer extends Application {
     ServerConnector connector;
 
     if (conf.useSsl()) {
+      LOG.debug("Enabling SSL for Zeppelin Server on port " + conf.getServerSslPort());
       HttpConfiguration httpConfig = new HttpConfiguration();
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(conf.getServerSslPort());
       httpConfig.setOutputBufferSize(32768);
+      httpConfig.setRequestHeaderSize(8192);
+      httpConfig.setResponseHeaderSize(8192);
+      httpConfig.setSendServerVersion(true);
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       SecureRequestCustomizer src = new SecureRequestCustomizer();
@@ -212,7 +255,11 @@ public class ZeppelinServer extends Application {
     connector.setIdleTimeout(timeout);
     connector.setSoLingerTime(-1);
     connector.setHost(conf.getServerAddress());
-    connector.setPort(conf.getServerPort());
+    if (conf.useSsl()) {
+      connector.setPort(conf.getServerSslPort());
+    } else {
+      connector.setPort(conf.getServerPort());
+    }
 
     server.addConnector(connector);
 
@@ -241,12 +288,14 @@ public class ZeppelinServer extends Application {
     sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
     sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
 
-    // Set truststore
-    sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
-    sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
-    sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+    if (conf.useClientAuth()) {
+      sslContextFactory.setNeedClientAuth(conf.useClientAuth());
 
-    sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+      // Set truststore
+      sslContextFactory.setTrustStorePath(conf.getTrustStorePath());
+      sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
+      sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+    }
 
     return sslContextFactory;
   }
@@ -297,6 +346,9 @@ public class ZeppelinServer extends Application {
     webApp.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
+    webApp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
+            Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
+
     return webApp;
 
   }
@@ -322,10 +374,10 @@ public class ZeppelinServer extends Application {
     NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
     singletons.add(notebookRepoApi);
 
-    HeliumRestApi heliumApi = new HeliumRestApi(helium, heliumApplicationFactory, notebook);
+    HeliumRestApi heliumApi = new HeliumRestApi(helium, notebook);
     singletons.add(heliumApi);
 
-    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory, notebookWsServer);
     singletons.add(interpreterApi);
 
     CredentialRestApi credentialApi = new CredentialRestApi(credentials);
@@ -341,6 +393,14 @@ public class ZeppelinServer extends Application {
     singletons.add(settingsApi);
 
     return singletons;
+  }
+
+  /**
+   * Check if it is source build or binary package
+   * @return
+   */
+  private static boolean isBinaryPackage(ZeppelinConfiguration conf) {
+    return !new File(conf.getRelativeDir("zeppelin-web")).isDirectory();
   }
 }
 

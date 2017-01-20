@@ -11,55 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<script type="text/ng-template" id="notebook_folder_renderer.html">
-  <div ng-if="node.children == null"
-       ng-mouseenter="showNoteButton=true"
-       ng-mouseleave="showNoteButton=false">
-    <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
-      <i style="font-size: 10px;" class="icon-doc"/> {{noteName(node)}}
-    </a>
-    <a style="text-decoration: none;">
-      <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
-         class="fa fa-pencil" ng-show="showNoteButton" ng-click="renameNote(node)"
-         tooltip-placement="bottom" tooltip="Rename note">
-      </i>
-    </a>
-    <a style="text-decoration: none;">
-      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-eraser" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
-         tooltip-placement="bottom" tooltip="Clear output">
-      </i>
-    </a>
-    <a style="text-decoration: none;">
-      <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
-         class="fa fa-trash-o" ng-show="showNoteButton" ng-click="removeNote(node.id)"
-         tooltip-placement="bottom" tooltip="Remove note">
-      </i>
-    </a>
-  </div>
-  <div ng-if="node.children != null">
-    <div ng-mouseenter="showFolderButton=true"
-         ng-mouseleave="showFolderButton=false">
-      <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
-        <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
-      </a>
-      <a style="text-decoration: none;">
-        <i style="font-size: 13px; margin-left: 10px; cursor: pointer; text-decoration: none;"
-           class="fa fa-pencil" ng-show="showFolderButton" ng-click="renameFolder(node)"
-           tooltip-placement="bottom" tooltip="Rename folder">
-        </i>
-      </a>
-    </div>
-    <div ng-if="!node.hidden">
-      <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />
-      </ul>
-    </div>
-  </div>
-</script>
-
-<div ng-controller="HomeCtrl as home">
+<div ng-controller="HomeCtrl as home" data-ng-init="initHome()">
   <div ng-show="home.staticHome" class="box width-full home">
     <div class="zeppelin">
       <div class="zeppelin2"></div>
@@ -84,7 +36,7 @@ limitations under the License.
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-            <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+            <h5 ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;" ng-click="notenamectrl.getInterpreterSettings()">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
@@ -92,15 +44,14 @@ limitations under the License.
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
               </li>
-              <div ng-if="!query || query.name === ''">
-                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index" ng-include="'notebook_folder_renderer.html'" />
+              <div ng-if="!query.q || query.q === ''">
+                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                    ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
               </div>
-              <div ng-if="query && query.name !== ''">
-                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
-                  <i style="font-size: 10px;" class="icon-doc"></i>
-                  <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
-                </li>
-              </div>
+              <div ng-if="query.q">
+                <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                    ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
+             </div>
             </ul>
           </div>
         </div>
@@ -133,7 +84,7 @@ limitations under the License.
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
     <div id="{{currentParagraph.id}}_paragraphColumn"
-         ng-if="currentParagraph.result"
+         ng-if="currentParagraph.results"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
          ng-hide="currentParagraph.config.tableHide && home.viewOnly">

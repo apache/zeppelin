@@ -125,7 +125,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
 
 * Getting Started
   * [Quick Start](./install/install.html) for basic instructions on installing Apache Zeppelin
-  * [Configuration](./install/install.html#apache-zeppelin-configuration) lists for Apache Zeppelin
+  * [Configuration](./install/configuration.html) lists for Apache Zeppelin
   * [Explore Apache Zeppelin UI](./quickstart/explorezeppelinui.html): basic components of Apache Zeppelin home
   * [Tutorial](./quickstart/tutorial.html): a short walk-through tutorial that uses Apache Spark backend
 * Basic Feature Guide

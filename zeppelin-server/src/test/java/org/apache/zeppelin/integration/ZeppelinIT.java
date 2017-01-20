@@ -179,10 +179,10 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
+      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
           .sendKeys(Keys.ENTER);
       ZeppelinITUtils.sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this note')]" +
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       ZeppelinITUtils.sleep(100, true);
 
@@ -289,7 +289,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // Get 2nd paragraph id
       final String secondParagraphId = driver.findElement(By.xpath(getParagraphXPath(2)
-              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu\"]/li[1]"))
+              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu dropdown-menu-right\"]/li[1]"))
               .getAttribute("textContent");
 
       assertTrue("Cannot find paragraph id for the 2nd paragraph", isNotBlank(secondParagraphId));

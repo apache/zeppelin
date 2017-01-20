@@ -129,17 +129,18 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   public void testLoadRunUnloadApplication()
       throws IOException, ApplicationException, InterruptedException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
         HeliumTestApplication.class.getName(),
-        new String[][]{});
+        new String[][]{},
+        "", "");
 
     Note note1 = notebook.createNote(anonymous);
     factory.setInterpreters("user", note1.getId(),factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -174,17 +175,18 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @Test
   public void testUnloadOnParagraphRemove() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
         HeliumTestApplication.class.getName(),
-        new String[][]{});
+        new String[][]{},
+        "", "");
 
     Note note1 = notebook.createNote(anonymous);
     factory.setInterpreters("user", note1.getId(), factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -213,17 +215,18 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @Test
   public void testUnloadOnInterpreterUnbind() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
         HeliumTestApplication.class.getName(),
-        new String[][]{});
+        new String[][]{},
+        "", "");
 
     Note note1 = notebook.createNote(anonymous);
     notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -254,7 +257,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
 
     // add paragraph with invalid magic
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
@@ -273,12 +276,13 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @Test
   public void testUnloadOnInterpreterRestart() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
         HeliumTestApplication.class.getName(),
-        new String[][]{});
+        new String[][]{},
+        "", "");
 
     Note note1 = notebook.createNote(anonymous);
     notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
@@ -290,7 +294,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       }
     }
 
-    Paragraph p1 = note1.addParagraph();
+    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");

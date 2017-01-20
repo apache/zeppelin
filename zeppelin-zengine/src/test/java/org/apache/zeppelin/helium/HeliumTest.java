@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.helium;
 
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +24,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
@@ -48,15 +48,12 @@ public class HeliumTest {
   }
 
   @Test
-  public void testSaveLoadConf() throws IOException, URISyntaxException {
+  public void testSaveLoadConf() throws IOException, URISyntaxException, TaskRunnerException {
     // given
     File heliumConf = new File(tmpDir, "helium.conf");
-    Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath());
+    Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(),
+        null, null, null);
     assertFalse(heliumConf.exists());
-    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
-    helium.addRegistry(registry1);
-    assertEquals(2, helium.getAllRegistry().size());
-    assertEquals(0, helium.getAllPackageInfo().size());
 
     // when
     helium.save();
@@ -64,15 +61,16 @@ public class HeliumTest {
     // then
     assertTrue(heliumConf.exists());
 
-    // then
-    Helium heliumRestored = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath());
-    assertEquals(2, heliumRestored.getAllRegistry().size());
+    // then load without exception
+    Helium heliumRestored = new Helium(
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null);
   }
 
   @Test
-  public void testRestoreRegistryInstances() throws IOException, URISyntaxException {
+  public void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
-    Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath());
+    Helium helium = new Helium(
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null);
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", "r2");
     helium.addRegistry(registry1);
@@ -80,20 +78,24 @@ public class HeliumTest {
 
     // when
     registry1.add(new HeliumPackage(
-        HeliumPackage.Type.APPLICATION,
+        HeliumType.APPLICATION,
         "name1",
         "desc1",
         "artifact1",
         "className1",
-        new String[][]{}));
+        new String[][]{},
+        "",
+        ""));
 
     registry2.add(new HeliumPackage(
-        HeliumPackage.Type.APPLICATION,
+        HeliumType.APPLICATION,
         "name2",
         "desc2",
         "artifact2",
         "className2",
-        new String[][]{}));
+        new String[][]{},
+        "",
+        ""));
 
     // then
     assertEquals(2, helium.getAllPackageInfo().size());

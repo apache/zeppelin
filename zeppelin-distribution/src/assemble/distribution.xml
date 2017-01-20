@@ -95,5 +95,17 @@
       <outputDirectory>/lib/interpreter</outputDirectory>
       <directory>../zeppelin-interpreter/target/lib</directory>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/lib/node_modules/zeppelin-vis</outputDirectory>
+      <directory>../zeppelin-web/src/app/visualization</directory>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/lib/node_modules/zeppelin-tabledata</outputDirectory>
+      <directory>../zeppelin-web/src/app/tabledata</directory>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/lib/node_modules/zeppelin-spell</outputDirectory>
+      <directory>../zeppelin-web/src/app/spell</directory>
+    </fileSet>
   </fileSets>
 </assembly>

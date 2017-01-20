@@ -153,7 +153,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
 
     urls = urlList.toArray(urls);
-
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {
       URLClassLoader newCl = new URLClassLoader(urls, oldCl);
@@ -169,11 +168,25 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   private Map setupPySparkEnv() throws IOException{
     Map env = EnvironmentUtils.getProcEnvironment();
+
     if (!env.containsKey("PYTHONPATH")) {
       SparkConf conf = getSparkConf();
-      env.put("PYTHONPATH", conf.get("spark.submit.pyFiles").replaceAll(",", ":") + 
+      env.put("PYTHONPATH", conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
               ":../interpreter/lib/python");
     }
+
+    // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
+    // also, add all packages to PYTHONPATH since there might be transitive dependencies
+    if (SparkInterpreter.useSparkSubmit() &&
+        !getSparkInterpreter().isYarnMode()) {
+
+      String sparkSubmitJars = getSparkConf().get("spark.jars").replace(",", ":");
+
+      if (!"".equals(sparkSubmitJars)) {
+        env.put("PYTHONPATH", env.get("PYTHONPATH") + sparkSubmitJars);
+      }
+    }
+
     return env;
   }
 
@@ -364,7 +377,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           "pyspark " + sparkInterpreter.getSparkContext().version() + " is not supported"));
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
-    String jobGroup = sparkInterpreter.getJobGroup(context);
+    String jobGroup = Utils.buildJobGroupId(context);
     ZeppelinContext z = sparkInterpreter.getZeppelinContext();
     z.setInterpreterContext(context);
     z.setGui(context.getGui());

@@ -28,15 +28,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Skeletal implementation of the Job concept.
- *  - designed for inheritance
- *  - should be run on a separate thread
- *  - maintains internal state: it's status
- *  - supports listeners who are updated on status change
+ * - designed for inheritance
+ * - should be run on a separate thread
+ * - maintains internal state: it's status
+ * - supports listeners who are updated on status change
  *
- *  Job class is serialized/deserialized and used server<->client communication
- *  and saving/loading jobs from disk.
- *  Changing/adding/deleting non transitive field name need consideration of that.
- *
+ * Job class is serialized/deserialized and used server<->client communication
+ * and saving/loading jobs from disk.
+ * Changing/adding/deleting non transitive field name need consideration of that.
  */
 public abstract class Job {
   /**
@@ -48,15 +47,10 @@ public abstract class Job {
    * FINISHED - Job finished run. with success
    * ERROR - Job finished run. with error
    * ABORT - Job finished by abort
-   *
    */
   public static enum Status {
-    READY,
-    PENDING,
-    RUNNING,
-    FINISHED,
-    ERROR,
-    ABORT;
+    READY, PENDING, RUNNING, FINISHED, ERROR, ABORT;
+
     public boolean isReady() {
       return this == READY;
     }
@@ -72,13 +66,6 @@ public abstract class Job {
 
   private String jobName;
   String id;
-
-  // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
-  // see ZEPPELIN-212
-  Object results;
-
-  // For backward compatibility of note.json format after ZEPPELIN-212
-  Object result;
 
   Date dateCreated;
   Date dateStarted;
@@ -125,6 +112,10 @@ public abstract class Job {
     setStatus(Status.READY);
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
+
   public String getId() {
     return id;
   }
@@ -141,6 +132,13 @@ public abstract class Job {
 
   public Status getStatus() {
     return status;
+  }
+
+  /**
+   * just set status without notifying to listeners for spell.
+   */
+  public void setStatusWithoutNotification(Status status) {
+    this.status = status;
   }
 
   public void setStatus(Status status) {
@@ -180,7 +178,7 @@ public abstract class Job {
       progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
       progressUpdator.start();
       dateStarted = new Date();
-      results = jobRun();
+      setResult(jobRun());
       this.exception = null;
       errorMessage = null;
       dateFinished = new Date();
@@ -189,14 +187,14 @@ public abstract class Job {
       LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
-      results = e.getMessage();
+      setResult(e.getMessage());
       errorMessage = getStack(e);
       dateFinished = new Date();
     } catch (Throwable e) {
       LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
-      results = e.getMessage();
+      setResult(e.getMessage());
       errorMessage = getStack(e);
       dateFinished = new Date();
     } finally {
@@ -210,7 +208,11 @@ public abstract class Job {
     }
 
     Throwable cause = ExceptionUtils.getRootCause(e);
-    return ExceptionUtils.getFullStackTrace(cause);
+    if (cause != null) {
+      return ExceptionUtils.getFullStackTrace(cause);
+    } else {
+      return ExceptionUtils.getFullStackTrace(e);
+    }
   }
 
   public Throwable getException() {
@@ -222,13 +224,7 @@ public abstract class Job {
     errorMessage = getStack(t);
   }
 
-  public Object getPreviousResultFormat() {
-    return result;
-  }
-
-  public Object getReturn() {
-    return results;
-  }
+  public abstract Object getReturn();
 
   public String getJobName() {
     return jobName;
@@ -266,7 +262,9 @@ public abstract class Job {
     return dateFinished;
   }
 
-  public void setResult(Object results) {
-    this.results = results;
+  public abstract void setResult(Object results);
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
   }
 }
