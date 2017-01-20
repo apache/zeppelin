@@ -98,6 +98,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
+  static final String PRECODE_KEY = "precode";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -113,6 +114,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_URL = DEFAULT_KEY + DOT + URL_KEY;
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
+  static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
@@ -334,11 +336,16 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private Connection getConnectionFromPool(String url, String user, String propertyKey,
-      Properties properties) throws SQLException, ClassNotFoundException {
+      Properties properties, String noteId) throws SQLException, ClassNotFoundException {
     String jdbcDriver = getJDBCDriverName(user, propertyKey);
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
+
+      String precode = properties.getProperty(PRECODE_KEY);
+      if (precode != null) {
+        executeSqlPrecode(DriverManager.getConnection(jdbcDriver), precode, noteId);
+      }
     }
     return DriverManager.getConnection(jdbcDriver);
   }
@@ -356,20 +363,21 @@ public class JDBCInterpreter extends Interpreter {
 
     final Properties properties = jdbcUserConfigurations.getPropertyMap(propertyKey);
     final String url = properties.getProperty(URL_KEY);
+    final String noteId = interpreterContext.getNoteId();
 
     if (StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
-      connection = getConnectionFromPool(url, user, propertyKey, properties);
+      connection = getConnectionFromPool(url, user, propertyKey, properties, noteId);
     } else {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
 
       switch (authType) {
           case KERBEROS:
             if (user == null) {
-              connection = getConnectionFromPool(url, user, propertyKey, properties);
+              connection = getConnectionFromPool(url, user, propertyKey, properties, noteId);
             } else {
               if ("hive".equalsIgnoreCase(propertyKey)) {
                 connection = getConnectionFromPool(url + ";hive.server2.proxy.user=" + user,
-                  user, propertyKey, properties);
+                  user, propertyKey, properties, noteId);
               } else {
                 UserGroupInformation ugi = null;
                 try {
@@ -388,7 +396,7 @@ public class JDBCInterpreter extends Interpreter {
                   connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
                     @Override
                     public Connection run() throws Exception {
-                      return getConnectionFromPool(url, user, poolKey, properties);
+                      return getConnectionFromPool(url, user, poolKey, properties, noteId);
                     }
                   });
                 } catch (Exception e) {
@@ -403,7 +411,7 @@ public class JDBCInterpreter extends Interpreter {
             break;
 
           default:
-            connection = getConnectionFromPool(url, user, propertyKey, properties);
+            connection = getConnectionFromPool(url, user, propertyKey, properties, noteId);
       }
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
@@ -503,6 +511,30 @@ public class JDBCInterpreter extends Interpreter {
       }
     }
     return queries;
+  }
+
+  private void executeSqlPrecode(Connection connection, String precode, String noteId) {
+    logger.info("Run SQL precode '{}' with noteId {}", precode, noteId);
+    if (precode.contains("%noteId")) {
+      precode = precode.replace("%noteId", "'" + noteId + "'");
+    }
+    try {
+      Statement statement = connection.createStatement();
+      try {
+        statement.execute(precode);
+      } catch (SQLException e) {
+        logger.error("Cannot execute precode SQL: '" + precode + "'", e);
+      }
+      statement.close();
+    } catch (SQLException e) {
+      logger.error("Cannot create precode statement", e);
+    }
+    try {
+      if (!connection.getAutoCommit()) {
+        connection.commit();
+      }
+      connection.close();
+    } catch (SQLException e) { /*ignored*/ }
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,
