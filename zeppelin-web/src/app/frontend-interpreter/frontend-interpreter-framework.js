@@ -28,22 +28,6 @@ export class AbstractFrontendInterpreter {
     this.displayType = displayType;
   }
 
-  /**
-   * @param paragraphText which includes magic
-   * @returns {string} if magic exists, otherwise return undefined
-   */
-  static extractMagic(allParagraphText) {
-  const intpNameRegexp = /^\s*%(\S+)\s*/g;
-  try {
-    let match = intpNameRegexp.exec(allParagraphText);
-    if (match) { return `%${match[1].trim()}`; }
-  } catch (error) {
-    // failed to parse, ignore
-  }
-
-  return undefined;
-}
-
   static useInterpret(interpreter) {
     return (interpreter.__proto__.hasOwnProperty('interpret'));
   }

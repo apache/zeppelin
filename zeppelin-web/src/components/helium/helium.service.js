@@ -81,9 +81,16 @@ import {
      * @param displayType {string} e.g `ELEMENT`
      * @returns {FrontendInterpreterBase} undefined for non-available displayType
      */
-    this.getFrontendInterpreterWithDisplayType = function(displayType) {
+    this.getFrontendInterpreterUsingDisplayType = function(displayType) {
       return frontendIntpWithDisplayType[displayType];
     };
+
+    /**
+     * @returns {Object}
+     */
+    this.getAvailableFrontendInterpreterDisplay = function() {
+      return frontendIntpWithDisplayType;
+    }
 
     this.getVisualizationBundles = function() {
       return visualizationBundles;

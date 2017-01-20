@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { AbstractFrontendInterpreter } from '../../frontend-interpreter'
+import { FrontendInterpreterResult } from '../../frontend-interpreter'
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
@@ -225,9 +225,16 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
 
+  $scope.handleFrontendInterpreterError = function(error) {
+    $scope.paragraph.status = 'ERROR';
+    $scope.paragraph.errorMessage = error.stack;
+    console.error('Failed to execute FrontendInterpreter.interpret\n', error);
+    $scope.$digest();
+  }
+
   $scope.runParagraphUsingFrontendInterpreter = function(intp, paragraphText, magic) {
     // clear results which is watched by `ng-repeat`. without this,
-    // frontend interpreter results cannot be rendered in view twice more
+    // frontend interpreter results cannot be rendered in view more than once
     $scope.paragraph.results = {};
     $scope.$digest();
 
@@ -236,13 +243,17 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       const splited = paragraphText.split(magic);
       const textWithoutMagic = splited[1];
       $scope.paragraph.status = 'FINISHED';
-      $scope.paragraph.results.msg = intp.interpret(textWithoutMagic);
-      $scope.paragraph.config.tableHide = false;
+      const frontIntpResult = intp.interpret(textWithoutMagic);
+      const parsed = frontIntpResult.getAllParsedGeneratorsWithTypes(
+        heliumService.getAvailableFrontendInterpreterDisplay());
+      parsed.then(resultsMsg => {
+        $scope.paragraph.results.msg = resultsMsg;
+        $scope.paragraph.config.tableHide = false;
+        $scope.$digest();
+      }).catch($scope.handleFrontendInterpreterError);
       // TODO(1ambda): broadcast to other clients
     } catch (error) {
-      $scope.paragraph.status = 'ERROR';
-      $scope.paragraph.errorMessage = error.stack;
-      console.error('Failed to execute FrontendInterpreter.interpret\n', error);
+      $scope.handleFrontendInterpreterError(error);
     }
   };
 
@@ -271,7 +282,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       return;
     }
 
-    const magic = AbstractFrontendInterpreter.extractMagic(paragraphText);
+    const magic = FrontendInterpreterResult.extractMagic(paragraphText);
     const frontendIntp = heliumService.getFrontendInterpreterUsingMagic(magic);
 
     if (frontendIntp) {
