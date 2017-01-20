@@ -214,7 +214,7 @@ eval $INTERPRETER_RUN_COMMAND &
 
 pid=$!
 if [[ -z "${pid}" ]]; then
-  return 1;
+  exit 1;
 else
   echo ${pid} > ${ZEPPELIN_PID}
 fi
