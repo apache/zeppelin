@@ -34,13 +34,10 @@ public abstract class GraphEntity {
   private Map<String, Object> data;
 
   /**
-   * The current label of the entity
-   * 
+   * The primary type of the entity
    */
   private String label;
   
-  private String defaultLabel;
-
   private String color;
 
   public GraphEntity() {}
@@ -51,7 +48,6 @@ public abstract class GraphEntity {
     this.setId(id);
     this.setData(data);
     this.setLabel(label);
-    this.setDefaultLabel(defaultLabel);
     this.setColor(color);
   }
 
@@ -77,14 +73,6 @@ public abstract class GraphEntity {
 
   public void setLabel(String label) {
     this.label = label;
-  }
-
-  public String getDefaultLabel() {
-    return defaultLabel;
-  }
-
-  public void setDefaultLabel(String defaultLabel) {
-    this.defaultLabel = defaultLabel;
   }
 
   public String getColor() {
