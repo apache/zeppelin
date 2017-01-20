@@ -41,7 +41,7 @@ class AbstractFunctionalSuite extends FunSuite with WebBrowser with BeforeAndAft
   override def beforeAll() = {
     "../bin/zeppelin-daemon.sh start" !
 
-    eventually (timeout(Span(20, Seconds))) {
+    eventually (timeout(Span(180, Seconds))) {
       go to SERVER_ADDRESS
       assert(find("welcome").isDefined)
     }
