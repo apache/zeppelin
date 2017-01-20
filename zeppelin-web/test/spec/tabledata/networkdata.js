@@ -40,7 +40,7 @@ describe('NetworkData build', function() {
     expect(nd.graph.nodes[0].id).toBe(jsonExpected.nodes[0].id);
     expect(nd.graph.nodes[1].id).toBe(jsonExpected.nodes[1].id);
     expect(nd.graph.edges[0].id).toBe(jsonExpected.edges[0].id);
-    expect(nd.graph.edges[0].source).toBe(jsonExpected.edges[0].source);
-    expect(nd.graph.edges[0].target).toBe(jsonExpected.edges[0].target);
+    expect(nd.graph.edges[0].source.id).toBe(jsonExpected.nodes[1].id);
+    expect(nd.graph.edges[0].target.id).toBe(jsonExpected.nodes[0].id);
   });
 });
