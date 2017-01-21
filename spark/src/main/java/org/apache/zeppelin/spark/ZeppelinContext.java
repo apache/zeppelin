@@ -385,8 +385,8 @@ public class ZeppelinContext {
    * @return
    */
   @ZeppelinApi
-  public RemoteZeppelinJobStatus getZeppelinJobStatus(String noteId, String paragraphId) {
-    return getZeppelinJobStatus(noteId, paragraphId, interpreterContext);
+  public RemoteZeppelinJobStatus getJobStatus(String noteId, String paragraphId) {
+    return getJobStatus(noteId, paragraphId, interpreterContext);
   }
 
   /**
@@ -397,7 +397,7 @@ public class ZeppelinContext {
    * @return
    */
   @ZeppelinApi
-  public RemoteZeppelinJobStatus getZeppelinJobStatus(
+  public RemoteZeppelinJobStatus getJobStatus(
       String noteId, String paragraphId, InterpreterContext context) {
     RemoteWorksController remoteWorksController = context.getRemoteWorksController();
     return remoteWorksController.getRemoteJobStatus(noteId, paragraphId);

@@ -82,6 +82,10 @@ public class RemoteZeppelinJobStatus {
     }
   }
 
+  public String name() {
+    return getJobStatus().name();
+  }
+
   public boolean isFinished() {
     return getJobStatus().isFinished();
   }
@@ -105,11 +109,4 @@ public class RemoteZeppelinJobStatus {
   public boolean isRunning() {
     return getJobStatus().isRunning();
   }
-
-  public String getStatus() {
-    return getJobStatus().name();
-  }
-
-
-
 }
