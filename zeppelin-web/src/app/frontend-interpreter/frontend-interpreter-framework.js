@@ -28,14 +28,6 @@ export class AbstractFrontendInterpreter {
     this.displayType = displayType;
   }
 
-  static useInterpret(interpreter) {
-    return (interpreter.__proto__.hasOwnProperty('interpret'));
-  }
-
-  static useDisplay(interpreter) {
-    return (interpreter.__proto__.hasOwnProperty('display'));
-  }
-
   /**
    * Consumes text and return multiple interpreter results.
    * This method should handle error properly to provide precise error message.
@@ -45,20 +37,6 @@ export class AbstractFrontendInterpreter {
    */
   interpret(paragraphText) {
     /** implement this if you want to add a frontend interpreter */
-  }
-
-  /**
-   * Consumes text and return a single interpreter result.
-   * This method should handle error properly to provide precise error message.
-   *
-   * Currently, `display` only allows DefaultDisplayType
-   * as a type of result to avoid to recursive evaluation of display results.
-   *
-   * @param paragraphText {string} which doesn't include magic
-   * @return {FrontendInterpreterResult}
-   */
-  display(paragraphText) {
-    /** implement this if you want to add a display system */
   }
 
   /**

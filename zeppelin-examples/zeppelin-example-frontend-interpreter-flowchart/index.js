@@ -41,13 +41,12 @@ export default class FlowchartInterpreter extends AbstractFrontendInterpreter {
         };
 
         /**
-         * `interpret` method can return multiple results.
-         * But now, we return just 1 result which is wrapped in an array.
+         * `interpret` method can return multiple results using `add()`
+         * but now, we return just 1 result
          */
-        return [new FrontendInterpreterResult(
-            DefaultDisplayType.ELEMENT,
+        return new FrontendInterpreterResult(
             callback
-        )];
+        );
     }
 
     getOption() {

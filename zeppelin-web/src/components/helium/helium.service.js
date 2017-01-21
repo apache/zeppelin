@@ -33,8 +33,6 @@ import {
     var heliumBundles = [];
     // map for `{ magic: interpreter }`
     let frontendIntpWithMagic = {};
-    // map for `{ displayType: interpreter }`
-    let frontendIntpWithDisplayType = {};
     let visualizationBundles = [];
 
     // load should be promise
@@ -47,19 +45,7 @@ import {
         heliumBundles.map(b => {
           if (b.type === HeliumType.FRONTEND_INTERPRETER) {
             const interpreter = new b.class(); // eslint-disable-line new-cap
-
-            // add frontend interpreter if `interpret` method is available
-            if (AbstractFrontendInterpreter.useInterpret(interpreter)) {
-              frontendIntpWithMagic[interpreter.getMagic()] = interpreter;
-            }
-
-            // add frontend interpreter if `display` method is available
-            // and its display type is in default display types.
-            if (AbstractFrontendInterpreter.useDisplay(interpreter) &&
-                DefaultDisplayType[interpreter.getDisplayType()]) {
-              frontendIntpWithDisplayType[interpreter.getDisplayType()] = interpreter;
-            }
-
+            frontendIntpWithMagic[interpreter.getMagic()] = interpreter;
           } else if (b.type === HeliumType.VISUALIZATION) {
             visualizationBundles.push(b);
           }
@@ -78,19 +64,11 @@ import {
     };
 
     /**
-     * @param displayType {string} e.g `ELEMENT`
-     * @returns {FrontendInterpreterBase} undefined for non-available displayType
+     * @returns {Object} map for `{ magic : interpreter }`
      */
-    this.getFrontendInterpreterUsingDisplayType = function(displayType) {
-      return frontendIntpWithDisplayType[displayType];
+    this.getAvailableFrontendInterpreters = function() {
+      return frontendIntpWithMagic;
     };
-
-    /**
-     * @returns {Object}
-     */
-    this.getAvailableFrontendInterpreterDisplay = function() {
-      return frontendIntpWithDisplayType;
-    }
 
     this.getVisualizationBundles = function() {
       return visualizationBundles;

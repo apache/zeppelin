@@ -245,7 +245,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.status = 'FINISHED';
       const frontIntpResult = intp.interpret(textWithoutMagic);
       const parsed = frontIntpResult.getAllParsedGeneratorsWithTypes(
-        heliumService.getAvailableFrontendInterpreterDisplay());
+        heliumService.getAvailableFrontendInterpreters());
       parsed.then(resultsMsg => {
         $scope.paragraph.results.msg = resultsMsg;
         $scope.paragraph.config.tableHide = false;

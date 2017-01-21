@@ -29,10 +29,15 @@ export default class TranslatorInterpreter extends AbstractFrontendInterpreter {
     }
 
     interpret(paragraphText) {
-        return [new FrontendInterpreterResult(
-            DefaultDisplayType.TEXT,
-            this.translate(paragraphText)
-        )];
+        /**
+         * FrontendInterpreterResult
+         * - accepts not only `string` but also `promise`
+         * - allows multiple output using the `add()` function
+         */
+        const result = new FrontendInterpreterResult()
+            .add('%html <h4>Translation From English To Korean</h4>')
+            .add(this.translate(paragraphText));
+        return result;
     }
 
     translate(text) {

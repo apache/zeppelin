@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin-examples</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-example-frontend-interpreter-flowchart</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Example application - Frontend Flowchart Interpreter</name>
 
   <dependencies>
