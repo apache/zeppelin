@@ -19,6 +19,9 @@ zeppelin-server/derby.log
 
 lens/lens-cli-hist.log
 
+# bin file
+bin/derby.log
+
 # conf file
 conf/zeppelin-env.sh
 conf/zeppelin-env.cmd
@@ -69,8 +72,7 @@ zeppelin-web/yarn.lock
 /local-repo/
 
 **/sessions/
-**/data/
-**/build/
+**/data/ **/build/
 **/testing/
 !/testing/
 
