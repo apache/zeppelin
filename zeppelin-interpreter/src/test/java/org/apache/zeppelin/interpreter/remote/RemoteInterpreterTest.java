@@ -195,9 +195,10 @@ public class RemoteInterpreterTest {
             false);
 
     RemoteInterpreterRunningProcess existsIntpProcess = new RemoteInterpreterRunningProcess(
-            10 * 1000, listener, null, host, port);
+            10 * 1000, listener, appListener, host, port);
 
     InterpreterGroup remoteInterpreterGroup = new InterpreterGroup(intpGroupName);
+
     remoteInterpreterGroup.setRemoteInterpreterProcess(existsIntpProcess);
     remoteInterpreterGroup.put("note", new LinkedList<Interpreter>());
     remoteInterpreterGroup.get("note").add(remoteintp);
