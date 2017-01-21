@@ -41,7 +41,7 @@ public class AppendOutputRunner implements Runnable {
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
   private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);
 
-  private static final BlockingQueue<AppendOutputBuffer> queue = new LinkedBlockingQueue<>();
+  private final BlockingQueue<AppendOutputBuffer> queue = new LinkedBlockingQueue<>();
   private final RemoteInterpreterProcessListener listener;
 
   public AppendOutputRunner(RemoteInterpreterProcessListener listener) {
