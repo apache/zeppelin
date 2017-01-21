@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RemoteInterpreterEventPoller extends Thread {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventPoller.class);
-  private static final ScheduledExecutorService appendService =
+  private final ScheduledExecutorService appendService =
       Executors.newSingleThreadScheduledExecutor();
   private final RemoteInterpreterProcessListener listener;
   private final ApplicationEventListener appListener;
