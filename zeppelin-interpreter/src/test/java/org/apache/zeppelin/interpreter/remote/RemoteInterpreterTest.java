@@ -243,8 +243,6 @@ public class RemoteInterpreterTest {
     assertTrue(ret.message().get(0).getData().equals("10"));
     assertTrue(remoteInterpreterGroup.getRemoteInterpreterProcess().getHost().equals(host));
     assertTrue(remoteInterpreterGroup.getRemoteInterpreterProcess().getPort() == port);
-
-    existsIntpProcess.dereference();
   }
 
   @Test
