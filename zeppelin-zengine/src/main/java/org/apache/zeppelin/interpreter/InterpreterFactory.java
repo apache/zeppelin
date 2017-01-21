@@ -478,7 +478,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       if (repositoryUrl != null) {
         depResolver.addRepo("dyInterpreterRepo", repositoryUrl, isSnapShotRepo);
       }
-      logger.info("interpreter path : {}", interpreterLoadPath);
       depResolver.load(artifact, new File(interpreterLoadPath));
       setDynamicInterpreter(intpClassName, interpreterLoadPath);
     } catch (Exception e) {
@@ -510,8 +509,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       return false;
     }
 
-    Set<String> keys = Interpreter.registeredInterpreters.keySet();
-
     String regInterpreterName = String.format("%s.%s", intpGroupName, intpName);
     RegisteredInterpreter targetInterpreter = Interpreter
       .registeredInterpreters.get(regInterpreterName);
@@ -524,8 +521,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("loaded dynamic interpreter not match  dir {}", fileDirPath);
       return false;
     }
-
-    logger.info("Interpreter {} found. class={}", intpName, fileDirPath);
 
     cleanCl.get(fileDirPath).close();
     cleanCl.remove(fileDirPath);
@@ -574,7 +569,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
           if (interpreterClassName.equals(
                   Interpreter.registeredInterpreters.get(intName).getClassName())) {
             RegisteredInterpreter r = Interpreter.registeredInterpreters.get(intName);
-
             logger.info("dynamic Interpreter {} found. class={}", intName, fileDirPath);
             r.setPath(fileDirPath);
             cleanCl.put(fileDirPath, ccl);
