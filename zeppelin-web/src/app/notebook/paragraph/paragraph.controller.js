@@ -1040,7 +1040,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.title = data.paragraph.title;
       $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
       $scope.paragraph.status = data.paragraph.status;
-      $scope.paragraph.results = data.paragraph.results;
+      if (data.paragraph.status !== 'RUNNING') {
+        $scope.paragraph.results = data.paragraph.results;
+      }
       $scope.paragraph.settings = data.paragraph.settings;
       if ($scope.editor) {
         $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
