@@ -34,7 +34,16 @@ limitations under the License.
   <div class="row">
     <div class="col-md-6 text-left">
       <div class="form-inline">
-        <span class="labelBtn btn-group" style="margin-left: 0px; padding-left: 10px;">
+        <span class="labelBtn btn-group">
+          <button type="button"
+                  class="btn btn-default"
+                  style="width: 25px; height: 25px; margin-right: 0px; padding: 1px 0px 3px 3px"
+                  ng-click="onChangeSortAsc()"
+                  tooltip-placement="right" tooltip="{{sortTooltipMsg}}">
+            <i class="fa" ng-class="{true: 'fa-sort-amount-asc', false : 'fa-sort-amount-desc'}[filterConfig.isSortByAsc]"></i>
+          </button>
+        </span>
+        <span class="labelBtn btn-group" style="margin-left: 0px; padding-left: 3px;">
           <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                  data-toggle="dropdown"
                  style="min-width: 100px; text-align: right !important;">
@@ -136,7 +145,7 @@ limitations under the License.
   </div>
   <div
     ng-if="JobInfomationsByFilter.length > 0"
-    ng-repeat="notebookJob in JobInfomationsByFilter"
+    ng-repeat="notebookJob in JobInfomationsByFilter track by $index"
     class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
