@@ -600,9 +600,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("Interpreter setting group {} : id={}, name={}",
               setting.getGroup(), settingId, setting.getName());
     }
-
-
-
   }
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
