@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.rest.message.DynamicInterpreterRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
@@ -281,6 +282,73 @@ public class InterpreterRestApi {
       logger.error("Exception in InterpreterRestApi while removing repository ", e);
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
           ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.OK).build();
+  }
+
+  /**
+   * load a downloaded interpreter via external repository
+   */
+  @POST
+  @Path("load/{interpreterGroupName}/{interpreterName}")
+  public Response loadDynamicInterpreter(
+          @PathParam("interpreterGroupName") String interpreterGroupName,
+          @PathParam("interpreterName") String interpreterName, String message) {
+    logger.info("dynamic load interpreter interpreterGroupName [{}] name [{}]",
+            interpreterGroupName, interpreterName);
+    try {
+      DynamicInterpreterRequest request = gson.fromJson(
+              message, DynamicInterpreterRequest.class
+      );
+      if (request.getClassName() == null || request.getArtifact() == null) {
+        throw new Exception("invalid request data");
+      }
+      boolean result = interpreterFactory.loadDynamicInterpreter(
+              interpreterGroupName,
+              interpreterName,
+              request.getArtifact(),
+              request.getClassName(),
+              request.getUrl(),
+              request.isSnapshot()
+      );
+      if (result == false) {
+        throw new Exception("can not load interpreter");
+      }
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while adding repository - load failed ", e);
+      return new JsonResponse(
+              Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.OK).build();
+  }
+
+  /**
+   * load a downloaded interpreter via external repository
+   */
+  @DELETE
+  @Path("unload/{interpreterGroupName}/{interpreterName}/{interpreterClassName}")
+  public Response unloadDynamicInterpreter(
+          @PathParam("interpreterGroupName") String interpreterGroupName,
+          @PathParam("interpreterName") String interpreterName,
+          @PathParam("interpreterClassName") String interpreterClassName) {
+    logger.info("dynamic load interpreter interpreterGroupName [{}] name [{}] classname[{}]",
+            interpreterGroupName, interpreterName, interpreterClassName);
+    try {
+      if (interpreterClassName == null) {
+        throw new Exception("invalid request data");
+      }
+      boolean result = interpreterFactory.unloadDynamicInterpreter(
+              interpreterGroupName,
+              interpreterName,
+              interpreterClassName);
+
+      if (result == false) {
+        throw new Exception("can't unload interpreter");
+      }
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while adding repository - load failed ", e);
+      return new JsonResponse(
+              Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.OK).build();
   }

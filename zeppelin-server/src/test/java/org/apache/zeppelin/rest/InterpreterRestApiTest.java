@@ -86,6 +86,78 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testLoadDynamicInterpreter() throws IOException, InterruptedException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.getLastParagraph();
+    Map config = p.getConfig();
+    config.put("enabled", true);
+
+    String interpreterGroupName = "md";
+    String interpreterName = "md";
+    String interpreterArtifact = "org.apache.zeppelin:zeppelin-markdown:0.6.2";
+    String interpreterClassName = "org.apache.zeppelin.markdown.Markdown";
+    String mdDep = "org.apache.drill.exec:drill-jdbc:jar:1.6.0";
+    boolean isSnapshot = false;
+
+    String reqBody = "{artifact:\"" + interpreterArtifact + "\"," + "className:" + "\"" + interpreterClassName + "\"" + "}";
+    String reqBody2 = "{\"name\":\"" + interpreterName + "\",\"group\":\"" + interpreterGroupName + "\",\"properties\":{\"propname\":\"propvalue\"}," +
+            "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"" + interpreterName + "\"}]," +
+            "\"dependencies\":[ {\n" +
+            "      \"groupArtifactVersion\": \"" + mdDep + "\",\n" +
+            "      \"exclusions\":[]\n" +
+            "    }]," +
+            "\"option\": { \"remote\": true, \"session\": false }}";
+
+    // when
+    PostMethod post = httpPost("/interpreter/load/" + interpreterGroupName + "/" + interpreterName, reqBody);
+    assertThat(post, isAllowed());
+
+    PostMethod settingPost = httpPost("/interpreter/setting", reqBody2);
+
+    assertThat(settingPost, isAllowed());
+
+
+    // when: run markdown paragraph
+    p.setConfig(config);
+    p.setText("%md markdown");
+    p.setAuthenticationInfo(anonymous);
+    note.run(p.getId());
+    while (p.getStatus() == Status.RUNNING || p.getStatus() == Status.PENDING) {
+      Thread.sleep(100);
+    }
+
+    assertTrue(p.getStatus() == Status.FINISHED);
+
+    // remove markdown
+    DeleteMethod delete = httpDelete("/interpreter/unload/" + interpreterGroupName + "/" + interpreterName + "/" + interpreterClassName);
+    assertThat(delete, isAllowed());
+
+    note.run(p.getId());
+    while (p.getStatus() == Status.RUNNING || p.getStatus() == Status.PENDING) {
+      Thread.sleep(100);
+    }
+
+    assertTrue(p.getStatus() == Status.ERROR);
+
+    // restore
+    post = httpPost("/interpreter/load/" + interpreterGroupName + "/" + interpreterName, reqBody);
+    assertThat(post, isAllowed());
+
+    settingPost = httpPost("/interpreter/setting", reqBody2);
+    assertThat(settingPost, isAllowed());
+
+    // re check
+    note.run(p.getId());
+    while (p.getStatus() == Status.RUNNING || p.getStatus() == Status.PENDING) {
+      Thread.sleep(100);
+    }
+
+    assertTrue(p.getStatus() == Status.FINISHED);
+
+  }
+
+  @Test
   public void getSettings() throws IOException {
     // when
     GetMethod get = httpGet("/interpreter/setting");
