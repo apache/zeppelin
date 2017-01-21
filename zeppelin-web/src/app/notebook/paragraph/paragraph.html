@@ -56,8 +56,7 @@ limitations under the License.
          ng-controller="ResultCtrl"
          ng-repeat="result in paragraph.results.msg track by $index"
          ng-init="init(result, paragraph.config.results[$index], paragraph, $index)"
-         ng-include src="'app/notebook/paragraph/result/result.html'"
-         >
+         ng-include src="'app/notebook/paragraph/result/result.html'">
     </div>
     <div id="{{paragraph.id}}_error"
          class="error text"

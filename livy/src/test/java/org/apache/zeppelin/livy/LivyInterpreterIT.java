@@ -51,7 +51,7 @@ public class LivyInterpreterIT {
     LOGGER.info("Starting livy at {}", cluster.livyEndpoint());
     properties = new Properties();
     properties.setProperty("zeppelin.livy.url", cluster.livyEndpoint());
-    properties.setProperty("zeppelin.livy.create.session.timeout", "120");
+    properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "100");
   }
 
@@ -310,6 +310,38 @@ public class LivyInterpreterIT {
       assertTrue(result.message().get(0).getData().contains("name 'a' is not defined"));
     } finally {
       pysparkInterpreter.close();
+    }
+  }
+
+  @Test
+  public void testSparkInterpreterWithDisplayAppInfo() {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    Properties properties2 = new Properties(properties);
+    properties2.put("zeppelin.livy.displayAppInfo", "true");
+    // enable spark ui because it is disabled by livy integration test
+    properties2.put("livy.spark.ui.enabled", "true");
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties2);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    try {
+      InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(2, result.message().size());
+      assertTrue(result.message().get(0).getData().contains("1.5.2"));
+      assertTrue(result.message().get(1).getData().contains("Spark Application Id"));
+    } finally {
+      sparkInterpreter.close();
     }
   }
 

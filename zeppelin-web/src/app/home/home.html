@@ -11,18 +11,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<script type="text/ng-template" id="notebook_folder_renderer.html">
+<!-- Template of Home -->
+<script type="text/ng-template" id="note_renderer.html">
   <!-- note -->
-  <div ng-if="node.children == null"
-       ng-mouseenter="showNoteButton=true"
+  <div ng-if="node.children == null && isFilterNote(node)" ng-mouseenter="showNoteButton=true"
        ng-mouseleave="showNoteButton=false">
     <a style="text-decoration: none;" href="#/notebook/{{node.id}}">
-      <i style="font-size: 10px;" class="icon-doc"/> {{noteName(node)}}
+      <i style="font-size: 10px;"
+         ng-class="query.q && node.isTrash ? 'fa fa-trash-o' : 'icon-doc'" /> {{noteName(node)}}
     </a>
+    <!-- if note is not in trash -->
     <a ng-if="!node.isTrash" style="text-decoration: none;">
       <i style="margin-left: 10px;"
-         class="fa fa-pencil notebook-list-btn" ng-show="showNoteButton" ng-click="renameNote(node)"
+         class="fa fa-pencil notebook-list-btn" ng-show="showNoteButton"
+         ng-click="node.path ? renameNote(node.id, node.path) : renameNote(node.id, node.name)"
          tooltip-placement="bottom" tooltip="Rename note">
       </i>
     </a>
@@ -31,23 +33,24 @@ limitations under the License.
          tooltip-placement="bottom" tooltip="Clear output">
       </i>
     </a>
-    <a style="text-decoration: none;">
-      <!-- if note is not in trash -->
-      <i ng-if="!node.isTrash"
-         class="fa fa-trash-o notebook-list-btn" ng-show="showNoteButton" ng-click="moveNoteToTrash(node.id)"
+    <a ng-if="!node.isTrash" style="text-decoration: none;">
+      <i class="fa fa-trash-o notebook-list-btn" ng-show="showNoteButton" ng-click="moveNoteToTrash(node.id)"
          tooltip-placement="bottom" tooltip="Move note to Trash">
       </i>
+    </a>
       <!-- if note is in trash -->
-      <i ng-if="node.isTrash"
-         class="fa fa-undo notebook-list-btn" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
+    <a ng-if="node.isTrash">
+      <i class="fa fa-undo notebook-list-btn" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
          tooltip-placement="bottom" tooltip="Restore note">
       </i>
-      <i ng-if="node.isTrash" style="font-size: 16px;"
-         class="fa fa-times notebook-list-btn" ng-show="showNoteButton" ng-click="removeNote(node.id)"
+    </a>
+    <a ng-if="node.isTrash" style="font-size: 16px;">
+      <i class="fa fa-times notebook-list-btn" ng-show="showNoteButton" ng-click="removeNote(node.id)"
          tooltip-placement="bottom" tooltip="Remove note permanently">
       </i>
     </a>
   </div>
+
   <!-- folder -->
   <div ng-if="node.children != null && node.id !== TRASH_FOLDER_ID">
     <div ng-mouseenter="showFolderButton=true"
@@ -55,30 +58,33 @@ limitations under the License.
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
         <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'" /> {{noteName(node)}}
       </a>
-      <a style="text-decoration: none;">
-        <i ng-if="!node.isTrash" style="margin-left: 10px;"
+      <a ng-if="!node.isTrash" style="text-decoration: none;">
+        <i style="margin-left: 10px;"
            class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
            tooltip-placement="bottom" tooltip="Rename folder">
         </i>
+      </a>
         <!-- if folder is not in trash -->
-        <i ng-if="!node.isTrash"
-           class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"
+      <a ng-if="!node.isTrash">
+        <i class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"
            tooltip-placement="bottom" tooltip="Move folder to Trash">
         </i>
+      </a>
         <!-- if folder is in trash -->
-        <i ng-if="node.isTrash"
-           class="fa fa-undo notebook-list-btn" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
+      <a ng-if="node.isTrash">
+        <i class="fa fa-undo notebook-list-btn" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
            tooltip-placement="bottom" tooltip="Restore folder">
         </i>
-        <i ng-if="node.isTrash" style="font-size: 16px"
-           class="fa fa-times notebook-list-btn" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
+      </a>
+      <a ng-if="node.isTrash" style="font-size: 16px">
+        <i class="fa fa-times notebook-list-btn" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
            tooltip-placement="bottom" tooltip="Remove folder permanently">
         </i>
       </a>
     </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />
+        <li ng-repeat="node in node.children" ng-include="'note_renderer.html'" />
       </ul>
     </div>
   </div>
@@ -99,15 +105,16 @@ limitations under the License.
            tooltip-placement="bottom" tooltip="Empty trash">
         </i>
       </a>
-    </div>
+      </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />
+        <li ng-repeat="node in node.children" ng-include="'note_renderer.html'" />
       </ul>
     </div>
   </div>
 </script>
 
+<!-- HomeCtrl -->
 <div ng-controller="HomeCtrl as home">
   <div ng-show="home.staticHome" class="box width-full home">
     <div class="zeppelin">
@@ -133,7 +140,7 @@ limitations under the License.
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-            <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+            <h5 ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;" ng-click="notenamectrl.getInterpreterSettings()">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
@@ -141,16 +148,14 @@ limitations under the License.
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
               </li>
-              <div ng-if="!query || query.name === ''">
-                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index" ng-include="'notebook_folder_renderer.html'" />
+              <div ng-if="!query.q || query.q === ''">
+                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                    ng-include="'note_renderer.html'" />
               </div>
-              <div ng-if="query && query.name !== ''">
-                <li ng-repeat="note in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
-                  <i ng-if="!note.isTrash" style="font-size: 10px;" class="icon-doc"></i>
-                  <i ng-if="note.isTrash" style="font-size: 12px;" class="fa fa-trash-o"></i>
-                  <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
-                </li>
-              </div>
+              <div ng-if="query.q">
+                <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                    ng-include="'note_renderer.html'" />
+             </div>
             </ul>
           </div>
         </div>

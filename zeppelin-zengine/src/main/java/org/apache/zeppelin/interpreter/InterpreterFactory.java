@@ -74,8 +74,6 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
-import org.apache.zeppelin.interpreter.dev.DevInterpreter;
-import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -739,7 +737,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String noteId) {
     InterpreterOption option = interpreterSetting.getOption();
     if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroup(noteId);
+      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
     } else if (option.isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
@@ -758,10 +756,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = (Properties) interpreterSetting.getProperties();
-    if (option.isExistingProcess) {
-      properties.put(Constants.ZEPPELIN_INTERPRETER_HOST, option.getHost());
-      properties.put(Constants.ZEPPELIN_INTERPRETER_PORT, option.getPort());
-    }
     // if interpreters are already there, wait until they're being removed
     synchronized (interpreterGroup) {
       long interpreterRemovalWaitStart = System.nanoTime();
@@ -793,8 +787,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       if (option.isRemote()) {
         if (option.isExistingProcess()) {
           interpreter =
-              connectToRemoteRepl(noteId, info.getClassName(), option.getHost(), option.getPort(),
-                  properties, user, option.isUserImpersonate);
+              connectToRemoteRepl(interpreterSessionKey, info.getClassName(), option.getHost(),
+                  option.getPort(), properties, interpreterSetting.getId(), user,
+                  option.isUserImpersonate);
         } else {
           interpreter = createRemoteRepl(path, interpreterSessionKey, info.getClassName(),
               properties, interpreterSetting.getId(), user, option.isUserImpersonate(), runner);
@@ -825,7 +820,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     synchronized (interpreterSettings) {
       if (interpreterSettings.containsKey(id)) {
         InterpreterSetting intp = interpreterSettings.get(id);
-        intp.closeAndRmoveAllInterpreterGroups();
+        intp.closeAndRemoveAllInterpreterGroups();
 
         interpreterSettings.remove(id);
         for (List<String> settings : interpreterBindings.values()) {
@@ -954,7 +949,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         try {
           stopJobAllInterpreter(intpSetting);
 
-          intpSetting.closeAndRmoveAllInterpreterGroups();
+          intpSetting.closeAndRemoveAllInterpreterGroups();
           intpSetting.setOption(option);
           intpSetting.setProperties(properties);
           intpSetting.setDependencies(dependencies);
@@ -976,18 +971,23 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     return noteId == null ? false : true;
   }
 
-  public void restart(String settingId, String noteId) {
+  public void restart(String settingId, String noteId, String user) {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
 
+    // restart interpreter setting in note page
     if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
-      intpSetting.closeAndRemoveInterpreterGroup(noteId);
+      intpSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
       return;
+    } else {
+      // restart interpreter setting in interpreter setting page
+      restart(settingId, user);
     }
-    restart(settingId);
+
+
   }
 
-  public void restart(String id) {
+  public void restart(String id, String user) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpSetting = interpreterSettings.get(id);
       // Check if dependency in specified path is changed
@@ -998,13 +998,20 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         copyDependenciesFromLocalPath(intpSetting);
 
         stopJobAllInterpreter(intpSetting);
-
-        intpSetting.closeAndRmoveAllInterpreterGroups();
+        if (user.equals("anonymous")) {
+          intpSetting.closeAndRemoveAllInterpreterGroups();
+        } else {
+          intpSetting.closeAndRemoveInterpreterGroupByUser(user);
+        }
 
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
       }
     }
+  }
+
+  public void restart(String id) {
+    restart(id, "anonymous");
   }
 
   private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
@@ -1035,7 +1042,31 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       for (final InterpreterSetting intpSetting : intpSettings) {
         Thread t = new Thread() {
           public void run() {
-            intpSetting.closeAndRmoveAllInterpreterGroups();
+            intpSetting.closeAndRemoveAllInterpreterGroups();
+          }
+        };
+        t.start();
+        closeThreads.add(t);
+      }
+    }
+
+    for (Thread t : closeThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        logger.error("Can't close interpreterGroup", e);
+      }
+    }
+  }
+
+  public void shutdown() {
+    List<Thread> closeThreads = new LinkedList<>();
+    synchronized (interpreterSettings) {
+      Collection<InterpreterSetting> intpSettings = interpreterSettings.values();
+      for (final InterpreterSetting intpSetting : intpSettings) {
+        Thread t = new Thread() {
+          public void run() {
+            intpSetting.shutdownAndRemoveAllInterpreterGroups();
           }
         };
         t.start();
@@ -1111,11 +1142,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private Interpreter connectToRemoteRepl(String interpreterSessionKey, String className,
-      String host, int port, Properties property, String userName, Boolean isUserImpersonate) {
+      String host, int port, Properties property, String interpreterSettingId, String userName,
+      Boolean isUserImpersonate) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
+    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
-        new RemoteInterpreter(property, interpreterSessionKey, className, host, port,
+        new RemoteInterpreter(property, interpreterSessionKey, className, host, port, localRepoPath,
             connectTimeout, maxPoolSize, remoteInterpreterProcessListener, appEventListener,
             userName, isUserImpersonate));
     return intp;
@@ -1349,11 +1382,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       }
     }
 
-    // dev interpreter
-    if (DevInterpreter.isInterpreterName(replName)) {
-      return getDevInterpreter();
-    }
-
     return null;
   }
 
@@ -1429,24 +1457,5 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.warn("Couldn't get interpreter editor setting");
     }
     return editor;
-  }
-
-  private Interpreter getDevInterpreter() {
-    if (devInterpreter == null) {
-      InterpreterOption option = new InterpreterOption();
-      option.setRemote(true);
-
-      InterpreterGroup interpreterGroup = createInterpreterGroup("dev", option);
-
-      devInterpreter = connectToRemoteRepl("dev", DevInterpreter.class.getName(), "localhost",
-          ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT, new Properties(), "anonymous", false);
-
-      LinkedList<Interpreter> intpList = new LinkedList<>();
-      intpList.add(devInterpreter);
-      interpreterGroup.put("dev", intpList);
-
-      devInterpreter.setInterpreterGroup(interpreterGroup);
-    }
-    return devInterpreter;
   }
 }

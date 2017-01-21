@@ -108,6 +108,16 @@
 </property>
 -->
 
+<!-- provide region of your KMS key -->
+<!-- See http://docs.aws.amazon.com/general/latest/gr/rande.html#kms_region for region codes names -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.kmsKeyRegion</name>
+  <value>us-east-1</value>
+  <description>AWS KMS key region in your AWS account</description>
+</property>
+-->
+
 <!-- Use a custom encryption materials provider to encrypt data -->
 <!-- No configuration is given to the provider, so you must use system properties or another means to configure -->
 <!-- See https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html -->
@@ -147,11 +157,11 @@
 </property>
 -->
 
-<!-- For versioning your local notebook storage using Git repository
+<!-- Notebook storage layer using local file system
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
+  <description>local notebook persistence layer implementation</description>
 </property>
 -->
 
@@ -159,15 +169,15 @@
 <!--
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
-  <description>two notebook persistence layers (local + ZeppelinHub)</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
+  <description>two notebook persistence layers (versioned local + ZeppelinHub)</description>
 </property>
 -->
 
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 
 <property>

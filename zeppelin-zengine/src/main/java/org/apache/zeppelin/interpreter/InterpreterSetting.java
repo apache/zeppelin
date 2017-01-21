@@ -144,6 +144,26 @@ public class InterpreterSetting {
     return key;
   }
 
+  private String getInterpreterSessionKey(String user, String noteId) {
+    InterpreterOption option = getOption();
+    String key;
+    if (option.isExistingProcess()) {
+      key = Constants.EXISTING_PROCESS;
+    } else if (option.perNoteScoped() && option.perUserScoped()) {
+      key = user + ":" + noteId;
+    } else if (option.perUserScoped()) {
+      key = user;
+    } else if (option.perNoteScoped()) {
+      key = noteId;
+    } else {
+      key = "shared_session";
+    }
+
+    logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
+        "{}", key, noteId, user, getName());
+    return key;
+  }
+
   public InterpreterGroup getInterpreterGroup(String user, String noteId) {
     String key = getInterpreterProcessKey(user, noteId);
     if (!interpreterGroupRef.containsKey(key)) {
@@ -173,7 +193,7 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroup(String noteId) {
+  void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
     String key = getInterpreterProcessKey("", noteId);
 
     InterpreterGroup groupToRemove = null;
@@ -190,10 +210,56 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRmoveAllInterpreterGroups() {
+  void closeAndRemoveInterpreterGroupByUser(String user) {
+    if (user.equals("anonymous")) {
+      user = "";
+    }
+    String processKey = getInterpreterProcessKey(user, "");
+    String sessionKey = getInterpreterSessionKey(user, "");
+    InterpreterGroup groupToRemove = null;
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (intpKey.contains(processKey)) {
+        interpreterGroupWriteLock.lock();
+        groupToRemove = interpreterGroupRef.remove(intpKey);
+        interpreterGroupWriteLock.unlock();
+      }
+    }
+
+    if (groupToRemove != null) {
+      groupToRemove.close(sessionKey);
+    }
+  }
+
+  void closeAndRemoveAllInterpreterGroups() {
     HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
     for (String key : groupsToRemove) {
-      closeAndRemoveInterpreterGroup(key);
+      closeAndRemoveInterpreterGroupByNoteId(key);
+    }
+  }
+
+  void shutdownAndRemoveInterpreterGroup(String interpreterGroupKey) {
+    String key = getInterpreterProcessKey("", interpreterGroupKey);
+
+    List<InterpreterGroup> groupToRemove = new LinkedList<>();
+    InterpreterGroup groupItem;
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (intpKey.contains(key)) {
+        interpreterGroupWriteLock.lock();
+        groupItem = interpreterGroupRef.remove(intpKey);
+        interpreterGroupWriteLock.unlock();
+        groupToRemove.add(groupItem);
+      }
+    }
+
+    for (InterpreterGroup groupToClose : groupToRemove) {
+      groupToClose.shutdown();
+    }
+  }
+
+  void shutdownAndRemoveAllInterpreterGroups() {
+    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
+    for (String interpreterGroupKey : groupsToRemove) {
+      shutdownAndRemoveInterpreterGroup(interpreterGroupKey);
     }
   }
 

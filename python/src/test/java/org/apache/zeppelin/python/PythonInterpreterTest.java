@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -62,6 +63,7 @@ import org.slf4j.LoggerFactory;
 public class PythonInterpreterTest {
   private static final Logger LOG = LoggerFactory.getLogger(PythonProcess.class);
 
+  PythonInterpreter zeppelinPythonInterpreter = null;
   PythonInterpreter pythonInterpreter = null;
   PythonProcess mockPythonProcess;
   String cmdHistory;
@@ -88,6 +90,7 @@ public class PythonInterpreterTest {
 
     // python interpreter
     pythonInterpreter = spy(new PythonInterpreter(getPythonTestProperties()));
+    zeppelinPythonInterpreter = new PythonInterpreter(getPythonTestProperties());
 
     // create interpreter group
     InterpreterGroup group = new InterpreterGroup();
@@ -97,6 +100,12 @@ public class PythonInterpreterTest {
 
     when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
     when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
+  }
+
+  @After
+  public void afterTest() throws IOException {
+    pythonInterpreter.close();
+    zeppelinPythonInterpreter.close();
   }
 
   @Test
@@ -170,6 +179,18 @@ public class PythonInterpreterTest {
     InterpreterResult result = pythonInterpreter.interpret("print a", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("%text print a", result.message().get(0).toString());
+  }
+
+  @Test
+  public void testInterpretInvalidSyntax() {
+    zeppelinPythonInterpreter.open();
+    InterpreterResult result = zeppelinPythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\n\nz._displayhook()", null);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(result.message().get(0).toString().contains("hi\nhi\nhi"));
+
+    result = zeppelinPythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\nz._displayhook()", null);
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    assertTrue(result.message().get(0).toString().contains("SyntaxError: invalid syntax"));
   }
 
   /**

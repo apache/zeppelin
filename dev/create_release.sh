@@ -42,6 +42,7 @@ done
 
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
+SCALA_VERSION="2.11"
 
 function build_docker_base() {
   # build base image
@@ -80,7 +81,7 @@ function make_binary_release() {
 
   cp -r "${WORKING_DIR}/zeppelin" "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cd "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
-  ./dev/change_scala_version.sh 2.11
+  ./dev/change_scala_version.sh "${SCALA_VERSION}"
   echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
   mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
   if [[ $? -ne 0 ]]; then
@@ -123,8 +124,8 @@ function make_binary_release() {
 build_docker_base
 git_clone
 make_source_package
-make_binary_release all "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11"
-make_binary_release netinst "-Pspark-2.0 -Phadoop-2.4 -Pyarn -Ppyspark -Psparkr -Pr -Pscala-2.11 -pl !alluxio,!angular,!cassandra,!elasticsearch,!file,!flink,!hbase,!ignite,!jdbc,!kylin,!lens,!livy,!markdown,!postgresql,!python,!shell,!bigquery"
+make_binary_release all "-Pspark-2.1 -Phadoop-2.6 -Pyarn -Ppyspark -Psparkr -Pscala-${SCALA_VERSION}"
+make_binary_release netinst "-Pspark-2.1 -Phadoop-2.6 -Pyarn -Ppyspark -Psparkr -Pscala-${SCALA_VERSION} -pl zeppelin-interpreter,zeppelin-zengine,:zeppelin-display_${SCALA_VERSION},:zeppelin-spark-dependencies_${SCALA_VERSION},:zeppelin-spark_${SCALA_VERSION},zeppelin-web,zeppelin-server,zeppelin-distribution -am"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

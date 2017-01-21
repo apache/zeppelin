@@ -11,40 +11,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function() {
 
-  angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter);
+angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter);
 
-  function jobManagerFilter() {
-    function filterContext(jobItems, filterConfig) {
-      var filterValueInterpreter = filterConfig.filterValueInterpreter;
-      var filterValueNotebookName = filterConfig.filterValueNotebookName;
-      var isSortByAsc = filterConfig.isSortByAsc;
-      var filterItems = jobItems;
+function jobManagerFilter() {
+  function filterContext(jobItems, filterConfig) {
+    var filterValueInterpreter = filterConfig.filterValueInterpreter;
+    var filterValueNotebookName = filterConfig.filterValueNotebookName;
+    var isSortByAsc = filterConfig.isSortByAsc;
+    var filterItems = jobItems;
 
-      if (filterValueInterpreter === undefined) {
-        filterItems = _.filter(filterItems, function(jobItem) {
-          return jobItem.interpreter === undefined ? true : false;
-        });
-      } else if (filterValueInterpreter !== '*') {
-        filterItems = _.where(filterItems, {interpreter: filterValueInterpreter});
-      }
-
-      if (filterValueNotebookName !== '') {
-        filterItems = _.filter(filterItems, function(jobItem) {
-          var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
-          var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
-          return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
-        });
-      }
-
-      filterItems = _.sortBy(filterItems, function(sortItem) {
-        return sortItem.noteName;
+    if (filterValueInterpreter === undefined) {
+      filterItems = _.filter(filterItems, function(jobItem) {
+        return jobItem.interpreter === undefined ? true : false;
       });
-
-      return isSortByAsc ? filterItems : filterItems.reverse();
+    } else if (filterValueInterpreter !== '*') {
+      filterItems = _.where(filterItems, {interpreter: filterValueInterpreter});
     }
-    return filterContext;
-  }
 
-})();
+    if (filterValueNotebookName !== '') {
+      filterItems = _.filter(filterItems, function(jobItem) {
+        var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
+        var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
+        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
+      });
+    }
+
+    filterItems = _.sortBy(filterItems, function(sortItem) {
+      return sortItem.noteName.toLowerCase();
+    });
+
+    return isSortByAsc ? filterItems : filterItems.reverse();
+  }
+  return filterContext;
+}
+

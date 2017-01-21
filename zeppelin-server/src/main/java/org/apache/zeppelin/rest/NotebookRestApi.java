@@ -323,7 +323,7 @@ public class NotebookRestApi {
   public Response importNote(String req) throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note newNote = notebook.importNote(req, null, subject);
-    return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
+    return new JsonResponse<>(Status.OK, "", newNote.getId()).build();
   }
 
   /**
@@ -359,7 +359,7 @@ public class NotebookRestApi {
     note.persist(subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
-    return new JsonResponse<>(Status.CREATED, "", note.getId()).build();
+    return new JsonResponse<>(Status.OK, "", note.getId()).build();
   }
 
   /**
@@ -391,7 +391,7 @@ public class NotebookRestApi {
    * Clone note REST API
    *
    * @param noteId ID of Note
-   * @return JSON with status.CREATED
+   * @return JSON with status.OK
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
   @POST
@@ -410,7 +410,7 @@ public class NotebookRestApi {
     Note newNote = notebook.cloneNote(noteId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
-    return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
+    return new JsonResponse<>(Status.OK, "", newNote.getId()).build();
   }
 
   /**
@@ -445,7 +445,7 @@ public class NotebookRestApi {
 
     note.persist(subject);
     notebookServer.broadcastNote(note);
-    return new JsonResponse<>(Status.CREATED, "", p.getId()).build();
+    return new JsonResponse<>(Status.OK, "", p.getId()).build();
   }
 
   /**

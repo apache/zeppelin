@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response.Status;
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -122,7 +123,7 @@ public class InterpreterRestApi {
           .createNewSetting(request.getName(), request.getGroup(), request.getDependencies(),
               request.getOption(), p);
       logger.info("new setting created with {}", interpreterSetting.getId());
-      return new JsonResponse<>(Status.CREATED, "", interpreterSetting).build();
+      return new JsonResponse<>(Status.OK, "", interpreterSetting).build();
     } catch (InterpreterException | IOException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
@@ -178,12 +179,11 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response restartSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
-
     try {
       RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
 
       String noteId = request == null ? null : request.getNoteId();
-      interpreterFactory.restart(settingId, noteId);
+      interpreterFactory.restart(settingId, noteId, SecurityUtils.getPrincipal());
 
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
@@ -237,7 +237,7 @@ public class InterpreterRestApi {
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
           ExceptionUtils.getStackTrace(e)).build();
     }
-    return new JsonResponse(Status.CREATED).build();
+    return new JsonResponse(Status.OK).build();
   }
 
   /**

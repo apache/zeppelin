@@ -145,7 +145,7 @@ limitations under the License.
   </div>
   <div
     ng-if="JobInfomationsByFilter.length > 0"
-    ng-repeat="notebookJob in JobInfomationsByFilter"
+    ng-repeat="notebookJob in JobInfomationsByFilter track by $index"
     class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
