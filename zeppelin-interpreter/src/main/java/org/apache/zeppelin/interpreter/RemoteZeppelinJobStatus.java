@@ -82,4 +82,34 @@ public class RemoteZeppelinJobStatus {
     }
   }
 
+  public boolean isFinished() {
+    return getJobStatus().isFinished();
+  }
+
+  public boolean isAbort() {
+    return getJobStatus().isAbort();
+  }
+
+  public boolean isError() {
+    return getJobStatus().isError();
+  }
+
+  public boolean isPending() {
+    return getJobStatus().isPending();
+  }
+
+  public boolean isReady() {
+    return getJobStatus().isReady();
+  }
+
+  public boolean isRunning() {
+    return getJobStatus().isRunning();
+  }
+
+  public String getStatus() {
+    return getJobStatus().name();
+  }
+
+
+
 }
