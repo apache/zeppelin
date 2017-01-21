@@ -72,7 +72,8 @@ zeppelin-web/yarn.lock
 /local-repo/
 
 **/sessions/
-**/data/ **/build/
+**/data/ 
+**/build/
 **/testing/
 !/testing/
 
