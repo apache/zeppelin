@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -174,10 +175,11 @@ public class RemoteInterpreterTest {
   @Test
   public void testExistsRemoteInterperterCall() throws TTransportException, IOException, InterruptedException {
     String intpGroupName = "mockIntp";
-    String host = "localhost";
+    String host = "127.0.0.1";
     int port = 20000;
 
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    ApplicationEventListener appListener = mock(ApplicationEventListener.class);
     RemoteInterpreter remoteintp = new RemoteInterpreter(
             new Properties(),
             "note",
@@ -188,7 +190,7 @@ public class RemoteInterpreterTest {
             10 * 1000,
             10,
             listener,
-            null,
+            appListener,
             "anonymous",
             false);
 
