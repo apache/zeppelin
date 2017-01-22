@@ -202,7 +202,11 @@ public abstract class Job {
     }
 
     Throwable cause = ExceptionUtils.getRootCause(e);
-    return ExceptionUtils.getFullStackTrace(cause);
+    if (cause != null) {
+      return ExceptionUtils.getFullStackTrace(cause);
+    } else {
+      return ExceptionUtils.getFullStackTrace(e);
+    }
   }
 
   public Throwable getException() {
