@@ -24,13 +24,13 @@
     <parent>
         <artifactId>zeppelin</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.7.1-SNAPSHOT</version>
+        <version>0.7.0</version>
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-pig</artifactId>
     <packaging>jar</packaging>
-    <version>0.7.1-SNAPSHOT</version>
+    <version>0.7.0</version>
     <name>Zeppelin: Apache Pig Interpreter</name>
     <description>Zeppelin interpreter for Apache Pig</description>
     <url>http://zeppelin.apache.org</url>

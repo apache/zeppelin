@@ -1,7 +1,7 @@
 {
   "name": "zeppelin-vis",
   "description": "Visualization API",
-  "version": "0.7.1-SNAPSHOT",
+  "version": "0.7.0",
   "main": "visualization",
   "dependencies": {
     "json3": "~3.3.1",
