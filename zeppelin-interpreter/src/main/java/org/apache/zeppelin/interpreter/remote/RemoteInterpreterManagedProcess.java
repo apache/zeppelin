@@ -24,6 +24,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -109,7 +110,12 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(localRepoDir, false);
 
     executor = new DefaultExecutor();
-    executor.setStreamHandler(new PumpStreamHandler(new ProcessLogOutputStream(logger)));
+
+    ByteArrayOutputStream cmdOut = new ByteArrayOutputStream();
+    ProcessLogOutputStream processOutput = new ProcessLogOutputStream(logger);
+    processOutput.setOutputStream(cmdOut);
+
+    executor.setStreamHandler(new PumpStreamHandler(processOutput));
     watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     executor.setWatchdog(watchdog);
 
@@ -128,6 +134,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
     long startTime = System.currentTimeMillis();
     while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
+      if (!running) {
+        try {
+          cmdOut.flush();
+        } catch (IOException e) {
+          // nothing to do
+        }
+        throw new InterpreterException(new String(cmdOut.toByteArray()));
+      }
+
       try {
         if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
           break;
@@ -145,6 +160,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
         }
       }
     }
+    processOutput.setOutputStream(null);
   }
 
   public void stop() {
@@ -179,6 +195,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private static class ProcessLogOutputStream extends LogOutputStream {
 
     private Logger logger;
+    OutputStream out;
 
     public ProcessLogOutputStream(Logger logger) {
       this.logger = logger;
@@ -187,6 +204,38 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     @Override
     protected void processLine(String s, int i) {
       this.logger.debug(s);
+    }
+
+    @Override
+    public void write(byte [] b) throws IOException {
+      super.write(b);
+
+      if (out != null) {
+        synchronized (this) {
+          if (out != null) {
+            out.write(b);
+          }
+        }
+      }
+    }
+
+    @Override
+    public void write(byte [] b, int offset, int len) throws IOException {
+      super.write(b, offset, len);
+
+      if (out != null) {
+        synchronized (this) {
+          if (out != null) {
+            out.write(b, offset, len);
+          }
+        }
+      }
+    }
+
+    public void setOutputStream(OutputStream out) {
+      synchronized (this) {
+        this.out = out;
+      }
     }
   }
 }

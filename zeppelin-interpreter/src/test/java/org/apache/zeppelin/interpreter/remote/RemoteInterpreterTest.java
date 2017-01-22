@@ -831,8 +831,8 @@ public class RemoteInterpreterTest {
 
 
     assertEquals("env value 1", intp.interpret("getEnv MY_ENV1", context).message().get(0).getData());
-    assertEquals(0, intp.interpret("getProperty MY_ENV1", context).message().size());
-    assertEquals(0, intp.interpret("getEnv my.property.1", context).message().size());
+    assertEquals(Code.ERROR, intp.interpret("getProperty MY_ENV1", context).code());
+    assertEquals(Code.ERROR, intp.interpret("getEnv my.property.1", context).code());
     assertEquals("property value 1", intp.interpret("getProperty my.property.1", context).message().get(0).getData());
 
     intp.close();
