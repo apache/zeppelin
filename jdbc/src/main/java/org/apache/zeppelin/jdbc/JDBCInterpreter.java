@@ -336,7 +336,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private Connection getConnectionFromPool(String url, String user, String propertyKey,
-      Properties properties, String noteId) throws SQLException, ClassNotFoundException {
+      Properties properties) throws SQLException, ClassNotFoundException {
     String jdbcDriver = getJDBCDriverName(user, propertyKey);
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
@@ -344,7 +344,7 @@ public class JDBCInterpreter extends Interpreter {
 
       String precode = properties.getProperty(PRECODE_KEY);
       if (precode != null) {
-        executeSqlPrecode(DriverManager.getConnection(jdbcDriver), precode, noteId);
+        executeSqlPrecode(DriverManager.getConnection(jdbcDriver), precode);
       }
     }
     return DriverManager.getConnection(jdbcDriver);
@@ -366,18 +366,18 @@ public class JDBCInterpreter extends Interpreter {
     final String noteId = interpreterContext.getNoteId();
 
     if (StringUtils.isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
-      connection = getConnectionFromPool(url, user, propertyKey, properties, noteId);
+      connection = getConnectionFromPool(url, user, propertyKey, properties);
     } else {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
 
       switch (authType) {
           case KERBEROS:
             if (user == null) {
-              connection = getConnectionFromPool(url, user, propertyKey, properties, noteId);
+              connection = getConnectionFromPool(url, user, propertyKey, properties);
             } else {
               if ("hive".equalsIgnoreCase(propertyKey)) {
                 connection = getConnectionFromPool(url + ";hive.server2.proxy.user=" + user,
-                  user, propertyKey, properties, noteId);
+                  user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
                 try {
@@ -396,7 +396,7 @@ public class JDBCInterpreter extends Interpreter {
                   connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
                     @Override
                     public Connection run() throws Exception {
-                      return getConnectionFromPool(url, user, poolKey, properties, noteId);
+                      return getConnectionFromPool(url, user, poolKey, properties);
                     }
                   });
                 } catch (Exception e) {
@@ -411,7 +411,7 @@ public class JDBCInterpreter extends Interpreter {
             break;
 
           default:
-            connection = getConnectionFromPool(url, user, propertyKey, properties, noteId);
+            connection = getConnectionFromPool(url, user, propertyKey, properties);
       }
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
@@ -513,11 +513,8 @@ public class JDBCInterpreter extends Interpreter {
     return queries;
   }
 
-  private void executeSqlPrecode(Connection connection, String precode, String noteId) {
-    logger.info("Run SQL precode '{}' with noteId {}", precode, noteId);
-    if (precode.contains("%noteId")) {
-      precode = precode.replace("%noteId", "'" + noteId + "'");
-    }
+  private void executeSqlPrecode(Connection connection, String precode) {
+    logger.info("Run SQL precode '{}'", precode);
     try {
       Statement statement = connection.createStatement();
       try {
