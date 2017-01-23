@@ -31,10 +31,9 @@ export const DefaultDisplayMagic = {
   '%text': DefaultDisplayType.TEXT,
 };
 
-export class GeneratorWithType {
-  constructor(generator, type) {
-    // use variable name `data` to keep consistency with backend
-    this.data = generator;
+export class DataWithType {
+  constructor(data, type) {
+    this.data = data;
     this.type = type;
   }
 
@@ -48,86 +47,92 @@ export class GeneratorWithType {
     }
   }
 
-  static parseStringGenerator(generator, customDisplayMagic) {
+  /**
+   * consume 1 data and produce multiple
+   * @param data {string}
+   * @param customDisplayType
+   * @return {Array<DataWithType>}
+   */
+  static parseStringData(data, customDisplayMagic) {
     function availableMagic(magic) {
       return magic && (DefaultDisplayMagic[magic] || customDisplayMagic[magic]);
     }
 
-    const splited = generator.split('\n');
+    const splited = data.split('\n');
 
     const gensWithTypes = [];
     let mergedGens = [];
     let previousMagic = DefaultDisplayType.TEXT;
 
-    // create `GeneratorWithType` whenever see available display type.
+    // create `DataWithType` whenever see available display type.
     for(let i = 0; i < splited.length; i++) {
       const g = splited[i];
       const magic = SpellResult.extractMagic(g);
 
-      // create `GeneratorWithType` only if see new magic
+      // create `DataWithType` only if see new magic
       if (availableMagic(magic) && mergedGens.length > 0) {
-        gensWithTypes.push(new GeneratorWithType(mergedGens.join(''), previousMagic));
+        gensWithTypes.push(new DataWithType(mergedGens.join(''), previousMagic));
         mergedGens = [];
       }
 
-      // accumulate `generator` to mergedGens
+      // accumulate `data` to mergedGens
       if (availableMagic(magic)) {
         const withoutMagic = g.split(magic)[1];
         mergedGens.push(`${withoutMagic}\n`);
-        previousMagic = GeneratorWithType.handleDefaultMagic(magic);
+        previousMagic = DataWithType.handleDefaultMagic(magic);
       } else {
         mergedGens.push(`${g}\n`);
       }
     }
 
-    // cleanup the last `GeneratorWithType`
+    // cleanup the last `DataWithType`
     if (mergedGens.length > 0) {
-      previousMagic = GeneratorWithType.handleDefaultMagic(previousMagic);
-      gensWithTypes.push(new GeneratorWithType(mergedGens.join(''), previousMagic));
+      previousMagic = DataWithType.handleDefaultMagic(previousMagic);
+      gensWithTypes.push(new DataWithType(mergedGens.join(''), previousMagic));
     }
 
     return gensWithTypes;
   }
 
   /**
-   * get 1 `GeneratorWithType` and produce multiples using available displays
+   * get 1 `DataWithType` and produce multiples using available displays
    * return an wrapped with a promise to generalize result output which can be
    * object, function or promise
-   * @param generatorWithType {GeneratorWithType}
+   * @param dataWithType {DataWithType}
    * @param availableDisplays {Object} Map for available displays
-   * @return {Promise<Array<GeneratorWithType>>}
+   * @return {Promise<Array<DataWithType>>}
    */
-  static produceMultipleGenerator(generatorWithType, customDisplayType) {
-    const generator = generatorWithType.getGenerator();
-    const type = generatorWithType.getType();
+  static produceMultipleData(dataWithType, customDisplayType) {
+    const data = dataWithType.getData();
+    const type = dataWithType.getType();
 
     // if the type is specified, just return it
-    // handle non-specified generatorWithTypes only
+    // handle non-specified dataWithTypes only
     if (type) {
-      return new Promise((resolve) => { resolve([generatorWithType]); });
+      return new Promise((resolve) => { resolve([dataWithType]); });
     }
 
     let wrapped;
 
-    if (SpellResult.isFunctionGenerator(generator)) {
-      // if generator is a function, we consider it as ELEMENT type.
+    if (SpellResult.isFunction(data)) {
+      // if data is a function, we consider it as ELEMENT type.
       wrapped = new Promise((resolve) => {
-        const result = [new GeneratorWithType(generator, DefaultDisplayType.ELEMENT)];
+        const result = [new DataWithType(data, DefaultDisplayType.ELEMENT)];
         return resolve(result);
       });
-    } else if (SpellResult.isPromiseGenerator(generator)) {
-      // if generator is a promise,
-      wrapped = generator.then(generated => {
+    } else if (SpellResult.isPromise(data)) {
+      // if data is a promise,
+      wrapped = data.then(generated => {
         const result =
-          GeneratorWithType.parseStringGenerator(generated, customDisplayType);
+          DataWithType.parseStringData(generated, customDisplayType);
         return result;
       })
 
     } else {
-      // if generator is a object, parse it to multiples
+      // if data is a object, parse it to multiples
       wrapped = new Promise((resolve) => {
         const result =
-          GeneratorWithType.parseStringGenerator(generator, customDisplayType);
+          DataWithType.parseStringData(data, customDisplayType);
         return resolve(result);
       });
     }
@@ -136,7 +141,7 @@ export class GeneratorWithType {
   }
 
   /**
-   * generator (`data`) can be promise, function or just object
+   * `data` can be promise, function or just object
    * - if data is an object, it will be used directly.
    * - if data is a function, it will be called with DOM element id
    *   where the final output is rendered.
@@ -144,14 +149,14 @@ export class GeneratorWithType {
    *   will be called in `then()` of this promise.
    * @returns {*} `data` which can be object, function or promise.
    */
-  getGenerator() {
+  getData() {
     return this.data;
   }
 
   /**
    * Value of `type` might be empty which means
-   * generator can be splited into multiple generators
-   * by `SpellResult.parseMultipleGenerators()`
+   * data can be separated into multiples
+   * by `SpellResult.parseStringData()`
    * @returns {string}
    */
   getType() {
@@ -160,23 +165,23 @@ export class GeneratorWithType {
 }
 
 export class SpellResult {
-  constructor(resultGenerator, resultType) {
-    this.generatorsWithTypes = [];
-    this.add(resultGenerator, resultType);
+  constructor(resultData, resultType) {
+    this.dataWithTypes = [];
+    this.add(resultData, resultType);
   }
 
-  static isFunctionGenerator(generator) {
-    return (generator && typeof generator === 'function');
+  static isFunction(data) {
+    return (data && typeof data === 'function');
   }
 
-  static isPromiseGenerator(generator) {
-    return (generator && typeof generator.then === 'function');
+  static isPromise(data) {
+    return (data && typeof data.then === 'function');
   }
 
-  static isObjectGenerator(generator) {
-    return (generator &&
-      !SpellResult.isFunctionGenerator(generator) &&
-      !SpellResult.isPromiseGenerator(generator));
+  static isObject(data) {
+    return (data &&
+      !SpellResult.isFunction(data) &&
+      !SpellResult.isPromise(data));
   }
 
   static extractMagic(allParagraphText) {
@@ -193,17 +198,11 @@ export class SpellResult {
     return undefined;
   }
 
-  /**
-   * consume 1 generator and produce multiple
-   * @param generator {string}
-   * @param customDisplayType
-   * @return {Array<GeneratorWithType>}
-   */
 
-  add(resultGenerator, resultType) {
-    if (resultGenerator) {
-      this.generatorsWithTypes.push(
-        new GeneratorWithType(resultGenerator, resultType));
+  add(resultData, resultType) {
+    if (resultData) {
+      this.dataWithTypes.push(
+        new DataWithType(resultData, resultType));
     }
 
     return this;
@@ -211,11 +210,11 @@ export class SpellResult {
 
   /**
    * @param customDisplayType
-   * @return {Promise<Array<GeneratorWithType>>}
+   * @return {Promise<Array<DataWithType>>}
    */
-  getAllParsedGeneratorsWithTypes(customDisplayType) {
-    const promises = this.generatorsWithTypes.map(gt => {
-      return GeneratorWithType.produceMultipleGenerator(gt, customDisplayType);
+  getAllParsedDataWithTypes(customDisplayType) {
+    const promises = this.dataWithTypes.map(gt => {
+      return DataWithType.produceMultipleData(gt, customDisplayType);
     });
 
     // some promises can include an array so we need to flatten them

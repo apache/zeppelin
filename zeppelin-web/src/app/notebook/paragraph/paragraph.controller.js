@@ -225,11 +225,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
 
-  $scope.handleSpellError = function(error) {
+  $scope.handleSpellError = function(error, digestRequired) {
     $scope.paragraph.status = 'ERROR';
     $scope.paragraph.errorMessage = error.stack;
     console.error('Failed to execute interpret() in spell\n', error);
-    $scope.$digest();
+    if (digestRequired) { $scope.$digest(); }
   };
 
   $scope.runParagraphUsingSpell = function(spell, paragraphText,
@@ -244,15 +244,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       const textWithoutMagic = splited[1].replace(/^\s+/g, '');
       $scope.paragraph.status = 'FINISHED';
       const spellResult = spell.interpret(textWithoutMagic);
-      const parsed = spellResult.getAllParsedGeneratorsWithTypes(
+      const parsed = spellResult.getAllParsedDataWithTypes(
         heliumService.getAllSpells());
+
+      // handle actual result message in promise
       parsed.then(resultsMsg => {
         $scope.paragraph.results.msg = resultsMsg;
         $scope.paragraph.config.tableHide = false;
         if (digestRequired) { $scope.$digest(); }
-      }).catch($scope.handleSpellError);
+      }).catch(error => {
+        $scope.handleSpellError(error, digestRequired);
+      });
     } catch (error) {
-      $scope.handleSpellError(error);
+      $scope.handleSpellError(error, digestRequired);
     }
   };
 

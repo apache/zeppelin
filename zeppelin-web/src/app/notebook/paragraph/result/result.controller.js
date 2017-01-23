@@ -321,7 +321,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     // get result from intp
 
     const spellResult = spell.interpret(data.trim());
-    const parsed = spellResult.getAllParsedGeneratorsWithTypes(
+    const parsed = spellResult.getAllParsedDataWithTypes(
       heliumService.getAllSpells());
 
     // custom display result can include multiple subset results
@@ -350,29 +350,29 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
    * feed it to the success callback.
    * if error occurs, the error is passed to the failure callback
    *
-   * @param generator {Object or Function}
+   * @param data {Object or Function}
    * @param type {string} Display Type
    * @param successCallback
    * @param failureCallback
    */
-  const generateData = function(generator, type, successCallback, failureCallback) {
-    if (SpellResult.isFunctionGenerator(generator)) {
+  const handleData = function(data, type, successCallback, failureCallback) {
+    if (SpellResult.isFunction(data)) {
       try {
-        successCallback(generator());
+        successCallback(data());
       } catch (error) {
         failureCallback(error);
-        console.error(`Failed to handle ${type} type, function generator\n`, error);
+        console.error(`Failed to handle ${type} type, function data\n`, error);
       }
-    } else if (SpellResult.isObjectGenerator(generator)) {
+    } else if (SpellResult.isObject(data)) {
       try {
-        successCallback(generator);
+        successCallback(data);
       } catch (error) {
-        console.error(`Failed to handle ${type} type, object generator\n`, error);
+        console.error(`Failed to handle ${type} type, object data\n`, error);
       }
     }
   };
 
-  const renderElem = function(targetElemId, generator) {
+  const renderElem = function(targetElemId, data) {
     function retryRenderer() {
       const elem = angular.element(`#${targetElemId}`);
       if (!elem.length) {
@@ -380,8 +380,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         return;
       }
 
-      generateData(() => { generator(targetElemId) }, DefaultDisplayType.ELEMENT,
-        () => {}, /** HTML element will be filled in generator . thus pass empty success callback */
+      handleData(() => { data(targetElemId) }, DefaultDisplayType.ELEMENT,
+        () => {}, /** HTML element will be filled with data. thus pass empty success callback */
         (error) => { elem.html(`${error.stack}`); }
       );
     }
@@ -389,7 +389,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $timeout(retryRenderer);
   };
 
-  const renderHtml = function(targetElemId, generator) {
+  const renderHtml = function(targetElemId, data) {
     function retryRenderer() {
       const elem = angular.element(`#${targetElemId}`);
       if (!elem.length) {
@@ -397,7 +397,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         return;
       }
 
-      generateData(generator, DefaultDisplayType.HTML,
+      handleData(data, DefaultDisplayType.HTML,
         (generated) => {
           elem.html(generated);
           elem.find('pre code').each(function(i, e) {
@@ -413,7 +413,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $timeout(retryRenderer);
   };
 
-  const renderAngular = function(targetElemId, generator) {
+  const renderAngular = function(targetElemId, data) {
     function retryRenderer() {
       const elem = angular.element(`#${targetElemId}`);
       if (!elem.length) {
@@ -422,7 +422,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
 
       const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
-      generateData(generator, DefaultDisplayType.ANGULAR,
+      handleData(data, DefaultDisplayType.ANGULAR,
         (generated) => {
           elem.html(generated);
           $compile(elem.contents())(paragraphScope);
@@ -438,7 +438,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return angular.element('#p' + resultId + '_text');
   };
 
-  const renderText = function(targetElemId, generator) {
+  const renderText = function(targetElemId, data) {
     function retryRenderer() {
       const elem = angular.element(`#${targetElemId}`);
       if (!elem.length) {
@@ -446,7 +446,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         return;
       }
 
-      generateData(generator, DefaultDisplayType.TEXT,
+      handleData(data, DefaultDisplayType.TEXT,
         (generated) => {
           // clear all lines before render
           clearTextOutput();
