@@ -238,7 +238,7 @@ body {
 /* Custom container */
 .content {
   word-wrap: break-word;
-  max-width: 1024px;
+  max-width: 860px;
   padding: 2rem 2rem;
   margin: 0 auto;
 }
@@ -518,6 +518,62 @@ a.anchor {
 }
 
 a.anchorjs-link:hover { text-decoration: none; }
+
+/* Helium Package list style */
+.heliumPackageContainer p {
+  font-family: "Helvetica Neue";
+  font-weight: 900;
+  padding: 12px 0;
+  text-transform: uppercase;
+}
+
+.heliumPackageList {
+  min-height: 25px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #EFEFEF;
+  padding-bottom: 13px;
+}
+
+.heliumPackageList .heliumPackageHead {
+  font-family: "Helvetica Neue";
+  height: 30px;
+}
+
+.heliumPackageList .heliumPackageName {
+  font-size: 20px;
+  font-weight: 900;
+  color: #3071a9;
+  margin-top: 0;
+}
+
+.heliumPackageList .heliumPackageName span {
+  font-size: 10px;
+  color: #aaa;
+}
+
+.heliumPackageList .heliumPackageAuthor {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.heliumPackageList .heliumPackageIcon {
+  float: left;
+  font-size: 17px;
+  width: 26px;
+  height: 22px;
+  padding: 5px 2px 0px 2px;
+}
+
+.heliumPackageList .heliumPackageDescription {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.heliumPackageList .heliumPackageLatestVersion {
+  color: #aaa;
+  font-style: italic;
+}
 
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
