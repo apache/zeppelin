@@ -50,8 +50,12 @@ def get(key):
 def _on_config_change():
     # dpi
     dpi = _config['dpi']
-    matplotlib.rcParams['savefig.dpi'] = dpi
+    
+    # For older versions of matplotlib, savefig.dpi is not synced with
+    # figure.dpi by default
     matplotlib.rcParams['figure.dpi'] = dpi
+    if matplotlib.__version__ < '2.0.0':
+        matplotlib.rcParams['savefig.dpi'] = dpi
     
     # Width and height
     width = float(_config['width']) / dpi
@@ -75,7 +79,7 @@ def _on_config_change():
     
     
 def _init_config():
-    dpi = matplotlib.rcParams['savefig.dpi']
+    dpi = matplotlib.rcParams['figure.dpi']
     fmt = matplotlib.rcParams['savefig.format']
     width, height = matplotlib.rcParams['figure.figsize']
     fontsize = matplotlib.rcParams['font.size']

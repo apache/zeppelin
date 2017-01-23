@@ -30,7 +30,7 @@ if [[ $# -ne 2 ]]; then
   usage
 fi
 
-for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD DOCKER_USERNAME DOCKER_PASSWORD DOCKER_EMAIL; do
+for var in GPG_PASSPHRASE ASF_USERID ASF_PASSWORD; do
   if [[ -z "${!var}" ]]; then
     echo "You need ${var} variable set"
     exit 1
@@ -67,14 +67,6 @@ function curl_error() {
   fi
 }
 
-function publish_to_dockerhub() {
-  # publish images
-  docker login --username="${DOCKER_USERNAME}" --password="${DOCKER_PASSWORD}" --email="${DOCKER_EMAIL}"
-  docker push ${DOCKER_USERNAME}/zeppelin-base:latest
-  docker push ${DOCKER_USERNAME}/zeppelin-release:"${RELEASE_VERSION}"
-  
-}
-
 function publish_to_maven() {
   cd "${WORKING_DIR}/zeppelin"
 
@@ -102,9 +94,9 @@ function publish_to_maven() {
 
   # build with scala-2.10
   echo "mvn clean install -DskipTests \
-    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 \
+    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -DskipTests -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 \
+  mvn clean install -DskipTests -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.10 failed."
@@ -161,6 +153,5 @@ function publish_to_maven() {
 }
 
 git_clone
-publish_to_dockerhub
 publish_to_maven
 cleanup

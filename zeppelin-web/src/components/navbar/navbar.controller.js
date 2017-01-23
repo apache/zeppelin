@@ -85,6 +85,10 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     return ($routeParams.noteId === noteId);
   }
 
+  function listConfigurations() {
+    websocketMsgSrv.listConfigurations();
+  }
+
   function loadNotes() {
     websocketMsgSrv.getNoteList();
   }
@@ -135,6 +139,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
   });
 
   $scope.$on('loginSuccess', function(event, param) {
+    listConfigurations();
     loadNotes();
   });
 
@@ -153,4 +158,3 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     });
   }
 }
-

@@ -222,6 +222,11 @@
   <description>Interpreter process connect timeout in msec.</description>
 </property>
 
+<property>
+  <name>zeppelin.interpreter.output.limit</name>
+  <value>102400</value>
+  <description>Output message from interpreter exceeding the limit will be truncated</description>
+</property>
 
 <property>
   <name>zeppelin.ssl</name>

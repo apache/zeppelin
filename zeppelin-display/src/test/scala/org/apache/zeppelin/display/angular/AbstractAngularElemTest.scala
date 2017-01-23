@@ -23,6 +23,7 @@ import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
 import org.apache.zeppelin.user.AuthenticationInfo
 import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 
 /**
@@ -61,12 +62,12 @@ trait AbstractAngularElemTest
     // click create thread for callback function to run. So it'll may not immediately invoked
     // after click. therefore eventually should be
     click(elem)
-    eventually {
+    eventually (timeout(Span(5, Seconds))) {
       a should be(1)
     }
 
     click(elem)
-    eventually {
+    eventually (timeout(Span(5, Seconds))) {
       a should be(2)
     }
 
@@ -120,7 +121,7 @@ trait AbstractAngularElemTest
 
     click(elem)
 
-    eventually { modelValue should be("value")}
+    eventually (timeout(Span(5, Seconds))) { modelValue should be("value")}
   }
 
 

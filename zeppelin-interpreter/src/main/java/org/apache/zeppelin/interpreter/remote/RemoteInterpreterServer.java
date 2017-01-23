@@ -162,6 +162,11 @@ public class RemoteInterpreterServer
       interpreterGroup.setResourcePool(resourcePool);
 
       String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
+      if (properties.containsKey("zeppelin.interpreter.output.limit")) {
+        InterpreterOutput.limit = Integer.parseInt(
+            properties.get("zeppelin.interpreter.output.limit"));
+      }
+
       depLoader = new DependencyResolver(localRepoPath);
       appLoader = new ApplicationLoader(resourcePool, depLoader);
     }

@@ -98,9 +98,18 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
       filterValueInterpreter: '*',
       isSortByAsc: true
     };
+    $scope.sortTooltipMsg = 'Switch to sort by desc';
     $scope.jobTypeFilter = jobManagerFilter;
 
     websocketMsgSrv.getNoteJobsList();
+
+    $scope.$watch('filterConfig.isSortByAsc', function (value) {
+      if (value) {
+        $scope.sortTooltipMsg = 'Switch to sort by desc';
+      } else {
+        $scope.sortTooltipMsg = 'Switch to sort by asc';
+      }
+    });
 
     $scope.$on('$destroy', function() {
       websocketMsgSrv.unsubscribeJobManager();
