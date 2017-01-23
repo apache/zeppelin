@@ -185,9 +185,9 @@ export class SpellResult {
   }
 
   static extractMagic(allParagraphText) {
-    const intpNameRegexp = /^\s*%(\S+)\s*/g;
+    const pattern = /^\s*%(\S+)\s*/g;
     try {
-      let match = intpNameRegexp.exec(allParagraphText);
+      let match = pattern.exec(allParagraphText);
       if (match) {
         return `%${match[1].trim()}`;
       }

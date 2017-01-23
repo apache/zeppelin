@@ -29,30 +29,52 @@ export default class TranslatorSpell extends SpellBase {
     }
 
     interpret(paragraphText) {
+        const parsed = this.parseConfig(paragraphText);
+        const source = parsed.source;
+        const target = parsed.target;
+        const auth = parsed.auth;
+        const text = parsed.text;
+
         /**
-         * SpellResult
-         * - accepts not only `string` but also `promise`
+         * SpellResult.add()
+         * - accepts not only `string` but also `promise` as a parameter
          * - allows to add multiple output using the `add()` function
          */
         const result = new SpellResult()
-            .add('<h4>Translation From English To Korean</h4>', DefaultDisplayType.HTML)
+            .add('<h4>Translation Result</h4>', DefaultDisplayType.HTML)
             // or use display system implicitly like
             // .add('%html <h4>Translation From English To Korean</h4>')
-            .add(this.translate(paragraphText));
+            .add(this.translate(source, target, auth, text));
         return result;
     }
 
-    translate(text) {
+    parseConfig(text) {
+        const pattern = /^\s*(\S+)-(\S+)\s*(\S+)([\S\s]*)/g;
+        const match = pattern.exec(text);
+
+        if (!match) {
+            throw new Error(`Failed to parse configuration. See README`);
+        }
+
+        return {
+            source: match[1],
+            target: match[2],
+            auth: match[3],
+            text: match[4],
+        }
+    }
+
+    translate(source, target, auth, text) {
         return fetch('https://translation.googleapis.com/language/translate/v2', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer YOUR_ACCESS_KEY',
+                'Authorization': `Bearer ${auth}`,
             },
             body: JSON.stringify({
                 'q': text,
-                'source': 'en',
-                'target': 'ko',
+                'source': source,
+                'target': target,
                 'format': 'text'
             })
         }).then(response => {
