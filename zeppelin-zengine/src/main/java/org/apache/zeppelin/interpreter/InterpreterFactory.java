@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -312,16 +313,19 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, cl);
 
-    InputStream inputStream = tempClassLoader.getResourceAsStream(interpreterJson);
-
-    if (null != inputStream) {
-      logger.debug("Reading {} from resources in {}", interpreterJson, interpreterDir);
-      List<RegisteredInterpreter> registeredInterpreterList =
-          getInterpreterListFromJson(inputStream);
-      registerInterpreters(registeredInterpreterList, interpreterDir);
-      return true;
+    Enumeration<URL> interpreterSettings = tempClassLoader.getResources(interpreterJson);
+    if (!interpreterSettings.hasMoreElements()) {
+      return false;
     }
-    return false;
+    for (URL url : Collections.list(interpreterSettings)) {
+      try (InputStream inputStream = url.openStream()) {
+        logger.debug("Reading {} from {}", interpreterJson, url);
+        List<RegisteredInterpreter> registeredInterpreterList =
+            getInterpreterListFromJson(inputStream);
+        registerInterpreters(registeredInterpreterList, interpreterDir);
+      }
+    }
+    return true;
   }
 
   private boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson)
