@@ -41,19 +41,19 @@ public class Helium {
 
   private final HeliumConf heliumConf;
   private final String heliumConfPath;
-  private final String defaultLocalRegistryPath;
+  private final String registryPaths;
   private final Gson gson;
   private final HeliumVisualizationFactory visualizationFactory;
   private final HeliumApplicationFactory applicationFactory;
 
   public Helium(
       String heliumConfPath,
-      String defaultLocalRegistryPath,
+      String registryPaths,
       HeliumVisualizationFactory visualizationFactory,
       HeliumApplicationFactory applicationFactory)
       throws IOException {
     this.heliumConfPath = heliumConfPath;
-    this.defaultLocalRegistryPath = defaultLocalRegistryPath;
+    this.registryPaths = registryPaths;
     this.visualizationFactory = visualizationFactory;
     this.applicationFactory = applicationFactory;
 
@@ -96,19 +96,28 @@ public class Helium {
   }
 
   private synchronized HeliumConf loadConf(String path) throws IOException {
+    // add registry
+    if (registryPaths != null && !registryPaths.isEmpty()) {
+      String[] paths = registryPaths.split(",");
+      for (String uri : paths) {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+          logger.info("Add helium online registry {}", uri);
+          registry.add(new HeliumOnlineRegistry(uri, uri));
+        } else {
+          logger.info("Add helium local registry {}", uri);
+          registry.add(new HeliumLocalRegistry(uri, uri));
+        }
+      }
+    }
+
     File heliumConfFile = new File(path);
     if (!heliumConfFile.isFile()) {
       logger.warn("{} does not exists", path);
       HeliumConf conf = new HeliumConf();
-      LinkedList<HeliumRegistry> defaultRegistry = new LinkedList<>();
-      defaultRegistry.add(new HeliumLocalRegistry("local", defaultLocalRegistryPath));
-      conf.setRegistry(defaultRegistry);
-      this.registry = conf.getRegistry();
       return conf;
     } else {
       String jsonString = FileUtils.readFileToString(heliumConfFile);
       HeliumConf conf = gson.fromJson(jsonString, HeliumConf.class);
-      this.registry = conf.getRegistry();
       return conf;
     }
   }
@@ -117,7 +126,6 @@ public class Helium {
     String jsonString;
     synchronized (registry) {
       clearNotExistsPackages();
-      heliumConf.setRegistry(registry);
       jsonString = gson.toJson(heliumConf);
     }
 
