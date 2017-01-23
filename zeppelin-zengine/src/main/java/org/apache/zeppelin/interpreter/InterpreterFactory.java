@@ -1384,8 +1384,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       key = SHARED_SESSION;
     }
 
-    logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
-        "{}", key, noteId, user, setting.getName());
     return key;
   }
 
