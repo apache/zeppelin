@@ -1,0 +1,11 @@
+{
+  "name": "echo-frontend-interpreter",
+  "description": "Frontend Echo Interpreter (example)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "zeppelin-frontend-interpreter": "*"
+  }
+}

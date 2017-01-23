@@ -25,7 +25,7 @@ import 'whatwg-fetch';
 
 export default class TranslatorInterpreter extends AbstractFrontendInterpreter {
     constructor() {
-        super("%translator", DefaultDisplayType.TEXT);
+        super("%translator");
     }
 
     interpret(paragraphText) {

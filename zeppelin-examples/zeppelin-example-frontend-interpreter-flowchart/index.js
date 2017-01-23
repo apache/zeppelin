@@ -25,7 +25,7 @@ import flowchart from 'flowchart.js';
 
 export default class FlowchartInterpreter extends AbstractFrontendInterpreter {
     constructor() {
-        super("%flowchart", DefaultDisplayType.ELEMENT);
+        super("%flowchart");
     }
 
     interpret(paragraphText) {
