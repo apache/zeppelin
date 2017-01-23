@@ -192,21 +192,33 @@ public class HeliumBundleFactory {
 
     copyFrameworkModuleToInstallPath(npmPackageCopyFilter);
 
-    out.reset();
     try {
-      npmCommand("install");
+      out.reset();
+      npmCommand("install --loglevel=error");
+    } catch (TaskRunnerException e) {
+      // ignore `(empty)` warning
+      String cause = new String(out.toByteArray());
+      if (!cause.contains("(empty)")) {
+        throw new IOException(cause);
+      }
+    }
+
+    try {
+      out.reset();
       npmCommand("run bundle");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
     }
 
+    String bundleStdoutResult = new String(out.toByteArray());
+
     File heliumBundle = new File(workingDirectory, HELIUM_BUNDLE);
     if (!heliumBundle.isFile()) {
       throw new IOException(
-          "Can't create bundle: \n" + new String(out.toByteArray()));
+          "Can't create bundle: \n" + bundleStdoutResult);
     }
 
-    WebpackResult result = getWebpackResultFromOutput(new String(out.toByteArray()));
+    WebpackResult result = getWebpackResultFromOutput(bundleStdoutResult);
     if (result.errors.length > 0) {
       heliumBundle.delete();
       throw new IOException(result.errors[0]);
@@ -361,7 +373,7 @@ public class HeliumBundleFactory {
   }
 
   public synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
-    npmCommand("install " + pkg.getArtifact());
+    npmCommand("install " + pkg.getArtifact() + " npm install --loglevel=error");
   }
 
   private void npmCommand(String args) throws TaskRunnerException {
