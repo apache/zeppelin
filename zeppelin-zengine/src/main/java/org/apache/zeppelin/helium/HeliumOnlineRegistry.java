@@ -18,6 +18,11 @@ package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +60,17 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
 
   @Override
   public List<HeliumPackage> getAll() throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(uri()).openStream()));
+    HttpClient client = HttpClientBuilder.create()
+        .setUserAgent("ApacheZeppelin/" + Util.getVersion())
+        .build();
+    HttpGet get = new HttpGet(uri());
+    HttpResponse response = client.execute(get);
+    if (response.getStatusLine().getStatusCode() != 200) {
+      throw new IOException(uri() + " returned " + response.getStatusLine().toString());
+    }
+
+    BufferedReader reader = new BufferedReader(
+        new InputStreamReader(response.getEntity().getContent()));
     List<Map<String, Map<String, HeliumPackage>>> packages = gson.fromJson(
         reader,
         new TypeToken<List<Map<String, Map<String, HeliumPackage>>>>() {
@@ -69,7 +84,6 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
         packageList.addAll(versions.values());
       }
     }
-
     return packageList;
   }
 }
