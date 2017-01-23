@@ -67,6 +67,10 @@ limitations under the License.
            tooltip="Scroll Top"></div>
     </div>
 
+    <div id="p{{id}}_custom" class="resultContained"
+      ng-if="!isDefaultDisplay()">
+    </div>
+
     <div id="p{{id}}_elem" class="resultContained"
          ng-if="type == 'ELEMENT'">
     </div>

@@ -53,7 +53,7 @@ export class GeneratorWithType {
       return magic && (DefaultDisplayMagic[magic] || customDisplayMagic[magic]);
     }
 
-    const splited = generator.split("\n");
+    const splited = generator.split('\n');
 
     const gensWithTypes = [];
     let mergedGens = [];

@@ -23,9 +23,8 @@ import {
 /*eslint-enable no-unused-vars */
 
 export class AbstractFrontendInterpreter {
-  constructor(magic, displayType) {
+  constructor(magic) {
     this.magic = magic;
-    this.displayType = displayType;
   }
 
   /**
@@ -37,6 +36,7 @@ export class AbstractFrontendInterpreter {
    */
   interpret(paragraphText) {
     /** implement this if you want to add a frontend interpreter */
+    throw new Error('AbstractFrontendInterpreter.interpret is not overrided');
   }
 
   /**
@@ -46,14 +46,5 @@ export class AbstractFrontendInterpreter {
    */
   getMagic() {
     return this.magic;
-  }
-
-  /**
-   * return display type for this frontend interpreter.
-   * (e.g `DefaultDisplayType.TEXT`)
-   * @return {string}
-   */
-  getDisplayType() {
-    return this.displayType;
   }
 }

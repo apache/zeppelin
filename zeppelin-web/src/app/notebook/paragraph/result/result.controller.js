@@ -252,8 +252,40 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  var renderResult = function(type, refresh) {
-    var activeApp;
+  $scope.createDisplayDOMId = function(baseDOMId, type) {
+    if (type === DefaultDisplayType.TABLE) {
+      return `${baseDOMId}_graph`;
+    } else if (type === DefaultDisplayType.HTML) {
+      return `${baseDOMId}_html`;
+    } else if (type === DefaultDisplayType.ANGULAR) {
+      return `${baseDOMId}_angular`;
+    } else if (type === DefaultDisplayType.TEXT) {
+      return `${baseDOMId}_text`;
+    } else if (type === DefaultDisplayType.ELEMENT) {
+      return `${baseDOMId}_elem`;
+    } else {
+      console.error(`Cannot create display DOM Id due to unknown display type: ${type}`);
+    }
+  };
+
+  $scope.renderDefaultDisplay = function(targetElemId, type, data, refresh) {
+    if (type === DefaultDisplayType.TABLE) {
+      $scope.renderGraph(targetElemId, $scope.graphMode, refresh);
+    } else if (type === DefaultDisplayType.HTML) {
+      renderHtml(targetElemId, data);
+    } else if (type === DefaultDisplayType.ANGULAR) {
+      renderAngular(targetElemId, data);
+    } else if (type === DefaultDisplayType.TEXT) {
+      renderText(targetElemId, data);
+    } else if (type === DefaultDisplayType.ELEMENT) {
+      renderElem(targetElemId, data);
+    } else {
+      console.error(`Unknown Display Type: ${type}`);
+    }
+  };
+
+  const renderResult = function(type, refresh) {
+    let activeApp;
     if (enableHelium) {
       getSuggestions();
       getApplicationStates();
@@ -261,42 +293,56 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     if (activeApp) {
-      const app = _.find($scope.apps, {id: activeApp});
-      renderApp(app, `p${appState.id}`);
+      const appState = _.find($scope.apps, {id: activeApp});
+      renderApp(`p${appState.id}`, appState);
     } else {
-
-      /**
-       * find proper interpreter which can handle the non-default display type
-       * the displayed type which is generated from `display()`
-       * should be one of the default interpreter type
-       */
-      // const isDefaultDisplayType = DefaultDisplayType[type];
-      // if (!isDefaultDisplayType) {
-      //   const intp = heliumService.getFrontendInterpreterWithDisplayType(type);
-      //
-      //   if (intp) {
-      //     // currently display only accepts `Object` data not
-      //     // doesn't support function and promise
-      //     const result = intp.display(data);
-      //     type = result.getType();
-      //     data = result.getData();
-      //   }
-      // }
-
-      if (type === DefaultDisplayType.TABLE) {
-        $scope.renderGraph($scope.graphMode, refresh);
-      } else if (type === DefaultDisplayType.HTML) {
-        renderHtml(`p${$scope.id}_html`, data);
-      } else if (type === DefaultDisplayType.ANGULAR) {
-        renderAngular(`p${$scope.id}_angular`, data);
-      } else if (type === DefaultDisplayType.TEXT) {
-        renderText(`p${$scope.id}_text`, data);
-      } else if (type === DefaultDisplayType.ELEMENT) {
-        renderElem(`p${$scope.id}_elem`, data);
+      if (!DefaultDisplayType[type]) {
+        const frontendIntp = heliumService.getFrontendInterpreterUsingMagic(type);
+        if (!frontendIntp) {
+          console.error(`Unknown Display Type: ${type}`);
+          return;
+        }
+        $scope.renderCustomDisplay(type, data, frontendIntp);
       } else {
-        console.error(`Unknown Display Type: ${type}`);
+        const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type);
+        $scope.renderDefaultDisplay(targetElemId, type, data, refresh);
       }
     }
+  };
+
+  $scope.isDefaultDisplay = function() {
+    return DefaultDisplayType[$scope.type];
+  };
+
+  /**
+   * Render multiple sub results for custom display
+   */
+  $scope.renderCustomDisplay = function(type, data, frontendIntp) {
+    // get result from intp
+
+    const frontIntpResult = frontendIntp.interpret(data.trim());
+    const parsed = frontIntpResult.getAllParsedGeneratorsWithTypes(
+      heliumService.getAvailableFrontendInterpreters());
+
+    // custom display result can include multiple subset results
+    parsed.then(dataWithTypes => {
+      const containerDOM = document.getElementById(`p${$scope.id}_custom`);
+      for(let i = 0; i < dataWithTypes.length; i++) {
+        const dt = dataWithTypes[i];
+        const data = dt.data;
+        const type = dt.type;
+
+        // prepare DOM to be filled
+        const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom`, type);
+        const subResultDOM = document.createElement('div');
+        containerDOM.appendChild(subResultDOM);
+        subResultDOM.setAttribute('id', subResultDOMId);
+
+        $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
+      }
+    }).catch(error => {
+      console.error(`Failed to render custom display: ${$scope.type}\n` + error);
+    });
   };
 
   /**
@@ -304,7 +350,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
    * feed it to the success callback.
    * if error occurs, the error is passed to the failure callback
    *
-   * @param generator {Object or Promise or Function}
+   * @param generator {Object or Function}
    * @param type {string} Display Type
    * @param successCallback
    * @param failureCallback
@@ -317,13 +363,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         failureCallback(error);
         console.error(`Failed to handle ${type} type, function generator\n`, error);
       }
-    } else if (FrontendInterpreterResult.isPromiseGenerator(generator)) {
-      generator
-        .then((generated) => { successCallback(generated); })
-        .catch((error) => {
-          failureCallback(error);
-          console.error(`Failed to handle ${type} type, promise generator\n`, error);
-        });
     } else if (FrontendInterpreterResult.isObjectGenerator(generator)) {
       try {
         successCallback(generator);
@@ -343,7 +382,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
       generateData(() => { generator(targetElemId) }, DefaultDisplayType.ELEMENT,
         () => {}, /** HTML element will be filled in generator . thus pass empty success callback */
-        (error) => {  elem.html(`${error.stack}`); }
+        (error) => { elem.html(`${error.stack}`); }
       );
     }
 
@@ -421,7 +460,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     $timeout(retryRenderer);
-  }
+  };
 
   var clearTextOutput = function() {
     var textEl = getTextResultElem($scope.id);
@@ -457,11 +496,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  $scope.renderGraph = function(type, refresh) {
+  $scope.renderGraph = function(targetElemId, type, refresh) {
     // set graph height
     var height = $scope.config.graph.height;
-    var graphContainerEl = angular.element('#p' + $scope.id + '_graph');
-    graphContainerEl.height(height);
+    var targetElem = angular.element(`#${targetElemId}`);
+    targetElem.height(height);
 
     if (!type) {
       type = 'table';
@@ -807,7 +846,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   const renderApp = function(targetElemId, appState) {
     function retryRenderer() {
-      var elem = angular.element(document.getElementById(elememId));
+      var elem = angular.element(document.getElementById(targetElemId));
       console.log('retry renderApp %o', elem);
       if (!elem.length) {
         $timeout(retryRenderer, 1000);

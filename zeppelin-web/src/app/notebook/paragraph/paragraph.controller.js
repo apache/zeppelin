@@ -230,18 +230,18 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.errorMessage = error.stack;
     console.error('Failed to execute FrontendInterpreter.interpret\n', error);
     $scope.$digest();
-  }
+  };
 
-  $scope.runParagraphUsingFrontendInterpreter = function(intp, paragraphText, magic) {
-    // clear results which is watched by `ng-repeat`. without this,
-    // frontend interpreter results cannot be rendered in view more than once
+  $scope.runParagraphUsingFrontendInterpreter = function(intp, paragraphText,
+                                                         magic, digestRequired) {
     $scope.paragraph.results = {};
-    $scope.$digest();
+    if (digestRequired) { $scope.$digest(); }
 
     try {
       // remove magic from paragraphText
       const splited = paragraphText.split(magic);
-      const textWithoutMagic = splited[1];
+      // remove leading spaces
+      const textWithoutMagic = splited[1].replace(/^\s+/g, '');
       $scope.paragraph.status = 'FINISHED';
       const frontIntpResult = intp.interpret(textWithoutMagic);
       const parsed = frontIntpResult.getAllParsedGeneratorsWithTypes(
@@ -249,9 +249,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       parsed.then(resultsMsg => {
         $scope.paragraph.results.msg = resultsMsg;
         $scope.paragraph.config.tableHide = false;
-        $scope.$digest();
+        if (digestRequired) { $scope.$digest(); }
       }).catch($scope.handleFrontendInterpreterError);
-      // TODO(1ambda): broadcast to other clients
     } catch (error) {
       $scope.handleFrontendInterpreterError(error);
     }
@@ -277,7 +276,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     commitParagraph(paragraph);
   };
 
-  $scope.runParagraph = function(paragraphText) {
+  $scope.runParagraph = function(paragraphText, digestRequired) {
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return;
     }
@@ -286,7 +285,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     const frontendIntp = heliumService.getFrontendInterpreterUsingMagic(magic);
 
     if (frontendIntp) {
-      $scope.runParagraphUsingFrontendInterpreter(frontendIntp, paragraphText, magic);
+      $scope.runParagraphUsingFrontendInterpreter(
+        frontendIntp, paragraphText, magic, digestRequired);
     } else {
       $scope.runParagraphUsingBackendInterpreter(paragraphText);
     }
@@ -306,14 +306,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.runParagraphFromShortcut = function(paragraphText) {
-    // we need to call `$digest()` to update view immediately
-    $scope.runParagraph(paragraphText);
-    $scope.$digest();
+    // passing `digestRequired` as true to update view immediately
+    // without this, results cannot be rendered in view more than once
+    $scope.runParagraph(paragraphText, true);
   };
 
   $scope.runParagraphFromButton = function(paragraphText) {
     // we come here from `$scope.on`, so we don't need to call `$digest()`
-    $scope.runParagraph(paragraphText)
+    $scope.runParagraph(paragraphText, false)
   };
 
   $scope.moveUp = function(paragraph) {

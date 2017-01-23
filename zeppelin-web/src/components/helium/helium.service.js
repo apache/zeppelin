@@ -13,10 +13,6 @@
  */
 
 import { HeliumType, } from './helium-type';
-import {
-  AbstractFrontendInterpreter,
-  DefaultDisplayType
-} from '../../app/frontend-interpreter'
 
 (function() {
   angular.module('zeppelinWebApp').service('heliumService', heliumService);
