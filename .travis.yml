@@ -96,6 +96,7 @@ before_script:
   - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
   - ./testing/setupLivy.sh
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
+  - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
 
 script:
