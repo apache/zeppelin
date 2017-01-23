@@ -17,31 +17,31 @@
 #
 
 # export JAVA_HOME=
-# export MASTER=                 		# Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
-# export ZEPPELIN_JAVA_OPTS      		# Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
-# export ZEPPELIN_MEM            		# Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
-# export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
-# export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options.
-# export ZEPPELIN_SSL_PORT       		# ssl port (used when ssl environment variable is set to true)
+# export MASTER=                 		        # Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
+# export ZEPPELIN_JAVA_OPTS      		        # Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
+# export ZEPPELIN_MEM            		        # Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
+# export ZEPPELIN_INTP_MEM       		        # zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
+# export ZEPPELIN_INTP_JAVA_OPTS 		        # zeppelin interpreter process jvm options.
+# export ZEPPELIN_SSL_PORT       		        # ssl port (used when ssl environment variable is set to true)
 
-# export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
-# export ZEPPELIN_PID_DIR        		# The pid files are stored. ${ZEPPELIN_HOME}/run by default.
-# export ZEPPELIN_WAR_TEMPDIR    		# The location of jetty temporary directory.
-# export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
-# export ZEPPELIN_NOTEBOOK_HOMESCREEN		# Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
-# export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	# hide homescreen notebook from list when this value set to "true". default "false"
-# export ZEPPELIN_NOTEBOOK_S3_BUCKET        # Bucket where notebook saved
-# export ZEPPELIN_NOTEBOOK_S3_ENDPOINT      # Endpoint of the bucket
-# export ZEPPELIN_NOTEBOOK_S3_USER          # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
-# export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID    # AWS KMS key ID
-# export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION      # AWS KMS key region
-# export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
-# export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
+# export ZEPPELIN_LOG_DIR        		        # Where log files are stored.  PWD by default.
+# export ZEPPELIN_PID_DIR        		        # The pid files are stored. ${ZEPPELIN_HOME}/run by default.
+# export ZEPPELIN_WAR_TEMPDIR    		        # The location of jetty temporary directory.
+# export ZEPPELIN_NOTEBOOK_DIR   		        # Where notebook saved
+# export ZEPPELIN_NOTEBOOK_HOMESCREEN		    # Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
+# export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	    # hide homescreen notebook from list when this value set to "true". default "false"
+# export ZEPPELIN_NOTEBOOK_S3_BUCKET            # Bucket where notebook saved
+# export ZEPPELIN_NOTEBOOK_S3_ENDPOINT          # Endpoint of the bucket
+# export ZEPPELIN_NOTEBOOK_S3_USER              # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
+# export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID        # AWS KMS key ID
+# export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION    # AWS KMS key region
+# export ZEPPELIN_IDENT_STRING   		        # A string representing this instance of zeppelin. $USER by default.
+# export ZEPPELIN_NICENESS       		        # The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
-# export ZEPPELIN_INTERPRETER_DOWNLOAD_DIR          # Path for interpreter download
-# export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
-# export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
-# export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
+# export ZEPPELIN_INTERPRETER_DOWNLOAD_DIR      # Path for interpreter download
+# export ZEPPELIN_NOTEBOOK_STORAGE 		        # Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
+# export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	        # If there are multiple notebook storages, should we treat the first one as the only source of truth?
+# export ZEPPELIN_NOTEBOOK_PUBLIC               # Make notebook public by default when created, private otherwise
 
 #### Spark interpreter configuration ####
 
