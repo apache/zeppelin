@@ -96,7 +96,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
     interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
-        Maps.<String, InterpreterProperty>newHashMap(), "mock1");
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
 
     SearchService search = mock(SearchService.class);

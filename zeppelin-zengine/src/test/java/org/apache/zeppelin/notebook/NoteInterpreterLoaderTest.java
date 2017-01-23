@@ -72,8 +72,8 @@ public class NoteInterpreterLoaderTest {
     ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
     interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, Maps.<String, Object>newHashMap()));
 
-    interpreterSettingManager.add("group1", interpreterInfos, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock");
-    interpreterSettingManager.add("group2", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock");
+    interpreterSettingManager.add("group1", interpreterInfos, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock", null);
+    interpreterSettingManager.add("group2", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock", null);
 
     interpreterSettingManager.createNewSetting("group1", "group1", Lists.<Dependency>newArrayList(), new InterpreterOption(), new Properties());
     interpreterSettingManager.createNewSetting("group2", "group2", Lists.<Dependency>newArrayList(), new InterpreterOption(), new Properties());
