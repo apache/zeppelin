@@ -27,10 +27,10 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-example-frontend-interpreter-translator</artifactId>
+  <artifactId>zeppelin-example-spell-flowchart</artifactId>
   <packaging>jar</packaging>
   <version>0.8.0-SNAPSHOT</version>
-  <name>Zeppelin: Example application - Frontend Translator Interpreter</name>
+  <name>Zeppelin: Example Spell - Flowchart</name>
 
   <dependencies>
     <dependency>

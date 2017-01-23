@@ -104,8 +104,8 @@
       <directory>../zeppelin-web/src/app/tabledata</directory>
     </fileSet>
     <fileSet>
-      <outputDirectory>/lib/node_modules/zeppelin-frontend-interpreter</outputDirectory>
-      <directory>../zeppelin-web/src/app/frontend-interpreter</directory>
+      <outputDirectory>/lib/node_modules/zeppelin-spell</outputDirectory>
+      <directory>../zeppelin-web/src/app/spell</directory>
     </fileSet>
   </fileSets>
 </assembly>

@@ -41,7 +41,7 @@ public class HeliumPackage {
     NOTEBOOK_REPO,
     APPLICATION,
     VISUALIZATION,
-    FRONTEND_INTERPRETER
+    SPELL
   }
 
   public HeliumPackage(Type type,
@@ -83,7 +83,7 @@ public class HeliumPackage {
 
   public static boolean isBundleType(Type type) {
     return (type == Type.VISUALIZATION ||
-        type == Type.FRONTEND_INTERPRETER);
+        type == Type.SPELL);
   }
 
   public String getName() {

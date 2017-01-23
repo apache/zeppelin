@@ -16,14 +16,14 @@
  */
 
 import {
-    AbstractFrontendInterpreter,
-    FrontendInterpreterResult,
+    SpellBase,
+    SpellResult,
     DefaultDisplayType,
-} from 'zeppelin-frontend-interpreter';
+} from 'zeppelin-spell';
 
 import flowchart from 'flowchart.js';
 
-export default class FlowchartInterpreter extends AbstractFrontendInterpreter {
+export default class FlowchartSpell extends SpellBase {
     constructor() {
         super("%flowchart");
     }
@@ -44,7 +44,7 @@ export default class FlowchartInterpreter extends AbstractFrontendInterpreter {
          * `interpret` method can return multiple results using `add()`
          * but now, we return just 1 result
          */
-        return new FrontendInterpreterResult(
+        return new SpellResult(
             callback
         );
     }

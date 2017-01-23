@@ -21,8 +21,8 @@ import LinechartVisualization from '../../../visualization/builtins/visualizatio
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
 import {
   DefaultDisplayType,
-  FrontendInterpreterResult,
-} from '../../../frontend-interpreter'
+  SpellResult,
+} from '../../../spell'
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
@@ -297,12 +297,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       renderApp(`p${appState.id}`, appState);
     } else {
       if (!DefaultDisplayType[type]) {
-        const frontendIntp = heliumService.getFrontendInterpreterUsingMagic(type);
-        if (!frontendIntp) {
-          console.error(`Unknown Display Type: ${type}`);
+        const spell = heliumService.getSpellByMagic(type);
+        if (!spell) {
+          console.error(`Can't execute spell due to unknown display type: ${type}`);
           return;
         }
-        $scope.renderCustomDisplay(type, data, frontendIntp);
+        $scope.renderCustomDisplay(type, data, spell);
       } else {
         const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type);
         $scope.renderDefaultDisplay(targetElemId, type, data, refresh);
@@ -317,12 +317,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   /**
    * Render multiple sub results for custom display
    */
-  $scope.renderCustomDisplay = function(type, data, frontendIntp) {
+  $scope.renderCustomDisplay = function(type, data, spell) {
     // get result from intp
 
-    const frontIntpResult = frontendIntp.interpret(data.trim());
-    const parsed = frontIntpResult.getAllParsedGeneratorsWithTypes(
-      heliumService.getAvailableFrontendInterpreters());
+    const spellResult = spell.interpret(data.trim());
+    const parsed = spellResult.getAllParsedGeneratorsWithTypes(
+      heliumService.getAllSpells());
 
     // custom display result can include multiple subset results
     parsed.then(dataWithTypes => {
@@ -356,14 +356,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
    * @param failureCallback
    */
   const generateData = function(generator, type, successCallback, failureCallback) {
-    if (FrontendInterpreterResult.isFunctionGenerator(generator)) {
+    if (SpellResult.isFunctionGenerator(generator)) {
       try {
         successCallback(generator());
       } catch (error) {
         failureCallback(error);
         console.error(`Failed to handle ${type} type, function generator\n`, error);
       }
-    } else if (FrontendInterpreterResult.isObjectGenerator(generator)) {
+    } else if (SpellResult.isObjectGenerator(generator)) {
       try {
         successCallback(generator);
       } catch (error) {

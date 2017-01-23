@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { FrontendInterpreterResult } from '../../frontend-interpreter'
+import { SpellResult } from '../../spell'
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
@@ -225,15 +225,15 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
 
-  $scope.handleFrontendInterpreterError = function(error) {
+  $scope.handleSpellError = function(error) {
     $scope.paragraph.status = 'ERROR';
     $scope.paragraph.errorMessage = error.stack;
-    console.error('Failed to execute FrontendInterpreter.interpret\n', error);
+    console.error('Failed to execute interpret() in spell\n', error);
     $scope.$digest();
   };
 
-  $scope.runParagraphUsingFrontendInterpreter = function(intp, paragraphText,
-                                                         magic, digestRequired) {
+  $scope.runParagraphUsingSpell = function(spell, paragraphText,
+                                           magic, digestRequired) {
     $scope.paragraph.results = {};
     if (digestRequired) { $scope.$digest(); }
 
@@ -243,16 +243,16 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '');
       $scope.paragraph.status = 'FINISHED';
-      const frontIntpResult = intp.interpret(textWithoutMagic);
-      const parsed = frontIntpResult.getAllParsedGeneratorsWithTypes(
-        heliumService.getAvailableFrontendInterpreters());
+      const spellResult = spell.interpret(textWithoutMagic);
+      const parsed = spellResult.getAllParsedGeneratorsWithTypes(
+        heliumService.getAllSpells());
       parsed.then(resultsMsg => {
         $scope.paragraph.results.msg = resultsMsg;
         $scope.paragraph.config.tableHide = false;
         if (digestRequired) { $scope.$digest(); }
-      }).catch($scope.handleFrontendInterpreterError);
+      }).catch($scope.handleSpellError);
     } catch (error) {
-      $scope.handleFrontendInterpreterError(error);
+      $scope.handleSpellError(error);
     }
   };
 
@@ -281,12 +281,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       return;
     }
 
-    const magic = FrontendInterpreterResult.extractMagic(paragraphText);
-    const frontendIntp = heliumService.getFrontendInterpreterUsingMagic(magic);
+    const magic = SpellResult.extractMagic(paragraphText);
+    const spell = heliumService.getSpellByMagic(magic);
 
-    if (frontendIntp) {
-      $scope.runParagraphUsingFrontendInterpreter(
-        frontendIntp, paragraphText, magic, digestRequired);
+    if (spell) {
+      $scope.runParagraphUsingSpell(
+        spell, paragraphText, magic, digestRequired);
     } else {
       $scope.runParagraphUsingBackendInterpreter(paragraphText);
     }

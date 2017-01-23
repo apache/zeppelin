@@ -18,29 +18,27 @@
 /*eslint-disable no-unused-vars */
 import {
   DefaultDisplayType,
-  FrontendInterpreterResult,
-} from './frontend-interpreter-result';
+  SpellResult,
+} from './spell-result';
 /*eslint-enable no-unused-vars */
 
-export class AbstractFrontendInterpreter {
+export class SpellBase {
   constructor(magic) {
     this.magic = magic;
   }
 
   /**
-   * Consumes text and return multiple interpreter results.
-   * This method should handle error properly to provide precise error message.
+   * Consumes text and return `SpellResult`.
    *
    * @param paragraphText {string} which doesn't include magic
-   * @return {Array<FrontendInterpreterResult>}
+   * @return {SpellResult}
    */
   interpret(paragraphText) {
-    /** implement this if you want to add a frontend interpreter */
-    throw new Error('AbstractFrontendInterpreter.interpret is not overrided');
+    throw new Error('SpellBase.interpret() should be overrided');
   }
 
   /**
-   * return magic for this frontend interpreter.
+   * return magic for this spell.
    * (e.g `%flowchart`)
    * @return {string}
    */

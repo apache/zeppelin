@@ -16,26 +16,28 @@
  */
 
 import {
-    AbstractFrontendInterpreter,
-    FrontendInterpreterResult,
+    SpellBase,
+    SpellResult,
     DefaultDisplayType,
-} from 'zeppelin-frontend-interpreter';
+} from 'zeppelin-spell';
 
 import 'whatwg-fetch';
 
-export default class TranslatorInterpreter extends AbstractFrontendInterpreter {
+export default class TranslatorSpell extends SpellBase {
     constructor() {
         super("%translator");
     }
 
     interpret(paragraphText) {
         /**
-         * FrontendInterpreterResult
+         * SpellResult
          * - accepts not only `string` but also `promise`
-         * - allows multiple output using the `add()` function
+         * - allows to add multiple output using the `add()` function
          */
-        const result = new FrontendInterpreterResult()
-            .add('%html <h4>Translation From English To Korean</h4>')
+        const result = new SpellResult()
+            .add('<h4>Translation From English To Korean</h4>', DefaultDisplayType.HTML)
+            // or use display system implicitly like
+            // .add('%html <h4>Translation From English To Korean</h4>')
             .add(this.translate(paragraphText));
         return result;
     }

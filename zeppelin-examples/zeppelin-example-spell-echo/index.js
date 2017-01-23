@@ -15,11 +15,18 @@
  * limitations under the License.
  */
 
-export {
-  DefaultDisplayType,
-  FrontendInterpreterResult,
-} from './frontend-interpreter-result';
+import {
+    SpellBase,
+    SpellResult,
+    DefaultDisplayType,
+} from 'zeppelin-spell';
 
-export {
-  AbstractFrontendInterpreter
-} from './frontend-interpreter-framework';
+export default class EchoSpell extends SpellBase {
+    constructor() {
+        super("%echo");
+    }
+
+    interpret(paragraphText) {
+        return new SpellResult(paragraphText);
+    }
+}

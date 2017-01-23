@@ -50,7 +50,7 @@ public class HeliumBundleFactory {
   private final File workingDirectory;
   private File tabledataModulePath;
   private File visualizationModulePath;
-  private File frontendInterpreterModulePath;
+  private File spellModulePath;
   private Gson gson;
 
   String bundleCacheKey = "";
@@ -62,11 +62,11 @@ public class HeliumBundleFactory {
       File moduleDownloadPath,
       File tabledataModulePath,
       File visualizationModulePath,
-      File frontendInterpreterModulePath) throws TaskRunnerException {
+      File spellModulePath) throws TaskRunnerException {
     this(moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
-    this.frontendInterpreterModulePath = frontendInterpreterModulePath;
+    this.spellModulePath = spellModulePath;
   }
 
   public HeliumBundleFactory(File moduleDownloadPath) throws TaskRunnerException {
@@ -252,17 +252,17 @@ public class HeliumBundleFactory {
       FileUtils.copyDirectory(visualizationModulePath, visModuleInstallPath, npmPackageCopyFilter);
     }
 
-    // install frontend-interpreter module
-    File frontendInterpreterModuleInstallPath = new File(workingDirectory,
-        "node_modules/zeppelin-frontend-interpreter");
-    if (frontendInterpreterModulePath != null) {
-      if (frontendInterpreterModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(frontendInterpreterModuleInstallPath);
+    // install spell module
+    File spellModuleInstallPath = new File(workingDirectory,
+        "node_modules/zeppelin-spell");
+    if (spellModulePath != null) {
+      if (spellModuleInstallPath.exists()) {
+        FileUtils.deleteDirectory(spellModuleInstallPath);
       }
 
       FileUtils.copyDirectory(
-          frontendInterpreterModulePath,
-          frontendInterpreterModuleInstallPath,
+          spellModulePath,
+          spellModuleInstallPath,
           npmPackageCopyFilter);
     }
   }

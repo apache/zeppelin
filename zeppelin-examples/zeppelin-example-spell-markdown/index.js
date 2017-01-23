@@ -14,11 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-{
-  "type" : "FRONTEND_INTERPRETER",
-  "name" : "translator-frontend-interpreter",
-  "description" : "with Google Translation API (examaple)",
-  "artifact" : "./zeppelin-examples/zeppelin-example-frontend-interpreter-translator",
-  "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-globe '></i>"
+
+import {
+    SpellBase,
+    SpellResult,
+    DefaultDisplayType,
+} from 'zeppelin-spell';
+
+import md from 'markdown';
+
+const markdown = md.markdown;
+
+export default class MarkdownSpell extends SpellBase {
+    constructor() {
+        super("%markdown");
+    }
+
+    interpret(paragraphText) {
+        const parsed = markdown.toHTML(paragraphText);
+
+        /**
+         * specify `DefaultDisplayType.HTML` since `parsed` will contain DOM
+         * otherwise it will be rendered as `DefaultDisplayType.TEXT` (default)
+         */
+        return new SpellResult(parsed, DefaultDisplayType.HTML);
+    }
 }

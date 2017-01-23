@@ -27,10 +27,10 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-example-frontend-interpreter-markdown</artifactId>
+  <artifactId>zeppelin-example-spell-markdown</artifactId>
   <packaging>jar</packaging>
   <version>0.8.0-SNAPSHOT</version>
-  <name>Zeppelin: Example application - Frontend Markdown Interpreter</name>
+  <name>Zeppelin: Example Spell - Markdown</name>
 
   <dependencies>
     <dependency>

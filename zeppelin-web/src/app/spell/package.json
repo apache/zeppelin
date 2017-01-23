@@ -1,7 +1,7 @@
 {
-  "name": "zeppelin-frontend-interpreter",
-  "description": "Frontend Interpreter API",
-  "version": "0.7.0-SNAPSHOT",
+  "name": "zeppelin-spell",
+  "description": "Zeppelin Spell Framework",
+  "version": "0.8.0-SNAPSHOT",
   "main": "index",
   "dependencies": {
   },

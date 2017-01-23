@@ -1,6 +1,6 @@
 {
-  "name": "flowchart-frontend-interpreter",
-  "description": "Frontend Flowchart Interpreter (example)",
+  "name": "flowchart-spell",
+  "description": "Flowchart Spell (example)",
   "version": "1.0.0",
   "main": "index",
   "author": "",
@@ -8,6 +8,6 @@
   "dependencies": {
     "raphael": "2.2.0",
     "flowchart.js": "^1.6.5",
-    "zeppelin-frontend-interpreter": "*"
+    "zeppelin-spell": "*"
   }
 }

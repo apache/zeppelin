@@ -49,7 +49,7 @@ public class HeliumBundleFactoryTest {
     hbf = new HeliumBundleFactory(tmpDir,
         new File(moduleDir, "tabledata"),
         new File(moduleDir, "visualization"),
-        new File(moduleDir, "frontend-interpreter"));
+        new File(moduleDir, "spell"));
   }
 
   @After

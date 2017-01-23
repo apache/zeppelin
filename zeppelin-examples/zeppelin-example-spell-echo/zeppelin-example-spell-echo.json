@@ -14,19 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {
-    AbstractFrontendInterpreter,
-    FrontendInterpreterResult,
-    DefaultDisplayType,
-} from 'zeppelin-frontend-interpreter';
-
-export default class MarkdownInterpreter extends AbstractFrontendInterpreter {
-    constructor() {
-        super("%echo");
-    }
-
-    interpret(paragraphText) {
-        return new FrontendInterpreterResult(paragraphText);
-    }
+{
+  "type" : "SPELL",
+  "name" : "echo-spell",
+  "description" : "Return just what receive (example)",
+  "artifact" : "./zeppelin-examples/zeppelin-example-spell-echo",
+  "license" : "Apache-2.0",
+  "icon" : "<i class='fa fa-repeat'></i>"
 }

@@ -15,28 +15,11 @@
  * limitations under the License.
  */
 
-import {
-    AbstractFrontendInterpreter,
-    FrontendInterpreterResult,
-    DefaultDisplayType,
-} from 'zeppelin-frontend-interpreter';
+export {
+  DefaultDisplayType,
+  SpellResult,
+} from './spell-result';
 
-import md from 'markdown';
-
-const markdown = md.markdown;
-
-export default class MarkdownInterpreter extends AbstractFrontendInterpreter {
-    constructor() {
-        super("%markdown");
-    }
-
-    interpret(paragraphText) {
-        const parsed = markdown.toHTML(paragraphText);
-
-        /**
-         * specify `DefaultDisplayType.HTML` since `parsed` will contain DOM
-         * otherwise it will be rendered as `DefaultDisplayType.TEXT` (default)
-         */
-        return new FrontendInterpreterResult(parsed, DefaultDisplayType.HTML);
-    }
-}
+export {
+  SpellBase,
+} from './spell-base';

@@ -36,8 +36,10 @@
   <modules>
     <module>zeppelin-example-clock</module>
     <module>zeppelin-example-horizontalbar</module>
-    <module>zeppelin-example-frontend-interpreter-flowchart</module>
-    <module>zeppelin-example-frontend-interpreter-translator</module>
+    <module>zeppelin-example-spell-flowchart</module>
+    <module>zeppelin-example-spell-translator</module>
+    <module>zeppelin-example-spell-markdown</module>
+    <module>zeppelin-example-spell-echo</module>
   </modules>
   
   <build>

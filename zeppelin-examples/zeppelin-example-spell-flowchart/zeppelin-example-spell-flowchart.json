@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 {
-  "type" : "FRONTEND_INTERPRETER",
-  "name" : "echo-frontend-interpreter",
-  "description" : "Return just what receive (example)",
-  "artifact" : "./zeppelin-examples/zeppelin-example-frontend-interpreter-echo",
+  "type" : "SPELL",
+  "name" : "flowchart-spell",
+  "description" : "with Flowchart.js (example)",
+  "artifact" : "./zeppelin-examples/zeppelin-example-spell-flowchart",
   "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-repeat'></i>"
+  "icon" : "<i class='fa fa-random'></i>"
 }

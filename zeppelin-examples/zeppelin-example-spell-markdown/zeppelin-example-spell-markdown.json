@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 {
-  "type" : "FRONTEND_INTERPRETER",
-  "name" : "markdown-frontend-interpreter",
+  "type" : "SPELL",
+  "name" : "markdown-spell",
   "description" : "with markdown-js (example)",
-  "artifact" : "./zeppelin-examples/zeppelin-example-frontend-interpreter-markdown",
+  "artifact" : "./zeppelin-examples/zeppelin-example-spell-markdown",
   "license" : "Apache-2.0",
   "icon" : "<i class='fa fa-bold'></i>"
 }

@@ -62,7 +62,7 @@ export class GeneratorWithType {
     // create `GeneratorWithType` whenever see available display type.
     for(let i = 0; i < splited.length; i++) {
       const g = splited[i];
-      const magic = FrontendInterpreterResult.extractMagic(g);
+      const magic = SpellResult.extractMagic(g);
 
       // create `GeneratorWithType` only if see new magic
       if (availableMagic(magic) && mergedGens.length > 0) {
@@ -109,13 +109,13 @@ export class GeneratorWithType {
 
     let wrapped;
 
-    if (FrontendInterpreterResult.isFunctionGenerator(generator)) {
+    if (SpellResult.isFunctionGenerator(generator)) {
       // if generator is a function, we consider it as ELEMENT type.
       wrapped = new Promise((resolve) => {
         const result = [new GeneratorWithType(generator, DefaultDisplayType.ELEMENT)];
         return resolve(result);
       });
-    } else if (FrontendInterpreterResult.isPromiseGenerator(generator)) {
+    } else if (SpellResult.isPromiseGenerator(generator)) {
       // if generator is a promise,
       wrapped = generator.then(generated => {
         const result =
@@ -151,7 +151,7 @@ export class GeneratorWithType {
   /**
    * Value of `type` might be empty which means
    * generator can be splited into multiple generators
-   * by `FrontendInterpreterResult.parseMultipleGenerators()`
+   * by `SpellResult.parseMultipleGenerators()`
    * @returns {string}
    */
   getType() {
@@ -159,7 +159,7 @@ export class GeneratorWithType {
   }
 }
 
-export class FrontendInterpreterResult {
+export class SpellResult {
   constructor(resultGenerator, resultType) {
     this.generatorsWithTypes = [];
     this.add(resultGenerator, resultType);
@@ -175,8 +175,8 @@ export class FrontendInterpreterResult {
 
   static isObjectGenerator(generator) {
     return (generator &&
-      !FrontendInterpreterResult.isFunctionGenerator(generator) &&
-      !FrontendInterpreterResult.isPromiseGenerator(generator));
+      !SpellResult.isFunctionGenerator(generator) &&
+      !SpellResult.isPromiseGenerator(generator));
   }
 
   static extractMagic(allParagraphText) {

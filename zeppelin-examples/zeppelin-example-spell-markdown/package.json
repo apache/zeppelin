@@ -1,0 +1,12 @@
+{
+  "name": "markdown-spell",
+  "description": "Markdown Spell (example)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "markdown": "0.5.0",
+    "zeppelin-spell": "*"
+  }
+}

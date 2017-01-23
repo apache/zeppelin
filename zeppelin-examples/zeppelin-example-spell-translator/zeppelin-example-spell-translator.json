@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 {
-  "type" : "FRONTEND_INTERPRETER",
-  "name" : "flowchart-frontend-interpreter",
-  "description" : "with Flowchart.js (example)",
-  "artifact" : "./zeppelin-examples/zeppelin-example-frontend-interpreter-flowchart",
+  "type" : "SPELL",
+  "name" : "translator-spell",
+  "description" : "with Google Translation API (examaple)",
+  "artifact" : "./zeppelin-examples/zeppelin-example-spell-translator",
   "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-random'></i>"
+  "icon" : "<i class='fa fa-globe '></i>"
 }

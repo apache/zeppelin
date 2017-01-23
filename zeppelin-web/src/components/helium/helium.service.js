@@ -28,7 +28,7 @@ import { HeliumType, } from './helium-type';
     // name `heliumBundles` should be same as `HelumBundleFactory.HELIUM_BUNDLES_VAR`
     var heliumBundles = [];
     // map for `{ magic: interpreter }`
-    let frontendIntpWithMagic = {};
+    let spellPerMagic = {};
     let visualizationBundles = [];
 
     // load should be promise
@@ -39,9 +39,9 @@ import { HeliumType, } from './helium-type';
 
         // extract bundles by type
         heliumBundles.map(b => {
-          if (b.type === HeliumType.FRONTEND_INTERPRETER) {
-            const interpreter = new b.class(); // eslint-disable-line new-cap
-            frontendIntpWithMagic[interpreter.getMagic()] = interpreter;
+          if (b.type === HeliumType.SPELL) {
+            const spell = new b.class(); // eslint-disable-line new-cap
+            spellPerMagic[spell.getMagic()] = spell;
           } else if (b.type === HeliumType.VISUALIZATION) {
             visualizationBundles.push(b);
           }
@@ -53,17 +53,17 @@ import { HeliumType, } from './helium-type';
 
     /**
      * @param magic {string} e.g `%flowchart`
-     * @returns {FrontendInterpreterBase} undefined for non-available magic
+     * @returns {SpellBase} undefined if magic is not registered
      */
-    this.getFrontendInterpreterUsingMagic = function(magic) {
-      return frontendIntpWithMagic[magic];
+    this.getSpellByMagic = function(magic) {
+      return spellPerMagic[magic];
     };
 
     /**
-     * @returns {Object} map for `{ magic : interpreter }`
+     * @returns {Object} map for `{ magic : spell }`
      */
-    this.getAvailableFrontendInterpreters = function() {
-      return frontendIntpWithMagic;
+    this.getAllSpells = function() {
+      return spellPerMagic;
     };
 
     this.getVisualizationBundles = function() {
