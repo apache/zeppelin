@@ -33,7 +33,7 @@ fi
 
 mkdir "${WORKING_DIR}"
 
-# If set to 'yes', replease script will deploy artifects to SNAPSHOT repository.
+# If set to 'yes', release script will deploy artifacts to SNAPSHOT repository.
 DO_SNAPSHOT='no'
 
 usage() {
