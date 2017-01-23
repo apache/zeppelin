@@ -18,6 +18,7 @@ function jobManagerFilter() {
   function filterContext(jobItems, filterConfig) {
     var filterValueInterpreter = filterConfig.filterValueInterpreter;
     var filterValueNotebookName = filterConfig.filterValueNotebookName;
+    var isSortByAsc = filterConfig.isSortByAsc;
     var filterItems = jobItems;
 
     if (filterValueInterpreter === undefined) {
@@ -36,7 +37,11 @@ function jobManagerFilter() {
       });
     }
 
-    return filterItems;
+    filterItems = _.sortBy(filterItems, function(sortItem) {
+      return sortItem.noteName.toLowerCase();
+    });
+
+    return isSortByAsc ? filterItems : filterItems.reverse();
   }
   return filterContext;
 }

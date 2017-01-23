@@ -27,7 +27,7 @@ import org.pegdown.plugins.PegDownPlugins;
 public class PegdownParser implements MarkdownParser {
   private PegDownProcessor processor;
 
-  public static final long PARSING_TIMEOUT_AS_MILLIS = 5000;
+  public static final long PARSING_TIMEOUT_AS_MILLIS = 10000;
   public static final int OPTIONS = Extensions.ALL_WITH_OPTIONALS - Extensions.ANCHORLINKS;
 
   public PegdownParser() {

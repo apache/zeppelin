@@ -144,9 +144,6 @@ public class HeliumRestApi {
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-    } catch (TaskRunnerException e) {
-      logger.error(e.getMessage(), e);
-      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
   }
 
@@ -157,9 +154,6 @@ public class HeliumRestApi {
       helium.disable(packageName);
       return new JsonResponse(Response.Status.OK).build();
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
-      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-    } catch (TaskRunnerException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
@@ -180,7 +174,7 @@ public class HeliumRestApi {
 
     try {
       helium.setVisualizationPackageOrder(orderedList);
-    } catch (IOException | TaskRunnerException e) {
+    } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }

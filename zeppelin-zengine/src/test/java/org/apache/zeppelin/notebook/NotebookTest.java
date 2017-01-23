@@ -736,35 +736,32 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     factory.setInterpreters(anonymous.getUser(), note.getId(), factory.getDefaultInterpreterSettingList());
 
-    ArrayList<Paragraph> paragraphs = new ArrayList<>();
-    for (int i = 0; i < 100; i++) {
-      Paragraph tmp = note.addParagraph(AuthenticationInfo.ANONYMOUS);
-      tmp.setText("p" + tmp.getId());
-      paragraphs.add(tmp);
-    }
+    // create three paragraphs
+    Paragraph p1 = note.addParagraph(anonymous);
+    p1.setText("sleep 1000");
+    Paragraph p2 = note.addParagraph(anonymous);
+    p2.setText("sleep 1000");
+    Paragraph p3 = note.addParagraph(anonymous);
+    p3.setText("sleep 1000");
 
-    for (Paragraph p : paragraphs) {
-      assertEquals(Job.Status.READY, p.getStatus());
-    }
 
     note.runAll();
 
-    while (paragraphs.get(0).getStatus() != Status.FINISHED) Thread.yield();
+    // wait until first paragraph finishes and second paragraph starts
+    while (p1.getStatus() != Status.FINISHED || p2.getStatus() != Status.RUNNING) Thread.yield();
 
+    assertEquals(Status.FINISHED, p1.getStatus());
+    assertEquals(Status.RUNNING, p2.getStatus());
+    assertEquals(Status.PENDING, p3.getStatus());
+
+    // restart interpreter
     factory.restart(factory.getInterpreterSettings(note.getId()).get(0).getId());
 
-    boolean isAborted = false;
-    for (Paragraph p : paragraphs) {
-      logger.debug(p.getStatus().name());
-      if (isAborted) {
-        assertEquals(Job.Status.ABORT, p.getStatus());
-      }
-      if (p.getStatus() == Status.ABORT) {
-        isAborted = true;
-      }
-    }
+    // make sure three differnt status aborted well.
+    assertEquals(Status.FINISHED, p1.getStatus());
+    assertEquals(Status.ABORT, p2.getStatus());
+    assertEquals(Status.ABORT, p3.getStatus());
 
-    assertTrue(isAborted);
     notebook.removeNote(note.getId(), anonymous);
   }
 
