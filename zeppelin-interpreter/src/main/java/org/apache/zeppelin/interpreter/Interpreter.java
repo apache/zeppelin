@@ -394,6 +394,7 @@ public abstract class Interpreter {
   public static Map<String, RegisteredInterpreter> registeredInterpreters = Collections
       .synchronizedMap(new HashMap<String, RegisteredInterpreter>());
 
+  @Deprecated
   public static void register(String name, String group, String className,
       Map<String, InterpreterProperty> properties) {
     register(name, group, className, false, properties);
@@ -408,6 +409,7 @@ public abstract class Interpreter {
     register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
   }
 
+  @Deprecated
   public static void register(RegisteredInterpreter registeredInterpreter) {
     String interpreterKey = registeredInterpreter.getInterpreterKey();
     if (!registeredInterpreters.containsKey(interpreterKey)) {
