@@ -33,6 +33,9 @@ fi
 
 mkdir "${WORKING_DIR}"
 
+# If set to 'yes', replease script will deploy artifects to SNAPSHOT repository.
+DO_SNAPSHOT='no'
+
 usage() {
   echo "usage) $0 [Release version] [Branch or Tag]"
   echo "   ex. $0 0.6.0 v0.6.0"
