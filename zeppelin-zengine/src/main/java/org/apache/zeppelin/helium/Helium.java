@@ -42,6 +42,8 @@ public class Helium {
   private final HeliumConf heliumConf;
   private final String heliumConfPath;
   private final String registryPaths;
+  private final File registryCacheDir;
+
   private final Gson gson;
   private final HeliumVisualizationFactory visualizationFactory;
   private final HeliumApplicationFactory applicationFactory;
@@ -49,11 +51,13 @@ public class Helium {
   public Helium(
       String heliumConfPath,
       String registryPaths,
+      File registryCacheDir,
       HeliumVisualizationFactory visualizationFactory,
       HeliumApplicationFactory applicationFactory)
       throws IOException {
     this.heliumConfPath = heliumConfPath;
     this.registryPaths = registryPaths;
+    this.registryCacheDir = registryCacheDir;
     this.visualizationFactory = visualizationFactory;
     this.applicationFactory = applicationFactory;
 
@@ -102,7 +106,7 @@ public class Helium {
       for (String uri : paths) {
         if (uri.startsWith("http://") || uri.startsWith("https://")) {
           logger.info("Add helium online registry {}", uri);
-          registry.add(new HeliumOnlineRegistry(uri, uri));
+          registry.add(new HeliumOnlineRegistry(uri, uri, registryCacheDir));
         } else {
           logger.info("Add helium local registry {}", uri);
           registry.add(new HeliumLocalRegistry(uri, uri));

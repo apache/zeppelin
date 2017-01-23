@@ -18,6 +18,7 @@ package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -26,10 +27,7 @@ import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,38 +50,84 @@ import java.util.Map;
 public class HeliumOnlineRegistry extends HeliumRegistry {
   Logger logger = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
   private final Gson gson;
+  private final File registryCacheFile;
 
-  public HeliumOnlineRegistry(String name, String uri) {
+  public HeliumOnlineRegistry(String name, String uri, File registryCacheDir) {
     super(name, uri);
+    registryCacheDir.mkdirs();
+    this.registryCacheFile = new File(registryCacheDir, name);
     gson = new Gson();
   }
 
   @Override
-  public List<HeliumPackage> getAll() throws IOException {
+  public synchronized List<HeliumPackage> getAll() throws IOException {
     HttpClient client = HttpClientBuilder.create()
         .setUserAgent("ApacheZeppelin/" + Util.getVersion())
         .build();
     HttpGet get = new HttpGet(uri());
-    HttpResponse response = client.execute(get);
-    if (response.getStatusLine().getStatusCode() != 200) {
-      throw new IOException(uri() + " returned " + response.getStatusLine().toString());
+    HttpResponse response;
+
+    try {
+      response = client.execute(get);
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      return readFromCache();
     }
 
-    BufferedReader reader = new BufferedReader(
-        new InputStreamReader(response.getEntity().getContent()));
-    List<Map<String, Map<String, HeliumPackage>>> packages = gson.fromJson(
-        reader,
-        new TypeToken<List<Map<String, Map<String, HeliumPackage>>>>() {
-        }.getType());
-    reader.close();
 
-    List<HeliumPackage> packageList = new LinkedList<>();
+    if (response.getStatusLine().getStatusCode() != 200) {
+      // try read from cache
+      logger.error(uri() + " returned " + response.getStatusLine().toString());
+      return readFromCache();
+    } else {
+      List<HeliumPackage> packageList = new LinkedList<>();
 
-    for (Map<String, Map<String, HeliumPackage>> pkg : packages) {
-      for (Map<String, HeliumPackage> versions : pkg.values()) {
-        packageList.addAll(versions.values());
+      BufferedReader reader;
+      reader = new BufferedReader(
+          new InputStreamReader(response.getEntity().getContent()));
+
+      List<Map<String, Map<String, HeliumPackage>>> packages = gson.fromJson(
+          reader,
+          new TypeToken<List<Map<String, Map<String, HeliumPackage>>>>() {
+          }.getType());
+      reader.close();
+
+      for (Map<String, Map<String, HeliumPackage>> pkg : packages) {
+        for (Map<String, HeliumPackage> versions : pkg.values()) {
+          packageList.addAll(versions.values());
+        }
+      }
+
+      writeToCache(packageList);
+      return packageList;
+    }
+  }
+
+  private List<HeliumPackage> readFromCache() {
+    synchronized (registryCacheFile) {
+      if (registryCacheFile.isFile()) {
+        try {
+          return gson.fromJson(
+              new FileReader(registryCacheFile),
+              new TypeToken<List<HeliumPackage>>() {
+              }.getType());
+        } catch (FileNotFoundException e) {
+          logger.error(e.getMessage(), e);
+          return new LinkedList<>();
+        }
+      } else {
+        return new LinkedList<>();
       }
     }
-    return packageList;
+  }
+
+  private void writeToCache(List<HeliumPackage> pkg) throws IOException {
+    synchronized (registryCacheFile) {
+      if (registryCacheFile.exists()) {
+        registryCacheFile.delete();
+      }
+      String jsonToCache = gson.toJson(pkg);
+      FileUtils.writeStringToFile(registryCacheFile, jsonToCache);
+    }
   }
 }
