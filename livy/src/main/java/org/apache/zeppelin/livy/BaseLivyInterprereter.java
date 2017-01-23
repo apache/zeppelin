@@ -212,13 +212,6 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       long start = System.currentTimeMillis();
       // pull the session status until it is idle or timeout
       while (!sessionInfo.isReady()) {
-        LOGGER.info("Session {} is in state {}, appId {}", sessionInfo.id, sessionInfo.state,
-            sessionInfo.appId);
-        if (sessionInfo.isFinished()) {
-          String msg = "Session " + sessionInfo.id + " is finished, appId: " + sessionInfo.appId
-              + ", log: " + sessionInfo.log;
-          throw new LivyException(msg);
-        }
         if ((System.currentTimeMillis() - start) / 1000 > sessionCreationTimeout) {
           String msg = "The creation of session " + sessionInfo.id + " is timeout within "
               + sessionCreationTimeout + " seconds, appId: " + sessionInfo.appId
@@ -227,6 +220,13 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         }
         Thread.sleep(pullStatusInterval);
         sessionInfo = getSessionInfo(sessionInfo.id);
+        LOGGER.info("Session {} is in state {}, appId {}", sessionInfo.id, sessionInfo.state,
+            sessionInfo.appId);
+        if (sessionInfo.isFinished()) {
+          String msg = "Session " + sessionInfo.id + " is finished, appId: " + sessionInfo.appId
+              + ", log: " + sessionInfo.log;
+          throw new LivyException(msg);
+        }
       }
       return sessionInfo;
     } catch (Exception e) {
@@ -438,7 +438,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         || response.getStatusCode().value() == 201) {
       return response.getBody();
     } else if (response.getStatusCode().value() == 404) {
-      if (response.getBody().matches("Session '\\d+' not found.")) {
+      if (response.getBody().matches("\"Session '\\d+' not found.\"")) {
         throw new SessionNotFoundException(response.getBody());
       } else {
         throw new APINotFoundException("No rest api found for " + targetURL +
