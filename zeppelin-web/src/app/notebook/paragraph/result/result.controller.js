@@ -173,6 +173,20 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     renderResult($scope.type);
   };
 
+  function retryUntilElemIsLoaded(targetElemId, callback) {
+    function retry() {
+      const elem = angular.element(`#${targetElemId}`);
+      if (!elem.length) {
+        $timeout(retry, 10);
+        return;
+      }
+
+      callback();
+    }
+
+    $timeout(retry);
+  }
+
   $scope.$on('updateResult', function(event, result, newConfig, paragraphRef, index) {
     if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
       return;
@@ -326,13 +340,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
     // custom display result can include multiple subset results
     parsed.then(dataWithTypes => {
-      function retry() {
-        const containerDOM = angular.element(`#p${$scope.id}_custom`);
-        if (!containerDOM.length) {
-          $timeout(retry, 10);
-          return;
-        }
-
+      const containerDOMId = `p${$scope.id}_custom`;
+      const afterLoaded = () => {
+        const containerDOM = angular.element(`#${containerDOMId}`);
         // Spell.interpret() can create multiple outputs
         for(let i = 0; i < dataWithTypes.length; i++) {
           const dt = dataWithTypes[i];
@@ -347,9 +357,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
           $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
         }
-      }
+      };
 
-      $timeout(retry);
+      retryUntilElemIsLoaded(containerDOMId, afterLoaded);
     }).catch(error => {
       console.error(`Failed to render custom display: ${$scope.type}\n` + error);
     });
@@ -383,30 +393,20 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const renderElem = function(targetElemId, data) {
-    function retryRenderer() {
+    const afterLoaded = () => {
       const elem = angular.element(`#${targetElemId}`);
-      if (!elem.length) {
-        $timeout(retryRenderer, 10);
-        return;
-      }
-
       handleData(() => { data(targetElemId) }, DefaultDisplayType.ELEMENT,
         () => {}, /** HTML element will be filled with data. thus pass empty success callback */
         (error) => { elem.html(`${error.stack}`); }
       );
-    }
+    };
 
-    $timeout(retryRenderer);
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
   const renderHtml = function(targetElemId, data) {
-    function retryRenderer() {
+    const afterLoaded = () => {
       const elem = angular.element(`#${targetElemId}`);
-      if (!elem.length) {
-        $timeout(retryRenderer, 10);
-        return;
-      }
-
       handleData(data, DefaultDisplayType.HTML,
         (generated) => {
           elem.html(generated);
@@ -418,19 +418,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         },
         (error) => {  elem.html(`${error.stack}`); }
       );
-    }
+    };
 
-    $timeout(retryRenderer);
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
   const renderAngular = function(targetElemId, data) {
-    function retryRenderer() {
+    const afterLoaded = () => {
       const elem = angular.element(`#${targetElemId}`);
-      if (!elem.length) {
-        $timeout(retryRenderer, 10);
-        return;
-      }
-
       const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
       handleData(data, DefaultDisplayType.ANGULAR,
         (generated) => {
@@ -439,9 +434,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         },
         (error) => {  elem.html(`${error.stack}`); }
       );
-    }
+    };
 
-    $timeout(retryRenderer);
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
   const getTextResultElem = function (resultId) {
@@ -449,13 +444,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const renderText = function(targetElemId, data) {
-    function retryRenderer() {
+    const afterLoaded = () => {
       const elem = angular.element(`#${targetElemId}`);
-      if (!elem.length) {
-        $timeout(retryRenderer, 10);
-        return;
-      }
-
       handleData(data, DefaultDisplayType.TEXT,
         (generated) => {
           // clear all lines before render
@@ -467,9 +457,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         },
         (error) => {  elem.html(`${error.stack}`); }
       );
-    }
+    };
 
-    $timeout(retryRenderer);
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
   var clearTextOutput = function() {
@@ -1054,4 +1044,4 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
     }
   });
-};
+}
