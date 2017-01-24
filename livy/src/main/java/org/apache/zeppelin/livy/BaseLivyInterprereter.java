@@ -206,7 +206,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           conf.put(entry.getKey().toString().substring(5), entry.getValue().toString());
       }
 
-      CreateSessionRequest request = new CreateSessionRequest(kind, user, conf);
+      CreateSessionRequest request = new CreateSessionRequest(kind,
+          user.equals("anonymous") ? null : user, conf);
       SessionInfo sessionInfo = SessionInfo.fromJson(
           callRestAPI("/sessions", "POST", request.toJson()));
       long start = System.currentTimeMillis();
