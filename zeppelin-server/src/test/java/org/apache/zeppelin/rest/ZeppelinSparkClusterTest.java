@@ -395,7 +395,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         Map config1 = p1.getConfig();
         config1.put("enabled", true);
         p1.setConfig(config1);
-        p1.setText("%spark z.getJobStatus(\"" + note.getId() + "\",\"" + p0.getId() + "\").name()");
+        p1.setText("%spark var status = z.getJobStatus(\"" + note.getId() + "\",\"" + p0.getId() + "\").name()\n println(status)");
         p1.setAuthenticationInfo(anonymous);
 
         note.runAll();
@@ -406,7 +406,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p0.getStatus());
         assertEquals(Status.FINISHED, p1.getStatus());
 
-        assertTrue(p0.getStatus().name().equals(p1.getResult().message().get(0).toString()));
+        assertTrue(p0.getStatus().name().equals(p1.getResult().message()));
 
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
