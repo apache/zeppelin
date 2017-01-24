@@ -55,10 +55,6 @@ public class HeliumTest {
     Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(),
         null, null, null);
     assertFalse(heliumConf.exists());
-    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
-    helium.addRegistry(registry1);
-    assertEquals(2, helium.getAllRegistry().size());
-    assertEquals(0, helium.getAllPackageInfo().size());
 
     // when
     helium.save();
@@ -66,10 +62,9 @@ public class HeliumTest {
     // then
     assertTrue(heliumConf.exists());
 
-    // then
+    // then load without exception
     Helium heliumRestored = new Helium(
         heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null);
-    assertEquals(2, heliumRestored.getAllRegistry().size());
   }
 
   @Test
