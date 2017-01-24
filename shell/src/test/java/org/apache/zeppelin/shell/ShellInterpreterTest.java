@@ -38,7 +38,7 @@ public class ShellInterpreterTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("shell.command.timeout.millisecs", "60000");
+    p.setProperty("shell.command.timeout.millisecs", "2000");
     shell = new ShellInterpreter(p);
 
     context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
@@ -77,9 +77,9 @@ public class ShellInterpreterTest {
   @Test
   public void testShellTimeout() {
     if (System.getProperty("os.name").startsWith("Windows")) {
-      result = shell.interpret("timeout 61", context);
+      result = shell.interpret("timeout 4", context);
     } else {
-      result = shell.interpret("sleep 61", context);
+      result = shell.interpret("sleep 4", context);
     }
 
     assertEquals(Code.INCOMPLETE, result.code());
