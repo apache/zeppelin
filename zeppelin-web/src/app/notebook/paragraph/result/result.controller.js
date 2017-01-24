@@ -326,20 +326,30 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
     // custom display result can include multiple subset results
     parsed.then(dataWithTypes => {
-      const containerDOM = document.getElementById(`p${$scope.id}_custom`);
-      for(let i = 0; i < dataWithTypes.length; i++) {
-        const dt = dataWithTypes[i];
-        const data = dt.data;
-        const type = dt.type;
+      function retry() {
+        const containerDOM = angular.element(`#p${$scope.id}_custom`);
+        if (!containerDOM.length) {
+          $timeout(retry, 10);
+          return;
+        }
 
-        // prepare DOM to be filled
-        const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom`, type);
-        const subResultDOM = document.createElement('div');
-        containerDOM.appendChild(subResultDOM);
-        subResultDOM.setAttribute('id', subResultDOMId);
+        // Spell.interpret() can create multiple outputs
+        for(let i = 0; i < dataWithTypes.length; i++) {
+          const dt = dataWithTypes[i];
+          const data = dt.data;
+          const type = dt.type;
 
-        $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
+          // prepare each DOM to be filled
+          const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom_${i}`, type);
+          const subResultDOM = document.createElement('div');
+          containerDOM.append(subResultDOM);
+          subResultDOM.setAttribute('id', subResultDOMId);
+
+          $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
+        }
       }
+
+      $timeout(retry);
     }).catch(error => {
       console.error(`Failed to render custom display: ${$scope.type}\n` + error);
     });

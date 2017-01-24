@@ -262,6 +262,9 @@ public class NotebookServer extends WebSocketServlet
           case RUN_PARAGRAPH:
             runParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
+          case PARAGRAPH_EXECUTED_BY_SPELL:
+            broadcastSpellExecution(conn, userAndRoles, notebook, messagereceived);
+            break;
           case RUN_ALL_PARAGRAPHS:
             runAllParagraphs(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -1574,6 +1577,45 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
+  private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,
+                                       Notebook notebook, Message fromMessage)
+      throws IOException {
+
+    final String paragraphId = (String) fromMessage.get("id");
+    if (paragraphId == null) {
+      return;
+    }
+
+    String noteId = getOpenNoteId(conn);
+    final Note note = notebook.getNote(noteId);
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      permissionError(conn, "write", fromMessage.principal, userAndRoles,
+          notebookAuthorization.getWriters(noteId));
+      return;
+    }
+
+    String text = (String) fromMessage.get("paragraph");
+    String title = (String) fromMessage.get("title");
+    Status status = Status.valueOf((String) fromMessage.get("status"));
+    Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
+
+    Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
+        text, title, params, config);
+    p.setStatus(status);
+    p.setResult(fromMessage.get("results"));
+
+    addNewParagraphIfLastParagraphIsExecuted(note, p);
+    if (!persistNoteWithAuthInfo(conn, note, p)) {
+      return;
+    }
+
+    // broadcast to other clients only
+    broadcastExcept(note.getId(),
+        new Message(OP.RUN_PARAGRAPH_USING_SPELL).put("paragraph", p), conn);
+  }
+
   private void runParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
                             Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
@@ -1600,8 +1642,7 @@ public class NotebookServer extends WebSocketServlet
     persistAndExecuteSingleParagraph(conn, note, p);
   }
 
-  private void persistAndExecuteSingleParagraph(NotebookSocket conn,
-                                                Note note, Paragraph p) throws IOException {
+  private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
     // if it's the last paragraph and empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
     if (!(p.getText().trim().equals(p.getMagic()) ||
@@ -1610,15 +1651,30 @@ public class NotebookServer extends WebSocketServlet
       Paragraph newPara = note.addParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);
     }
+  }
 
+  /**
+   * @return false if failed to save a note
+   */
+  private boolean persistNoteWithAuthInfo(NotebookSocket conn,
+                                          Note note, Paragraph p) throws IOException {
     try {
       note.persist(p.getAuthenticationInfo());
+      return true;
     } catch (FileSystemException ex) {
       LOG.error("Exception from run", ex);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
           "Oops! There is something wrong with the notebook file system. "
               + "Please check the logs for more details.")));
       // don't run the paragraph when there is error on persisting the note information
+      return false;
+    }
+  }
+
+  private void persistAndExecuteSingleParagraph(NotebookSocket conn,
+                                                Note note, Paragraph p) throws IOException {
+    addNewParagraphIfLastParagraphIsExecuted(note, p);
+    if (!persistNoteWithAuthInfo(conn, note, p)) {
       return;
     }
 

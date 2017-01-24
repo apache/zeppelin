@@ -12,7 +12,9 @@
  * limitations under the License.
  */
 
-import { SpellResult } from '../../spell'
+import {
+  SpellResult,
+} from '../../spell';
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
@@ -225,15 +227,32 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
 
-  $scope.handleSpellError = function(error, digestRequired) {
+  $scope.propagateSpellResult = function(paragraphId, paragraphTitle,
+                                         paragraphText, paragraphResults, paragraphStatus,
+                                         paragraphConfig, paragraphSettingsParam) {
+    websocketMsgSrv.paragraphExecutedBySpell(
+      paragraphId, paragraphTitle,
+      paragraphText, paragraphResults, paragraphStatus,
+      paragraphConfig, paragraphSettingsParam);
+  };
+
+  $scope.handleSpellError = function(paragraphText, error,
+                                     digestRequired, propagated) {
     $scope.paragraph.status = 'ERROR';
     $scope.paragraph.errorMessage = error.stack;
     console.error('Failed to execute interpret() in spell\n', error);
     if (digestRequired) { $scope.$digest(); }
+
+    if (!propagated) {
+      $scope.propagateSpellResult(
+        $scope.paragraph.id, $scope.paragraph.title,
+        paragraphText, [], $scope.paragraph.status,
+        $scope.paragraph.config, $scope.paragraph.settings.params);
+    }
   };
 
   $scope.runParagraphUsingSpell = function(spell, paragraphText,
-                                           magic, digestRequired) {
+                                           magic, digestRequired, propagated) {
     $scope.paragraph.results = {};
     if (digestRequired) { $scope.$digest(); }
 
@@ -242,21 +261,34 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       const splited = paragraphText.split(magic);
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '');
-      $scope.paragraph.status = 'FINISHED';
       const spellResult = spell.interpret(textWithoutMagic);
       const parsed = spellResult.getAllParsedDataWithTypes(
-        heliumService.getAllSpells());
+        heliumService.getAllSpells(), magic, textWithoutMagic);
 
       // handle actual result message in promise
       parsed.then(resultsMsg => {
+        const status = 'FINISHED';
+        $scope.paragraph.status = status;
+        $scope.paragraph.errorMessage = '';
+        $scope.paragraph.results.code = status;
         $scope.paragraph.results.msg = resultsMsg;
         $scope.paragraph.config.tableHide = false;
         if (digestRequired) { $scope.$digest(); }
+
+        if (!propagated) {
+          const propagable = SpellResult.createPropagable(resultsMsg);
+          $scope.propagateSpellResult(
+            $scope.paragraph.id, $scope.paragraph.title,
+            paragraphText, propagable, status,
+            $scope.paragraph.config, $scope.paragraph.settings.params);
+        }
       }).catch(error => {
-        $scope.handleSpellError(error, digestRequired);
+        $scope.handleSpellError(paragraphText, error,
+          digestRequired, propagated);
       });
     } catch (error) {
-      $scope.handleSpellError(error, digestRequired);
+      $scope.handleSpellError(paragraphText, error,
+        digestRequired, propagated);
     }
   };
 
@@ -280,7 +312,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     commitParagraph(paragraph);
   };
 
-  $scope.runParagraph = function(paragraphText, digestRequired) {
+  /**
+   * @param paragraphText to be parsed
+   * @param digestRequired true if calling `$digest` is required
+   * @param propagated true if update request is sent from other client
+   */
+  $scope.runParagraph = function(paragraphText, digestRequired, propagated) {
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return;
     }
@@ -290,7 +327,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
     if (spell) {
       $scope.runParagraphUsingSpell(
-        spell, paragraphText, magic, digestRequired);
+        spell, paragraphText, magic, digestRequired, propagated);
     } else {
       $scope.runParagraphUsingBackendInterpreter(paragraphText);
     }
@@ -312,12 +349,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphFromShortcut = function(paragraphText) {
     // passing `digestRequired` as true to update view immediately
     // without this, results cannot be rendered in view more than once
-    $scope.runParagraph(paragraphText, true);
+    $scope.runParagraph(paragraphText, true, false);
   };
 
   $scope.runParagraphFromButton = function(paragraphText) {
-    // we come here from `$scope.on`, so we don't need to call `$digest()`
-    $scope.runParagraph(paragraphText, false)
+    // we come here from the view, so we don't need to call `$digest()`
+    $scope.runParagraph(paragraphText, false, false)
   };
 
   $scope.moveUp = function(paragraph) {
@@ -1032,101 +1069,146 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  $scope.$on('updateParagraph', function(event, data) {
-    if (data.paragraph.id === $scope.paragraph.id &&
-      (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
-      data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
-      data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-      data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
-      data.paragraph.status !== $scope.paragraph.status ||
-      data.paragraph.jobName !== $scope.paragraph.jobName ||
-      data.paragraph.title !== $scope.paragraph.title ||
-      isEmpty(data.paragraph.results) !== isEmpty($scope.paragraph.results) ||
-      data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
-      !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
-      !angular.equals(data.paragraph.config, $scope.paragraph.config))
-    ) {
-      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-        isEmpty(data.paragraph.results) !== isEmpty($scope.paragraph.results) ||
-        data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
+  /**
+   * @returns {boolean} true if updated is needed
+   */
+  function isUpdateRequired(oldPara, newPara) {
+    return (newPara.id === oldPara.id &&
+      (newPara.dateCreated !== oldPara.dateCreated ||
+      newPara.dateFinished !== oldPara.dateFinished ||
+      newPara.dateStarted !== oldPara.dateStarted ||
+      newPara.dateUpdated !== oldPara.dateUpdated ||
+      newPara.status !== oldPara.status ||
+      newPara.jobName !== oldPara.jobName ||
+      newPara.title !== oldPara.title ||
+      isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
+      newPara.errorMessage !== oldPara.errorMessage ||
+      !angular.equals(newPara.settings, oldPara.settings) ||
+      !angular.equals(newPara.config, oldPara.config)))
+  }
 
-      if ($scope.paragraph.text !== data.paragraph.text) {
-        if ($scope.dirtyText) {         // check if editor has local update
-          if ($scope.dirtyText === data.paragraph.text) {  // when local update is the same from remote, clear local update
-            $scope.paragraph.text = data.paragraph.text;
-            $scope.dirtyText = undefined;
-            $scope.originalText = angular.copy(data.paragraph.text);
-          } else { // if there're local update, keep it.
-            $scope.paragraph.text = data.paragraph.text;
-          }
-        } else {
-          $scope.paragraph.text = data.paragraph.text;
-          $scope.originalText = angular.copy(data.paragraph.text);
+  $scope.updateAllScopeTexts = function(oldPara, newPara) {
+    if (oldPara.text !== newPara.text) {
+      if ($scope.dirtyText) {         // check if editor has local update
+        if ($scope.dirtyText === newPara.text) {  // when local update is the same from remote, clear local update
+          $scope.paragraph.text = newPara.text;
+          $scope.dirtyText = undefined;
+          $scope.originalText = angular.copy(newPara.text);
+
+        } else { // if there're local update, keep it.
+          $scope.paragraph.text = newPara.text;
         }
-      }
-
-      /** broadcast update to result controller **/
-      if (data.paragraph.results && data.paragraph.results.msg) {
-        for (var i in data.paragraph.results.msg) {
-          var newResult = data.paragraph.results.msg ? data.paragraph.results.msg[i] : {};
-          var oldResult = ($scope.paragraph.results && $scope.paragraph.results.msg) ?
-            $scope.paragraph.results.msg[i] : {};
-          var newConfig = data.paragraph.config.results ? data.paragraph.config.results[i] : {};
-          var oldConfig = $scope.paragraph.config.results ? $scope.paragraph.config.results[i] : {};
-          if (!angular.equals(newResult, oldResult) ||
-            !angular.equals(newConfig, oldConfig)) {
-            $rootScope.$broadcast('updateResult', newResult, newConfig, data.paragraph, parseInt(i));
-          }
-        }
-      }
-
-      // resize col width
-      if ($scope.paragraph.config.colWidth !== data.paragraph.colWidth) {
-        $rootScope.$broadcast('paragraphResized', $scope.paragraph.id);
-      }
-
-      /** push the rest */
-      $scope.paragraph.aborted = data.paragraph.aborted;
-      $scope.paragraph.user = data.paragraph.user;
-      $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
-      $scope.paragraph.dateCreated = data.paragraph.dateCreated;
-      $scope.paragraph.dateFinished = data.paragraph.dateFinished;
-      $scope.paragraph.dateStarted = data.paragraph.dateStarted;
-      $scope.paragraph.errorMessage = data.paragraph.errorMessage;
-      $scope.paragraph.jobName = data.paragraph.jobName;
-      $scope.paragraph.title = data.paragraph.title;
-      $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
-      $scope.paragraph.status = data.paragraph.status;
-      if (data.paragraph.status !== 'RUNNING') {
-        $scope.paragraph.results = data.paragraph.results;
-      }
-      $scope.paragraph.settings = data.paragraph.settings;
-      if ($scope.editor) {
-        $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
-      }
-
-      if (!$scope.asIframe) {
-        $scope.paragraph.config = data.paragraph.config;
-        initializeDefault(data.paragraph.config);
       } else {
-        data.paragraph.config.editorHide = true;
-        data.paragraph.config.tableHide = false;
-        $scope.paragraph.config = data.paragraph.config;
-      }
-
-      if (statusChanged || resultRefreshed) {
-        // when last paragraph runs, zeppelin automatically appends new paragraph.
-        // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-        if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
-          // rendering output can took some time. So delay scrolling event firing for sometime.
-          setTimeout(function() {
-            $rootScope.$broadcast('scrollToCursor');
-          }, 500);
-        }
+        $scope.paragraph.text = newPara.text;
+        $scope.originalText = angular.copy(newPara.text);
       }
     }
+  };
+
+  $scope.updateParagraphObjectWhenUpdated = function(newPara) {
+    // resize col width
+    if ($scope.paragraph.config.colWidth !== newPara.colWidth) {
+      $rootScope.$broadcast('paragraphResized', $scope.paragraph.id);
+    }
+
+    /** push the rest */
+    $scope.paragraph.aborted = newPara.aborted;
+    $scope.paragraph.user = newPara.user;
+    $scope.paragraph.dateUpdated = newPara.dateUpdated;
+    $scope.paragraph.dateCreated = newPara.dateCreated;
+    $scope.paragraph.dateFinished = newPara.dateFinished;
+    $scope.paragraph.dateStarted = newPara.dateStarted;
+    $scope.paragraph.errorMessage = newPara.errorMessage;
+    $scope.paragraph.jobName = newPara.jobName;
+    $scope.paragraph.title = newPara.title;
+    $scope.paragraph.lineNumbers = newPara.lineNumbers;
+    $scope.paragraph.status = newPara.status;
+    if (newPara.status !== 'RUNNING') {
+      $scope.paragraph.results = newPara.results;
+    }
+    $scope.paragraph.settings = newPara.settings;
+    if ($scope.editor) {
+      $scope.editor.setReadOnly($scope.isRunning(newPara));
+    }
+
+    if (!$scope.asIframe) {
+      $scope.paragraph.config = newPara.config;
+      initializeDefault(newPara.config);
+    } else {
+      newPara.config.editorHide = true;
+      newPara.config.tableHide = false;
+      $scope.paragraph.config = newPara.config;
+    }
+  };
+
+  $scope.updateParagraph = function(oldPara, newPara, updateCallback) {
+    // 1. get status, refreshed
+    const statusChanged = (newPara.status !== oldPara.status);
+    const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
+      isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
+      newPara.status === 'ERROR' || (newPara.status === 'FINISHED' && statusChanged);
+
+    // 2. update texts managed by $scope
+    $scope.updateAllScopeTexts(oldPara, newPara);
+
+    // 3. execute callback to update result
+    updateCallback();
+
+    // 4. update remaining paragraph objects
+    $scope.updateParagraphObjectWhenUpdated(newPara);
+
+    // 5. handle scroll down by key properly if new paragraph is added
+    if (statusChanged || resultRefreshed) {
+      // when last paragraph runs, zeppelin automatically appends new paragraph.
+      // this broadcast will focus to the newly inserted paragraph
+      const paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+      if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
+        // rendering output can took some time. So delay scrolling event firing for sometime.
+        setTimeout(() => { $rootScope.$broadcast('scrollToCursor'); }, 500);
+      }
+    }
+  };
+
+  $scope.$on('runParagraphUsingSpell', function(event, data) {
+    const oldPara = $scope.paragraph;
+    let newPara = data.paragraph;
+    const updateCallback = () => {
+      $scope.runParagraph(newPara.text, true, true);
+    };
+
+    if (!isUpdateRequired(oldPara, newPara)) {
+      return;
+    }
+
+    $scope.updateParagraph(oldPara, newPara, updateCallback)
+  });
+
+  $scope.$on('updateParagraph', function(event, data) {
+    const oldPara = $scope.paragraph;
+    const newPara = data.paragraph;
+
+    if (!isUpdateRequired(oldPara, newPara)) {
+      return;
+    }
+
+    const updateCallback = () => {
+      // broadcast `updateResult` message to trigger result update
+      if (newPara.results && newPara.results.msg) {
+        for (let i in newPara.results.msg) {
+          const newResult = newPara.results.msg ? newPara.results.msg[i] : {};
+          const oldResult = (newPara.results && newPara.results.msg) ?
+            newPara.results.msg[i] : {};
+          const newConfig = newPara.config.results ? newPara.config.results[i] : {};
+          const oldConfig = newPara.config.results ? newPara.config.results[i] : {};
+          if (!angular.equals(newResult, oldResult) ||
+            !angular.equals(newConfig, oldConfig)) {
+            $rootScope.$broadcast('updateResult', newResult, newConfig, newPara, parseInt(i));
+          }
+        }
+      }
+    };
+
+    $scope.updateParagraph(oldPara, newPara, updateCallback)
   });
 
   $scope.$on('updateProgress', function(event, data) {

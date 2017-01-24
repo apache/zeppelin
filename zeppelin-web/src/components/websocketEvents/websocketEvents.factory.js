@@ -105,6 +105,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
 
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
+    } else if (op === 'RUN_PARAGRAPH_USING_SPELL') {
+      $rootScope.$broadcast('runParagraphUsingSpell', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
       $rootScope.$broadcast('appendParagraphOutput', data);
     } else if (op === 'PARAGRAPH_UPDATE_OUTPUT') {

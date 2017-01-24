@@ -12,6 +12,11 @@
  * limitations under the License.
  */
 
+import {
+  SpellResult,
+  DefaultDisplayType,
+} from '../../app/spell';
+
 angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv);
 
 websocketMsgSrv.$inject = ['$rootScope', 'websocketEvents'];
@@ -157,6 +162,29 @@ function websocketMsgSrv($rootScope, websocketEvents) {
 
     cancelParagraphRun: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
+    },
+
+    paragraphExecutedBySpell: function(paragraphId, paragraphTitle,
+                                       paragraphText, paragraphResultsMsg, paragraphStatus,
+                                       paragraphConfig, paragraphParams) {
+      websocketEvents.sendNewEvent({
+        op: 'PARAGRAPH_EXECUTED_BY_SPELL',
+        data: {
+          id: paragraphId,
+          title: paragraphTitle,
+          paragraph: paragraphText,
+          results: {
+            code: paragraphStatus,
+            msg: paragraphResultsMsg.map(dataWithType => {
+              let serializedData = dataWithType.data;
+              return { type: dataWithType.type, data: serializedData, };
+            })
+          },
+          status: paragraphStatus,
+          config: paragraphConfig,
+          params: paragraphParams
+        }
+      });
     },
 
     runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {

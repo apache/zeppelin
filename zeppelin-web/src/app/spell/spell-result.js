@@ -32,9 +32,20 @@ export const DefaultDisplayMagic = {
 };
 
 export class DataWithType {
-  constructor(data, type) {
+  constructor(data, type, magic, text) {
     this.data = data;
     this.type = type;
+
+    /**
+     * keep for `DefaultDisplayType.ELEMENT` (function data type)
+     * to propagate a result to other client.
+     *
+     * otherwise we will send function as `data` and it will not work
+     * since they don't have context where they are created.
+     */
+
+    this.magic = magic;
+    this.text = text;
   }
 
   static handleDefaultMagic(m) {
@@ -45,6 +56,17 @@ export class DataWithType {
     } else {
       return m;
     }
+  }
+
+  static createPropagable(dataWithType) {
+    if (!SpellResult.isFunction(dataWithType.data)) {
+      return dataWithType;
+    }
+
+    const data = dataWithType.getText();
+    const type = dataWithType.getMagic();
+
+    return new DataWithType(data, type);
   }
 
   /**
@@ -100,9 +122,12 @@ export class DataWithType {
    * object, function or promise
    * @param dataWithType {DataWithType}
    * @param availableDisplays {Object} Map for available displays
+   * @param magic
+   * @param textWithoutMagic
    * @return {Promise<Array<DataWithType>>}
    */
-  static produceMultipleData(dataWithType, customDisplayType) {
+  static produceMultipleData(dataWithType, customDisplayType,
+                             magic, textWithoutMagic) {
     const data = dataWithType.getData();
     const type = dataWithType.getType();
 
@@ -117,7 +142,9 @@ export class DataWithType {
     if (SpellResult.isFunction(data)) {
       // if data is a function, we consider it as ELEMENT type.
       wrapped = new Promise((resolve) => {
-        const result = [new DataWithType(data, DefaultDisplayType.ELEMENT)];
+        const dt = new DataWithType(
+          data, DefaultDisplayType.ELEMENT, magic, textWithoutMagic);
+        const result = [dt];
         return resolve(result);
       });
     } else if (SpellResult.isPromise(data)) {
@@ -162,6 +189,14 @@ export class DataWithType {
   getType() {
     return this.type;
   }
+
+  getMagic() {
+    return this.magic;
+  }
+
+  getText() {
+    return this.text;
+  }
 }
 
 export class SpellResult {
@@ -198,6 +233,11 @@ export class SpellResult {
     return undefined;
   }
 
+  static createPropagable(resultMsg) {
+    return resultMsg.map(dt => {
+      return DataWithType.createPropagable(dt);
+    })
+  }
 
   add(resultData, resultType) {
     if (resultData) {
@@ -210,11 +250,13 @@ export class SpellResult {
 
   /**
    * @param customDisplayType
+   * @param textWithoutMagic
    * @return {Promise<Array<DataWithType>>}
    */
-  getAllParsedDataWithTypes(customDisplayType) {
-    const promises = this.dataWithTypes.map(gt => {
-      return DataWithType.produceMultipleData(gt, customDisplayType);
+  getAllParsedDataWithTypes(customDisplayType, magic, textWithoutMagic) {
+    const promises = this.dataWithTypes.map(dt => {
+      return DataWithType.produceMultipleData(
+        dt, customDisplayType, magic, textWithoutMagic);
     });
 
     // some promises can include an array so we need to flatten them
