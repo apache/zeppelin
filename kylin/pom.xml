@@ -23,14 +23,14 @@
     <parent>
         <artifactId>zeppelin</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.7.1-SNAPSHOT</version>
+        <version>0.7.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-kylin</artifactId>
     <packaging>jar</packaging>
-    <version>0.7.1-SNAPSHOT</version>
+    <version>0.7.0</version>
     <name>Zeppelin: Kylin interpreter</name>
 
     <dependencies>
