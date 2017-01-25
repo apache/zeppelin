@@ -109,18 +109,6 @@ object RInterpreter {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
   logger.trace("logging inside the RInterpreter singleton")
 
-  // These are the additional properties we need on top of the ones provided by the spark interpreters
-  lazy val props: Map[String, InterpreterProperty] = new InterpreterPropertyBuilder()
-    .add("rhadoop.cmd",          "HADOOP_CMD", "rhadoop.cmd", "", "Usually /usr/bin/hadoop")
-    .add("rhadooop.streamingjar", "HADOOP_STREAMING", "rhadooop.streamingjar", "", "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
-    .add("rscala.debug",          "RSCALA_DEBUG", "rscala.debug","false", "Whether to turn on rScala debugging") // TEST:  Implemented but not tested
-    .add("rscala.timeout",        "RSCALA_TIMEOUT", "rscala.timeout","60", "Timeout for rScala") // TEST:  Implemented but not tested
-    .build
-
-  def getProps() = {
-    props
-  }
-
   // Some R interactive visualization packages insist on producing HTML that refers to javascript
   // or css by file path.  These functions are intended to load those files and embed them into the
   // HTML as Base64 encoded DataURIs.
