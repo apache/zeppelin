@@ -228,25 +228,28 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.propagateSpellResult = function(paragraphId, paragraphTitle,
-                                         paragraphText, paragraphResults, paragraphStatus,
+                                         paragraphText, paragraphResults,
+                                         paragraphStatus, paragraphErrorMessage,
                                          paragraphConfig, paragraphSettingsParam) {
     websocketMsgSrv.paragraphExecutedBySpell(
       paragraphId, paragraphTitle,
-      paragraphText, paragraphResults, paragraphStatus,
+      paragraphText, paragraphResults,
+      paragraphStatus, paragraphErrorMessage,
       paragraphConfig, paragraphSettingsParam);
   };
 
   $scope.handleSpellError = function(paragraphText, error,
                                      digestRequired, propagated) {
+    const errorMessage = error.stack;
     $scope.paragraph.status = 'ERROR';
-    $scope.paragraph.errorMessage = error.stack;
+    $scope.paragraph.errorMessage = errorMessage;
     console.error('Failed to execute interpret() in spell\n', error);
     if (digestRequired) { $scope.$digest(); }
 
     if (!propagated) {
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
-        paragraphText, [], $scope.paragraph.status,
+        paragraphText, [], $scope.paragraph.status, errorMessage,
         $scope.paragraph.config, $scope.paragraph.settings.params);
     }
   };
@@ -254,6 +257,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphUsingSpell = function(spell, paragraphText,
                                            magic, digestRequired, propagated) {
     $scope.paragraph.results = {};
+    $scope.paragraph.errorMessage = '';
     if (digestRequired) { $scope.$digest(); }
 
     try {
@@ -269,7 +273,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       parsed.then(resultsMsg => {
         const status = 'FINISHED';
         $scope.paragraph.status = status;
-        $scope.paragraph.errorMessage = '';
         $scope.paragraph.results.code = status;
         $scope.paragraph.results.msg = resultsMsg;
         $scope.paragraph.config.tableHide = false;
@@ -279,7 +282,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           const propagable = SpellResult.createPropagable(resultsMsg);
           $scope.propagateSpellResult(
             $scope.paragraph.id, $scope.paragraph.title,
-            paragraphText, propagable, status,
+            paragraphText, propagable, status, '',
             $scope.paragraph.config, $scope.paragraph.settings.params);
         }
       }).catch(error => {

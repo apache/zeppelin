@@ -1638,8 +1638,9 @@ public class NotebookServer extends WebSocketServlet
     final Note note = notebook.getNote(noteId);
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
         text, title, params, config);
-    p.setStatus(status);
     p.setResult(fromMessage.get("results"));
+    p.setErrorMessage((String) fromMessage.get("errorMessage"));
+    p.setStatusWithoutNotification(status);
 
     addNewParagraphIfLastParagraphIsExecuted(note, p);
     if (!persistNoteWithAuthInfo(conn, note, p)) {
