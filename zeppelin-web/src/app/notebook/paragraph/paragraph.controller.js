@@ -1199,10 +1199,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       if (newPara.results && newPara.results.msg) {
         for (let i in newPara.results.msg) {
           const newResult = newPara.results.msg ? newPara.results.msg[i] : {};
-          const oldResult = (newPara.results && newPara.results.msg) ?
-            newPara.results.msg[i] : {};
+          const oldResult = (oldPara.results && oldPara.results.msg) ?
+            oldPara.results.msg[i] : {};
           const newConfig = newPara.config.results ? newPara.config.results[i] : {};
-          const oldConfig = newPara.config.results ? newPara.config.results[i] : {};
+          const oldConfig = oldPara.config.results ? oldPara.config.results[i] : {};
           if (!angular.equals(newResult, oldResult) ||
             !angular.equals(newConfig, oldConfig)) {
             $rootScope.$broadcast('updateResult', newResult, newConfig, newPara, parseInt(i));

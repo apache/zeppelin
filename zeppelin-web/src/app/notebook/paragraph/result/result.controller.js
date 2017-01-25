@@ -155,6 +155,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   $scope.imageData;
   $scope.textRendererInitialized = false;
 
+  // queue for append output
+  const textAppendQueueBeforeInitialize = [];
+
   $scope.init = function(result, config, paragraph, index) {
     // register helium plugin vis
     var visBundles = heliumService.getVisualizationBundles();
@@ -191,6 +194,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
       return;
     }
+
     console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
     var refresh = !angular.equals(newConfig, $scope.config) ||
       !angular.equals(result.type, $scope.type) ||
@@ -451,8 +455,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
           // clear all lines before render
           clearTextOutput();
           $scope.textRendererInitialized = true;
-          if (generated) { appendTextOutput(generated); }
-          else { flushAppendQueue(); }
+
+          if (generated) {
+            const divDOM = angular.element('<div></div>').text(generated);
+            elem.append(divDOM);
+          }
+
           elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false; });
         },
         (error) => {  elem.html(`${error.stack}`); }
@@ -468,8 +476,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       textEl.children().remove();
     }
   };
-
-  var textAppendQueueBeforeInitialize = [];
 
   var flushAppendQueue = function() {
     while (textAppendQueueBeforeInitialize.length > 0) {
