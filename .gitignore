@@ -17,6 +17,8 @@ conf/interpreter.json
 
 # other generated files
 spark/dependency-reduced-pom.xml
+/bin/derby.log
+/bin/metastore_db
 
 #webapp
 zeppelin-web/node_modules
