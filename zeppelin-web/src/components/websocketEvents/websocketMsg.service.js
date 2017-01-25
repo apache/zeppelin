@@ -12,11 +12,6 @@
  * limitations under the License.
  */
 
-import {
-  SpellResult,
-  DefaultDisplayType,
-} from '../../app/spell';
-
 angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv);
 
 websocketMsgSrv.$inject = ['$rootScope', 'websocketEvents'];
