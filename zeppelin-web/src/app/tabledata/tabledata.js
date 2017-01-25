@@ -37,6 +37,10 @@ export default class TableData {
 
     for (var i = 0; i < textRows.length; i++) {
       var textRow = textRows[i];
+      if (textRow === '') {
+        continue;
+      }
+
       if (commentRow) {
         comment += textRow;
         continue;
