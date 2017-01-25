@@ -42,7 +42,7 @@ export default class TableData {
         continue;
       }
 
-      if (textRow === '') {
+      if (textRow === '<!--TABLE_COMMENT-->') {
         if (rows.length > 0) {
           commentRow = true;
         }
