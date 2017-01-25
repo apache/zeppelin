@@ -105,7 +105,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     }.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
-    assertEquals(p.getStatus(), Job.Status.READY);
+    assertEquals(p.getStatus(), Job.Status.FINISHED);
 
     // run non-blank paragraph
     p.setText("test");
