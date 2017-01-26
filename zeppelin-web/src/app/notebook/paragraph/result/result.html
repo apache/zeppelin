@@ -37,8 +37,7 @@ limitations under the License.
       <!-- graph -->
       <div id="p{{id}}_graph"
            class="graphContainer"
-           ng-class="{'noOverflow': graphMode=='table'}"
-           >
+           ng-class="{'noOverflow': graphMode=='table'}">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="p{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id">

@@ -187,7 +187,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         return;
       }
 
-      callback();
+      const elem = angular.element(`#${targetElemId}`);
+      callback(elem);
     }
 
     $timeout(retry);
@@ -219,7 +220,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       resultIndex === data.index &&
       (paragraph.status === 'RUNNING' || paragraph.status === 'PENDING')) {
 
-      if (DefaultDisplayType.TEXT != $scope.type) {
+      if (DefaultDisplayType.TEXT !== $scope.type) {
         $scope.type = DefaultDisplayType.TEXT;
       }
       appendTextOutput(data.data);
@@ -501,110 +502,99 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   }
 
-  $scope.renderGraph = function(targetElemId, type, refresh) {
+  $scope.renderGraph = function(graphElemId, graphMode, refresh) {
     // set graph height
-    var height = $scope.config.graph.height;
-    var targetElem = angular.element(`#${targetElemId}`);
-    targetElem.height(height);
+    const height = $scope.config.graph.height;
+    const graphElem = angular.element(`#${graphElemId}`);
+    graphElem.height(height);
 
-    if (!type) {
-      type = 'table';
+    if (!graphMode) { graphMode = 'table'; }
+    const tableElemId = `p${$scope.id}_${graphMode}`;
+
+    const builtInViz = builtInVisualizations[graphMode];
+    if (!builtInViz) { return; }
+
+    // deactive previsouly active visualization
+    for (let t in builtInVisualizations) {
+      const v = builtInVisualizations[t].instance;
+
+      if (t !== graphMode && v && v.isActive()) {
+        v.deactivate();
+        break;
+      }
     }
 
-    var builtInViz = builtInVisualizations[type];
-    if (builtInViz) {
-      // deactive previsouly active visualization
-      for (var t in builtInVisualizations) {
-        var v = builtInVisualizations[t].instance;
+    if (!builtInViz.instance) { // not instantiated yet
+      // render when targetEl is available
+      const afterLoaded = (loadedElem) => {
+        try {
+          const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+          const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+          // set height
+          loadedElem.height(height);
 
-        if (t !== type && v && v.isActive()) {
-          v.deactivate();
-          break;
+          // instantiate visualization
+          const config = getVizConfig(graphMode);
+          const Visualization = builtInViz.class;
+          builtInViz.instance = new Visualization(loadedElem, config);
+
+          // inject emitter, $templateRequest
+          const emitter = function(graphSetting) {
+            commitVizConfigChange(graphSetting, graphMode);
+          };
+          builtInViz.instance._emitter = emitter;
+          builtInViz.instance._compile = $compile;
+          builtInViz.instance._createNewScope = createNewScope;
+          const transformation = builtInViz.instance.getTransformation();
+          transformation._emitter = emitter;
+          transformation._templateRequest = $templateRequest;
+          transformation._compile = $compile;
+          transformation._createNewScope = createNewScope;
+
+          // render
+          const transformed = transformation.transform(tableData);
+          transformation.renderSetting(transformationSettingTargetEl);
+          builtInViz.instance.render(transformed);
+          builtInViz.instance.renderSetting(visualizationSettingTargetEl);
+          builtInViz.instance.activate();
+          angular.element(window).resize(() => {
+            builtInViz.instance.resize();
+          });
+        } catch (err) {
+          console.error('Graph drawing error %o', err);
         }
-      }
+      };
 
-      if (!builtInViz.instance) { // not instantiated yet
-        // render when targetEl is available
-        var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
-          if (targetEl.length) {
-            try {
-              // set height
-              targetEl.height(height);
+      retryUntilElemIsLoaded(tableElemId, afterLoaded);
+    } else if (refresh) {
+      // when graph options or data are changed
+      console.log('Refresh data %o', tableData);
 
-              // instantiate visualization
-              var config = getVizConfig(type);
-              var Visualization = builtInViz.class;
-              builtInViz.instance = new Visualization(targetEl, config);
+      const afterLoaded = (loadedElem) => {
+        const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+        const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+        const config = getVizConfig(graphMode);
+        loadedElem.height(height);
+        const transformation = builtInViz.instance.getTransformation();
+        transformation.setConfig(config);
+        const transformed = transformation.transform(tableData);
+        transformation.renderSetting(transformationSettingTargetEl);
+        builtInViz.instance.setConfig(config);
+        builtInViz.instance.render(transformed);
+        builtInViz.instance.renderSetting(visualizationSettingTargetEl);
+      };
 
-              // inject emitter, $templateRequest
-              var emitter = function(graphSetting) {
-                commitVizConfigChange(graphSetting, type);
-              };
-              builtInViz.instance._emitter = emitter;
-              builtInViz.instance._compile = $compile;
-              builtInViz.instance._createNewScope = createNewScope;
-              var transformation = builtInViz.instance.getTransformation();
-              transformation._emitter = emitter;
-              transformation._templateRequest = $templateRequest;
-              transformation._compile = $compile;
-              transformation._createNewScope = createNewScope;
+      retryUntilElemIsLoaded(tableElemId, afterLoaded);
+    } else {
+      const afterLoaded = (loadedElem) => {
+        loadedElem.height(height);
+        builtInViz.instance.activate();
+      };
 
-              // render
-              var transformed = transformation.transform(tableData);
-              transformation.renderSetting(transformationSettingTargetEl);
-              builtInViz.instance.render(transformed);
-              builtInViz.instance.renderSetting(visualizationSettingTargetEl);
-              builtInViz.instance.activate();
-              angular.element(window).resize(function() {
-                builtInViz.instance.resize();
-              });
-            } catch (err) {
-              console.error('Graph drawing error %o', err);
-            }
-          } else {
-            $timeout(retryRenderer, 10);
-          }
-        };
-        $timeout(retryRenderer);
-      } else if (refresh) {
-        console.log('Refresh data %o', tableData);
-        // when graph options or data are changed
-        var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          if (targetEl.length) {
-            var config = getVizConfig(type);
-            targetEl.height(height);
-            var transformation = builtInViz.instance.getTransformation();
-            transformation.setConfig(config);
-            var transformed = transformation.transform(tableData);
-            transformation.renderSetting(transformationSettingTargetEl);
-            builtInViz.instance.setConfig(config);
-            builtInViz.instance.render(transformed);
-            builtInViz.instance.renderSetting(visualizationSettingTargetEl);
-          } else {
-            $timeout(retryRenderer, 10);
-          }
-        };
-        $timeout(retryRenderer);
-      } else {
-        var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          if (targetEl.length) {
-            targetEl.height(height);
-            builtInViz.instance.activate();
-          } else {
-            $timeout(retryRenderer, 10);
-          }
-        };
-        $timeout(retryRenderer);
-      }
+      retryUntilElemIsLoaded(tableElemId, afterLoaded);
     }
   };
+
   $scope.switchViz = function(newMode) {
     var newConfig = angular.copy($scope.config);
     var newParams = angular.copy(paragraph.settings.params);
@@ -850,11 +840,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const renderApp = function(targetElemId, appState) {
-    const afterLoaded = () => {
+    const afterLoaded = (loadedElem) => {
       try {
         console.log('renderApp %o', appState);
-        elem.html(appState.output);
-        $compile(elem.contents())(getAppScope(appState));
+        loadedElem.html(appState.output);
+        $compile(loadedElem.contents())(getAppScope(appState));
       } catch (err) {
         console.log('App rendering error %o', err);
       }
