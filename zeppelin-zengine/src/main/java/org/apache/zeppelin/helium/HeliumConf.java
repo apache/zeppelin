@@ -22,22 +22,11 @@ import java.util.*;
  * Helium config. This object will be persisted to conf/heliumc.conf
  */
 public class HeliumConf {
-  List<HeliumRegistry> registry = new LinkedList<>();
-
   // enabled packages {name, version}
   Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
 
   // enabled visualization package display order
   List<String> visualizationDisplayOrder = new LinkedList<>();
-
-
-  public List<HeliumRegistry> getRegistry() {
-    return registry;
-  }
-
-  public void setRegistry(List<HeliumRegistry> registry) {
-    this.registry = registry;
-  }
 
   public Map<String, String> getEnabledPackages() {
     return new HashMap<>(enabled);

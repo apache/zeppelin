@@ -123,7 +123,9 @@ public class ZeppelinServer extends Application {
 
     this.helium = new Helium(
         conf.getHeliumConfPath(),
-        conf.getHeliumDefaultLocalRegistryPath(),
+        conf.getHeliumRegistry(),
+        new File(
+            conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium_registry_cache"),
         heliumVisualizationFactory,
         heliumApplicationFactory);
 

@@ -53,12 +53,8 @@ public class HeliumTest {
     // given
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(),
-        null, null);
+        null, null, null);
     assertFalse(heliumConf.exists());
-    HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
-    helium.addRegistry(registry1);
-    assertEquals(2, helium.getAllRegistry().size());
-    assertEquals(0, helium.getAllPackageInfo().size());
 
     // when
     helium.save();
@@ -66,17 +62,16 @@ public class HeliumTest {
     // then
     assertTrue(heliumConf.exists());
 
-    // then
+    // then load without exception
     Helium heliumRestored = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null);
-    assertEquals(2, heliumRestored.getAllRegistry().size());
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null);
   }
 
   @Test
   public void testRestoreRegistryInstances() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
     Helium helium = new Helium(
-        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null);
+        heliumConf.getAbsolutePath(), localRegistryPath.getAbsolutePath(), null, null, null);
     HeliumTestRegistry registry1 = new HeliumTestRegistry("r1", "r1");
     HeliumTestRegistry registry2 = new HeliumTestRegistry("r2", "r2");
     helium.addRegistry(registry1);
