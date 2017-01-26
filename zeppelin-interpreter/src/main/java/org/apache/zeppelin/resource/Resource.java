@@ -117,6 +117,7 @@ public class Resource {
         Method method = r.getClass().getMethod(
             methodName,
             paramTypes);
+        method.setAccessible(true);
         Object ret = method.invoke(r, params);
         return ret;
       }  catch (Exception e) {
