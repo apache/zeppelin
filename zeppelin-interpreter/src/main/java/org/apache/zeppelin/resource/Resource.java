@@ -16,7 +16,11 @@
  */
 package org.apache.zeppelin.resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**
@@ -24,6 +28,7 @@ import java.nio.ByteBuffer;
  */
 public class Resource {
   private final transient Object r;
+  private final transient LocalResourcePool pool;
   private final boolean serializable;
   private final ResourceId resourceId;
   private final String className;
@@ -31,11 +36,13 @@ public class Resource {
 
   /**
    * Create local resource
+   *
    * @param resourceId
-   * @param r must not be null
+   * @param r          must not be null
    */
-  Resource(ResourceId resourceId, Object r) {
+  Resource(LocalResourcePool pool, ResourceId resourceId, Object r) {
     this.r = r;
+    this.pool = pool;
     this.resourceId = resourceId;
     this.serializable = r instanceof Serializable;
     this.className = r.getClass().getName();
@@ -43,10 +50,12 @@ public class Resource {
 
   /**
    * Create remote object
+   *
    * @param resourceId
    */
-  Resource(ResourceId resourceId, boolean serializable, String className) {
+  Resource(LocalResourcePool pool, ResourceId resourceId, boolean serializable, String className) {
     this.r = null;
+    this.pool = pool;
     this.resourceId = resourceId;
     this.serializable = serializable;
     this.className = className;
@@ -61,11 +70,10 @@ public class Resource {
   }
 
   /**
-   *
    * @return null when this is remote resource and not serializable.
    */
   public Object get() {
-    if (isLocal() || isSerializable()){
+    if (isLocal() || isSerializable()) {
       return r;
     } else {
       return null;
@@ -78,6 +86,7 @@ public class Resource {
 
   /**
    * if it is remote object
+   *
    * @return
    */
   public boolean isRemote() {
@@ -86,6 +95,7 @@ public class Resource {
 
   /**
    * Whether it is locally accessible or not
+   *
    * @return
    */
   public boolean isLocal() {
@@ -93,6 +103,36 @@ public class Resource {
   }
 
 
+  public Object invokeMethod(
+      String methodName, Class [] paramTypes, Object [] params) {
+    return invokeMethod(methodName, paramTypes, params, null);
+  }
+
+  public Object invokeMethod(
+      String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
+    if (r != null) {
+      try {
+        Method method = r.getClass().getMethod(
+            methodName,
+            paramTypes);
+        Object ret = method.invoke(r, params);
+        if (ret != null && returnResourceName != null) {
+          pool.put(
+              resourceId.getNoteId(),
+              resourceId.getParagraphId(),
+              returnResourceName,
+              ret
+          );
+        }
+        return ret;
+      } catch (Exception e) {
+        logException(e);
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
 
   public static ByteBuffer serializeObject(Object o) throws IOException {
     if (o == null || !(o instanceof Serializable)) {
@@ -129,4 +169,8 @@ public class Resource {
     return object;
   }
 
+  private void logException(Exception e) {
+    Logger logger = LoggerFactory.getLogger(Resource.class);
+    logger.error(e.getMessage(), e);
+  }
 }

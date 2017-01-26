@@ -68,7 +68,7 @@ public class MockInterpreterResourcePool extends Interpreter {
     String name = null;
     if (stmt.length >= 2) {
       String[] npn = stmt[1].split(":");
-      if (npn.length == 3) {
+      if (npn.length >= 3) {
         noteId = npn[0];
         paragraphId = npn[1];
         name = npn[2];
@@ -77,7 +77,7 @@ public class MockInterpreterResourcePool extends Interpreter {
       }
     }
     String value = null;
-    if (stmt.length == 3) {
+    if (stmt.length >= 3) {
       value = stmt[2];
     }
 
@@ -96,6 +96,10 @@ public class MockInterpreterResourcePool extends Interpreter {
       ret = resourcePool.remove(noteId, paragraphId, name);
     } else if (cmd.equals("getAll")) {
       ret = resourcePool.getAll();
+    } else if (cmd.equals("invoke")) {
+      Resource resource = resourcePool.get(noteId, paragraphId, name);
+      String returnResourceName = (stmt.length >=4) ? stmt[3] : null;
+      ret = resource.invokeMethod(value, null, null, returnResourceName);
     }
 
     try {

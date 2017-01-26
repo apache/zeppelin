@@ -23,11 +23,11 @@ public class RemoteResource extends Resource {
   ResourcePoolConnector resourcePoolConnector;
 
   RemoteResource(ResourceId resourceId, Object r) {
-    super(resourceId, r);
+    super(null, resourceId, r);
   }
 
   RemoteResource(ResourceId resourceId, boolean serializable, String className) {
-    super(resourceId, serializable, className);
+    super(null, resourceId, serializable, className);
   }
 
   @Override
@@ -51,5 +51,22 @@ public class RemoteResource extends Resource {
 
   public void setResourcePoolConnector(ResourcePoolConnector resourcePoolConnector) {
     this.resourcePoolConnector = resourcePoolConnector;
+  }
+
+  @Override
+  public Object invokeMethod(
+      String methodName, Class [] paramTypes, Object [] params) {
+    return invokeMethod(methodName, paramTypes, params, null);
+  }
+
+  @Override
+  public Object invokeMethod(
+      String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
+    return resourcePoolConnector.invokeMethod(
+        getResourceId(),
+        methodName,
+        paramTypes,
+        params,
+        returnResourceName);
   }
 }

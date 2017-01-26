@@ -50,6 +50,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   private final List<RemoteInterpreterEvent> eventQueue = new LinkedList<>();
   private final List<ResourceSet> getAllResourceResponse = new LinkedList<>();
   private final Map<ResourceId, Object> getResourceResponse = new HashMap<>();
+  private final Map<InvokeResourceMethodEventMessage, Object> getInvokeResponse = new HashMap<>();
   private final Gson gson = new Gson();
 
   /**
@@ -165,6 +166,60 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   /**
+   * Invoke method and save result in resourcePool as another resource
+   * @param resourceId
+   * @param methodName
+   * @param paramTypes
+   * @param params
+   * @param returnResourceName
+   * @return
+   */
+  @Override
+  public Object invokeMethod(
+      ResourceId resourceId,
+      String methodName,
+      Class[] paramTypes,
+      Object[] params,
+      String returnResourceName) {
+    logger.debug("Request Invoke method {} of Resource {}", methodName, resourceId.getName());
+
+    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
+        resourceId,
+        methodName,
+        paramTypes,
+        params,
+        returnResourceName);
+
+    synchronized (getInvokeResponse) {
+      // wait for previous response consumed
+      while (getInvokeResponse.containsKey(invokeMethod)) {
+        try {
+          getInvokeResponse.wait();
+        } catch (InterruptedException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      // send request
+      Gson gson = new Gson();
+
+      sendEvent(new RemoteInterpreterEvent(
+          RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
+          gson.toJson(invokeMethod)));
+      // wait for response
+      while (!getInvokeResponse.containsKey(invokeMethod)) {
+        try {
+          getInvokeResponse.wait();
+        } catch (InterruptedException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      Object o = getInvokeResponse.remove(invokeMethod);
+      getInvokeResponse.notifyAll();
+      return o;
+    }
+  }
+
+  /**
    * Supposed to call from RemoteInterpreterEventPoller
    */
   public void putResponseGetAllResources(List<String> resources) {
@@ -205,6 +260,32 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     synchronized (getResourceResponse) {
       getResourceResponse.put(rid, o);
       getResourceResponse.notifyAll();
+    }
+  }
+
+
+  /**
+   * Supposed to call from RemoteInterpreterEventPoller
+   * @param message json serialized InvokeMessage
+   * @param object java serialized of the object
+   */
+  public void putResponseInvokeMethod(
+      String message, ByteBuffer object) {
+    InvokeResourceMethodEventMessage invokeMessage =
+        gson.fromJson(message, InvokeResourceMethodEventMessage.class);
+
+    Object o = null;
+    try {
+      o = Resource.deserializeObject(object);
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+    } catch (ClassNotFoundException e) {
+      logger.error(e.getMessage(), e);
+    }
+
+    synchronized (getInvokeResponse) {
+      getInvokeResponse.put(invokeMessage, o);
+      getInvokeResponse.notifyAll();
     }
   }
 
