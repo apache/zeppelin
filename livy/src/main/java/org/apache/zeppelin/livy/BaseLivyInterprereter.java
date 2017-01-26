@@ -98,20 +98,12 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       if (sessionInfo.appId == null) {
         // livy 0.2 don't return appId and sparkUiUrl in response so that we need to get it
         // explicitly by ourselves.
-        sessionInfo.appId = extractStatementResult(
-            interpret("sc.applicationId", null, false, false).message()
-                .get(0).getData());
+        sessionInfo.appId = extractAppId();
       }
 
       if (sessionInfo.appInfo == null ||
           StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
-        interpret(
-            "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-            null, false, false);
-        sessionInfo.webUIAddress = extractStatementResult(
-            interpret(
-                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false)
-                .message().get(0).getData());
+        sessionInfo.webUIAddress = extractWebUIAddress();
       } else {
         sessionInfo.webUIAddress = sessionInfo.appInfo.get("sparkUiUrl");
       }
@@ -129,6 +121,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       LOGGER.info("Use livy 0.2.0");
     }
   }
+
+  protected abstract String extractAppId() throws LivyException;
+
+  protected abstract String extractWebUIAddress() throws LivyException;
 
   public SessionInfo getSessionInfo() {
     return sessionInfo;
@@ -148,25 +144,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           InterpreterUtils.getMostRelevantMessage(e));
     }
   }
-
-  /**
-   * Extract the eval result of spark shell, e.g. extract application_1473129941656_0048
-   * from following:
-   * res0: String = application_1473129941656_0048
-   *
-   * @param result
-   * @return
-   */
-  private String extractStatementResult(String result) {
-    int pos = -1;
-    if ((pos = result.indexOf("=")) >= 0) {
-      return result.substring(pos + 1).trim();
-    } else {
-      throw new RuntimeException("No result can be extracted from '" + result + "', " +
-          "something must be wrong");
-    }
-  }
-
+  
   @Override
   public void cancel(InterpreterContext context) {
     if (livyVersion.isCancelSupported()) {
@@ -207,7 +185,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
 
       CreateSessionRequest request = new CreateSessionRequest(kind,
-          user.equals("anonymous") ? null : user, conf);
+          user == null || user.equals("anonymous") ? null : user, conf);
       SessionInfo sessionInfo = SessionInfo.fromJson(
           callRestAPI("/sessions", "POST", request.toJson()));
       long start = System.currentTimeMillis();
