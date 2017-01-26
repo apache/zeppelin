@@ -270,7 +270,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("Before Run Output field contains ",
           driver.findElements(By.xpath(xpathToOutputField)).size(),
           CoreMatchers.equalTo(0));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
+      runParagraph(1);
       waitForParagraph(1, "FINISHED");
       collector.checkThat("After Run Output field contains  ",
           driver.findElement(By.xpath(xpathToOutputField)).getText(),
@@ -286,7 +286,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testClearOutputButton ", e);
     }
-
   }
 
   @Test

@@ -22,14 +22,14 @@ limitations under the License.
 
       <input class="form-control input-sm"
              ng-if="!paragraph.settings.forms[formulaire.name].options"
-             ng-enter="runParagraph(getEditorValue())"
+             ng-enter="runParagraphFromButton(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}" />
 
       <select class="form-control input-sm"
              ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
-             ng-enter="runParagraph(getEditorValue())"
+             ng-enter="runParagraphFromButton(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}"
