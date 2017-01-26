@@ -22,6 +22,8 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 
@@ -123,28 +125,12 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
           // assumption is correct for now. Ideally livy should return table type. We may do it in
           // the future release of livy.
           if (message.getType() == InterpreterResult.Type.TEXT) {
-            StringBuilder resMsg = new StringBuilder();
-            String[] rows = message.getData().split("\n");
-            String[] headers = rows[1].split("\\|");
-            for (int head = 1; head < headers.length; head++) {
-              resMsg.append(headers[head].trim()).append("\t");
+            List<String> rows = parseSQLOutput(message.getData());
+            result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
+            if (rows.size() >= (maxResult + 1)) {
+              result2.add(InterpreterResult.Type.HTML,
+                  "<font color=red>Results are limited by " + maxResult + ".</font>");
             }
-            resMsg.append("\n");
-            if (rows[3].indexOf("+") == 0) {
-
-            } else {
-              for (int cols = 3; cols < rows.length - 1; cols++) {
-                String[] col = rows[cols].split("\\|");
-                for (int data = 1; data < col.length; data++) {
-                  resMsg.append(col[data].trim()).append("\t");
-                }
-                resMsg.append("\n");
-              }
-            }
-            if (rows[rows.length - 1].indexOf("only") == 0) {
-              resMsg.append("<font color=red>" + rows[rows.length - 1] + ".</font>");
-            }
-            result2.add(InterpreterResult.Type.TABLE, resMsg.toString());
           } else {
             result2.add(message.getType(), message.getData());
           }
@@ -157,6 +143,53 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
+    }
+  }
+
+  protected List<String> parseSQLOutput(String output) {
+    List<String> rows = new ArrayList<>();
+    String[] lines = output.split("\n");
+    // at least 4 lines, even for empty sql output
+    //    +---+---+
+    //    |  a|  b|
+    //    +---+---+
+    //    +---+---+
+
+    String[] tokens = StringUtils.split(lines[0], "\\+");
+    // pairs keeps the start/end position of each cell. We parse it from the first row
+    // which use '+' as separator
+    List<Pair> pairs = new ArrayList<>();
+    int start = 0;
+    int end = 0;
+    for (String token : tokens) {
+      start = end + 1;
+      end = start + token.length();
+      pairs.add(new Pair(start, end));
+    }
+
+    for (String line : lines) {
+      // skip line like "+---+---+" and "only showing top 1 row"
+      if (!line.matches("(\\+\\-+)+\\+") || line.contains("only showing")) {
+        List<String> cells = new ArrayList<>();
+        for (Pair pair : pairs) {
+          // strip the blank space around the cell
+          cells.add(line.substring(pair.start, pair.end).trim());
+        }
+        rows.add(StringUtils.join(cells, "\t"));
+      }
+    }
+    return rows;
+  }
+
+  /**
+   * Represent the start and end index of each cell
+   */
+  private static class Pair {
+    private int start;
+    private int end;
+    public Pair(int start, int end) {
+      this.start = start;
+      this.end = end;
     }
   }
 

@@ -19,10 +19,15 @@
 
 set -xe
 
-if [[ -n $LIVY_VER ]]; then
-    ./testing/downloadLivy.sh
-    export LIVY_HOME=`pwd`/livy-server-$LIVY_VER
-    export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER
+if [[ "$#" -ne 1 ]]; then
+    echo "usage) $0 [livy version]"
+    echo "   eg) $0 0.2.0"
+    exit 1
 fi
+
+LIVY_VERSION="${1}"
+./testing/downloadLivy.sh $LIVY_VERSION
+export LIVY_HOME=`pwd`/livy-server-$LIVY_VER
+export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER
 
 set +xe
