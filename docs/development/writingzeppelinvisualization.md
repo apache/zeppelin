@@ -32,27 +32,12 @@ Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded
 
 
 #### 1. Load Helium package files from registry
-Zeppelin needs to know what Visualization packages are available. Zeppelin searches _Helium package file_ from local registry (by default helium/ directory) by default.
-_Helium package file_ provides informations like name, artifact, and so on. It's similar to _package.json_ in npm package.
 
-Here's an example `helium/zeppelin-example-horizontalbar.json`
-
-```
-{
-  "type" : "VISUALIZATION",
-  "name" : "zeppelin_horizontalbar",
-  "description" : "Horizontal Bar chart (example)",
-  "artifact" : "./zeppelin-examples/zeppelin-example-horizontalbar",
-  "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-bar-chart rotate90flipX'></i>"
-}
-```
-
-Check [Create helium package file](#3-create-helium-package-file) section to learn about it.
-
+Zeppelin needs to know what Visualization packages are available. Zeppelin will read information of packages from both online and local registry.
+Registries are configurable through `ZEPPELIN_HELIUM_LOCALREGISTRY_DEFAULT` env variable or `zeppelin.helium.localregistry.default` property.
 
 #### 2. Enable packages
-Once Zeppelin loads _Helium package files_ from local registry, available packages are displayed in Helium menu.
+Once Zeppelin loads _Helium package files_ from registries, available packages are displayed in Helium menu.
 
 Click 'enable' button.
 
@@ -129,7 +114,7 @@ You can check complete visualization package example [here](https://github.com/a
 Zeppelin's built-in visualization uses the same API, so you can check [built-in visualizations](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization/builtins) as additional examples.
 
 
-#### 3. Create __Helium package file__
+#### 3. Create __Helium package file__ and locally deploy
 
 __Helium Package file__ is a json file that provides information about the application.
 Json file contains the following information
@@ -144,6 +129,9 @@ Json file contains the following information
   "icon" : "<i class='fa fa-bar-chart rotate90flipX'></i>"
 }
 ```
+
+Place file in your local registry directory (default `./helium`).
+
 
 ##### type
 
@@ -210,3 +198,9 @@ yarn run visdev
 ```
 
 You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
+
+
+#### 5. Publish your visualization
+
+Once it's done, publish your visualization package using `npm publish`.
+That's it. With in an hour, your visualization will be available in Zeppelin's helium menu.
