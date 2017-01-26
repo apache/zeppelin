@@ -972,18 +972,25 @@ public class RemoteInterpreterServer
             message.methodName,
             message.getParamTypes());
         Object ret = method.invoke(o, message.params);
-        if (message.returnResourceName != null) {
+        if (message.shouldPutResultIntoResourcePool()) {
+          // if return resource name is specified,
+          // then put result into resource pool
+          // and return empty byte buffer
           resourcePool.put(
               noteId,
               paragraphId,
               message.returnResourceName,
               ret);
-        }
-        ByteBuffer serialized = Resource.serializeObject(ret);
-        if (serialized == null) {
           return ByteBuffer.allocate(0);
         } else {
-          return serialized;
+          // if return resource name is not specified,
+          // then return serialized result
+          ByteBuffer serialized = Resource.serializeObject(ret);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
         }
       } catch (Exception e) {
         logger.error(e.getMessage(), e);
@@ -1001,7 +1008,19 @@ public class RemoteInterpreterServer
   @Override
   public void resourceResponseInvokeMethod(
       String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
-    eventClient.putResponseInvokeMethod(invokeResourceMethodEventMessage, object);
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeResourceMethodEventMessage, InvokeResourceMethodEventMessage.class);
+
+    if (message.shouldPutResultIntoResourcePool()) {
+      Resource resource = resourcePool.get(
+          message.resourceId.getNoteId(),
+          message.resourceId.getParagraphId(),
+          message.returnResourceName,
+          true);
+      eventClient.putResponseInvokeMethod(message, resource);
+    } else {
+      eventClient.putResponseInvokeMethod(message, object);
+    }
   }
 
   @Override

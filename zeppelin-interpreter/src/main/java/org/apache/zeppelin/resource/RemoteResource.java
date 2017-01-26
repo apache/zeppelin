@@ -56,17 +56,24 @@ public class RemoteResource extends Resource {
   @Override
   public Object invokeMethod(
       String methodName, Class [] paramTypes, Object [] params) {
-    return invokeMethod(methodName, paramTypes, params, null);
+    ResourceId resourceId = getResourceId();
+    return resourcePoolConnector.invokeMethod(
+        resourceId,
+        methodName,
+        paramTypes,
+        params);
   }
 
   @Override
-  public Object invokeMethod(
+  public Resource invokeMethod(
       String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
-    return resourcePoolConnector.invokeMethod(
-        getResourceId(),
+    ResourceId resourceId = getResourceId();
+    Resource resource = resourcePoolConnector.invokeMethod(
+        resourceId,
         methodName,
         paramTypes,
         params,
         returnResourceName);
+    return resource;
   }
 }

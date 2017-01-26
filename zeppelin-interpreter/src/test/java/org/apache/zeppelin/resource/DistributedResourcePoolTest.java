@@ -192,7 +192,13 @@ public class DistributedResourcePoolTest {
       }
 
       @Override
-      public Object invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[] params, String returnResourceName) {
+      public Object invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[] params) {
+        return null;
+      }
+
+      @Override
+      public Resource invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[]
+          params, String returnResourceName) {
         return null;
       }
     });

@@ -63,6 +63,10 @@ public class InvokeResourceMethodEventMessage {
     return types;
   }
 
+  public boolean shouldPutResultIntoResourcePool() {
+    return (returnResourceName != null);
+  }
+
   @Override
   public int hashCode() {
     String hash = resourceId.hashCode() + methodName;

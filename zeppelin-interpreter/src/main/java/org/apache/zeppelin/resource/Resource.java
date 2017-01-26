@@ -105,10 +105,23 @@ public class Resource {
 
   public Object invokeMethod(
       String methodName, Class [] paramTypes, Object [] params) {
-    return invokeMethod(methodName, paramTypes, params, null);
+    if (r != null) {
+      try {
+        Method method = r.getClass().getMethod(
+            methodName,
+            paramTypes);
+        Object ret = method.invoke(r, params);
+        return ret;
+      }  catch (Exception e) {
+        logException(e);
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
-  public Object invokeMethod(
+  public Resource invokeMethod(
       String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
     if (r != null) {
       try {
@@ -116,15 +129,16 @@ public class Resource {
             methodName,
             paramTypes);
         Object ret = method.invoke(r, params);
-        if (ret != null && returnResourceName != null) {
-          pool.put(
-              resourceId.getNoteId(),
-              resourceId.getParagraphId(),
-              returnResourceName,
-              ret
-          );
-        }
-        return ret;
+        pool.put(
+            resourceId.getNoteId(),
+            resourceId.getParagraphId(),
+            returnResourceName,
+            ret
+        );
+        return pool.get(
+            resourceId.getNoteId(),
+            resourceId.getParagraphId(),
+            returnResourceName);
       } catch (Exception e) {
         logException(e);
         return null;

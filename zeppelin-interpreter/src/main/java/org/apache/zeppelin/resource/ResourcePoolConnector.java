@@ -40,6 +40,15 @@ public interface ResourcePoolConnector {
       ResourceId id,
       String methodName,
       Class[] paramTypes,
+      Object[] params);
+
+  /**
+   * Invoke method, put result into resource pool and return
+   */
+  public Resource invokeMethod(
+      ResourceId id,
+      String methodName,
+      Class[] paramTypes,
       Object[] params,
       String returnResourceName);
 }

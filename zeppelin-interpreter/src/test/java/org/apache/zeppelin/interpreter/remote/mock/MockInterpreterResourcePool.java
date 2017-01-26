@@ -98,8 +98,12 @@ public class MockInterpreterResourcePool extends Interpreter {
       ret = resourcePool.getAll();
     } else if (cmd.equals("invoke")) {
       Resource resource = resourcePool.get(noteId, paragraphId, name);
-      String returnResourceName = (stmt.length >=4) ? stmt[3] : null;
-      ret = resource.invokeMethod(value, null, null, returnResourceName);
+      if (stmt.length >=4) {
+        Resource res = resource.invokeMethod(value, null, null, stmt[3]);
+        ret = res.get();
+      } else {
+        ret = resource.invokeMethod(value, null, null);
+      }
     }
 
     try {
