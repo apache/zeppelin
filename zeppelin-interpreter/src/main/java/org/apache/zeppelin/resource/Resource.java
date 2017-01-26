@@ -137,7 +137,7 @@ public class Resource {
    * @return Resource that holds return value
    */
   public Resource invokeMethod(
-      String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
+    String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
     if (r != null) {
       try {
         Method method = r.getClass().getMethod(

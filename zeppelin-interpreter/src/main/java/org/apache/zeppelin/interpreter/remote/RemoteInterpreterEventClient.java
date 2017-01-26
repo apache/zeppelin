@@ -171,6 +171,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    * @param methodName
    * @param paramTypes
    * @param params
+<<<<<<< 5bb38c89ae67f95858547f73d0e833ef91b3d6ee
    * @return
    */
   @Override
@@ -323,7 +324,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    */
   public void putResponseInvokeMethod(
       InvokeResourceMethodEventMessage invokeMessage, ByteBuffer object) {
-    Object o = null;
+   Object o = null;
     try {
       o = Resource.deserializeObject(object);
     } catch (IOException e) {
@@ -350,7 +351,6 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
       getInvokeResponse.notifyAll();
     }
   }
-
 
   /**
    * Supposed to call from RemoteInterpreterEventPoller
