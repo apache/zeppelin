@@ -18,7 +18,6 @@
 package org.apache.zeppelin.interpreter;
 
 import com.google.common.base.Joiner;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,12 +26,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -365,27 +366,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   private void loadFromFile() throws IOException {
-    File settingFile = new File(conf.getInterpreterSettingPath());
-    if (!settingFile.exists()) {
+    Path settingFile = Paths.get(conf.getInterpreterSettingPath());
+    if (!Files.exists(settingFile)) {
       // nothing to read
       return;
     }
-    FileInputStream fis = new FileInputStream(settingFile);
-    InputStreamReader isr = new InputStreamReader(fis);
-    BufferedReader bufferedReader = new BufferedReader(isr);
-    StringBuilder sb = new StringBuilder();
-    InterpreterSetting interpreterSettingObject;
-    String depClassPath = StringUtils.EMPTY;
-    String line;
-    while ((line = bufferedReader.readLine()) != null) {
-      sb.append(line);
+    InterpreterInfoSaving infoSaving;
+    try (Reader json = Files.newBufferedReader(settingFile, StandardCharsets.UTF_8)) {
+      infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
     }
-    isr.close();
-    fis.close();
-
-    String json = sb.toString();
-    InterpreterInfoSaving infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
-
     for (String k : infoSaving.interpreterSettings.keySet()) {
       InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
       List<InterpreterInfo> infos = setting.getInterpreterInfos();
@@ -405,13 +394,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       setting.getOption().setRemote(true);
 
       // Update transient information from InterpreterSettingRef
-      interpreterSettingObject = interpreterSettingsRef.get(setting.getGroup());
+      InterpreterSetting interpreterSettingObject =
+          interpreterSettingsRef.get(setting.getGroup());
       if (interpreterSettingObject == null) {
         logger.warn("can't get InterpreterSetting " +
             "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
         continue;
       }
-      depClassPath = interpreterSettingObject.getPath();
+      String depClassPath = interpreterSettingObject.getPath();
       setting.setPath(depClassPath);
 
       for (InterpreterInfo info : infos) {
