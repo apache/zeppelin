@@ -43,4 +43,16 @@ public class LivySparkRInterpreter extends BaseLivyInterprereter {
   public String getSessionKind() {
     return "sparkr";
   }
+
+  @Override
+  protected String extractAppId() throws LivyException {
+    //TODO(zjffdu) depends on SparkR
+    return null;
+  }
+
+  @Override
+  protected String extractWebUIAddress() throws LivyException {
+    //TODO(zjffdu) depends on SparkR
+    return null;
+  }
 }

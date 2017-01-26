@@ -33,7 +33,7 @@ import java.util.Properties;
 /**
  * Livy PySpark interpreter for Zeppelin.
  */
-public class LivyPySpark3Interpreter extends BaseLivyInterprereter {
+public class LivyPySpark3Interpreter extends LivyPySparkBaseInterpreter {
 
   public LivyPySpark3Interpreter(Properties property) {
     super(property);
@@ -43,4 +43,5 @@ public class LivyPySpark3Interpreter extends BaseLivyInterprereter {
   public String getSessionKind() {
     return "pyspark3";
   }
+
 }
