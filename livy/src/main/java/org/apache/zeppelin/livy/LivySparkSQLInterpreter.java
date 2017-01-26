@@ -155,6 +155,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
     //    +---+---+
     //    +---+---+
 
+    // use the first line to determinte the position of feach cell
     String[] tokens = StringUtils.split(lines[0], "\\+");
     // pairs keeps the start/end position of each cell. We parse it from the first row
     // which use '+' as separator
