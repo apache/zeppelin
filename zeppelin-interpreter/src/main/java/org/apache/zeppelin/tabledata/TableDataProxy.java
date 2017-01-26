@@ -14,31 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.tabledata;
 
-import java.io.Serializable;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
+
+import java.util.Iterator;
 
 /**
- * Interpreter result message
+ * Proxy TableData for ResourcePool
  */
-public class InterpreterResultMessage implements Serializable {
-  InterpreterResult.Type type;
-  String data;
+public class TableDataProxy implements TableData {
+  private final Resource resource;
 
-  public InterpreterResultMessage(InterpreterResult.Type type, String data) {
-    this.type = type;
-    this.data = data;
+  public TableDataProxy(Resource tableDataRemoteResource) {
+    this.resource = tableDataRemoteResource;
   }
 
-  public InterpreterResult.Type getType() {
-    return type;
+  @Override
+  public ColumnDef[] columns() {
+    return (ColumnDef[]) resource.invokeMethod(
+        "columns", null, null);
   }
 
-  public String getData() {
-    return data;
-  }
+  @Override
+  public Iterator<Row> rows() {
+    String resourceName = resource.getResourceId().getName() + ".rows";
+    Resource rows = resource.invokeMethod("rows", null, null, resourceName);
 
-  public String toString() {
-    return "%" + type.name().toLowerCase() + " " + data;
+    ProxyRowIterator it = new ProxyRowIterator(rows);
+    return it;
   }
 }

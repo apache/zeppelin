@@ -351,7 +351,6 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
-
   /**
    * Supposed to call from RemoteInterpreterEventPoller
    * @return next available event

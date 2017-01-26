@@ -14,31 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.tabledata;
 
-import java.io.Serializable;
+import java.util.Iterator;
 
 /**
- * Interpreter result message
+ * Abstract representation of table data
  */
-public class InterpreterResultMessage implements Serializable {
-  InterpreterResult.Type type;
-  String data;
+public interface TableData {
+  /**
+   * Get column definitions
+   * @return
+   */
+  public ColumnDef [] columns();
 
-  public InterpreterResultMessage(InterpreterResult.Type type, String data) {
-    this.type = type;
-    this.data = data;
-  }
-
-  public InterpreterResult.Type getType() {
-    return type;
-  }
-
-  public String getData() {
-    return data;
-  }
-
-  public String toString() {
-    return "%" + type.name().toLowerCase() + " " + data;
-  }
+  /**
+   * Get row iterator
+   * @param
+   * @return
+   */
+  public Iterator<Row> rows();
 }
