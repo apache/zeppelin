@@ -75,7 +75,7 @@ public class LivyInterpreterIT {
     return true;
   }
 
-//  @Test
+  @Test
   public void testSparkInterpreterRDD() {
     if (!checkPreCondition()) {
       return;
@@ -157,7 +157,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkInterpreterDataFrame() {
     if (!checkPreCondition()) {
       return;
@@ -225,7 +225,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkSQLInterpreter() {
     if (!checkPreCondition()) {
       return;
@@ -311,7 +311,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkInterpreterWithDisplayAppInfo() {
     if (!checkPreCondition()) {
       return;
@@ -351,7 +351,7 @@ public class LivyInterpreterIT {
     // TODO(zjffdu),  Livy's SparkRIntepreter has some issue, do it after livy-0.3 release.
   }
 
-//  @Test
+  @Test
   public void testLivyTutorialNote() throws IOException {
     if (!checkPreCondition()) {
       return;

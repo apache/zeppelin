@@ -218,4 +218,16 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
   public void close() {
     this.sparkInterpreter.close();
   }
+
+  @Override
+  protected String extractAppId() throws LivyException {
+    // it wont' be called because it would delegate to LivySparkInterpreter
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  protected String extractWebUIAddress() throws LivyException {
+    // it wont' be called because it would delegate to LivySparkInterpreter
+    throw new UnsupportedOperationException();
+  }
 }
