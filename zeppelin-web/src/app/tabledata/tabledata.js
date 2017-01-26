@@ -37,12 +37,13 @@ export default class TableData {
 
     for (var i = 0; i < textRows.length; i++) {
       var textRow = textRows[i];
+
       if (commentRow) {
         comment += textRow;
         continue;
       }
 
-      if (textRow === '') {
+      if (textRow === '' || textRow === '<!--TABLE_COMMENT-->') {
         if (rows.length > 0) {
           commentRow = true;
         }
