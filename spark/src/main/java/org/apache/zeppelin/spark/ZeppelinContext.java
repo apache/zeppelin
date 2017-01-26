@@ -293,9 +293,7 @@ public class ZeppelinContext {
     }
 
     if (rows.length > maxResult) {
-      msg.append("<!--TABLE_COMMENT-->");
-      msg.append("\n");
-      msg.append("<font color=red>Results are limited by " + maxResult + ".</font>");
+      msg.append("\n<font color=red>Results are limited by " + maxResult + ".</font>");
     }
     sc.clearJobGroup();
     return msg.toString();
