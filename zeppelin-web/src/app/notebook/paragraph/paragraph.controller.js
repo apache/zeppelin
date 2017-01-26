@@ -555,10 +555,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  // $scope.text = asdasd
-  // dirtyText =
-
-  // originalText
   $scope.aceChanged = function(_, editor) {
     var session = editor.getSession();
     var dirtyText = session.getValue();

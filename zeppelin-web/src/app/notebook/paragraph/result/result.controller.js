@@ -153,10 +153,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   // image data
   $scope.imageData;
-  $scope.textRendererInitialized = false;
 
   // queue for append output
-  const textAppendQueueBeforeInitialize = [];
+  const textResultQueueForAppend = [];
 
   $scope.init = function(result, config, paragraph, index) {
     // register helium plugin vis
@@ -176,10 +175,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     renderResult($scope.type);
   };
 
+  function isDOMLoaded(targetElemId) {
+    const elem = angular.element(`#${targetElemId}`);
+    return elem.length;
+  }
+
   function retryUntilElemIsLoaded(targetElemId, callback) {
     function retry() {
-      const elem = angular.element(`#${targetElemId}`);
-      if (!elem.length) {
+      if (!isDOMLoaded(targetElemId)) {
         $timeout(retry, 10);
         return;
       }
@@ -195,7 +198,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       return;
     }
 
-    console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
     var refresh = !angular.equals(newConfig, $scope.config) ||
       !angular.equals(result.type, $scope.type) ||
       !angular.equals(result.data, data);
@@ -216,14 +218,10 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
       (paragraph.status === 'RUNNING' || paragraph.status === 'PENDING')) {
-      appendTextOutput(data.data);
-    }
-  });
 
-  $scope.$on('updateParagraphOutput', function(event, data) {
-    if (paragraph.id === data.paragraphId &&
-      resultIndex === data.index) {
-      clearTextOutput();
+      if (DefaultDisplayType.TEXT != $scope.type) {
+        $scope.type = DefaultDisplayType.TEXT;
+      }
       appendTextOutput(data.data);
     }
   });
@@ -443,8 +441,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
-  const getTextResultElem = function (resultId) {
-    return angular.element('#p' + resultId + '_text');
+  const getTextResultElemId = function (resultId) {
+    return `p${resultId}_text`;
   };
 
   const renderText = function(targetElemId, data) {
@@ -453,8 +451,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       handleData(data, DefaultDisplayType.TEXT,
         (generated) => {
           // clear all lines before render
-          clearTextOutput();
-          $scope.textRendererInitialized = true;
+          removeChildrenDOM(targetElemId);
 
           if (generated) {
             const divDOM = angular.element('<div></div>').text(generated);
@@ -470,37 +467,39 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
-  var clearTextOutput = function() {
-    var textEl = getTextResultElem($scope.id);
-    if (textEl.length) {
-      textEl.children().remove();
+  const removeChildrenDOM = function(targetElemId) {
+    const elem = angular.element(`#${targetElemId}`);
+    if (elem.length) {
+      elem.children().remove();
     }
   };
 
-  var flushAppendQueue = function() {
-    while (textAppendQueueBeforeInitialize.length > 0) {
-      appendTextOutput(textAppendQueueBeforeInitialize.pop());
-    }
-  };
+  function appendTextOutput(data) {
+    const elemId = getTextResultElemId($scope.id);
+    textResultQueueForAppend.push(data);
 
-  var appendTextOutput = function(msg) {
-    if (!$scope.textRendererInitialized) {
-      textAppendQueueBeforeInitialize.push(msg);
-    } else {
-      flushAppendQueue();
-      var textEl = getTextResultElem($scope.id);
-      if (textEl.length) {
-        var lines = msg.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          textEl.append(angular.element('<div></div>').text(lines[i]));
-        }
+    // if DOM is not loaded, just push data and return
+    if (!isDOMLoaded(elemId)) {
+      return;
+    }
+
+    const elem = angular.element(`#${elemId}`);
+
+    // pop all stacked data and append to the DOM
+    while (textResultQueueForAppend.length > 0) {
+      const stacked = textResultQueueForAppend.pop();
+
+      const lines = stacked.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        elem.append(angular.element('<div></div>').text(lines[i]));
       }
+
       if ($scope.keepScrollDown) {
-        var doc = getTextResultElem($scope.id);
+        const doc = angular.element(`#${elemId}`);
         doc[0].scrollTop = doc[0].scrollHeight;
       }
     }
-  };
+  }
 
   $scope.renderGraph = function(targetElemId, type, refresh) {
     // set graph height
@@ -851,23 +850,16 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const renderApp = function(targetElemId, appState) {
-    function retryRenderer() {
-      var elem = angular.element(document.getElementById(targetElemId));
-      console.log('retry renderApp %o', elem);
-      if (!elem.length) {
-        $timeout(retryRenderer, 1000);
-      } else {
-        try {
-          console.log('renderApp %o', appState);
-          elem.html(appState.output);
-          $compile(elem.contents())(getAppScope(appState));
-        } catch (err) {
-          console.log('App rendering error %o', err);
-        }
+    const afterLoaded = () => {
+      try {
+        console.log('renderApp %o', appState);
+        elem.html(appState.output);
+        $compile(elem.contents())(getAppScope(appState));
+      } catch (err) {
+        console.log('App rendering error %o', err);
       }
-    }
-
-    $timeout(retryRenderer);
+    };
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
   /*
