@@ -346,12 +346,14 @@ public class Helium {
    * Get enabled package list in order
    * @return
    */
-  public List<String> getBundlePackageOrder() {
+  public List<String> setVisualizationPackageOrder() {
     List orderedPackageList = new LinkedList<>();
     List<HeliumPackage> packages = getBundlePackagesToBundle();
 
     for (HeliumPackage pkg : packages) {
-      orderedPackageList.add(pkg.getName());
+      if (HeliumPackage.Type.VISUALIZATION == pkg.getType()) {
+        orderedPackageList.add(pkg.getName());
+      }
     }
 
     return orderedPackageList;

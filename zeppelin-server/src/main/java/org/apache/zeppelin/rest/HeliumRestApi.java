@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.rest;
 
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
@@ -160,15 +159,15 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("bundleOrder")
-  public Response getBundlePackageOrder() {
-    List<String> order = helium.getBundlePackageOrder();
+  @Path("order/visualization")
+  public Response getVisualizationPackageOrder() {
+    List<String> order = helium.setVisualizationPackageOrder();
     return new JsonResponse(Response.Status.OK, order).build();
   }
 
   @POST
-  @Path("bundleOrder")
-  public Response setBundlePackageOrder(String orderedPackageNameList) {
+  @Path("order/visualization")
+  public Response getVisualizationPackageOrder(String orderedPackageNameList) {
     List<String> orderedList = gson.fromJson(
         orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
 

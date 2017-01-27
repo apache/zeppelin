@@ -61,7 +61,7 @@
     };
 
     var getBundleOrder = function() {
-      heliumService.getBundleOrder().
+      heliumService.getVisualizationPackageOrder().
         success(function(data, status) {
           $scope.bundleOrder = data.body;
         }).
@@ -98,7 +98,7 @@
             confirm.$modalFooter.find('button').addClass('disabled');
             confirm.$modalFooter.find('button:contains("OK")')
               .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
-            heliumService.setBundleOrder($scope.bundleOrder).
+            heliumService.setVisualizationPackageOrder($scope.bundleOrder).
               success(function(data, status) {
                 init();
                 confirm.close();

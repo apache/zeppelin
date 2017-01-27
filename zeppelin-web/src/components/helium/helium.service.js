@@ -70,12 +70,12 @@ import { HeliumType, } from './helium-type';
       return visualizationBundles;
     };
 
-    this.getBundleOrder = function() {
-      return $http.get(baseUrlSrv.getRestApiBase() + '/helium/bundleOrder');
+    this.getVisualizationPackageOrder = function() {
+      return $http.get(baseUrlSrv.getRestApiBase() + '/helium/order/visualization');
     };
 
-    this.setBundleOrder = function(list) {
-      return $http.post(baseUrlSrv.getRestApiBase() + '/helium/bundleOrder', list);
+    this.setVisualizationPackageOrder = function(list) {
+      return $http.post(baseUrlSrv.getRestApiBase() + '/helium/order/visualization', list);
     };
 
     this.getAllPackageInfo = function() {
