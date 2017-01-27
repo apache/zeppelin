@@ -74,7 +74,7 @@ Add the following code to a paragraph in your Apache Zeppelin note and run it.
 ```javascript
 println(
 """%angular
-  <div ng-include="'app/home/customer/customHome.html'"></div>
+  <div ng-include="'app/home/notebook.html'"></div>
 """)
 ```
 

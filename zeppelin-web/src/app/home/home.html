@@ -46,11 +46,11 @@ limitations under the License.
               </li>
               <div ng-if="!query.q || query.q === ''">
                 <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
-                    ng-include src="'app/home/home-template.html'" ng-class="note_folder_renderer"></li>
+                    ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
               </div>
               <div ng-if="query.q">
                 <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
-                    ng-include src="'app/home/home-template.html'" ng-class="note_folder_renderer"></li>
+                    ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
              </div>
             </ul>
           </div>
