@@ -307,10 +307,10 @@ public class RemoteScheduler implements Scheduler {
     @Override
     public void run() {
       if (job.isAborted()) {
-        job.setStatus(Status.ABORT);
-        job.aborted = false;
-
         synchronized (queue) {
+          job.setStatus(Status.ABORT);
+          job.aborted = false;
+
           running.remove(job);
           queue.notify();
         }
@@ -350,16 +350,16 @@ public class RemoteScheduler implements Scheduler {
         lastStatus = Status.ERROR;
       }
 
-      job.setStatus(lastStatus);
-
-      if (listener != null) {
-        listener.jobFinished(scheduler, job);
-      }
-
-      // reset aborted flag to allow retry
-      job.aborted = false;
-
       synchronized (queue) {
+        job.setStatus(lastStatus);
+
+        if (listener != null) {
+          listener.jobFinished(scheduler, job);
+        }
+
+        // reset aborted flag to allow retry
+        job.aborted = false;
+
         running.remove(job);
         queue.notify();
       }
