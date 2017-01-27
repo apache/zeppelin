@@ -420,7 +420,7 @@ public class InterpreterSetting {
   }
 
   public Map<String, Set<String>> getNoteIdAndParaMap() {
-    return noteIdToParaIdsetMap;
+    return runtimeInfosToBeCleared;
   }
 
   public void clearNoteIdAndParaMap() {

@@ -14,7 +14,8 @@ limitations under the License.
 
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
   <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
-    <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;">
+    <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;"
+       tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
       <span class="fa fa-tasks"></span>
       {{paragraph.runtimeInfos.jobUrl.label}}
     </a>
