@@ -376,8 +376,14 @@ public class JDBCInterpreter extends Interpreter {
               connection = getConnectionFromPool(url, user, propertyKey, properties);
             } else {
               if ("hive".equalsIgnoreCase(propertyKey)) {
-                connection = getConnectionFromPool(url + ";hive.server2.proxy.user=" + user,
-                  user, propertyKey, properties);
+                StringBuilder connectionUrl = new StringBuilder(url);
+                Integer lastIndexOfUrl = connectionUrl.indexOf("?");
+                if (lastIndexOfUrl == -1) {
+                  lastIndexOfUrl = connectionUrl.length();
+                }
+                connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
+                connection = getConnectionFromPool(connectionUrl.toString(),
+                    user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
                 try {
