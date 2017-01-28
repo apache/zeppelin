@@ -249,6 +249,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Interpreter directory</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</td>
+    <td>zeppelin.interpreter.output.limit</td>
+    <td>102400</td>
+    <td>Output message from interpreter exceeding the limit will be truncated</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
     <td>zeppelin.websocket.max.text.message.size</td>
     <td>1024000</td>

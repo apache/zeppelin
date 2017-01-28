@@ -282,7 +282,7 @@ public class NotebookTest implements JobListenerFactory{
     note.run(p1.getId());
 
     Thread.sleep(2 * 1000);
-    assertEquals(p1.getStatus(), Status.READY);
+    assertEquals(p1.getStatus(), Status.FINISHED);
     assertNull(p1.getDateStarted());
     notebook.removeNote(note.getId(), anonymous);
   }

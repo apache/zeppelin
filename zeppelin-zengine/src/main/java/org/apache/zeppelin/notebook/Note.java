@@ -222,7 +222,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
   public void initializeJobListenerForParagraph(Paragraph paragraph) {
     final Note paragraphNote = paragraph.getNote();
-    if (paragraphNote.getId().equals(this.getId())) {
+    if (!paragraphNote.getId().equals(this.getId())) {
       throw new IllegalArgumentException(
           format("The paragraph %s from note %s " + "does not belong to note %s", paragraph.getId(),
               paragraphNote.getId(), this.getId()));
@@ -555,13 +555,14 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   public void run(String paragraphId) {
     Paragraph p = getParagraph(paragraphId);
-
+    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    
     if (p.isBlankParagraph()) {
       logger.info("skip to run blank paragraph. {}", p.getId());
+      p.setStatus(Job.Status.FINISHED);
       return;
     }
 
-    p.setListener(jobListenerFactory.getParagraphJobListener(this));
     String requiredReplName = p.getRequiredReplName();
     Interpreter intp = factory.getInterpreter(p.getUser(), getId(), requiredReplName);
 

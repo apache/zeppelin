@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -144,6 +145,33 @@ public class InterpreterSetting {
     return key;
   }
 
+  private boolean isEqualInterpreterKeyProcessKey(String refKey, String processKey) {
+    InterpreterOption option = getOption();
+    int validCount = 0;
+    if (getOption().isProcess()
+        && !(option.perUserIsolated() == true && option.perNoteIsolated() == true)) {
+
+      List<String> processList = Arrays.asList(processKey.split(":"));
+      List<String> refList = Arrays.asList(refKey.split(":"));
+
+      if (refList.size() <= 1 || processList.size() <= 1) {
+        return refKey.equals(processKey);
+      }
+
+      if (processList.get(0).equals("") || processList.get(0).equals(refList.get(0))) {
+        validCount = validCount + 1;
+      }
+
+      if (processList.get(1).equals("") || processList.get(1).equals(refList.get(1))) {
+        validCount = validCount + 1;
+      }
+
+      return (validCount >= 2);
+    } else {
+      return refKey.equals(processKey);
+    }
+  }
+
   private String getInterpreterSessionKey(String user, String noteId) {
     InterpreterOption option = getOption();
     String key;
@@ -194,18 +222,19 @@ public class InterpreterSetting {
   }
 
   void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
-    String key = getInterpreterProcessKey("", noteId);
-
-    InterpreterGroup groupToRemove = null;
+    String processKey = getInterpreterProcessKey("", noteId);
+    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
+    InterpreterGroup groupKey;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (intpKey.contains(key)) {
+      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
-        groupToRemove = interpreterGroupRef.remove(intpKey);
+        groupKey = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
+        closeToGroupList.add(groupKey);
       }
     }
 
-    if (groupToRemove != null) {
+    for (InterpreterGroup groupToRemove : closeToGroupList) {
       groupToRemove.close();
     }
   }
@@ -216,17 +245,19 @@ public class InterpreterSetting {
     }
     String processKey = getInterpreterProcessKey(user, "");
     String sessionKey = getInterpreterSessionKey(user, "");
-    InterpreterGroup groupToRemove = null;
+    List<InterpreterGroup> groupToRemove = new LinkedList<>();
+    InterpreterGroup groupItem;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (intpKey.contains(processKey)) {
+      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
-        groupToRemove = interpreterGroupRef.remove(intpKey);
+        groupItem = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();
+        groupToRemove.add(groupItem);
       }
     }
 
-    if (groupToRemove != null) {
-      groupToRemove.close(sessionKey);
+    for (InterpreterGroup groupToClose : groupToRemove) {
+      groupToClose.close(sessionKey);
     }
   }
 
@@ -243,7 +274,7 @@ public class InterpreterSetting {
     List<InterpreterGroup> groupToRemove = new LinkedList<>();
     InterpreterGroup groupItem;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (intpKey.contains(key)) {
+      if (isEqualInterpreterKeyProcessKey(intpKey, key)) {
         interpreterGroupWriteLock.lock();
         groupItem = interpreterGroupRef.remove(intpKey);
         interpreterGroupWriteLock.unlock();

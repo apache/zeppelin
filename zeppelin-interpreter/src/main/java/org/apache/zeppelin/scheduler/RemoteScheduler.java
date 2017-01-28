@@ -346,6 +346,10 @@ public class RemoteScheduler implements Scheduler {
           lastStatus = Status.ERROR;
         }
       }
+      if (job.getException() != null) {
+        lastStatus = Status.ERROR;
+      }
+
       job.setStatus(lastStatus);
 
       if (listener != null) {

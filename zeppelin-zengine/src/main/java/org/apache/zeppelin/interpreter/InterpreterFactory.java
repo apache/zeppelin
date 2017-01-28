@@ -1150,7 +1150,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
         new RemoteInterpreter(property, interpreterSessionKey, className, host, port, localRepoPath,
             connectTimeout, maxPoolSize, remoteInterpreterProcessListener, appEventListener,
-            userName, isUserImpersonate));
+            userName, isUserImpersonate, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT)));
     return intp;
   }
 
@@ -1175,7 +1175,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, interpreterSessionKey, className,
             interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate);
+            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate,
+            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT));
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);

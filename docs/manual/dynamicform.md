@@ -56,6 +56,8 @@ Also you can separate option's display name and value, using `${formName=default
 
 <img src="../assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
+Hit enter after selecting option to run the paragraph with new value.
+
 ### Checkbox form
 
 For multi-selection, you can create a checkbox form using `${checkbox:formName=defaultValue1|defaultValue2...,option1|option2...}`. The variable will be substituted by a comma-separated string based on the selected items. For example:
