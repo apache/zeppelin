@@ -46,7 +46,22 @@ limitations under the License.
   <tr>
     <td>elasticsearch.port</td>
     <td>9300</td>
-    <td>Connection port <b>( Important: this is not the HTTP port, but the transport port )</b></td>
+    <td>Connection port <b>( Important: it depends on the client type, transport or http)</b></td>
+  </tr>
+  <tr>
+    <td>elasticsearch.client.type</td>
+    <td>transport</td>
+    <td>The type of client for Elasticsearch (transport or http)<b>( Important: the port depends on this value)</b></td>
+  </tr>
+  <tr>
+    <td>elasticsearch.basicauth.username</td>
+    <td></td>
+    <td>Username for a basic authentication (http)</b></td>
+  </tr>
+  <tr>
+    <td>elasticsearch.basicauth.password</td>
+    <td></td>
+    <td>Password for a basic authentication (http)</b></td>
   </tr>
   <tr>
     <td>elasticsearch.result.size</td>

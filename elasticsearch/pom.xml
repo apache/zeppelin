@@ -26,7 +26,6 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-elasticsearch</artifactId>
   <packaging>jar</packaging>
   <version>0.7.1-SNAPSHOT</version>
@@ -34,8 +33,10 @@
 
   <properties>
     <elasticsearch.version>2.4.3</elasticsearch.version>
+    <httpasyncclient.version>4.0.2</httpasyncclient.version>
     <guava.version>18.0</guava.version>
     <json-flattener.version>0.1.6</json-flattener.version>
+    <unirest.version>1.4.9</unirest.version>
   </properties>
 
   <dependencies>
@@ -51,6 +52,12 @@
       <artifactId>elasticsearch</artifactId>
       <version>${elasticsearch.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpasyncclient</artifactId>
+      <version>${httpasyncclient.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -62,6 +69,12 @@
       <groupId>com.github.wnameless</groupId>
       <artifactId>json-flattener</artifactId>
       <version>${json-flattener.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.mashape.unirest</groupId>
+      <artifactId>unirest-java</artifactId>
+      <version>${unirest.version}</version>
     </dependency>
     
     <dependency>
