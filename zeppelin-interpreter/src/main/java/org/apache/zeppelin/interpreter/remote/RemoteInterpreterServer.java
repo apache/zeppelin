@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.remote;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -952,6 +953,73 @@ public class RemoteInterpreterServer
         logger.error(e.getMessage(), e);
         return ByteBuffer.allocate(0);
       }
+    }
+  }
+
+  @Override
+  public ByteBuffer resourceInvokeMethod(
+      String noteId, String paragraphId, String resourceName, String invokeMessage) {
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeMessage, InvokeResourceMethodEventMessage.class);
+
+    Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
+    if (resource == null || resource.get() == null) {
+      return ByteBuffer.allocate(0);
+    } else {
+      try {
+        Object o = resource.get();
+        Method method = o.getClass().getMethod(
+            message.methodName,
+            message.getParamTypes());
+        Object ret = method.invoke(o, message.params);
+        if (message.shouldPutResultIntoResourcePool()) {
+          // if return resource name is specified,
+          // then put result into resource pool
+          // and return empty byte buffer
+          resourcePool.put(
+              noteId,
+              paragraphId,
+              message.returnResourceName,
+              ret);
+          return ByteBuffer.allocate(0);
+        } else {
+          // if return resource name is not specified,
+          // then return serialized result
+          ByteBuffer serialized = Resource.serializeObject(ret);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
+        }
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+        return ByteBuffer.allocate(0);
+      }
+    }
+  }
+
+  /**
+   * Get payload of resource from remote
+   * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
+   * @param object java serialized of the object
+   * @throws TException
+   */
+  @Override
+  public void resourceResponseInvokeMethod(
+      String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeResourceMethodEventMessage, InvokeResourceMethodEventMessage.class);
+
+    if (message.shouldPutResultIntoResourcePool()) {
+      Resource resource = resourcePool.get(
+          message.resourceId.getNoteId(),
+          message.resourceId.getParagraphId(),
+          message.returnResourceName,
+          true);
+      eventClient.putResponseInvokeMethod(message, resource);
+    } else {
+      eventClient.putResponseInvokeMethod(message, object);
     }
   }
 

@@ -31,4 +31,24 @@ public interface ResourcePoolConnector {
    * @return
    */
   public Object readResource(ResourceId id);
+
+  /**
+   * Invoke method of Resource and get return
+   * @return
+   */
+  public Object invokeMethod(
+      ResourceId id,
+      String methodName,
+      Class[] paramTypes,
+      Object[] params);
+
+  /**
+   * Invoke method, put result into resource pool and return
+   */
+  public Resource invokeMethod(
+      ResourceId id,
+      String methodName,
+      Class[] paramTypes,
+      Object[] params,
+      String returnResourceName);
 }
