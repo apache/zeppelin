@@ -103,6 +103,13 @@ public class Resource {
   }
 
 
+  /**
+   * Call a method of the object that this resource holds
+   * @param methodName name of method to call
+   * @param paramTypes method parameter types
+   * @param params method parameter values
+   * @return return value of the method
+   */
   public Object invokeMethod(
       String methodName, Class [] paramTypes, Object [] params) {
     if (r != null) {
@@ -121,6 +128,14 @@ public class Resource {
     }
   }
 
+  /**
+   * Call a method of the object that this resource holds and save return value as a resource
+   * @param methodName name of method to call
+   * @param paramTypes method parameter types
+   * @param params method parameter values
+   * @param returnResourceName name of resource that return value will be saved
+   * @return Resource that holds return value
+   */
   public Resource invokeMethod(
       String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
     if (r != null) {
