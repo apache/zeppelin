@@ -31,11 +31,6 @@ public class ActionResponse {
   private final List<AggWrapper> aggregations = new LinkedList<>();
 
 
-//  public ActionResponse source(String source) {
-//    this.source = source;
-//    return this;
-//  }
-
   public ActionResponse succeeded(boolean succeeded) {
     this.succeeded = succeeded;
     return this;
@@ -44,19 +39,6 @@ public class ActionResponse {
   public boolean isSucceeded() {
     return succeeded;
   }
-
-//  public String getSource() {
-//    return source;
-//  }
-
-//  public String getId() {
-//    return id;
-//  }
-
-//  public ActionResponse id(String id) {
-//    this.id = id;
-//    return this;
-//  }
 
   public ActionResponse totalHits(long totalHits) {
     this.totalHits = totalHits;
