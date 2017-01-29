@@ -37,6 +37,7 @@
       <outputDirectory>/</outputDirectory>
       <includes>
         <include>*.jar</include>
+        <include>revision.txt</include>
       </includes>
     </fileSet>
     <fileSet>
