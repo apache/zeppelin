@@ -64,7 +64,7 @@ abstract public class AbstractZeppelinIT {
 
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
-        + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]");
+        + "//div[contains(@class, 'control')]//span[2][contains(.,'" + state + "')]");
     WebElement element = pollingWait(locator, MAX_PARAGRAPH_TIMEOUT_SEC);
     return element.isDisplayed();
   }

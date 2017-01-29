@@ -13,24 +13,26 @@ limitations under the License.
 -->
 
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
-  <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
-    <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;"
-       tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
-      <span class="fa fa-tasks"></span>
-      {{paragraph.runtimeInfos.jobUrl.label}}
-    </a>
-  </span>
-  <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1">
-    <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
-          data-toggle="dropdown" type="button">
-      <span class="fa fa-tasks"></span>
-      {{paragraph.runtimeInfos.jobUrl.label}}S
+  <span>
+    <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
+      <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;"
+         tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
+        <span class="fa fa-tasks"></span>
+        {{paragraph.runtimeInfos.jobUrl.label}}
+      </a>
     </span>
-    <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
-      <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values">
-        <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
-      </li>
-    </ul>
+    <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1">
+      <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
+            data-toggle="dropdown" type="button">
+        <span class="fa fa-tasks"></span>
+        {{paragraph.runtimeInfos.jobUrl.label}}S
+      </span>
+      <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
+        <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values">
+          <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+        </li>
+      </ul>
+    </span>
   </span>
   <span>
     {{paragraph.status}}
