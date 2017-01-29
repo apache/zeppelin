@@ -17,8 +17,12 @@
 {
   "type" : "SPELL",
   "name" : "translator-spell",
-  "description" : "with Google Translation API (examaple)",
+  "description" : "Translate langauges using Google API (examaple)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-translator",
   "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-globe '></i>"
+  "icon" : "<i class='fa fa-globe '></i>",
+  "spell": {
+    "magic": "%translator",
+    "usage": "%translator <source>-<target> <access-key> <TEXT>"
+  }
 }

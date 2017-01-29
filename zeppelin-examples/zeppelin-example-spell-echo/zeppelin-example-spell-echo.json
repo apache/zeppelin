@@ -20,5 +20,9 @@
   "description" : "Return just what receive (example)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-echo",
   "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-repeat'></i>"
+  "icon" : "<i class='fa fa-repeat'></i>",
+  "spell": {
+    "magic": "%echo",
+    "usage": "%echo <TEXT>"
+  }
 }

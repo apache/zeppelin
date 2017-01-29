@@ -17,8 +17,12 @@
 {
   "type" : "SPELL",
   "name" : "flowchart-spell",
-  "description" : "with Flowchart.js (example)",
+  "description" : "Draw flowchart using http://flowchart.js.org (example)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-flowchart",
   "license" : "Apache-2.0",
-  "icon" : "<i class='fa fa-random'></i>"
+  "icon" : "<i class='fa fa-random'></i>",
+  "spell": {
+    "magic": "%flowchart",
+    "usage": "%flowchart <TEXT>"
+  }
 }
