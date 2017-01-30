@@ -1,0 +1,529 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n# Zeppelin Workflow\n#### Describes how various interpreters can be used as workflows.",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:00 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eZeppelin Workflow\u003c/h1\u003e\n\u003ch4\u003eDescribes how various interpreters can be used as workflows.\u003c/h4\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483311356894_400311605",
+      "id": "20170101-145556_1340440758",
+      "dateCreated": "Jan 1, 2017 2:55:56 PM",
+      "dateStarted": "Jan 1, 2017 7:00:00 PM",
+      "dateFinished": "Jan 1, 2017 7:00:00 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027well\u0027\u003e\n    \u003cdiv class\u003d\u0027row\u0027\u003e\n      \u003cdiv class\u003d\u0027col-md-12 text-center text-warning\u0027\u003e\n        Normaly Execute Cycle\n      \u003c/div\u003e\n    \u003c/div\u003e\n\u003c/div\u003e\n\u003cdiv class\u003d\u0027row\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-right text-warning\u0027\u003e\n    For example ---\u003e\n  \u003c/div\u003e\n\u003c/div\u003e",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:00 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027well\u0027\u003e\n    \u003cdiv class\u003d\u0027row\u0027\u003e\n      \u003cdiv class\u003d\u0027col-md-12 text-center text-warning\u0027\u003e\n        Normaly Execute Cycle\n      \u003c/div\u003e\n    \u003c/div\u003e\n\u003c/div\u003e\n\u003cdiv class\u003d\u0027row\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-right text-warning\u0027\u003e\n    For example ---\u003e\n  \u003c/div\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483312806703_-1252533564",
+      "id": "20170101-152006_1383393641",
+      "dateCreated": "Jan 1, 2017 3:20:06 PM",
+      "dateStarted": "Jan 1, 2017 7:00:01 PM",
+      "dateFinished": "Jan 1, 2017 7:00:01 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n\nprintln(\"%html \u003ch1 class\u003d\u0027text-primary\u0027\u003ePlease Execute this paragraph\u003c/h1\u003e\")\n\nz.run(\"2C6AEZVY2\", \"20170101-152325_935191391\")\nz.run(\"2C6AEZVY2\", \"20170101-152357_227883083\")\nz.run(\"2C6AEZVY2\", \"20170101-152408_302376653\")",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:01 PM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1 class\u003d\u0027text-primary\u0027\u003ePlease Execute this paragraph\u003c/h1\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313002204_284228519",
+      "id": "20170101-152322_987058228",
+      "dateCreated": "Jan 1, 2017 3:23:22 PM",
+      "dateStarted": "Jan 1, 2017 7:00:01 PM",
+      "dateFinished": "Jan 1, 2017 7:00:04 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nThread.sleep(3000)\n\nprintln(\"%html \u003ch1\u003eSPARK DONE\u003c/h1\u003e\")\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:01 PM",
+      "config": {
+        "colWidth": 2.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "tableHide": false,
+        "title": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eSPARK DONE\u003c/h1\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313005407_295016813",
+      "id": "20170101-152325_935191391",
+      "dateCreated": "Jan 1, 2017 3:23:25 PM",
+      "dateStarted": "Jan 1, 2017 7:00:09 PM",
+      "dateFinished": "Jan 1, 2017 7:00:15 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n# MARKDOWN DONE",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:01 PM",
+      "config": {
+        "colWidth": 2.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eMARKDOWN DONE\u003c/h1\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313037019_1351567941",
+      "id": "20170101-152357_227883083",
+      "dateCreated": "Jan 1, 2017 3:23:57 PM",
+      "dateStarted": "Jan 1, 2017 7:00:04 PM",
+      "dateFinished": "Jan 1, 2017 7:00:04 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003ch1\u003eANGULAR DONE\u003c/h1\u003e\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:02 PM",
+      "config": {
+        "colWidth": 2.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003ch1\u003eANGULAR DONE\u003c/h1\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313048080_-1861070051",
+      "id": "20170101-152408_302376653",
+      "dateCreated": "Jan 1, 2017 3:24:08 PM",
+      "dateStarted": "Jan 1, 2017 7:00:04 PM",
+      "dateFinished": "Jan 1, 2017 7:00:04 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-primary\u0027\u003e\n    Workflow execute\n  \u003c/div\u003e\n\u003c/div\u003e\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:02 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cbr /\u003e\n\u003cbr /\u003e\n\u003cdiv class\u003d\u0027row well\u0027\u003e\n  \u003cdiv class\u003d\u0027col-md-12 text-center text-primary\u0027\u003e\n    Workflow execute\n  \u003c/div\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313003802_1345365986",
+      "id": "20170101-152323_1238754452",
+      "dateCreated": "Jan 1, 2017 3:23:23 PM",
+      "dateStarted": "Jan 1, 2017 7:00:02 PM",
+      "dateFinished": "Jan 1, 2017 7:00:02 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\n\nprintln(\"%html \u003ch1 class\u003d\u0027text-primary\u0027\u003eBased Thread workflow executor\u003c/h1\u003e\")\nnew Thread(new Runnable {\n    def run() {\n        z.run(\"2C6AEZVY2\", \"20170101-152406_303378533\")\n        var job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152406_303378533\").getJobStatus();\n        while (job.isPending || job.isRunning) {\n            Thread.sleep(1000)\n            job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152406_303378533\").getJobStatus()\n        }\n        \n        z.run(\"2C6AEZVY2\", \"20170101-152404_1766974937\")\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152404_1766974937\").getJobStatus();\n        \n        while (job.isPending || job.isRunning) {\n            Thread.sleep(500)\n            job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152404_1766974937\").getJobStatus();\n        }\n        z.run(\"2C6AEZVY2\", \"20170101-164138_1051383091\")\n                println(\"ex Hello\")\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-164138_1051383091\").getJobStatus();\n        while (job.isPending || job.isRunning) {\n            Thread.sleep(500)\n            job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-164138_1051383091\").getJobStatus();\n        }\n    }\n}).start",
+      "user": "anonymous",
+      "dateUpdated": "Jan 2, 2017 9:16:42 AM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1 class\u003d\u0027text-primary\u0027\u003eBased Thread workflow executor\u003c/h1\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313046793_1537817057",
+      "id": "20170101-152406_916644710",
+      "dateCreated": "Jan 1, 2017 3:24:06 PM",
+      "dateStarted": "Jan 2, 2017 9:16:42 AM",
+      "dateFinished": "Jan 2, 2017 9:16:43 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nThread.sleep(3000)\nprintln(\"%html \u003ch1\u003eSPARK DONE\u003c/h1\u003e\")\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 2, 2017 9:00:32 AM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eSPARK DONE\u003c/h1\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313046170_1692870864",
+      "id": "20170101-152406_303378533",
+      "dateCreated": "Jan 1, 2017 3:24:06 PM",
+      "dateStarted": "Jan 2, 2017 9:16:44 AM",
+      "dateFinished": "Jan 2, 2017 9:16:47 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n# MARKDOWN DONE",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:03 PM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eMARKDOWN DONE\u003c/h1\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483313044517_-1645625991",
+      "id": "20170101-152404_1766974937",
+      "dateCreated": "Jan 1, 2017 3:24:04 PM",
+      "dateStarted": "Jan 2, 2017 9:16:49 AM",
+      "dateFinished": "Jan 2, 2017 9:16:49 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%angular\n\u003ch1\u003eANGULAR DONE\u003c/h1\u003e\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 1, 2017 7:00:03 PM",
+      "config": {
+        "colWidth": 3.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/undefined",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003ch1\u003eANGULAR DONE\u003c/h1\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483317698107_-128478476",
+      "id": "20170101-164138_1051383091",
+      "dateCreated": "Jan 1, 2017 4:41:38 PM",
+      "dateStarted": "Jan 2, 2017 9:16:51 AM",
+      "dateFinished": "Jan 2, 2017 9:16:51 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "import scala.concurrent.{Await, Future, future}\nimport scala.concurrent.ExecutionContext.Implicits.global\nimport scala.util.{Failure, Success}\n\ndef printWorkflowResult(msg:String): Unit \u003d {\n    println(\"HEEEE\")\n}\n\nval myWorkflow \u003d Future {\n    z.run(\"2C6AEZVY2\", \"20170101-152406_303378533\")\n    var job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152406_303378533\").getJobStatus();\n    while (job.isPending || job.isRunning) {\n        Thread.sleep(1000)\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152406_303378533\").getJobStatus()\n    }\n    \n    if (job.isFinished \u003d\u003d false) {\n        new Exception(\"Fist job is fail!\")\n    }\n    \n    println(\"dflkjsdlkfjdslk\")\n    \n    z.run(\"2C6AEZVY2\", \"20170101-152404_1766974937\")\n    job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152404_1766974937\").getJobStatus();\n    \n    while (job.isPending || job.isRunning) {\n        Thread.sleep(500)\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-152404_1766974937\").getJobStatus();\n    }\n    \n    if (job.isFinished \u003d\u003d false) {\n        new Exception(\"second job is fail!\")\n    }\n    \n    z.run(\"2C6AEZVY2\", \"20170101-164138_1051383091\")\n            println(\"ex Hello\")\n    job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-164138_1051383091\").getJobStatus();\n    while (job.isPending || job.isRunning) {\n        Thread.sleep(500)\n        job \u003d z.getZeppelinJobStatus(\"2C6AEZVY2\", \"20170101-164138_1051383091\").getJobStatus();\n    }\n\n    if (job.isFinished \u003d\u003d false) {\n        new Exception(\"third job is fail!\")\n    }\n \n    val result:String \u003d \"Done\"\n    result\n}\n\nmyWorkflow.onComplete {\n    case Success(msg) \u003d\u003e println(\"Got the callback, meaning \" + msg)\n    case Failure(e) \u003d\u003e e.printStackTrace\n}\n\nmyWorkflow onSuccess {\n    case result \u003d\u003e printWorkflowResult(\"Workflow is Done\")\n}\n\nmyWorkflow onFailure {\n    case failure \u003d\u003e printWorkflowResult(\"Workflow is Fail\")\n}\n\nprintln(\"Workflow Execute\")\n\n\n\n\n\nThread.sleep(5000)",
+      "user": "anonymous",
+      "dateUpdated": "Jan 2, 2017 9:10:23 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport scala.concurrent.{Await, Future, future}\n\nimport scala.concurrent.ExecutionContext.Implicits.global\n\nimport scala.util.{Failure, Success}\n\nprintWorkflowResult: (msg: String)Unit\n\nmyWorkflow: scala.concurrent.Future[String] \u003d scala.concurrent.impl.Promise$DefaultPromise@2f0159a2\nWorkflow Execute\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1483326003200_406855249",
+      "id": "20170101-190003_224666894",
+      "dateCreated": "Jan 1, 2017 7:00:03 PM",
+      "dateStarted": "Jan 2, 2017 9:10:23 AM",
+      "dateFinished": "Jan 2, 2017 9:10:34 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 2, 2017 8:44:58 AM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483375498856_2033485473",
+      "id": "20170102-084458_592045884",
+      "dateCreated": "Jan 2, 2017 8:44:58 AM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 2, 2017 8:45:00 AM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483375500500_-1206885088",
+      "id": "20170102-084500_1266132957",
+      "dateCreated": "Jan 2, 2017 8:45:00 AM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 2, 2017 8:44:57 AM",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1483375497136_1427121206",
+      "id": "20170102-084457_301741370",
+      "dateCreated": "Jan 2, 2017 8:44:57 AM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Zeppelin Tutorial/Workflow Tutorial",
+  "id": "2C6AEZVY2",
+  "angularObjects": {
+    "2C8AHX3W9:shared_process": [],
+    "2C67YNHQU:shared_process": [],
+    "2C6B7JAYS:shared_process": [],
+    "2C548UHDB:shared_process": [],
+    "2C53F7RSM:shared_process": [],
+    "2C7E2MKRM:shared_process": [],
+    "2C5C149TR:shared_process": [],
+    "2C5VB3W86:shared_process": [],
+    "2C6Q32VJ2:shared_process": [],
+    "2C4G9MQGQ:shared_process": [],
+    "2C4QKZTAQ:shared_process": [],
+    "2C76ZHMJ8:shared_process": [],
+    "2C6KBJDXK:shared_process": [],
+    "2C78P62FM:shared_process": [],
+    "2C7YVY1JE:shared_process": [],
+    "2C6VZEHC3:shared_process": [],
+    "2C6P5GQ63:shared_process": [],
+    "2C851PFXZ:shared_process": [],
+    "2C6BHV77Q:shared_process": []
+  },
+  "config": {
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}
