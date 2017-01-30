@@ -37,9 +37,8 @@ limitations under the License.
          </div>
        </ul>
     </div>
+    <br/><br/><br/>
   </div>
-  <br/><br/><br/>
-</div>
 
   <!-- Load notebook -->
 <div ng-show="home.notebookHome" id="{{currentParagraph.id}}_paragraphColumn_main"
@@ -49,9 +48,10 @@ limitations under the License.
      ng-class="columnWidthClass(currentParagraph.config.colWidth)"
      class="paragraph-col">
    <div id="{{currentParagraph.id}}_paragraphColumn"
-     ng-if="currentParagraph.result"
+     ng-if="currentParagraph.config.results"
      ng-include src="'app/notebook/paragraph/paragraph.html'"
      ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
      ng-hide="currentParagraph.config.tableHide && home.viewOnly">
    </div>
  </div>
+</div>
