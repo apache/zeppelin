@@ -76,6 +76,7 @@
 .spellInfo .spellUsage {
   margin-top: 8px;
   margin-bottom: 4px;
+  width: 500px;
 }
 
 .heliumPackageList .heliumPackageDisabledArtifact {
