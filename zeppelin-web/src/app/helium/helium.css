@@ -51,11 +51,32 @@
   margin-top: 0;
 }
 
-.heliumPackageList .heliumPackageName span {
-  font-size: 10px;
+.heliumPackageList .heliumPackageName .heliumType {
+  font-size: 13px;
   color: #AAAAAA;
 }
 
+.spellInfo {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.spellInfo .spellInfoDesc {
+  font-size: 13px;
+  color: #AAAAAA;
+}
+
+.spellInfo .spellInfoValue {
+  font-size: 13px;
+  font-style: italic;
+  color: #444444;
+}
+
+.spellInfo .spellUsage {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
 
 .heliumPackageList .heliumPackageDisabledArtifact {
   color:gray;
