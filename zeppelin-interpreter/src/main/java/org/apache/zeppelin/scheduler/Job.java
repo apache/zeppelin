@@ -64,7 +64,6 @@ public abstract class Job {
     }
   }
 
-
   private String jobName;
   String id;
 
@@ -133,6 +132,13 @@ public abstract class Job {
 
   public Status getStatus() {
     return status;
+  }
+
+  /**
+   * just set status without notifying to listeners for spell.
+   */
+  public void setStatusWithoutNotification(Status status) {
+    this.status = status;
   }
 
   public void setStatus(Status status) {
@@ -257,4 +263,8 @@ public abstract class Job {
   }
 
   public abstract void setResult(Object results);
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 }

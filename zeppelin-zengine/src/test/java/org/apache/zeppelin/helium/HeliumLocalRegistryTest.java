@@ -50,7 +50,7 @@ public class HeliumLocalRegistryTest {
 
     // when
     Gson gson = new Gson();
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "app1",
         "desc1",
         "artifact1",

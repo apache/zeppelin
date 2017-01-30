@@ -25,7 +25,7 @@ limitations under the License.
   <!-- Run / Cancel button -->
   <span ng-if="!revisionView">
     <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
-          ng-click="runParagraph(getEditorValue())"
+          ng-click="runParagraphFromButton(getEditorValue())"
           ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top"
           tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+c)"

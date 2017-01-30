@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
@@ -79,7 +78,7 @@ public class HeliumTest {
 
     // when
     registry1.add(new HeliumPackage(
-        HeliumPackage.Type.APPLICATION,
+        HeliumType.APPLICATION,
         "name1",
         "desc1",
         "artifact1",
@@ -89,7 +88,7 @@ public class HeliumTest {
         ""));
 
     registry2.add(new HeliumPackage(
-        HeliumPackage.Type.APPLICATION,
+        HeliumType.APPLICATION,
         "name2",
         "desc2",
         "artifact2",

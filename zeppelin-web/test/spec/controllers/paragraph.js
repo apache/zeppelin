@@ -41,10 +41,6 @@ describe('Controller: ParagraphCtrl', function() {
     });
   });
 
-  it('should return "TEXT" by default when getResultType() is called with no parameter', function() {
-    expect(scope.getResultType()).toEqual('TEXT');
-  });
-
   it('should have this array of values for "colWidthOption"', function() {
     expect(scope.colWidthOption).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   });

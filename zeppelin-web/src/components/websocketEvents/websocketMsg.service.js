@@ -159,6 +159,31 @@ function websocketMsgSrv($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
 
+    paragraphExecutedBySpell: function(paragraphId, paragraphTitle,
+                                       paragraphText, paragraphResultsMsg,
+                                       paragraphStatus, paragraphErrorMessage,
+                                       paragraphConfig, paragraphParams) {
+      websocketEvents.sendNewEvent({
+        op: 'PARAGRAPH_EXECUTED_BY_SPELL',
+        data: {
+          id: paragraphId,
+          title: paragraphTitle,
+          paragraph: paragraphText,
+          results: {
+            code: paragraphStatus,
+            msg: paragraphResultsMsg.map(dataWithType => {
+              let serializedData = dataWithType.data;
+              return { type: dataWithType.type, data: serializedData, };
+            })
+          },
+          status: paragraphStatus,
+          errorMessage: paragraphErrorMessage,
+          config: paragraphConfig,
+          params: paragraphParams
+        }
+      });
+    },
+
     runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
       websocketEvents.sendNewEvent({
         op: 'RUN_PARAGRAPH',

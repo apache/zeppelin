@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.rest;
 
-import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
@@ -107,22 +106,22 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("visualizations/load")
+  @Path("bundle/load")
   @Produces("text/javascript")
-  public Response visualizationLoad(@QueryParam("refresh") String refresh) {
+  public Response bundleLoad(@QueryParam("refresh") String refresh) {
     try {
       File bundle;
       if (refresh != null && refresh.equals("true")) {
-        bundle = helium.recreateVisualizationBundle();
+        bundle = helium.recreateBundle();
       } else {
-        bundle = helium.getVisualizationFactory().getCurrentBundle();
+        bundle = helium.getBundleFactory().getCurrentCacheBundle();
       }
 
       if (bundle == null) {
         return Response.ok().build();
       } else {
-        String visBundle = FileUtils.readFileToString(bundle);
-        return Response.ok(visBundle).build();
+        String stringifiedBundle = FileUtils.readFileToString(bundle);
+        return Response.ok(stringifiedBundle).build();
       }
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
@@ -160,15 +159,15 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("visualizationOrder")
+  @Path("order/visualization")
   public Response getVisualizationPackageOrder() {
-    List<String> order = helium.getVisualizationPackageOrder();
+    List<String> order = helium.setVisualizationPackageOrder();
     return new JsonResponse(Response.Status.OK, order).build();
   }
 
   @POST
-  @Path("visualizationOrder")
-  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
+  @Path("order/visualization")
+  public Response getVisualizationPackageOrder(String orderedPackageNameList) {
     List<String> orderedList = gson.fromJson(
         orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
 

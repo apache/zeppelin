@@ -45,20 +45,20 @@ public class Helium {
   private final File registryCacheDir;
 
   private final Gson gson;
-  private final HeliumVisualizationFactory visualizationFactory;
+  private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
 
   public Helium(
       String heliumConfPath,
       String registryPaths,
       File registryCacheDir,
-      HeliumVisualizationFactory visualizationFactory,
+      HeliumBundleFactory bundleFactory,
       HeliumApplicationFactory applicationFactory)
       throws IOException {
     this.heliumConfPath = heliumConfPath;
     this.registryPaths = registryPaths;
     this.registryCacheDir = registryCacheDir;
-    this.visualizationFactory = visualizationFactory;
+    this.bundleFactory = bundleFactory;
     this.applicationFactory = applicationFactory;
 
     GsonBuilder builder = new GsonBuilder();
@@ -95,8 +95,8 @@ public class Helium {
     return applicationFactory;
   }
 
-  public HeliumVisualizationFactory getVisualizationFactory() {
-    return visualizationFactory;
+  public HeliumBundleFactory getBundleFactory() {
+    return bundleFactory;
   }
 
   private synchronized HeliumConf loadConf(String path) throws IOException {
@@ -145,14 +145,14 @@ public class Helium {
     Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo();
 
     // clear visualization display order
-    List<String> packageOrder = heliumConf.getVisualizationDisplayOrder();
+    List<String> packageOrder = heliumConf.getBundleDisplayOrder();
     List<String> clearedOrder = new LinkedList<>();
     for (String pkgName : packageOrder) {
       if (all.containsKey(pkgName)) {
         clearedOrder.add(pkgName);
       }
     }
-    heliumConf.setVisualizationDisplayOrder(clearedOrder);
+    heliumConf.setBundleDisplayOrder(clearedOrder);
 
     // clear enabled package
     Map<String, String> enabledPackages = heliumConf.getEnabledPackages();
@@ -215,8 +215,8 @@ public class Helium {
     return null;
   }
 
-  public File recreateVisualizationBundle() throws IOException {
-    return visualizationFactory.bundle(getVisualizationPackagesToBundle(), true);
+  public File recreateBundle() throws IOException {
+    return bundleFactory.buildBundle(getBundlePackagesToBundle(), true);
   }
 
   public void enable(String name, String artifact) throws IOException {
@@ -231,8 +231,8 @@ public class Helium {
     heliumConf.enablePackage(name, artifact);
 
     // if package is visualization, rebuild bundle
-    if (pkgInfo.getPkg().getType() == HeliumPackage.Type.VISUALIZATION) {
-      visualizationFactory.bundle(getVisualizationPackagesToBundle());
+    if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
+      bundleFactory.buildBundle(getBundlePackagesToBundle());
     }
 
     save();
@@ -247,9 +247,9 @@ public class Helium {
 
     heliumConf.disablePackage(name);
 
-    HeliumPackageSearchResult pkg = getPackageInfo(name, artifact);
-    if (pkg == null || pkg.getPkg().getType() == HeliumPackage.Type.VISUALIZATION) {
-      visualizationFactory.bundle(getVisualizationPackagesToBundle());
+    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
+    if (pkgInfo == null || HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
+      bundleFactory.buildBundle(getBundlePackagesToBundle());
     }
 
     save();
@@ -278,7 +278,7 @@ public class Helium {
 
     for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo().values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
-        if (pkg.getPkg().getType() == HeliumPackage.Type.APPLICATION && pkg.isEnabled()) {
+        if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
           ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
               pkg.getPkg().getResources(),
               paragraph.getNote().getId(),
@@ -299,15 +299,15 @@ public class Helium {
   }
 
   /**
-   * Get enabled visualization packages
+   * Get enabled buildBundle packages
    *
-   * @return ordered list of enabled visualization package
+   * @return ordered list of enabled buildBundle package
    */
-  public List<HeliumPackage> getVisualizationPackagesToBundle() {
+  public List<HeliumPackage> getBundlePackagesToBundle() {
     Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo();
-    List<String> visOrder = heliumConf.getVisualizationDisplayOrder();
+    List<String> visOrder = heliumConf.getBundleDisplayOrder();
 
-    List<HeliumPackage> orderedVisualizationPackages = new LinkedList<>();
+    List<HeliumPackage> orderedBundlePackages = new LinkedList<>();
 
     // add enabled packages in visOrder
     for (String name : visOrder) {
@@ -316,8 +316,8 @@ public class Helium {
         continue;
       }
       for (HeliumPackageSearchResult pkgInfo : versions) {
-        if (pkgInfo.getPkg().getType() == HeliumPackage.Type.VISUALIZATION && pkgInfo.isEnabled()) {
-          orderedVisualizationPackages.add(pkgInfo.getPkg());
+        if (canBundle(pkgInfo)) {
+          orderedBundlePackages.add(pkgInfo.getPkg());
           allPackages.remove(name);
           break;
         }
@@ -325,28 +325,35 @@ public class Helium {
     }
 
     // add enabled packages not in visOrder
-    for (List<HeliumPackageSearchResult> pkgs : allPackages.values()) {
-      for (HeliumPackageSearchResult pkg : pkgs) {
-        if (pkg.getPkg().getType() == HeliumPackage.Type.VISUALIZATION && pkg.isEnabled()) {
-          orderedVisualizationPackages.add(pkg.getPkg());
+    for (List<HeliumPackageSearchResult> pkgInfos : allPackages.values()) {
+      for (HeliumPackageSearchResult pkgInfo : pkgInfos) {
+        if (canBundle(pkgInfo)) {
+          orderedBundlePackages.add(pkgInfo.getPkg());
           break;
         }
       }
     }
 
-    return orderedVisualizationPackages;
+    return orderedBundlePackages;
+  }
+
+  public boolean canBundle(HeliumPackageSearchResult pkgInfo) {
+    return (pkgInfo.isEnabled() &&
+        HeliumPackage.isBundleType(pkgInfo.getPkg().getType()));
   }
 
   /**
    * Get enabled package list in order
    * @return
    */
-  public List<String> getVisualizationPackageOrder() {
+  public List<String> setVisualizationPackageOrder() {
     List orderedPackageList = new LinkedList<>();
-    List<HeliumPackage> packages = getVisualizationPackagesToBundle();
+    List<HeliumPackage> packages = getBundlePackagesToBundle();
 
     for (HeliumPackage pkg : packages) {
-      orderedPackageList.add(pkg.getName());
+      if (HeliumType.VISUALIZATION == pkg.getType()) {
+        orderedPackageList.add(pkg.getName());
+      }
     }
 
     return orderedPackageList;
@@ -354,10 +361,10 @@ public class Helium {
 
   public void setVisualizationPackageOrder(List<String> orderedPackageList)
       throws IOException {
-    heliumConf.setVisualizationDisplayOrder(orderedPackageList);
+    heliumConf.setBundleDisplayOrder(orderedPackageList);
 
-    // if package is visualization, rebuild bundle
-    visualizationFactory.bundle(getVisualizationPackagesToBundle());
+    // if package is visualization, rebuild buildBundle
+    bundleFactory.buildBundle(getBundlePackagesToBundle());
 
     save();
   }

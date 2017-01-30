@@ -103,5 +103,9 @@
       <outputDirectory>/lib/node_modules/zeppelin-tabledata</outputDirectory>
       <directory>../zeppelin-web/src/app/tabledata</directory>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/lib/node_modules/zeppelin-spell</outputDirectory>
+      <directory>../zeppelin-web/src/app/spell</directory>
+    </fileSet>
   </fileSets>
 </assembly>

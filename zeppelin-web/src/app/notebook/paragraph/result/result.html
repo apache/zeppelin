@@ -37,8 +37,7 @@ limitations under the License.
       <!-- graph -->
       <div id="p{{id}}_graph"
            class="graphContainer"
-           ng-class="{'noOverflow': graphMode=='table'}"
-           >
+           ng-class="{'noOverflow': graphMode=='table'}">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="p{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id">
@@ -67,13 +66,19 @@ limitations under the License.
            tooltip="Scroll Top"></div>
     </div>
 
-    <div id="p{{id}}_html"
-         class="resultContained"
+    <div id="p{{id}}_custom" class="resultContained"
+      ng-if="!isDefaultDisplay()">
+    </div>
+
+    <div id="p{{id}}_elem" class="resultContained"
+         ng-if="type == 'ELEMENT'">
+    </div>
+
+    <div id="p{{id}}_html" class="resultContained"
          ng-if="type == 'HTML'">
     </div>
 
-    <div id="p{{id}}_angular"
-         class="resultContained"
+    <div id="p{{id}}_angular" class="resultContained"
          ng-if="type == 'ANGULAR'">
     </div>
 

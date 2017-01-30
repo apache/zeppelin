@@ -19,6 +19,10 @@ import PiechartVisualization from '../../../visualization/builtins/visualization
 import AreachartVisualization from '../../../visualization/builtins/visualization-areachart';
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart';
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
+import {
+  DefaultDisplayType,
+  SpellResult,
+} from '../../../spell'
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
@@ -150,13 +154,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   // image data
   $scope.imageData;
 
-  $scope.init = function(result, config, paragraph, index) {
-    console.log('result controller init %o %o %o', result, config, index);
+  // queue for append output
+  const textResultQueueForAppend = [];
 
+  $scope.init = function(result, config, paragraph, index) {
     // register helium plugin vis
-    var heliumVis = heliumService.get();
-    console.log('Helium visualizations %o', heliumVis);
-    heliumVis.forEach(function(vis) {
+    var visBundles = heliumService.getVisualizationBundles();
+    visBundles.forEach(function(vis) {
       $scope.builtInTableDataVisualizationList.push({
         id: vis.id,
         name: vis.name,
@@ -171,11 +175,30 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     renderResult($scope.type);
   };
 
+  function isDOMLoaded(targetElemId) {
+    const elem = angular.element(`#${targetElemId}`);
+    return elem.length;
+  }
+
+  function retryUntilElemIsLoaded(targetElemId, callback) {
+    function retry() {
+      if (!isDOMLoaded(targetElemId)) {
+        $timeout(retry, 10);
+        return;
+      }
+
+      const elem = angular.element(`#${targetElemId}`);
+      callback(elem);
+    }
+
+    $timeout(retry);
+  }
+
   $scope.$on('updateResult', function(event, result, newConfig, paragraphRef, index) {
     if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
       return;
     }
-    console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, index);
+
     var refresh = !angular.equals(newConfig, $scope.config) ||
       !angular.equals(result.type, $scope.type) ||
       !angular.equals(result.data, data);
@@ -196,14 +219,10 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
       (paragraph.status === 'RUNNING' || paragraph.status === 'PENDING')) {
-      appendTextOutput(data.data);
-    }
-  });
 
-  $scope.$on('updateParagraphOutput', function(event, data) {
-    if (paragraph.id === data.paragraphId &&
-      resultIndex === data.index) {
-      clearTextOutput();
+      if (DefaultDisplayType.TEXT !== $scope.type) {
+        $scope.type = DefaultDisplayType.TEXT;
+      }
       appendTextOutput(data.data);
     }
   });
@@ -250,8 +269,40 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  var renderResult = function(type, refresh) {
-    var activeApp;
+  $scope.createDisplayDOMId = function(baseDOMId, type) {
+    if (type === DefaultDisplayType.TABLE) {
+      return `${baseDOMId}_graph`;
+    } else if (type === DefaultDisplayType.HTML) {
+      return `${baseDOMId}_html`;
+    } else if (type === DefaultDisplayType.ANGULAR) {
+      return `${baseDOMId}_angular`;
+    } else if (type === DefaultDisplayType.TEXT) {
+      return `${baseDOMId}_text`;
+    } else if (type === DefaultDisplayType.ELEMENT) {
+      return `${baseDOMId}_elem`;
+    } else {
+      console.error(`Cannot create display DOM Id due to unknown display type: ${type}`);
+    }
+  };
+
+  $scope.renderDefaultDisplay = function(targetElemId, type, data, refresh) {
+    if (type === DefaultDisplayType.TABLE) {
+      $scope.renderGraph(targetElemId, $scope.graphMode, refresh);
+    } else if (type === DefaultDisplayType.HTML) {
+      renderHtml(targetElemId, data);
+    } else if (type === DefaultDisplayType.ANGULAR) {
+      renderAngular(targetElemId, data);
+    } else if (type === DefaultDisplayType.TEXT) {
+      renderText(targetElemId, data);
+    } else if (type === DefaultDisplayType.ELEMENT) {
+      renderElem(targetElemId, data);
+    } else {
+      console.error(`Unknown Display Type: ${type}`);
+    }
+  };
+
+  const renderResult = function(type, refresh) {
+    let activeApp;
     if (enableHelium) {
       getSuggestions();
       getApplicationStates();
@@ -259,228 +310,291 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     if (activeApp) {
-      var app = _.find($scope.apps, {id: activeApp});
-      renderApp(app);
+      const appState = _.find($scope.apps, {id: activeApp});
+      renderApp(`p${appState.id}`, appState);
     } else {
-      if (type === 'TABLE') {
-        $scope.renderGraph($scope.graphMode, refresh);
-      } else if (type === 'HTML') {
-        renderHtml();
-      } else if (type === 'ANGULAR') {
-        renderAngular();
-      } else if (type === 'TEXT') {
-        renderText();
+      if (!DefaultDisplayType[type]) {
+        const spell = heliumService.getSpellByMagic(type);
+        if (!spell) {
+          console.error(`Can't execute spell due to unknown display type: ${type}`);
+          return;
+        }
+        $scope.renderCustomDisplay(type, data, spell);
+      } else {
+        const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type);
+        $scope.renderDefaultDisplay(targetElemId, type, data, refresh);
       }
     }
   };
 
-  var renderHtml = function() {
-    var retryRenderer = function() {
-      var htmlEl = angular.element('#p' + $scope.id + '_html');
-      if (htmlEl.length) {
-        try {
-          htmlEl.html(data);
+  $scope.isDefaultDisplay = function() {
+    return DefaultDisplayType[$scope.type];
+  };
 
-          htmlEl.find('pre code').each(function(i, e) {
+  /**
+   * Render multiple sub results for custom display
+   */
+  $scope.renderCustomDisplay = function(type, data, spell) {
+    // get result from intp
+
+    const spellResult = spell.interpret(data.trim());
+    const parsed = spellResult.getAllParsedDataWithTypes(
+      heliumService.getAllSpells());
+
+    // custom display result can include multiple subset results
+    parsed.then(dataWithTypes => {
+      const containerDOMId = `p${$scope.id}_custom`;
+      const afterLoaded = () => {
+        const containerDOM = angular.element(`#${containerDOMId}`);
+        // Spell.interpret() can create multiple outputs
+        for(let i = 0; i < dataWithTypes.length; i++) {
+          const dt = dataWithTypes[i];
+          const data = dt.data;
+          const type = dt.type;
+
+          // prepare each DOM to be filled
+          const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom_${i}`, type);
+          const subResultDOM = document.createElement('div');
+          containerDOM.append(subResultDOM);
+          subResultDOM.setAttribute('id', subResultDOMId);
+
+          $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
+        }
+      };
+
+      retryUntilElemIsLoaded(containerDOMId, afterLoaded);
+    }).catch(error => {
+      console.error(`Failed to render custom display: ${$scope.type}\n` + error);
+    });
+  };
+
+  /**
+   * generates actually object which will be consumed from `data` property
+   * feed it to the success callback.
+   * if error occurs, the error is passed to the failure callback
+   *
+   * @param data {Object or Function}
+   * @param type {string} Display Type
+   * @param successCallback
+   * @param failureCallback
+   */
+  const handleData = function(data, type, successCallback, failureCallback) {
+    if (SpellResult.isFunction(data)) {
+      try {
+        successCallback(data());
+      } catch (error) {
+        failureCallback(error);
+        console.error(`Failed to handle ${type} type, function data\n`, error);
+      }
+    } else if (SpellResult.isObject(data)) {
+      try {
+        successCallback(data);
+      } catch (error) {
+        console.error(`Failed to handle ${type} type, object data\n`, error);
+      }
+    }
+  };
+
+  const renderElem = function(targetElemId, data) {
+    const afterLoaded = () => {
+      const elem = angular.element(`#${targetElemId}`);
+      handleData(() => { data(targetElemId) }, DefaultDisplayType.ELEMENT,
+        () => {}, /** HTML element will be filled with data. thus pass empty success callback */
+        (error) => { elem.html(`${error.stack}`); }
+      );
+    };
+
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
+  };
+
+  const renderHtml = function(targetElemId, data) {
+    const afterLoaded = () => {
+      const elem = angular.element(`#${targetElemId}`);
+      handleData(data, DefaultDisplayType.HTML,
+        (generated) => {
+          elem.html(generated);
+          elem.find('pre code').each(function(i, e) {
             hljs.highlightBlock(e);
           });
           /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
-          MathJax.Hub.Queue(['Typeset', MathJax.Hub, htmlEl[0]]);
-        } catch (err) {
-          console.log('HTML rendering error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer, 10);
-      }
+          MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
+        },
+        (error) => {  elem.html(`${error.stack}`); }
+      );
     };
-    $timeout(retryRenderer);
+
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
-  var renderAngular = function() {
-    var retryRenderer = function() {
-      if (angular.element('#p' + $scope.id + '_angular').length) {
-        try {
-          angular.element('#p' + $scope.id + '_angular').html(data);
-
-          var paragraphScope = noteVarShareService.get(paragraph.id + '_paragraphScope');
-          $compile(angular.element('#p' + $scope.id + '_angular').contents())(paragraphScope);
-        } catch (err) {
-          console.log('ANGULAR rendering error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer, 10);
-      }
+  const renderAngular = function(targetElemId, data) {
+    const afterLoaded = () => {
+      const elem = angular.element(`#${targetElemId}`);
+      const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
+      handleData(data, DefaultDisplayType.ANGULAR,
+        (generated) => {
+          elem.html(generated);
+          $compile(elem.contents())(paragraphScope);
+        },
+        (error) => {  elem.html(`${error.stack}`); }
+      );
     };
-    $timeout(retryRenderer);
+
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
-  var getTextEl = function (paragraphId) {
-    return angular.element('#p' + $scope.id + '_text');
-  }
-
-  var textRendererInitialized = false;
-  var renderText = function() {
-    var retryRenderer = function() {
-      var textEl = getTextEl($scope.id);
-      if (textEl.length) {
-        // clear all lines before render
-        clearTextOutput();
-        textRendererInitialized = true;
-
-        if (data) {
-          appendTextOutput(data);
-        } else {
-          flushAppendQueue();
-        }
-
-        getTextEl($scope.id).bind('mousewheel', function(e) {
-          $scope.keepScrollDown = false;
-        });
-      } else {
-        $timeout(retryRenderer, 10);
-      }
-    };
-    $timeout(retryRenderer);
+  const getTextResultElemId = function (resultId) {
+    return `p${resultId}_text`;
   };
 
-  var clearTextOutput = function() {
-    var textEl = getTextEl($scope.id);
-    if (textEl.length) {
-      textEl.children().remove();
+  const renderText = function(targetElemId, data) {
+    const afterLoaded = () => {
+      const elem = angular.element(`#${targetElemId}`);
+      handleData(data, DefaultDisplayType.TEXT,
+        (generated) => {
+          // clear all lines before render
+          removeChildrenDOM(targetElemId);
+
+          if (generated) {
+            const divDOM = angular.element('<div></div>').text(generated);
+            elem.append(divDOM);
+          }
+
+          elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false; });
+        },
+        (error) => {  elem.html(`${error.stack}`); }
+      );
+    };
+
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
+  };
+
+  const removeChildrenDOM = function(targetElemId) {
+    const elem = angular.element(`#${targetElemId}`);
+    if (elem.length) {
+      elem.children().remove();
     }
   };
 
-  var textAppendQueueBeforeInitialize = [];
+  function appendTextOutput(data) {
+    const elemId = getTextResultElemId($scope.id);
+    textResultQueueForAppend.push(data);
 
-  var flushAppendQueue = function() {
-    while (textAppendQueueBeforeInitialize.length > 0) {
-      appendTextOutput(textAppendQueueBeforeInitialize.pop());
+    // if DOM is not loaded, just push data and return
+    if (!isDOMLoaded(elemId)) {
+      return;
     }
-  };
 
-  var appendTextOutput = function(msg) {
-    if (!textRendererInitialized) {
-      textAppendQueueBeforeInitialize.push(msg);
-    } else {
-      flushAppendQueue();
-      var textEl = getTextEl($scope.id);
-      if (textEl.length) {
-        var lines = msg.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          textEl.append(angular.element('<div></div>').text(lines[i]));
-        }
+    const elem = angular.element(`#${elemId}`);
+
+    // pop all stacked data and append to the DOM
+    while (textResultQueueForAppend.length > 0) {
+      const stacked = textResultQueueForAppend.pop();
+
+      const lines = stacked.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        elem.append(angular.element('<div></div>').text(lines[i]));
       }
+
       if ($scope.keepScrollDown) {
-        var doc = getTextEl($scope.id);
+        const doc = angular.element(`#${elemId}`);
         doc[0].scrollTop = doc[0].scrollHeight;
       }
     }
-  };
+  }
 
-  $scope.renderGraph = function(type, refresh) {
+  $scope.renderGraph = function(graphElemId, graphMode, refresh) {
     // set graph height
-    var height = $scope.config.graph.height;
-    var graphContainerEl = angular.element('#p' + $scope.id + '_graph');
-    graphContainerEl.height(height);
+    const height = $scope.config.graph.height;
+    const graphElem = angular.element(`#${graphElemId}`);
+    graphElem.height(height);
 
-    if (!type) {
-      type = 'table';
+    if (!graphMode) { graphMode = 'table'; }
+    const tableElemId = `p${$scope.id}_${graphMode}`;
+
+    const builtInViz = builtInVisualizations[graphMode];
+    if (!builtInViz) { return; }
+
+    // deactive previsouly active visualization
+    for (let t in builtInVisualizations) {
+      const v = builtInVisualizations[t].instance;
+
+      if (t !== graphMode && v && v.isActive()) {
+        v.deactivate();
+        break;
+      }
     }
 
-    var builtInViz = builtInVisualizations[type];
-    if (builtInViz) {
-      // deactive previsouly active visualization
-      for (var t in builtInVisualizations) {
-        var v = builtInVisualizations[t].instance;
+    if (!builtInViz.instance) { // not instantiated yet
+      // render when targetEl is available
+      const afterLoaded = (loadedElem) => {
+        try {
+          const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+          const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+          // set height
+          loadedElem.height(height);
 
-        if (t !== type && v && v.isActive()) {
-          v.deactivate();
-          break;
+          // instantiate visualization
+          const config = getVizConfig(graphMode);
+          const Visualization = builtInViz.class;
+          builtInViz.instance = new Visualization(loadedElem, config);
+
+          // inject emitter, $templateRequest
+          const emitter = function(graphSetting) {
+            commitVizConfigChange(graphSetting, graphMode);
+          };
+          builtInViz.instance._emitter = emitter;
+          builtInViz.instance._compile = $compile;
+          builtInViz.instance._createNewScope = createNewScope;
+          const transformation = builtInViz.instance.getTransformation();
+          transformation._emitter = emitter;
+          transformation._templateRequest = $templateRequest;
+          transformation._compile = $compile;
+          transformation._createNewScope = createNewScope;
+
+          // render
+          const transformed = transformation.transform(tableData);
+          transformation.renderSetting(transformationSettingTargetEl);
+          builtInViz.instance.render(transformed);
+          builtInViz.instance.renderSetting(visualizationSettingTargetEl);
+          builtInViz.instance.activate();
+          angular.element(window).resize(() => {
+            builtInViz.instance.resize();
+          });
+        } catch (err) {
+          console.error('Graph drawing error %o', err);
         }
-      }
+      };
 
-      if (!builtInViz.instance) { // not instantiated yet
-        // render when targetEl is available
-        var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
-          if (targetEl.length) {
-            try {
-              // set height
-              targetEl.height(height);
+      retryUntilElemIsLoaded(tableElemId, afterLoaded);
+    } else if (refresh) {
+      // when graph options or data are changed
+      console.log('Refresh data %o', tableData);
 
-              // instantiate visualization
-              var config = getVizConfig(type);
-              var Visualization = builtInViz.class;
-              builtInViz.instance = new Visualization(targetEl, config);
+      const afterLoaded = (loadedElem) => {
+        const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+        const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+        const config = getVizConfig(graphMode);
+        loadedElem.height(height);
+        const transformation = builtInViz.instance.getTransformation();
+        transformation.setConfig(config);
+        const transformed = transformation.transform(tableData);
+        transformation.renderSetting(transformationSettingTargetEl);
+        builtInViz.instance.setConfig(config);
+        builtInViz.instance.render(transformed);
+        builtInViz.instance.renderSetting(visualizationSettingTargetEl);
+      };
 
-              // inject emitter, $templateRequest
-              var emitter = function(graphSetting) {
-                commitVizConfigChange(graphSetting, type);
-              };
-              builtInViz.instance._emitter = emitter;
-              builtInViz.instance._compile = $compile;
-              builtInViz.instance._createNewScope = createNewScope;
-              var transformation = builtInViz.instance.getTransformation();
-              transformation._emitter = emitter;
-              transformation._templateRequest = $templateRequest;
-              transformation._compile = $compile;
-              transformation._createNewScope = createNewScope;
+      retryUntilElemIsLoaded(tableElemId, afterLoaded);
+    } else {
+      const afterLoaded = (loadedElem) => {
+        loadedElem.height(height);
+        builtInViz.instance.activate();
+      };
 
-              // render
-              var transformed = transformation.transform(tableData);
-              transformation.renderSetting(transformationSettingTargetEl);
-              builtInViz.instance.render(transformed);
-              builtInViz.instance.renderSetting(visualizationSettingTargetEl);
-              builtInViz.instance.activate();
-              angular.element(window).resize(function() {
-                builtInViz.instance.resize();
-              });
-            } catch (err) {
-              console.error('Graph drawing error %o', err);
-            }
-          } else {
-            $timeout(retryRenderer, 10);
-          }
-        };
-        $timeout(retryRenderer);
-      } else if (refresh) {
-        console.log('Refresh data %o', tableData);
-        // when graph options or data are changed
-        var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          if (targetEl.length) {
-            var config = getVizConfig(type);
-            targetEl.height(height);
-            var transformation = builtInViz.instance.getTransformation();
-            transformation.setConfig(config);
-            var transformed = transformation.transform(tableData);
-            transformation.renderSetting(transformationSettingTargetEl);
-            builtInViz.instance.setConfig(config);
-            builtInViz.instance.render(transformed);
-            builtInViz.instance.renderSetting(visualizationSettingTargetEl);
-          } else {
-            $timeout(retryRenderer, 10);
-          }
-        };
-        $timeout(retryRenderer);
-      } else {
-        var retryRenderer = function() {
-          var targetEl = angular.element('#p' + $scope.id + '_' + type);
-          if (targetEl.length) {
-            targetEl.height(height);
-            builtInViz.instance.activate();
-          } else {
-            $timeout(retryRenderer, 10);
-          }
-        };
-        $timeout(retryRenderer);
-      }
+      retryUntilElemIsLoaded(tableElemId, afterLoaded);
     }
   };
+
   $scope.switchViz = function(newMode) {
     var newConfig = angular.copy($scope.config);
     var newParams = angular.copy(paragraph.settings.params);
@@ -728,23 +842,17 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       });
   };
 
-  var renderApp = function(appState) {
-    var retryRenderer = function() {
-      var targetEl = angular.element(document.getElementById('p' + appState.id));
-      console.log('retry renderApp %o', targetEl);
-      if (targetEl.length) {
-        try {
-          console.log('renderApp %o', appState);
-          targetEl.html(appState.output);
-          $compile(targetEl.contents())(getAppScope(appState));
-        } catch (err) {
-          console.log('App rendering error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer, 1000);
+  const renderApp = function(targetElemId, appState) {
+    const afterLoaded = (loadedElem) => {
+      try {
+        console.log('renderApp %o', appState);
+        loadedElem.html(appState.output);
+        $compile(loadedElem.contents())(getAppScope(appState));
+      } catch (err) {
+        console.log('App rendering error %o', err);
       }
     };
-    $timeout(retryRenderer);
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
   };
 
   /*
@@ -927,4 +1035,4 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
     }
   });
-};
+}
