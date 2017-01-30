@@ -129,7 +129,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   public void testLoadRunUnloadApplication()
       throws IOException, ApplicationException, InterruptedException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -175,7 +175,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @Test
   public void testUnloadOnParagraphRemove() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -215,7 +215,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @Test
   public void testUnloadOnInterpreterUnbind() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -276,7 +276,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   @Test
   public void testUnloadOnInterpreterRestart() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumPackage.Type.APPLICATION,
+    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",

@@ -278,7 +278,7 @@ public class Helium {
 
     for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo().values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
-        if (pkg.getPkg().getType() == HeliumPackage.Type.APPLICATION && pkg.isEnabled()) {
+        if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
           ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
               pkg.getPkg().getResources(),
               paragraph.getNote().getId(),
@@ -351,7 +351,7 @@ public class Helium {
     List<HeliumPackage> packages = getBundlePackagesToBundle();
 
     for (HeliumPackage pkg : packages) {
-      if (HeliumPackage.Type.VISUALIZATION == pkg.getType()) {
+      if (HeliumType.VISUALIZATION == pkg.getType()) {
         orderedPackageList.add(pkg.getName());
       }
     }

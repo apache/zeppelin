@@ -68,7 +68,7 @@ public class HeliumBundleFactoryTest {
   @Test
   public void downloadPackage() throws TaskRunnerException {
     HeliumPackage pkg = new HeliumPackage(
-        HeliumPackage.Type.VISUALIZATION,
+        HeliumType.VISUALIZATION,
         "lodash",
         "lodash",
         "lodash@3.9.3",
@@ -85,7 +85,7 @@ public class HeliumBundleFactoryTest {
   @Test
   public void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg = new HeliumPackage(
-        HeliumPackage.Type.VISUALIZATION,
+        HeliumType.VISUALIZATION,
         "zeppelin-bubblechart",
         "zeppelin-bubblechart",
         "zeppelin-bubblechart@0.0.3",
@@ -113,7 +113,7 @@ public class HeliumBundleFactoryTest {
     String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
 
     HeliumPackage pkg = new HeliumPackage(
-        HeliumPackage.Type.VISUALIZATION,
+        HeliumType.VISUALIZATION,
         "vis1",
         "vis1",
         localPkg,
@@ -135,7 +135,7 @@ public class HeliumBundleFactoryTest {
     String localPkg = resDir + "/../../../src/test/resources/helium/vis2";
 
     HeliumPackage pkg = new HeliumPackage(
-        HeliumPackage.Type.VISUALIZATION,
+        HeliumType.VISUALIZATION,
         "vis2",
         "vis2",
         localPkg,
@@ -163,7 +163,7 @@ public class HeliumBundleFactoryTest {
     String resDir = new File(res.getFile()).getParent();
 
     HeliumPackage pkgV1 = new HeliumPackage(
-        HeliumPackage.Type.VISUALIZATION,
+        HeliumType.VISUALIZATION,
         "zeppelin-bubblechart",
         "zeppelin-bubblechart",
         "zeppelin-bubblechart@0.0.3",
@@ -174,7 +174,7 @@ public class HeliumBundleFactoryTest {
     );
 
     HeliumPackage pkgV2 = new HeliumPackage(
-        HeliumPackage.Type.VISUALIZATION,
+        HeliumType.VISUALIZATION,
         "zeppelin-bubblechart",
         "zeppelin-bubblechart",
         "zeppelin-bubblechart@0.0.1",
