@@ -304,4 +304,10 @@
   <description>Size in characters of the maximum text message to be received by websocket. Defaults to 1024000</description>
 </property>
 
+<property>
+  <name>zeppelin.server.default.dir.allowed</name>
+  <value>false</value>
+  <description>Enable directory listings on server.</description>
+</property>
+
 </configuration>

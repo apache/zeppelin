@@ -260,6 +260,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>1024000</td>
     <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
+  <tr>
+    <td>ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</td>
+    <td>zeppelin.server.default.dir.allowed</td>
+    <td>false</td>
+    <td>Enable directory listings on server.</td>
+  </tr>
 </table>
 
 
