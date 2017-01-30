@@ -170,7 +170,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
     for (String line : lines) {
       // skip line like "+---+---+" and "only showing top 1 row"
-      if (!line.matches("(\\+\\-+)+\\+") || line.contains("only showing")) {
+      if (!line.matches("(\\+\\-+)+\\+") && !line.contains("only showing")) {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
           // strip the blank space around the cell
