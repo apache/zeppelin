@@ -30,10 +30,71 @@ Or you can also create your own package as described in [Write new Visualization
 <div ng-app="app">
   <div ng-controller="HeliumPkgCtrl">
     <div class="box width-full heliumPackageContainer">
-      <p>{% raw %}{{HeliumPkgs.length}}{% endraw %} packages found
-      </p>
+      <p>search by type</p>
+      <form ng-init="content='all'">
+        <input class="helium-radio" id="all" type="radio" name="content" ng-model="content" value="all"><label for="all">All</label>
+        <input class="helium-radio" id="viz" type="radio" name="content" ng-model="content" value="viz"><label for="viz">Visualization</label>
+        <input class="helium-radio" id="spell" type="radio" name="content" ng-model="content" value="spell"><label for="spell">Spell</label>
+      </form>
+      <br />
+      <p ng-show="content == 'all'">{% raw %}{{latestPkgInfo.length}}{% endraw %} package(s) found</p>
+      <p ng-show="content == 'spell'">{% raw %}{{spellTypePkgs.length}}{% endraw %} package(s) found</p>
+      <p ng-show="content == 'viz'">{% raw %}{{vizTypePkgs.length}}{% endraw %} package(s) found</p>
       <div class="row heliumPackageList"
-           ng-repeat="pkg in latestPkgInfo | orderBy: 'name'">
+           ng-repeat="pkg in latestPkgInfo | orderBy: 'type'"
+           ng-show="content == 'all'">
+        <div class="col-md-12">
+          <div class="heliumPackageHead">
+            <div class="heliumPackageIcon"
+                 ng-bind-html="pkg.icon"></div>
+            <div class="heliumPackageName">
+              <a ng-href="{% raw %}{{npmWebLink}}/{{pkg.name}}{% endraw %}"
+                 target="_blank">
+                 {% raw %}{{pkg.name}}{% endraw %}
+              </a>
+              <span>{% raw %}{{pkg.type}}{% endraw %}</span>
+            </div>
+          </div>
+          <div class="heliumPackageAuthor">
+            by {% raw %}{{pkg.author}}{% endraw %}
+          </div>
+          <div class="heliumPackageDescription">
+            {% raw %}{{pkg.description}}{% endraw %}
+          </div>
+          <div class="heliumPackageLatestVersion">
+              v {% raw %}{{pkg.artifact.split('@')[1]}}{% endraw %}
+          </div>
+        </div>
+      </div>
+      <div class="row heliumPackageList"
+           ng-repeat="pkg in spellTypePkgs | orderBy: 'name'"
+           ng-show="content == 'spell'">
+        <div class="col-md-12">
+          <div class="heliumPackageHead">
+            <div class="heliumPackageIcon"
+                 ng-bind-html="pkg.icon"></div>
+            <div class="heliumPackageName">
+              <a ng-href="{% raw %}{{npmWebLink}}/{{pkg.name}}{% endraw %}"
+                 target="_blank">
+                 {% raw %}{{pkg.name}}{% endraw %}
+              </a>
+              <span>{% raw %}{{pkg.type}}{% endraw %}</span>
+            </div>
+          </div>
+          <div class="heliumPackageAuthor">
+            by {% raw %}{{pkg.author}}{% endraw %}
+          </div>
+          <div class="heliumPackageDescription">
+            {% raw %}{{pkg.description}}{% endraw %}
+          </div>
+          <div class="heliumPackageLatestVersion">
+              v {% raw %}{{pkg.artifact.split('@')[1]}}{% endraw %}
+          </div>
+        </div>
+      </div>
+      <div class="row heliumPackageList"
+           ng-repeat="pkg in vizTypePkgs | orderBy: 'name'"
+           ng-show="content == 'viz'">
         <div class="col-md-12">
           <div class="heliumPackageHead">
             <div class="heliumPackageIcon"
