@@ -635,23 +635,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         enableLiveAutocompletion: false
       });
 
-      $scope.handleFocus = function(value, isDigestPass) {
-        $scope.paragraphFocused = value;
-        if (isDigestPass === false || isDigestPass === undefined) {
-          // Protect against error in case digest is already running
-          $timeout(function() {
-            // Apply changes since they come from 3rd party library
-            $scope.$digest();
-          });
-        }
-      };
-
       $scope.editor.on('focus', function() {
-        $scope.handleFocus(true);
+        handleFocus(true);
       });
 
       $scope.editor.on('blur', function() {
-        $scope.handleFocus(false);
+        handleFocus(false);
       });
 
       $scope.editor.on('paste', function(e) {
@@ -743,6 +732,17 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         }
         this.origOnCommandKey(e, hashId, keyCode);
       };
+    }
+  };
+
+  var handleFocus = function(value, isDigestPass) {
+    $scope.paragraphFocused = value;
+    if (isDigestPass === false || isDigestPass === undefined) {
+      // Protect against error in case digest is already running
+      $timeout(function() {
+        // Apply changes since they come from 3rd party library
+        $scope.$digest();
+      });
     }
   };
 
@@ -1283,9 +1283,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   });
 
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
-    if (!$scope.editor) {
-      return;
-    }
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
@@ -1303,11 +1300,13 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           $scope.scrollToCursor($scope.paragraph.id, 0);
         }
       }
-      $scope.handleFocus(true);
+      handleFocus(true);
     } else {
-      $scope.editor.blur();
+      if ($scope.editor !== undefined && $scope.editor !== null) {
+        $scope.editor.blur();
+      }
       var isDigestPass = true;
-      $scope.handleFocus(false, isDigestPass);
+      handleFocus(false, isDigestPass);
     }
   });
 
