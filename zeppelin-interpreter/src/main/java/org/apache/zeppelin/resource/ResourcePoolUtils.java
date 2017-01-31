@@ -55,10 +55,12 @@ public class ResourcePoolUtils {
         boolean broken = false;
         try {
           client = remoteInterpreterProcess.getClient();
-          List<String> resourceList = client.resourcePoolGetAll();
-          Gson gson = new Gson();
-          for (String res : resourceList) {
-            resourceSet.add(gson.fromJson(res, Resource.class));
+          if (client != null) {
+            List<String> resourceList = client.resourcePoolGetAll();
+            Gson gson = new Gson();
+            for (String res : resourceList) {
+              resourceSet.add(gson.fromJson(res, Resource.class));
+            }
           }
         } catch (Exception e) {
           logger.error(e.getMessage(), e);
