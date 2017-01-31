@@ -169,8 +169,9 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
     }
 
     for (String line : lines) {
+      // Only match format "|....|"
       // skip line like "+---+---+" and "only showing top 1 row"
-      if (!line.matches("(\\+\\-+)+\\+") && !line.contains("only showing")) {
+      if (line.matches("^\\|.*\\|$")) {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
           // strip the blank space around the cell
