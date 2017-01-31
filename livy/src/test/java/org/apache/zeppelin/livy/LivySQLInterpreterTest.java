@@ -83,17 +83,37 @@ public class LivySQLInterpreterTest {
     //    |  2| 2b|
     //    |  3| 3c|
     //    +---+---+
+    //    only showing top 3 rows
     rows = sqlInterpreter.parseSQLOutput("+---+---+\n" +
         "|  a|  b|\n" +
         "+---+---+\n" +
         "|  1| 1a|\n" +
         "|  2| 2b|\n" +
         "|  3| 3c|\n" +
-        "+---+---+");
+        "+---+---+\n" +
+        "only showing top 3 rows");
     assertEquals(4, rows.size());
     assertEquals("a\tb", rows.get(0));
     assertEquals("1\t1a", rows.get(1));
     assertEquals("2\t2b", rows.get(2));
     assertEquals("3\t3c", rows.get(3));
+
+
+    //  sql output with 1 rows and showing "only showing top 1 rows"
+    //    +---+
+    //    |  a|
+    //    +---+
+    //    |  1|
+    //    +---+
+    //    only showing top 1 rows
+    rows = sqlInterpreter.parseSQLOutput("+---+\n" +
+        "|  a|\n" +
+        "+---+\n" +
+        "|  1|\n" +
+        "+---+\n" +
+        "only showing top 1 rows");
+    assertEquals(2, rows.size());
+    assertEquals("a", rows.get(0));
+    assertEquals("1", rows.get(1));
   }
 }
