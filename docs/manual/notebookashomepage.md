@@ -65,13 +65,15 @@ Restart your Zeppelin server
 That's it! Open your browser and navigate to Apache Zeppelin and see your customized homepage.
 
 <br />
-## Show notes list in your custom homepage
+## Show note list in your custom homepage
 If you want to display the list of notes on your custom Apache Zeppelin homepage all
 you need to do is use our %angular support.
 
 Add the following code to a paragraph in your Apache Zeppelin note and run it.
 
 ```javascript
+%spark
+
 println(
 """%angular
   <div ng-include="'app/home/notebook.html'"></div>
@@ -80,8 +82,8 @@ println(
 
 After running the paragraph, you will see output similar to this one:
 
-<img src="/assets/themes/zeppelin/img/screenshots/homepage_custom_notebook_list.png" />
+<img src="/assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
 
-That's it! Voila! You have your notes list.
+That's it! Voila! You have your note list.
 
 
