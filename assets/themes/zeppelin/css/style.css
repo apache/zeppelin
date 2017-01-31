@@ -575,6 +575,94 @@ a.anchorjs-link:hover { text-decoration: none; }
   font-style: italic;
 }
 
+.helium-radio {
+  position: absolute;
+  display: none; 
+}
+
+.helium-radio[disabled] {
+  cursor: not-allowed; 
+}
+
+.helium-radio + label {
+  position: relative;
+  display: block;
+  padding-left: 36px;
+  cursor: pointer;
+  vertical-align: middle; 
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 26px;
+}
+.helium-radio + label:hover:before {
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+  animation-name: hover-color; 
+}
+.helium-radio + label:before {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: inline-block;
+  width: 19px;
+  height: 19px;
+  content: '';
+  border: 1px solid #c0c0c0; 
+}
+.helium-radio + label:after {
+  position: absolute;
+  display: none;
+  content: ''; 
+}
+
+.helium-radio[disabled] + label {
+  cursor: not-allowed;
+  color: #e4e4e4; 
+}
+.helium-radio[disabled] + label:hover, .helium-radio[disabled] + label:before, .helium-radio[disabled] + label:after {
+  cursor: not-allowed; 
+}
+.helium-radio[disabled] + label:hover:before {
+  border: 1px solid #e4e4e4;
+  animation-name: none; 
+}
+.helium-radio[disabled] + label:before {
+  border-color: #e4e4e4; 
+}
+
+.helium-radio:checked + label:before {
+  animation-name: none; 
+}
+
+.helium-radio:checked + label:after {
+  display: block; 
+}
+
+.helium-radio + label:before {
+  border-radius: 50%; 
+}
+
+.helium-radio + label:after {
+  top: 11px;
+  left: 11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3e97eb; 
+}
+
+.helium-radio:checked + label:before {
+  border: 1px solid #3e97eb; 
+}
+
+.helium-radio:checked[disabled] + label:before {
+  border: 1px solid #c9e2f9; 
+}
+
+.helium-radio:checked[disabled] + label:after {
+  background: #c9e2f9; 
+}
+
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
   .jumbotron h1 {
