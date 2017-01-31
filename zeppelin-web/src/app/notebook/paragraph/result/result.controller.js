@@ -166,7 +166,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         class: vis.class
       };
     });
-    
+
     updateData(result, config, paragraph, index);
     renderResult($scope.type);
   };
@@ -716,6 +716,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   var getSuggestions = function() {
     // Get suggested apps
     var noteId = $route.current.pathParams.noteId;
+    if (!noteId) {
+    return;
+    }
     $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + paragraph.id)
       .success(function(data, status, headers, config) {
         $scope.suggestion = data.body;

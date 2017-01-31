@@ -456,7 +456,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     var session = editor.getSession();
     var dirtyText = session.getValue();
     $scope.dirtyText = dirtyText;
-    $scope.startSaveTimer();
+    $scope.$broadcast('startSaveTimer');
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
   };
 
@@ -696,7 +696,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       return match[1].trim();
       // get default interpreter name if paragraph text doesn't start with '%'
       // TODO(mina): dig into the cause what makes interpreterBindings to have no element
-    } else if ($scope.$parent.interpreterBindings.length !== 0) {
+    } else if ($scope.$parent.interpreterBindings && $scope.$parent.interpreterBindings.length !== 0) {
       return $scope.$parent.interpreterBindings[0].name;
     }
     return '';

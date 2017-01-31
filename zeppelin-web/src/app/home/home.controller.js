@@ -34,6 +34,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   vm.arrayOrderingSrv = arrayOrderingSrv;
 
   vm.notebookHome = false;
+  vm.noteCustomHome = true;
   if ($rootScope.ticket !== undefined) {
     vm.staticHome = false;
   } else {
@@ -44,11 +45,10 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
   $scope.query = {q: ''};
 
-  var initHome = function() {
+  $scope.initHome = function() {
     websocketMsgSrv.getHomeNote();
+    vm.noteCustomHome = false;
   };
-
-  initHome();
 
   $scope.reloadNoteList = function() {
     websocketMsgSrv.reloadAllNotesFromRepo();
@@ -72,6 +72,10 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   });
 
   $scope.$on('setNoteContent', function(event, note) {
+    if (vm.noteCustomHome) {
+      return;
+    }
+
     if (note) {
       vm.note = note;
 
@@ -143,5 +147,9 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
       return true;
     }
     return false;
+  };
+
+  $scope.getNoteName = function(note) {
+    return arrayOrderingSrv.getNoteName(note);
   };
 }
