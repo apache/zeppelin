@@ -39,19 +39,4 @@ limitations under the License.
     </div>
     <br/><br/><br/>
   </div>
-
-  <!-- Load notebook -->
-<div ng-show="home.notebookHome" id="{{currentParagraph.id}}_paragraphColumn_main"
-     ng-repeat="currentParagraph in home.note.paragraphs"
-     ng-controller="ParagraphCtrl"
-     ng-init="init(currentParagraph, home.note)"
-     ng-class="columnWidthClass(currentParagraph.config.colWidth)"
-     class="paragraph-col">
-   <div id="{{currentParagraph.id}}_paragraphColumn"
-     ng-if="currentParagraph.config.results"
-     ng-include src="'app/notebook/paragraph/paragraph.html'"
-     ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
-     ng-hide="currentParagraph.config.tableHide && home.viewOnly">
-   </div>
- </div>
 </div>
