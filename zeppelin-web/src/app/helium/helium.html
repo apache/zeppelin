@@ -45,7 +45,8 @@ limitations under the License.
 
 <div class="box width-full heliumPackageContainer">
   <div class="row heliumPackageList"
-       ng-repeat="(pkgName, pkgInfo) in defaultVersions">
+       ng-repeat="(pkgName, pkgInfo) in defaultVersions"
+       ng-if="pkgInfo.pkg.type == 'VISUALIZATION' || pkgInfo.pkg.type == 'APPLICATION'">
     <div class="col-md-12">
       <div class="heliumPackageHead">
         <div class="heliumPackageIcon"
