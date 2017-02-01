@@ -1,6 +1,6 @@
-## Zeppelin project website
+## Apache Zeppelin project website
 
-This readme will walk you through building the Zeppelin website
+This readme will walk you through building the Apache Zeppelin website
 
 
 ## Build website
@@ -8,7 +8,7 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 
 **tl;dr version:**
 
-    ruby --version >= 1.9.3
+    ruby --version >= 2.0.0
     gem install bundler
     bundle install
 
