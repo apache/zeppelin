@@ -34,7 +34,10 @@ Or you can also create your own package as described in [Write new Visualization
       <form ng-init="content='all'">
         <input class="helium-radio" id="all" type="radio" name="content" ng-model="content" value="all"><label for="all">All</label>
         <input class="helium-radio" id="viz" type="radio" name="content" ng-model="content" value="viz"><label for="viz">Visualization</label>
-        <input class="helium-radio" id="spell" type="radio" name="content" ng-model="content" value="spell"><label for="spell">Spell</label>
+        <input class="helium-radio" id="spell" type="radio" name="content" ng-model="content" value="spell">
+        <label for="spell">Spell 
+          <span style="color: gray; font-style: italic; font-size: 12px;">only available in development version(0.8.0-SNAPSHOT)</span>
+          </label>
       </form>
       <br />
       <p ng-show="content == 'all'">{% raw %}{{latestPkgInfo.length}}{% endraw %} package(s) found</p>
