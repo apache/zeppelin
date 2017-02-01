@@ -46,8 +46,8 @@ If someone who doesn't have **read** permission is trying to access the notebook
 
 <center><img src="../assets/themes/zeppelin/img/docs-img/insufficient_privileges.png"></center>
 
-## Separate notebook workspaces
-By default, the authorization rights allow other users to see the newly created note, meaning the workspace is public. This behavior is controllable and can be set through either `ZEPPELIN_NOTEBOOK_PUBLIC` variable in `conf/zeppelin-env.sh`, or through `zeppelin.notebook.public` property in `conf/zeppelin-site.xml`. Thus, in order to make newly created note appear only in your private workspace by default, you can set either `ZEPPELIN_NOTEBOOK_PUBLIC` to `false` in your `conf/zeppelin-env.sh` as follows:
+## Separate notebook workspaces (public vs. private)
+By default, the authorization rights allow other users to see the newly created note, meaning the workspace is `public`. This behavior is controllable and can be set through either `ZEPPELIN_NOTEBOOK_PUBLIC` variable in `conf/zeppelin-env.sh`, or through `zeppelin.notebook.public` property in `conf/zeppelin-site.xml`. Thus, in order to make newly created note appear only in your `private` workspace by default, you can set either `ZEPPELIN_NOTEBOOK_PUBLIC` to `false` in your `conf/zeppelin-env.sh` as follows:
 ```
 export ZEPPELIN_NOTEBOOK_PUBLIC="false"
 ```
