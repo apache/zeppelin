@@ -60,7 +60,7 @@ or set `zeppelin.notebook.public` property to `false` in `conf/zeppelin-site.xml
 </property>
 ```
 
-Behind the scenes when you create a new note only the `owner` is assigned to it, leaving `readers` and `writers` fields empty. All the notes with at least one empty authorization field are considered to be in `public` workspace. Thus when setting `zeppelin.notebook.public` (or corresponding `ZEPPELIN_NOTEBOOK_PUBLIC`) to false, newly created notes have `readers` and `writers` fields filled with current user, making note appear as in `private` workspace.
+Behind the scenes, when you create a new note only the `owners` field is filled with current user, leaving `readers` and `writers` fields empty. All the notes with at least one empty authorization field are considered to be in `public` workspace. Thus when setting `zeppelin.notebook.public` (or corresponding `ZEPPELIN_NOTEBOOK_PUBLIC`) to false, newly created notes have `readers` and `writers` fields filled with current user, making note appear as in `private` workspace.
 
 ## How it works
 In this section, we will explain the detail about how the notebook authorization works in backend side.
