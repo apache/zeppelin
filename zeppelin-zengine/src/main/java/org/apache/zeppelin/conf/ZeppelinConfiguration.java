@@ -381,7 +381,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public boolean isS3ServerSideEncryption() {
-	  return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_SSE);
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_SSE);
   }
 
   public String getInterpreterListPath() {
