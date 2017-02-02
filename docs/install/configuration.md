@@ -195,6 +195,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Class name of a custom S3 encryption materials provider implementation to use for encrypting data in S3 (optional)</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_SSE</td>
+    <td>zeppelin.notebook.s3.sse</td>
+    <td>false</td>
+    <td>Save notebooks to S3 with server-side encryption enabled</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
     <td>zeppelin.notebook.azure.connectionString</td>
     <td></td>

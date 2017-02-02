@@ -165,6 +165,24 @@ Or using the following setting in **zeppelin-site.xml**:
   <description>Custom encryption materials provider used to encrypt notebook data in S3</description>
 ```   
 
+#### Enable server-side encryption
+
+To request server-side encryption of notebooks, set the following environment variable in the file **zeppelin-env.sh**:
+
+```
+export ZEPPELIN_NOTEBOOK_S3_SSE = true
+```
+
+Or using the following setting in **zeppelin-site.xml**:
+
+```
+<property>
+  <name>zeppelin.notebook.s3.sse</name>
+  <value>true</value>
+  <description>Server-side encryption enabled for notebooks</description>
+</property>
+```
+
 </br>
 ## Notebook Storage  in Azure <a name="Azure"></a>
 

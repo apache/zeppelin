@@ -34,6 +34,7 @@ REM set ZEPPELIN_NOTEBOOK_S3_USER              REM User in bucket where notebook
 REM set ZEPPELIN_NOTEBOOK_S3_ENDPOINT          REM Endpoint of the bucket
 REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID        REM AWS KMS key ID
 REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION    REM AWS KMS key region
+REM set ZEPPELIN_NOTEBOOK_S3_SSE               REM Server-side encryption enabled for notebooks
 REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zeppelin. $USER by default.
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
