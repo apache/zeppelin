@@ -129,6 +129,14 @@
 </property>
 -->
 
+<!-- Server-side encryption enabled for notebooks -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.sse</name>
+  <value>true</value>
+  <description>Server-side encryption enabled for notebooks</description>
+</property>
+-->
 
 <!-- If using Azure for storage use the following settings -->
 <!--

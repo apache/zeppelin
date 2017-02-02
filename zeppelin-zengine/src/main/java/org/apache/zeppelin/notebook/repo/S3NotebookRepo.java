@@ -55,6 +55,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.KMSEncryptionMaterialsProvider;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -86,12 +87,14 @@ public class S3NotebookRepo implements NotebookRepo {
   private final AmazonS3 s3client;
   private final String bucketName;
   private final String user;
+  private final boolean useServerSideEncryption;
   private final ZeppelinConfiguration conf;
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     bucketName = conf.getBucketName();
     user = conf.getUser();
+    useServerSideEncryption = conf.isS3ServerSideEncryption();
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
@@ -234,7 +237,17 @@ public class S3NotebookRepo implements NotebookRepo {
       Writer writer = new OutputStreamWriter(new FileOutputStream(file));
       writer.write(json);
       writer.close();
-      s3client.putObject(new PutObjectRequest(bucketName, key, file));
+
+      PutObjectRequest putRequest = new PutObjectRequest(bucketName, key, file);
+
+      if (useServerSideEncryption) {
+        // Request server-side encryption.
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+        putRequest.setMetadata(objectMetadata);
+      }
+
+      s3client.putObject(putRequest);
     }
     catch (AmazonClientException ace) {
       throw new IOException("Unable to store note in S3: " + ace, ace);
