@@ -71,7 +71,7 @@ abstract public class AbstractZeppelinIT {
 
   protected String getParagraphStatus(final int paragraphNo) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
-        + "//div[contains(@class, 'control')]//span[2]");
+        + "//div[contains(@class, 'control')]/span[2]");
 
     return driver.findElement(locator).getText();
   }
