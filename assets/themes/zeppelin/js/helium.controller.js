@@ -27,7 +27,6 @@ angular.module("app", []).controller("HeliumPkgCtrl", function($scope, $window, 
     var vizTypePkgs = []
     var spellTypePkgs = []
     for (var idx in latestPkgInfo) {
-      console.log(latestPkgInfo[idx])
       if (latestPkgInfo[idx].type == "VISUALIZATION") {
        vizTypePkgs.push(latestPkgInfo[idx])
       } else {
@@ -37,8 +36,6 @@ angular.module("app", []).controller("HeliumPkgCtrl", function($scope, $window, 
 
     $scope.vizTypePkgs = vizTypePkgs
     $scope.spellTypePkgs = spellTypePkgs
-    console.log('viz: ' + $scope.vizTypePkgs)
-    console.log('spell: ' + $scope.spellTypePkgs)
   }
 
   $scope.showPkgsBasedOnType()
