@@ -30,19 +30,19 @@ Or you can also create your own package as described in [Write new Visualization
 <div ng-app="app">
   <div ng-controller="HeliumPkgCtrl">
     <div class="box width-full heliumPackageContainer">
-      <p>search by</p>
+      <p>List by</p>
       <form ng-init="content='all'">
-        <input class="helium-radio" id="all" type="radio" name="content" ng-model="content" value="all"><label for="all">Lately Published</label>
-        <input class="helium-radio" id="viz" type="radio" name="content" ng-model="content" value="viz"><label for="viz">Visualization Type</label>
+        <input class="helium-radio" id="all" type="radio" name="content" ng-model="content" value="all"><label for="all">Lately published</label>
+        <input class="helium-radio" id="viz" type="radio" name="content" ng-model="content" value="viz"><label for="viz">Type: Visualization</label>
         <input class="helium-radio" id="spell" type="radio" name="content" ng-model="content" value="spell">
-        <label for="spell">Spell Type
-          <span style="color: gray; font-style: italic; font-size: 12px;">only available in development version(0.8.0-SNAPSHOT)</span>
+        <label for="spell">Type: Spell
+          <span style="color: gray; font-style: italic; font-size: 11px;">only available in development version(0.8.0-SNAPSHOT)</span>
           </label>
       </form>
       <br />
-      <p ng-show="content == 'all'">{% raw %}{{latestPkgInfo.length}}{% endraw %} package(s) found</p>
-      <p ng-show="content == 'spell'">{% raw %}{{spellTypePkgs.length}}{% endraw %} package(s) found</p>
-      <p ng-show="content == 'viz'">{% raw %}{{vizTypePkgs.length}}{% endraw %} package(s) found</p>
+      <p ng-show="content == 'all'">{% raw %}{{latestPkgInfo.length}}{% endraw %} package(s) registered</p>
+      <p ng-show="content == 'spell'">{% raw %}{{spellTypePkgs.length}}{% endraw %} package(s) registered</p>
+      <p ng-show="content == 'viz'">{% raw %}{{vizTypePkgs.length}}{% endraw %} package(s) registered</p>
       <div class="row heliumPackageList"
            ng-repeat="pkg in latestPkgInfo | orderBy: ['published', 'type']:true"
            ng-show="content == 'all'">
