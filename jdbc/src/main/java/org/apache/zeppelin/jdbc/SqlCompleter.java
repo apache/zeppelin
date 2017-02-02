@@ -163,6 +163,7 @@ public class SqlCompleter extends StringsCompleter {
       try {
         while (cols.next()) {
           String schema = cols.getString("TABLE_SCHEM");
+          if (schema == null) schema = cols.getString("TABLE_CAT");
           String table = cols.getString("TABLE_NAME");
           String column = cols.getString("COLUMN_NAME");
           if (!isBlank(table)) {
@@ -197,14 +198,17 @@ public class SqlCompleter extends StringsCompleter {
       // Add the driver specific SQL completions
       String driverSpecificKeywords =
               "/" + metaData.getDriverName().replace(" ", "-").toLowerCase() + "-sql.keywords";
-
       logger.info("JDBC DriverName:" + driverSpecificKeywords);
-
-      if (SqlCompleter.class.getResource(driverSpecificKeywords) != null) {
-        String driverKeywords =
-                new BufferedReader(new InputStreamReader(
-                        SqlCompleter.class.getResourceAsStream(driverSpecificKeywords))).readLine();
-        keywords += "," + driverKeywords.toUpperCase();
+      try {
+        if (SqlCompleter.class.getResource(driverSpecificKeywords) != null) {
+          String driverKeywords =
+                  new BufferedReader(new InputStreamReader(
+                          SqlCompleter.class.getResourceAsStream(driverSpecificKeywords))).readLine();
+          keywords += "," + driverKeywords.toUpperCase();
+        }
+      } catch (Exception e) {
+        logger.debug("fail to get driver specific SQL completions for " +
+                driverSpecificKeywords + " : " + e, e);
       }
 
 
@@ -317,6 +321,7 @@ public class SqlCompleter extends StringsCompleter {
       Set<String> keywords = getSqlKeywordsCompletions(connection);
       if (connection != null) {
         schemas = getSchemaNames(connection.getMetaData(), schemaFilter);
+        if (schemas.size() == 0) schemas.add(connection.getCatalog());
         fillTableAndColumnNames(connection.getMetaData(), schemaFilter, tables, columns);
       }
       init(schemas, tables, columns, keywords);
