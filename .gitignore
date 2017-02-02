@@ -11,16 +11,13 @@
 !/interpreter/lib
 
 # interpreter temp files
-spark/derby.log
+derby.log
 spark/metastore_db
 spark-1.*-bin-hadoop*
 .spark-dist
-zeppelin-server/derby.log
 
 lens/lens-cli-hist.log
 
-# bin file
-bin/derby.log
 
 # conf file
 conf/zeppelin-env.sh
