@@ -21,8 +21,8 @@ limitations under the License.
 
 # Helium Packages
 
-From Zeppelin-0.7, you can load/unload a pluggable Apache Zeppelin Visualization package on runtime through [Helium framework](https://issues.apache.org/jira/browse/ZEPPELIN-533) in Zeppelin.
-Since it's a npm packge, surely can be published to [npm registry](https://www.npmjs.com/). 
+From Zeppelin-0.7, you can load/unload a pluggable Apache Zeppelin package on runtime through [Helium framework](https://issues.apache.org/jira/browse/ZEPPELIN-533) in Zeppelin.
+Since it's a [npm packge](https://docs.npmjs.com/getting-started/what-is-npm), surely can be published to [npm registry](https://docs.npmjs.com/misc/registry). 
 Here are the lists of Helium packages registered in the registry. 
 If you need more information about how you can use the below packages in Zeppelin, see [How it works](https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html#how-it-works).
 Or you can also create your own package as described in [Write new Visualization](https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html#write-new-visualization) section.
@@ -30,12 +30,12 @@ Or you can also create your own package as described in [Write new Visualization
 <div ng-app="app">
   <div ng-controller="HeliumPkgCtrl">
     <div class="box width-full heliumPackageContainer">
-      <p>search by type</p>
+      <p>search by</p>
       <form ng-init="content='all'">
-        <input class="helium-radio" id="all" type="radio" name="content" ng-model="content" value="all"><label for="all">All</label>
-        <input class="helium-radio" id="viz" type="radio" name="content" ng-model="content" value="viz"><label for="viz">Visualization</label>
+        <input class="helium-radio" id="all" type="radio" name="content" ng-model="content" value="all"><label for="all">Lately Published</label>
+        <input class="helium-radio" id="viz" type="radio" name="content" ng-model="content" value="viz"><label for="viz">Visualization Type</label>
         <input class="helium-radio" id="spell" type="radio" name="content" ng-model="content" value="spell">
-        <label for="spell">Spell 
+        <label for="spell">Spell Type
           <span style="color: gray; font-style: italic; font-size: 12px;">only available in development version(0.8.0-SNAPSHOT)</span>
           </label>
       </form>
@@ -44,7 +44,7 @@ Or you can also create your own package as described in [Write new Visualization
       <p ng-show="content == 'spell'">{% raw %}{{spellTypePkgs.length}}{% endraw %} package(s) found</p>
       <p ng-show="content == 'viz'">{% raw %}{{vizTypePkgs.length}}{% endraw %} package(s) found</p>
       <div class="row heliumPackageList"
-           ng-repeat="pkg in latestPkgInfo | orderBy: 'type'"
+           ng-repeat="pkg in latestPkgInfo | orderBy: ['published', 'type']:true"
            ng-show="content == 'all'">
         <div class="col-md-12">
           <div class="heliumPackageHead">
