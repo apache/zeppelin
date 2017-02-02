@@ -203,7 +203,8 @@ public class SqlCompleter extends StringsCompleter {
         if (SqlCompleter.class.getResource(driverSpecificKeywords) != null) {
           String driverKeywords =
                   new BufferedReader(new InputStreamReader(
-                          SqlCompleter.class.getResourceAsStream(driverSpecificKeywords))).readLine();
+                          SqlCompleter.class.getResourceAsStream(driverSpecificKeywords)))
+                          .readLine();
           keywords += "," + driverKeywords.toUpperCase();
         }
       } catch (Exception e) {
