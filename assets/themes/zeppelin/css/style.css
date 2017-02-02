@@ -238,7 +238,7 @@ body {
 /* Custom container */
 .content {
   word-wrap: break-word;
-  max-width: 1024px;
+  max-width: 860px;
   padding: 2rem 2rem;
   margin: 0 auto;
 }
@@ -519,6 +519,150 @@ a.anchor {
 
 a.anchorjs-link:hover { text-decoration: none; }
 
+/* Helium Package list style */
+.heliumPackageContainer p {
+  font-family: "Helvetica Neue";
+  font-weight: 900;
+  padding: 12px 0;
+  text-transform: uppercase;
+}
+
+.heliumPackageList {
+  min-height: 25px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #EFEFEF;
+  padding-bottom: 13px;
+}
+
+.heliumPackageList .heliumPackageHead {
+  font-family: "Helvetica Neue";
+  height: 30px;
+}
+
+.heliumPackageList .heliumPackageName {
+  font-size: 20px;
+  font-weight: 900;
+  color: #3071a9;
+  margin-top: 0;
+}
+
+.heliumPackageList .heliumPackageName span {
+  font-size: 10px;
+  color: #aaa;
+}
+
+.heliumPackageList .heliumPackageAuthor {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 4px;
+}
+
+.heliumPackageList .heliumPackageIcon {
+  float: left;
+  font-size: 17px;
+  width: 26px;
+  height: 22px;
+  padding: 5px 2px 0px 2px;
+}
+
+.heliumPackageList .heliumPackageDescription {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.heliumPackageList .heliumPackageLatestVersion {
+  color: #aaa;
+  font-style: italic;
+}
+
+.helium-radio {
+  position: absolute;
+  display: none; 
+}
+
+.helium-radio[disabled] {
+  cursor: not-allowed; 
+}
+
+.helium-radio + label {
+  position: relative;
+  display: block;
+  padding-left: 36px;
+  cursor: pointer;
+  vertical-align: middle; 
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 26px;
+}
+.helium-radio + label:hover:before {
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+  animation-name: hover-color; 
+}
+.helium-radio + label:before {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: inline-block;
+  width: 19px;
+  height: 19px;
+  content: '';
+  border: 1px solid #c0c0c0; 
+}
+.helium-radio + label:after {
+  position: absolute;
+  display: none;
+  content: ''; 
+}
+
+.helium-radio[disabled] + label {
+  cursor: not-allowed;
+  color: #e4e4e4; 
+}
+.helium-radio[disabled] + label:hover, .helium-radio[disabled] + label:before, .helium-radio[disabled] + label:after {
+  cursor: not-allowed; 
+}
+.helium-radio[disabled] + label:hover:before {
+  border: 1px solid #e4e4e4;
+  animation-name: none; 
+}
+.helium-radio[disabled] + label:before {
+  border-color: #e4e4e4; 
+}
+
+.helium-radio:checked + label:before {
+  animation-name: none; 
+}
+
+.helium-radio:checked + label:after {
+  display: block; 
+}
+
+.helium-radio + label:before {
+  border-radius: 50%; 
+}
+
+.helium-radio + label:after {
+  top: 11px;
+  left: 11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3e97eb; 
+}
+
+.helium-radio:checked + label:before {
+  border: 1px solid #3e97eb; 
+}
+
+.helium-radio:checked[disabled] + label:before {
+  border: 1px solid #c9e2f9; 
+}
+
+.helium-radio:checked[disabled] + label:after {
+  background: #c9e2f9; 
+}
+
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
   .jumbotron h1 {
@@ -538,11 +682,52 @@ a.anchorjs-link:hover { text-decoration: none; }
 
 @media only screen
 and (min-width: 768px)
+and (max-width: 996px) {
+  .navbar-brand small {
+    display: none;
+  }
+  .navbar-collapse.collapse {
+    padding-right: 0;
+  }
+  .navbar-header {
+    float: none;
+  }
+  .navbar-toggle {
+    display: block;
+  }
+  .navbar-fixed-top {
+    top: 0;
+    border-width: 0 0 1px;
+  }
+  .navbar-collapse {
+    border-top: 1px solid transparent;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .navbar-collapse.collapse {
+    display: none!important;
+  }
+  .navbar-nav {
+    float: none!important;
+    margin-top: 7.5px;
+  }
+  .navbar-nav>li {
+    float: none;
+  }
+  .navbar-nav>li>a {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .collapse.in{
+    display:block !important;
+  }
+}
+
+@media only screen
+and (min-width: 768px)
 and (max-width: 1024px) {
   .navbar-brand small {
     display: none;
   }
-
   .navbar-collapse.collapse {
     padding-right: 0;
   }
