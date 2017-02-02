@@ -24,12 +24,12 @@
   <parent>
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>helium-dev</artifactId>
-  <version>0.7.0</version>
+  <version>0.7.1-SNAPSHOT</version>
   <name>Zeppelin: Helium development interpreter</name>
 
   <dependencies>
