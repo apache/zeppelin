@@ -364,7 +364,7 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (!key.startsWith("spark.") || !val.trim().isEmpty()) {
+      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
         logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
         conf.set(key, val);
       }
@@ -495,7 +495,7 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (!key.startsWith("spark.") || !val.trim().isEmpty()) {
+      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
         logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
         conf.set(key, val);
       }
