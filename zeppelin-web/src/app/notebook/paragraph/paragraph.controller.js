@@ -1137,9 +1137,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if ($scope.editor) {
       $scope.editor.setReadOnly($scope.isRunning(newPara));
     }
-
-      }
-    }
   };
 
   $scope.$on('runParagraphUsingSpell', function(event, data) {
