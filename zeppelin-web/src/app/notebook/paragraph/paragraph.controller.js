@@ -1036,6 +1036,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
+  $scope.$on('updateParaInfos', function(event, data) {
+    if (data.id === $scope.paragraph.id) {
+      $scope.paragraph.runtimeInfos = data.infos;
+    }
+  });
+
   $scope.$on('angularObjectRemove', function(event, data) {
     var noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
@@ -1083,7 +1089,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
       newPara.errorMessage !== oldPara.errorMessage ||
       !angular.equals(newPara.settings, oldPara.settings) ||
-      !angular.equals(newPara.config, oldPara.config)))
+      !angular.equals(newPara.config, oldPara.config) ||
+      !angular.equals(newPara.runtimeInfos, oldPara.runtimeInfos)))
   }
 
   $scope.updateAllScopeTexts = function(oldPara, newPara) {
@@ -1126,46 +1133,47 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.results = newPara.results;
     }
     $scope.paragraph.settings = newPara.settings;
+    $scope.paragraph.runtimeInfos = newPara.runtimeInfos;
     if ($scope.editor) {
       $scope.editor.setReadOnly($scope.isRunning(newPara));
     }
 
     if (!$scope.asIframe) {
-      $scope.paragraph.config = newPara.config;
-      initializeDefault(newPara.config);
-    } else {
-      newPara.config.editorHide = true;
-      newPara.config.tableHide = false;
-      $scope.paragraph.config = newPara.config;
-    }
-  };
-
-  $scope.updateParagraph = function(oldPara, newPara, updateCallback) {
-    // 1. get status, refreshed
-    const statusChanged = (newPara.status !== oldPara.status);
-    const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
-      isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
-      newPara.status === 'ERROR' || (newPara.status === 'FINISHED' && statusChanged);
-
-    // 2. update texts managed by $scope
-    $scope.updateAllScopeTexts(oldPara, newPara);
-
-    // 3. execute callback to update result
-    updateCallback();
-
-    // 4. update remaining paragraph objects
-    $scope.updateParagraphObjectWhenUpdated(newPara);
-
-    // 5. handle scroll down by key properly if new paragraph is added
-    if (statusChanged || resultRefreshed) {
-      // when last paragraph runs, zeppelin automatically appends new paragraph.
-      // this broadcast will focus to the newly inserted paragraph
-      const paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-      if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
-        // rendering output can took some time. So delay scrolling event firing for sometime.
-        setTimeout(() => { $rootScope.$broadcast('scrollToCursor'); }, 500);
-      }
-    }
+       $scope.paragraph.config = newPara.config;
+       initializeDefault(newPara.config);
+     } else {
+       newPara.config.editorHide = true;
+       newPara.config.tableHide = false;
+       $scope.paragraph.config = newPara.config;
+     }
+   };
+ 
+   $scope.updateParagraph = function(oldPara, newPara, updateCallback) {
+     // 1. get status, refreshed
+     const statusChanged = (newPara.status !== oldPara.status);
+     const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
+       isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
+       newPara.status === 'ERROR' || (newPara.status === 'FINISHED' && statusChanged);
+ 
+     // 2. update texts managed by $scope
+     $scope.updateAllScopeTexts(oldPara, newPara);
+ 
+     // 3. execute callback to update result
+     updateCallback();
+ 
+     // 4. update remaining paragraph objects
+     $scope.updateParagraphObjectWhenUpdated(newPara);
+ 
+     // 5. handle scroll down by key properly if new paragraph is added
+     if (statusChanged || resultRefreshed) {
+       // when last paragraph runs, zeppelin automatically appends new paragraph.
+       // this broadcast will focus to the newly inserted paragraph
+       const paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
+       if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
+         // rendering output can took some time. So delay scrolling event firing for sometime.
+         setTimeout(() => { $rootScope.$broadcast('scrollToCursor'); }, 500);
+       }
+     }
   };
 
   $scope.$on('runParagraphUsingSpell', function(event, data) {

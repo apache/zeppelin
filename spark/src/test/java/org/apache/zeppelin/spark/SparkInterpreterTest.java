@@ -23,11 +23,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
@@ -54,6 +56,8 @@ public class SparkInterpreterTest {
   public static InterpreterGroup intpGroup;
   private InterpreterContext context;
   public static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
+  private  static Map<String, Map<String, String>> paraIdToInfosMap =
+      new HashMap<>();
 
   /**
    * Get spark version number as a numerical value.
@@ -92,6 +96,20 @@ public class SparkInterpreterTest {
       repl.open();
     }
 
+    final RemoteEventClientWrapper remoteEventClientWrapper = new RemoteEventClientWrapper() {
+
+      @Override
+      public void onParaInfosReceived(String noteId, String paragraphId,
+          Map<String, String> infos) {
+        if (infos != null) {
+          paraIdToInfosMap.put(paragraphId, infos);
+        }
+      }
+
+      @Override
+      public void onMetaInfosReceived(Map<String, String> infos) {
+      }
+    };
     context = new InterpreterContext("note", "id", null, "title", "text",
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
@@ -99,7 +117,19 @@ public class SparkInterpreterTest {
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(null));
+        new InterpreterOutput(null)) {
+        
+        @Override
+        public RemoteEventClientWrapper getClient() {
+          return remoteEventClientWrapper;
+        }
+    };
+    // The first para interpretdr will set the Eventclient wrapper
+    //SparkInterpreter.interpret(String, InterpreterContext) ->
+    //SparkInterpreter.populateSparkWebUrl(InterpreterContext) ->
+    //ZeppelinContext.setEventClient(RemoteEventClientWrapper)
+    //running a dummy to ensure that we dont have any race conditions among tests
+    repl.interpret("sc", context);
   }
 
   @Test
@@ -272,5 +302,28 @@ public class SparkInterpreterTest {
   public void testCompletion() {
     List<InterpreterCompletion> completions = repl.completion("sc.", "sc.".length());
     assertTrue(completions.size() > 0);
+  }
+
+  @Test
+  public void testParagraphUrls() {
+    String paraId = "test_para_job_url";
+    InterpreterContext intpCtx = new InterpreterContext("note", paraId, null, "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(null));
+    repl.interpret("sc.parallelize(1 to 10).map(x => {x}).collect", intpCtx);
+    Map<String, String> paraInfos = paraIdToInfosMap.get(intpCtx.getParagraphId());
+    String jobUrl = null;
+    if (paraInfos != null) {
+      jobUrl = paraInfos.get("jobUrl");
+    }
+    String sparkUIUrl = repl.getSparkUIUrl();
+    assertNotNull(jobUrl);
+    assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job?id="));
+
   }
 }

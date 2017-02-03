@@ -164,6 +164,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
     } else if (op === 'SET_NOTE_REVISION') {
       $rootScope.$broadcast('setNoteRevisionResult', data);
+    } else if (op === 'PARAS_INFO') {
+      $rootScope.$broadcast('updateParaInfos', data);
     }
   });
 

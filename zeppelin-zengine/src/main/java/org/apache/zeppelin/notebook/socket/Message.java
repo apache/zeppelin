@@ -174,7 +174,8 @@ public class Message {
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
-    RUN_PARAGRAPH_USING_SPELL     // [s-c] run paragraph using spell
+    RUN_PARAGRAPH_USING_SPELL,     // [s-c] run paragraph using spell
+    PARAS_INFO                    // [s-c] paragraph runtime infos
   }
 
   public static final Message EMPTY = new Message(null);

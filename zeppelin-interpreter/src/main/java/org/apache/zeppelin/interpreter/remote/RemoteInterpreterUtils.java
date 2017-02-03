@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,5 +63,14 @@ public class RemoteInterpreterUtils {
       }
       return false;
     }
+  }
+
+  public static String getInterpreterSettingId(String intpGrpId) {
+    String settingId = null;
+    if (intpGrpId != null) {
+      int indexOfColon = intpGrpId.indexOf(":");
+      settingId = intpGrpId.substring(0, indexOfColon);
+    }
+    return settingId;
   }
 }

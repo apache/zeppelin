@@ -182,4 +182,10 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception {
 
   }
+
+  @Override
+  public void onParaInfosReceived(String noteId, String paragraphId,
+      String interpreterSettingId, Map<String, String> metaInfos) {
+  }
+
 }

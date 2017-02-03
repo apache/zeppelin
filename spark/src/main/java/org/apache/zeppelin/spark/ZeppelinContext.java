@@ -46,6 +46,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.RemoteWorksController;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -61,6 +62,7 @@ public class ZeppelinContext {
   // Map interpreter class name (to be used by hook registry) from
   // given replName in parapgraph
   private static final Map<String, String> interpreterClassMap;
+  private static RemoteEventClientWrapper eventClient;
   static {
     interpreterClassMap = new HashMap<>();
     interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
@@ -221,7 +223,7 @@ public class ZeppelinContext {
       Object df, int maxResult) {
     Object[] rows = null;
     Method take;
-    String jobGroup = "zeppelin-" + interpreterContext.getParagraphId();
+    String jobGroup = Utils.buildJobGroupId(interpreterContext);
     sc.setJobGroup(jobGroup, "Zeppelin", false);
 
     try {
@@ -930,4 +932,21 @@ public class ZeppelinContext {
     return resourcePool.getAll();
   }
 
+  /**
+   * Get the event client
+   */
+  @ZeppelinApi
+  public static RemoteEventClientWrapper getEventClient() {
+    return eventClient;
+  }
+
+  /**
+   * Set event client
+   */
+  @ZeppelinApi
+  public void setEventClient(RemoteEventClientWrapper eventClient) {
+    if (ZeppelinContext.eventClient == null) {
+      ZeppelinContext.eventClient = eventClient;
+    }
+  }
 }
