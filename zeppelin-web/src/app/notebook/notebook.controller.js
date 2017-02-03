@@ -614,6 +614,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       $scope.openSetting();
       $scope.closePermissions();
+      window.scroll(0,0);
     }
   };
 
