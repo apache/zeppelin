@@ -131,3 +131,4 @@ Apache Zeppelin is Apache2 Licensed software. Please check out the [source repos
 Apache Zeppelin has a very active development community.
 Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
 </div>
+<br />

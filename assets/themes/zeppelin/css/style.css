@@ -4,7 +4,6 @@
 
 body {
   padding-top: 50px;
-  padding-bottom: 20px;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: #4c555a;
@@ -663,7 +662,9 @@ a.anchorjs-link:hover { text-decoration: none; }
 /* For what's new section */
 .new {
   background: rgba(226, 233, 239, 0.4);
+  padding-bottom: 28px;
 }
+
 .new .description {
   text-align: center;
   padding: 18px;
@@ -775,6 +776,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 .thumbnail {
   background-color: transparent;
   border: none;
+  display: inline;
 }
 
 .thumbnail img {
@@ -813,7 +815,7 @@ a.anchorjs-link:hover { text-decoration: none; }
   position: absolute;
   padding: 5px;
   left: -140px;
-  top: 200px;
+  top: 160px;
   visibility: hidden;
   color: black;
   text-decoration: none;

@@ -20,42 +20,41 @@ limitations under the License.
     <div class="border row">
       <div class="border col-md-4 col-sm-4">
         <h4>Pluggable Visualization</h4>
-        <p>
-          Load/unload Javascript 
-          <a href="https://www.npmjs.com/" target="_blank">npm packages</a>
-          like Zeppelin built-in chart using Helium framework.
-          <div class="first">
-            <a class="thumbnail text-center" href="#thumb">
-              Demo
-              <span><img src="./assets/themes/zeppelin/img/helium.gif" /></span>
+        <div class="first">
+          <p>
+            Load/unload Javascript 
+            <a href="https://www.npmjs.com/" target="_blank">npm packages</a>
+            like Zeppelin built-in chart using Helium framework.
+            <a class="thumbnail" href="#thumb">
+              See more in DEMO.<span><img src="./assets/themes/zeppelin/img/helium.gif" /></span>
             </a>
-          </div>
-        </p>
+          </p>
+        </div>
       </div>
       <div class="border col-md-4 col-sm-4">
         <h4>Interpreter Per User / Note</h4>
+        <div class="second">
         <p>
           Separate interpreter running scope 
           <span style="font-weight: 900; font-style: initial;">Per user</span> or 
           <span style="font-weight: 900; font-style: initial;">Per Note</span>.
-        </p>
-        <div class="second">
           <a class="thumbnail text-center" href="#thumb">
-            Demo
+            See more in DEMO.
             <span><img src="./assets/themes/zeppelin/img/scope.gif" style="max-width: 600px" /></span>
           </a>
+        </p>
         </div>
       </div>
       <div class="border col-md-4 col-sm-4">
         <h4>Personal Note Mode</h4>
+        <div class="third">
         <p>
           Personalize your analysis result by switching the note to Personal Mode.  
-        </p>
-        <div class="third">
           <a class="thumbnail text-center third" href="#thumb">
-            Demo
+            See more in DEMO.
             <span><img src="./assets/themes/zeppelin/img/personalize.gif" /></span>
           </a>
+        </p>
         </div>
       </div>
     </div>

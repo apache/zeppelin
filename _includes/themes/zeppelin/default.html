@@ -49,10 +49,6 @@
 
     <div class="content">
       {{ content }}
-      <hr>
-      <footer>
-        <!-- <p>&copy; {{ site.time | date: '%Y' }} {{ site.author.name }}</p>-->
-      </footer>
     </div>
 
     {% include JB/analytics %}
@@ -60,5 +56,9 @@
     {% if page.title == "Zeppelin" %}
       {% include_relative twitter.md %}
     {% endif %}
+    
+    <footer>
+      <!-- <p>&copy; {{ site.time | date: '%Y' }} {{ site.author.name }}</p>-->
+    </footer>
   </body>
 </html>

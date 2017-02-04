@@ -24,9 +24,10 @@ limitations under the License.
         <p style="text-align:center; margin-top: 32px; font-size: 12px; color: gray; font-weight: 200; font-style: italic; padding-bottom: 0;">See more tweets or</p>
         <a href="https://twitter.com/ApacheZeppelin" class="btn btn-primary btn-lg round" role="button">
           Follow Zeppelin on &nbsp;
-          <i class="fa fa-twitter" aria-hidden="true"></i>
+          <i class="fa fa-twitter fa-lg" aria-hidden="true"></i>
         </a>
       </div>
     </div>
   </div>
+  <hr>
 </div>
