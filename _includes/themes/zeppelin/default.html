@@ -56,5 +56,9 @@
     </div>
 
     {% include JB/analytics %}
+
+    {% if page.title == "Zeppelin" %}
+      {% include_relative twitter.md %}
+    {% endif %}
   </body>
 </html>

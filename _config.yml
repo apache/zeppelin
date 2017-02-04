@@ -3,6 +3,7 @@
 permalink: /:categories/:year/:month/:day/:title 
 
 exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "vendor", "node_modules", "scss"]
+gems: ['jekyll-twitter-plugin']
 highlighter: true
 markdown: redcarpet
 encoding: utf-8
