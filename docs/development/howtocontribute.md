@@ -115,7 +115,7 @@ cd <zeppelin_home>/zeppelin-interpreter/src/main/thrift
 
 ### Run Selenium test
 
-Zeppelin has [set of integration tests](https://github.com/apache/zeppelin/tree/master/zeppelin-server/src/test/java/org/apache/zeppelin/integration) using Selenium. To run these test, first build and run Zeppelin and make sure Zeppelin is running on port 8080. Then you can run test using folowing command
+Zeppelin has [set of integration tests](https://github.com/apache/zeppelin/tree/master/zeppelin-server/src/test/java/org/apache/zeppelin/integration) using Selenium. To run these test, first build and run Zeppelin and make sure Zeppelin is running on port 8080. Then you can run test using following command
 
 ```
 TEST_SELENIUM=true mvn test -Dtest=[TEST_NAME] -DfailIfNoTests=false -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
