@@ -21,6 +21,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.RemoteZeppelinJobStatus;
 import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
@@ -66,6 +67,20 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
 
     sendEvent(new RemoteInterpreterEvent(
         RemoteInterpreterEventType.REMOTE_ZEPPELIN_SERVER_RESOURCE,
+        gson.toJson(eventBody)));
+  }
+
+  public void getZeppelinServerJobStatus(String eventOwnerKey, String noteId, String paragraphId) {
+    RemoteZeppelinServerResource eventBody = new RemoteZeppelinServerResource();
+    eventBody.setResourceType(RemoteZeppelinServerResource.Type.JOB_STATUS);
+    eventBody.setOwnerKey(eventOwnerKey);
+    RemoteZeppelinJobStatus jobStatus = new RemoteZeppelinJobStatus();
+    jobStatus.setNoteId(noteId);
+    jobStatus.setParagraphId(paragraphId);
+    eventBody.setData(jobStatus);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.REMOTE_ZEPPELIN_JOB_STATUS,
         gson.toJson(eventBody)));
   }
 

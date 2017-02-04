@@ -25,7 +25,8 @@ public class RemoteZeppelinServerResource {
    * Resource Type for Zeppelin Server
    */
   public enum Type{
-    PARAGRAPH_RUNNERS
+    PARAGRAPH_RUNNERS,
+    JOB_STATUS
   }
 
   private String ownerKey;

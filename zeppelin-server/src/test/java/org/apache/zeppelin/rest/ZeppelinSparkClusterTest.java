@@ -381,6 +381,37 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
 
     @Test
+    public void zGetJobStatusTest() throws IOException {
+        // create new note
+        Note note = ZeppelinServer.notebook.createNote(anonymous);
+        Paragraph p0 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Map config0 = p0.getConfig();
+        config0.put("enabled", true);
+        p0.setConfig(config0);
+        p0.setText("%spark println(\"Hello\")");
+        p0.setAuthenticationInfo(anonymous);
+
+        Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Map config1 = p1.getConfig();
+        config1.put("enabled", true);
+        p1.setConfig(config1);
+        p1.setText("%spark var status = z.getJobStatus(\"" + note.getId() + "\",\"" + p0.getId() + "\").name())\n println(status)");
+        p1.setAuthenticationInfo(anonymous);
+
+        note.runAll();
+
+        // z.run is not blocking call. So p1 may not be finished when p0 is done.
+        waitForFinish(p1);
+
+        assertEquals(Status.FINISHED, p0.getStatus());
+        assertEquals(Status.FINISHED, p1.getStatus());
+
+        assertTrue(p0.getStatus().name().equals(p1.getResult().message()));
+
+        ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    }
+
+    @Test
     public void pySparkDepLoaderTest() throws IOException {
         // create new note
         Note note = ZeppelinServer.notebook.createNote(anonymous);
