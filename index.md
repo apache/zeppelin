@@ -18,15 +18,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 <br />
-<h1 style="
-  font-family: 'Helvetica';
-  text-align: center;
-  font-size: 38px;
-  font-weight: 700;
-  text-transform: uppercase;
-  border-bottom: none;
-  color: #4c555a;
-  letter-spacing: 1px;">
+<h1 class="index-header">
   What is Apache Zeppelin ?
 </h1>
 
@@ -34,7 +26,7 @@ limitations under the License.
 <div class="row">
   <div class="col-md-6" style="padding-right:0">
     <h1 style="color:#4c555a">Multi-purpose Notebook</h1>
-    <p class="index-header">
+    <p>
       The Notebook is the place for all your needs
     </p>
     <ul style="list-style-type: none;padding-left:10px;" >

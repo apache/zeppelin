@@ -514,7 +514,17 @@ a.anchor {
 
 a.anchorjs-link:hover { text-decoration: none; }
 
-<<<<<<< 51d230d0ba4f9eb22fb4efda460b4d6fb7b3e257
+.index-header {
+  font-family: 'Helvetica';
+  text-align: center;
+  font-size: 38px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  color: #4c555a;
+  letter-spacing: 1px;
+}
+
 /* Helium Package list style */
 .heliumPackageContainer p {
   font-family: "Helvetica Neue";
