@@ -118,6 +118,15 @@ Please check the below table before you download Zeppelin package.
   </tr>
   <tr>
     <td>
+      <h6 style="display: inline;"><a href="https://github.com/spotify/scio/" target="_blank">Scio</a></h6>
+    </td>
+    <td>O</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td>
       <h6><a href="https://cloud.google.com/bigquery/" target="_blank">BigQuery</a></h6>
     </td>
     <td>O</td>
