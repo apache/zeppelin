@@ -614,6 +614,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       $scope.openSetting();
       $scope.closePermissions();
+      angular.element('html, body').animate({ scrollTop: 0 }, 'slow');
     }
   };
 
