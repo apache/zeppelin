@@ -18,6 +18,19 @@ limitations under the License.
 -->
 {% include JB/setup %}
 <br />
+<h1 style="
+  font-family: 'Helvetica';
+  text-align: center;
+  font-size: 38px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  color: #4c555a;
+  letter-spacing: 1px;">
+  What is Apache Zeppelin ?
+</h1>
+
+<br /><br /><br />
 <div class="row">
   <div class="col-md-6" style="padding-right:0">
     <h1 style="color:#4c555a">Multi-purpose Notebook</h1>
@@ -117,4 +130,4 @@ If you want to learn more about this feature, please visit [this page](./docs/la
 Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](./docs/latest/development/howtocontribute.html).
 Apache Zeppelin has a very active development community.
 Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
-
+</div>
