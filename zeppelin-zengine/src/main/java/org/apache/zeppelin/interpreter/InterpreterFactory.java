@@ -96,6 +96,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   @Deprecated
   private String[] interpreterClassList;
   private String[] interpreterGroupOrderList;
+  private List<String> dynamicInterpreterClassList;
 
   /**
    * This is only references with default settings, name and properties
@@ -159,6 +160,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     interpreterClassList = replsConf.split(",");
     String groupOrder = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER);
     interpreterGroupOrderList = groupOrder.split(",");
+    dynamicInterpreterClassList = new ArrayList<String>();
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -445,6 +447,147 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       }
     }
     return DEFAULT_EDITOR;
+  }
+
+  public boolean loadDynamicInterpreter(String intpGroupName, String intpName, String artifact,
+                                        String intpClassName, String repositoryUrl,
+                                        boolean isSnapShotRepo) {
+    String[] artifactItem = artifact.split(":");
+    if (artifactItem.length != 3) {
+      logger.error("Failed load dynamic interpreter - invalid artifact : {}", artifact);
+      return false;
+    }
+
+    String zepInterpreterRepoDir = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_DOWNLOAD_DIR);
+    String zepInterpreterRepoFullPath = conf.getRelativeDir(
+            ConfVars.ZEPPELIN_INTERPRETER_DOWNLOAD_DIR
+    );
+
+    String interpreterDesPath = String.format("%s/%s/%s/", zepInterpreterRepoDir,
+            intpGroupName, intpName);
+    String interpreterLoadPath = String.format("%s/%s/%s", zepInterpreterRepoFullPath,
+            intpGroupName, intpName);
+
+    try {
+      if (repositoryUrl != null) {
+        depResolver.addRepo("dyInterpreterRepo", repositoryUrl, isSnapShotRepo);
+      }
+      depResolver.load(artifact, new File(interpreterLoadPath));
+      setDynamicInterpreter(intpClassName, interpreterLoadPath);
+    } catch (Exception e) {
+      logger.error("Failed load dynamic interpreter : ", e);
+      return false;
+    }
+    return true;
+  }
+
+  public boolean unloadDynamicInterpreter(String intpGroupName, String intpName,
+      String intpClassName) throws IOException{
+    if (dynamicInterpreterClassList.contains(intpClassName) == false) {
+      logger.info("loaded dynamic interpreter not found  {}", intpClassName);
+      return false;
+    }
+
+    String zepInterpreterRepoFullPath = conf.getRelativeDir(
+        ConfVars.ZEPPELIN_INTERPRETER_DOWNLOAD_DIR
+    );
+    String fileDirPath = String.format("%s/%s/%s", zepInterpreterRepoFullPath,
+        intpGroupName, intpName);
+
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+
+
+    File interpreterDir = new File(fileDirPath);
+    if (interpreterDir == null){
+      logger.info("loaded dynamic interpreter not found  dir {}", interpreterDir);
+      return false;
+    }
+
+    String regInterpreterName = String.format("%s.%s", intpGroupName, intpName);
+    RegisteredInterpreter targetInterpreter = Interpreter
+      .registeredInterpreters.get(regInterpreterName);
+    if (targetInterpreter == null) {
+      logger.info("loaded dynamic interpreter not found name {}", intpName);
+      return false;
+    }
+
+    if (targetInterpreter.getPath().equals(fileDirPath) == false) {
+      logger.info("loaded dynamic interpreter not match  dir {}", fileDirPath);
+      return false;
+    }
+
+    cleanCl.get(fileDirPath).close();
+    cleanCl.remove(fileDirPath);
+    dynamicInterpreterClassList.remove(intpClassName);
+
+    for (String settingId : interpreterSettings.keySet()) {
+      InterpreterSetting setting = interpreterSettings.get(settingId);
+      if (setting.getGroup().equals(intpGroupName)) {
+        remove(settingId);
+      }
+      interpreterSettings.remove(settingId);
+    }
+    interpreterSettingsRef.remove(intpGroupName);
+
+    return true;
+  }
+
+  protected void setDynamicInterpreter(String interpreterClassName, String fileDirPath)
+      throws InterpreterException, IOException, ClassNotFoundException {
+    if (dynamicInterpreterClassList.contains(interpreterClassName)) {
+      logger.info("dynamic interpreter already. {}", interpreterClassName);
+      return;
+    }
+
+    dynamicInterpreterClassList.add(interpreterClassName);
+
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    // Load classes
+    File interpreterDir = new File(fileDirPath);
+
+    if (interpreterDir != null) {
+      URL[] urls = null;
+      try {
+        urls = recursiveBuildLibList(interpreterDir);
+      } catch (MalformedURLException e) {
+        logger.error("Can't load jars ", e);
+        throw new IOException(e);
+      }
+      URLClassLoader ccl = new URLClassLoader(urls, oldcl);
+
+      try {
+        InterpreterInfo interpreterInfo;
+        Class.forName(interpreterClassName, true, ccl);
+        Set<String> keys = Interpreter.registeredInterpreters.keySet();
+        for (String intName : keys) {
+          if (interpreterClassName.equals(
+                  Interpreter.registeredInterpreters.get(intName).getClassName())) {
+            RegisteredInterpreter r = Interpreter.registeredInterpreters.get(intName);
+            logger.info("dynamic Interpreter {} found. class={}", intName, fileDirPath);
+            r.setPath(fileDirPath);
+            cleanCl.put(fileDirPath, ccl);
+            interpreterInfo =
+                    new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
+                            r.getEditor());
+            add(r.getGroup(), interpreterInfo, r.getProperties(), defaultOption,
+              r.getPath(), r.getRunner());
+          }
+        }
+      } catch (ClassNotFoundException e) {
+        logger.error("Load error : ", e);
+        throw e;
+      } catch (RepositoryException e) {
+        logger.error("Load error : ", e);
+      }
+    }
+
+    loadFromFile();
+
+    for (String settingId : interpreterSettings.keySet()) {
+      InterpreterSetting setting = interpreterSettings.get(settingId);
+      logger.info("Interpreter setting group {} : id={}, name={}",
+              setting.getGroup(), settingId, setting.getName());
+    }
   }
 
   private void loadInterpreterDependencies(final InterpreterSetting setting) {
@@ -1236,8 +1379,6 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       key = SHARED_SESSION;
     }
 
-    logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
-        "{}", key, noteId, user, setting.getName());
     return key;
   }
 
