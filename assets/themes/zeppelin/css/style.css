@@ -515,13 +515,13 @@ a.anchor {
 a.anchorjs-link:hover { text-decoration: none; }
 
 .index-header {
-  font-family: 'Helvetica';
+  font-family: 'Helvetica' !important;
   text-align: center;
-  font-size: 38px;
+  font-size: 38px !important;
   font-weight: 700;
   text-transform: uppercase;
   border-bottom: none;
-  color: #4c555a;
+  color: #4c555a !important;
   letter-spacing: 1px;
 }
 
@@ -720,14 +720,14 @@ a.anchorjs-link:hover { text-decoration: none; }
 }
 
 .newBtn .btn {
-  padding: 14px 24px;
+  padding: 14px 16px;
   border: 0 none;
   font-weight: 700;
   font-size: 14px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: #fff !important;
-  width: 180px;
+  width: 190px;
   margin: 24px 16px
 }
 
