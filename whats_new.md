@@ -40,7 +40,7 @@ limitations under the License.
           <span style="font-weight: 900; font-style: initial;">Per Note</span>.
           <a class="thumbnail text-center" href="#thumb">
             See more in DEMO.
-            <span><img src="./assets/themes/zeppelin/img/scope.gif" style="max-width: 600px" /></span>
+            <span><img src="./assets/themes/zeppelin/img/scope.gif" style="max-width: 55vw" /></span>
           </a>
         </p>
         </div>

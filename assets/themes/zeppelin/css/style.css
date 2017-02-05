@@ -801,13 +801,13 @@ a.anchorjs-link:hover { text-decoration: none; }
 .thumbnail span img {
   border-width: 0;
   padding: 2px;
-  max-width: 740px;
+  max-width: 55vw;
 }
 
 .first .thumbnail span {
   position: absolute;
   padding: 5px;
-  left: -800px;
+  left: -55vw;
   visibility: hidden;
   color: black;
   text-decoration: none;
@@ -824,7 +824,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 .second .thumbnail span {
   position: absolute;
   padding: 5px;
-  left: -140px;
+  left: -12vw;
   top: 160px;
   visibility: hidden;
   color: black;
@@ -840,7 +840,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 .third .thumbnail span {
   position: absolute;
   padding: 5px;
-  left: -730px;
+  left: -55vw;
   visibility: hidden;
   color: black;
   text-decoration: none;
@@ -868,6 +868,34 @@ a.anchorjs-link:hover { text-decoration: none; }
 @media only screen and (max-width: 768px) {
   .navbar .navbar-brand {
     padding-bottom: 0;
+  }
+
+  /* For enlarged image*/
+  .thumbnail span img {
+    max-width: 86vw !important;
+  }
+
+  .first .thumbnail span {
+    left: 0;
+  }
+
+  .first .thumbnail:hover span {
+    top: 16vh;
+    left: 0;
+  }
+
+  .second .thumbnail span {
+    left: 0;
+    top: 16vh;
+  }
+
+  .third .thumbnail span {
+    left: 0;
+  }
+
+  .third .thumbnail:hover span {
+    top: 16vh;
+    left: 0;
   }
 }
 
