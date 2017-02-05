@@ -19,21 +19,23 @@ limitations under the License.
     <span class="newZeppelin center-block">Apache Zeppelin 0.7</span>
     <div class="border row">
       <div class="border col-md-4 col-sm-4">
-        <h4>Pluggable Visualization</h4>
-        <div class="first">
+        <h4>Pluggable Visualization <br/> via Helium</h4>
+        <div class="viz">
           <p>
             Load/unload Javascript 
             <a href="https://www.npmjs.com/" target="_blank">npm packages</a>
             like Zeppelin built-in chart using Helium framework.
             <a class="thumbnail" href="#thumb">
-              See more in DEMO.<span><img src="./assets/themes/zeppelin/img/helium.gif" /></span>
+              See more in DEMO <span><img src="./assets/themes/zeppelin/img/helium.gif" /></span>
             </a>
+            and
+            <a href="./docs/0.7.0/development/writingzeppelinvisualization.html#how-it-works" target="_blank">Zeppelin Visualization: How it works?</a>
           </p>
         </div>
       </div>
       <div class="border col-md-4 col-sm-4">
-        <h4>Interpreter Per User / Note</h4>
-        <div class="second">
+        <h4>Multi-user Support Improvement</h4>
+        <div class="multi">
         <p>
           Separate interpreter running scope 
           <span style="font-weight: 900; font-style: initial;">Per user</span> or 
@@ -41,16 +43,24 @@ limitations under the License.
           <a class="thumbnail text-center" href="#thumb">
             See more in DEMO.
             <span><img src="./assets/themes/zeppelin/img/scope.gif" style="max-width: 55vw" /></span>
+          </a> <br/>
+          Also running Zeppelin interpreter process as web front end user is available now. 
+          <a class="thumbnail text-center" href="#thumb">
+            See more in DEMO
+            <span style="top: 230px;"><img src="./assets/themes/zeppelin/img/user-impersonation.gif" style="max-width: 55vw;" /></span>
           </a>
+          and 
+          <a href="./docs/0.7.0/manual/userimpersonation.html" target="_blank">Interpreter User Impersonation</a>.
         </p>
         </div>
       </div>
       <div class="border col-md-4 col-sm-4">
-        <h4>Personal Note Mode</h4>
-        <div class="third">
+        <h4>New Note Mode - <br/> Personal Mode</h4>
+        <div class="personal">
         <p>
-          Personalize your analysis result by switching the note to Personal Mode.  
-          <a class="thumbnail text-center third" href="#thumb">
+          Personalize your analysis result by switching the note to Personal Mode. 
+          (Collaboration Mode is default.) 
+          <a class="thumbnail text-center personal" href="#thumb">
             See more in DEMO.
             <span><img src="./assets/themes/zeppelin/img/personalize.gif" /></span>
           </a>

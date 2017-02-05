@@ -169,7 +169,7 @@ body {
   color: #3071a9;
 }
 
-.sideMenu li:first-of-type {
+.sideMenu li:viz-of-type {
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
@@ -237,7 +237,7 @@ body {
   padding: 2rem 2rem;
   margin: 0 auto;
 }
-.content :first-child {
+.content :viz-child {
   margin-top: 0;
 }
 
@@ -301,10 +301,10 @@ a.anchor {
 .content li {
   margin: 0;
 }
-.content li p.first {
+.content li p.viz {
   display: inline-block;
 }
-.content ul :first-child, ol :first-child {
+.content ul :viz-child, ol :viz-child {
   margin-top: 0px;
 }
 
@@ -386,7 +386,7 @@ a.anchor {
   color: #819198;
   border-left: 0.3rem solid #dce6f0;
 }
-.content blockquote > :first-child {
+.content blockquote > :viz-child {
   margin-top: 0;
 }
 .content blockquote > :last-child {
@@ -804,7 +804,7 @@ a.anchorjs-link:hover { text-decoration: none; }
   max-width: 55vw;
 }
 
-.first .thumbnail span {
+.viz .thumbnail span {
   position: absolute;
   padding: 5px;
   left: -55vw;
@@ -814,14 +814,14 @@ a.anchorjs-link:hover { text-decoration: none; }
   width: 30px;
 }
 
-.first .thumbnail:hover span {
+.viz .thumbnail:hover span {
   visibility: visible;
   top: 0;
   left: 320px; /*position where enlarged image should offset horizontally */
   z-index: 50;
 }
 
-.second .thumbnail span {
+.multi .thumbnail span {
   position: absolute;
   padding: 5px;
   left: -12vw;
@@ -832,12 +832,12 @@ a.anchorjs-link:hover { text-decoration: none; }
   width: 30px;
 }
 
-.second .thumbnail:hover span {
+.multi .thumbnail:hover span {
   visibility: visible;
   z-index: 50;
 }
 
-.third .thumbnail span {
+.personal .thumbnail span {
   position: absolute;
   padding: 5px;
   left: -55vw;
@@ -847,7 +847,7 @@ a.anchorjs-link:hover { text-decoration: none; }
   width: 30px;
 }
 
-.third .thumbnail:hover span {
+.personal .thumbnail:hover span {
   visibility: visible;
   top: 0;
   z-index: 50;
@@ -875,25 +875,25 @@ a.anchorjs-link:hover { text-decoration: none; }
     max-width: 86vw !important;
   }
 
-  .first .thumbnail span {
+  .viz .thumbnail span {
     left: 0;
   }
 
-  .first .thumbnail:hover span {
+  .viz .thumbnail:hover span {
     top: 16vh;
     left: 0;
   }
 
-  .second .thumbnail span {
+  .multi .thumbnail span {
     left: 0;
     top: 16vh;
   }
 
-  .third .thumbnail span {
+  .personal .thumbnail span {
     left: 0;
   }
 
-  .third .thumbnail:hover span {
+  .personal .thumbnail:hover span {
     top: 16vh;
     left: 0;
   }
