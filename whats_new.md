@@ -59,10 +59,20 @@ limitations under the License.
       </div>
     </div>
     <div class="border row">
-      <div class="border col-md-4 col-md-offset-2 col-sm-4 col-sm-offset-2">
+      <div class="border col-md-4 col-sm-4">
         <h4>Support Spark 2.1</h4>
         <p>
           The latest version of <a href="http://spark.apache.org/releases/spark-release-2-1-0.html" target="_blank">Apache Spark 2.1.0</a> is now available in Zeppelin.
+        </p>
+      </div>
+      <div class="border col-md-4 col-sm-4">
+        <h4>Improvement in Python</h4>
+        <p>
+          Integrated
+          <a href="./docs/latest/interpreter/python.html#matplotlib-integration" target="_blank">Matplotlib</a>
+          with Python & Pyspark interpreter. And 
+          <a href="./docs/latest/interpreter/python.html#conda" target="_blank">Conda</a>
+          is now available in Zeppelin. 
         </p>
       </div>
       <div class="border col-md-4 col-sm-4">
