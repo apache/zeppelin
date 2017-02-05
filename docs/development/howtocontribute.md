@@ -127,7 +127,7 @@ For example, to run [ParagraphActionIT](https://github.com/apache/zeppelin/blob/
 TEST_SELENIUM=true mvn test -Dtest=ParagraphActionsIT -DfailIfNoTests=false -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
 ```
 
-You'll need Firefox web browser installed in your development environment. While CI server uses 'Firefox 31.0' to run selenium test, it is good idea to install the same version.
+You'll need Firefox web browser installed in your development environment. While CI server uses [Firefox 31.0](https://ftp.mozilla.org/pub/firefox/releases/31.0/) to run selenium test, it is good idea to install the same version (disable auto update to keep the version).
 
 
 ## Where to Start
