@@ -4,7 +4,6 @@
 
 body {
   padding-top: 50px;
-  padding-bottom: 20px;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: #4c555a;
@@ -19,6 +18,7 @@ body {
 
 .jumbotron {
   background-color: #3071a9;
+  margin-bottom: 0px;
 }
 
 .jumbotron h1,
@@ -28,6 +28,8 @@ body {
 
 .jumbotron p {
   font-size: 19px;
+  line-height: 1.5;
+  margin-bottom: 28px;
 }
 
 .jumbotron .btn {
@@ -64,15 +66,8 @@ body {
 
 .jumbotron h1 {
   font-family: 'Patua One', cursive;
-
-.jumbotron h1 {
-  font-family: 'Patua One', cursive;
-}
-
-.jumbotron small {
-  font-size: 60%;
-  color: #FFF;
-}
+  font-size: 60px;
+  line-height: 1.5;
 }
 
 .jumbotron small {
@@ -174,7 +169,7 @@ body {
   color: #3071a9;
 }
 
-.sideMenu li:first-of-type {
+.sideMenu li:viz-of-type {
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
@@ -242,7 +237,7 @@ body {
   padding: 2rem 2rem;
   margin: 0 auto;
 }
-.content :first-child {
+.content :viz-child {
   margin-top: 0;
 }
 
@@ -306,10 +301,10 @@ a.anchor {
 .content li {
   margin: 0;
 }
-.content li p.first {
+.content li p.viz {
   display: inline-block;
 }
-.content ul :first-child, ol :first-child {
+.content ul :viz-child, ol :viz-child {
   margin-top: 0px;
 }
 
@@ -391,7 +386,7 @@ a.anchor {
   color: #819198;
   border-left: 0.3rem solid #dce6f0;
 }
-.content blockquote > :first-child {
+.content blockquote > :viz-child {
   margin-top: 0;
 }
 .content blockquote > :last-child {
@@ -518,6 +513,17 @@ a.anchor {
 }
 
 a.anchorjs-link:hover { text-decoration: none; }
+
+.index-header {
+  font-family: 'Helvetica' !important;
+  text-align: center;
+  font-size: 38px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  color: #4c555a !important;
+  letter-spacing: 1px;
+}
 
 /* Helium Package list style */
 .heliumPackageContainer p {
@@ -663,6 +669,191 @@ a.anchorjs-link:hover { text-decoration: none; }
   background: #c9e2f9; 
 }
 
+/* For what's new section */
+.new {
+  background: rgba(226, 233, 239, 0.4);
+  padding-bottom: 28px;
+}
+
+.new .description {
+  text-align: center;
+  padding: 18px;
+  font-size: 17px;
+}
+
+.newZeppelin {
+  text-align: center;
+  font-family: 'Patua One', cursive;
+  font-size: 30px;
+  padding-bottom: 28px;
+  color: #3071a9;
+}
+
+.new h2 {
+  font-family: "Helvetica";
+  text-align: center;
+  padding-top: 32px;
+  font-size: 38px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  letter-spacing: 1px;
+}
+
+.new h4 {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 18px;
+  margin-top: 8px;
+}
+
+.new p {
+  padding-bottom: 18px;
+  padding-right: 9px;
+  padding-left: 9px;
+  text-align: justify;
+}
+
+.newBtn .round {
+  border-radius: 24px;
+}
+
+.newBtn .btn {
+  padding: 14px 16px;
+  border: 0 none;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff !important;
+  width: 190px;
+  margin: 24px 16px
+}
+
+.newBtn .btn:focus, .btn:active:focus, .btn.active:focus {
+  outline: 0 none;
+}
+
+.newBtn .btn-primary {
+  background: #0099cc;
+  color: #ffffff;
+}
+.newBtn .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+  background: #33a6cc;
+  transition: .1s ease-in;
+}
+.newBtn .btn-primary:active, .btn-primary.active {
+  background: #007299;
+  box-shadow: none;
+}
+
+/* For twitter news feed button */
+.twitterBtn .round {
+  border-radius: 18px;
+}
+
+.twitterBtn .btn {
+  padding: 10px 24px;
+  border: 0 none;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff !important;
+  width: 280px;
+  margin: 8px 16px
+}
+
+.twitterBtn .btn:focus, .btn:active:focus, .btn.active:focus {
+  outline: 0 none;
+}
+
+.twitterBtn .btn-primary {
+  background: #0099cc;
+  color: #ffffff;
+}
+.twitterBtn .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+  background: #33a6cc;
+  transition: .1s ease-in;
+}
+.twitterBtn .btn-primary:active, .btn-primary.active {
+  background: #007299;
+  box-shadow: none;
+}
+
+/* Demo img thumbnail */ 
+.thumbnail {
+  background-color: transparent;
+  border: none;
+  display: inline;
+}
+
+.thumbnail img {
+  margin: 0 5px 5px 0;
+}
+
+.thumbnail:hover {
+  background-color: transparent;
+}
+
+/* For enlarged image*/
+.thumbnail span img {
+  border-width: 0;
+  padding: 2px;
+  max-width: 55vw;
+}
+
+.viz .thumbnail span {
+  position: absolute;
+  padding: 5px;
+  left: -55vw;
+  visibility: hidden;
+  color: black;
+  text-decoration: none;
+  width: 30px;
+}
+
+.viz .thumbnail:hover span {
+  visibility: visible;
+  top: 0;
+  left: 320px; /*position where enlarged image should offset horizontally */
+  z-index: 50;
+}
+
+.multi .thumbnail span {
+  position: absolute;
+  padding: 5px;
+  left: -12vw;
+  top: 160px;
+  visibility: hidden;
+  color: black;
+  text-decoration: none;
+  width: 30px;
+}
+
+.multi .thumbnail:hover span {
+  visibility: visible;
+  z-index: 50;
+}
+
+.personal .thumbnail span {
+  position: absolute;
+  padding: 5px;
+  left: -55vw;
+  visibility: hidden;
+  color: black;
+  text-decoration: none;
+  width: 30px;
+}
+
+.personal .thumbnail:hover span {
+  visibility: visible;
+  top: 0;
+  z-index: 50;
+}
+
+
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
   .jumbotron h1 {
@@ -677,6 +868,34 @@ a.anchorjs-link:hover { text-decoration: none; }
 @media only screen and (max-width: 768px) {
   .navbar .navbar-brand {
     padding-bottom: 0;
+  }
+
+  /* For enlarged image*/
+  .thumbnail span img {
+    max-width: 86vw !important;
+  }
+
+  .viz .thumbnail span {
+    left: 0;
+  }
+
+  .viz .thumbnail:hover span {
+    top: 16vh;
+    left: 0;
+  }
+
+  .multi .thumbnail span {
+    left: 0;
+    top: 16vh;
+  }
+
+  .personal .thumbnail span {
+    left: 0;
+  }
+
+  .personal .thumbnail:hover span {
+    top: 16vh;
+    left: 0;
   }
 }
 
