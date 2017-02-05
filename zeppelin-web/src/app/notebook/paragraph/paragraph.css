@@ -76,6 +76,10 @@ table.dataTable.table-condensed .sorting_desc:after {
   white-space:pre-wrap; /** to preserve white-space and newlines of result */
 }
 
+.plainTextContent div {
+  min-height:17px;
+}
+
 .graphContainer {
   position: relative;
   margin-bottom: 5px;

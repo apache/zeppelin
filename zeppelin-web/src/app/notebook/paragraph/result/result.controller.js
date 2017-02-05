@@ -488,12 +488,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
     // pop all stacked data and append to the DOM
     while (textResultQueueForAppend.length > 0) {
-      const stacked = textResultQueueForAppend.pop();
-
-      const lines = stacked.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        elem.append(angular.element('<div></div>').text(lines[i]));
-      }
+      const line = textResultQueueForAppend.pop();
+      elem.append(angular.element('<div></div>').text(line));
 
       if ($scope.keepScrollDown) {
         const doc = angular.element(`#${elemId}`);
