@@ -41,16 +41,16 @@ Please check the below table before you download Zeppelin package.
       <h6><a href="http://spark.apache.org/" target="_blank">Spark</a><h6>
     </td>
     <td rowspan="2">
-        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x, 2.0.x <strong>2.1.0</strong>
+        1.4.x, 1.5.x, 1.6.x, 2.0.x <strong>2.1.0</strong>
     </td>
     <td>
-        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x, <strong>2.0.0</strong>
+        1.1.x, 1.2.x, 1.3.x, 1.4.x, 1.5.x, 1.6.x, <strong>2.0.0</strong>
     </td>
     <td>
-        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
+        1.1.x, 1.2.x, 1.3.x, 1.4.x, 1.5.x, 1.6.x
     </td>
     <td rowspan="2">
-        1.1.x, 1.2.x, 1.3.x 1.4.x, 1.5.x, 1.6.x
+        1.1.x, 1.2.x, 1.3.x, 1.4.x, 1.5.x, 1.6.x
     </td>
   </tr>
   <tr>
