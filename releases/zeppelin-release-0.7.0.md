@@ -44,7 +44,7 @@ We encourage to [download](../../download.html) the latest release. Feedback thr
 
 ### Visualization
    * [ZEPPELIN-212](https://issues.apache.org/jira/browse/ZEPPELIN-212) - Multiple paragraph results
-   * [ZEPPELIN-732](https://issues.apache.org/jira/browse/ZEPPELIN-732) - Helium Application
+   * [ZEPPELIN-732](https://issues.apache.org/jira/browse/ZEPPELIN-732) - [Helium Application](../../helium_packages.html)
    * [ZEPPELIN-1371](https://issues.apache.org/jira/browse/ZEPPELIN-1371) - Add text/numeric conversion support to table display
 
 ### Backend interpreter support

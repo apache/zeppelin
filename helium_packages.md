@@ -22,7 +22,7 @@ limitations under the License.
 # Helium Packages
 
 From Zeppelin-0.7, you can load/unload a pluggable Apache Zeppelin package on runtime through [Helium framework](https://issues.apache.org/jira/browse/ZEPPELIN-533) in Zeppelin.
-Since it's a [npm packge](https://docs.npmjs.com/getting-started/what-is-npm), surely can be published to [npm registry](https://docs.npmjs.com/misc/registry). 
+Since it's a [npm package](https://docs.npmjs.com/getting-started/what-is-npm), surely can be published to [npm registry](https://docs.npmjs.com/misc/registry). 
 Here are the lists of Helium packages registered in the registry. 
 If you need more information about how you can use the below packages in Zeppelin, see [How it works](https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html#how-it-works).
 Or you can also create your own package as described in [Write new Visualization](https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html#write-new-visualization) section.
