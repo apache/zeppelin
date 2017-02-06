@@ -113,7 +113,7 @@ This release includes new interpreter support for
    * note.json format has been changed to support multiple types of output in a paragraph. Zeppelin will automatically convert old format to new format. 0.6 or lower version can read new note.json format but output will not be displayed. For the detail, see [ZEPPELIN-212](http://issues.apache.org/jira/browse/ZEPPELIN-212) and [pull request](https://github.com/apache/zeppelin/pull/1658).
    * Note storage layer will utilize `GitNotebookRepo` by default instead of `VFSNotebookRepo` storage layer, which is an extension of latter one with versioning capabilities on top of it.
    * Markdown and angular paragraphs will hide editor automatically after run and user can open editor by double clicking those paragraphs.
-   * Select box dynamic form doesn't run on changed but on enter after change.
+   * Select box dynamic form doesn't run on change but on enter after change.
 
 ### Known issues
    * [ZEPPELIN-2048](https://issues.apache.org/jira/browse/ZEPPELIN-2048): Can't run first paragraph when personalize mode on
