@@ -18,7 +18,6 @@ import './app/home/home.controller.js';
 import './app/handsontable/handsonHelper.js';
 import './app/notebook/notebook.controller.js';
 
-/** start: global variable `zeppelin` related files */
 import './app/tabledata/tabledata.js';
 import './app/tabledata/transformation.js';
 import './app/tabledata/pivot.js';
@@ -32,7 +31,6 @@ import './app/visualization/builtins/visualization-piechart.js';
 import './app/visualization/builtins/visualization-areachart.js';
 import './app/visualization/builtins/visualization-linechart.js';
 import './app/visualization/builtins/visualization-scatterchart.js';
-/** end: global variable `zeppelin` related files */
 
 import './app/jobmanager/jobmanager.controller.js';
 import './app/jobmanager/jobs/job.controller.js';
@@ -45,7 +43,7 @@ import './app/notebook/paragraph/paragraph.controller.js';
 import './app/notebook/paragraph/result/result.controller.js';
 import './app/search/result-list.controller.js';
 import './app/notebookRepos/notebookRepos.controller.js';
-import './app/helium/helium.controller.js';
+import './app/helium';
 import './components/arrayOrderingSrv/arrayOrdering.service.js';
 import './components/clipboard/clipboard.controller.js';
 import './components/navbar/navbar.controller.js';

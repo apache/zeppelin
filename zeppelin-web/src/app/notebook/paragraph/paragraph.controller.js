@@ -237,7 +237,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  $scope.runParagraphUsingSpell = function(spell, paragraphText,
+  $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
     $scope.paragraph.results = {};
     $scope.paragraph.errorMessage = '';
@@ -248,6 +248,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       const splited = paragraphText.split(magic);
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '');
+
+      const spell = heliumService.getSpellByMagic(magic);
       const spellResult = spell.interpret(textWithoutMagic);
       const parsed = spellResult.getAllParsedDataWithTypes(
         heliumService.getAllSpells(), magic, textWithoutMagic);
@@ -312,8 +314,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     const spell = heliumService.getSpellByMagic(magic);
 
     if (spell) {
-      $scope.runParagraphUsingSpell(
-        spell, paragraphText, magic, digestRequired, propagated);
+      $scope.runParagraphUsingSpell(paragraphText, magic, digestRequired, propagated);
     } else {
       $scope.runParagraphUsingBackendInterpreter(paragraphText);
     }

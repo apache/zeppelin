@@ -334,7 +334,7 @@ function websocketMsgSrv($rootScope, websocketEvents) {
 
     getInterpreterSettings: function() {
       websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
-    }
+    },
 
   };
 }

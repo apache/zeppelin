@@ -41,36 +41,24 @@ export function mergePersistedConfWithSpec(persisted, spec) {
   return confs;
 }
 
-export function createSinglePackageConfig(pkg, persistedConf) {
-  const spec = pkg.config;
-  if (!spec) { return; }
-
-  const version = pkg.version;
-  if (!version) { return; }
-
-  if (!persistedConf) { persistedConf = {}; }
-
-  return mergePersistedConfWithSpec(persistedConf, spec);
-}
-
-export function createAllPackageConfigs(defaultPackages, persistedConfs) {
+export function createPackageConf(defaultPackages, persistedPackacgeConfs) {
   let packageConfs = {};
 
   for (let name in defaultPackages) {
-    const pkgSearchResult = defaultPackages[name];
+    const pkgInfo = defaultPackages[name];
 
-    const spec = pkgSearchResult.pkg.config;
-    if (!spec) { continue; }
+    const configSpec = pkgInfo.pkg.config;
+    if (!configSpec) { continue; }
 
-    const version = pkgSearchResult.pkg.version;
+    const version = pkgInfo.pkg.version;
     if (!version) { continue; }
 
-    let persistedConf = {};
-    if (persistedConfs[name] && persistedConfs[name][version]) {
-      persistedConf = persistedConfs[name][version];
+    let config = {};
+    if (persistedPackacgeConfs[name] && persistedPackacgeConfs[name][version]) {
+      config = persistedPackacgeConfs[name][version];
     }
 
-    const confs = mergePersistedConfWithSpec(persistedConf, spec);
+    const confs = mergePersistedConfWithSpec(config, configSpec);
     packageConfs[name] = confs;
   }
 
@@ -95,12 +83,14 @@ export function parseConfigValue(type, stringified) {
 }
 
 /**
- * persist key-value only
- * since other info (e.g type, desc) can be provided by default config
+ * create persistable config object
  */
 export function createPersistableConfig(currentConf) {
+  // persist key-value only
+  // since other info (e.g type, desc) can be provided by default config
   const filtered = currentConf.reduce((acc, c) => {
-    acc[c.name] = parseConfigValue(c.type, c.value);
+    let value = parseConfigValue(c.type, c.value);
+    acc[c.name] = value;
     return acc;
   }, {});
 
