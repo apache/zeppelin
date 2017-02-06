@@ -17,6 +17,7 @@
 {
   "type" : "SPELL",
   "name" : "markdown-spell",
+  "version": "local",
   "description" : "Parse markdown using https://github.com/evilstreak/markdown-js (example)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-markdown",
   "license" : "Apache-2.0",

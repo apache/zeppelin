@@ -17,10 +17,18 @@
 {
   "type" : "SPELL",
   "name" : "translator-spell",
+  "version": "local",
   "description" : "Translate langauges using Google API (examaple)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-translator",
   "license" : "Apache-2.0",
   "icon" : "<i class='fa fa-globe '></i>",
+  "config": {
+    "access-token": {
+      "type": "string",
+      "description": "access token for Google Translation API",
+      "defaultValue": "EXAMPLE-TOKEN"
+    }
+  },
   "spell": {
     "magic": "%translator",
     "usage": "%translator <source>-<target> <access-key> <TEXT>"
