@@ -131,4 +131,4 @@ Jeff Zhang, Mina Lee, AhyoungRyu, astroshim, Lee moon soo, Prabhjyot Singh, Khal
 
 The following people helped verifying this release:
 
-CloverHearts, Jun Kim, Prabhjyot Singh, Jeff Zhang, Hyung Sung Shim, Ahyoung Ryu, Md. Rezaul Karim, Alexander Bezzubov, Alexander Goodman, Lei Wang, Felix Cheung, DuyHai Doan, Vinay Shukla, Khalid Huseynov, Jongyoul Lee, Sora Lee, Windy Qin, rohit choudhary, moon soo Lee, Andreas Weise, Renjith Kamath
+CloverHearts, Jun Kim, Prabhjyot Singh, Jeff Zhang, Hyung Sung Shim, Ahyoung Ryu, Md. Rezaul Karim, Alexander Bezzubov, Alexander Goodman, Lei Wang, Felix Cheung, DuyHai Doan, Vinay Shukla, Khalid Huseynov, Jongyoul Lee, Sora Lee, Windy Qin, rohit choudhary, moon soo Lee, Andreas Weise, Renjith Kamath, Mina Lee
