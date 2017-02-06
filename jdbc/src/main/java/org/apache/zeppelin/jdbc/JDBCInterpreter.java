@@ -375,7 +375,7 @@ public class JDBCInterpreter extends Interpreter {
             if (user == null) {
               connection = getConnectionFromPool(url, user, propertyKey, properties);
             } else {
-              if ("hive".equalsIgnoreCase(propertyKey)) {
+              if (url.trim().indexOf("jdbc:hive") == 0) {
                 StringBuilder connectionUrl = new StringBuilder(url);
                 Integer lastIndexOfUrl = connectionUrl.indexOf("?");
                 if (lastIndexOfUrl == -1) {
