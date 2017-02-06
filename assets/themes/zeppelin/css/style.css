@@ -19,6 +19,7 @@ body {
 .jumbotron {
   background-color: #3071a9;
   margin-bottom: 0px;
+  padding-top: 28px;
 }
 
 .jumbotron h1,
@@ -169,7 +170,7 @@ body {
   color: #3071a9;
 }
 
-.sideMenu li:viz-of-type {
+.sideMenu li:first-of-type {
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
@@ -237,7 +238,7 @@ body {
   padding: 2rem 2rem;
   margin: 0 auto;
 }
-.content :viz-child {
+.content :first-child {
   margin-top: 0;
 }
 
@@ -304,7 +305,7 @@ a.anchor {
 .content li p.viz {
   display: inline-block;
 }
-.content ul :viz-child, ol :viz-child {
+.content ul :first-child, ol :first-child {
   margin-top: 0px;
 }
 
@@ -386,7 +387,7 @@ a.anchor {
   color: #819198;
   border-left: 0.3rem solid #dce6f0;
 }
-.content blockquote > :viz-child {
+.content blockquote > :first-child {
   margin-top: 0;
 }
 .content blockquote > :last-child {
@@ -517,7 +518,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 .index-header {
   font-family: 'Helvetica' !important;
   text-align: center;
-  font-size: 38px !important;
+  font-size: 37px !important;
   font-weight: 700;
   text-transform: uppercase;
   border-bottom: none;
@@ -693,7 +694,7 @@ a.anchorjs-link:hover { text-decoration: none; }
   font-family: "Helvetica";
   text-align: center;
   padding-top: 32px;
-  font-size: 38px;
+  font-size: 37px;
   font-weight: 700;
   text-transform: uppercase;
   border-bottom: none;
@@ -781,6 +782,97 @@ a.anchorjs-link:hover { text-decoration: none; }
   background: #007299;
   box-shadow: none;
 }
+
+/* For Medium Blog post */
+.blog {
+  background: #fff;
+  padding-bottom: 28px;
+}
+
+.blog .container {
+  width: 60vw;
+}
+
+.blogContentBox {
+  border-top: solid 1px #93A1A1;
+  margin-top: 26px;
+  padding-top: 22px;
+  padding-bottom: 16px;
+}
+
+.blog h2 {
+  font-family: "Helvetica";
+  text-align: center;
+  padding-top: 32px;
+  font-size: 36px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  letter-spacing: 1px;
+}
+
+.blogList {
+  min-height: 25px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid #EFEFEF;
+  padding-bottom: 22px;
+}
+
+.blogList .blogHead {
+  font-family: "Helvetica Neue";
+  height: 30px;
+}
+
+.blogList .blogTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blogList .blogTitle a {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: rgba(0,0,0,.7);
+  margin-top: 5px;
+  margin-bottom: 3px;
+}
+
+.blogList .blogDescription {
+  margin-top: 14px;
+  margin-bottom: 14px;
+  letter-spacing: -.02em;
+  font-weight: 200;
+  font-size: 15px;
+  line-height: 1.3;
+  color: rgba(0,0,0,.5);
+}
+
+.blogList .blogPublished {
+  font-weight: 200;
+  color: #00ab6b;
+}
+
+.blogShadow {
+  height: 120px;
+  background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+  margin-top: -100px;
+  z-index: 50;
+}
+
+.blogShadow .blogMore {
+  position: relative;
+  padding-top: 80px;
+  text-align: center;
+  color: #586E75;
+}
+
+.blogShadow .blogMore a {
+
+}
+
 
 /* Demo img thumbnail */ 
 .thumbnail {
@@ -896,6 +988,10 @@ a.anchorjs-link:hover { text-decoration: none; }
   .personal .thumbnail:hover span {
     top: 16vh;
     left: 0;
+  }
+
+  .blog .container {
+    width: 80vw;
   }
 }
 
