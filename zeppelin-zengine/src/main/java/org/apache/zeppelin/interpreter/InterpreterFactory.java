@@ -731,7 +731,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String noteId) {
     InterpreterOption option = interpreterSetting.getOption();
     if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
+      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(user, noteId);
     } else if (option.isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
@@ -971,7 +971,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     // restart interpreter setting in note page
     if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
-      intpSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
+      intpSetting.closeAndRemoveInterpreterGroupByNoteId(user, noteId);
       return;
     } else {
       // restart interpreter setting in interpreter setting page

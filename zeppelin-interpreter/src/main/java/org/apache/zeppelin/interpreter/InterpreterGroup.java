@@ -117,15 +117,15 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
   }
-  
+
   public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
     this.angularObjectRegistry = angularObjectRegistry;
   }
-  
+
   public InterpreterHookRegistry getInterpreterHookRegistry() {
     return hookRegistry;
   }
-  
+
   public void setInterpreterHookRegistry(InterpreterHookRegistry hookRegistry) {
     this.hookRegistry = hookRegistry;
   }
@@ -148,15 +148,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       intpToClose.addAll(intpGroupForSession);
     }
     close(intpToClose);
-
-    // make sure remote interpreter process terminates
-    if (remoteInterpreterProcess != null) {
-      while (remoteInterpreterProcess.referenceCount() > 0) {
-        remoteInterpreterProcess.dereference();
-      }
-      remoteInterpreterProcess = null;
-    }
-    allInterpreterGroups.remove(id);
+    terminateRemoteProcess();
   }
 
   /**
@@ -167,14 +159,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     LOGGER.info("Close interpreter group " + getId() + " for session: " + sessionId);
     List<Interpreter> intpForSession = this.get(sessionId);
     close(intpForSession);
-
-    if (remoteInterpreterProcess != null) {
-      remoteInterpreterProcess.dereference();
-      if (remoteInterpreterProcess.referenceCount() <= 0) {
-        remoteInterpreterProcess = null;
-        allInterpreterGroups.remove(id);
-      }
-    }
+    terminateRemoteProcess();
   }
 
   private void close(Collection<Interpreter> intpToClose) {
@@ -209,12 +194,9 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   }
 
   /**
-   * Close all interpreter instances in this group
+   * Make sure remote interpreter process terminates
    */
-  public void shutdown() {
-    LOGGER.info("Close interpreter group " + getId());
-
-    // make sure remote interpreter process terminates
+  private void terminateRemoteProcess() {
     if (remoteInterpreterProcess != null) {
       while (remoteInterpreterProcess.referenceCount() > 0) {
         remoteInterpreterProcess.dereference();
@@ -222,6 +204,15 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
       remoteInterpreterProcess = null;
     }
     allInterpreterGroups.remove(id);
+  }
+
+  /**
+   * Close all interpreter instances in this group
+   */
+  public void shutdown() {
+    LOGGER.info("Close interpreter group " + getId());
+
+    terminateRemoteProcess();
 
     List<Interpreter> intpToClose = new LinkedList<>();
     for (List<Interpreter> intpGroupForSession : this.values()) {
