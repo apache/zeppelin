@@ -21,6 +21,6 @@ limitations under the License.
 
 # Apache Zeppelin Documentation 
 
-  * [Zeppelin 0.5.6-incubating](docs/0.5.6-incubationg)
-  * [Zeppelin 0.5.5-incubating](docs/0.5.5-incubationg)
-  * [Zeppelin 0.5.0-incubating](docs/0.5.0-incubationg)
+  * [Zeppelin 0.5.6-incubating](docs/0.5.6-incubating)
+  * [Zeppelin 0.5.5-incubating](docs/0.5.5-incubating)
+  * [Zeppelin 0.5.0-incubating](docs/0.5.0-incubating)
