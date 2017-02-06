@@ -19,14 +19,19 @@ package org.apache.zeppelin.helium;
 import java.util.*;
 
 /**
- * Helium config. This object will be persisted to conf/heliumc.conf
+ * Helium config. This object will be persisted to conf/helium.conf
  */
 public class HeliumConf {
   // enabled packages {name, version}
-  Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
+  private Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
+
+  // config for versioned package {name {version {configKey configValue}}}
+  private Map<String, Map<String, Map<String, Object>>> packageConfig =
+      Collections.synchronizedMap(
+          new HashMap<String, Map<String, Map<String, Object>>>());
 
   // enabled visualization package display order
-  List<String> bundleDisplayOrder = new LinkedList<>();
+  private List<String> bundleDisplayOrder = new LinkedList<>();
 
   public Map<String, String> getEnabledPackages() {
     return new HashMap<>(enabled);
@@ -38,6 +43,43 @@ public class HeliumConf {
 
   public void enablePackage(String name, String artifact) {
     enabled.put(name, artifact);
+  }
+
+  public void updatePackageConfig(String pkgName, String pkgVersion,
+                                  Map<String, Object> newConfig) {
+    if (!packageConfig.containsKey(pkgName)) {
+      packageConfig.put(pkgName,
+          Collections.synchronizedMap(new HashMap<String, Map<String, Object>>()));
+    }
+
+    Map<String, Map<String, Object>> versionedConfig = packageConfig.get(pkgName);
+
+    versionedConfig.put(pkgVersion, newConfig);
+  }
+
+  /**
+   * @return versioned package config `{name, {version, {configKey, configVal}}}`
+   */
+  public Map<String, Map<String, Map<String, Object>>> getAllPackageConfigs () {
+    return packageConfig;
+  }
+
+  public Map<String, Object> getPackageConfig (String pkgName, String pkgVersion) {
+    if (!packageConfig.containsKey(pkgName)) {
+      packageConfig.put(pkgName,
+          Collections.synchronizedMap(new HashMap<String, Map<String, Object>>()));
+    }
+
+    Map<String, Map<String, Object>> versionedConfig = packageConfig.get(pkgName);
+
+    if (!versionedConfig.containsKey(pkgVersion)) {
+      versionedConfig.put(pkgVersion,
+          Collections.synchronizedMap(new HashMap<String, Object>()));
+    }
+
+    Map<String, Object> config = versionedConfig.get(pkgVersion);
+
+    return config;
   }
 
   public void disablePackage(HeliumPackage pkg) {

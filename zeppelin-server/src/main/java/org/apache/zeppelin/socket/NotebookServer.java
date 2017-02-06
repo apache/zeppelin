@@ -2281,7 +2281,6 @@ public class NotebookServer extends WebSocketServlet
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
     conn.send(serializeMessage(resp));
-    return;
   }
 
   private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject)
@@ -2324,11 +2323,31 @@ public class NotebookServer extends WebSocketServlet
         .equals(WatcherSecurityKey.getKey()));
   }
 
+  /**
+   * Send websocket message to all connections regardless of notebook id
+   */
+  private void broadcastToAllConnections(String serialized) {
+    broadcastToAllConnectionsExcept(null, serialized);
+  }
+
+  private void broadcastToAllConnectionsExcept(NotebookSocket exclude, String serialized) {
+    synchronized (connectedSockets) {
+      for (NotebookSocket conn: connectedSockets) {
+        if (exclude != null && exclude.equals(conn)) {
+          continue;
+        }
+
+        try {
+          conn.send(serialized);
+        } catch (IOException e) {
+          LOG.error("Cannot broadcast message to watcher", e);
+        }
+      }
+    }
+  }
+
   private void broadcastToWatchers(String noteId, String subject, Message message) {
     synchronized (watcherSockets) {
-      if (watcherSockets.isEmpty()) {
-        return;
-      }
       for (NotebookSocket watcher : watcherSockets) {
         try {
           watcher.send(
