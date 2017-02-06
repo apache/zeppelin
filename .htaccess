@@ -7,7 +7,7 @@ RewriteRule ^/?docs/0.6.0-(?!SNAPSHOT).*/(.*) /docs/0.6.0/$2  [R=301,L,NE]
 RewriteRule ^/?docs/(0.5.[056])(?!-incubating).*/(.*) /docs/$1-incubating/$3  [R=301,L,NE]
 
 # rewrite docs/latest to latest stable release
-RewriteRule ^/?docs/latest/(.*) /docs/0.6.2/$1  [PT]
+RewriteRule ^/?docs/latest/(.*) /docs/0.7.0/$1  [PT]
 
 # rewrite docs/snapshot to latest snapshot version
-RewriteRule ^/?docs/snapshot/(.*) /docs/0.7.0-SNAPSHOT/$1  [PT]
+RewriteRule ^/?docs/snapshot/(.*) /docs/0.8.0-SNAPSHOT/$1  [PT]
