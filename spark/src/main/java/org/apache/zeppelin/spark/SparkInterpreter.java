@@ -993,6 +993,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private Results.Result interpret(String line) {
+    out.ignoreLeadingNewLinesFromScalaReporter();
     return (Results.Result) Utils.invokeMethod(
         intp,
         "interpret",
@@ -1261,7 +1262,6 @@ public class SparkInterpreter extends Interpreter {
     if (varName == null || varName.isEmpty()) {
       return;
     }
-
     Object lastObj = null;
     try {
       if (Utils.isScala2_10()) {
