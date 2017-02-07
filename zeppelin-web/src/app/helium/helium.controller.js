@@ -218,7 +218,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       return;
     }
 
-    heliumService.getSinglePackageConfig(pkgName, pkgVersion)
+    heliumService.getSinglePackageConfigs(pkgName, pkgVersion)
       .then(conf => {
         $scope.defaultPackageConfigs[pkgName] = conf;
         pkgSearchResult.configOpened = true;

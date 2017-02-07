@@ -56,7 +56,8 @@ export function createDefaultPackages(pkgSearchResults, sce) {
 export function findPackageByMagic(defaultPackages, magic) {
   for (let name in defaultPackages) {
     const pkgSearchResult = defaultPackages[name];
-    if (pkgSearchResult.pkg.type === HeliumType.SPELL &&
+    if (pkgSearchResult.enabled &&
+      pkgSearchResult.pkg.type === HeliumType.SPELL &&
       pkgSearchResult.pkg.spell.magic === magic) {
       return pkgSearchResult;
     }

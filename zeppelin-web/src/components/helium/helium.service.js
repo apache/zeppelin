@@ -15,7 +15,7 @@
 import { HeliumType, } from './helium-type';
 import {
   createAllPackageConfigs,
-  createSinglePackageConfig,
+  createSinglePackageConfigs,
   createPersistableConfig,
 } from './helium-conf';
 import {
@@ -68,23 +68,36 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     return spellPerMagic[magic];
   };
 
-  /**
-   */
   this.executeSpell = function(magic, textWithoutMagic) {
-    const spell = this.getSpellByMagic(magic);
-    const spellResult = spell.interpret(textWithoutMagic);
-    const parsed = spellResult.getAllParsedDataWithTypes(
-      spellPerMagic, magic, textWithoutMagic);
+    const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
+      .then(confs => {
+        return createPersistableConfig(confs);
+      });
 
-    return parsed;
+    return promisedConf.then(conf => {
+      const spell = this.getSpellByMagic(magic);
+      const spellResult = spell.interpret(textWithoutMagic, conf);
+      const parsed = spellResult.getAllParsedDataWithTypes(
+        spellPerMagic, magic, textWithoutMagic);
+
+      return parsed;
+    });
   };
 
   this.executeSpellAsDisplaySystem = function(type, data) {
-    const spell = this.getSpellByMagic(type);
-    const spellResult = spell.interpret(data.trim());
-    const parsed = spellResult.getAllParsedDataWithTypes(spellPerMagic);
+    const promisedConf = this.getSinglePackageConfigUsingMagic(type)
+      .then(confs => {
+        return createPersistableConfig(confs);
+      });
 
-    return parsed;
+    return promisedConf.then(conf => {
+
+      const spell = this.getSpellByMagic(type);
+      const spellResult = spell.interpret(data.trim(), conf);
+      const parsed = spellResult.getAllParsedDataWithTypes(spellPerMagic);
+
+      return parsed;
+    });
   };
 
   this.getVisualizationBundles = function() {
@@ -180,7 +193,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
   /**
    * get all package configs.
-   * @return Promise<{name, {version, {confKey, confVal}}}>
+   * @return { Promise<{name, Array<Object>}> }
    */
   this.getAllPackageConfigs = function() {
     const promisedDefaultPackages = this.getDefaultPackages();
@@ -204,9 +217,9 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
   /**
    * get the package config which is persisted in server.
-   * @return Promise<{confKey, confVal}>
+   * @return { Promise<Array<Object>> }
    */
-  this.getSinglePackageConfig = function(pkgName, pkgVersion) {
+  this.getSinglePackageConfigs = function(pkgName, pkgVersion) {
     const promisedPkgSearchResult = this.getSinglePackageInfo(pkgName, pkgVersion);
 
     const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgVersion}`;
@@ -220,7 +233,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
         const pkgSearchResult = values[0];
         const persistedConf = values[1];
 
-        const merged = createSinglePackageConfig(pkgSearchResult.pkg, persistedConf);
+        const merged = createSinglePackageConfigs(pkgSearchResult.pkg, persistedConf);
         return merged;
       })
       .catch(function(error) {
@@ -229,13 +242,21 @@ export default function heliumService($http, $sce, baseUrlSrv) {
   };
 
   this.getSinglePackageConfigUsingMagic = function(magic) {
-    this.getDefaultPackages()
+    const promised = this.getDefaultPackages()
       .then(defaultPackages => {
         const pkgSearchResult = findPackageByMagic(defaultPackages, magic)
+
+        // return empty conf if failed to find pkg
+        if (!pkgSearchResult) {
+          return {};
+        }
+
         const pkgVersion = pkgSearchResult.pkg.version;
         const pkgName = pkgSearchResult.pkg.name;
 
-        return this.getSinglePackageConfig(pkgName, pkgVersion);
-      })
+        return this.getSinglePackageConfigs(pkgName, pkgVersion);
+      });
+
+    return promised;
   };
 }

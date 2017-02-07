@@ -41,12 +41,12 @@ export function mergePersistedConfWithSpec(persisted, spec) {
   return confs;
 }
 
-export function createSinglePackageConfig(pkg, persistedConf) {
+export function createSinglePackageConfigs(pkg, persistedConf) {
   const spec = pkg.config;
-  if (!spec) { return; }
+  if (!spec) { return []; }
 
   const version = pkg.version;
-  if (!version) { return; }
+  if (!version) { return []; }
 
   if (!persistedConf) { persistedConf = {}; }
 
@@ -98,8 +98,8 @@ export function parseConfigValue(type, stringified) {
  * persist key-value only
  * since other info (e.g type, desc) can be provided by default config
  */
-export function createPersistableConfig(currentConf) {
-  const filtered = currentConf.reduce((acc, c) => {
+export function createPersistableConfig(currentConfs) {
+  const filtered = currentConfs.reduce((acc, c) => {
     acc[c.name] = parseConfigValue(c.type, c.value);
     return acc;
   }, {});
