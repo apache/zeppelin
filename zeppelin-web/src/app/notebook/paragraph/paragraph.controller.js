@@ -249,31 +249,28 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '');
 
-      const spell = heliumService.getSpellByMagic(magic);
-      const spellResult = spell.interpret(textWithoutMagic);
-      const parsed = spellResult.getAllParsedDataWithTypes(
-        heliumService.getAllSpells(), magic, textWithoutMagic);
-
       // handle actual result message in promise
-      parsed.then(resultsMsg => {
-        const status = 'FINISHED';
-        $scope.paragraph.status = status;
-        $scope.paragraph.results.code = status;
-        $scope.paragraph.results.msg = resultsMsg;
-        $scope.paragraph.config.tableHide = false;
-        if (digestRequired) { $scope.$digest(); }
+      heliumService.executeSpell(magic, textWithoutMagic)
+        .then(resultsMsg => {
+          const status = 'FINISHED';
+          $scope.paragraph.status = status;
+          $scope.paragraph.results.code = status;
+          $scope.paragraph.results.msg = resultsMsg;
+          $scope.paragraph.config.tableHide = false;
+          if (digestRequired) { $scope.$digest(); }
 
-        if (!propagated) {
-          const propagable = SpellResult.createPropagable(resultsMsg);
-          $scope.propagateSpellResult(
-            $scope.paragraph.id, $scope.paragraph.title,
-            paragraphText, propagable, status, '',
-            $scope.paragraph.config, $scope.paragraph.settings.params);
-        }
-      }).catch(error => {
-        $scope.handleSpellError(paragraphText, error,
-          digestRequired, propagated);
-      });
+          if (!propagated) {
+            const propagable = SpellResult.createPropagable(resultsMsg);
+            $scope.propagateSpellResult(
+              $scope.paragraph.id, $scope.paragraph.title,
+              paragraphText, propagable, status, '',
+              $scope.paragraph.config, $scope.paragraph.settings.params);
+          }
+        })
+        .catch(error => {
+          $scope.handleSpellError(paragraphText, error,
+            digestRequired, propagated);
+        });
     } catch (error) {
       $scope.handleSpellError(paragraphText, error,
         digestRequired, propagated);
@@ -311,9 +308,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
 
     const magic = SpellResult.extractMagic(paragraphText);
-    const spell = heliumService.getSpellByMagic(magic);
 
-    if (spell) {
+    if (heliumService.getSpellByMagic(magic)) {
       $scope.runParagraphUsingSpell(paragraphText, magic, digestRequired, propagated);
     } else {
       $scope.runParagraphUsingBackendInterpreter(paragraphText);

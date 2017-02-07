@@ -69,10 +69,22 @@ export default function heliumService($http, $sce, baseUrlSrv) {
   };
 
   /**
-   * @returns {Object} map for `{ magic : spell }`
    */
-  this.getAllSpells = function() {
-    return spellPerMagic;
+  this.executeSpell = function(magic, textWithoutMagic) {
+    const spell = this.getSpellByMagic(magic);
+    const spellResult = spell.interpret(textWithoutMagic);
+    const parsed = spellResult.getAllParsedDataWithTypes(
+      spellPerMagic, magic, textWithoutMagic);
+
+    return parsed;
+  };
+
+  this.executeSpellAsDisplaySystem = function(type, data) {
+    const spell = this.getSpellByMagic(type);
+    const spellResult = spell.interpret(data.trim());
+    const parsed = spellResult.getAllParsedDataWithTypes(spellPerMagic);
+
+    return parsed;
   };
 
   this.getVisualizationBundles = function() {
