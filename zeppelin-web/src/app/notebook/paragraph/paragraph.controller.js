@@ -227,7 +227,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.status = 'ERROR';
     $scope.paragraph.errorMessage = errorMessage;
     console.error('Failed to execute interpret() in spell\n', error);
-    if (digestRequired) { $scope.$digest(); }
 
     if (!propagated) {
       $scope.propagateSpellResult(
@@ -240,6 +239,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
     $scope.paragraph.results = {};
+    $scope.paragraph.status = 'PENDING';
     $scope.paragraph.errorMessage = '';
     if (digestRequired) { $scope.$digest(); }
 
@@ -257,7 +257,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           $scope.paragraph.results.code = status;
           $scope.paragraph.results.msg = resultsMsg;
           $scope.paragraph.config.tableHide = false;
-          if (digestRequired) { $scope.$digest(); }
 
           if (!propagated) {
             const propagable = SpellResult.createPropagable(resultsMsg);
