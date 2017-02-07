@@ -73,11 +73,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private String scriptPath;
   boolean pythonscriptRunning = false;
   private static final int MAX_TIMEOUT_SEC = 10;
-  private long pythonPid = 0;
+  private long pythonPid;
 
   public PySparkInterpreter(Properties property) {
     super(property);
 
+    pythonPid = -1;
     try {
       File scriptFile = File.createTempFile("zeppelin_pyspark-", ".py");
       scriptPath = scriptFile.getAbsolutePath();
