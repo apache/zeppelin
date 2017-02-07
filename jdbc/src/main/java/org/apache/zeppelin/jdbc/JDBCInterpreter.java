@@ -17,6 +17,7 @@ package org.apache.zeppelin.jdbc;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.IOException;
@@ -46,6 +47,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -618,21 +620,54 @@ public class JDBCInterpreter extends Interpreter {
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
     } catch (Exception e) {
-      logger.error("Cannot run " + sql, e);
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      PrintStream ps = new PrintStream(baos);
-      e.printStackTrace(ps);
-      String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-
-      try {
-        closeDBPool(user, propertyKey);
-      } catch (SQLException e1) {
-        e1.printStackTrace();
+      if (e.getCause() instanceof TTransportException &&
+          e.getCause().getMessage().equals("GSS initiate failed") &&
+          getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
+        return reLoginFromKeytab(propertyKey, sql, interpreterContext, interpreterResult);
+      } else {
+        logger.error("Cannot run " + sql, e);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        e.printStackTrace(ps);
+        String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        try {
+          closeDBPool(user, propertyKey);
+        } catch (SQLException e1) {
+          logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
+        }
+        interpreterResult.add(errorMsg);
+        return new InterpreterResult(Code.ERROR, interpreterResult.message());
       }
-      interpreterResult.add(errorMsg);
-      return new InterpreterResult(Code.ERROR, interpreterResult.message());
     }
     return interpreterResult;
+  }
+
+  private InterpreterResult reLoginFromKeytab(String propertyKey, String sql,
+     InterpreterContext interpreterContext, InterpreterResult interpreterResult) {
+    String user = interpreterContext.getAuthenticationInfo().getUser();
+    try {
+      closeDBPool(user, propertyKey);
+    } catch (SQLException e) {/*ignored*/}
+    UserGroupInformation.AuthenticationMethod authType =
+        JDBCSecurityImpl.getAuthtype(property);
+    if (authType.equals(KERBEROS)) {
+      try {
+        if (UserGroupInformation.isLoginKeytabBased()) {
+          UserGroupInformation.getLoginUser().reloginFromKeytab();
+        } else if (UserGroupInformation.isLoginTicketBased()) {
+          UserGroupInformation.getLoginUser().reloginFromTicketCache();
+        }
+      } catch (IOException e) {
+        logger.error("Cannot reloginFromKeytab " + sql, e);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        e.printStackTrace(ps);
+        String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        interpreterResult.add(errorMsg);
+        return new InterpreterResult(Code.ERROR, interpreterResult.message());
+      }
+    }
+    return executeSql(propertyKey, sql, interpreterContext);
   }
 
   /**
