@@ -30,6 +30,7 @@ import java.io.IOException;
 public class InterpreterOutputStream extends LogOutputStream {
   public static Logger logger;
   InterpreterOutput interpreterOutput;
+  boolean ignoreLeadingNewLinesFromScalaReporter = false;
 
   public InterpreterOutputStream(Logger logger) {
     this.logger = logger;
@@ -45,6 +46,18 @@ public class InterpreterOutputStream extends LogOutputStream {
 
   @Override
   public void write(int b) throws IOException {
+    if (ignoreLeadingNewLinesFromScalaReporter && b == '\n') {
+      StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+      for (StackTraceElement stack : stacks) {
+        if (stack.getClassName().equals("scala.tools.nsc.interpreter.ReplReporter") &&
+            stack.getMethodName().equals("error")) {
+          // ignore. Please see ZEPPELIN-2067
+          return;
+        }
+      }
+    } else {
+      ignoreLeadingNewLinesFromScalaReporter = false;
+    }
     super.write(b);
     if (interpreterOutput != null) {
       interpreterOutput.write(b);
@@ -53,17 +66,13 @@ public class InterpreterOutputStream extends LogOutputStream {
 
   @Override
   public void write(byte [] b) throws IOException {
-    super.write(b);
-    if (interpreterOutput != null) {
-      interpreterOutput.write(b);
-    }
+    write(b, 0, b.length);
   }
 
   @Override
-  public void write(byte [] b, int offset, int len) throws IOException {
-    super.write(b, offset, len);
-    if (interpreterOutput != null) {
-      interpreterOutput.write(b, offset, len);
+  public void write(byte [] b, int off, int len) throws IOException {
+    for (int i = off; i < len; i++) {
+      write(b[i]);
     }
   }
 
@@ -80,12 +89,15 @@ public class InterpreterOutputStream extends LogOutputStream {
     }
   }
 
-
   @Override
   public void flush() throws IOException {
     super.flush();
     if (interpreterOutput != null) {
       interpreterOutput.flush();
     }
+  }
+
+  public void ignoreLeadingNewLinesFromScalaReporter() {
+    ignoreLeadingNewLinesFromScalaReporter = true;
   }
 }
