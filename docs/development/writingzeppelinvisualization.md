@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Writing a new Visualization(Experimental)"
-description: "Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. Make your own Application in Apache Zeppelin is quite easy."
+description: "Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded on runtime through Helium framework in Zeppelin. A Visualization is a javascript npm package and user can use them just like any other built-in visualization in notebook."
 group: development
 ---
 <!--
