@@ -647,7 +647,9 @@ public class JDBCInterpreter extends Interpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
     try {
       closeDBPool(user, propertyKey);
-    } catch (SQLException e) {/*ignored*/}
+    } catch (SQLException e) {
+      logger.error("Error, could not close DB pool in reLoginFromKeytab ", e);
+    }
     UserGroupInformation.AuthenticationMethod authType =
         JDBCSecurityImpl.getAuthtype(property);
     if (authType.equals(KERBEROS)) {
@@ -659,11 +661,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       } catch (IOException e) {
         logger.error("Cannot reloginFromKeytab " + sql, e);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        e.printStackTrace(ps);
-        String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-        interpreterResult.add(errorMsg);
+        interpreterResult.add(e.getMessage());
         return new InterpreterResult(Code.ERROR, interpreterResult.message());
       }
     }
