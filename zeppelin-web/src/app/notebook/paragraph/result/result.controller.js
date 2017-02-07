@@ -20,6 +20,7 @@ import AreachartVisualization from '../../../visualization/builtins/visualizatio
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart';
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
 import NetworkVisualization from '../../../visualization/builtins/visualization-d3network';
+import {
   DefaultDisplayType,
   SpellResult,
 } from '../../../spell'
@@ -59,47 +60,47 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       id: 'table',   // paragraph.config.graph.mode
       name: 'Table', // human readable name. tooltip
       icon: '<i class="fa fa-table"></i>',
-      supports: ['TABLE', 'NETWORK'] //this visualization support the following dataset types
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK] //this visualization support the following dataset types
     },
     {
       id: 'multiBarChart',
       name: 'Bar Chart',
       icon: '<i class="fa fa-bar-chart"></i>',
       transformation: 'pivot',
-      supports: ['TABLE', 'NETWORK']
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'pieChart',
       name: 'Pie Chart',
       icon: '<i class="fa fa-pie-chart"></i>',
       transformation: 'pivot',
-      supports: ['TABLE', 'NETWORK']
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'stackedAreaChart',
       name: 'Area Chart',
       icon: '<i class="fa fa-area-chart"></i>',
       transformation: 'pivot',
-      supports: ['TABLE', 'NETWORK']
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'lineChart',
       name: 'Line Chart',
       icon: '<i class="fa fa-line-chart"></i>',
       transformation: 'pivot',
-      supports: ['TABLE', 'NETWORK']
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'scatterChart',
       name: 'Scatter Chart',
       icon: '<i class="cf cf-scatter-chart"></i>',
-      supports: ['TABLE', 'NETWORK']
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'network',
       name: 'Network',
       icon: '<i class="fa fa-share-alt"></i>',
-      supports: ['NETWORK']
+      supports: [DefaultDisplayType.NETWORK]
     }
   ];
 
@@ -291,7 +292,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.createDisplayDOMId = function(baseDOMId, type) {
-    if (type === DefaultDisplayType.TABLE) {
+    if (type === DefaultDisplayType.TABLE || type === DefaultDisplayType.NETWORK) {
       return `${baseDOMId}_graph`;
     } else if (type === DefaultDisplayType.HTML) {
       return `${baseDOMId}_html`;
@@ -307,7 +308,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.renderDefaultDisplay = function(targetElemId, type, data, refresh) {
-    if (type === DefaultDisplayType.TABLE) {
+    if (type === DefaultDisplayType.TABLE || type === DefaultDisplayType.NETWORK) {
       $scope.renderGraph(targetElemId, $scope.graphMode, refresh);
     } else if (type === DefaultDisplayType.HTML) {
       renderHtml(targetElemId, data);

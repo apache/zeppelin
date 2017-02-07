@@ -18,6 +18,7 @@
 export const DefaultDisplayType = {
   ELEMENT: 'ELEMENT',
   TABLE: 'TABLE',
+  NETWORK: 'NETWORK',
   HTML: 'HTML',
   ANGULAR: 'ANGULAR',
   TEXT: 'TEXT',
