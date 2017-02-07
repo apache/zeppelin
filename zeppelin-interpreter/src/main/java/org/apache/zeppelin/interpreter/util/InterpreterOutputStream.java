@@ -51,7 +51,7 @@ public class InterpreterOutputStream extends LogOutputStream {
       for (StackTraceElement stack : stacks) {
         if (stack.getClassName().equals("scala.tools.nsc.interpreter.ReplReporter") &&
             stack.getMethodName().equals("error")) {
-          // ignore
+          // ignore. Please see ZEPPELIN-2067
           return;
         }
       }
