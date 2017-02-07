@@ -82,7 +82,7 @@ println(
 
 After running the paragraph, you will see output similar to this one:
 
-<img src="/assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
+<img src="../assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
 
 That's it! Voila! You have your note list.
 
