@@ -261,6 +261,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Output message from interpreter exceeding the limit will be truncated</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT</td>
+    <td>zeppelin.interpreter.connect.timeout</td>
+    <td>30000</td>
+    <td>Output message from interpreter exceeding the limit will be truncated</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
     <td>zeppelin.websocket.max.text.message.size</td>
     <td>1024000</td>
