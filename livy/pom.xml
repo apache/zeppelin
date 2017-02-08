@@ -45,10 +45,6 @@
         <achilles.version>3.2.4-Zeppelin</achilles.version>
         <assertj.version>1.7.0</assertj.version>
         <mockito.version>1.9.5</mockito.version>
-        <livy.version>0.2.0</livy.version>
-        <spark.version>1.5.2</spark.version>
-        <hadoop.version>2.6.0</hadoop.version>
-
         <!--plugin versions-->
         <plugin.failsafe.version>2.16</plugin.failsafe.version>
         <plugin.antrun.version>1.8</plugin.antrun.version>
@@ -132,27 +128,27 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-core_2.10</artifactId>
+                    <artifactId>spark-core_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-sql_2.10</artifactId>
+                    <artifactId>spark-sql_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-streaming_2.10</artifactId>
+                    <artifactId>spark-streaming_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-hive_2.10</artifactId>
+                    <artifactId>spark-hive_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-repl_2.10</artifactId>
+                    <artifactId>spark-repl_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-yarn_2.10</artifactId>
+                    <artifactId>spark-yarn_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
@@ -192,63 +188,27 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-core_2.10</artifactId>
+                    <artifactId>spark-core_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-sql_2.10</artifactId>
+                    <artifactId>spark-sql_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-streaming_2.10</artifactId>
+                    <artifactId>spark-streaming_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-hive_2.10</artifactId>
+                    <artifactId>spark-hive_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-repl_2.10</artifactId>
+                    <artifactId>spark-repl_${scala.version}</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-yarn_2.10</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.cloudera.livy</groupId>
-            <artifactId>livy-core</artifactId>
-            <version>${livy.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.xerial.snappy</groupId>
-                    <artifactId>snappy-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-core_2.10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-sql_2.10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-streaming_2.10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-hive_2.10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-repl_2.10</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-yarn_2.10</artifactId>
+                    <artifactId>spark-yarn_${scala.version}</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -258,6 +218,12 @@
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.esotericsoftware</groupId>
+                    <artifactId>kryo-shaded</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -325,6 +291,12 @@
             <artifactId>hadoop-hdfs</artifactId>
             <version>${hadoop.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -333,6 +305,12 @@
             <classifier>tests</classifier>
             <version>${hadoop.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -450,6 +428,10 @@
                     <systemPropertyVariables>
                         <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
                     </systemPropertyVariables>
+                    <environmentVariables>
+                        <LIVY_SPARK_SCALA_VERSION>${scala.version}</LIVY_SPARK_SCALA_VERSION>
+                        <LIVY_LOG_DIR>${project.build.directory}/tmp</LIVY_LOG_DIR>
+                    </environmentVariables>
                     <argLine>-Xmx2048m</argLine>
                 </configuration>
             </plugin>
@@ -493,4 +475,104 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>livy-0.3</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <livy.version>0.3.0</livy.version>
+                <scala.version>2.11</scala.version>
+                <spark.version>2.1.0</spark.version>
+                <hadoop.version>2.7.2</hadoop.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.cloudera.livy</groupId>
+                    <artifactId>livy-core_${scala.version}</artifactId>
+                    <version>0.3.0</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.xerial.snappy</groupId>
+                            <artifactId>snappy-java</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-core_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-sql_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-streaming_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-hive_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-repl_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-yarn_${scala.version}</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>livy-0.2</id>
+            <properties>
+                <livy.version>0.2.0</livy.version>
+                <spark.version>1.6.2</spark.version>
+                <hadoop.version>2.6.0</hadoop.version>
+                <scala.version>2.10</scala.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.cloudera.livy</groupId>
+                    <artifactId>livy-core</artifactId>
+                    <version>0.2.0</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.xerial.snappy</groupId>
+                            <artifactId>snappy-java</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-core_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-sql_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-streaming_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-hive_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-repl_${scala.version}</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.apache.spark</groupId>
+                            <artifactId>spark-yarn_${scala.version}</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
