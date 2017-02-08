@@ -266,7 +266,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     }
   }
 
-  private LivyVersion getLivyVersion() throws LivyException {
+  protected LivyVersion getLivyVersion() throws LivyException {
     return new LivyVersion((LivyVersionResponse.fromJson(callRestAPI("/version", "GET")).version));
   }
 

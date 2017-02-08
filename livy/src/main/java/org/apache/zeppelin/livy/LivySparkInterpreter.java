@@ -70,7 +70,7 @@ public class LivySparkInterpreter extends BaseLivyInterprereter {
    * @param result
    * @return
    */
-  private String extractStatementResult(String result) {
+  public String extractStatementResult(String result) {
     int pos = -1;
     if ((pos = result.indexOf("=")) >= 0) {
       return result.substring(pos + 1).trim();
