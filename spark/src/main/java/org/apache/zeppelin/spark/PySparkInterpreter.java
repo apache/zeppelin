@@ -431,7 +431,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     try {
       interrupt();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Error", e);
     }
   }
 
