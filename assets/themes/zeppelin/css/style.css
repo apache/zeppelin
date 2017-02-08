@@ -791,6 +791,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 
 .blog .container {
   width: 60vw;
+  max-width: 750px;
 }
 
 .blogContentBox {
@@ -801,7 +802,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 }
 
 .blog h2 {
-  font-family: "Helvetica";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-align: center;
   padding-top: 32px;
   font-size: 36px;
@@ -819,7 +820,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 }
 
 .blogList .blogHead {
-  font-family: "Helvetica Neue";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   height: 30px;
 }
 
