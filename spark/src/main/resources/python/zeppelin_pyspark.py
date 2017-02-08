@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import os, sys, signal, getopt, traceback, json, re
+import os, sys, getopt, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
@@ -226,11 +226,7 @@ class PySparkCompletion:
       result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
       self.interpreterObject.setStatementsFinished(result, False)
 
-def handler_stop_signals(signum, frame):
-  sys.exit("Got signal. " + str(signum))
 
-
-signal.signal(signal.SIGINT, handler_stop_signals)
 output = Logger()
 sys.stdout = output
 sys.stderr = output
@@ -256,7 +252,7 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
-intp.onPythonScriptInitialized(os.getpid())
+intp.onPythonScriptInitialized()
 
 jsc = intp.getJavaSparkContext()
 
