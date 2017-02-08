@@ -843,11 +843,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       Map<String, List<InterpreterSetting>> nameInterpreterSettingMap = new HashMap<>();
       for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
-        String name = interpreterSetting.getName();
-        if (!nameInterpreterSettingMap.containsKey(name)) {
-          nameInterpreterSettingMap.put(name, new ArrayList<InterpreterSetting>());
+        String group = interpreterSetting.getGroup();
+        if (!nameInterpreterSettingMap.containsKey(group)) {
+          nameInterpreterSettingMap.put(group, new ArrayList<InterpreterSetting>());
         }
-        nameInterpreterSettingMap.get(name).add(interpreterSetting);
+        nameInterpreterSettingMap.get(group).add(interpreterSetting);
       }
 
       for (String groupName : interpreterGroupOrderList) {
