@@ -140,8 +140,40 @@ public class SqlCompleter extends StringsCompleter {
   }
 
   /**
+   * Return list of catalog names within the database
+   *
+   * @param meta metadata from connection to database
+   * @param schemaFilter a catalog name pattern; must match the catalog name
+   *        as it is stored in the database; "" retrieves those without a catalog;
+   *        <code>null</code> means that the schema name should not be used to narrow
+   *        the search; supports '%' and '_' symbols; for example "prod_v_%"
+   * @return set of all catalog names in the database
+   */
+  private static Set<String> getCatalogNames(DatabaseMetaData meta, String schemaFilter) {
+    Set<String> res = new HashSet<>();
+    try {
+      ResultSet schemas = meta.getCatalogs();
+      try {
+        while (schemas.next()) {
+          String schemaName = schemas.getString("TABLE_CAT");
+          if (schemaFilter.equals("") || schemaFilter == null || schemaName.matches(
+                  schemaFilter.replace("_", ".").replace("%", ".*?"))) {
+            res.add(schemaName);
+          }
+        }
+      } finally {
+        schemas.close();
+      }
+    } catch (SQLException t) {
+      logger.error("Failed to retrieve the schema names", t);
+    }
+    return res;
+  }
+
+  /**
    * Fill two map with list of tables and list of columns
    *
+   * @param catalogName name of a catalog
    * @param meta metadata from connection to database
    * @param schemaFilter a schema name pattern; must match the schema name
    *        as it is stored in the database; "" retrieves those without a schema;
@@ -152,14 +184,13 @@ public class SqlCompleter extends StringsCompleter {
    * @param columns function fills this map, for every table name adds set
    *        of columns within the table; table name is in format schema_name.table_name
    */
-  private static void fillTableAndColumnNames(DatabaseMetaData meta, String schemaFilter,
+  private static void fillTableAndColumnNames(String catalogName, DatabaseMetaData meta,
+                                              String schemaFilter,
                                               Map<String, Set<String>> tables,
                                               Map<String, Set<String>> columns)  {
-    tables.clear();
-    columns.clear();
     try {
-      ResultSet cols = meta.getColumns(meta.getConnection().getCatalog(),
-              schemaFilter, "%", "%");
+      ResultSet cols = meta.getColumns(catalogName, schemaFilter, "%",
+              "%");
       try {
         while (cols.next()) {
           String schema = cols.getString("TABLE_SCHEM");
@@ -319,11 +350,24 @@ public class SqlCompleter extends StringsCompleter {
       Map<String, Set<String>> tables = new HashMap<>();
       Map<String, Set<String>> columns = new HashMap<>();
       Set<String> schemas = new HashSet<>();
+      Set<String> catalogs = new HashSet<>();
       Set<String> keywords = getSqlKeywordsCompletions(connection);
       if (connection != null) {
         schemas = getSchemaNames(connection.getMetaData(), schemaFilter);
-        if (schemas.size() == 0) schemas.add(connection.getCatalog());
-        fillTableAndColumnNames(connection.getMetaData(), schemaFilter, tables, columns);
+        catalogs = getCatalogNames(connection.getMetaData(), schemaFilter);
+
+        if (!"".equals(connection.getCatalog())) {
+          if (schemas.size() == 0 )
+            schemas.add(connection.getCatalog());
+          fillTableAndColumnNames(connection.getCatalog(), connection.getMetaData(), schemaFilter,
+                  tables, columns);
+        } else {
+          if (schemas.size() == 0) schemas.addAll(catalogs);
+          for (String catalog : catalogs) {
+            fillTableAndColumnNames(catalog, connection.getMetaData(), schemaFilter, tables,
+                    columns);
+          }
+        }
       }
       init(schemas, tables, columns, keywords);
       logger.info("Completer initialized with " + schemas.size() + " schemas, " +
