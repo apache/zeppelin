@@ -100,10 +100,11 @@ public class KylinInterpreter extends Interpreter {
   }
 
   public HttpResponse prepareRequest(String sql) throws IOException {
-    String kylinProject = getProject(KYLIN_QUERY_PROJECT);
+    String kylinProject = getProject(sql);
+    String kylinSql = getSQL(sql);
 
     logger.info("project:" + kylinProject);
-    logger.info("sql:" + sql);
+    logger.info("sql:" + kylinSql);
     logger.info("acceptPartial:" + getProperty(KYLIN_QUERY_ACCEPT_PARTIAL));
     logger.info("limit:" + getProperty(KYLIN_QUERY_LIMIT));
     logger.info("offset:" + getProperty(KYLIN_QUERY_OFFSET));
@@ -111,7 +112,7 @@ public class KylinInterpreter extends Interpreter {
         + ":" + getProperty(KYLIN_PASSWORD)).getBytes("UTF-8"));
 
     String postContent = new String("{\"project\":" + "\"" + kylinProject + "\""
-        + "," + "\"sql\":" + "\"" + sql + "\""
+        + "," + "\"sql\":" + "\"" + kylinSql + "\""
         + "," + "\"acceptPartial\":" + "\"" + getProperty(KYLIN_QUERY_ACCEPT_PARTIAL) + "\""
         + "," + "\"offset\":" + "\"" + getProperty(KYLIN_QUERY_OFFSET) + "\""
         + "," + "\"limit\":" + "\"" + getProperty(KYLIN_QUERY_LIMIT) + "\"" + "}");
@@ -132,18 +133,34 @@ public class KylinInterpreter extends Interpreter {
   }
 
   public String getProject(String cmd) {
-    boolean firstLineIndex = cmd.startsWith("(");
+    boolean isFirstLineProject = cmd.startsWith("(");
 
-    if (firstLineIndex) {
-      int configStartIndex = cmd.indexOf("(");
-      int configLastIndex = cmd.indexOf(")");
-      if (configStartIndex != -1 && configLastIndex != -1) {
-        return cmd.substring(configStartIndex + 1, configLastIndex);
+    if (isFirstLineProject) {
+      int projectStartIndex = cmd.indexOf("(");
+      int projectEndIndex = cmd.indexOf(")");
+      if (projectStartIndex != -1 && projectEndIndex != -1) {
+        return cmd.substring(projectStartIndex + 1, projectEndIndex);
       } else {
         return getProperty(KYLIN_QUERY_PROJECT);
       }
     } else {
       return getProperty(KYLIN_QUERY_PROJECT);
+    }
+  }
+
+  public String getSQL(String cmd) {
+    boolean isFirstLineProject = cmd.startsWith("(");
+
+    if (isFirstLineProject) {
+      int projectStartIndex = cmd.indexOf("(");
+      int projectEndIndex = cmd.indexOf(")");
+      if (projectStartIndex != -1 && projectEndIndex != -1) {
+        return cmd.substring(projectEndIndex + 1);
+      } else {
+        return cmd;
+      }
+    } else {
+      return cmd;
     }
   }
 
