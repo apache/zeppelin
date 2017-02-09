@@ -46,8 +46,7 @@ Click 'enable' button.
 
 #### 3. Create and load visualization bundle on the fly
 
-Once a Visualization package is enabled, [HeliumVisualizationFactory](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/helium/HeliumVisualizationFactory.java) creates a js bundle. The js bundle is served by `helium/visualization/load` rest api endpoint.
-
+Once a Visualization package is enabled, [HeliumBundleFactory](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/helium/HeliumBundleFactory.java) creates a js bundle. The js bundle is served by `helium/bundle/load` rest api endpoint.
 
 #### 4. Run visualization
 
@@ -194,7 +193,7 @@ Run Zeppelin. And then run zeppelin-web in visualization dev mode.
 
 ```
 cd zeppelin-web
-yarn run visdev
+yarn run dev:helium 
 ```
 
 You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
