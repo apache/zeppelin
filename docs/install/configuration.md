@@ -30,6 +30,7 @@ There are two locations you can configure Apache Zeppelin.
 * **Java properties** can ba defined in `conf/zeppelin-site.xml`.
 
 If both are defined, then the **environment variables** will take priority.
+> Mouse hover on each property and click <i class="fa fa-link fa-flip-horizontal"></i> then you can get a link for that.
 
 <table class="table-configuration">
   <tr>
@@ -39,206 +40,206 @@ If both are defined, then the **environment variables** will take priority.
     <th class="col-md-4">Description</th>
   </tr>
   <tr>
-    <td>ZEPPELIN_PORT</td>
-    <td>zeppelin.server.port</td>
+    <td><h6 class="properties">ZEPPELIN_PORT</h6></td>
+    <td><h6 class="properties">zeppelin.server.port</h6></td>
     <td>8080</td>
     <td>Zeppelin server port</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_PORT</td>
-    <td>zeppelin.server.ssl.port</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_PORT</h6></td>
+    <td><h6 class="properties">zeppelin.server.ssl.port</h6></td>
     <td>8443</td>
     <td>Zeppelin Server ssl port (used when ssl environment/property is set to true)</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_MEM</td>
+    <td><h6 class="properties">ZEPPELIN_MEM</h6></td>
     <td>N/A</td>
     <td>-Xmx1024m -XX:MaxPermSize=512m</td>
     <td>JVM mem options</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_INTP_MEM</td>
+    <td><h6 class="properties">ZEPPELIN_INTP_MEM</h6></td>
     <td>N/A</td>
     <td>ZEPPELIN_MEM</td>
     <td>JVM mem options for interpreter process</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_JAVA_OPTS</td>
+    <td><h6 class="properties">ZEPPELIN_JAVA_OPTS</h6></td>
     <td>N/A</td>
     <td></td>
     <td>JVM options</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_ALLOWED_ORIGINS</td>
-    <td>zeppelin.server.allowed.origins</td>
+    <td><h6 class="properties">ZEPPELIN_ALLOWED_ORIGINS</h6></td>
+    <td><h6 class="properties">zeppelin.server.allowed.origins</h6></td>
     <td>*</td>
-    <td>Enables a way to specify a ',' separated list of allowed origins for REST and websockets. <br /> e.g. http://localhost:8080 </td>
+    <td>Enables a way to specify a ',' separated list of allowed origins for REST and websockets. <br /> e.g. http://localhost:8080</td>
   </tr>
     <tr>
     <td>N/A</td>
-    <td>zeppelin.anonymous.allowed</td>
+    <td><h6 class="properties">zeppelin.anonymous.allowed</h6></td>
     <td>true</td>
     <td>The anonymous user is allowed by default.</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
-    <td>zeppelin.server.context.path</td>
+    <td><h6 class="properties">ZEPPELIN_SERVER_CONTEXT_PATH</h6></td>
+    <td><h6 class="properties">zeppelin.server.context.path</h6></td>
     <td>/</td>
     <td>Context path of the web application</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL</td>
-    <td>zeppelin.ssl</td>
+    <td><h6 class="properties">ZEPPELIN_SSL</h6></td>
+    <td><h6 class="properties">zeppelin.ssl</h6></td>
     <td>false</td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_CLIENT_AUTH</td>
-    <td>zeppelin.ssl.client.auth</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_CLIENT_AUTH</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.client.auth</h6></td>
     <td>false</td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_KEYSTORE_PATH</td>
-    <td>zeppelin.ssl.keystore.path</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_KEYSTORE_PATH</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.keystore.path</h6></td>
     <td>keystore</td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_KEYSTORE_TYPE</td>
-    <td>zeppelin.ssl.keystore.type</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_KEYSTORE_TYPE</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.keystore.type</h6></td>
     <td>JKS</td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_KEYSTORE_PASSWORD</td>
-    <td>zeppelin.ssl.keystore.password</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_KEYSTORE_PASSWORD</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.keystore.password</h6></td>
     <td></td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_KEY_MANAGER_PASSWORD</td>
-    <td>zeppelin.ssl.key.manager.password</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_KEY_MANAGER_PASSWORD</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.key.manager.password</h6></td>
     <td></td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_TRUSTSTORE_PATH</td>
-    <td>zeppelin.ssl.truststore.path</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_TRUSTSTORE_PATH</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.truststore.path</h6></td>
     <td></td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_TRUSTSTORE_TYPE</td>
-    <td>zeppelin.ssl.truststore.type</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_TRUSTSTORE_TYPE</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.truststore.type</h6></td>
     <td></td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SSL_TRUSTSTORE_PASSWORD</td>
-    <td>zeppelin.ssl.truststore.password</td>
+    <td><h6 class="properties">ZEPPELIN_SSL_TRUSTSTORE_PASSWORD</h6></td>
+    <td><h6 class="properties">zeppelin.ssl.truststore.password</h6></td>
     <td></td>
     <td></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
-    <td>zeppelin.notebook.homescreen</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_HOMESCREEN</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.homescreen</h6></td>
     <td></td>
     <td>Display note IDs on the Apache Zeppelin homescreen <br />e.g. 2A94M5J1Z</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
-    <td>zeppelin.notebook.homescreen.hide</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.homescreen.hide</h6></td>
     <td>false</td>
     <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_WAR_TEMPDIR</td>
-    <td>zeppelin.war.tempdir</td>
+    <td><h6 class="properties">ZEPPELIN_WAR_TEMPDIR</h6></td>
+    <td><h6 class="properties">zeppelin.war.tempdir</h6></td>
     <td>webapps</td>
     <td>Location of the jetty temporary directory</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_DIR</td>
-    <td>zeppelin.notebook.dir</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_DIR</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.dir</h6></td>
     <td>notebook</td>
     <td>The root directory where notebook directories are saved</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_S3_BUCKET</td>
-    <td>zeppelin.notebook.s3.bucket</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_BUCKET</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.bucket</h6></td>
     <td>zeppelin</td>
     <td>S3 Bucket where notebook files will be saved</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_S3_USER</td>
-    <td>zeppelin.notebook.s3.user</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_USER</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.user</h6></td>
     <td>user</td>
     <td>User name of an S3 bucket<br />e.g. <code>bucket/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_S3_ENDPOINT</td>
-    <td>zeppelin.notebook.s3.endpoint</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_ENDPOINT</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.endpoint</h6></td>
     <td>s3.amazonaws.com</td>
     <td>Endpoint for the bucket</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</td>
-    <td>zeppelin.notebook.s3.kmsKeyID</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.kmsKeyID</h6></td>
     <td></td>
     <td>AWS KMS Key ID to use for encrypting data in S3 (optional)</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_S3_EMP</td>
-    <td>zeppelin.notebook.s3.encryptionMaterialsProvider</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_EMP</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.encryptionMaterialsProvider</h6></td>
     <td></td>
     <td>Class name of a custom S3 encryption materials provider implementation to use for encrypting data in S3 (optional)</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_S3_SSE</td>
-    <td>zeppelin.notebook.s3.sse</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_SSE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.sse</h6></td>
     <td>false</td>
     <td>Save notebooks to S3 with server-side encryption enabled</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
-    <td>zeppelin.notebook.azure.connectionString</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.azure.connectionString</h6></td>
     <td></td>
     <td>The Azure storage account connection string<br />e.g. <br/><code>DefaultEndpointsProtocol=https;<br/>AccountName=&lt;accountName&gt;;<br/>AccountKey=&lt;accountKey&gt;</code></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>
-    <td>zeppelin.notebook.azure.share</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_SHARE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.azure.share</h6></td>
     <td>zeppelin</td>
     <td>Azure Share where the notebook files will be saved</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
-    <td>zeppelin.notebook.azure.user</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_USER</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.azure.user</h6></td>
     <td>user</td>
     <td>Optional user name of an Azure file share<br />e.g. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
-    <td>zeppelin.notebook.storage</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_STORAGE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.storage</h6></td>
     <td>org.apache.zeppelin.notebook.repo.GitNotebookRepo</td>
     <td>Comma separated list of notebook storage locations</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC</td>
-    <td>zeppelin.notebook.one.way.sync</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.one.way.sync</h6></td>
     <td>false</td>
     <td>If there are multiple notebook storage locations, should we treat the first one as the only source of truth?</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_PUBLIC</td>
-    <td>zeppelin.notebook.public</td>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_PUBLIC</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.public</h6></td>
     <td>true</td>
     <td>Make notebook public (set only <code>owners</code>) by default when created/imported. If set to <code>false</code> will add <code>user</code> to <code>readers</code> and <code>writers</code> as well, making it private and invisible to other users unless permissions are granted.</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_INTERPRETERS</td>
-    <td>zeppelin.interpreters</td>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETERS</h6></td>
+    <td><h6 class="properties">zeppelin.interpreters</h6></td>
   <description></description>
     <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
     ...
@@ -249,32 +250,32 @@ If both are defined, then the **environment variables** will take priority.
     </td>
   </tr>
   <tr>
-    <td>ZEPPELIN_INTERPRETER_DIR</td>
-    <td>zeppelin.interpreter.dir</td>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_DIR</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.dir</h6></td>
     <td>interpreter</td>
     <td>Interpreter directory</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</td>
-    <td>zeppelin.interpreter.output.limit</td>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.output.limit</h6></td>
     <td>102400</td>
     <td>Output message from interpreter exceeding the limit will be truncated</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT</td>
-    <td>zeppelin.interpreter.connect.timeout</td>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.connect.timeout</h6></td>
     <td>30000</td>
     <td>Output message from interpreter exceeding the limit will be truncated</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
-    <td>zeppelin.websocket.max.text.message.size</td>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.max.text.message.size</h6></td>
     <td>1024000</td>
-    <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
+    <td>Size(in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</td>
-    <td>zeppelin.server.default.dir.allowed</td>
+    <td><h6 class="properties">ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</h6></td>
+    <td><h6 class="properties">zeppelin.server.default.dir.allowed</h6></td>
     <td>false</td>
     <td>Enable directory listings on server.</td>
   </tr>
