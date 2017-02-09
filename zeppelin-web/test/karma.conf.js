@@ -75,7 +75,7 @@ module.exports = function(config) {
 
       'src/index.js',
       // 'test/spec/**/*.js',
-      {pattern: 'test/spec/**/*.js', watched: false},
+      {pattern: 'src/**/*.test.js', watched: false},
     ],
 
     // list of files / patterns to exclude
@@ -108,7 +108,7 @@ module.exports = function(config) {
     preprocessors: {
       'src/*/{*.js,!(test)/**/*.js}': 'coverage',
       'src/index.js': ['webpack', 'sourcemap',],
-      'test/spec/**/*.js': ['webpack', 'sourcemap',],
+      'src/**/*.test.js': ['webpack', 'sourcemap',],
     },
 
     coverageReporter: {
