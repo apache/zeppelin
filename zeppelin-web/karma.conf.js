@@ -3,7 +3,7 @@
 // Generated on 2014-08-29 using
 // generator-karma 0.8.3
 
-var webpackConfig = require('../webpack.config');
+var webpackConfig = require('./webpack.config');
 
 module.exports = function(config) {
   'use strict';
@@ -13,7 +13,7 @@ module.exports = function(config) {
     autoWatch: true,
 
     // base path, that will be used to resolve files and exclude
-    basePath: '../',
+    basePath: './',
 
     // testing framework to use (jasmine/mocha/qunit/...)
     frameworks: ['jasmine'],
@@ -113,7 +113,7 @@ module.exports = function(config) {
 
     coverageReporter: {
       type: 'html',
-      dir: '../reports/zeppelin-web-coverage',
+      dir: './reports/zeppelin-web-coverage',
       subdir: '.'
     },
 
