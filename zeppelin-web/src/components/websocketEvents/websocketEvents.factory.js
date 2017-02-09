@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents);
 
-websocketEvents.$inject = ['$rootScope', '$websocket', '$location', 'baseUrlSrv'];
-
 function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
+  'ngInject';
+
   var websocketCalls = {};
   var pingIntervalId;
 

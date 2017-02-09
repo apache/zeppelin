@@ -14,23 +14,11 @@
 
 angular.module('zeppelinWebApp').controller('NavCtrl', NavCtrl);
 
-NavCtrl.$inject = [
-  '$scope',
-  '$rootScope',
-  '$http',
-  '$routeParams',
-  '$location',
-  'noteListDataFactory',
-  'baseUrlSrv',
-  'websocketMsgSrv',
-  'arrayOrderingSrv',
-  'searchService',
-  'TRASH_FOLDER_ID'
-];
-
 function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
                  noteListDataFactory, baseUrlSrv, websocketMsgSrv,
                  arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
+  'ngInject';
+
   var vm = this;
   vm.arrayOrderingSrv = arrayOrderingSrv;
   vm.connected = websocketMsgSrv.isConnected();

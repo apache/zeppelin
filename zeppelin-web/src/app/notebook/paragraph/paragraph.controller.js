@@ -18,29 +18,12 @@ import {
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
-ParagraphCtrl.$inject = [
-  '$scope',
-  '$rootScope',
-  '$route',
-  '$window',
-  '$routeParams',
-  '$location',
-  '$timeout',
-  '$compile',
-  '$http',
-  '$q',
-  'websocketMsgSrv',
-  'baseUrlSrv',
-  'ngToast',
-  'saveAsService',
-  'noteVarShareService',
-  'heliumService'
-];
-
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
                        baseUrlSrv, ngToast, saveAsService, noteVarShareService,
                        heliumService) {
+  'ngInject';
+
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = {};

@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl);
 
-ConfigurationCtrl.$inject = ['$scope', '$rootScope', '$http', 'baseUrlSrv', 'ngToast'];
-
 function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+  'ngInject';
+
   $scope.configrations = [];
   $scope._ = _;
   ngToast.dismiss();

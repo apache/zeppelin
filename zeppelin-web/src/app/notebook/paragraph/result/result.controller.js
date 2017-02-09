@@ -26,30 +26,10 @@ import {
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
-ResultCtrl.$inject = [
-  '$scope',
-  '$rootScope',
-  '$route',
-  '$window',
-  '$routeParams',
-  '$location',
-  '$timeout',
-  '$compile',
-  '$http',
-  '$q',
-  '$templateRequest',
-  '$sce',
-  'websocketMsgSrv',
-  'baseUrlSrv',
-  'ngToast',
-  'saveAsService',
-  'noteVarShareService',
-  'heliumService'
-];
-
 function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                     $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
                     baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
+  'ngInject';
 
   /**
    * Built-in visualizations
