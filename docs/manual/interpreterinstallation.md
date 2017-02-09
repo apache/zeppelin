@@ -113,9 +113,7 @@ You can also install 3rd party interpreters located in the maven repository by u
 
 The above command will download maven artifact `groupId1:artifact1:version1` and all of it's transitive dependencies into `interpreter/interpreter1` directory.
 
-Once you have installed interpreters, you'll need to add interpreter class name into `zeppelin.interpreters` property in [configuration](../install/configuration.html).
-And then restart Zeppelin, [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
-
+After restart Zeppelin, then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
 
 #### Install multiple 3rd party interpreters at once
 
