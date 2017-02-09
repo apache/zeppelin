@@ -64,7 +64,7 @@ Making a new spell is similar to [Helium Visualization#write-new-visualization](
 - Write code using framework
 - Publish your spell to npm
 
-#### 1. Create a npm package
+### 1. Create a npm package
 
 Create a [package.json](https://docs.npmjs.com/files/package.json) in new directory for spell. 
 
@@ -94,7 +94,7 @@ Here's an example
 }
 ```
 
-#### 2. Write spell using framework 
+### 2. Write spell using framework 
 
 Here are some examples you can refer
 
@@ -173,7 +173,7 @@ export default class MarkdownSpell extends SpellBase {
 - You might want to manipulate DOM directly (e.g google d3.js), then refer [Flowchart Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-flowchart/index.js) 
 - You might want to return promise not string (e.g API call), then refer [Google Translation API Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-translator/index.js)
 
-#### 3. Create __Helium package file__ for local deploy
+### 3. Create __Helium package file__ for local deploy
 
 You don't want to publish your package every time you make a change in your spell. Zeppelin provides local deploy.
 The only thing you need to do is creating a __Helium Package file__ (JSON) for local deploy. 
@@ -199,7 +199,7 @@ It's automatically created when you publish to npm repository but in local case,
 - Make sure that `artifact` should be same as your spell directory. 
 - You can get information about other fields in [Helium Visualization#3-create-helium-package-file-and-locally-deploy](./writingzeppelinvisualization.html#3-create-helium-package-file-and-locally-deploy).
 
-#### 4. Run in dev mode
+### 4. Run in dev mode
 
 ```
 cd zeppelin-web
@@ -208,6 +208,6 @@ yarn run dev:helium
 
 You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
 
-#### 4. Publish your spell to the npm repository 
+### 5. Publish your spell to the npm repository 
 
 See [Publishing npm packages](https://docs.npmjs.com/getting-started/publishing-npm-packages)
