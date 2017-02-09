@@ -49,6 +49,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   private SchedulerFactory schedulerFactory;
   private DependencyResolver depResolver;
   private InterpreterFactory factory;
+  private InterpreterSettingManager interpreterSettingManager;
   private VFSNotebookRepo notebookRepo;
   private Notebook notebook;
   private HeliumApplicationFactory heliumAppFactory;
@@ -84,8 +85,8 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
     heliumAppFactory = new HeliumApplicationFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf,
-        new InterpreterOption(true), null, null, heliumAppFactory, depResolver, false);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, heliumAppFactory, depResolver, false, interpreterSettingManager);
     HashMap<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
     factory.setEnv(env);
@@ -98,6 +99,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         notebookRepo,
         schedulerFactory,
         factory,
+        interpreterSettingManager,
         this,
         search,
         notebookAuthorization,
@@ -112,7 +114,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
   @After
   public void tearDown() throws Exception {
-    List<InterpreterSetting> settings = factory.get();
+    List<InterpreterSetting> settings = interpreterSettingManager.get();
     for (InterpreterSetting setting : settings) {
       for (InterpreterGroup intpGroup : setting.getAllInterpreterGroups()) {
         intpGroup.close();
@@ -138,7 +140,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    factory.setInterpreters("user", note1.getId(),factory.getDefaultInterpreterSettingList());
+    interpreterSettingManager.setInterpreters("user", note1.getId(),interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -184,7 +186,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    factory.setInterpreters("user", note1.getId(), factory.getDefaultInterpreterSettingList());
+    interpreterSettingManager.setInterpreters("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -224,7 +226,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -285,7 +287,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
       if (setting.getName().equals("mock1")) {
@@ -312,7 +314,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       Thread.yield();
     }
     // when restart interpreter
-    factory.restart(mock1IntpSettingId);
+    interpreterSettingManager.restart(mock1IntpSettingId);
     while (app.getStatus() == ApplicationState.Status.LOADED) {
       Thread.yield();
     }

@@ -68,6 +68,7 @@ import org.mockito.Mock;
 public class InterpreterFactoryTest {
 
   private InterpreterFactory factory;
+  private InterpreterSettingManager interpreterSettingManager;
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private InterpreterContext context;
@@ -102,13 +103,14 @@ public class InterpreterFactoryTest {
     conf = new ZeppelinConfiguration();
     schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     context = new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, jobListenerFactory, search,
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, interpreterSettingManager, jobListenerFactory, search,
         notebookAuthorization, null);
   }
 
@@ -119,7 +121,7 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testBasic() {
-    List<InterpreterSetting> all = factory.get();
+    List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
       if (setting.getName().equals("mock1")) {
@@ -137,17 +139,18 @@ public class InterpreterFactoryTest {
     assertNotNull("get Interpreter", interpreterGroup.get("session").get(0));
 
     // try to get unavailable interpreter
-    assertNull(factory.get("unknown"));
+    assertNull(interpreterSettingManager.get("unknown"));
 
     // restart interpreter
-    factory.restart(mock1Setting.getId());
+    interpreterSettingManager.restart(mock1Setting.getId());
     assertNull(mock1Setting.getInterpreterGroup("user", "sharedProcess").get("session"));
   }
 
   @Test
   public void testRemoteRepl() throws Exception {
-    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, false);
-    List<InterpreterSetting> all = factory.get();
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
       if (setting.getName().equals("mock1")) {
@@ -174,8 +177,9 @@ public class InterpreterFactoryTest {
    */
   @Test
   public void testRestartInterpreterInScopedMode() throws Exception {
-    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, false);
-    List<InterpreterSetting> all = factory.get();
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
       if (setting.getName().equals("mock1")) {
@@ -210,8 +214,9 @@ public class InterpreterFactoryTest {
    */
   @Test
   public void testRestartInterpreterInIsolatedMode() throws Exception {
-    factory = new InterpreterFactory(conf, new InterpreterOption(true), null, null, null, depResolver, false);
-    List<InterpreterSetting> all = factory.get();
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
       if (setting.getName().equals("mock1")) {
@@ -243,21 +248,21 @@ public class InterpreterFactoryTest {
   @Test
   public void testFactoryDefaultList() throws IOException, RepositoryException {
     // get default settings
-    List<String> all = factory.getDefaultInterpreterSettingList();
-    assertTrue(factory.get().size() >= all.size());
+    List<String> all = interpreterSettingManager.getDefaultInterpreterSettingList();
+    assertTrue(interpreterSettingManager.get().size() >= all.size());
   }
 
   @Test
   public void testExceptions() throws InterpreterException, IOException, RepositoryException {
-    List<String> all = factory.getDefaultInterpreterSettingList();
+    List<String> all = interpreterSettingManager.getDefaultInterpreterSettingList();
     // add setting with null option & properties expected nullArgumentException.class
     try {
-      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "", null);
+      interpreterSettingManager.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "", null);
     } catch(NullArgumentException e) {
       assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
     }
     try {
-      factory.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "", null);
+      interpreterSettingManager.add("mock2", new ArrayList<InterpreterInfo>(), new LinkedList<Dependency>(), new InterpreterOption(false), Collections.EMPTY_MAP, "", null);
     } catch (NullArgumentException e){
       assertEquals("Test null properties" , e.getMessage(),new NullArgumentException("properties").getMessage());
     }
@@ -267,22 +272,23 @@ public class InterpreterFactoryTest {
   @Test
   public void testSaveLoad() throws IOException, RepositoryException {
     // interpreter settings
-    int numInterpreters = factory.get().size();
+    int numInterpreters = interpreterSettingManager.get().size();
 
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
-    factory.createNewSetting("new-mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
-    assertEquals(numInterpreters + 1, factory.get().size());
+    interpreterSettingManager.createNewSetting("new-mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
+    assertEquals(numInterpreters + 1, interpreterSettingManager.get().size());
 
-    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null, depResolver, false);
-    assertEquals(numInterpreters + 1, factory2.get().size());
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+
+    assertEquals(numInterpreters + 1, interpreterSettingManager.get().size());
   }
 
   @Test
   public void testInterpreterSettingPropertyClass() throws IOException, RepositoryException {
     // check if default interpreter reference's property type is map
-    Map<String, InterpreterSetting> interpreterSettingRefs = factory.getAvailableInterpreterSettings();
+    Map<String, InterpreterSetting> interpreterSettingRefs = interpreterSettingManager.getAvailableInterpreterSettings();
     InterpreterSetting intpSetting = interpreterSettingRefs.get("mock1");
     Map<String, InterpreterProperty> intpProperties =
         (Map<String, InterpreterProperty>) intpSetting.getProperties();
@@ -293,7 +299,7 @@ public class InterpreterFactoryTest {
     properties.put("key1", "value1");
     properties.put("key2", "value2");
 
-    factory.createNewSetting("newMock", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), properties);
+    interpreterSettingManager.createNewSetting("newMock", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), properties);
 
     String confFilePath = conf.getInterpreterSettingPath();
     byte[] encoded = Files.readAllBytes(Paths.get(confFilePath));
@@ -312,20 +318,21 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
-    factory.add("group1", new ArrayList<InterpreterInfo>() {{
+    interpreterSettingManager.add("group1", new ArrayList<InterpreterInfo>() {{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1", null);
-    factory.add("group2", new ArrayList<InterpreterInfo>(){{
+    interpreterSettingManager.add("group2", new ArrayList<InterpreterInfo>(){{
       add(info2);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path2", null);
 
-    final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
-    final InterpreterSetting setting2 = factory.createNewSetting("test-group2", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+    final InterpreterSetting setting1 = interpreterSettingManager.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+    final InterpreterSetting setting2 = interpreterSettingManager.createNewSetting("test-group2", "group1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
 
-    factory.setInterpreters("user", "note", new ArrayList<String>() {{
+    interpreterSettingManager.setInterpreters("user", "note", new ArrayList<String>() {{
       add(setting1.getId());
       add(setting2.getId());
     }});
@@ -336,20 +343,21 @@ public class InterpreterFactoryTest {
 
   @Test
   public void testMultiUser() throws IOException, RepositoryException {
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, true);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, true, interpreterSettingManager);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
-    factory.add("group1", new ArrayList<InterpreterInfo>(){{
+    interpreterSettingManager.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);
     }}, new ArrayList<Dependency>(), new InterpreterOption(true), Collections.EMPTY_MAP, "/path1", null);
 
     InterpreterOption perUserInterpreterOption = new InterpreterOption(true, InterpreterOption.ISOLATED, InterpreterOption.SHARED);
-    final InterpreterSetting setting1 = factory.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), perUserInterpreterOption, new Properties());
+    final InterpreterSetting setting1 = interpreterSettingManager.createNewSetting("test-group1", "group1", new ArrayList<Dependency>(), perUserInterpreterOption, new Properties());
 
-    factory.setInterpreters("user1", "note", new ArrayList<String>() {{
+    interpreterSettingManager.setInterpreters("user1", "note", new ArrayList<String>() {{
       add(setting1.getId());
     }});
 
-    factory.setInterpreters("user2", "note", new ArrayList<String>() {{
+    interpreterSettingManager.setInterpreters("user2", "note", new ArrayList<String>() {{
       add(setting1.getId());
     }});
 
@@ -360,7 +368,7 @@ public class InterpreterFactoryTest {
   @Test
   public void testInvalidInterpreterSettingName() {
     try {
-      factory.createNewSetting("new.mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
+      interpreterSettingManager.createNewSetting("new.mock1", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
       fail("expect fail because of invalid InterpreterSetting Name");
     } catch (IOException e) {
       assertEquals("'.' is invalid for InterpreterSetting name.", e.getMessage());
@@ -371,39 +379,40 @@ public class InterpreterFactoryTest {
   @Test
   public void getEditorSetting() throws IOException, RepositoryException, SchedulerException {
     List<String> intpIds = new ArrayList<>();
-    for(InterpreterSetting intpSetting: factory.get()) {
+    for(InterpreterSetting intpSetting: interpreterSettingManager.get()) {
       if (intpSetting.getName().startsWith("mock1")) {
         intpIds.add(intpSetting.getId());
       }
     }
     Note note = notebook.createNote(intpIds, new AuthenticationInfo("anonymous"));
 
+    Interpreter interpreter = factory.getInterpreter("user1", note.getId(), "mock11");
     // get editor setting from interpreter-setting.json
-    Map<String, Object> editor = factory.getEditorSetting("user1", note.getId(), "mock11");
+    Map<String, Object> editor = interpreterSettingManager.getEditorSetting(interpreter, "user1", note.getId(), "mock11");
     assertEquals("java", editor.get("language"));
 
     // when interpreter is not loaded via interpreter-setting.json
     // or editor setting doesn't exit
-    editor = factory.getEditorSetting("user1", note.getId(), "mock1");
+    editor = interpreterSettingManager.getEditorSetting(factory.getInterpreter("user1", note.getId(), "mock1"),"user1", note.getId(), "mock1");
     assertEquals(null, editor.get("language"));
 
     // when interpreter is not bound to note
-    editor = factory.getEditorSetting("user1", note.getId(), "mock2");
+    editor = interpreterSettingManager.getEditorSetting(factory.getInterpreter("user1", note.getId(), "mock11"),"user1", note.getId(), "mock2");
     assertEquals("text", editor.get("language"));
   }
 
   @Test
   public void registerCustomInterpreterRunner() throws IOException {
-    InterpreterFactory spyFactory = spy(factory);
+    InterpreterSettingManager spyInterpreterSettingManager = spy(interpreterSettingManager);
 
-    doNothing().when(spyFactory).saveToFile();
+    doNothing().when(spyInterpreterSettingManager).saveToFile();
 
     ArrayList<InterpreterInfo> interpreterInfos1 = new ArrayList<>();
     interpreterInfos1.add(new InterpreterInfo("name1.class", "name1", true, Maps.<String, Object>newHashMap()));
 
-    spyFactory.add("normalGroup1", interpreterInfos1, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/normalGroup1", null);
+    spyInterpreterSettingManager.add("normalGroup1", interpreterInfos1, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/normalGroup1", null);
 
-    spyFactory.createNewSetting("normalGroup1", "normalGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
+    spyInterpreterSettingManager.createNewSetting("normalGroup1", "normalGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
 
     ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
     interpreterInfos2.add(new InterpreterInfo("name1.class", "name1", true, Maps.<String, Object>newHashMap()));
@@ -412,13 +421,13 @@ public class InterpreterFactoryTest {
 
     when(mockInterpreterRunner.getPath()).thenReturn("custom-linux-path.sh");
 
-    spyFactory.add("customGroup1", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/customGroup1", mockInterpreterRunner);
+    spyInterpreterSettingManager.add("customGroup1", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(true), Maps.<String, InterpreterProperty>newHashMap(), "/customGroup1", mockInterpreterRunner);
 
-    spyFactory.createNewSetting("customGroup1", "customGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
+    spyInterpreterSettingManager.createNewSetting("customGroup1", "customGroup1", Lists.<Dependency>newArrayList(), new InterpreterOption(true), new Properties());
 
-    spyFactory.setInterpreters("anonymous", "noteCustome", spyFactory.getDefaultInterpreterSettingList());
+    spyInterpreterSettingManager.setInterpreters("anonymous", "noteCustome", spyInterpreterSettingManager.getDefaultInterpreterSettingList());
 
-    spyFactory.getInterpreter("anonymous", "noteCustome", "customGroup1");
+    factory.getInterpreter("anonymous", "noteCustome", "customGroup1");
 
     verify(mockInterpreterRunner, times(1)).getPath();
   }
