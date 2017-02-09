@@ -45,6 +45,37 @@
     <!--plugin versions-->
     <plugin.frontned.version>1.3</plugin.frontned.version>
   </properties>
+  
+  <profiles>
+    <profile>
+      <id>linux_profile</id>
+      <activation>
+        <os>
+          <family>linux</family>
+        </os>
+      </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>exec-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>some-execution</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                    <goal>exec</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                <executable>${basedir}/add_dependencies.sh</executable>
+              </configuration>
+            </plugin>            
+          </plugins>
+        </build>
+    </profile>
+  </profiles> 
 
   <build>
     <plugins>
@@ -120,34 +151,77 @@
           </execution>
 
           <execution>
-            <id>yarn install</id>
-            <goals>
-              <goal>yarn</goal>
-            </goals>
-            <configuration>
-              <arguments>install --no-lockfile</arguments>
-            </configuration>
+              <id>yarn add bower</id>
+              <goals>
+                  <goal>yarn</goal>
+              </goals>
+              <configuration>
+                <!--ignore-scripts-->
+                  <arguments>add bower --no-lockfile --no-bin-links</arguments>
+              </configuration>
           </execution>
 
           <execution>
-            <id>yarn build</id>
-            <goals>
-              <goal>yarn</goal>
-            </goals>
-            <configuration>
-              <arguments>run build</arguments>
-            </configuration>
+              <id>yarn karma-phantomjs-launcher</id>
+              <goals>
+                  <goal>yarn</goal>
+              </goals>
+              <phase>process-test-resources</phase>
+              <configuration>
+                  <arguments>add karma-phantomjs-launcher --no-lockfile --no-bin-links</arguments>
+              </configuration>
+          </execution>
+                    
+          <execution>
+              <id>bower install</id>
+              <goals>
+                  <goal>bower</goal>
+              </goals>
+              <configuration>
+                  <arguments>install --silent --allow-root</arguments>
+              </configuration>
           </execution>
 
           <execution>
-            <id>yarn test</id>
-            <goals>
-              <goal>yarn</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <arguments>run test</arguments>
-            </configuration>
+              <id>pre-webpack-dist</id>
+              <goals>
+                  <goal>grunt</goal>
+              </goals>
+              <configuration>
+                  <arguments>pre-webpack-dist</arguments>
+              </configuration>
+          </execution>
+
+          <execution>
+              <id>webpack build</id>
+              <goals>
+                  <goal>webpack</goal>
+              </goals>
+              <configuration>
+                  <arguments>-p</arguments>
+              </configuration>
+          </execution>
+
+          <execution>
+              <id>post-webpack-dist</id>
+              <goals>
+                  <goal>grunt</goal>
+              </goals>
+              <configuration>
+                  <arguments>post-webpack-dist</arguments>
+              </configuration>
+          </execution>
+
+          <execution>
+              <id>javascript tests</id>
+              <goals>
+                  <goal>karma</goal>
+              </goals>
+
+              <phase>test</phase>
+              <configuration>
+                  <karmaConfPath>test/karma.conf.js</karmaConfPath>
+              </configuration>
           </execution>
 
         </executions>
@@ -190,6 +264,15 @@
             <fileset>
               <directory>node_modules</directory>
             </fileset>
+            <fileset>
+              <directory>target</directory>
+            </fileset>
+            <fileset>
+              <directory>dist</directory>
+            </fileset>
+            <fileset>
+              <directory>.tmp</directory>
+            </fileset>                                              
           </filesets>
         </configuration>
       </plugin>

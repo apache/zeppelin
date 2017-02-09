@@ -19,19 +19,27 @@ It is recommended to install node 6.0.0+ since Zeppelin uses 6.9.1+ (see [creati
 
 All build commands are described in [package.json](./package.json)
 
-```sh
 # install required depepdencies and bower packages (only once)
-$ npm install -g yarn
-$ yarn install
+```
+$ npm install -g yarn bower npm-run-all rimraf grunt webpack karma karma-phantomjs-launcher
+```
 
+```
+$ yarn install --no-lockfile --no-bin-links
+```
 # build zeppelin-web for production
+```
 $ yarn run build
+```
 
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
+```
 $ yarn run dev
+```
 
 # execute tests
+```
 $ yarn run test
 ```
 
