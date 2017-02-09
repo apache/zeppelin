@@ -26,7 +26,7 @@ limitations under the License.
 ## Dev Mode
 When working on Zeppelin's WebApplication, it is recommended to run in dev mode.
 
-For that, start Zeppelin server normally, then use ``./grunt serve`` in _zeppelin-web_ directory.
+For that, start Zeppelin server normally, then use ``yarn run dev`` in _zeppelin-web_ directory.
 
 This will launch a Zeppelin WebApplication on port **9000** that will update on code changes.
 
@@ -63,7 +63,7 @@ If you still need to use it, then please use ``angular.element()`` instead of ``
 ## Folder Structure & Code Organization
 
 * `src` folder: Contains the Source code for Zeppelin WebApplication
-* `dist` folder: Contains the compiled code after using **grunt build**
+* `dist` folder: Contains the compiled code after using **yarn run build**
 
 ### Src and Code Organization
 
@@ -80,7 +80,8 @@ The `src` folder is organized as such:
  |   |    |    ├──  subComponent1.css
  │   |    |    └──  subComponent1.controller.js
  │   │    └──  name.css
- │   └──  app.js
+ │   ├──  app.js
+ │   └──  app.controller.js
  ├──  assets/
  │   ├──  images/
  │   └──  styles/
@@ -94,8 +95,9 @@ The `src` folder is organized as such:
  ├──  fonts/
  |    ├──  *.{eot,svg,ttf,woff,otf}
  │    └──  *.css
- ├──  favico.ico
+ ├──  favicon.ico
  ├──  index.html
+ ├──  index.js
  └──  404.html
 </pre>
 
@@ -127,7 +129,7 @@ Contains the application `app.js` and page related components.
 * Notebook Page
 etc...
 
-The only resctiction being that a component in the `app` folder is **not used anywhere else**
+The only restriction being that a component in the `app` folder is **not used anywhere else**
 
 #### Components folder
 
