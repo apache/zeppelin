@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('CredentialCtrl', CredentialCtrl);
 
-CredentialCtrl.$inject = ['$scope', '$rootScope', '$http', 'baseUrlSrv', 'ngToast'];
-
 function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+  'ngInject';
+
   $scope._ = _;
   ngToast.dismiss();
 

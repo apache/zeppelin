@@ -14,19 +14,10 @@
 
 angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
 
-HomeCtrl.$inject = [
-  '$scope',
-  'noteListDataFactory',
-  'websocketMsgSrv',
-  '$rootScope',
-  'arrayOrderingSrv',
-  'ngToast',
-  'noteActionSrv',
-  'TRASH_FOLDER_ID'
-];
-
 function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
                   ngToast, noteActionSrv, TRASH_FOLDER_ID) {
+  'ngInject';
+
   ngToast.dismiss();
   var vm = this;
   vm.notes = noteListDataFactory;

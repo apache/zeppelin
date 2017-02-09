@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('NotebookReposCtrl', NotebookReposCtrl);
 
-NotebookReposCtrl.$inject = ['$http', 'baseUrlSrv', 'ngToast'];
-
 function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
+  'ngInject';
+
   var vm = this;
   vm.notebookRepos = [];
   vm.showDropdownSelected = showDropdownSelected;

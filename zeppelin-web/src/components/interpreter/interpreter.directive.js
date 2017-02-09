@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').directive('interpreterDirective', interpreterDirective);
 
-interpreterDirective.$inject = ['$timeout'];
-
 function interpreterDirective($timeout) {
+  'ngInject';
+
   return {
     restrict: 'A',
     link: function(scope, element, attr) {

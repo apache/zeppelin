@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory);
 
-noteListDataFactory.$inject = ['TRASH_FOLDER_ID'];
-
 function noteListDataFactory(TRASH_FOLDER_ID) {
+  'ngInject';
+
   var notes = {
     root: {children: []},
     flatList: [],

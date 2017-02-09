@@ -15,9 +15,9 @@
 angular.module('zeppelinWebApp')
   .controller('JobmanagerCtrl', JobmanagerCtrl);
 
-JobmanagerCtrl.$inject = ['$scope', 'websocketMsgSrv', '$interval', 'ngToast', '$q', '$timeout', 'jobManagerFilter'];
-
 function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
+  'ngInject';
+
   ngToast.dismiss();
   var asyncNotebookJobFilter = function(jobInfomations, filterConfig) {
     return $q(function(resolve, reject) {

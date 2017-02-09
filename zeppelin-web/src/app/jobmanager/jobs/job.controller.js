@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl);
 
-JobCtrl.$inject = ['$scope', '$http', 'baseUrlSrv'];
-
 function JobCtrl($scope, $http, baseUrlSrv) {
+  'ngInject';
+
   $scope.init = function(jobInformation) {
     $scope.progressValue = 0;
   };

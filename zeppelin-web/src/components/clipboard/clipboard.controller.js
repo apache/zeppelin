@@ -12,9 +12,10 @@
  * limitations under the License.
  */
 angular.module('zeppelinWebApp').controller('clipboardCtrl', clipboardCtrl);
-clipboardCtrl.$inject = ['$scope'];
 
 function clipboardCtrl($scope) {
+  'ngInject';
+
   $scope.complete = function(e) {
     $scope.copied = true;
     $scope.tooltip = 'Copied!';
