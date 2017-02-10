@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.base.Throwables;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
@@ -577,6 +578,7 @@ public class JDBCInterpreter extends Interpreter {
           getJDBCConfiguration(user).saveStatement(paragraphId, statement);
 
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
+          getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(propertyKey);
           if (isResultSetAvailable) {
             resultSet = statement.getResultSet();
 
@@ -621,15 +623,12 @@ public class JDBCInterpreter extends Interpreter {
       getJDBCConfiguration(user).removeStatement(paragraphId);
     } catch (Exception e) {
       if (e.getCause() instanceof TTransportException &&
-          e.getCause().getMessage().equals("GSS initiate failed") &&
-          getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
+          Throwables.getStackTraceAsString(e).contains("GSS") &&
+          getJDBCConfiguration(user).isConnectionInDBDriverPoolSuccessful(propertyKey)) {
         return reLoginFromKeytab(propertyKey, sql, interpreterContext, interpreterResult);
       } else {
         logger.error("Cannot run " + sql, e);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        e.printStackTrace(ps);
-        String errorMsg = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        String errorMsg = Throwables.getStackTraceAsString(e);
         try {
           closeDBPool(user, propertyKey);
         } catch (SQLException e1) {
