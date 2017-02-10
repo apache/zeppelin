@@ -127,6 +127,11 @@ public abstract class AbstractTestRestApi {
     if (!wasRunning) {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
+
+      // some test profile does not build zeppelin-web.
+      // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
+      new File("../zeppelin-web/dist").mkdirs();
+
       LOG.info("Staring test Zeppelin up...");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
