@@ -28,24 +28,28 @@ public class DirAccessTest extends AbstractTestRestApi {
 
   @Test
   public void testDirAccessForbidden() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "false");
-    AbstractTestRestApi.startUpWithAuthenticationEnable();
-    HttpClient httpClient = new HttpClient();
-    GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
-    httpClient.executeMethod(getMethod);
-    AbstractTestRestApi.shutDown();
-    assert getMethod.getStatusCode() == HttpStatus.SC_FORBIDDEN;
+    synchronized (this) {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "false");
+      AbstractTestRestApi.startUpWithAuthenticationEnable();
+      HttpClient httpClient = new HttpClient();
+      GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
+      httpClient.executeMethod(getMethod);
+      AbstractTestRestApi.shutDown();
+      assert getMethod.getStatusCode() == HttpStatus.SC_FORBIDDEN;
+    }
   }
 
   @Test
   public void testDirAccessOk() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "true");
-    AbstractTestRestApi.startUpWithAuthenticationEnable();
-    HttpClient httpClient = new HttpClient();
-    GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
-    httpClient.executeMethod(getMethod);
-    AbstractTestRestApi.shutDown();
-    assert getMethod.getStatusCode() == HttpStatus.SC_OK;
+    synchronized (this) {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "true");
+      AbstractTestRestApi.startUpWithAuthenticationEnable();
+      HttpClient httpClient = new HttpClient();
+      GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
+      httpClient.executeMethod(getMethod);
+      AbstractTestRestApi.shutDown();
+      assert getMethod.getStatusCode() == HttpStatus.SC_OK;
+    }
   }
 
   protected static String getUrlToTest() {

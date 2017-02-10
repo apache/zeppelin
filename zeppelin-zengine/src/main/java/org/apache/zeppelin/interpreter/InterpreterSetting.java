@@ -145,8 +145,8 @@ public class InterpreterSetting {
       key = SHARED_PROCESS;
     }
 
-    logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
-        key, getId(), getName());
+    //logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
+    //    key, getId(), getName());
     return key;
   }
 
