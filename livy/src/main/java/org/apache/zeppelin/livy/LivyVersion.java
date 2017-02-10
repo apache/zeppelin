@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 public class LivyVersion {
   private static final Logger logger = LoggerFactory.getLogger(LivyVersion.class);
 
-  private static final LivyVersion LIVY_0_2_0 = LivyVersion.fromVersionString("0.2.0");
-  private static final LivyVersion LIVY_0_3_0 = LivyVersion.fromVersionString("0.3.0");
+  protected static final LivyVersion LIVY_0_2_0 = LivyVersion.fromVersionString("0.2.0");
+  protected static final LivyVersion LIVY_0_3_0 = LivyVersion.fromVersionString("0.3.0");
 
   private int version;
   private String versionString;
