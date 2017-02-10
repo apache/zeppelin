@@ -30,9 +30,8 @@ We should have only one Angular Component per file, and it should look like this
 
   angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
 
-  HomeCtrl.$inject = ['$location'];
-
   function HomeCtrl($location) {
+  'ngInject';
     ...
   }
 
