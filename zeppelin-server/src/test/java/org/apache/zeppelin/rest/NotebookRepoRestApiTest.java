@@ -80,13 +80,16 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     assertThat(listOfRepositories.size(), is(not(0)));
   }
+<<<<<<< HEAD
 
   @Test public void reloadRepositories() throws IOException {
-    GetMethod get = httGet("/notebook-repositories/reload");
+    GetMethod get = httpGet("/notebook-repositories/reload");
     int status = get.getStatusCode();
     get.releaseConnection();
     assertThat(status, is(200)); 
   }
+=======
+>>>>>>> parent of 064eee8... [ZEPPELIN-2114]: Adding a call in NotebookRepoRestApi to reload note
   
   @Test public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -102,7 +105,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     }
 
     if (StringUtils.isBlank(localVfs)) {
-      // no local VFS set...
+      // no loval VFS set...
       return;
     }
 

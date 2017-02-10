@@ -31,11 +31,13 @@ public class JDBCUserConfigurations {
   private final Map<String, Statement> paragraphIdStatementMap;
   private final Map<String, PoolingDriver> poolingDriverMap;
   private final HashMap<String, Properties> propertiesMap;
+  private HashMap<String, Boolean> isSuccessful;
 
   public JDBCUserConfigurations() {
     paragraphIdStatementMap = new HashMap<>();
     poolingDriverMap = new HashMap<>();
     propertiesMap = new HashMap<>();
+    isSuccessful = new HashMap<>();
   }
 
   public void initStatementMap() throws SQLException {
@@ -53,6 +55,7 @@ public class JDBCUserConfigurations {
       it.remove();
     }
     poolingDriverMap.clear();
+    isSuccessful.clear();
   }
 
   public void setPropertyMap(String key, Properties properties) {
@@ -88,13 +91,26 @@ public class JDBCUserConfigurations {
 
   public void saveDBDriverPool(String key, PoolingDriver driver) throws SQLException {
     poolingDriverMap.put(key, driver);
+    isSuccessful.put(key, false);
   }
   public PoolingDriver removeDBDriverPool(String key) throws SQLException {
+    isSuccessful.remove(key);
     return poolingDriverMap.remove(key);
   }
 
   public boolean isConnectionInDBDriverPool(String key) {
     return poolingDriverMap.containsKey(key);
+  }
+
+  public void setConnectionInDBDriverPoolSuccessful(String key) {
+    isSuccessful.put(key, true);
+  }
+
+  public boolean isConnectionInDBDriverPoolSuccessful(String key) {
+    if (isSuccessful.containsKey(key)) {
+      return isSuccessful.get(key);
+    }
+    return false;
   }
 
 }
