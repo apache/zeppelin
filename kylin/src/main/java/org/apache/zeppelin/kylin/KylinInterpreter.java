@@ -25,7 +25,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
@@ -53,7 +52,8 @@ public class KylinInterpreter extends Interpreter {
   static final String KYLIN_QUERY_LIMIT = "kylin.query.limit";
   static final String KYLIN_QUERY_ACCEPT_PARTIAL = "kylin.query.ispartial";
   static final Pattern KYLIN_TABLE_FORMAT_REGEX_LABEL = Pattern.compile("\"label\":\"(.*?)\"");
-  static final Pattern KYLIN_TABLE_FORMAT_REGEX = Pattern.compile("\"results\":\\[\\[\"(.*?)\"]]");
+  static final Pattern KYLIN_TABLE_FORMAT_REGEX_RESULTS =
+          Pattern.compile("\"results\":\\[\\[(.*?)]]");
 
   public KylinInterpreter(Properties property) {
     super(property);
@@ -189,7 +189,7 @@ public class KylinInterpreter extends Interpreter {
     return rett;
   }
 
-  private String formatResult(String msg) {
+  String formatResult(String msg) {
     StringBuilder res = new StringBuilder("%table ");
     
     Matcher ml = KYLIN_TABLE_FORMAT_REGEX_LABEL.matcher(msg);
@@ -198,16 +198,19 @@ public class KylinInterpreter extends Interpreter {
     } 
     res.append(" \n");
     
-    Matcher mr = KYLIN_TABLE_FORMAT_REGEX.matcher(msg);
+    Matcher mr = KYLIN_TABLE_FORMAT_REGEX_RESULTS.matcher(msg);
     String table = null;
     while (!mr.hitEnd() && mr.find()) {
       table = mr.group(1);
     }
 
-    String[] row = table.split("\"],\\[\"");
+    String[] row = table.split("],\\[");
     for (int i = 0; i < row.length; i++) {
-      String[] col = row[i].split("\",\"");
+      String[] col = row[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
       for (int j = 0; j < col.length; j++) {
+        if (col[j] != null) {
+          col[j] = col[j].replaceAll("^\"|\"$", "");
+        }
         res.append(col[j] + " \t");
       }
       res.append(" \n");

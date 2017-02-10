@@ -15,13 +15,9 @@
  * limitations under the License.
  */
 
-import org.apache.http.*;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.message.AbstractHttpMessage;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.kylin.KylinInterpreter;
-import org.junit.BeforeClass;
-import org.junit.Test;
+package org.apache.zeppelin.kylin;
+
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -30,7 +26,17 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.AbstractHttpMessage;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class KylinInterpreterTest {
   static final Properties kylinProperties = new Properties();
@@ -47,7 +53,7 @@ public class KylinInterpreterTest {
   }
 
   @Test
-  public void testWithDefault(){
+  public void testWithDefault() {
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
     InterpreterResult result = t.interpret(
         "select a.date,sum(b.measure) as measure from kylin_fact_table a " +
@@ -58,7 +64,7 @@ public class KylinInterpreterTest {
   }
 
   @Test
-  public void testWithProject(){
+  public void testWithProject() {
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
     assertEquals("project2", t.getProject("(project2)\n select a.date,sum(b.measure) as measure " +
             "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
@@ -73,7 +79,36 @@ public class KylinInterpreterTest {
             "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
   }
 
-  private Properties getDefaultProperties(){
+  @Test
+  public void testParseResult() {
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\",\"name\":\"COUNTRY\","
+            + "\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\",\"precision\":256,"
+            + "\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
+            + "\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,\"searchable\":false,"
+            + "\"currency\":false,\"signed\":true},{\"isNullable\":1,\"displaySize\":256,\"label\":\"CURRENCY\","
+            + "\"name\":\"CURRENCY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\","
+            + "\"precision\":256,\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,"
+            + "\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,"
+            + "\"searchable\":false,\"currency\":false,\"signed\":true},{\"isNullable\":0,\"displaySize\":19,"
+            + "\"label\":\"COUNT__\",\"name\":\"COUNT__\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
+            + "\"tableName\":\"SALES_TABLE\",\"precision\":19,\"scale\":0,\"columnType\":-5,\"columnTypeName\":"
+            + "\"BIGINT\",\"writable\":false,\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
+            + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],\"results\":"
+            + "[[\"AMERICA\",\"USD\",null],[null,\"RMB\",0],[\"KOR\",null,100],[\"\\\"abc\\\"\",\"a,b,c\",-1]],"
+            + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,\"isException\":false,\"exceptionMessage\":null,"
+            + "\"duration\":134,\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
+            + "\"partial\":false}";
+    String expected="%table COUNTRY \tCURRENCY \tCOUNT__ \t \n" +
+            "AMERICA \tUSD \tnull \t \n" +
+            "null \tRMB \t0 \t \n" +
+            "KOR \tnull \t100 \t \n" +
+            "\\\"abc\\\" \ta,b,c \t-1 \t \n";
+    KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
+    String actual = t.formatResult(msg);
+    Assert.assertEquals(expected, actual);
+  }
+
+  private Properties getDefaultProperties() {
     Properties prop = new Properties();
     prop.put("kylin.api.username", "ADMIN");
     prop.put("kylin.api.password", "KYLIN");
