@@ -29,7 +29,7 @@ It allows some performance improvements compared to the usual `{{ "{{ " }}}}` sy
 Your code would then look like:
 
 ```
-<div ng-bing='home.myValue'></div>
+<div ng-bind='home.myValue'></div>
 ```
 
 Instead of:
