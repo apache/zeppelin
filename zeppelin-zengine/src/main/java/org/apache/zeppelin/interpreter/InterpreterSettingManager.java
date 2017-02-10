@@ -78,6 +78,9 @@ import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
 
+/**
+ * TBD
+ */
 public class InterpreterSettingManager {
 
   private static final Logger logger = LoggerFactory.getLogger(InterpreterSettingManager.class);
