@@ -470,6 +470,7 @@ public class Notebook implements NoteEventListener {
     note.setCredentials(this.credentials);
 
     note.setInterpreterFactory(replFactory);
+    note.setInterpreterSettingManager(interpreterSettingManager);
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);

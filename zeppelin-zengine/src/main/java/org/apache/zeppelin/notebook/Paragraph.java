@@ -295,6 +295,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.factory = factory;
   }
 
+  public void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
+    this.interpreterSettingManager = interpreterSettingManager;
+  }
+
   public InterpreterResult getResult() {
     return (InterpreterResult) getReturn();
   }
