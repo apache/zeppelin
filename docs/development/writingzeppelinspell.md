@@ -45,13 +45,13 @@ Helium Spell works like [Helium Visualization](./writingzeppelinvisualization.ht
 
 ### 1. Enabling
 
-Find a spell what you want to use in `/helium` package and click `enable` button.
+Find a spell what you want to use in `/helium` package and click `Enable` button.
 
 <img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_registered.png" />
 
 ### 2. Using
 
-Spell works like interpreter. Thus, use the `magic` to execute spell in a notebook page. (you might need to refresh after enabling)
+Spell works like interpreter. Thus, use the `MAGIC` to execute spell in a notebook page. (you might need to refresh after enabling)
 
 <img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
 
