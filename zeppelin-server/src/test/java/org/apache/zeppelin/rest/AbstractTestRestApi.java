@@ -188,7 +188,8 @@ public abstract class AbstractTestRestApi {
 
       // assume first one is spark
       InterpreterSetting sparkIntpSetting = null;
-      for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+      for(InterpreterSetting intpSetting :
+          ZeppelinServer.notebook.getInterpreterSettingManager().get()) {
         if (intpSetting.getName().equals("spark")) {
           sparkIntpSetting = intpSetting;
         }
@@ -208,7 +209,7 @@ public abstract class AbstractTestRestApi {
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
         sparkR = true;
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       } else {
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
@@ -225,7 +226,7 @@ public abstract class AbstractTestRestApi {
           sparkR = true;
         }
 
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       }
     }
   }
@@ -292,10 +293,10 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
+      List<String> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
           .getDefaultInterpreterSettingList();
       for (String setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting);
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);

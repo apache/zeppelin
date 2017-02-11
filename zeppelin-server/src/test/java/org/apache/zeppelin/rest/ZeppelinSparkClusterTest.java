@@ -185,7 +185,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
         for (InterpreterSetting setting : settings) {
           if (setting.getName().equals("spark")) {
-            ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
+            ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
             break;
           }
         }
@@ -417,7 +417,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
             for (InterpreterSetting setting : settings) {
                 if (setting.getName().equals("spark")) {
-                    ZeppelinServer.notebook.getInterpreterFactory().restart(setting.getId());
+                    ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
                     break;
                 }
             }

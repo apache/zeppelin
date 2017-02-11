@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ import org.apache.zeppelin.socket.NotebookServer;
 public class InterpreterRestApi {
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
-  private InterpreterFactory interpreterFactory;
+  private InterpreterSettingManager interpreterSettingManager;
   private NotebookServer notebookServer;
 
   Gson gson = new Gson();
@@ -69,9 +70,9 @@ public class InterpreterRestApi {
   public InterpreterRestApi() {
   }
 
-  public InterpreterRestApi(InterpreterFactory interpreterFactory,
-                                      NotebookServer notebookWsServer) {
-    this.interpreterFactory = interpreterFactory;
+  public InterpreterRestApi(InterpreterSettingManager interpreterSettingManager,
+      NotebookServer notebookWsServer) {
+    this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
   }
 
@@ -82,7 +83,7 @@ public class InterpreterRestApi {
   @Path("setting")
   @ZeppelinApi
   public Response listSettings() {
-    return new JsonResponse<>(Status.OK, "", interpreterFactory.get()).build();
+    return new JsonResponse<>(Status.OK, "", interpreterSettingManager.get()).build();
   }
 
   /**
@@ -93,7 +94,7 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response getSetting(@PathParam("settingId") String settingId) {
     try {
-      InterpreterSetting setting = interpreterFactory.get(settingId);
+      InterpreterSetting setting = interpreterSettingManager.get(settingId);
       if (setting == null) {
         return new JsonResponse<>(Status.NOT_FOUND).build();
       } else {
@@ -123,7 +124,7 @@ public class InterpreterRestApi {
       }
       Properties p = new Properties();
       p.putAll(request.getProperties());
-      InterpreterSetting interpreterSetting = interpreterFactory
+      InterpreterSetting interpreterSetting = interpreterSettingManager
           .createNewSetting(request.getName(), request.getGroup(), request.getDependencies(),
               request.getOption(), p);
       logger.info("new setting created with {}", interpreterSetting.getId());
@@ -144,7 +145,7 @@ public class InterpreterRestApi {
     try {
       UpdateInterpreterSettingRequest request =
           gson.fromJson(message, UpdateInterpreterSettingRequest.class);
-      interpreterFactory
+      interpreterSettingManager
           .setPropertyAndRestart(settingId, request.getOption(), request.getProperties(),
               request.getDependencies());
     } catch (InterpreterException e) {
@@ -156,7 +157,7 @@ public class InterpreterRestApi {
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
           ExceptionUtils.getStackTrace(e)).build();
     }
-    InterpreterSetting setting = interpreterFactory.get(settingId);
+    InterpreterSetting setting = interpreterSettingManager.get(settingId);
     if (setting == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
     }
@@ -171,7 +172,7 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response removeSetting(@PathParam("settingId") String settingId) throws IOException {
     logger.info("Remove interpreterSetting {}", settingId);
-    interpreterFactory.remove(settingId);
+    interpreterSettingManager.remove(settingId);
     return new JsonResponse(Status.OK).build();
   }
 
@@ -184,12 +185,12 @@ public class InterpreterRestApi {
   public Response restartSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
 
-    InterpreterSetting setting = interpreterFactory.get(settingId);
+    InterpreterSetting setting = interpreterSettingManager.get(settingId);
     try {
       RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
 
       String noteId = request == null ? null : request.getNoteId();
-      interpreterFactory.restart(settingId, noteId, SecurityUtils.getPrincipal());
+      interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
       notebookServer.clearParagraphRuntimeInfo(setting);
 
     } catch (InterpreterException e) {
@@ -209,7 +210,7 @@ public class InterpreterRestApi {
   @GET
   @ZeppelinApi
   public Response listInterpreter(String message) {
-    Map<String, InterpreterSetting> m = interpreterFactory.getAvailableInterpreterSettings();
+    Map<String, InterpreterSetting> m = interpreterSettingManager.getAvailableInterpreterSettings();
     return new JsonResponse<>(Status.OK, "", m).build();
   }
 
@@ -220,7 +221,7 @@ public class InterpreterRestApi {
   @Path("repository")
   @ZeppelinApi
   public Response listRepositories() {
-    List<RemoteRepository> interpreterRepositories = interpreterFactory.getRepositories();
+    List<RemoteRepository> interpreterRepositories = interpreterSettingManager.getRepositories();
     return new JsonResponse<>(Status.OK, "", interpreterRepositories).build();
   }
 
@@ -235,8 +236,8 @@ public class InterpreterRestApi {
   public Response addRepository(String message) {
     try {
       Repository request = gson.fromJson(message, Repository.class);
-      interpreterFactory.addRepository(request.getId(), request.getUrl(), request.isSnapshot(),
-          request.getAuthentication(), request.getProxy());
+      interpreterSettingManager.addRepository(request.getId(), request.getUrl(),
+          request.isSnapshot(), request.getAuthentication(), request.getProxy());
       logger.info("New repository {} added", request.getId());
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while adding repository ", e);
@@ -258,7 +259,7 @@ public class InterpreterRestApi {
       return new JsonResponse<>(Status.BAD_REQUEST).build();
     }
     String propValue = null;
-    InterpreterSetting interpreterSetting = interpreterFactory.get(settingId);
+    InterpreterSetting interpreterSetting = interpreterSettingManager.get(settingId);
     Map<String, String> infos = interpreterSetting.getInfos();
     if (infos != null) {
       propValue = infos.get(propName);
@@ -282,7 +283,7 @@ public class InterpreterRestApi {
   public Response removeRepository(@PathParam("repoId") String repoId) {
     logger.info("Remove repository {}", repoId);
     try {
-      interpreterFactory.removeRepository(repoId);
+      interpreterSettingManager.removeRepository(repoId);
     } catch (Exception e) {
       logger.error("Exception in InterpreterRestApi while removing repository ", e);
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, e.getMessage(),
