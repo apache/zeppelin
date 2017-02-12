@@ -216,9 +216,14 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
     }
   };
 
+  $scope.isLocalPackage = function(pkgSearchResult) {
+    const pkg = pkgSearchResult.pkg;
+    return pkg.artifact && pkg.artifact.startsWith('/');
+  };
+
   $scope.hasNpmLink = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return (pkg.type === HeliumType.SPELL || pkg.type === HeliumType.VISUALIZATION) &&
-      pkg.artifact && pkg.artifact.includes('@');
-  }
+      !$scope.isLocalPackage(pkgSearchResult);
+  };
 }

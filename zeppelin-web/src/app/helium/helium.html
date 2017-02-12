@@ -54,7 +54,7 @@ limitations under the License.
           <span ng-if="hasNpmLink(pkgInfo)">
             <a target="_blank" href="https://www.npmjs.com/package/{{pkgName}}">{{pkgName}}</a>
           </span>
-          <span ng-if="!hasNpmLink(pkgInfo)">
+          <span ng-if="!hasNpmLink(pkgInfo)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgInfo)}">
             {{pkgName}}
           </span>
           <span class="heliumType">{{pkgInfo.pkg.type}}</span>
