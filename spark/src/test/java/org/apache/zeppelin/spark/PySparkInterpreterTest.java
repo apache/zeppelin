@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -119,6 +121,35 @@ public class PySparkInterpreterTest {
     if (getSparkVersionNumber() > 11) {
       List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
       assertTrue(completions.size() > 0);
+    }
+  }
+
+  private class infinityPythonJob implements Runnable {
+    @Override
+    public void run() {
+      String code = "import time\nwhile True:\n  time.sleep(1)" ;
+      InterpreterResult ret = pySparkInterpreter.interpret(code, context);
+      assertNotNull(ret);
+      Pattern expectedMessage = Pattern.compile("KeyboardInterrupt");
+      Matcher m = expectedMessage.matcher(ret.message().toString());
+      assertTrue(m.find());
+    }
+  }
+
+  @Test
+  public void testCancelIntp() {
+    if (getSparkVersionNumber() > 11) {
+
+      assertEquals(InterpreterResult.Code.SUCCESS,
+        pySparkInterpreter.interpret("a = 1\n", context).code());
+
+      new Thread(new infinityPythonJob()).start();
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      pySparkInterpreter.cancel(context);
     }
   }
 }
