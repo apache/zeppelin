@@ -48,6 +48,7 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
@@ -2381,5 +2382,13 @@ public class NotebookServer extends WebSocketServlet
       }
     }
     setting.clearNoteIdAndParaMap();
+  }
+
+  @Override
+  public void onInterpreterShutdown(String settingId) {
+    InterpreterFactory interpreterFactory = notebook().getInterpreterFactory();
+    InterpreterSetting intpSetting = interpreterFactory.get(settingId);
+    interpreterFactory.restart(settingId);
+    clearParagraphRuntimeInfo(intpSetting);
   }
 }

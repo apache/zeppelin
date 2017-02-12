@@ -188,6 +188,12 @@ public class SparkInterpreter extends Interpreter {
         return jobUrl;
       }
 
+      @Override
+      public void onApplicationEnd(SparkListenerApplicationEnd appEnded) {
+        super.onApplicationEnd(appEnded);
+        RemoteEventClientWrapper eventClient = ZeppelinContext.getEventClient();
+        eventClient.onInterpreterShutdown();
+      }
     };
     try {
       Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);

@@ -32,6 +32,7 @@ public interface RemoteInterpreterProcessListener {
   public void onRemoteRunParagraph(String noteId, String ParagraphID) throws Exception;
   public void onGetParagraphRunners(
       String noteId, String paragraphId, RemoteWorksEventListener callback);
+  public void onInterpreterShutdown(String settingId);
 
   /**
    * Remote works for Interpreter callback listener

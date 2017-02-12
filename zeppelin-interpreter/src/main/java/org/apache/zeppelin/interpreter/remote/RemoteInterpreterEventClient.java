@@ -473,6 +473,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     sendEvent(new RemoteInterpreterEvent(RemoteInterpreterEventType.PARA_INFOS,
         gson.toJson(infos)));
   }
+
   /**
    * Wait for eventQueue becomes empty
    */
@@ -486,5 +487,10 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         }
       }
     }
+  }
+
+  public void onInterpreterShutdown() {
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.SHUTDOWN_INTERPRETER, null));
   }
 }
