@@ -79,7 +79,7 @@ body {
   padding-bottom: 10px;
 }
 
-.navbar-brand img {
+.navbar-brand-main img {
   margin: 0;
 }
 
@@ -124,7 +124,7 @@ body {
   background: #265380;
 }
 
-.navbar-inverse .navbar-brand {
+.navbar-inverse .navbar-brand-main {
   color: white;
   text-decoration: none;
   font-size: 32px;
@@ -523,15 +523,8 @@ a.anchor {
   color: white;
 }
 
-.navbar-brand {
+.navbar-brand-main {
   font-family: 'Patua One', cursive;
-}
-
-.navbar-brand small {
-  font-size: 14px;
-  font-family: 'Open Sans', 'Helvetica Neue', Helvetica;
-  color: white;
-  vertical-align: bottom;
 }
 
 .navbar-collapse.collapse {
@@ -597,14 +590,14 @@ a.anchorjs-link:hover { text-decoration: none; }
   .jumbotron h1 {
     display: none;
   }
-  .navbar-brand small {
+  .navbar-brand-version small {
     display: none;
     color: white;
   }
 }
 
 @media only screen and (max-width: 768px) {
-  .navbar .navbar-brand {
+  .navbar .navbar-brand-main {
     padding-bottom: 0;
   }
 }
@@ -612,7 +605,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 @media only screen
 and (min-width: 768px)
 and (max-width: 1024px) {
-  .navbar-brand small {
+  .navbar-brand-version small {
     display: none;
   }
 
@@ -646,8 +639,21 @@ and (max-width: 1024px) {
   border-bottom-color: #428bca;
 }
 
-#menu .navbar-brand {
+#menu .navbar-brand-version {
   margin-right: 50px;
+  text-decoration: none !important;
+}
+
+#menu .navbar-brand-version span {
+  float: none;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+#menu .navbar-brand-version small {
+  font-size: 14px;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica;
+  color: white;
 }
 
 /* gh-pages branch docs dropdown menu */
