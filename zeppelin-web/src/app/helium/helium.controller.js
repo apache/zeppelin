@@ -218,7 +218,7 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
 
   $scope.isLocalPackage = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
-    return pkg.artifact && pkg.artifact.startsWith('/');
+    return pkg.artifact && !pkg.artifact.includes('@');
   };
 
   $scope.hasNpmLink = function(pkgSearchResult) {
