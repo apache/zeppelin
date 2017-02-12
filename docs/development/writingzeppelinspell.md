@@ -51,7 +51,7 @@ Find a spell what you want to use in `/helium` package and click `Enable` button
 
 ### 2. Using
 
-Spell works like interpreter. Thus, use the `MAGIC` to execute spell in a notebook page. (you might need to refresh after enabling)
+Spell works like an interpreter. Thus, use the `MAGIC` to execute spell in a note. (you might need to refresh after enabling)
 
 <img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
 
@@ -62,7 +62,7 @@ Making a new spell is similar to [Helium Visualization#write-new-visualization](
 
 - Add framework dependency called zeppelin-spell into `package.json`
 - Write code using framework
-- Publish your spell to npm
+- Publish your spell to [npm]("https://www.npmjs.com/")
 
 ### 1. Create a npm package
 
@@ -173,11 +173,11 @@ export default class MarkdownSpell extends SpellBase {
 - You might want to manipulate DOM directly (e.g google d3.js), then refer [Flowchart Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-flowchart/index.js) 
 - You might want to return promise not string (e.g API call), then refer [Google Translation API Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-translator/index.js)
 
-### 3. Create __Helium package file__ for local deploy
+### 3. Create __Helium package file__ for local deployment 
 
 You don't want to publish your package every time you make a change in your spell. Zeppelin provides local deploy.
 The only thing you need to do is creating a __Helium Package file__ (JSON) for local deploy. 
-It's automatically created when you publish to npm repository but in local case, you should make it by your self.
+It's automatically created when you publish to npm repository but in local case, you should make it by yourself.
 
 ```
 {
@@ -194,7 +194,7 @@ It's automatically created when you publish to npm repository but in local case,
 }
 ```
 
-- Place file in your local registry directory (default `$ZEPPELIN_HOME/helium`).
+- Place this file in your local registry directory (default `$ZEPPELIN_HOME/helium`).
 - `type` should be `SPELL`
 - Make sure that `artifact` should be same as your spell directory. 
 - You can get information about other fields in [Helium Visualization#3-create-helium-package-file-and-locally-deploy](./writingzeppelinvisualization.html#3-create-helium-package-file-and-locally-deploy).

@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Writing a new Visualization(Experimental)"
-description: "Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded on runtime through Helium framework in Zeppelin. A Visualization is a javascript npm package and user can use them just like any other built-in visualization in notebook."
+description: "Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded on runtime through Helium framework in Zeppelin. A Visualization is a javascript npm package and user can use them just like any other built-in visualization in a note."
 group: development
 ---
 <!--
@@ -129,7 +129,7 @@ Json file contains the following information
 }
 ```
 
-Place file in your local registry directory (default `./helium`).
+Place this file in your local registry directory (default `./helium`).
 
 
 ##### type
