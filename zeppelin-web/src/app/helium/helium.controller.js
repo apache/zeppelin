@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import { HeliumType, } from '../../components/helium/helium-type';
+
 angular.module('zeppelinWebApp').controller('HeliumCtrl', HeliumCtrl);
 
 HeliumCtrl.$inject = ['$scope', '$rootScope', '$sce', 'baseUrlSrv', 'ngToast', 'heliumService'];
@@ -213,4 +215,10 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
       $scope.showVersions[pkgName] = true;
     }
   };
+
+  $scope.hasNpmLink = function(pkgSearchResult) {
+    const pkg = pkgSearchResult.pkg;
+    return (pkg.type === HeliumType.SPELL || pkg.type === HeliumType.VISUALIZATION) &&
+      pkg.artifact && pkg.artifact.includes('@');
+  }
 }
