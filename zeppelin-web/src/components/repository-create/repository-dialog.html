@@ -28,7 +28,7 @@ limitations under the License.
             <div class="form-group">
               <label class="control-label col-sm-2" for="repoId">ID</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="repoId" ng-model="newRepoSetting.id"
+                <input type="text" pattern="^[a-zA-Z0-9]*$" class="form-control" id="repoId" ng-model="newRepoSetting.id"
                        placeholder="Repository id" required />
               </div>
             </div>
