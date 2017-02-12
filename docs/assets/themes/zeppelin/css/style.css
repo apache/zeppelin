@@ -646,8 +646,8 @@ and (max-width: 1024px) {
 
 #menu .navbar-brand-version span {
   float: none;
-    display: inline-block;
-    vertical-align: bottom;
+  display: inline-block;
+  vertical-align: bottom;
 }
 
 #menu .navbar-brand-version small {
