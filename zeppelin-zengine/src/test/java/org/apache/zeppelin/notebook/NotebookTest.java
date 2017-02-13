@@ -23,6 +23,8 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Sets;
@@ -361,10 +363,9 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testSchedulePoolUsage() throws InterruptedException, IOException {
-    final int timeout = 30_000;
-    final int executionCount = 13;
+    final int timeout = 30;
     final String everySecondCron = "* * * * * ?";
-    final AtomicInteger finishedJobsCount = new AtomicInteger(0);
+    final CountDownLatch jobsToExecuteCount = new CountDownLatch(13);
     final Note note = notebook.createNote(anonymous);
 
     executeNewParagraphByCron(note, everySecondCron);
@@ -372,20 +373,12 @@ public class NotebookTest implements JobListenerFactory{
       @Override
       public void onStatusChanged(Job job, Status before, Status after) {
         if (after == Status.FINISHED) {
-          if (finishedJobsCount.incrementAndGet() >= executionCount) {
-            synchronized (finishedJobsCount) {
-              finishedJobsCount.notify();
-            }
-          }
+          jobsToExecuteCount.countDown();
         }
       }
     };
 
-    synchronized (finishedJobsCount) {
-      finishedJobsCount.wait(timeout);
-    }
-
-    assertEquals(executionCount, finishedJobsCount.get());
+    assertTrue(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
 
     terminateScheduledNote(note);
     afterStatusChangedListener = null;
