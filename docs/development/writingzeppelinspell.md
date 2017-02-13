@@ -207,7 +207,7 @@ cd zeppelin-web
 yarn run dev:helium 
 ```
 
-You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
+You can browse localhost:9000. Every time refresh your browser, Zeppelin will rebuild your spell and reload changes.
 
 ### 5. Publish your spell to the npm repository 
 
