@@ -41,6 +41,7 @@
   border: 1px solid #CCCCCC;
   border-radius: 3px;
   vertical-align: middle;
+  font-size: 12px;
 }
 
 .interpreter textarea {
