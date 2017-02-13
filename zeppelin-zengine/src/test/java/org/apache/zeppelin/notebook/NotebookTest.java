@@ -23,12 +23,12 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -69,6 +69,7 @@ public class NotebookTest implements JobListenerFactory{
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
+  private StatusChangedListener afterStatusChangedListener;
 
   @Before
   public void setUp() throws Exception {
@@ -365,71 +366,43 @@ public class NotebookTest implements JobListenerFactory{
 
   @Test
   public void testSchedulePoolUsage() throws InterruptedException, IOException {
-    // create a note and a paragraph
-    Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
-    Map config = Maps.newHashMap();
-    p.setConfig(config);
-    Date dateFinished = p.getDateFinished();
-    String result = getResultString(p.getResult());
-    assertEquals(result, StringUtils.EMPTY);
-    assertNull(dateFinished);
-    
-    // set cron scheduler, once a second
-    config = note.getConfig();
+    final int timeout = 30;
+    final String everySecondCron = "* * * * * ?";
+    final CountDownLatch jobsToExecuteCount = new CountDownLatch(13);
+    final Note note = notebook.createNote(anonymous);
+
+    executeNewParagraphByCron(note, everySecondCron);
+    afterStatusChangedListener = new StatusChangedListener() {
+      @Override
+      public void onStatusChanged(Job job, Status before, Status after) {
+        if (after == Status.FINISHED) {
+          jobsToExecuteCount.countDown();
+        }
+      }
+    };
+
+    assertTrue(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
+
+    terminateScheduledNote(note);
+    afterStatusChangedListener = null;
+  }
+
+  private void executeNewParagraphByCron(Note note, String cron) {
+    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    paragraph.setText("p");
+    Map<String, Object> config = note.getConfig();
     config.put("enabled", true);
-    config.put("cron", "* * * * * ?");
+    config.put("cron", cron);
     note.setConfig(config);
     notebook.refreshCron(note.getId());
-    
-    // run job maxExecutionCount times
-    int maxExecutionCount = 13;
-    int maxRetryCount = 4 * maxExecutionCount;
-    int executionCount = 0;
-    int retryCount = 0;
-    String resultTemplate = "%text repl1: p";
-    p.setText("p" + executionCount);
-    
-    while (executionCount < maxExecutionCount) {
-      if (p.getDateFinished() != null && !p.getDateFinished().equals(dateFinished)) {
-        // paragraph has been executed
-        assertNotEquals(dateFinished, p.getDateFinished());
-        assertNotEquals(result, getResultString(p.getResult()));
-        assertEquals(p.getResult().toString(), resultTemplate + executionCount);
-        assertEquals(p.getStatus(), Status.FINISHED);
-        executionCount++;
-        dateFinished = p.getDateFinished();
-        result = getResultString(p.getResult());
-        p.setText("p" + executionCount);
-      }
-      Thread.sleep(1100);
-      if (++retryCount > maxRetryCount) {
-        logger.error("Couldn't schedule {} number of note executions after {} retries",
-            maxExecutionCount, maxRetryCount);
-        fail();
-      }
-    }
-    
-    // save results and update paragraph
-    dateFinished = p.getDateFinished();
-    result = getResultString(p.getResult());
-    p.setText("new text");
-    // remove cron scheduler
-    config.put("cron", null);
-    note.setConfig(config);
+  }
+
+  private void terminateScheduledNote(Note note) {
+    note.getConfig().remove("cron");
     notebook.refreshCron(note.getId());
-    
-    Thread.sleep(1100);
-    
-    // ensure that hasn't been run again
-    assertEquals(dateFinished, p.getDateFinished());
-    assertEquals(result, getResultString(p.getResult()));
+    notebook.removeNote(note.getId(), anonymous);
   }
-  
-  private String getResultString(InterpreterResult result) {
-    return result == null ? StringUtils.EMPTY : result.toString();
-  }
+
   
   @Test
   public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
@@ -1251,7 +1224,14 @@ public class NotebookTest implements JobListenerFactory{
 
       @Override
       public void afterStatusChange(Job job, Status before, Status after) {
+        if (afterStatusChangedListener != null) {
+          afterStatusChangedListener.onStatusChanged(job, before, after);
+        }
       }
     };
+  }
+
+  private interface StatusChangedListener {
+    void onStatusChanged(Job job, Status before, Status after);
   }
 }
