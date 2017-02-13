@@ -481,10 +481,16 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   $scope.$on('addParagraph', function(event, paragraph, index) {
+    if ($scope.paragraphUrl) {
+      return;
+    }
     addPara(paragraph, index);
   });
 
   $scope.$on('removeParagraph', function(event, paragraphId) {
+    if ($scope.paragraphUrl) {
+      return;
+    }
     removePara(paragraphId);
   });
 
