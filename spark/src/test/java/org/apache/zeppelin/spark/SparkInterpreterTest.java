@@ -109,6 +109,10 @@ public class SparkInterpreterTest {
       @Override
       public void onMetaInfosReceived(Map<String, String> infos) {
       }
+
+      @Override
+      public void onInterpreterShutdown() {
+      }
     };
     context = new InterpreterContext("note", "id", null, "title", "text",
         new AuthenticationInfo(),
