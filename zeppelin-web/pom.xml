@@ -75,8 +75,59 @@
           </plugins>
         </build>
     </profile>
-  </profiles> 
+    <profile>
+      <id>install-yarn-bover-etc</id>
+      <activation>
+        <file>
+          <missing>${basedir}/node_modules</missing>
+        </file>  
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>${plugin.frontned.version}</version>
+            <executions>
 
+              <execution>
+                <id>install node and yarn</id>
+                <goals>
+                  <goal>install-node-and-yarn</goal>
+                </goals>
+                <configuration>
+                  <nodeVersion>${node.version}</nodeVersion>
+                  <yarnVersion>${yarn.version}</yarnVersion>
+                </configuration>
+              </execution>
+
+              <execution>
+                  <id>yarn add bower</id>
+                  <goals>
+                      <goal>yarn</goal>
+                  </goals>
+                  <configuration>
+                      <arguments>add bower karma-phantomjs-launcher --no-lockfile --no-bin-links</arguments>
+                  </configuration>
+              </execution>
+
+              <execution>
+                  <id>bower install</id>
+                  <goals>
+                      <goal>bower</goal>
+                  </goals>
+                  <configuration>
+                      <arguments>install --silent --allow-root</arguments>
+                  </configuration>
+              </execution> 
+            </executions>           
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+   
+  </profiles> 
+  
   <build>
     <plugins>
       <plugin>
@@ -129,7 +180,6 @@
             <exclude>**/.npmignore</exclude>
             <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
-            <exclude>*.sh</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -139,55 +189,13 @@
         <artifactId>frontend-maven-plugin</artifactId>
         <version>${plugin.frontned.version}</version>
         <executions>
-
-          <execution>
-            <id>install node and yarn</id>
-            <goals>
-              <goal>install-node-and-yarn</goal>
-            </goals>
-            <configuration>
-              <nodeVersion>${node.version}</nodeVersion>
-              <yarnVersion>${yarn.version}</yarnVersion>
-            </configuration>
-          </execution>
-
-          <execution>
-              <id>yarn add bower</id>
-              <goals>
-                  <goal>yarn</goal>
-              </goals>
-              <configuration>
-                <!--ignore-scripts-->
-                  <arguments>add bower --no-lockfile --no-bin-links</arguments>
-              </configuration>
-          </execution>
-
-          <execution>
-              <id>yarn karma-phantomjs-launcher</id>
-              <goals>
-                  <goal>yarn</goal>
-              </goals>
-              <phase>process-test-resources</phase>
-              <configuration>
-                  <arguments>add karma-phantomjs-launcher --no-lockfile --no-bin-links</arguments>
-              </configuration>
-          </execution>
-                    
-          <execution>
-              <id>bower install</id>
-              <goals>
-                  <goal>bower</goal>
-              </goals>
-              <configuration>
-                  <arguments>install --silent --allow-root</arguments>
-              </configuration>
-          </execution>
-
+                   
           <execution>
               <id>pre-webpack-dist</id>
               <goals>
                   <goal>grunt</goal>
               </goals>
+              <phase>compile</phase>
               <configuration>
                   <arguments>pre-webpack-dist</arguments>
               </configuration>
@@ -198,6 +206,7 @@
               <goals>
                   <goal>webpack</goal>
               </goals>
+              <phase>compile</phase>
               <configuration>
                   <arguments>-p</arguments>
               </configuration>
@@ -208,6 +217,7 @@
               <goals>
                   <goal>grunt</goal>
               </goals>
+              <phase>compile</phase>
               <configuration>
                   <arguments>post-webpack-dist</arguments>
               </configuration>
@@ -258,25 +268,38 @@
           <filesets>
             <fileset>
               <directory>bower_components</directory>
+              <followSymlinks>false</followSymlinks>
             </fileset>
-            <fileset>
+            <fileset>  
               <directory>node</directory>
+              <followSymlinks>false</followSymlinks>
             </fileset>
-            <fileset>
+            <fileset>  
               <directory>node_modules</directory>
+              <followSymlinks>false</followSymlinks>
             </fileset>
-            <fileset>
+            <fileset>    
               <directory>target</directory>
             </fileset>
-            <fileset>
+            <fileset>                 
               <directory>dist</directory>
             </fileset>
+            <fileset>                 
+              <directory>.tmp</directory>    
+              <followSymlinks>false</followSymlinks>
+            </fileset>
             <fileset>
-              <directory>.tmp</directory>
-            </fileset>                                              
+              <directory>.</directory>
+              <includes>
+                <include>*.log</include>
+                <include>yarn.lock</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>                                                         
           </filesets>
+          <failOnError>false</failOnError>
         </configuration>
-      </plugin>
+      </plugin>    
     </plugins>
   </build>
 
