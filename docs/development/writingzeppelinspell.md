@@ -51,7 +51,8 @@ Find a spell what you want to use in `/helium` package and click `Enable` button
 
 ### 2. Using
 
-Spell works like an interpreter. Thus, use the `MAGIC` to execute spell in a note. (you might need to refresh after enabling)
+Spell works like an interpreter. Use the `MAGIC` value to execute spell in a note. (you might need to refresh after enabling)
+For example, Use `%echo` for the Echo Spell.
 
 <img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
 
