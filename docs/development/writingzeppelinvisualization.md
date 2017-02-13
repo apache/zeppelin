@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Writing a new Visualization(Experimental)"
-description: "Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. Make your own Application in Apache Zeppelin is quite easy."
+description: "Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded on runtime through Helium framework in Zeppelin. A Visualization is a javascript npm package and user can use them just like any other built-in visualization in a note."
 group: development
 ---
 <!--
@@ -46,8 +46,7 @@ Click 'enable' button.
 
 #### 3. Create and load visualization bundle on the fly
 
-Once a Visualization package is enabled, [HeliumVisualizationFactory](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/helium/HeliumVisualizationFactory.java) creates a js bundle. The js bundle is served by `helium/visualization/load` rest api endpoint.
-
+Once a Visualization package is enabled, [HeliumBundleFactory](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/helium/HeliumBundleFactory.java) creates a js bundle. The js bundle is served by `helium/bundle/load` rest api endpoint.
 
 #### 4. Run visualization
 
@@ -130,7 +129,7 @@ Json file contains the following information
 }
 ```
 
-Place file in your local registry directory (default `./helium`).
+Place this file in your local registry directory (default `./helium`).
 
 
 ##### type
@@ -194,7 +193,7 @@ Run Zeppelin. And then run zeppelin-web in visualization dev mode.
 
 ```
 cd zeppelin-web
-yarn run visdev
+yarn run dev:helium 
 ```
 
 You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
