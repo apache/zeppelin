@@ -35,10 +35,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
@@ -47,19 +44,19 @@ import org.slf4j.LoggerFactory;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
 
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-  public static SparkInterpreter repl;
-  public static InterpreterGroup intpGroup;
-  private InterpreterContext context;
-  public static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
+  static SparkInterpreter repl;
+  static InterpreterGroup intpGroup;
+  static InterpreterContext context;
+  static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
 
   /**
    * Get spark version number as a numerical value.
    * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
    */
-  public static int getSparkVersionNumber() {
+  public static int getSparkVersionNumber(SparkInterpreter repl) {
     if (repl == null) {
       return 0;
     }
@@ -81,16 +78,14 @@ public class SparkInterpreterTest {
     return p;
   }
 
-  @Before
-  public void setUp() throws Exception {
-    if (repl == null) {
-      intpGroup = new InterpreterGroup();
-      intpGroup.put("note", new LinkedList<Interpreter>());
-      repl = new SparkInterpreter(getSparkTestProperties(tmpDir));
-      repl.setInterpreterGroup(intpGroup);
-      intpGroup.get("note").add(repl);
-      repl.open();
-    }
+  @BeforeClass
+  public static void setUp() throws Exception {
+    intpGroup = new InterpreterGroup();
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    repl = new SparkInterpreter(getSparkTestProperties(tmpDir));
+    repl.setInterpreterGroup(intpGroup);
+    intpGroup.get("note").add(repl);
+    repl.open();
 
     context = new InterpreterContext("note", "id", null, "title", "text",
         new AuthenticationInfo(),
@@ -100,6 +95,11 @@ public class SparkInterpreterTest {
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         new InterpreterOutput(null));
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    repl.close();
   }
 
   @Test
@@ -150,7 +150,7 @@ public class SparkInterpreterTest {
 
   @Test
   public void testCreateDataFrame() {
-    if (getSparkVersionNumber() >= 13) {
+    if (getSparkVersionNumber(repl) >= 13) {
       repl.interpret("case class Person(name:String, age:Int)\n", context);
       repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
       repl.interpret("people.toDF.count", context);
@@ -166,7 +166,7 @@ public class SparkInterpreterTest {
     String code = "";
     repl.interpret("case class Person(name:String, age:Int)\n", context);
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
-    if (getSparkVersionNumber() < 13) {
+    if (getSparkVersionNumber(repl) < 13) {
       repl.interpret("people.registerTempTable(\"people\")", context);
       code = "z.show(sqlc.sql(\"select * from people\"))";
     } else {
@@ -182,7 +182,8 @@ public class SparkInterpreterTest {
     assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
 
 
-    if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
+    if (getSparkVersionNumber(repl) <= 11) { // spark 1.2 or later does not allow create multiple
+      // SparkContext in the same jvm by default.
       // create new interpreter
       SparkInterpreter repl2 = new SparkInterpreter(getSparkTestProperties(tmpDir));
       repl2.setInterpreterGroup(intpGroup);
@@ -235,7 +236,7 @@ public class SparkInterpreterTest {
 
   @Test
   public void testEnableImplicitImport() throws IOException {
-    if (getSparkVersionNumber() >= 13) {
+    if (getSparkVersionNumber(repl) >= 13) {
       // Set option of importing implicits to "true", and initialize new Spark repl
       Properties p = getSparkTestProperties(tmpDir);
       p.setProperty("zeppelin.spark.importImplicit", "true");
@@ -252,7 +253,7 @@ public class SparkInterpreterTest {
 
   @Test
   public void testDisableImplicitImport() throws IOException {
-    if (getSparkVersionNumber() >= 13) {
+    if (getSparkVersionNumber(repl) >= 13) {
       // Set option of importing implicits to "false", and initialize new Spark repl
       // this test should return error status when creating DataFrame from sequence
       Properties p = getSparkTestProperties(tmpDir);

@@ -1186,7 +1186,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePublic.getId()).size(), 0);
     assertEquals(notebookAuthorization.getWriters(notePublic.getId()).size(), 0);
-    
+
     // case of private note
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
     ZeppelinConfiguration conf2 = ZeppelinConfiguration.create();
@@ -1208,8 +1208,7 @@ public class NotebookTest implements JobListenerFactory{
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 2);
     assertEquals(notes2.size(), 1);
-    assertEquals(notes1.get(1).getId(), notePrivate.getId());
-    
+
     // user1 have all rights
     assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
