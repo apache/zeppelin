@@ -12,6 +12,39 @@ This will download all the dependencies including node (the binaries in the fold
 ```
 $ mvn package 
 ```
+#### You also can use maven for build and test
+
+If you want just build web application use:
+```
+$ mvn compile
+```  
+
+If you want just test web application use:
+```
+$ mvn test
+``` 
+
+Please note! Run
+
+```
+$ mvn clean
+```
+
+will clean local nodejs installation and all installed packages
+So, if you want to save time for rebuild use maven option:
+
+```
+-Dmaven.clean.skip=true
+```
+
+If you want skip tests of web application maven option:
+```
+-Dmaven.test.skip=true 
+```
+or 
+```
+-DskipTests
+```
 
 ### Local Development
 
@@ -21,11 +54,11 @@ All build commands are described in [package.json](./package.json)
 
 # install required depepdencies and bower packages (only once)
 ```
-$ npm install -g yarn bower npm-run-all rimraf grunt webpack karma karma-phantomjs-launcher
+$ npm install -g yarn
 ```
 
 ```
-$ yarn install --no-lockfile --no-bin-links
+$ yarn install
 ```
 # build zeppelin-web for production
 ```
