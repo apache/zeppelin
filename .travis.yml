@@ -82,7 +82,8 @@ matrix:
       env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Pscala-2.11" BUILD_FLAG="package -am -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
     # Test livy with spark 1.5.2 and hadoop 2.6
-    - jdk: "oraclejdk7"
+    - sudo: required
+      jdk: "oraclejdk7"
       env: SCALA_VER="2.10" $LIVY_VER="0.2.0" SPARK_VER="1.5.2" HADOOP_VER="2.6" PROFILE="-Pspark-1.5 -Phadoop-2.6" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl zeppelin-interpreter,livy" TEST_PROJECTS="-DfailIfNoTests=false"
 
 before_install:
