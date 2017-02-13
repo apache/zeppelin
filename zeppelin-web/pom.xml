@@ -80,7 +80,8 @@
             <exclude>node/**</exclude>
             <exclude>node_modules/**</exclude>
             <exclude>bower_components/**</exclude>
-            <exclude>test/**</exclude>
+            <exclude>src/**/*.test.js</exclude>
+            <exclude>reports/**</exclude>
             <exclude>dist/**</exclude>
             <exclude>src/.buildignore</exclude>
             <exclude>src/fonts/fontawesome*</exclude>
