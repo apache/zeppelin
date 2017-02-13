@@ -39,14 +39,14 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterMatplotlibTest {
 
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-  public static SparkInterpreter sparkInterpreter;
-  public static PySparkInterpreter pyspark;
-  public static InterpreterGroup intpGroup;
-  public static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
-  private InterpreterContext context;
+  static SparkInterpreter sparkInterpreter;
+  static PySparkInterpreter pyspark;
+  static InterpreterGroup intpGroup;
+  static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
+  static InterpreterContext context;
   
   public static class AltPySparkInterpreter extends PySparkInterpreter {
     /**
@@ -80,7 +80,7 @@ public class PySparkInterpreterMatplotlibTest {
     }
   }
 
-  private Properties getPySparkTestProperties() throws IOException {
+  private static Properties getPySparkTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty("master", "local[*]");
     p.setProperty("spark.app.name", "Zeppelin Test");
@@ -106,24 +106,20 @@ public class PySparkInterpreterMatplotlibTest {
     return version;
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    if (sparkInterpreter == null) {
-      sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
-      intpGroup.get("note").add(sparkInterpreter);
-      sparkInterpreter.setInterpreterGroup(intpGroup);
-      sparkInterpreter.open();
-    }
+    sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
+    intpGroup.get("note").add(sparkInterpreter);
+    sparkInterpreter.setInterpreterGroup(intpGroup);
+    sparkInterpreter.open();
 
-    if (pyspark == null) {
-      pyspark = new AltPySparkInterpreter(getPySparkTestProperties());
-      intpGroup.get("note").add(pyspark);
-      pyspark.setInterpreterGroup(intpGroup);
-      pyspark.open();
-    }
+    pyspark = new AltPySparkInterpreter(getPySparkTestProperties());
+    intpGroup.get("note").add(pyspark);
+    pyspark.setInterpreterGroup(intpGroup);
+    pyspark.open();
 
     context = new InterpreterContext("note", "id", null, "title", "text",
       new AuthenticationInfo(),
@@ -133,6 +129,12 @@ public class PySparkInterpreterMatplotlibTest {
       new LocalResourcePool("id"),
       new LinkedList<InterpreterContextRunner>(),
       new InterpreterOutput(null));
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    pyspark.close();
+    sparkInterpreter.close();
   }
 
   @Test
