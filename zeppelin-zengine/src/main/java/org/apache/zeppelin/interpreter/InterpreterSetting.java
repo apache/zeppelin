@@ -299,6 +299,32 @@ public class InterpreterSetting {
     }
   }
 
+  void shutdownAndRemoveInterpreterGroup(String interpreterGroupKey) {
+    String key = getInterpreterProcessKey("", interpreterGroupKey);
+
+    List<InterpreterGroup> groupToRemove = new LinkedList<>();
+    InterpreterGroup groupItem;
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (intpKey.contains(key)) {
+        interpreterGroupWriteLock.lock();
+        groupItem = interpreterGroupRef.remove(intpKey);
+        interpreterGroupWriteLock.unlock();
+        groupToRemove.add(groupItem);
+      }
+    }
+
+    for (InterpreterGroup groupToClose : groupToRemove) {
+      groupToClose.shutdown();
+    }
+  }
+
+  void shutdownAndRemoveAllInterpreterGroups() {
+    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
+    for (String interpreterGroupKey : groupsToRemove) {
+      shutdownAndRemoveInterpreterGroup(interpreterGroupKey);
+    }
+  }
+
   public Object getProperties() {
     return properties;
   }
