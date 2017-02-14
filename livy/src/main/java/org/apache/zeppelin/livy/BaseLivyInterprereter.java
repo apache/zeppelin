@@ -299,8 +299,14 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
-    if (stmtInfo.output.isError()) {
+    if (stmtInfo.output != null && stmtInfo.output.isError()) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, stmtInfo.output.evalue);
+    } else if (stmtInfo.isCancelled()) {
+      // corner case, output might be null if it is cancelled.
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
+    } else if (stmtInfo.output == null) {
+      // This case should never happen, just in case
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Empty output");
     } else {
       //TODO(zjffdu) support other types of data (like json, image and etc)
       String result = stmtInfo.output.data.plain_text;
@@ -531,6 +537,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
     public boolean isAvailable() {
       return state.equals("available") || state.equals("cancelled");
+    }
+
+    public boolean isCancelled() {
+      return state.equals("cancelled");
     }
 
     private static class StatementOutput {
