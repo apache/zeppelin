@@ -79,7 +79,7 @@
       <id>install-yarn-bover-etc-before-compile</id>
       <activation>
         <file>
-          <missing>${basedir}/node_modules</missing>
+          <missing>${basedir}/node/node</missing>
         </file>  
       </activation>
       <build>
