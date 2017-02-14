@@ -80,6 +80,13 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     assertThat(listOfRepositories.size(), is(not(0)));
   }
+
+  @Test public void reloadRepositories() throws IOException {
+    GetMethod get = httGet("/notebook-repositories/reload");
+    int status = get.getStatusCode();
+    get.releaseConnection();
+    assertThat(status, is(200)); 
+  }
   
   @Test public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -95,7 +102,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     }
 
     if (StringUtils.isBlank(localVfs)) {
-      // no loval VFS set...
+      // no local VFS set...
       return;
     }
 
