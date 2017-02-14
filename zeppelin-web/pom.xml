@@ -76,7 +76,7 @@
         </build>
     </profile>
     <profile>
-      <id>install-yarn-bover-etc</id>
+      <id>install-yarn-bover-etc-before-compile</id>
       <activation>
         <file>
           <missing>${basedir}/node_modules</missing>
@@ -95,6 +95,7 @@
                 <goals>
                   <goal>install-node-and-yarn</goal>
                 </goals>
+                <phase>generate-sources</phase>
                 <configuration>
                   <nodeVersion>${node.version}</nodeVersion>
                   <yarnVersion>${yarn.version}</yarnVersion>
@@ -106,6 +107,7 @@
                   <goals>
                       <goal>yarn</goal>
                   </goals>
+                  <phase>generate-sources</phase>
                   <configuration>
                       <arguments>add bower karma-phantomjs-launcher --no-lockfile --no-bin-links</arguments>
                   </configuration>
@@ -116,6 +118,7 @@
                   <goals>
                       <goal>bower</goal>
                   </goals>
+                  <phase>generate-sources</phase>
                   <configuration>
                       <arguments>install --silent --allow-root</arguments>
                   </configuration>
@@ -180,6 +183,7 @@
             <exclude>**/.npmignore</exclude>
             <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
+            <exclude>*.sh</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -189,7 +193,41 @@
         <artifactId>frontend-maven-plugin</artifactId>
         <version>${plugin.frontned.version}</version>
         <executions>
-                   
+          
+          <execution>
+            <id>install node and yarn</id>
+            <goals>
+              <goal>install-node-and-yarn</goal>
+            </goals>
+            <phase>post-clean</phase>
+            <configuration>
+              <nodeVersion>${node.version}</nodeVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
+            </configuration>
+          </execution>
+
+          <execution>
+              <id>yarn add bower</id>
+              <goals>
+                  <goal>yarn</goal>
+              </goals>
+              <phase>post-clean</phase>
+              <configuration>
+                  <arguments>add bower karma-phantomjs-launcher --no-lockfile --no-bin-links</arguments>
+              </configuration>
+          </execution>
+
+          <execution>
+              <id>bower install</id>
+              <goals>
+                  <goal>bower</goal>
+              </goals>
+              <phase>post-clean</phase>
+              <configuration>
+                  <arguments>install --silent --allow-root</arguments>
+              </configuration>
+          </execution>
+                                 
           <execution>
               <id>pre-webpack-dist</id>
               <goals>
@@ -286,7 +324,6 @@
             </fileset>
             <fileset>                 
               <directory>.tmp</directory>    
-              <followSymlinks>false</followSymlinks>
             </fileset>
             <fileset>
               <directory>.</directory>
@@ -302,6 +339,5 @@
       </plugin>    
     </plugins>
   </build>
-
-
+  
 </project>
