@@ -409,7 +409,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       LOGGER.error(String.format("Error with %s StatusCode: %s",
           response.getStatusCode().value(), e.getResponseBodyAsString()));
     } catch (RestClientException e) {
-      if (e.getMessage().contains("404 Not Found") && e.getMessage().contains("kerberos")) {
+      if (e.getMessage().contains("404 Not Found")) {
         throw new SessionNotFoundException("Session not found when kerberos is enabled ");
       } else {
         throw new LivyException(e);
