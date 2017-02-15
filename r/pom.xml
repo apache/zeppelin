@@ -223,6 +223,7 @@
             <exclude>**/derby.log</exclude>
             <exclude>**/metastore_db/</exclude>
             <exclude>**/README.md</exclude>
+            <exclude>**/interpreter-setting.json</exclude>
             <exclude>**/dependency-reduced-pom.xml</exclude>
           </excludes>
         </configuration>

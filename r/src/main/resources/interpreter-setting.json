@@ -1,0 +1,14 @@
+[
+  {
+    "group": "spark",
+    "name": "knitr",
+    "className": "org.apache.zeppelin.rinterpreter.KnitR",
+    "properties": null
+  },
+  {
+    "group": "spark",
+    "name": "r",
+    "className": "org.apache.zeppelin.rinterpreter.RRepl",
+    "properties": null
+  }
+]
