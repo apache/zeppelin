@@ -198,6 +198,8 @@ public class InterpreterSettingManager {
           }
         }
 
+        setting.setInterpreterGroupFactory(interpreterGroupFactory);
+
         loadInterpreterDependencies(setting);
         interpreterSettings.put(k, setting);
       }
