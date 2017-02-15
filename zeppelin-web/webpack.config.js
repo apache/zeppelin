@@ -28,6 +28,7 @@ var InsertLiveReloadPlugin = function InsertLiveReloadPlugin(options) {
   this.port = this.options.port || 35729;
   this.hostname = this.options.hostname || 'localhost';
 }
+var express = require('express');
 
 InsertLiveReloadPlugin.prototype.autoloadJs = function autoloadJs() {
   return
@@ -267,9 +268,11 @@ module.exports = function makeWebpackConfig () {
     progress: true,
     contentBase: './src',
     setup: function(app) {
-      app.use(
-        '/bower_components/',
-        require('express').static(path.join(__dirname, './bower_components/')));
+      app.use('**/bower_components/', express.static(path.resolve(__dirname, './bower_components/')));
+      app.use('**/app/', express.static(path.resolve(__dirname, './src/app/')));
+      app.use('**/assets/', express.static(path.resolve(__dirname, './src/assets/')));
+      app.use('**/fonts/', express.static(path.resolve(__dirname, './src/fonts/')));
+      app.use('**/components/', express.static(path.resolve(__dirname, './src/components/')));
     },
     stats: 'minimal',
   };

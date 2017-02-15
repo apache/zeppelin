@@ -14,8 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
 
-LoginCtrl.$inject = ['$scope', '$rootScope', '$http', '$httpParamSerializer', 'baseUrlSrv'];
 function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv) {
+  'ngInject';
+
   $scope.SigningIn = false;
   $scope.loginParams = {};
   $scope.login = function() {

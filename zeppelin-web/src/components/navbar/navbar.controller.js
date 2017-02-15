@@ -14,23 +14,11 @@
 
 angular.module('zeppelinWebApp').controller('NavCtrl', NavCtrl);
 
-NavCtrl.$inject = [
-  '$scope',
-  '$rootScope',
-  '$http',
-  '$routeParams',
-  '$location',
-  'noteListDataFactory',
-  'baseUrlSrv',
-  'websocketMsgSrv',
-  'arrayOrderingSrv',
-  'searchService',
-  'TRASH_FOLDER_ID'
-];
-
 function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
                  noteListDataFactory, baseUrlSrv, websocketMsgSrv,
                  arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
+  'ngInject';
+
   var vm = this;
   vm.arrayOrderingSrv = arrayOrderingSrv;
   vm.connected = websocketMsgSrv.isConnected();
@@ -93,6 +81,10 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     websocketMsgSrv.getNoteList();
   }
 
+  function getHomeNote(){
+    websocketMsgSrv.getHomeNote();
+  }
+
   function logout() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
@@ -141,6 +133,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
   $scope.$on('loginSuccess', function(event, param) {
     listConfigurations();
     loadNotes();
+    getHomeNote();
   });
 
   /*

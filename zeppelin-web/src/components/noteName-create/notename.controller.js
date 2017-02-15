@@ -14,14 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl);
 
-NotenameCtrl.$inject = [
-  '$scope',
-  'noteListDataFactory',
-  '$routeParams',
-  'websocketMsgSrv'
-];
-
 function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {
+  'ngInject';
+
   var vm = this;
   vm.clone = false;
   vm.notes = noteListDataFactory;

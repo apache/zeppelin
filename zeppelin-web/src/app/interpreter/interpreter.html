@@ -103,7 +103,6 @@ limitations under the License.
               %<span ng-show="!$parent.$first || $first">{{setting.name}}</span
               ><span ng-show="(!$parent.$first || $first) && !$first">.</span
               ><span ng-show="!$first">{{interpreter.name}}</span>
-              <span ng-show="$parent.$first && $first">(default)</span>
             </span>
           </small>
 
@@ -400,28 +399,27 @@ limitations under the License.
             </tr>
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
-            <td>{{key}}</td>
-            <td>
+            <td style="vertical-align: middle;">{{key}}</td>
+            <td style="vertical-align: middle;">
               <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>
                 {{setting.properties[key] | breakFilter}}
               </span>
             </td>
-            <td ng-if="valueform.$visible">
+            <td style="vertical-align: middle;" ng-if="valueform.$visible">
               <button class="btn btn-default btn-sm fa fa-remove"
                    ng-click="removeInterpreterProperty(key, setting.id)">
               </button>
             </td>
           </tr>
           <tr ng-if="valueform.$visible">
-            <td>
+            <td style="vertical-align: middle;">
               <input ng-model="setting.propertyKey"
-                     pu-elastic-input
-                     pu-elastic-input-minwidth="180px" />
+                     pu-elastic-input pu-elastic-input-minwidth="180px" />
             </td>
-            <td>
+            <td style="vertical-align: middle;">
               <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
             </td>
-            <td>
+            <td style="vertical-align: middle;">
               <button class="btn btn-default btn-sm fa fa-plus"
                    ng-click="addNewInterpreterProperty(setting.id)">
               </button>

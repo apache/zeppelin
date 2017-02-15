@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv);
 
-websocketMsgSrv.$inject = ['$rootScope', 'websocketEvents'];
-
 function websocketMsgSrv($rootScope, websocketEvents) {
+  'ngInject';
+
   return {
 
     getHomeNote: function() {

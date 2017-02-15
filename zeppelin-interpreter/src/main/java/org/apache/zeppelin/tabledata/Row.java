@@ -14,31 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.tabledata;
 
 import java.io.Serializable;
 
 /**
- * Interpreter result message
+ * Row representation of table data
  */
-public class InterpreterResultMessage implements Serializable {
-  InterpreterResult.Type type;
-  String data;
+public class Row implements Serializable {
+  private final Object[] data;
 
-  public InterpreterResultMessage(InterpreterResult.Type type, String data) {
-    this.type = type;
+  public Row(Object [] data) {
     this.data = data;
   }
 
-  public InterpreterResult.Type getType() {
-    return type;
-  }
-
-  public String getData() {
+  public Object [] get() {
     return data;
-  }
-
-  public String toString() {
-    return "%" + type.name().toLowerCase() + " " + data;
   }
 }

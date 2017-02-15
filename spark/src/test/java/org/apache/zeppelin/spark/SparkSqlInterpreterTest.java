@@ -27,9 +27,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
@@ -37,45 +35,38 @@ import static org.junit.Assert.assertTrue;
 
 public class SparkSqlInterpreterTest {
 
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-  private SparkSqlInterpreter sql;
-  private SparkInterpreter repl;
-  private InterpreterContext context;
-  private InterpreterGroup intpGroup;
+  static SparkSqlInterpreter sql;
+  static SparkInterpreter repl;
+  static InterpreterContext context;
+  static InterpreterGroup intpGroup;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     Properties p = new Properties();
     p.putAll(SparkInterpreterTest.getSparkTestProperties(tmpDir));
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.concurrentSQL", "false");
     p.setProperty("zeppelin.spark.sql.stacktrace", "false");
 
-    if (repl == null) {
+    repl = new SparkInterpreter(p);
+    intpGroup = new InterpreterGroup();
+    repl.setInterpreterGroup(intpGroup);
+    repl.open();
+    SparkInterpreterTest.repl = repl;
+    SparkInterpreterTest.intpGroup = intpGroup;
 
-      if (SparkInterpreterTest.repl == null) {
-        repl = new SparkInterpreter(p);
-        intpGroup = new InterpreterGroup();
-        repl.setInterpreterGroup(intpGroup);
-        repl.open();
-        SparkInterpreterTest.repl = repl;
-        SparkInterpreterTest.intpGroup = intpGroup;
-      } else {
-        repl = SparkInterpreterTest.repl;
-        intpGroup = SparkInterpreterTest.intpGroup;
-      }
+    sql = new SparkSqlInterpreter(p);
 
-      sql = new SparkSqlInterpreter(p);
+    intpGroup = new InterpreterGroup();
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(repl);
+    intpGroup.get("note").add(sql);
+    sql.setInterpreterGroup(intpGroup);
+    sql.open();
 
-      intpGroup = new InterpreterGroup();
-      intpGroup.put("note", new LinkedList<Interpreter>());
-      intpGroup.get("note").add(repl);
-      intpGroup.get("note").add(sql);
-      sql.setInterpreterGroup(intpGroup);
-      sql.open();
-    }
     context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
@@ -83,8 +74,14 @@ public class SparkSqlInterpreterTest {
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
   }
 
+  @AfterClass
+  public static void tearDown() {
+    sql.close();
+    repl.close();
+  }
+
   boolean isDataFrameSupported() {
-    return SparkInterpreterTest.getSparkVersionNumber() >= 13;
+    return SparkInterpreterTest.getSparkVersionNumber(repl) >= 13;
   }
 
   @Test

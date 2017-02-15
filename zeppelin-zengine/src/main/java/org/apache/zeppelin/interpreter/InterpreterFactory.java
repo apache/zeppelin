@@ -38,18 +38,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -81,6 +71,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * Manage interpreters.
@@ -554,6 +547,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     File settingFile = new File(conf.getInterpreterSettingPath());
     if (!settingFile.exists()) {
       settingFile.createNewFile();
+
+      Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+      Files.setPosixFilePermissions(settingFile.toPath(), permissions);
     }
 
     FileOutputStream fos = new FileOutputStream(settingFile, false);
@@ -843,11 +839,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
       Map<String, List<InterpreterSetting>> nameInterpreterSettingMap = new HashMap<>();
       for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
-        String name = interpreterSetting.getName();
-        if (!nameInterpreterSettingMap.containsKey(name)) {
-          nameInterpreterSettingMap.put(name, new ArrayList<InterpreterSetting>());
+        String group = interpreterSetting.getGroup();
+        if (!nameInterpreterSettingMap.containsKey(group)) {
+          nameInterpreterSettingMap.put(group, new ArrayList<InterpreterSetting>());
         }
-        nameInterpreterSettingMap.get(name).add(interpreterSetting);
+        nameInterpreterSettingMap.get(group).add(interpreterSetting);
       }
 
       for (String groupName : interpreterGroupOrderList) {

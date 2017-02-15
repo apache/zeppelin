@@ -76,6 +76,30 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
 
     @Test
+    public void scalaOutputTest() throws IOException {
+        // create new note
+        Note note = ZeppelinServer.notebook.createNote(anonymous);
+        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Map config = p.getConfig();
+        config.put("enabled", true);
+        p.setConfig(config);
+        p.setText("%spark import java.util.Date\n" +
+            "import java.net.URL\n" +
+            "println(\"hello\")\n"
+        );
+        p.setAuthenticationInfo(anonymous);
+        note.run(p.getId());
+        waitForFinish(p);
+        assertEquals(Status.FINISHED, p.getStatus());
+        assertEquals("import java.util.Date\n" +
+            "import java.net.URL\n" +
+            "hello\n", p.getResult().message().get(0).getData());
+        ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    }
+
+
+
+    @Test
     public void basicRDDTransformationAndActionTest() throws IOException {
         // create new note
         Note note = ZeppelinServer.notebook.createNote(anonymous);

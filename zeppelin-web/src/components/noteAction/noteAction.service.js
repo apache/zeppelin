@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').service('noteActionSrv', noteActionSrv);
 
-noteActionSrv.$inject = ['websocketMsgSrv', '$location', 'renameSrv', 'noteListDataFactory'];
-
 function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactory) {
+  'ngInject';
+
   this.moveNoteToTrash = function(noteId, redirectToHome) {
     BootstrapDialog.confirm({
       closable: true,

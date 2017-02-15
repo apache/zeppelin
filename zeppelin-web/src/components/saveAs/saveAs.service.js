@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').service('saveAsService', saveAsService);
 
-saveAsService.$inject = ['browserDetectService'];
-
 function saveAsService(browserDetectService) {
+  'ngInject';
+
   this.saveAs = function(content, filename, extension) {
     var BOM = '\uFEFF';
     if (browserDetectService.detectIE()) {

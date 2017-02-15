@@ -14,28 +14,11 @@
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
 
-NotebookCtrl.$inject = [
-  '$scope',
-  '$route',
-  '$routeParams',
-  '$location',
-  '$rootScope',
-  '$http',
-  'websocketMsgSrv',
-  'baseUrlSrv',
-  '$timeout',
-  'saveAsService',
-  'ngToast',
-  'noteActionSrv',
-  'noteVarShareService',
-  'TRASH_FOLDER_ID',
-  'heliumService',
-];
-
 function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
                       ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID,
                       heliumService) {
+  'ngInject';
 
   ngToast.dismiss();
 
@@ -614,6 +597,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       $scope.openSetting();
       $scope.closePermissions();
+      angular.element('html, body').animate({ scrollTop: 0 }, 'slow');
     }
   };
 

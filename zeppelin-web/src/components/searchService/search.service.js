@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').service('searchService', searchService);
 
-searchService.$inject = ['$resource', 'baseUrlSrv'];
-
 function searchService($resource, baseUrlSrv) {
+  'ngInject';
+
   this.search = function(term) {
     this.searchTerm = term.q;
     console.log('Searching for: %o', term.q);

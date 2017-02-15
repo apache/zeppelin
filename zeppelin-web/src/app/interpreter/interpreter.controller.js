@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
-InterpreterCtrl.$inject = ['$rootScope', '$scope', '$http', 'baseUrlSrv', 'ngToast', '$timeout', '$route'];
-
 function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+  'ngInject';
+
   var interpreterSettingsTmp = [];
   $scope.interpreterSettings = [];
   $scope.availableInterpreters = {};

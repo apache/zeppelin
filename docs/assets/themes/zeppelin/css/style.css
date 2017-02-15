@@ -452,9 +452,18 @@ a.anchor {
 }
 .content table th,
 .content table td {
-  padding: 0.5rem 1rem;
+  padding: 0.7rem 1rem;
   border: 1px solid #e9ebec;
 }
+
+.properties {
+  font-size: 12.5px !important;
+  font-weight: normal;
+  color: #4c555a !important;
+  margin-bottom: 0px;
+}
+
+
 
 /* posts index */
 .post > h3.title {

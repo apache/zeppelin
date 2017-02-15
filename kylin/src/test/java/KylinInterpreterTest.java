@@ -64,6 +64,13 @@ public class KylinInterpreterTest {
             "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
     assertEquals("", t.getProject("()\n select a.date,sum(b.measure) as measure " +
             "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
+    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a inner join " +
+            "kylin_lookup_table b on a.date=b.date group by a.date", t.getSQL("(project2)\n select a.date," +
+            "sum(b.measure) as measure from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date " +
+            "group by a.date"));
+    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a inner join kylin_lookup_table b " +
+            "on a.date=b.date group by a.date", t.getSQL("()\n select a.date,sum(b.measure) as measure " +
+            "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
   }
 
   private Properties getDefaultProperties(){

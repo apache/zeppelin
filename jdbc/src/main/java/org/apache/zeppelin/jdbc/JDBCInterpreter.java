@@ -201,18 +201,8 @@ public class JDBCInterpreter extends Interpreter {
 
   private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
 
-    SqlCompleter completer = null;
-    try {
-      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
-      Set<String> dataModelCompletions =
-          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
-      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
-      completer = new SqlCompleter(allCompletions, dataModelCompletions);
-
-    } catch (IOException | SQLException e) {
-      logger.error("Cannot create SQL completer", e);
-    }
-
+    SqlCompleter completer = new SqlCompleter();
+    completer.initFromConnection(jdbcConnection, "");
     return completer;
   }
 
@@ -375,7 +365,7 @@ public class JDBCInterpreter extends Interpreter {
             if (user == null) {
               connection = getConnectionFromPool(url, user, propertyKey, properties);
             } else {
-              if ("hive".equalsIgnoreCase(propertyKey)) {
+              if (url.trim().startsWith("jdbc:hive")) {
                 StringBuilder connectionUrl = new StringBuilder(url);
                 Integer lastIndexOfUrl = connectionUrl.indexOf("?");
                 if (lastIndexOfUrl == -1) {
@@ -712,7 +702,8 @@ public class JDBCInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor) {
     List<CharSequence> candidates = new ArrayList<>();
     SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
-    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
+    // It's strange but here cursor comes with additional +1 (even if buf is "" cursor = 1)
+    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor - 1, candidates) >= 0) {
       List<InterpreterCompletion> completion;
       completion = Lists.transform(candidates, sequenceToStringTransformer);
 

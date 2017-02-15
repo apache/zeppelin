@@ -23,10 +23,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
@@ -44,16 +41,16 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
 
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-  public static SparkInterpreter sparkInterpreter;
-  public static PySparkInterpreter pySparkInterpreter;
-  public static InterpreterGroup intpGroup;
-  public static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
-  private InterpreterContext context;
+  static SparkInterpreter sparkInterpreter;
+  static PySparkInterpreter pySparkInterpreter;
+  static InterpreterGroup intpGroup;
+  static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
+  static InterpreterContext context;
 
-  private Properties getPySparkTestProperties() throws IOException {
+  private static Properties getPySparkTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty("master", "local[*]");
     p.setProperty("spark.app.name", "Zeppelin Test");
@@ -79,24 +76,20 @@ public class PySparkInterpreterTest {
     return version;
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    if (sparkInterpreter == null) {
-      sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
-      intpGroup.get("note").add(sparkInterpreter);
-      sparkInterpreter.setInterpreterGroup(intpGroup);
-      sparkInterpreter.open();
-    }
+    sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
+    intpGroup.get("note").add(sparkInterpreter);
+    sparkInterpreter.setInterpreterGroup(intpGroup);
+    sparkInterpreter.open();
 
-    if (pySparkInterpreter == null) {
-      pySparkInterpreter = new PySparkInterpreter(getPySparkTestProperties());
-      intpGroup.get("note").add(pySparkInterpreter);
-      pySparkInterpreter.setInterpreterGroup(intpGroup);
-      pySparkInterpreter.open();
-    }
+    pySparkInterpreter = new PySparkInterpreter(getPySparkTestProperties());
+    intpGroup.get("note").add(pySparkInterpreter);
+    pySparkInterpreter.setInterpreterGroup(intpGroup);
+    pySparkInterpreter.open();
 
     context = new InterpreterContext("note", "id", null, "title", "text",
       new AuthenticationInfo(),
@@ -106,6 +99,12 @@ public class PySparkInterpreterTest {
       new LocalResourcePool("id"),
       new LinkedList<InterpreterContextRunner>(),
       new InterpreterOutput(null));
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    pySparkInterpreter.close();
+    sparkInterpreter.close();
   }
 
   @Test

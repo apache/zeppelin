@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('MainCtrl', MainCtrl);
 
-MainCtrl.$inject = ['$scope', '$rootScope', '$window', 'arrayOrderingSrv'];
-
 function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
+  'ngInject';
+
   $scope.looknfeel = 'default';
 
   var init = function() {

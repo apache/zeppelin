@@ -14,9 +14,9 @@
 
 angular.module('zeppelinWebApp').controller('HeliumCtrl', HeliumCtrl);
 
-HeliumCtrl.$inject = ['$scope', '$rootScope', '$sce', 'baseUrlSrv', 'ngToast', 'heliumService'];
-
 function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService) {
+  'ngInject';
+
   $scope.packageInfos = {};
   $scope.defaultVersions = {};
   $scope.showVersions = {};

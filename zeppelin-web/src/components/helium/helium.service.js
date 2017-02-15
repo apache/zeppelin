@@ -16,9 +16,8 @@ import { HeliumType, } from './helium-type';
 
 angular.module('zeppelinWebApp').service('heliumService', heliumService);
 
-heliumService.$inject = ['$http', 'baseUrlSrv', 'ngToast'];
-
 function heliumService($http, baseUrlSrv, ngToast) {
+  'ngInject';
 
   var url = baseUrlSrv.getRestApiBase() + '/helium/bundle/load';
   if (process.env.HELIUM_BUNDLE_DEV) {
