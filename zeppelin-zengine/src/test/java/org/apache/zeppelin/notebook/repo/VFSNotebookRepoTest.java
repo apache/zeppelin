@@ -31,6 +31,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
@@ -55,6 +56,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   private SchedulerFactory schedulerFactory;
   private Notebook notebook;
   private NotebookRepo notebookRepo;
+  private InterpreterSettingManager interpreterSettingManager;
   private InterpreterFactory factory;
   private DependencyResolver depResolver;
   private NotebookAuthorization notebookAuthorization;
@@ -84,12 +86,13 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     this.schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver, false);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search,
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, interpreterSettingManager, this, search,
         notebookAuthorization, null);
   }
 
@@ -118,7 +121,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   public void testSaveNotebook() throws IOException, InterruptedException {
     AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
     Note note = notebook.createNote(anonymous);
-    factory.setInterpreters("user", note.getId(), factory.getDefaultInterpreterSettingList());
+    interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();

@@ -77,6 +77,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient InterpreterFactory factory;
+  private transient InterpreterSettingManager interpreterSettingManager;
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
   private transient SearchService index;
@@ -101,10 +102,12 @@ public class Note implements Serializable, ParagraphJobListener {
   public Note() {
   }
 
-  public Note(NotebookRepo repo, InterpreterFactory factory, JobListenerFactory jlFactory,
+  public Note(NotebookRepo repo, InterpreterFactory factory,
+      InterpreterSettingManager interpreterSettingManager, JobListenerFactory jlFactory,
       SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
     this.repo = repo;
     this.factory = factory;
+    this.interpreterSettingManager = interpreterSettingManager;
     this.jobListenerFactory = jlFactory;
     this.index = noteIndex;
     this.noteEventListener = noteEventListener;
@@ -117,7 +120,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   private String getDefaultInterpreterName() {
-    InterpreterSetting setting = factory.getDefaultInterpreterSetting(getId());
+    InterpreterSetting setting = interpreterSettingManager.getDefaultInterpreterSetting(getId());
     return null != setting ? setting.getName() : StringUtils.EMPTY;
   }
 
@@ -220,6 +223,15 @@ public class Note implements Serializable, ParagraphJobListener {
     }
   }
 
+  void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
+    this.interpreterSettingManager = interpreterSettingManager;
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        p.setInterpreterSettingManager(interpreterSettingManager);
+      }
+    }
+  }
+
   public void initializeJobListenerForParagraph(Paragraph paragraph) {
     final Note paragraphNote = paragraph.getNote();
     if (!paragraphNote.getId().equals(this.getId())) {
@@ -272,7 +284,7 @@ public class Note implements Serializable, ParagraphJobListener {
    * Add paragraph last.
    */
   public Paragraph addParagraph(AuthenticationInfo authenticationInfo) {
-    Paragraph p = new Paragraph(this, this, factory);
+    Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, paragraphs.size());
     synchronized (paragraphs) {
@@ -292,7 +304,8 @@ public class Note implements Serializable, ParagraphJobListener {
   void addCloneParagraph(Paragraph srcParagraph) {
 
     // Keep paragraph original ID
-    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory,
+        interpreterSettingManager);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
@@ -329,7 +342,7 @@ public class Note implements Serializable, ParagraphJobListener {
    * @param index index of paragraphs
    */
   public Paragraph insertParagraph(int index, AuthenticationInfo authenticationInfo) {
-    Paragraph p = new Paragraph(this, this, factory);
+    Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, index);
     synchronized (paragraphs) {
@@ -623,7 +636,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
+    List<InterpreterSetting> settings = interpreterSettingManager.getInterpreterSettings(getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -638,7 +651,7 @@ public class Note implements Serializable, ParagraphJobListener {
   private void removeAllAngularObjectInParagraph(String user, String paragraphId) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = factory.getInterpreterSettings(getId());
+    List<InterpreterSetting> settings = interpreterSettingManager.getInterpreterSettings(getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
