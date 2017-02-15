@@ -80,7 +80,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // then
     assertThat(get, isAllowed());
-    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getAvailableInterpreterSettings().size(),
+    assertEquals(ZeppelinServer.notebook.getInterpreterSettingManager().getAvailableInterpreterSettings().size(),
         body.entrySet().size());
     get.releaseConnection();
   }
@@ -258,7 +258,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertEquals(p.getResult().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
     // when: restart interpreter
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         // call restart interpreter API
         PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
@@ -304,7 +304,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // when: get md interpreter
     InterpreterSetting mdIntpSetting = null;
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         mdIntpSetting = setting;
         break;
