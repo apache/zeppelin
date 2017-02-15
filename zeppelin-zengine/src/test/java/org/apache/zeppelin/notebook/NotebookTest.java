@@ -320,7 +320,7 @@ public class NotebookTest implements JobListenerFactory{
     note.runAll();
 
     // wait for finish
-    while(p3.isTerminated() == false) {
+    while(p3.isTerminated() == false || p3.getResult() == null) {
       Thread.yield();
     }
 
