@@ -41,7 +41,7 @@ If you want skip tests of web application maven option:
 ```
 -Dmaven.test.skip=true 
 ```
-or 
+ or 
 ```
 -DskipTests
 ```
