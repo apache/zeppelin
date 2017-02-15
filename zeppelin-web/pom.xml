@@ -154,7 +154,6 @@
             <exclude>**/.npmignore</exclude>
             <exclude>yarn.lock</exclude>
             <exclude>*.md</exclude>
-            <exclude>*.sh</exclude>
           </excludes>
         </configuration>
       </plugin>
