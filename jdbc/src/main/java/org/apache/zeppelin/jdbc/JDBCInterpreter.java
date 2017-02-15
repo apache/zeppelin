@@ -202,7 +202,7 @@ public class JDBCInterpreter extends Interpreter {
   private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
 
     SqlCompleter completer = new SqlCompleter();
-    completer.initFromConnection(jdbcConnection, "");
+    completer.initFromConnection(jdbcConnection, "%");
     return completer;
   }
 
