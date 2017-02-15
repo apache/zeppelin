@@ -60,6 +60,11 @@ $ npm install -g yarn
 ```
 $ yarn install
 ```
+
+```
+$ bower install --silent
+```
+
 # build zeppelin-web for production
 ```
 $ yarn run build

@@ -7,7 +7,7 @@
   },
   "scripts": {
     "clean": "rimraf dist && rimraf .tmp",
-    "prebuild": "bower install  --allow-root --silent && npm-run-all clean",
+    "prebuild": "npm-run-all clean",
     "build": "grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
     "predev": "grunt pre-webpack-dev",
     "dev:server": "webpack-dev-server --hot",

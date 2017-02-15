@@ -48,34 +48,6 @@
   
   <profiles>
     <profile>
-      <id>linux_profile</id>
-      <activation>
-        <os>
-          <family>linux</family>
-        </os>
-      </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>exec-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>some-execution</id>
-                  <phase>process-test-resources</phase>
-                  <goals>
-                    <goal>exec</goal>
-                  </goals>
-                </execution>
-              </executions>
-              <configuration>
-                <executable>${basedir}/add_dependencies.sh</executable>
-              </configuration>
-            </plugin>            
-          </plugins>
-        </build>
-    </profile>
-    <profile>
       <id>install-yarn-bover-etc-before-compile</id>
       <activation>
         <file>
@@ -128,7 +100,6 @@
         </plugins>
       </build>
     </profile>
-   
   </profiles> 
   
   <build>
