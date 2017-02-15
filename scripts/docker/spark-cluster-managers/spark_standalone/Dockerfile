@@ -33,8 +33,8 @@ yum clean all
 # Remove old jdk
 RUN yum remove java; yum remove jdk
 
-# install jdk7 
-RUN yum install -y java-1.7.0-openjdk-devel
+# install jdk8 
+RUN yum install -y java-1.8.0-openjdk-devel
 ENV JAVA_HOME /usr/lib/jvm/java
 ENV PATH $PATH:$JAVA_HOME/bin
 

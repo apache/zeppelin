@@ -89,7 +89,7 @@ cp /home/zeppelin/zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/zeppelin
 Set the following properties
 
 ```bash
-export JAVA_HOME="/usr/java/jdk1.7.0_79"
+export JAVA_HOME="/usr/lib/jvm/default-java"
 export HADOOP_CONF_DIR="/etc/hadoop/conf"
 export ZEPPELIN_JAVA_OPTS="-Dhdp.version=2.3.1.0-2574"
 export SPARK_HOME="/usr/lib/spark"

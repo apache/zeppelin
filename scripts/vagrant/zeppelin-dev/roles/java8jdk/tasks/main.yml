@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Install openjdk-7
-  apt: pkg=openjdk-7-jdk state=present
+- name: Install openjdk-8
+  apt: pkg=openjdk-8-jdk state=present
   

@@ -19,7 +19,7 @@
   roles:
     - common
     - ruby
-    - java7jdk
+    - java8jdk
     - nodejs
     - maven
     - python-addons

@@ -15,7 +15,7 @@
 
 # setup maven
 # Assumes Ubuntu Server 14.04 LTS
-# Assumes Java 7+ jdk installed
+# Assumes Java 8+ jdk installed
 ---
 
 - name: Install pythons httplib2 library so that ansible uri module works

@@ -100,7 +100,7 @@ The virtual machine consists of:
  - Git
  - Unzip
  - libfontconfig to avoid phatomJs missing dependency issues
- - openjdk-7-jdk
+ - openjdk-8-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
  - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
 

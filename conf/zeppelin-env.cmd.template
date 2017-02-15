@@ -19,8 +19,8 @@ REM
 REM set JAVA_HOME=
 REM set MASTER=                 		REM Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
 REM set ZEPPELIN_JAVA_OPTS      		REM Additional jvm options. for example, set ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
-REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
-REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxPermSize=512m
+REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
+REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxMetaspaceSize=512m
 REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options.
 
 REM set ZEPPELIN_LOG_DIR        		REM Where log files are stored.  PWD by default.

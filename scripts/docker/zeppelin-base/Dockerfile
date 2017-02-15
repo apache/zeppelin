@@ -17,12 +17,12 @@
 FROM alpine:3.4
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ENV JAVA_HOME /usr/lib/jvm/java-1.7-openjdk
+ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 ENV PATH $PATH:$JAVA_HOME/bin
 
-RUN apk add --update bash curl openjdk7-jre wget ca-certificates python build-base make gcc g++ java-cacerts openssl && \
-    rm /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts && \
-    ln -s /etc/ssl/certs/java/cacerts /usr/lib/jvm/java-1.7-openjdk/jre/lib/security/cacerts && \
+RUN apk add --update bash curl openjdk8-jre wget ca-certificates python build-base make gcc g++ java-cacerts openssl && \
+    rm /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts && \
+    ln -s /etc/ssl/certs/java/cacerts /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts && \
     curl --silent \
     --location https://github.com/sgerrand/alpine-pkg-R/releases/download/3.3.1-r0/R-3.3.1-r0.apk --output /var/cache/apk/R-3.3.1-r0.apk && \
     apk add --update --allow-untrusted /var/cache/apk/R-3.3.1-r0.apk && \

@@ -232,7 +232,7 @@ If you don't have requirements prepared, install it.
 ```
 sudo apt-get update
 sudo apt-get install git
-sudo apt-get install openjdk-7-jdk
+sudo apt-get install openjdk-8-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
 ```
@@ -249,7 +249,7 @@ sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/local/bin/mvn
 _Notes:_
  - Ensure node is installed by running `node --version`  
  - Ensure maven is running version 3.1.x or higher with `mvn -version`
- - Configure maven to use more memory than usual by `export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=1024m"`
+ - Configure maven to use more memory than usual by `export MAVEN_OPTS="-Xmx2g -XX:MaxMetaspaceSize=1024m"`
 
 
 

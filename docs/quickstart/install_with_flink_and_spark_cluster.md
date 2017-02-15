@@ -40,10 +40,10 @@ Assuming the minimal install, there are several programs that we will need to in
 
 - git
 - openssh-server
-- OpenJDK 7
+- OpenJDK 8
 - Maven 3.1+
 
-For git, openssh-server, and OpenJDK 7 we will be using the apt package manager.
+For git, openssh-server, and OpenJDK 8 we will be using the apt package manager.
 
 ##### git
 From the command prompt:
@@ -58,17 +58,17 @@ sudo apt-get install git
 sudo apt-get install openssh-server
 ```
 
-##### OpenJDK 7
+##### OpenJDK 8
 
 ```
-sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
+sudo apt-get install openjdk-8-jdk openjdk-8-jre-lib
 ```
-*A note for those using Ubuntu 16.04*: To install `openjdk-7` on Ubuntu 16.04, one must add a repository.  [Source](http://askubuntu.com/questions/761127/ubuntu-16-04-and-openjdk-7)
+*A note for those using Ubuntu 16.04*: To install `openjdk-8` on Ubuntu 16.04, read.  [How do I install openjdk 7 on Ubuntu 16.04 or higher?](http://askubuntu.com/questions/761127/how-do-i-install-openjdk-7-on-ubuntu-16-04-or-higher)
 
 ``` bash
 sudo add-apt-repository ppa:openjdk-r/ppa
 sudo apt-get update
-sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
+sudo apt-get install openjdk-8-jdk
 ```
 
 ##### Maven 3.1+

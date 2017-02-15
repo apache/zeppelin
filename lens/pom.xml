@@ -37,7 +37,7 @@
     <lens.version>2.5.0-beta</lens.version>
     <spring-shell.version>1.1.0.RELEASE</spring-shell.version>
     <hadoop-common.version>2.4.0</hadoop-common.version>
-    <checkerframework.jdk7.version>1.9.1</checkerframework.jdk7.version>
+    <checkerframework.jdk.version>2.1.7</checkerframework.jdk.version>
     <jackson.asl.version>1.9.13</jackson.asl.version>
     <jackson.version>1.9.11</jackson.version>
     <jersey.core.version>2.3.1</jersey.core.version>
@@ -63,8 +63,8 @@
     
     <dependency>
       <groupId>org.checkerframework</groupId>
-      <artifactId>jdk7</artifactId>
-      <version>${checkerframework.jdk7.version}</version>
+      <artifactId>jdk8</artifactId>
+      <version>${checkerframework.jdk.version}</version>
     </dependency>
 
     <dependency>
