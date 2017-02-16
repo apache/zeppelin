@@ -70,9 +70,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
   this.executeSpell = function(magic, textWithoutMagic) {
     const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
-      .then(confs => {
-        return createPersistableConfig(confs);
-      });
+      .then(confs => createPersistableConfig(confs));
 
     return promisedConf.then(conf => {
       const spell = this.getSpellByMagic(magic);
@@ -84,16 +82,13 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     });
   };
 
-  this.executeSpellAsDisplaySystem = function(type, data) {
-    const promisedConf = this.getSinglePackageConfigUsingMagic(type)
-      .then(confs => {
-        return createPersistableConfig(confs);
-      });
+  this.executeSpellAsDisplaySystem = function(magic, textWithoutMagic) {
+    const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
+      .then(confs => createPersistableConfig(confs));
 
     return promisedConf.then(conf => {
-
-      const spell = this.getSpellByMagic(type);
-      const spellResult = spell.interpret(data.trim(), conf);
+      const spell = this.getSpellByMagic(magic);
+      const spellResult = spell.interpret(textWithoutMagic.trim(), conf);
       const parsed = spellResult.getAllParsedDataWithTypes(spellPerMagic);
 
       return parsed;
