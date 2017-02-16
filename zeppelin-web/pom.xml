@@ -58,51 +58,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.git/</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>.babelrc</exclude>
-            <exclude>.bowerrc</exclude>
-            <exclude>.editorconfig</exclude>
-            <exclude>.jscsrc</exclude>
-            <exclude>.eslintrc</exclude>
-            <exclude>.tmp/**</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>node/**</exclude>
-            <exclude>node_modules/**</exclude>
-            <exclude>bower_components/**</exclude>
-            <exclude>test/**</exclude>
-            <exclude>dist/**</exclude>
-            <exclude>src/.buildignore</exclude>
-            <exclude>src/fonts/fontawesome*</exclude>
-            <exclude>src/fonts/font-awesome*</exclude>
-            <exclude>src/styles/font-awesome*</exclude>
-            <exclude>src/fonts/Simple-Line*</exclude>
-            <exclude>src/fonts/simple-line*</exclude>
-            <exclude>src/fonts/Patua-One*</exclude>
-            <exclude>src/fonts/patua-one*</exclude>
-            <exclude>src/fonts/Roboto*</exclude>
-            <exclude>src/fonts/roboto*</exclude>
-            <exclude>src/fonts/Source-Code-Pro*</exclude>
-            <exclude>src/fonts/source-code-pro*</exclude>
-            <exclude>bower.json</exclude>
-            <exclude>**/package.json</exclude>
-            <exclude>**/.npmignore</exclude>
-            <exclude>yarn.lock</exclude>
-            <exclude>*.md</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
         <version>${plugin.frontned.version}</version>
