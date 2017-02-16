@@ -14,5 +14,6 @@ public interface RemoteEventClientWrapper {
 
   public void onParaInfosReceived(String noteId, String paragraphId,
                                             Map<String, String> infos);
+  public void onInterpreterShutdown();
 
 }

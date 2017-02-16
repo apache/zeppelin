@@ -701,7 +701,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
    * @param settingId
    */
   public void clearRuntimeInfo(String settingId) {
-    if (settingId != null) {
+    if (settingId != null && runtimeInfos != null) {
       Set<String> keys = runtimeInfos.keySet();
       if (keys.size() > 0) {
         List<String> infosToRemove = new ArrayList<>();

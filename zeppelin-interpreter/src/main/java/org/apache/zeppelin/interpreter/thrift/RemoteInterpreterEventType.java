@@ -44,7 +44,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   META_INFOS(13),
   REMOTE_ZEPPELIN_SERVER_RESOURCE(14),
   RESOURCE_INVOKE_METHOD(15),
-  PARA_INFOS(16);
+  PARA_INFOS(16),
+  SHUTDOWN_INTERPRETER(17);
 
   private final int value;
 
@@ -97,6 +98,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
         return RESOURCE_INVOKE_METHOD;
       case 16:
         return PARA_INFOS;
+      case 17:
+        return SHUTDOWN_INTERPRETER;
       default:
         return null;
     }

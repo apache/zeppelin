@@ -190,7 +190,6 @@ public class InterpreterRestApi {
 
       String noteId = request == null ? null : request.getNoteId();
       interpreterFactory.restart(settingId, noteId, SecurityUtils.getPrincipal());
-      notebookServer.clearParagraphRuntimeInfo(setting);
 
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);

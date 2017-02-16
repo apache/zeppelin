@@ -188,4 +188,8 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
       String interpreterSettingId, Map<String, String> metaInfos) {
   }
 
+  @Override
+  public void onInterpreterShutdown(String settingId) {
+  }
+
 }

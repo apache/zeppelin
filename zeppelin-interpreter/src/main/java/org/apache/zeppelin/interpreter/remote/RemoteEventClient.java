@@ -30,5 +30,10 @@ public class RemoteEventClient implements RemoteEventClientWrapper {
     client.onParaInfosReceived(paraInfos);
   }
 
+  @Override
+  public void onInterpreterShutdown() {
+    client.onInterpreterShutdown();
+  }
+
 
 }
