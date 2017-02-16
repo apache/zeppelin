@@ -62,7 +62,7 @@ public class HeliumConf {
     return packageConfig;
   }
 
-  public Map<String, Object> getPackageConfig (String artifact) {
+  public Map<String, Object> getPackagePersistedConfig(String artifact) {
     if (!packageConfig.containsKey(artifact)) {
       packageConfig.put(artifact,
           Collections.synchronizedMap(new HashMap<String, Object>()));

@@ -41,18 +41,6 @@ export function mergePersistedConfWithSpec(persisted, spec) {
   return confs;
 }
 
-export function createSinglePackageConfigs(pkg, persistedConf) {
-  const spec = pkg.config;
-  if (!spec) { return []; }
-
-  const version = pkg.version;
-  if (!version) { return []; }
-
-  if (!persistedConf) { persistedConf = {}; }
-
-  return mergePersistedConfWithSpec(persistedConf, spec);
-}
-
 export function createAllPackageConfigs(defaultPackages, persistedConfs) {
   let packageConfs = {};
 

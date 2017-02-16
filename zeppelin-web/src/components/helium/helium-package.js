@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 
-import { HeliumType, } from './helium-type';
-
 export function createDefaultPackage(pkgSearchResult, sce) {
   for (let pkgIdx in pkgSearchResult) {
     const pkg = pkgSearchResult[pkgIdx];
@@ -46,33 +44,4 @@ export function createDefaultPackages(pkgSearchResults, sce) {
   }
 
   return defaultPackages;
-}
-
-/**
- * @param defaultPackages {name, pkgSearchResult}
- * @param magic
- * @returns {pkgSearchResult}
- */
-export function findPackageByMagic(defaultPackages, magic) {
-  for (let name in defaultPackages) {
-    const pkgSearchResult = defaultPackages[name];
-    if (pkgSearchResult.enabled &&
-      pkgSearchResult.pkg.type === HeliumType.SPELL &&
-      pkgSearchResult.pkg.spell.magic === magic) {
-      return pkgSearchResult;
-    }
-  }
-
-  return undefined;
-}
-
-/**
- * @param singlePkgSearchResults list of PkgSearchResult for a single package
- * @param version
- * @returns {T} found PkgSearchResult otherwise returns `undefined`
- */
-export function findPackageByVersion(singlePkgSearchResults, version) {
-  return singlePkgSearchResults.find(psr => {
-    return psr.pkg.version === version;
-  });
 }

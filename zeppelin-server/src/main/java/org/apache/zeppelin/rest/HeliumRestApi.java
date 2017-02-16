@@ -18,9 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -192,6 +190,30 @@ public class HeliumRestApi {
   }
 
   @GET
+  @Path("spell/config/{packageName}")
+  public Response getSpellConfigUsingMagic(@PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "packageName is empty" ).build();
+    }
+
+    try {
+      Map<String, Map<String, Object>> config =
+          helium.getSpellConfig(packageName);
+
+      if (config == null) {
+        return new JsonResponse(Response.Status.BAD_REQUEST,
+            "Failed to find enabled package for " + packageName).build();
+      }
+
+      return new JsonResponse(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @GET
   @Path("config")
   public Response getAllPackageConfigs() {
     try {
@@ -204,17 +226,24 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("config/{artifact}")
-  public Response getPackageConfig(@PathParam("artifact") String artifact) {
-
-    if (StringUtils.isEmpty(artifact)) {
+  @Path("config/{packageName}/{artifact}")
+  public Response getPackageConfig(@PathParam("packageName") String packageName,
+                                   @PathParam("artifact") String artifact) {
+    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(artifact)) {
       return new JsonResponse(Response.Status.BAD_REQUEST,
-          "package name or version is empty"
+          "package name or artifact is empty"
       ).build();
     }
 
     try {
-      Map<String, Object> config = helium.getPackageConfig(artifact);
+      Map<String, Map<String, Object>> config =
+          helium.getPackageConfig(packageName, artifact);
+
+      if (config == null) {
+        return new JsonResponse(Response.Status.BAD_REQUEST,
+            "Failed to find package for " + artifact).build();
+      }
+
       return new JsonResponse(Response.Status.OK, config).build();
     } catch (RuntimeException e) {
       logger.error(e.getMessage(), e);
@@ -223,9 +252,16 @@ public class HeliumRestApi {
   }
 
   @POST
-  @Path("config/{artifact}")
-  public Response updatePackageConfig(@PathParam("artifact") String artifact,
+  @Path("config/{packageName}/{artifact}")
+  public Response updatePackageConfig(@PathParam("packageName") String packageName,
+                                      @PathParam("artifact") String artifact,
                                       String rawConfig) {
+
+    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(artifact)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "package name or artifact is empty"
+      ).build();
+    }
 
     Map<String, Object> packageConfig = null;
 

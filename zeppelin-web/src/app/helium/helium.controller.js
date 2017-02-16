@@ -223,7 +223,6 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       .then(confs => {
         $scope.defaultPackageConfigs[pkgName] = confs;
         pkgSearchResult.configFetching = false;
-        $scope.$digest(); // to trigger view update
       });
   };
 

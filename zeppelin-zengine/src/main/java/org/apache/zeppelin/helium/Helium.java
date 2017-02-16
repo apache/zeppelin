@@ -248,11 +248,24 @@ public class Helium {
     return result.get(packageName);
   }
 
-  public HeliumPackageSearchResult getPackageInfo(String name, String artifact) {
-    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo(false, name);
-    List<HeliumPackageSearchResult> packages = infos.get(name);
+  public HeliumPackageSearchResult getEnabledPackageInfo(String packageName) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo();
+    List<HeliumPackageSearchResult> packages = infos.get(packageName);
+
+    for (HeliumPackageSearchResult pkgSearchResult : packages) {
+      if (pkgSearchResult.isEnabled()) {
+        return pkgSearchResult;
+      }
+    }
+
+    return null;
+  }
+
+  public HeliumPackageSearchResult getPackageInfo(String pkgName, String artifact) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo(false, pkgName);
+    List<HeliumPackageSearchResult> packages = infos.get(pkgName);
     if (artifact == null) {
-      return packages.get(0);
+      return packages.get(0); /** return the FIRST package */
     } else {
       for (HeliumPackageSearchResult pkg : packages) {
         if (pkg.getPkg().getArtifact().equals(artifact)) {
@@ -315,8 +328,8 @@ public class Helium {
     return heliumConf.getAllPackageConfigs();
   }
 
-  public Map<String, Object> getPackageConfig(String artifact) {
-    return heliumConf.getPackageConfig(artifact);
+  public Map<String, Object> getPackagePersistedConfig(String artifact) {
+    return heliumConf.getPackagePersistedConfig(artifact);
   }
 
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
@@ -431,5 +444,52 @@ public class Helium {
     bundleFactory.buildBundle(getBundlePackagesToBundle());
 
     save();
+  }
+
+  /**
+   * @param packageName
+   * @return { "confPersisted", "confSpec" } or return null if failed to found enabled package
+   */
+  public Map<String, Map<String, Object>> getSpellConfig(String packageName) {
+    HeliumPackageSearchResult result = getEnabledPackageInfo(packageName);
+
+    if (result == null) {
+      return null;
+    }
+
+    HeliumPackage enabledPackage = result.getPkg();
+
+    Map<String, Object> configSpec = enabledPackage.getConfig();
+    Map<String, Object> configPersisted =
+        getPackagePersistedConfig(enabledPackage.getArtifact());
+
+    return createMixedConfig(configPersisted, configSpec);
+  }
+
+  public Map<String, Map<String, Object>> getPackageConfig(String pkgName,
+                                                           String artifact) {
+
+    HeliumPackageSearchResult result = getPackageInfo(pkgName, artifact);
+
+    if (result == null) {
+      return null;
+    }
+
+    HeliumPackage requestedPackage = result.getPkg();
+
+    Map<String, Object> configSpec = requestedPackage.getConfig();
+    Map<String, Object> configPersisted =
+        getPackagePersistedConfig(artifact);
+
+    return createMixedConfig(configPersisted, configSpec);
+  }
+
+  public static Map<String, Map<String, Object>> createMixedConfig(Map<String, Object> persisted,
+                                                                   Map<String, Object> spec) {
+    Map<String, Map<String, Object>> mixed = new HashMap<>();
+    mixed.put("confPersisted", persisted);
+    mixed.put("confSpec", spec);
+
+    return mixed;
   }
 }
