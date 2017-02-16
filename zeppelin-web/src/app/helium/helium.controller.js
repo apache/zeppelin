@@ -196,7 +196,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
   $scope.configExists = function(pkgSearchResult) {
     // helium package config is persisted per version
-    return pkgSearchResult.pkg.config && pkgSearchResult.pkg.version;
+    return pkgSearchResult.pkg.config && pkgSearchResult.pkg.artifact;
   };
 
   $scope.configOpened = function(pkgSearchResult) {
