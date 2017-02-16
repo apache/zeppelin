@@ -211,16 +211,10 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
     const pkg = pkgSearchResult.pkg;
     const pkgName = pkg.name;
-    const pkgVersion = pkg.version;
 
-    if (!pkgName || !pkgVersion) {
-      console.error(`Failed to fetch config for '${pkgSearchResult}@${pkgVersion}'`);
-      return;
-    }
-
-    heliumService.getSinglePackageConfigs(pkgName, pkgVersion)
-      .then(conf => {
-        $scope.defaultPackageConfigs[pkgName] = conf;
+    heliumService.getSinglePackageConfigs(pkg)
+      .then(confs => {
+        $scope.defaultPackageConfigs[pkgName] = confs;
         pkgSearchResult.configOpened = true;
         $scope.$digest(); // to trigger view update
       });
@@ -228,10 +222,9 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
   $scope.saveConfig = function(pkgSearchResult) {
     const pkgName = pkgSearchResult.pkg.name;
-    const pkgVersion = pkgSearchResult.pkg.version;
     const currentConf = $scope.defaultPackageConfigs[pkgName];
 
-    heliumService.saveConfig(pkgName, pkgVersion, currentConf);
+    heliumService.saveConfig(pkgSearchResult.pkg, currentConf);
   };
 
   init();

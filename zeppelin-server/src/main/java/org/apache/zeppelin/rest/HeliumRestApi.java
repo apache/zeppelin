@@ -195,7 +195,7 @@ public class HeliumRestApi {
   @Path("config")
   public Response getAllPackageConfigs() {
     try {
-      Map<String, Map<String, Map<String, Object>>> config = helium.getAllPackageConfig();
+      Map<String, Map<String, Object>> config = helium.getAllPackageConfig();
       return new JsonResponse(Response.Status.OK, config).build();
     } catch (RuntimeException e) {
       logger.error(e.getMessage(), e);
@@ -204,18 +204,17 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("config/{packageName}/{packageVersion}")
-  public Response getPackageConfig(@PathParam("packageName") String packageName,
-                                   @PathParam("packageVersion") String packageVersion) {
+  @Path("config/{artifact}")
+  public Response getPackageConfig(@PathParam("artifact") String artifact) {
 
-    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(packageVersion)) {
+    if (StringUtils.isEmpty(artifact)) {
       return new JsonResponse(Response.Status.BAD_REQUEST,
           "package name or version is empty"
       ).build();
     }
 
     try {
-      Map<String, Object> config = helium.getPackageConfig(packageName, packageVersion);
+      Map<String, Object> config = helium.getPackageConfig(artifact);
       return new JsonResponse(Response.Status.OK, config).build();
     } catch (RuntimeException e) {
       logger.error(e.getMessage(), e);
@@ -224,9 +223,8 @@ public class HeliumRestApi {
   }
 
   @POST
-  @Path("config/{packageName}/{packageVersion}")
-  public Response updatePackageConfig(@PathParam("packageName") String packageName,
-                                      @PathParam("packageVersion") String packageVersion,
+  @Path("config/{artifact}")
+  public Response updatePackageConfig(@PathParam("artifact") String artifact,
                                       String rawConfig) {
 
     Map<String, Object> packageConfig = null;
@@ -234,7 +232,7 @@ public class HeliumRestApi {
     try {
       packageConfig = gson.fromJson(
           rawConfig, new TypeToken<Map<String, Object>>(){}.getType());
-      helium.updatePackageConfig(packageName, packageVersion, packageConfig);
+      helium.updatePackageConfig(artifact, packageConfig);
     } catch (JsonParseException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.BAD_REQUEST,

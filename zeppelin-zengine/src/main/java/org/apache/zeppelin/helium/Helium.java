@@ -304,19 +304,19 @@ public class Helium {
     save();
   }
 
-  public void updatePackageConfig(String pkgName, String pkgVersion,
-                                  Map<String, Object> pkgConfig) throws IOException {
-    heliumConf.updatePackageConfig(pkgName, pkgVersion, pkgConfig);
+  public void updatePackageConfig(String artifact, Map<String, Object> pkgConfig)
+      throws IOException {
 
+    heliumConf.updatePackageConfig(artifact, pkgConfig);
     save();
   }
 
-  public Map<String, Map<String, Map<String, Object>>> getAllPackageConfig() {
+  public Map<String, Map<String, Object>> getAllPackageConfig() {
     return heliumConf.getAllPackageConfigs();
   }
 
-  public Map<String, Object> getPackageConfig(String pkgName, String pkgVersion) {
-    return heliumConf.getPackageConfig(pkgName, pkgVersion);
+  public Map<String, Object> getPackageConfig(String artifact) {
+    return heliumConf.getPackageConfig(artifact);
   }
 
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {

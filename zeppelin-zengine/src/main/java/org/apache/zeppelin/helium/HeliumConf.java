@@ -25,10 +25,10 @@ public class HeliumConf {
   // enabled packages {name, version}
   private Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
 
-  // config for versioned package {name {version {configKey configValue}}}
-  private Map<String, Map<String, Map<String, Object>>> packageConfig =
+  // {artifact, {configKey, configValue}}
+  private Map<String, Map<String, Object>> packageConfig =
       Collections.synchronizedMap(
-          new HashMap<String, Map<String, Map<String, Object>>>());
+          new HashMap<String, Map<String, Object>>());
 
   // enabled visualization package display order
   private List<String> bundleDisplayOrder = new LinkedList<>();
@@ -45,41 +45,30 @@ public class HeliumConf {
     enabled.put(name, artifact);
   }
 
-  public void updatePackageConfig(String pkgName, String pkgVersion,
+  public void updatePackageConfig(String artifact,
                                   Map<String, Object> newConfig) {
-    if (!packageConfig.containsKey(pkgName)) {
-      packageConfig.put(pkgName,
-          Collections.synchronizedMap(new HashMap<String, Map<String, Object>>()));
-    }
-
-    Map<String, Map<String, Object>> versionedConfig = packageConfig.get(pkgName);
-
-    versionedConfig.put(pkgVersion, newConfig);
-  }
-
-  /**
-   * @return versioned package config `{name, {version, {configKey, configVal}}}`
-   */
-  public Map<String, Map<String, Map<String, Object>>> getAllPackageConfigs () {
-    return packageConfig;
-  }
-
-  public Map<String, Object> getPackageConfig (String pkgName, String pkgVersion) {
-    if (!packageConfig.containsKey(pkgName)) {
-      packageConfig.put(pkgName,
-          Collections.synchronizedMap(new HashMap<String, Map<String, Object>>()));
-    }
-
-    Map<String, Map<String, Object>> versionedConfig = packageConfig.get(pkgName);
-
-    if (!versionedConfig.containsKey(pkgVersion)) {
-      versionedConfig.put(pkgVersion,
+    if (!packageConfig.containsKey(artifact)) {
+      packageConfig.put(artifact,
           Collections.synchronizedMap(new HashMap<String, Object>()));
     }
 
-    Map<String, Object> config = versionedConfig.get(pkgVersion);
+    packageConfig.put(artifact, newConfig);
+  }
 
-    return config;
+  /**
+   * @return versioned package config `{artifact, {configKey, configVal}}`
+   */
+  public Map<String, Map<String, Object>> getAllPackageConfigs () {
+    return packageConfig;
+  }
+
+  public Map<String, Object> getPackageConfig (String artifact) {
+    if (!packageConfig.containsKey(artifact)) {
+      packageConfig.put(artifact,
+          Collections.synchronizedMap(new HashMap<String, Object>()));
+    }
+
+    return packageConfig.get(artifact);
   }
 
   public void disablePackage(HeliumPackage pkg) {

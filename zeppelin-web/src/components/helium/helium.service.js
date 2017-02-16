@@ -129,16 +129,20 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
   };
 
-  this.saveConfig = function(pkgName, pkgVersion, defaultPackageConfig) {
+  this.saveConfig = function(pkg , defaultPackageConfig) {
+    let pkgArtifact = pkg.artifact;
     const filtered = createPersistableConfig(defaultPackageConfig);
 
-    if (!pkgName || !pkgVersion || !filtered) {
+    if (!pkgArtifact|| !filtered) {
       console.error(
-        `Can't save helium package '${pkgName}@${pkgVersion}' config`, filtered);
+        `Can't save config for helium package '${pkgArtifact}'`, filtered);
       return;
     }
 
-    const url = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgVersion}`;
+    // in case of local package, it will include `/`
+    pkgArtifact = encodeURIComponent(pkgArtifact);
+
+    const url = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgArtifact}`;
     return $http.post(url, filtered);
   };
 
@@ -219,10 +223,22 @@ export default function heliumService($http, $sce, baseUrlSrv) {
    * get the package config which is persisted in server.
    * @return { Promise<Array<Object>> }
    */
-  this.getSinglePackageConfigs = function(pkgName, pkgVersion) {
+  this.getSinglePackageConfigs = function(pkg) {
+    const pkgName = pkg.name;
+    const pkgVersion = pkg.version;
+    let pkgArtifact = pkg.artifact;
+
+    if (!pkgName || !pkgVersion || !pkgArtifact) {
+      console.error(`Failed to fetch config for \n`, pkg);
+      return;
+    }
+
     const promisedPkgSearchResult = this.getSinglePackageInfo(pkgName, pkgVersion);
 
-    const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgVersion}`;
+    // in case of local package, it will include `/`
+    pkgArtifact = encodeURIComponent(pkgArtifact);
+
+    const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgArtifact}`;
     const promisedConf = $http.get(confUrl)
       .then(function(response, status) {
         return response.data.body;
@@ -246,15 +262,11 @@ export default function heliumService($http, $sce, baseUrlSrv) {
       .then(defaultPackages => {
         const pkgSearchResult = findPackageByMagic(defaultPackages, magic)
 
-        // return empty conf if failed to find pkg
+        // return empty confs if failed to find pkg
         if (!pkgSearchResult) {
-          return {};
+          return [];
         }
-
-        const pkgVersion = pkgSearchResult.pkg.version;
-        const pkgName = pkgSearchResult.pkg.name;
-
-        return this.getSinglePackageConfigs(pkgName, pkgVersion);
+        return this.getSinglePackageConfigs(pkgSearchResult.pkg);
       });
 
     return promised;

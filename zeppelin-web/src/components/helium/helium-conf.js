@@ -65,9 +65,12 @@ export function createAllPackageConfigs(defaultPackages, persistedConfs) {
     const version = pkgSearchResult.pkg.version;
     if (!version) { continue; }
 
+    const artifact = pkgSearchResult.pkg.artifact;
+    if (!artifact) { continue; }
+
     let persistedConf = {};
-    if (persistedConfs[name] && persistedConfs[name][version]) {
-      persistedConf = persistedConfs[name][version];
+    if (persistedConfs[artifact]) {
+      persistedConf = persistedConfs[artifact];
     }
 
     const confs = mergePersistedConfWithSpec(persistedConf, spec);
@@ -106,5 +109,3 @@ export function createPersistableConfig(currentConfs) {
 
   return filtered;
 }
-
-
