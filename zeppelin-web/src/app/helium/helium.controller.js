@@ -200,8 +200,13 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   };
 
   $scope.configOpened = function(pkgSearchResult) {
-    return pkgSearchResult.configOpened;
+    return pkgSearchResult.configOpened && !pkgSearchResult.configFetching;
   };
+
+  $scope.getConfigButtonClass = function(pkgSearchResult) {
+    return (pkgSearchResult.configOpened && pkgSearchResult.configFetching) ?
+      'disabled' : '';
+  }
 
   $scope.toggleConfigButton = function(pkgSearchResult) {
     if (pkgSearchResult.configOpened) {
@@ -211,11 +216,13 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
     const pkg = pkgSearchResult.pkg;
     const pkgName = pkg.name;
+    pkgSearchResult.configFetching = true;
+    pkgSearchResult.configOpened = true;
 
     heliumService.getSinglePackageConfigs(pkg)
       .then(confs => {
         $scope.defaultPackageConfigs[pkgName] = confs;
-        pkgSearchResult.configOpened = true;
+        pkgSearchResult.configFetching = false;
         $scope.$digest(); // to trigger view update
       });
   };

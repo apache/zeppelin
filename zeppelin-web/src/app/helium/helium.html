@@ -70,6 +70,7 @@ limitations under the License.
              style="float:right">Disable</div>
         <div ng-show="configExists(pkgSearchResult)"
              ng-click="toggleConfigButton(pkgSearchResult)"
+             ng-class="getConfigButtonClass(pkgSearchResult)"
              class="btn btn-default btn-xs spellConfigButton"
              style="float:right; margin-right:5px;">Config</div>
       </div>
