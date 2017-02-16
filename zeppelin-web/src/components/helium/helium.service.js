@@ -224,8 +224,8 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     let pkgArtifact = pkg.artifact;
 
     if (!pkgName || !pkgVersion || !pkgArtifact) {
-      console.error(`Failed to fetch config for \n`, pkg);
-      return;
+      console.error('Failed to fetch config for\n', pkg);
+      return Promise.resolve([]);
     }
 
     const promisedPkgSearchResult = this.getSinglePackageInfo(pkgName, pkgVersion);
