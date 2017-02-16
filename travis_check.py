@@ -13,15 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 #
+# This script checks build status of given pullrequest identified by author, branch name and commit hash.
+#
+
 import os, sys, getopt, traceback, json, requests, time
 
 author = sys.argv[1]
 branch = sys.argv[2]
 commit = sys.argv[3]
 
-#check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300]
-check = [5, 10, 10]
+# check interval in sec
+check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300]
 
 def info(msg):
     print("[" + time.strftime("%Y-%m-%d %H:%M:%S") + "] " + msg)
@@ -69,7 +73,8 @@ def printBuildStatus(build):
                 failure = failure + 1
         else:
             print("[" + str(index+1) + "] Unknown state")
-            
+            failure = failure + 1
+
     return failure, running
 
 
@@ -97,4 +102,3 @@ for sleep in check:
 
 info("Timeout")
 sys.exit(1)
-
