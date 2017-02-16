@@ -32,13 +32,13 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     url = url + '?refresh=true';
   }
 
+  let visualizationBundles = [];
   // name `heliumBundles` should be same as `HelumBundleFactory.HELIUM_BUNDLES_VAR`
-  var heliumBundles = [];
+  let heliumBundles = [];
   // map for `{ magic: interpreter }`
   let spellPerMagic = {};
   // map for `{ magic: package-name }`
   let pkgNamePerMagic = {}
-  let visualizationBundles = [];
 
   // load should be promise
   this.load = $http.get(url).success(function(response) {

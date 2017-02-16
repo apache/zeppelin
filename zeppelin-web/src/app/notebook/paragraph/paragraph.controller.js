@@ -32,6 +32,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.originalText = '';
   $scope.editor = null;
 
+  // transactional info for spell execution
+  $scope.spellTransaction = {
+    totalResultCount: 0, renderedResultCount: 0,
+    propagated: false, resultsMsg: [], paragraphText: '',
+  };
+
   var editorSetting = {};
   // flag that is used to set editor setting on paste percent sign
   var pastePercentSign = false;
@@ -236,6 +242,45 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
+  $scope.prepareSpellTransaction = function(resultsMsg, propagated, paragraphText) {
+    $scope.spellTransaction.totalResultCount = resultsMsg.length;
+    $scope.spellTransaction.renderedResultCount = 0;
+    $scope.spellTransaction.propagated = propagated;
+    $scope.spellTransaction.resultsMsg = resultsMsg;
+    $scope.spellTransaction.paragraphText = paragraphText;
+  };
+
+  /**
+   * - update spell transaction count and
+   * - check transaction is finished based on the result count
+   * @returns {boolean}
+   */
+  $scope.increaseSpellTransactionResultCount = function() {
+    $scope.spellTransaction.renderedResultCount += 1;
+
+    const total = $scope.spellTransaction.totalResultCount;
+    const current = $scope.spellTransaction.renderedResultCount;
+    return total === current;
+  };
+
+  $scope.cleanupSpellTransaction = function() {
+    const status = 'FINISHED';
+    $scope.paragraph.status = status;
+    $scope.paragraph.results.code = status;
+
+    const propagated = $scope.spellTransaction.propagated;
+    const resultsMsg = $scope.spellTransaction.resultsMsg;
+    const paragraphText = $scope.spellTransaction.paragraphText;
+
+    if (!propagated) {
+      const propagable = SpellResult.createPropagable(resultsMsg);
+      $scope.propagateSpellResult(
+        $scope.paragraph.id, $scope.paragraph.title,
+        paragraphText, propagable, status, '',
+        $scope.paragraph.config, $scope.paragraph.settings.params);
+    }
+  };
+
   $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
     $scope.paragraph.results = {};
@@ -252,19 +297,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       // handle actual result message in promise
       heliumService.executeSpell(magic, textWithoutMagic)
         .then(resultsMsg => {
-          const status = 'FINISHED';
-          $scope.paragraph.status = status;
-          $scope.paragraph.results.code = status;
+          $scope.prepareSpellTransaction(resultsMsg, propagated, paragraphText);
+
           $scope.paragraph.results.msg = resultsMsg;
           $scope.paragraph.config.tableHide = false;
 
-          if (!propagated) {
-            const propagable = SpellResult.createPropagable(resultsMsg);
-            $scope.propagateSpellResult(
-              $scope.paragraph.id, $scope.paragraph.title,
-              paragraphText, propagable, status, '',
-              $scope.paragraph.config, $scope.paragraph.settings.params);
-          }
         })
         .catch(error => {
           $scope.handleSpellError(paragraphText, error,
@@ -1153,6 +1190,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
      }
   };
 
+  /** $scope.$on */
+
   $scope.$on('runParagraphUsingSpell', function(event, data) {
     const oldPara = $scope.paragraph;
     let newPara = data.paragraph;
@@ -1336,5 +1375,18 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('closeTable', function(event) {
     $scope.closeTable($scope.paragraph);
+  });
+
+  $scope.$on('resultRendered', function(event, paragraphId) {
+    if ($scope.paragraph.id !== paragraphId) {
+      return;
+    }
+
+    /** increase spell result count and return if not finished */
+    if (!$scope.increaseSpellTransactionResultCount()) {
+      return;
+    }
+
+    $scope.cleanupSpellTransaction();
   });
 }

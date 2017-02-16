@@ -279,6 +279,10 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     } else {
       console.error(`Unknown Display Type: ${type}`);
     }
+
+    // send message to parent that this result is rendered
+    const paragraphId = $scope.$parent.paragraph.id;
+    $scope.$emit('resultRendered', paragraphId);
   };
 
   const renderResult = function(type, refresh) {
