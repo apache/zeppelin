@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -29,17 +28,13 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter11;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 public class NoteInterpreterLoaderTest {
@@ -122,11 +117,6 @@ public class NoteInterpreterLoaderTest {
     assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
     assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
-    // invalid close
-    factory.closeNote("user", "note");
-    assertNotNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
-    assertNotNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
-
     // when
     factory.closeNote("user", "noteA");
     factory.closeNote("user", "noteB");
@@ -168,51 +158,6 @@ public class NoteInterpreterLoaderTest {
     // interpreters are destroyed after close
     assertNull(factory.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("shared_session"));
     assertNull(factory.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("shared_session"));
-  }
-
-  @Test
-  public void testNoteInterpreterCloseForAll() throws IOException {
-    factory.setInterpreters("user", "FitstNote", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("FitstNote").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
-
-    factory.setInterpreters("user", "yourFirstNote", factory.getDefaultInterpreterSettingList());
-    factory.getInterpreterSettings("yourFirstNote").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
-
-    // interpreters are not created before accessing it
-    assertNull(factory.getInterpreterSettings("FitstNote").get(0).getInterpreterGroup("user", "FitstNote").get("FitstNote"));
-    assertNull(factory.getInterpreterSettings("yourFirstNote").get(0).getInterpreterGroup("user", "yourFirstNote").get("yourFirstNote"));
-
-    Interpreter firstNoteIntp = factory.getInterpreter("user", "FitstNote", "group1.mock1");
-    Interpreter yourFirstNoteIntp = factory.getInterpreter("user", "yourFirstNote", "group1.mock1");
-
-    firstNoteIntp.open();
-    yourFirstNoteIntp.open();
-
-    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
-
-    factory.closeNote("user", "FitstNote");
-
-    assertFalse(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
-
-    //reopen
-    firstNoteIntp.open();
-
-    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
-
-    // invalid check
-    factory.closeNote("invalid", "Note");
-
-    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
-
-    // invalid contains value check
-    factory.closeNote("u", "Note");
-
-    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
   }
 
 

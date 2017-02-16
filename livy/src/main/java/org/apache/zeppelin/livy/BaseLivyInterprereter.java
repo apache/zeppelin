@@ -30,6 +30,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -407,6 +408,12 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       response = new ResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
       LOGGER.error(String.format("Error with %s StatusCode: %s",
           response.getStatusCode().value(), e.getResponseBodyAsString()));
+    } catch (RestClientException e) {
+      if (e.getMessage().contains("404 Not Found")) {
+        throw new SessionNotFoundException("Session not found when kerberos is enabled ");
+      } else {
+        throw new LivyException(e);
+      }
     }
     if (response == null) {
       throw new LivyException("No http response returned");

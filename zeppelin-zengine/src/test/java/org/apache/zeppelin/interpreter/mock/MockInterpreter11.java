@@ -35,20 +35,13 @@ public class MockInterpreter11 extends Interpreter{
   public MockInterpreter11(Properties property) {
     super(property);
   }
-  boolean open;
 
   @Override
   public void open() {
-    open = true;
   }
 
   @Override
   public void close() {
-    open = false;
-  }
-
-  public boolean isOpen() {
-    return open;
   }
 
   @Override
