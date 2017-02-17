@@ -164,7 +164,7 @@
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%neo4j\n//Step 0: mport the data into Neo4j from a csv file\ncreate index on :Resource(name)",
+      "text": "%neo4j\n//Step 0: Import the data into Neo4j from a csv file\ncreate index on :Resource(name)",
       "user": "anonymous",
       "dateUpdated": "Jan 15, 2017 3:22:01 PM",
       "config": {
