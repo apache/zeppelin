@@ -207,6 +207,7 @@ public class Neo4jCypherInterpreter extends Interpreter {
         return renderTable(cols, lines);
       }
     } catch (Exception e) {
+      logger.error("Exception while interpreting cypher query", e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }

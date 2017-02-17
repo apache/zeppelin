@@ -17,7 +17,8 @@
  */
 class Dataset {
   /**
-   * load the paragraph result
+   * Load the paragraph result, every Dataset implementation must override this method
+   * where is contained the business rules to convert the paragraphResult object to the related dataset type
    */
   loadParagraphResult(paragraphResult) {
     // override this

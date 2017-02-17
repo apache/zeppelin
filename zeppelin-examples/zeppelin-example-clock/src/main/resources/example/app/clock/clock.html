@@ -11,15 +11,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div id="p{{paragraph.id}}_graph"
-     class="graphContainer"
-     ng-class="{'noOverflow': getGraphMode()=='table'}"
-     ng-show="getResultType()=='TABLE' || getResultType()=='NETWORK'"
-     >
-
-  <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-       id="p{{paragraph.id}}_{{viz.id}}"
-       ng-show="getGraphMode()==viz.id">
-  </div>
-  
-</div>
+<h3>{{date}}</h3>
