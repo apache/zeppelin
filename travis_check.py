@@ -24,7 +24,7 @@ author = sys.argv[1]
 commit = sys.argv[2]
 
 # check interval in sec
-check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300]
+check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 600, 600, 600, 600, 600, 600]
 
 def info(msg):
     print("[" + time.strftime("%Y-%m-%d %H:%M:%S") + "] " + msg)
@@ -53,25 +53,30 @@ def getBuildStatus(author, commit):
 def printBuildStatus(build):
     failure = 0
     running = 0
+
+    status = lambda idx, msg, jobId: '{:20}'.format("[" + str(index+1) + "] " + msg) + "https://travis-ci.org/" + author + "/zeppelin/jobs/" + str(jobId)
+
     for index, job in enumerate(build["matrix"]):
         result = job["result"]
+        jobId = job["id"]
+
         if job["started_at"] == None and result == None:
-            print("[" + str(index+1) + "] Not started")
+            print(status(index, "Not started", jobId))
             running = running + 1
         elif job["started_at"] != None and job["finished_at"] == None:
-            print("[" + str(index+1) + "] Running ...")
+            print(status(index, "Running ...", jobId))
             running = running + 1
         elif job["started_at"] != None and job["finished_at"] != None:
             if result == None:
-                print("[" + str(index+1) + "] Not completed")
+                print(status(index, "Not completed", jobId))
                 failure = failure + 1
             elif result == 0:
-                print("[" + str(index+1) + "] OK")
+                print(status(index, "OK", jobId))
             else:
-                print("[" + str(index+1) + "] Error " + str(result))
+                print(status(index, "Error " + str(result), jobId))
                 failure = failure + 1
         else:
-            print("[" + str(index+1) + "] Unknown state")
+            print(status(index, "Unknown state", jobId))
             failure = failure + 1
 
     return failure, running
@@ -87,7 +92,7 @@ for sleep in check:
         info("Can't find build for commit= " + commit)
         sys.exit(1)
 
-    print("https://travis-ci.org/" + author + "/zeppelin/builds/" + str(build["id"]))
+    print("Build https://travis-ci.org/" + author + "/zeppelin/builds/" + str(build["id"]))
     failure, running = printBuildStatus(build)
 
     print(str(failure) + " job(s) failed, " + str(running) + " job(s) running")
