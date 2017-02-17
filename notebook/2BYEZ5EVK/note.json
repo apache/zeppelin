@@ -2,7 +2,7 @@
   "paragraphs": [
     {
       "text": "%md\n\n### The [Apache Mahout](http://mahout.apache.org/)™ project\u0027s goal is to build an environment for quickly creating scalable performant machine learning applications.\n\n#### Apache Mahout software provides three major features:\n\n- A simple and extensible programming environment and framework for building scalable algorithms\n- A wide variety of premade algorithms for Scala + Apache Spark, H2O, Apache Flink\n- Samsara, a vector math experimentation environment with R-like syntax which works at scale\n\n#### In other words:\n\n*Apache Mahout provides a unified API for quickly creating machine learning algorithms on a variety of engines.*\n\n#### Getting Started\n\nApache Mahout is a collection of Libraries that enhance Apache Flink, Apache Spark, and others. Currently Zeppelin support the Flink and Spark Engines. A convenience script is provided to setup the nessecary imports and configurations to run Mahout on Spark and Flink. \n\nWe can use Apache Mahout\u0027s R-Like Domain Specific Language (DSL) inline with native Flink or Spark code.  We must however, first declare a few imports that are different for Spark and Flink\n\n__References:__\n\n[Mahout-Samsara\u0027s In-Core Linear Algebra DSL Reference](http://mahout.apache.org/users/environment/in-core-reference.html)\n[Mahout-Samsara\u0027s Distributed Linear Algebra DSL Reference](http://mahout.apache.org/users/environment/out-of-core-reference.html)\n[Getting Started with the Mahout-Samsara Shell](http://mahout.apache.org/users/sparkbindings/play-with-shell.html)\n",
-      "dateUpdated": "Jan 6, 2017 6:42:45 PM",
+      "dateUpdated": "Sep 28, 2016 10:01:52 AM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
