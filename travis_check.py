@@ -15,14 +15,13 @@
 # limitations under the License.
 
 #
-# This script checks build status of given pullrequest identified by author, branch name and commit hash.
+# This script checks build status of given pullrequest identified by author and commit hash.
 #
 
 import os, sys, getopt, traceback, json, requests, time
 
 author = sys.argv[1]
-branch = sys.argv[2]
-commit = sys.argv[3]
+commit = sys.argv[2]
 
 # check interval in sec
 check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300]
@@ -31,10 +30,10 @@ def info(msg):
     print("[" + time.strftime("%Y-%m-%d %H:%M:%S") + "] " + msg)
 
 
-info("Author: " + author + ", branch: " + branch + ", commit: " + commit)
+info("Author: " + author + ", commit: " + commit)
 
 
-def getBuildStatus(author, branch, commit):
+def getBuildStatus(author, commit):
     travisApi = "https://api.travis-ci.org/"
 
     # get latest 25 builds
@@ -43,7 +42,7 @@ def getBuildStatus(author, branch, commit):
 
     build = None
     for b in data:
-        if b["branch"] == branch and b["commit"][:len(commit)] == commit:
+        if b["commit"][:len(commit)] == commit:
             resp = requests.get(url=travisApi + "/repos/" + author + "/zeppelin/builds/" + str(b["id"]))
             build = json.loads(resp.text)
             break
@@ -83,9 +82,9 @@ for sleep in check:
     info("--------------------------------")
     time.sleep(sleep);
     info("Get build status ...")
-    build = getBuildStatus(author, branch, commit)
+    build = getBuildStatus(author, commit)
     if build == None:
-        info("Can't find build for branch=" + branch + ", commit= " + commit)
+        info("Can't find build for commit= " + commit)
         sys.exit(1)
 
     print("https://travis-ci.org/" + author + "/zeppelin/builds/" + str(build["id"]))
