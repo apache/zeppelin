@@ -27,7 +27,8 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 
 1. Make sure your issue is not already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
-3. Contribute your patch via Pull Request on our [Github Mirror](https://github.com/apache/zeppelin).
+3. Setup travis [Continuous Integration](#continuous-integration)
+4. Contribute your patch via Pull Request on our [Github Mirror](https://github.com/apache/zeppelin).
 
 Before you start, please read the [Code of Conduct](http://www.apache.org/foundation/policies/conduct.html) carefully, familiarize yourself with it and refer to it whenever you need it.
 
@@ -243,7 +244,9 @@ TEST_SELENIUM="true" mvn package -DfailIfNoTests=false -pl 'zeppelin-interpreter
 
 ## Continuous Integration
 
-Zeppelin uses Travis for CI. In the project root there is .travis.yml that configures CI and [publishes CI results] (https://travis-ci.org/apache/zeppelin/builds)
+Zeppelin project's CI system will collect information from pull request author's travis-ci and display status in the pull request.
+
+Each individual contributor should setup travis-ci for the fork before making a pullrequest. Go to [https://travis-ci.org/profile](https://travis-ci.org/profile) and switch on 'zeppelin' repository.
 
 
 ## Run Zeppelin server in development mode
