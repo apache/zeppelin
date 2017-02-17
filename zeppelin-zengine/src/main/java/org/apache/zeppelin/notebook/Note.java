@@ -144,7 +144,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public String getName() {
-    return name;
+    return isNameEmpty() ? getId() : name;
   }
 
   public String getNameWithoutPath() {
@@ -181,7 +181,7 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public boolean isNameEmpty() {
-    return getName().trim().isEmpty();
+    return this.name.trim().isEmpty();
   }
 
   private String normalizeNoteName(String name) {
