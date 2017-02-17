@@ -413,7 +413,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       // Exception happens when kerberos is enabled.
       if (e.getCause() instanceof HttpClientErrorException) {
         HttpClientErrorException cause = (HttpClientErrorException) e.getCause();
-        if (cause.getMessage().matches(SessionNotFound_Pattern)) {
+        if (cause.getResponseBodyAsString().matches(SessionNotFound_Pattern)) {
           throw new SessionNotFoundException(cause.getResponseBodyAsString());
         }
       }
