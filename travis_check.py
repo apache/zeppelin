@@ -28,7 +28,7 @@ check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300]
 
 def info(msg):
     print("[" + time.strftime("%Y-%m-%d %H:%M:%S") + "] " + msg)
-
+    sys.stdout.flush()
 
 info("Author: " + author + ", commit: " + commit)
 
