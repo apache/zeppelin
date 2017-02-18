@@ -715,6 +715,7 @@ public class Note implements Serializable, ParagraphJobListener {
    */
   public Note getUserNote(String user) {
     Note newNote = new Note();
+    newNote.name = getName();
     newNote.id = getId();
     newNote.config = getConfig();
     newNote.angularObjects = getAngularObjects();
