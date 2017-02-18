@@ -17,6 +17,18 @@
 #
 # This script checks build status of given pullrequest identified by author and commit hash.
 #
+# usage)
+#   python travis_check.py [author] [commit hash] [check interval (optional)]
+#
+# example)
+#   # full hash
+#   python travis_check.py Leemoonsoo 1f2549a38f440ebfbfe2d32a041684e3e39b496c
+#
+#   # with short hash
+#   python travis_check.py Leemoonsoo 1f2549a
+#
+#   # with custom check interval
+#   python travis_check.py Leemoonsoo 1f2549a 5,60,60
 
 import os, sys, getopt, traceback, json, requests, time
 
@@ -25,6 +37,9 @@ commit = sys.argv[2]
 
 # check interval in sec
 check = [5, 60, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 600, 600, 600, 600, 600, 600]
+
+if len(sys.argv) > 3:
+    check = map(lambda x: int(x), sys.argv[3].split(","))
 
 def info(msg):
     print("[" + time.strftime("%Y-%m-%d %H:%M:%S") + "] " + msg)
