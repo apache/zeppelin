@@ -136,19 +136,18 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testCancelIntp() {
+  public void testCancelIntp() throws InterruptedException {
     if (getSparkVersionNumber() > 11) {
-
       assertEquals(InterpreterResult.Code.SUCCESS,
         pySparkInterpreter.interpret("a = 1\n", context).code());
 
-      new Thread(new infinityPythonJob()).start();
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+      Thread t = new Thread(new infinityPythonJob());
+      t.start();
+      Thread.sleep(5000);
       pySparkInterpreter.cancel(context);
+      assertTrue(t.isAlive());
+      t.join(2000);
+      assertFalse(t.isAlive());
     }
   }
 }
