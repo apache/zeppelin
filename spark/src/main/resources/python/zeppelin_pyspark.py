@@ -252,7 +252,7 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
-intp.onPythonScriptInitialized()
+intp.onPythonScriptInitialized(os.getpid())
 
 jsc = intp.getJavaSparkContext()
 
