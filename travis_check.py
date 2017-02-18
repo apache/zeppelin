@@ -64,12 +64,12 @@ def getBuildStatus(author, commit):
 
     return build
 
+def status(index, msg, jobId):
+    return '{:20}'.format("[" + str(index+1) + "] " + msg) + "https://travis-ci.org/" + author + "/zeppelin/jobs/" + str(jobId)
 
 def printBuildStatus(build):
     failure = 0
     running = 0
-
-    status = lambda idx, msg, jobId: '{:20}'.format("[" + str(index+1) + "] " + msg) + "https://travis-ci.org/" + author + "/zeppelin/jobs/" + str(jobId)
 
     for index, job in enumerate(build["matrix"]):
         result = job["result"]
@@ -97,7 +97,6 @@ def printBuildStatus(build):
     return failure, running
 
 
-
 for sleep in check:
     info("--------------------------------")
     time.sleep(sleep);
@@ -110,7 +109,7 @@ for sleep in check:
     print("Build https://travis-ci.org/" + author + "/zeppelin/builds/" + str(build["id"]))
     failure, running = printBuildStatus(build)
 
-    print(str(failure) + " job(s) failed, " + str(running) + " job(s) running")
+    print(str(failure) + " job(s) failed, " + str(running) + " job(s) running/pending")
 
     if failure != 0:
         sys.exit(1)
