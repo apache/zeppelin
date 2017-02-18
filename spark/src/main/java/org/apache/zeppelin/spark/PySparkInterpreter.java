@@ -73,10 +73,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private String scriptPath;
   boolean pythonscriptRunning = false;
   private static final int MAX_TIMEOUT_SEC = 10;
+  private long pythonPid;
 
   public PySparkInterpreter(Properties property) {
     super(property);
 
+    pythonPid = -1;
     try {
       File scriptFile = File.createTempFile("zeppelin_pyspark-", ".py");
       scriptPath = scriptFile.getAbsolutePath();
@@ -310,7 +312,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   boolean pythonScriptInitialized = false;
   Integer pythonScriptInitializeNotifier = new Integer(0);
 
-  public void onPythonScriptInitialized() {
+  public void onPythonScriptInitialized(long pid) {
+    pythonPid = pid;
     synchronized (pythonScriptInitializeNotifier) {
       pythonScriptInitialized = true;
       pythonScriptInitializeNotifier.notifyAll();
@@ -411,10 +414,25 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
+  public void interrupt() throws IOException {
+    if (pythonPid > -1) {
+      logger.info("Sending SIGINT signal to PID : " + pythonPid);
+      Runtime.getRuntime().exec("kill -SIGINT " + pythonPid);
+    } else {
+      logger.warn("Non UNIX/Linux system, close the interpreter");
+      close();
+    }
+  }
+
   @Override
   public void cancel(InterpreterContext context) {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.cancel(context);
+    try {
+      interrupt();
+    } catch (IOException e) {
+      logger.error("Error", e);
+    }
   }
 
   @Override
