@@ -47,7 +47,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterprereter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-  private static String SessionNotFound_Pattern = "\"Session '\\d+' not found.\"";
+  private static String SESSION_NOT_FOUND_PATTERN = "\"Session '\\d+' not found.\"";
 
   protected volatile SessionInfo sessionInfo;
   private String livyURL;
@@ -413,7 +413,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       // Exception happens when kerberos is enabled.
       if (e.getCause() instanceof HttpClientErrorException) {
         HttpClientErrorException cause = (HttpClientErrorException) e.getCause();
-        if (cause.getResponseBodyAsString().matches(SessionNotFound_Pattern)) {
+        if (cause.getResponseBodyAsString().matches(SESSION_NOT_FOUND_PATTERN)) {
           throw new SessionNotFoundException(cause.getResponseBodyAsString());
         }
       }
@@ -428,7 +428,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         || response.getStatusCode().value() == 201) {
       return response.getBody();
     } else if (response.getStatusCode().value() == 404) {
-      if (response.getBody().matches(SessionNotFound_Pattern)) {
+      if (response.getBody().matches(SESSION_NOT_FOUND_PATTERN)) {
         throw new SessionNotFoundException(response.getBody());
       } else {
         throw new APINotFoundException("No rest api found for " + targetURL +
