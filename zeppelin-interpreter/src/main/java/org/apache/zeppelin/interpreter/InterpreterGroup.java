@@ -138,6 +138,17 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     this.remoteInterpreterProcess = remoteInterpreterProcess;
   }
 
+  // make sure remote interpreter process terminates
+  private void makeSureRemoteProcessTerminate() {
+    if (remoteInterpreterProcess != null) {
+      while (remoteInterpreterProcess.referenceCount() > 0) {
+        remoteInterpreterProcess.dereference();
+      }
+      remoteInterpreterProcess = null;
+    }
+    allInterpreterGroups.remove(id);
+  }
+
   /**
    * Close all interpreter instances in this group
    */
@@ -149,14 +160,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     }
     close(intpToClose);
 
-    // make sure remote interpreter process terminates
-    if (remoteInterpreterProcess != null) {
-      while (remoteInterpreterProcess.referenceCount() > 0) {
-        remoteInterpreterProcess.dereference();
-      }
-      remoteInterpreterProcess = null;
-    }
-    allInterpreterGroups.remove(id);
+    makeSureRemoteProcessTerminate();
   }
 
   /**
@@ -168,13 +172,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     List<Interpreter> intpForSession = this.get(sessionId);
     close(intpForSession);
 
-    if (remoteInterpreterProcess != null) {
-      remoteInterpreterProcess.dereference();
-      if (remoteInterpreterProcess.referenceCount() <= 0) {
-        remoteInterpreterProcess = null;
-        allInterpreterGroups.remove(id);
-      }
-    }
+    makeSureRemoteProcessTerminate();
   }
 
   private void close(Collection<Interpreter> intpToClose) {
