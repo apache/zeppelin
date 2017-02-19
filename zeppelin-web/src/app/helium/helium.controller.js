@@ -52,7 +52,6 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
     // show enabled version if any version of package is enabled
     for (var name in packageInfos) {
       var pkgs = packageInfos[name];
-      //console.log(pkgs)
       for (var pkgIdx in pkgs) {
         var pkg = pkgs[pkgIdx];
         pkg.pkg.icon = $sce.trustAsHtml(pkg.pkg.icon);
@@ -118,7 +117,7 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
       console.log('Can not load package info %o %o', status, data);
     });
   };
-  
+
   var getBundleOrder = function() {
     heliumService.getVisualizationPackageOrder().
     success(function(data, status) {
@@ -140,7 +139,6 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
   var init = function() {
     getAllPackageInfo();
     getBundleOrder();
-  
     $scope.bundleOrderChanged = false;
   };
 
