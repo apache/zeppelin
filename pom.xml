@@ -898,6 +898,7 @@
               <exclude>**/interpreter-setting.json</exclude>
               <exclude>**/constants.json</exclude>
               <exclude>scripts/**</exclude>
+              <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
