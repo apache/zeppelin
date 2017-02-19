@@ -40,6 +40,7 @@
   <properties>
     <node.version>v6.9.1</node.version>
     <yarn.version>v0.18.1</yarn.version>
+    <npm.version>4.2.0</npm.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--plugin versions-->
@@ -110,10 +111,12 @@
             <id>install node and yarn</id>
             <goals>
               <goal>install-node-and-yarn</goal>
+              <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
               <yarnVersion>${yarn.version}</yarnVersion>
+              <npmVersion>${npm.version}</npmVersion>
             </configuration>
           </execution>
 
