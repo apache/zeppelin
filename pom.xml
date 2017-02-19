@@ -898,6 +898,8 @@
               <exclude>**/interpreter-setting.json</exclude>
               <exclude>**/constants.json</exclude>
               <exclude>scripts/**</exclude>
+
+              <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>
 
               <!-- bundled from bootstrap -->
