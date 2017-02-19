@@ -132,4 +132,36 @@
   color: #636363;
 }
 
+.helium-repo-btn {
+  margin-right: 8px;
+}
+
+.helium-repo-btn:hover, .helium-repo-btn:focus {
+  margin-right: 8px;
+  outline: 0;
+}
+
+.packagePopUp img {
+  width: 55px;
+  display: block;
+  margin: 12px auto;
+}
+
+.packagePopUp label {
+  margin-bottom: 4px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.packagePopUp span {
+  font-size: 13px;
+}
+
+.localPkgInfo {
+  margin-top: 10px;
+  font-size: 11px;
+  font-style: italic;
+  color: #aaaaaa;
+}
+
 

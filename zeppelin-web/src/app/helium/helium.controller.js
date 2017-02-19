@@ -24,12 +24,35 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
   $scope.showVersions = {};
   $scope.bundleOrder = [];
   $scope.bundleOrderChanged = false;
+  $scope.npmRegistry = 'http://registry.npmjs.org/'
+  $scope.mvnCentralRepository = 'http://repo1.maven.org/maven2/'
+  $scope.vizTypePkg = {}
+  $scope.spellTypePkg = {}
+  $scope.intpTypePkg = {}
+  $scope.appTypePkg = {}
+  
+  $scope.npmPackageTypes = [HeliumType.SPELL, HeliumType.VISUALIZATION].join(', ')
+  $scope.mavenArtifactTypes = [HeliumType.APPLICATION, HeliumType.INTERPRETER].join(', ')
+  $scope.pkgsRegisteredInNpm = {}
+  $scope.pkgsRegisteredInMaven = {}
+  
+  $scope.intpDefaultIcon = $sce.trustAsHtml('<img src="../assets/images/maven_default_icon.png" style="width: 12px"/>');
+  
+  $(function () {
+    $('.helium-popover').popover({
+        trigger: 'focus',
+        content: 'body',
+        placement: "bottom",
+        html: true
+      })
+  })
 
   var buildDefaultVersionListToDisplay = function(packageInfos) {
     var defaultVersions = {};
     // show enabled version if any version of package is enabled
     for (var name in packageInfos) {
       var pkgs = packageInfos[name];
+      //console.log(pkgs)
       for (var pkgIdx in pkgs) {
         var pkg = pkgs[pkgIdx];
         pkg.pkg.icon = $sce.trustAsHtml(pkg.pkg.icon);
@@ -48,18 +71,54 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
     }
     $scope.defaultVersions = defaultVersions;
   };
+  
+  var classifyPkgType = function(packageInfos) {
+    var vizTypePkg = {}
+    var spellTypePkg = {}
+    var intpTypePkg = {}
+    var appTypePkg = {}
+  
+    for (var name in packageInfos) {
+      var pkgs = packageInfos[name]
+      var pkgType = pkgs.pkg.type
+    
+      switch (pkgType) {
+        case HeliumType.VISUALIZATION:
+          vizTypePkg[name] = pkgs;
+          break;
+        case HeliumType.SPELL:
+          spellTypePkg[name] = pkgs;
+          break;
+        case HeliumType.INTERPRETER:
+          intpTypePkg[name] = pkgs;
+          break;
+        case HeliumType.APPLICATION:
+          appTypePkg[name] = pkgs;
+          break;
+      }
+    }
+    
+    $scope.vizTypePkg = vizTypePkg
+    $scope.spellTypePkg = spellTypePkg
+    _.extend($scope.pkgsRegisteredInNpm, $scope.vizTypePkg, $scope.spellTypePkg)
+    
+    $scope.appTypePkg = appTypePkg
+    $scope.intpTypePkg = intpTypePkg
+    _.extend($scope.pkgsRegisteredInMaven, $scope.appTypePkg, $scope.intpTypePkg)
+  };
 
   var getAllPackageInfo = function() {
     heliumService.getAllPackageInfo().
     success(function(data, status) {
       $scope.packageInfos = data.body;
       buildDefaultVersionListToDisplay($scope.packageInfos);
+      classifyPkgType($scope.defaultVersions)
     }).
     error(function(data, status) {
       console.log('Can not load package info %o %o', status, data);
     });
   };
-
+  
   var getBundleOrder = function() {
     heliumService.getVisualizationPackageOrder().
     success(function(data, status) {
@@ -81,6 +140,7 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
   var init = function() {
     getAllPackageInfo();
     getBundleOrder();
+  
     $scope.bundleOrderChanged = false;
   };
 
@@ -224,6 +284,12 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
   $scope.hasNpmLink = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return (pkg.type === HeliumType.SPELL || pkg.type === HeliumType.VISUALIZATION) &&
+      !$scope.isLocalPackage(pkgSearchResult);
+  };
+  
+  $scope.hasMavenLink = function(pkgSearchResult) {
+    const pkg = pkgSearchResult.pkg;
+    return (pkg.type === HeliumType.APPLICATION || pkg.type === HeliumType.INTERPRETER) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
 }
