@@ -21,7 +21,6 @@ import PivotTransformation from '../../tabledata/pivot';
 export default class PiechartVisualization extends Nvd3ChartVisualization {
   constructor(targetEl, config) {
     super(targetEl, config);
-
     this.pivot = new PivotTransformation(config);
   };
 
@@ -43,7 +42,6 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
       true,
       false,
       false);
-
     var d = d3Data.d3g;
     var d3g = [];
     if (d.length > 0) {
@@ -67,6 +65,9 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   };
 
   configureChart(chart) {
-    chart.x(function(d) { return d.label;}).y(function(d) { return d.value;});
+    chart.x(function(d) { return d.label;})
+	 .y(function(d) { return d.value;})
+	 .showLabels(false)
+	 .showTooltipPercent(true);
   };
 }
