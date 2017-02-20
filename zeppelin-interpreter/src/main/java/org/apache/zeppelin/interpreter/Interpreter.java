@@ -18,15 +18,19 @@
 package org.apache.zeppelin.interpreter;
 
 
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -157,7 +161,42 @@ public abstract class Interpreter {
       }
     }
 
+    replaceContextParameters(p);
+
     return p;
+  }
+
+  /**
+   * Replace markers #{contextFieldName} by values from {@link InterpreterContext} fields
+   * with same name and marker #{user}. If value == null then replace by empty string.
+   */
+  private void replaceContextParameters(Properties properties) {
+    InterpreterContext interpreterContext = InterpreterContext.get();
+    if (interpreterContext != null) {
+      String markerTemplate = "#\\{%s\\}";
+      List typesToProcess = Arrays.asList(String.class, Double.class, Float.class, Short.class,
+          Byte.class, Character.class, Boolean.class, Integer.class, Long.class);
+      for (String key : properties.stringPropertyNames()) {
+        String p = properties.getProperty(key);
+        if (StringUtils.isNotEmpty(p)) {
+          for (Field field : InterpreterContext.class.getDeclaredFields()) {
+            Class clazz = field.getType();
+            if (typesToProcess.contains(clazz) || clazz.isPrimitive()) {
+              try {
+                Object value = FieldUtils.readField(field, interpreterContext, true);
+                p = p.replaceAll(String.format(markerTemplate, field.getName()),
+                    value != null ? value.toString() : StringUtils.EMPTY);
+              } catch (Exception e) {
+                logger.error("Cannot replace context parameter", e);
+              }
+            }
+          }
+          p = p.replaceAll(String.format(markerTemplate, "user"),
+              StringUtils.defaultString(userName, StringUtils.EMPTY));
+          properties.setProperty(key, p);
+        }
+      }
+    }
   }
 
   @ZeppelinApi
