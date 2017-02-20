@@ -32,6 +32,7 @@ There are few notebook storage systems available for a use out of the box:
   * all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
+  * storage using Apache Hadoop HDFS - `HDFSNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -245,6 +246,44 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
+
+## Notebook Storage in Apache Hadoop HDFS <a name="HDFS"></a>
+
+Notebooks may be stored in HDFS and local file system.
+
+To use this, set the following environment variable in the file **zeppelin-site.xml**
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.HDFSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+
+<property>
+  <name>hdfs.url</name>
+  <value>http://localhost:50070/webhdfs/v1/</value>
+  <description>HDFS url</description>
+</property>
+<property>
+  <name>hdfs.user</name>
+  <value>hdfs</value>
+  <description>HDFS user</description>
+</property>
+<property>
+  <name>hdfs.maxlength</name>
+  <value>1000</value>
+  <description>Maximum number of lines of results fetched</description>
+</property>
+<property>
+  <name>hdfs.notebook.dir</name>
+  <value>/tmp</value>
+  <description>notebook location directory in HDFS</description>
+</property>
+```
+
+</br>
+
 ## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
