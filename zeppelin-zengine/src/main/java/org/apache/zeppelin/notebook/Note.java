@@ -144,7 +144,10 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public String getName() {
-    return isNameEmpty() ? getId() : name;
+    if (isNameEmpty()) {
+      name = getId();
+    }
+    return name;
   }
 
   public String getNameWithoutPath() {
