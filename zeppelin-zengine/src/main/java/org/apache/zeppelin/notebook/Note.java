@@ -351,6 +351,7 @@ public class Note implements Serializable, ParagraphJobListener {
     synchronized (paragraphs) {
       paragraphs.add(index, p);
     }
+    p.addUser(p, p.getUser());
     if (noteEventListener != null) {
       noteEventListener.onParagraphCreate(p);
     }
