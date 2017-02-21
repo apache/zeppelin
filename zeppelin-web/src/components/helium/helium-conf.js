@@ -50,9 +50,6 @@ export function createAllPackageConfigs(defaultPackages, persistedConfs) {
     const spec = pkgSearchResult.pkg.config;
     if (!spec) { continue; }
 
-    const version = pkgSearchResult.pkg.version;
-    if (!version) { continue; }
-
     const artifact = pkgSearchResult.pkg.artifact;
     if (!artifact) { continue; }
 

@@ -27,7 +27,6 @@ import java.util.Map;
 public class HeliumPackage {
   private HeliumType type;
   private String name;           // user friendly name of this application
-  private String version;
   private String description;    // description
   private String artifact;       // artifact name e.g) groupId:artifactId:versionId
   private String className;      // entry point
@@ -83,10 +82,6 @@ public class HeliumPackage {
 
   public String getName() {
     return name;
-  }
-
-  public String getVersion() {
-    return version;
   }
 
   public String getDescription() {

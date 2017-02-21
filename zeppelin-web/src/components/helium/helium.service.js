@@ -148,7 +148,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
   };
 
   /**
-   * @returns {Promise<Object>} which including {name, Array<package info for version>}
+   * @returns {Promise<Object>} which including {name, Array<package info for artifact>}
    */
   this.getAllPackageInfo = function() {
     return $http.get(`${baseUrlSrv.getRestApiBase()}/helium/package`)
@@ -207,11 +207,10 @@ export default function heliumService($http, $sce, baseUrlSrv) {
    */
   this.getSinglePackageConfigs = function(pkg) {
     const pkgName = pkg.name;
-    const pkgVersion = pkg.version;
     // in case of local package, it will include `/`
     const pkgArtifact = encodeURIComponent(pkg.artifact);
 
-    if (!pkgName || !pkgVersion || !pkgArtifact) {
+    if (!pkgName || !pkgArtifact) {
       console.error('Failed to fetch config for\n', pkg);
       return Promise.resolve([]);
     }
