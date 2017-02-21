@@ -203,4 +203,11 @@ public class NoteTest {
     note.setName(Folder.TRASH_FOLDER_ID + "/a/b/c");
     assertTrue(note.isTrash());
   }
+
+  @Test
+  public void getNameWithoutNameItself() {
+    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+
+    assertEquals("getName should return same as getId when name is empty", note.getId(), note.getName());
+  }
 }
