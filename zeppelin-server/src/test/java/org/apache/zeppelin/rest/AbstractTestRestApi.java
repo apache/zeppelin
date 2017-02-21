@@ -84,7 +84,7 @@ public abstract class AbstractTestRestApi {
       "role1 = *\n" +
       "role2 = *\n" +
       "role3 = *\n" +
-      "admin = *" +
+      "admin = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
       "/** = authc";
