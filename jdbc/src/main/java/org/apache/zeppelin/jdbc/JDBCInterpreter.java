@@ -374,16 +374,22 @@ public class JDBCInterpreter extends Interpreter {
                 if (lastIndexOfUrl == -1) {
                   lastIndexOfUrl = connectionUrl.length();
                 }
-                connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
+                if (!property.getProperty("hive.proxy.user").equals("false")){
+                  logger.debug("Using hive proxy user");
+                  connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
+                }
                 connection = getConnectionFromPool(connectionUrl.toString(),
-                    user, propertyKey, properties);
+                        user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
+
                 try {
-                  ugi = UserGroupInformation.createProxyUser(user,
-                    UserGroupInformation.getCurrentUser());
+                  ugi = property.getProperty("hive.proxy.user").equals("false") ?
+                          UserGroupInformation.getCurrentUser() :
+                          UserGroupInformation.createProxyUser(
+                                  user, UserGroupInformation.getCurrentUser());
                 } catch (Exception e) {
-                  logger.error("Error in createProxyUser", e);
+                  logger.error("Error in getCurrentUser or createProxyUser", e);
                   StringBuilder stringBuilder = new StringBuilder();
                   stringBuilder.append(e.getMessage()).append("\n");
                   stringBuilder.append(e.getCause());
