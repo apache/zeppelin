@@ -230,7 +230,10 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     const pkgName = pkgSearchResult.pkg.name;
     const currentConf = $scope.defaultPackageConfigs[pkgName];
 
-    heliumService.saveConfig(pkgSearchResult.pkg, currentConf);
+    heliumService.saveConfig(pkgSearchResult.pkg, currentConf, () => {
+      // close after config is saved
+      pkgSearchResult.configOpened = false;
+    });
   };
 
   init();

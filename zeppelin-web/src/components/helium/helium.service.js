@@ -126,7 +126,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
   };
 
-  this.saveConfig = function(pkg , defaultPackageConfig) {
+  this.saveConfig = function(pkg , defaultPackageConfig, closeConfigPanelCallback) {
     // in case of local package, it will include `/`
     const pkgArtifact = encodeURIComponent(pkg.artifact);
     const pkgName = pkg.name;
@@ -139,7 +139,12 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     }
 
     const url = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgArtifact}`;
-    return $http.post(url, filtered);
+    return $http.post(url, filtered)
+      .then(() => {
+        if (closeConfigPanelCallback) { closeConfigPanelCallback(); }
+      }).catch((error) => {
+        console.error(`Failed to save config for ${pkgArtifact}`, error);
+      });
   };
 
   /**
