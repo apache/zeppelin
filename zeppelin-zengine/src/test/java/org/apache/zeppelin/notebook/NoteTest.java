@@ -127,6 +127,13 @@ public class NoteTest {
   }
 
   @Test
+  public void insertParagraphwithUser() {
+    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    Paragraph p = note.insertParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
+    assertEquals("anonymous", p.getUser());
+  }
+
+  @Test
   public void clearAllParagraphOutputTest() {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("md"))).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);

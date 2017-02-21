@@ -137,10 +137,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     p.setResult(getReturn());
     p.setStatus(getStatus());
     p.setId(getId());
-
-    userParagraphMap.put(user, p);
-
+    addUser(p, user);
     return p;
+  }
+
+  public void addUser(Paragraph p, String user) {
+    userParagraphMap.put(user, p);
   }
 
   public String getUser() {
