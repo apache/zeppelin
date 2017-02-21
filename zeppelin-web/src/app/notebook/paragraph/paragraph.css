@@ -114,7 +114,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 .paragraphAsIframe {
   padding: 0;
   margin-top: -79px;
-  margin-left: -10px;
+  margin-left: 0px;
   margin-right: -10px;
 }
 
@@ -146,12 +146,21 @@ table.dataTable.table-condensed .sorting_desc:after {
   display: block;
   unicode-bidi: embed;
   display: block !important;
-  margin: 0 0 10px!important;
+  margin-top: 0;
+  margin-left: 10px;
   font-size: 12px!important;
   line-height: 1.42857143!important;
   word-break: break-all!important;
   word-wrap: break-word!important;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+.paragraphAsIframe .title {
+  width: 80%;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+  margin: 0 10px !important;
 }
 
 /*

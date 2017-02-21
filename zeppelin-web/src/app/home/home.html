@@ -82,7 +82,7 @@ limitations under the License.
        ng-controller="ParagraphCtrl"
        ng-init="init(currentParagraph, home.note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
-       class="paragraph-col">
+       style="margin: 0; padding: 0;">
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-if="currentParagraph.results"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
