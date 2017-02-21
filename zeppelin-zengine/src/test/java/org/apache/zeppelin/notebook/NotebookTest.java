@@ -913,8 +913,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with scoped mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNote(InterpreterOption.SCOPED);
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note1.getId());
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note2.getId());
+      notebook.getInterpreterSettingManager().restart(setting.getId());
     }
 
     // run per note session enabled
@@ -929,8 +928,7 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter with isolated mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNote(InterpreterOption.ISOLATED);
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note1.getId());
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note2.getId());
+      notebook.getInterpreterSettingManager().restart(setting.getId());
     }
 
     // run per note process enabled
