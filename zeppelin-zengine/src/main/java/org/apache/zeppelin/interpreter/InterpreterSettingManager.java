@@ -801,7 +801,7 @@ public class InterpreterSettingManager {
       String noteId) {
     InterpreterOption option = interpreterSetting.getOption();
     if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
+      interpreterSetting.closeAndRemoveAllInterpreterGroups();
     } else if (option.isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
@@ -931,50 +931,22 @@ public class InterpreterSettingManager {
     }
   }
 
-  public void restart(String settingId, String noteId, String user) {
+  public void restart(String settingId) {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
 
-    // restart interpreter setting in note page
-    if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
-      intpSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-      return;
+    if (intpSetting != null) {
+      //clean up metaInfos
+      intpSetting.setInfos(null);
+      copyDependenciesFromLocalPath(intpSetting);
+
+      stopJobAllInterpreter(intpSetting);
+      intpSetting.closeAndRemoveAllInterpreterGroups();
+
     } else {
-      // restart interpreter setting in interpreter setting page
-      restart(settingId, user);
+      throw new InterpreterException("Interpreter setting id " + settingId + " not found");
     }
 
-  }
-
-  private boolean noteIdIsExist(String noteId) {
-    return noteId == null ? false : true;
-  }
-
-  public void restart(String id, String user) {
-    synchronized (interpreterSettings) {
-      InterpreterSetting intpSetting = interpreterSettings.get(id);
-      // Check if dependency in specified path is changed
-      // If it did, overwrite old dependency jar with new one
-      if (intpSetting != null) {
-        //clean up metaInfos
-        intpSetting.setInfos(null);
-        copyDependenciesFromLocalPath(intpSetting);
-
-        stopJobAllInterpreter(intpSetting);
-        if (user.equals("anonymous")) {
-          intpSetting.closeAndRemoveAllInterpreterGroups();
-        } else {
-          intpSetting.closeAndRemoveInterpreterGroupByUser(user);
-        }
-
-      } else {
-        throw new InterpreterException("Interpreter setting id " + id + " not found");
-      }
-    }
-  }
-
-  public void restart(String id) {
-    restart(id, "anonymous");
   }
 
   private void stopJobAllInterpreter(InterpreterSetting intpSetting) {

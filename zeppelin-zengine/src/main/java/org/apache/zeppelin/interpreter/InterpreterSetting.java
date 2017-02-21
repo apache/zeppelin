@@ -226,50 +226,18 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
-    String processKey = getInterpreterProcessKey("", noteId);
-    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
-    InterpreterGroup groupKey;
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
-        interpreterGroupWriteLock.lock();
-        groupKey = interpreterGroupRef.remove(intpKey);
-        interpreterGroupWriteLock.unlock();
-        closeToGroupList.add(groupKey);
-      }
-    }
-
-    for (InterpreterGroup groupToRemove : closeToGroupList) {
-      groupToRemove.close();
-    }
-  }
-
-  void closeAndRemoveInterpreterGroupByUser(String user) {
-    if (user.equals("anonymous")) {
-      user = "";
-    }
-    String processKey = getInterpreterProcessKey(user, "");
-    String sessionKey = getInterpreterSessionKey(user, "");
-    List<InterpreterGroup> groupToRemove = new LinkedList<>();
-    InterpreterGroup groupItem;
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
-        interpreterGroupWriteLock.lock();
-        groupItem = interpreterGroupRef.remove(intpKey);
-        interpreterGroupWriteLock.unlock();
-        groupToRemove.add(groupItem);
-      }
-    }
-
-    for (InterpreterGroup groupToClose : groupToRemove) {
-      groupToClose.close(sessionKey);
-    }
-  }
-
   void closeAndRemoveAllInterpreterGroups() {
     HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
+    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
     for (String key : groupsToRemove) {
-      closeAndRemoveInterpreterGroupByNoteId(key);
+      InterpreterGroup groupKey;
+      interpreterGroupWriteLock.lock();
+      groupKey = interpreterGroupRef.remove(key);
+      interpreterGroupWriteLock.unlock();
+      closeToGroupList.add(groupKey);
+    }
+    for (InterpreterGroup groupToRemove : closeToGroupList) {
+      groupToRemove.close();
     }
   }
 
