@@ -69,16 +69,6 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
     chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d, self.yLabels);});
 
-    // configure how the tooltip looks.
-  /*  chart.tooltip.contentGenerator(function(d) {
-      var tooltipContent = '<h3>' + d.value + '</h3>';
-      d.series.forEach(function(elem){
-        tooltipContent += '<p>'+elem.key+':<b>'
-                       +elem.value+'</b></p>';
-      })
-      return tooltipContent;
-    });
-  */
     chart.showDistX(true).showDistY(true);
     //handle the problem of tooltip not showing when muliple points have same value.
   };
