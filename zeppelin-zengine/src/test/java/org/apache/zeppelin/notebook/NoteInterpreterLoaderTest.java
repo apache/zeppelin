@@ -197,25 +197,25 @@ public class NoteInterpreterLoaderTest {
     interpreterSettingManager.closeNote("user", "FitstNote");
 
     assertFalse(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertFalse(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
 
     //reopen
     firstNoteIntp.open();
 
     assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertFalse(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
 
     // invalid check
     interpreterSettingManager.closeNote("invalid", "Note");
 
     assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertFalse(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
 
     // invalid contains value check
     interpreterSettingManager.closeNote("u", "Note");
 
     assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
-    assertFalse(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
   }
 
 
