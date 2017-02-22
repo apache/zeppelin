@@ -132,36 +132,29 @@
   color: #636363;
 }
 
-.helium-repo-btn {
+.heliumLearnMore {
+  margin-top:10px;
+}
+
+.heliumLearnMore a {
+  cursor:pointer;
+  margin-right:10px;
+  text-decoration:none;
+}
+
+.heliumRepoBtn {
   margin-right: 8px;
 }
 
-.helium-repo-btn:hover, .helium-repo-btn:focus {
+.heliumRepoBtn:hover, .heliumRepoBtn:focus {
   margin-right: 8px;
   outline: 0;
 }
 
-.packagePopUp img {
-  width: 55px;
-  display: block;
-  margin: 12px auto;
-}
-
-.packagePopUp label {
-  margin-bottom: 4px;
-  margin-top: 4px;
-  font-size: 13px;
-}
-
-.packagePopUp span {
-  font-size: 13px;
-}
-
 .localPkgInfo {
-  margin-top: 10px;
+  margin: 10px 12px 0 0;
   font-size: 11px;
   font-style: italic;
   color: #aaaaaa;
+  text-align: right;
 }
-
-

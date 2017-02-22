@@ -6,8 +6,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under thpackageInfosR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -24,28 +23,16 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
   $scope.showVersions = {};
   $scope.bundleOrder = [];
   $scope.bundleOrderChanged = false;
-  $scope.npmRegistry = 'http://registry.npmjs.org/'
-  $scope.mvnCentralRepository = 'http://repo1.maven.org/maven2/'
   $scope.vizTypePkg = {}
   $scope.spellTypePkg = {}
   $scope.intpTypePkg = {}
   $scope.appTypePkg = {}
+  $scope.numberOfEachPackageByType = {}
   
-  $scope.npmPackageTypes = [HeliumType.SPELL, HeliumType.VISUALIZATION].join(', ')
-  $scope.mavenArtifactTypes = [HeliumType.APPLICATION, HeliumType.INTERPRETER].join(', ')
-  $scope.pkgsRegisteredInNpm = {}
-  $scope.pkgsRegisteredInMaven = {}
+  $scope.allPackageTypes = [HeliumType][0]
+  $scope.pkgListByType = 'VISUALIZATION'
   
   $scope.intpDefaultIcon = $sce.trustAsHtml('<img src="../assets/images/maven_default_icon.png" style="width: 12px"/>');
-  
-  $(function () {
-    $('.helium-popover').popover({
-        trigger: 'focus',
-        content: 'body',
-        placement: "bottom",
-        html: true
-      })
-  })
 
   var buildDefaultVersionListToDisplay = function(packageInfos) {
     var defaultVersions = {};
@@ -95,15 +82,13 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
           appTypePkg[name] = pkgs;
           break;
       }
+      
     }
     
     $scope.vizTypePkg = vizTypePkg
     $scope.spellTypePkg = spellTypePkg
-    _.extend($scope.pkgsRegisteredInNpm, $scope.vizTypePkg, $scope.spellTypePkg)
-    
     $scope.appTypePkg = appTypePkg
     $scope.intpTypePkg = intpTypePkg
-    _.extend($scope.pkgsRegisteredInMaven, $scope.appTypePkg, $scope.intpTypePkg)
   };
 
   var getAllPackageInfo = function() {
