@@ -374,7 +374,8 @@ public class JDBCInterpreter extends Interpreter {
                 if (lastIndexOfUrl == -1) {
                   lastIndexOfUrl = connectionUrl.length();
                 }
-                if (!property.getProperty("hive.proxy.user").equals("false")){
+                boolean hasProxyUser = property.containsKey("hive.proxy.user");
+                if (!hasProxyUser || !property.getProperty("hive.proxy.user").equals("false")){
                   logger.debug("Using hive proxy user");
                   connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
                 }
