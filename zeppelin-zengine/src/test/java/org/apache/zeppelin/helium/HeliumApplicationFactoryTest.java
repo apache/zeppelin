@@ -92,15 +92,15 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
     ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
-    factory.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
         Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
-    factory.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
 
     ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
     interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, new HashMap<String, Object>()));
-    factory.add("mock2", interpreterInfos2, new ArrayList<Dependency>(), new InterpreterOption(),
+    interpreterSettingManager.add("mock2", interpreterInfos2, new ArrayList<Dependency>(), new InterpreterOption(),
         Maps.<String, InterpreterProperty>newHashMap(), "mock2", null);
-    factory.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
+    interpreterSettingManager.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
