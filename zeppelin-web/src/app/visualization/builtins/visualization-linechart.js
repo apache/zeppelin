@@ -95,7 +95,6 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
           force Y to 0
         </label>
         <br/>
-
         <label>
           <input type="checkbox"
                ng-model="config.lineWithFocus"
