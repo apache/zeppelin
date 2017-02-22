@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
@@ -87,17 +88,7 @@ public class InterpreterFactoryTest {
     new File(tmpDir, "conf").mkdirs();
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), new File(tmpDir, "interpreter"));
 
-    Map<String, InterpreterProperty> propertiesMockInterpreter1 = new HashMap<>();
-    propertiesMockInterpreter1.put("PROPERTY_1", new InterpreterProperty("PROPERTY_1", "", "VALUE_1", "desc"));
-    propertiesMockInterpreter1.put("property_2", new InterpreterProperty("", "property_2", "value_2", "desc"));
-    MockInterpreter1.register("mock1", "mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1", propertiesMockInterpreter1);
-    MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
-        "org.apache.zeppelin.interpreter.mock.MockInterpreter1," +
-        "org.apache.zeppelin.interpreter.mock.MockInterpreter2," +
-        "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(),
         "mock1,mock2,mock11,dev");
     conf = new ZeppelinConfiguration();
@@ -106,6 +97,21 @@ public class InterpreterFactoryTest {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     context = new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null);
+
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
+
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock2", interpreterInfos2, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock2", null);
+    interpreterSettingManager.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -149,6 +155,14 @@ public class InterpreterFactoryTest {
   @Test
   public void testRemoteRepl() throws Exception {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
@@ -178,6 +192,14 @@ public class InterpreterFactoryTest {
   @Test
   public void testRestartInterpreterInScopedMode() throws Exception {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
@@ -215,6 +237,14 @@ public class InterpreterFactoryTest {
   @Test
   public void testRestartInterpreterInIsolatedMode() throws Exception {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
@@ -282,7 +312,13 @@ public class InterpreterFactoryTest {
 
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
 
-    assertEquals(numInterpreters + 1, interpreterSettingManager.get().size());
+    /*
+     Current situation, if InterpreterSettinfRef doesn't have the key of InterpreterSetting, it would be ignored.
+     Thus even though interpreter.json have several interpreterSetting in that file, it would be ignored and would not be initialized from loadFromFile.
+     In this case, only "mock11" would be referenced from file under interpreter/mock, and "mock11" group would be initialized.
+     */
+    // TODO(jl): Decide how to handle the know referenced interpreterSetting.
+    assertEquals(1, interpreterSettingManager.get().size());
   }
 
   @Test

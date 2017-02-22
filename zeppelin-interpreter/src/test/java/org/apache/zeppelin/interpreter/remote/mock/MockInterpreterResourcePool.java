@@ -34,15 +34,6 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 
 public class MockInterpreterResourcePool extends Interpreter {
-  static {
-    Interpreter.register(
-        "resourcePoolTest",
-        "resourcePool",
-        MockInterpreterA.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("p1", "v1", "property1").build());
-
-  }
 
   AtomicInteger numWatch = new AtomicInteger(0);
 
