@@ -68,7 +68,7 @@ public class NoteInterpreterLoaderTest {
     MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(false));
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
   }
 
