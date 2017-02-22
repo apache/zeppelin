@@ -53,6 +53,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private transient InterpreterFactory factory;
+  private transient InterpreterSettingManager interpreterSettingManager;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
   private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap(); // personalized
@@ -84,10 +85,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph(String paragraphId, Note note, JobListener listener,
-      InterpreterFactory factory) {
+      InterpreterFactory factory, InterpreterSettingManager interpreterSettingManager) {
     super(paragraphId, generateId(), listener);
     this.note = note;
     this.factory = factory;
+    this.interpreterSettingManager = interpreterSettingManager;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -97,10 +99,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     config = new HashMap<>();
   }
 
-  public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
+  public Paragraph(Note note, JobListener listener, InterpreterFactory factory,
+      InterpreterSettingManager interpreterSettingManager) {
     super(generateId(), listener);
     this.note = note;
     this.factory = factory;
+    this.interpreterSettingManager = interpreterSettingManager;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -249,7 +253,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> getInterpreterCompletion() {
     List<InterpreterCompletion> completion = new LinkedList();
-    for (InterpreterSetting intp : factory.getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting intp : interpreterSettingManager.getInterpreterSettings(note.getId())) {
       List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
       if (intInfo.size() > 1) {
         for (InterpreterInfo info : intInfo) {
@@ -290,6 +294,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public void setInterpreterFactory(InterpreterFactory factory) {
     this.factory = factory;
+  }
+
+  public void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
+    this.interpreterSettingManager = interpreterSettingManager;
   }
 
   public InterpreterResult getResult() {
@@ -416,7 +424,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean noteHasInterpreters() {
-    return !factory.getInterpreterSettings(note.getId()).isEmpty();
+    return !interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty();
   }
 
   private boolean interpreterHasUser(InterpreterSetting intp) {
@@ -430,7 +438,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private InterpreterSetting getInterpreterSettingById(String id) {
     InterpreterSetting setting = null;
-    for (InterpreterSetting i : factory.getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting i : interpreterSettingManager.getInterpreterSettings(note.getId())) {
       if (id.startsWith(i.getId())) {
         setting = i;
         break;
@@ -504,8 +512,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
-    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
-      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
+    if (!interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup =
+          interpreterSettingManager.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
@@ -532,8 +541,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
-    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
-      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
+    if (!interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup =
+          interpreterSettingManager.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }

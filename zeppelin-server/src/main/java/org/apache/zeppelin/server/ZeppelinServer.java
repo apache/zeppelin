@@ -37,6 +37,9 @@ import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumVisualizationFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
@@ -84,6 +87,7 @@ public class ZeppelinServer extends Application {
   public static NotebookServer notebookWsServer;
   public static Helium helium;
 
+  private final InterpreterSettingManager interpreterSettingManager;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   private SearchService noteSearchService;
@@ -132,14 +136,17 @@ public class ZeppelinServer extends Application {
     }
 
     this.schedulerFactory = new SchedulerFactory();
+    this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
+        new InterpreterOption(true));
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
-        notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated());
+        notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
+        interpreterSettingManager);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.noteSearchService = new LuceneSearch();
     this.notebookAuthorization = NotebookAuthorization.init(conf);
     this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebook = new Notebook(conf,
-        notebookRepo, schedulerFactory, replFactory, notebookWsServer,
+        notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
             noteSearchService, notebookAuthorization, credentials);
 
     // to update notebook from application event from remote process.
@@ -187,7 +194,7 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterFactory().shutdown();
+          notebook.getInterpreterSettingManager().shutdown();
           notebook.close();
           Thread.sleep(3000);
         } catch (Exception e) {
@@ -210,7 +217,7 @@ public class ZeppelinServer extends Application {
     }
 
     jettyWebServer.join();
-    ZeppelinServer.notebook.getInterpreterFactory().close();
+    ZeppelinServer.notebook.getInterpreterSettingManager().close();
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
@@ -367,7 +374,7 @@ public class ZeppelinServer extends Application {
     HeliumRestApi heliumApi = new HeliumRestApi(helium, notebook);
     singletons.add(heliumApi);
 
-    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(interpreterSettingManager);
     singletons.add(interpreterApi);
 
     CredentialRestApi credentialApi = new CredentialRestApi(credentials);

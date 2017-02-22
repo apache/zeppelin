@@ -102,7 +102,7 @@ public class ParagraphTest {
     final String scriptBody = "My name is ${name} and I am ${age=20} years old. " +
             "My occupation is ${ job = engineer | developer | artists}";
 
-    final Paragraph paragraph = new Paragraph(note, null, null);
+    final Paragraph paragraph = new Paragraph(note, null, null, null);
     final String paragraphId = paragraph.getId();
 
     final AngularObject nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
