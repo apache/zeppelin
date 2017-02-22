@@ -18,29 +18,30 @@ package org.apache.zeppelin.notebook;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Properties;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter11;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 public class NoteInterpreterLoaderTest {
@@ -61,15 +62,23 @@ public class NoteInterpreterLoaderTest {
 
     conf = ZeppelinConfiguration.create();
 
-    Interpreter.registeredInterpreters = Collections
-        .synchronizedMap(new HashMap<String, Interpreter.RegisteredInterpreter>());
-    MockInterpreter1.register("mock1", "group1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1", true);
-    MockInterpreter11.register("mock11", "group1", "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
-    MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, Maps.<String, Object>newHashMap()));
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter11.class.getName(), "mock11", false, Maps.<String, Object>newHashMap()));
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, Maps.<String, Object>newHashMap()));
+
+    interpreterSettingManager.add("group1", interpreterInfos, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock", null);
+    interpreterSettingManager.add("group2", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock", null);
+
+    interpreterSettingManager.createNewSetting("group1", "group1", Lists.<Dependency>newArrayList(), new InterpreterOption(), new Properties());
+    interpreterSettingManager.createNewSetting("group2", "group2", Lists.<Dependency>newArrayList(), new InterpreterOption(), new Properties());
+
+
   }
 
   @After
