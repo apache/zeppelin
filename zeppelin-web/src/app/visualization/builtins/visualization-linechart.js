@@ -100,7 +100,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
           <input type="checkbox"
                ng-model="config.lineWithFocus"
                ng-click="save()" />
-          show line chart with focus
+          zoom
         </label>
       </div>`,
       scope: {
