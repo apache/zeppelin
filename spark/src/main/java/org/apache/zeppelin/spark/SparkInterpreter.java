@@ -999,10 +999,19 @@ public class SparkInterpreter extends Interpreter {
     if (sparkUrl != null) {
       return sparkUrl;
     }
-    Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
-    SparkUI sparkUi = sparkUiOption.get();
-    String sparkWebUrl = sparkUi.appUIAddress();
-    return sparkWebUrl;
+
+    if (sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0)) {
+      Option<String> uiWebUrlOption = (Option<String>) Utils.invokeMethod(sc, "uiWebUrl");
+      if (uiWebUrlOption.isDefined()) {
+        return uiWebUrlOption.get();
+      }
+    } else {
+      Option<SparkUI> sparkUIOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
+      if (sparkUIOption.isDefined()) {
+        return (String) Utils.invokeMethod(sparkUIOption.get(), "appUIAddress");
+      }
+    }
+    return "";
   }
 
   private Results.Result interpret(String line) {
