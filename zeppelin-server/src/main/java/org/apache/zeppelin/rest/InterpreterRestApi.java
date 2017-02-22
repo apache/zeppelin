@@ -190,7 +190,7 @@ public class InterpreterRestApi {
       RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
 
       String noteId = request == null ? null : request.getNoteId();
-      interpreterSettingManager.restart(settingId);
+      interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
       notebookServer.clearParagraphRuntimeInfo(setting);
 
     } catch (InterpreterException e) {
