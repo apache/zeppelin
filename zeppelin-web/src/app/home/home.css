@@ -28,6 +28,7 @@ body {
 }
 
 .bodyAsIframe {
+  padding-top: 20px;
   background: white;
 }
 
