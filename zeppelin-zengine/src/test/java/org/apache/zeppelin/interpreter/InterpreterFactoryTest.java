@@ -155,6 +155,14 @@ public class InterpreterFactoryTest {
   @Test
   public void testRemoteRepl() throws Exception {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
@@ -184,6 +192,14 @@ public class InterpreterFactoryTest {
   @Test
   public void testRestartInterpreterInScopedMode() throws Exception {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
@@ -221,6 +237,14 @@ public class InterpreterFactoryTest {
   @Test
   public void testRestartInterpreterInIsolatedMode() throws Exception {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    Properties intp1Properties = new Properties();
+    intp1Properties.put("PROPERTY_1", "VALUE_1");
+    intp1Properties.put("property_2", "value_2");
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
@@ -288,7 +312,13 @@ public class InterpreterFactoryTest {
 
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
 
-    assertEquals(numInterpreters + 1, interpreterSettingManager.get().size());
+    /*
+     Current situation, if InterpreterSettinfRef doesn't have the key of InterpreterSetting, it would be ignored.
+     Thus even though interpreter.json have several interpreterSetting in that file, it would be ignored and would not be initialized from loadFromFile.
+     In this case, only "mock11" would be referenced from file under interpreter/mock, and "mock11" group would be initialized.
+     */
+    // TODO(jl): Decide how to handle the know referenced interpreterSetting.
+    assertEquals(1, interpreterSettingManager.get().size());
   }
 
   @Test
