@@ -423,7 +423,12 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td>default.password</td>
     <td>hive_password</td>
   </tr>
+  <tr>
+    <td>hive.proxy.user</td>
+    <td>true or false</td>
 </table>
+
+Connection to Hive JDBC with a proxy user can be disabled with `hive.proxy.user` property (set to true by default)
 
 [Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
 [Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
