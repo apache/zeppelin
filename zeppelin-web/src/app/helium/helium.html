@@ -61,6 +61,13 @@ limitations under the License.
 </div>
 
 <div class="box width-full heliumPackageContainer">
+  <div class="row"
+       style="padding-bottom: 15px"
+       ng-if="getPackageSize(defaultVersions, pkgListByType) === 0">
+    <div class="col-md-12 gray40-message">
+      <em>Currently there is no available package to be listed</em>
+    </div>
+  </div>
   <div class="row heliumPackageList"
        ng-repeat="(pkgName, pkgInfo) in defaultVersions"
        ng-show="$parent.pkgListByType == pkgInfo.pkg.type">

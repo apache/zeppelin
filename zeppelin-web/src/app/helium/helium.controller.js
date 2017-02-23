@@ -277,4 +277,12 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
     return (pkg.type === HeliumType.APPLICATION || pkg.type === HeliumType.INTERPRETER) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
+  
+  $scope.getPackageSize = function(pkgSearchResult, targetPkgType) {
+    var result = []
+    _.map(pkgSearchResult, function (pkg) {
+      result.push(_.find(pkg, {type: targetPkgType}))
+    })
+    return _.compact(result).length
+  }
 }
