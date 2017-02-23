@@ -167,6 +167,7 @@ public class Message {
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO,                   // [s-c] error information to be sent
+    SESSION_LOGOUT,               // [s-c] error information to be sent
     WATCHER,                      // [s-c] Change websocket to watcher mode.
     PARAGRAPH_ADDED,              // [s-c] paragraph is added
     PARAGRAPH_REMOVED,            // [s-c] paragraph deleted
