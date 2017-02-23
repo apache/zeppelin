@@ -268,6 +268,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Output message from interpreter exceeding the limit will be truncated</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
+    <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
+    <td>local-repo</td>
+    <td>Local repository for dependency loader.<br>ex)visualiztion modules of npm.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>
     <td><h6 class="properties">zeppelin.websocket.max.text.message.size</h6></td>
     <td>1024000</td>
