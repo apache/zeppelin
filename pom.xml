@@ -309,6 +309,32 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <flattenMode>ossrh</flattenMode>
+          <updatePomFile>true</updatePomFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Test coverage plugin -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -476,7 +502,7 @@
         <version>${plugin.deploy.version}</version>
       </plugin>
 
-      <!--TODO(alex): make part of the build and reconcile conflicts
+    <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
       <artifactId>maven-duplicate-finder-plugin</artifactId>

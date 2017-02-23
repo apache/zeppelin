@@ -34,7 +34,7 @@ if [[ ($# -ne 1) || ( $1 == "--help") ||  $1 == "-h" ]]; then
   usage
 fi
 
-TO_VERSION=$1
+TO_VERSION="$1"
 
 check_scala_version() {
   for i in ${VALID_VERSIONS[*]}; do [ $i = "$1" ] && return 0; done
@@ -42,12 +42,14 @@ check_scala_version() {
   exit 1
 }
 
-check_scala_version "$TO_VERSION"
+check_scala_version "${TO_VERSION}"
 
-if [ $TO_VERSION = "2.11" ]; then
+if [ "${TO_VERSION}" = "2.11" ]; then
   FROM_VERSION="2.10"
+  SCALA_LIB_VERSION="2.11.7"
 else
   FROM_VERSION="2.11"
+  SCALA_LIB_VERSION="2.10.5"
 fi
 
 sed_i() {
@@ -57,11 +59,17 @@ sed_i() {
 export -f sed_i
 
 BASEDIR=$(dirname $0)/..
-find "$BASEDIR" -name 'pom.xml' -not -path '*target*' -print \
-  -exec bash -c "sed_i 's/\(artifactId.*\)_'$FROM_VERSION'/\1_'$TO_VERSION'/g' {}" \;
+find "${BASEDIR}" -name 'pom.xml' -not -path '*target*' -print \
+  -exec bash -c "sed_i 's/\(artifactId.*\)_'${FROM_VERSION}'/\1_'${TO_VERSION}'/g' {}" \;
 
-# Also update <scala.binary.version> in parent POM
+# update <scala.binary.version> in parent POM
 # Match any scala binary version to ensure idempotency
-sed_i '1,/<scala\.binary\.version>[0-9]*\.[0-9]*</s/<scala\.binary\.version>[0-9]*\.[0-9]*</<scala.binary.version>'$TO_VERSION'</' \
-  "$BASEDIR/pom.xml"
+sed_i '1,/<scala\.binary\.version>[0-9]*\.[0-9]*</s/<scala\.binary\.version>[0-9]*\.[0-9]*</<scala.binary.version>'${TO_VERSION}'</' \
+  "${BASEDIR}/pom.xml"
 
+# update <scala.version> in parent POM
+# This is to make variables in leaf pom to be substituted to real value when flattened-pom is created. 
+# maven-flatten plugin doesn't take properties defined under profile even if scala-2.11/scala-2.10 is activated via -Pscala-2.11/-Pscala-2.10,
+# and use default defined properties to create flatten pom.
+sed_i '1,/<scala\.version>[0-9]*\.[0-9]*\.[0-9]*</s/<scala\.version>[0-9]*\.[0-9]*\.[0-9]*</<scala.version>'${SCALA_LIB_VERSION}'</' \
+  "${BASEDIR}/pom.xml"
