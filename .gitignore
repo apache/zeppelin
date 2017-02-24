@@ -95,6 +95,8 @@ Thumbs.db
 # intelliJ IDEA project files
 .idea/
 *.iml
+*.ipr
+*.iws
 
 # maven target files
 target/
