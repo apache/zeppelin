@@ -233,11 +233,31 @@ If you don't have requirements prepared, install it.
 sudo apt-get update
 sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
-sudo apt-get install npm
+```
+
+For testing of zeppelin-web with phantomjs in Linux, please install required dependency
+
+For Ubuntu
+
+```
 sudo apt-get install libfontconfig
 ```
 
+For Centos/RHEL
 
+```
+sudo yum install fontconfig
+```
+
+Otherwise use 
+```
+-DskipTests
+```
+ or
+```
+-Dmaven.test.skip=true
+```
+ maven option.
 
 ### Install maven
 ```

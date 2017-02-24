@@ -12,6 +12,39 @@ This will download all the dependencies including node (the binaries in the fold
 ```
 $ mvn package 
 ```
+#### You also can use maven for build and test
+
+If you want just build web application use:
+```
+$ mvn compile
+```  
+
+If you want just test web application use:
+```
+$ mvn test
+``` 
+
+Please note! Run
+
+```
+$ mvn clean
+```
+
+will clean local nodejs installation and all installed packages
+So, if you want to save time for rebuild use maven option:
+
+```
+-Dmaven.clean.skip=true
+```
+
+If you want skip tests of web application maven option:
+```
+-Dmaven.test.skip=true 
+```
+ or 
+```
+-DskipTests
+```
 
 ### Local Development
 
@@ -19,19 +52,32 @@ It is recommended to install node 6.0.0+ since Zeppelin uses 6.9.1+ (see [creati
 
 All build commands are described in [package.json](./package.json)
 
-```sh
 # install required depepdencies and bower packages (only once)
+```
 $ npm install -g yarn
+```
+
+```
 $ yarn install
+```
+
+```
+$ bower install --silent
+```
 
 # build zeppelin-web for production
+```
 $ yarn run build
+```
 
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
+```
 $ yarn run dev
+```
 
 # execute tests
+```
 $ yarn run test
 ```
 
