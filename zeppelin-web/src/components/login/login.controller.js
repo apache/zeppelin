@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
 
-function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location) {
+function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {
   'ngInject';
 
   $scope.SigningIn = false;
@@ -41,10 +41,10 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
 
       //redirect to the page from where the user originally was
       if ($location.search() && $location.search()['ref']) {
-        setTimeout(function() {
+        $timeout(function() {
           var redirectLocation = $location.search()['ref'];
           $location.$$search = {};
-          window.location.hash = '#' + redirectLocation;
+          $location.path(redirectLocation);
         }, 100);
 
       }
