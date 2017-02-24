@@ -107,21 +107,23 @@ store bank into 'clean_bank.csv' using PigStorage(';'); -- this statement is opt
 ##### pig.query
 
 Get the number of each age where age is less than 30
+
 ```
 %pig.query
  
 bank_data = filter bank by age < 30;
 b = group bank_data by age;
-foreach b generate group, COUNT($1) as cou;
+foreach b generate group, COUNT($1);
 ```
 
 The same as above, but use dynamic text form so that use can specify the variable maxAge in textbox. (See screenshot below). Dynamic form is a very cool feature of zeppelin, you can refer this [link]((../manual/dynamicform.html)) for details.
+
 ```
 %pig.query
  
 bank_data = filter bank by age < ${maxAge=40};
 b = group bank_data by age;
-foreach b generate group, COUNT($1);
+foreach b generate group, COUNT($1) as count;
 ```
 
 Get the number of each age for specific marital type, also use dynamic form here. User can choose the marital type in the dropdown list (see screenshot below).
@@ -131,7 +133,7 @@ Get the number of each age for specific marital type, also use dynamic form here
  
 bank_data = filter bank by marital=='${marital=single,single|divorced|married}';
 b = group bank_data by age;
-foreach b generate group, COUNT($1);
+foreach b generate group, COUNT($1) as count;
 ```
 
 The above examples are in the pig tutorial note in Zeppelin, you can check that for details. Here's the screenshot.
@@ -140,7 +142,7 @@ The above examples are in the pig tutorial note in Zeppelin, you can check that 
 
 
 Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`. 
-Besides, we recommend you to specify alias explicitly so that the visualization can display the column name correctly. Here, we name `COUNT($1)` as `count`, if you don't do this,
-then we will name it using position, here we will use `col_1` to represent `COUNT($1)` if you don't specify alias for it. 
+Besides, we recommend you to specify alias explicitly so that the visualization can display the column name correctly. In the above example 2 and 3 of `%pig.query`, we name `COUNT($1)` as `count`. If you don't do this,
+then we will name it using position. E.g. in the above first example of `%pig.query`, we will use `col_1` in chart to represent `COUNT($1)`.
 
 
