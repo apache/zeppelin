@@ -717,7 +717,7 @@ public class NotebookServer extends WebSocketServlet
     LOG.info("Cannot {}. Connection readers {}. Allowed readers {}", op, userAndRoles, allowed);
 
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-        "Insufficient privileges to " + op + "note.\n\n" + "Allowed users or roles: " + allowed
+        "Insufficient privileges to " + op + " note.\n\n" + "Allowed users or roles: " + allowed
             .toString() + "\n\n" + "But the user " + userName + " belongs to: " + userAndRoles
             .toString())));
   }
