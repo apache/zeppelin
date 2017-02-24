@@ -200,9 +200,9 @@ public class NotebookServer extends WebSocketServlet
               messagereceived.ticket, ticket);
         } else {
           if (!messagereceived.op.equals(OP.PING)) {
-            conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+            conn.send(serializeMessage(new Message(OP.SESSION_LOGOUT).put("info",
                 "Your ticket is invalid possibly due to server restart. "
-                    + "Please refresh the page and login again.")));
+                    + "Please login again.")));
           }
         }
         return;
