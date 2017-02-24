@@ -83,7 +83,7 @@ public class ElasticsearchInterpreter extends Interpreter {
       + "    . same comments as for the search\n"
       + "  - get /index/type/id\n"
       + "  - delete /index/type/id\n"
-      + "  - index /ndex/type/id <json-formatted document>\n"
+      + "  - index /index/type/id <json-formatted document>\n"
       + "    . the id can be omitted, elasticsearch will generate one";
 
   protected static final List<String> COMMANDS = Arrays.asList(
