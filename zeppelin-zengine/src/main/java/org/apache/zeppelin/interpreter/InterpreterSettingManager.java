@@ -547,7 +547,7 @@ public class InterpreterSettingManager {
                 setting.getId());
             if (localRepoDir.exists()) {
               try {
-                FileUtils.cleanDirectory(localRepoDir);
+                FileUtils.forceDelete(localRepoDir);
               } catch (FileNotFoundException e) {
                 logger.info("A file that does not exist cannot be deleted, nothing to worry", e);
               }
