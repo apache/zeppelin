@@ -103,7 +103,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
         "enabled": false
       }
     ],
-    "zeppelin_horizontalbar": [
+    "zeppelin\_horizontalbar": [
       {
         "registry": "local",
         "pkg": {
