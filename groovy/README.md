@@ -49,3 +49,9 @@ g.table(
   ]
 )
 ```
+
+### the `g` object )
+
+```groovy g.angular(String name) ```
+Returns angular object by name. Look up notebook scope first and then global scope.
+

@@ -145,5 +145,24 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 		}
 	}
 
+	public void angularBind(String name, Object o, String noteId) {
+		AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+
+		if (registry.get(name, noteId, null) == null) {
+			registry.add(name, o, noteId, null);
+		} else {
+			registry.get(name, noteId, null).set(o);
+		}
+	}
+
+	/**
+	 * Create angular variable in notebook scope and bind with front end Angular display system.
+	 * If variable exists, it'll be overwritten.
+	 * @param name name of the variable
+	 * @param o value
+	 */
+	public void angularBind(String name, Object o) {
+		angularBind(name, o, interpreterContext.getNoteId());
+	}
 
 }
