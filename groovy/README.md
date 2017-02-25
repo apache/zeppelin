@@ -10,7 +10,8 @@
 def param = g.angular('ngSearchParam')
 //send request https://www.googleapis.com/customsearch/v1?q=ngSearchParam_value
 def r = HTTP.get(
-  //assume you defined groovy interpreter property `search_baseurl`='https://www.googleapis.com/customsearch/v1'
+  //assume you defined the groovy interpreter property
+  //   `search_baseurl`='https://www.googleapis.com/customsearch/v1'
   //in groovy object o.getProperty('A') == o.'A' == o.A == o['A']
   url : g.search_baseurl,
   query: [ q: param ],
