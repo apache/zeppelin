@@ -135,7 +135,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Fail code</td>
       <td>
-        404 when the specified notebook repository doesn't existed <br/> 
+        404 when the specified notebook repository doesn't exist <br/> 
         406 for invalid payload <br/>
         500 for any other errors
       </td>
