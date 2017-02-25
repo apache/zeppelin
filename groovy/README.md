@@ -50,8 +50,40 @@ g.table(
 )
 ```
 
-### the `g` object )
+### the `g` object
 
 ```groovy g.angular(String name) ```
+
 Returns angular object by name. Look up notebook scope first and then global scope.
+
+```groovy g.angularBind(String name, Object value) ```
+
+Assign a new `value` into angular object `name`
+
+```groovy java.util.Properties g.getProperties() ```
+
+returns all properties defined for this interpreter
+
+```groovy 
+g.PROPERTY_NAME
+g.'PROPERTY_NAME'
+g['PROPERTY_NAME']
+g.getProperty('PROPERTY_NAME')
+g.getProperties().getProperty('PROPERTY_NAME') ```
+
+All above the accessor to named property defined in groovy interpreter.
+In this case with name PROPERTY_NAME
+
+
+```groovy groovy.xml.MarkupBuilder g.html()```
+
+Starts or continues rendering of `%angular` to output and returns (groovy.xml.MarkupBuilder)[https://www.google.com/search?q=groovy.xml.MarkupBuilder]
+MarkupBuilder is usefull to generate html (xml)
+
+```groovy groovy.xml.MarkupBuilder g.table(obj)```
+
+starts or continues rendering table rows.
+obj:  List(rows) of List(columns) where first line is a header or closure that returns List of Lists
+
+
 
