@@ -146,27 +146,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--TODO: remove. only for independent build-->
-      <!--plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>revision-info</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-              	<exec executable="svn" output="${project.build.directory}/revision.txt">
-              	  <arg value="info"/>
-              	  <arg value="${basedir}"/>
-              	</exec>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin-->
     </plugins>
   </build>
 
