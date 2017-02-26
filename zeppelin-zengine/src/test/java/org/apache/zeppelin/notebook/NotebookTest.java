@@ -114,6 +114,7 @@ public class NotebookTest implements JobListenerFactory{
 
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, interpreterSettingManager, this, search,
         notebookAuthorization, credentials);
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
   }
 
   @After
