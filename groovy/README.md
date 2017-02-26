@@ -88,7 +88,8 @@ MarkupBuilder is usefull to generate html (xml)
 * `void g.table(obj)`
 
 starts or continues rendering table rows.
-obj:  List(rows) of List(columns) where first line is a header or closure that returns List of Lists
+
+obj:  List(rows) of List(columns) where first line is a header 
 
 
 
