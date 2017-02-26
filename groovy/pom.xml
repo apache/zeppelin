@@ -146,7 +146,8 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--TODO: remove. only for independent build-->
+      <!--plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -165,7 +166,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin-->
     </plugins>
   </build>
 
