@@ -124,6 +124,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph getUserParagraph(String user) {
+    if (!userParagraphMap.containsKey(user)) {
+      cloneParagraphForUser(user);
+    }
     return userParagraphMap.get(user);
   }
 
@@ -408,7 +411,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
       InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
 
-      Paragraph p = userParagraphMap.get(getUser());
+      Paragraph p = getUserParagraph(getUser());
       if (null != p) {
         p.setResult(res);
         p.settings.setParams(settings.getParams());
