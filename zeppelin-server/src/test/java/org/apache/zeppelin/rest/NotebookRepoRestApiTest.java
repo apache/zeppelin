@@ -18,6 +18,7 @@ package org.apache.zeppelin.rest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -80,6 +81,13 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     assertThat(listOfRepositories.size(), is(not(0)));
   }
+
+  @Test public void reloadRepositories() throws IOException {
+    GetMethod get = httpGet("/notebook-repositories/reload");
+    int status = get.getStatusCode();
+    get.releaseConnection();
+    assertThat(status, is(200)); 
+  }
   
   @Test public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -95,7 +103,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     }
 
     if (StringUtils.isBlank(localVfs)) {
-      // no loval VFS set...
+      // no local VFS set...
       return;
     }
 
@@ -111,7 +119,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
         break;
       }
     }
-    assertThat(updatedPath, is("/tmp/newDir"));
+    assertThat(updatedPath, anyOf(is("/tmp/newDir"),is("/tmp/newDir/")));
     
     // go back to normal
     payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"" + localVfs + "\" } }";
