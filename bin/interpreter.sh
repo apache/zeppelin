@@ -76,8 +76,6 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
   ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
 fi
 
-ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
-
 addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDirForIntp "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDirForIntp "${INTERPRETER_DIR}"
@@ -182,6 +180,10 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
   else
     echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
   fi
+fi
+
+if [[ "${INTERPRETER_ID}" != "spark" ]]; then
+  ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
