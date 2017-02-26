@@ -83,6 +83,7 @@ public class NotebookRepoRestApi {
   @ZeppelinApi
   public Response refreshRepo(){
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    LOG.info("Reloading notebook repository for user {}", subject.getUser());
     notebookWsServer.broadcastReloadedNoteList(subject, null);
     return new JsonResponse<>(Status.OK, "", null).build();
   }
