@@ -29,15 +29,6 @@ import java.util.Properties;
  * MockInterpreter to test outputstream
  */
 public class MockInterpreterOutputStream extends Interpreter {
-  static {
-    Interpreter.register(
-            "interpreterOutputStream",
-            "group1",
-            MockInterpreterA.class.getName(),
-            new InterpreterPropertyBuilder().build());
-
-  }
-
   private String lastSt;
 
   public MockInterpreterOutputStream(Properties property) {

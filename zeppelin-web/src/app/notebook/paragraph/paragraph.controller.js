@@ -509,10 +509,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.changeColWidth = function(paragraph, width) {
     angular.element('.navbar-right.open').removeClass('open');
-    if (width !== paragraph.config.colWidth) {
-      paragraph.config.colWidth = width;
-      commitParagraph(paragraph);
-    }
+    paragraph.config.colWidth = width;
+    commitParagraph(paragraph);
   };
 
   $scope.toggleOutput = function(paragraph) {
@@ -1130,23 +1128,23 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
        $scope.paragraph.config = newPara.config;
      }
    };
- 
+
    $scope.updateParagraph = function(oldPara, newPara, updateCallback) {
      // 1. get status, refreshed
      const statusChanged = (newPara.status !== oldPara.status);
      const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
        isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
        newPara.status === 'ERROR' || (newPara.status === 'FINISHED' && statusChanged);
- 
+
      // 2. update texts managed by $scope
      $scope.updateAllScopeTexts(oldPara, newPara);
- 
+
      // 3. execute callback to update result
      updateCallback();
- 
+
      // 4. update remaining paragraph objects
      $scope.updateParagraphObjectWhenUpdated(newPara);
- 
+
      // 5. handle scroll down by key properly if new paragraph is added
      if (statusChanged || resultRefreshed) {
        // when last paragraph runs, zeppelin automatically appends new paragraph.
