@@ -145,7 +145,7 @@ public class Helium {
   }
 
   private void clearNotExistsPackages() {
-    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo(false, null);
+    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfoWithoutRefresh();
 
     // clear visualization display order
     List<String> packageOrder = heliumConf.getBundleDisplayOrder();
@@ -164,6 +164,10 @@ public class Helium {
         heliumConf.disablePackage(pkgName);
       }
     }
+  }
+
+  public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfoWithoutRefresh() {
+    return getAllPackageInfo(false, null);
   }
 
   public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo() {
@@ -249,7 +253,7 @@ public class Helium {
   }
 
   public HeliumPackageSearchResult getEnabledPackageInfo(String packageName) {
-    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo();
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfoWithoutRefresh();
     List<HeliumPackageSearchResult> packages = infos.get(packageName);
 
     for (HeliumPackageSearchResult pkgSearchResult : packages) {
@@ -353,7 +357,7 @@ public class Helium {
       allResources = ResourcePoolUtils.getAllResources();
     }
 
-    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo(false, null).values()) {
+    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfoWithoutRefresh().values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
         if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
           ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
@@ -381,7 +385,7 @@ public class Helium {
    * @return ordered list of enabled buildBundle package
    */
   public List<HeliumPackage> getBundlePackagesToBundle() {
-    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo(false, null);
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
     List<String> visOrder = heliumConf.getBundleDisplayOrder();
 
     List<HeliumPackage> orderedBundlePackages = new LinkedList<>();
