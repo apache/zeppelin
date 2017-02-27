@@ -281,6 +281,10 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     } else {
       console.error(`Unknown Display Type: ${type}`);
     }
+
+    // send message to parent that this result is rendered
+    const paragraphId = $scope.$parent.paragraph.id;
+    $scope.$emit('resultRendered', paragraphId);
   };
 
   const renderResult = function(type, refresh) {
@@ -296,12 +300,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       renderApp(`p${appState.id}`, appState);
     } else {
       if (!DefaultDisplayType[type]) {
-        const spell = heliumService.getSpellByMagic(type);
-        if (!spell) {
-          console.error(`Can't execute spell due to unknown display type: ${type}`);
-          return;
-        }
-        $scope.renderCustomDisplay(type, data, spell);
+        $scope.renderCustomDisplay(type, data);
       } else {
         const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type);
         $scope.renderDefaultDisplay(targetElemId, type, data, refresh);
@@ -316,38 +315,40 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   /**
    * Render multiple sub results for custom display
    */
-  $scope.renderCustomDisplay = function(type, data, spell) {
+  $scope.renderCustomDisplay = function(type, data) {
     // get result from intp
-
-    const spellResult = spell.interpret(data.trim());
-    const parsed = spellResult.getAllParsedDataWithTypes(
-      heliumService.getAllSpells());
+    if (!heliumService.getSpellByMagic(type)) {
+      console.error(`Can't execute spell due to unknown display type: ${type}`);
+      return;
+    }
 
     // custom display result can include multiple subset results
-    parsed.then(dataWithTypes => {
-      const containerDOMId = `p${$scope.id}_custom`;
-      const afterLoaded = () => {
-        const containerDOM = angular.element(`#${containerDOMId}`);
-        // Spell.interpret() can create multiple outputs
-        for(let i = 0; i < dataWithTypes.length; i++) {
-          const dt = dataWithTypes[i];
-          const data = dt.data;
-          const type = dt.type;
+    heliumService.executeSpellAsDisplaySystem(type, data)
+      .then(dataWithTypes => {
+        const containerDOMId = `p${$scope.id}_custom`;
+        const afterLoaded = () => {
+          const containerDOM = angular.element(`#${containerDOMId}`);
+          // Spell.interpret() can create multiple outputs
+          for(let i = 0; i < dataWithTypes.length; i++) {
+            const dt = dataWithTypes[i];
+            const data = dt.data;
+            const type = dt.type;
 
-          // prepare each DOM to be filled
-          const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom_${i}`, type);
-          const subResultDOM = document.createElement('div');
-          containerDOM.append(subResultDOM);
-          subResultDOM.setAttribute('id', subResultDOMId);
+            // prepare each DOM to be filled
+            const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom_${i}`, type);
+            const subResultDOM = document.createElement('div');
+            containerDOM.append(subResultDOM);
+            subResultDOM.setAttribute('id', subResultDOMId);
 
-          $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
-        }
-      };
+            $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
+          }
+        };
 
-      retryUntilElemIsLoaded(containerDOMId, afterLoaded);
-    }).catch(error => {
-      console.error(`Failed to render custom display: ${$scope.type}\n` + error);
-    });
+        retryUntilElemIsLoaded(containerDOMId, afterLoaded);
+      })
+      .catch(error => {
+        console.error(`Failed to render custom display: ${$scope.type}\n` + error);
+      });
   };
 
   /**

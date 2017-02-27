@@ -18,8 +18,10 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.notebook.Note;
@@ -34,6 +36,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Helium Rest Api
@@ -56,13 +59,34 @@ public class HeliumRestApi {
   }
 
   /**
-   * Get all packages
-   * @return
+   * Get all package infos
    */
   @GET
-  @Path("all")
-  public Response getAll() {
-    return new JsonResponse(Response.Status.OK, "", helium.getAllPackageInfo()).build();
+  @Path("package")
+  public Response getAllPackageInfo() {
+    return new JsonResponse(
+        Response.Status.OK, "", helium.getAllPackageInfo()).build();
+  }
+
+  /**
+   * Get single package info
+   */
+  @GET
+  @Path("package/{packageName}")
+  public Response getSinglePackageInfo(@PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(
+          Response.Status.BAD_REQUEST,
+          "Can't get package info for empty name").build();
+    }
+
+    try {
+      return new JsonResponse(
+          Response.Status.OK, "", helium.getSinglePackageInfo(packageName)).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
   }
 
   @GET
@@ -163,6 +187,98 @@ public class HeliumRestApi {
   public Response getVisualizationPackageOrder() {
     List<String> order = helium.setVisualizationPackageOrder();
     return new JsonResponse(Response.Status.OK, order).build();
+  }
+
+  @GET
+  @Path("spell/config/{packageName}")
+  public Response getSpellConfigUsingMagic(@PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "packageName is empty" ).build();
+    }
+
+    try {
+      Map<String, Map<String, Object>> config =
+          helium.getSpellConfig(packageName);
+
+      if (config == null) {
+        return new JsonResponse(Response.Status.BAD_REQUEST,
+            "Failed to find enabled package for " + packageName).build();
+      }
+
+      return new JsonResponse(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("config")
+  public Response getAllPackageConfigs() {
+    try {
+      Map<String, Map<String, Object>> config = helium.getAllPackageConfig();
+      return new JsonResponse(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("config/{packageName}/{artifact}")
+  public Response getPackageConfig(@PathParam("packageName") String packageName,
+                                   @PathParam("artifact") String artifact) {
+    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(artifact)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "package name or artifact is empty"
+      ).build();
+    }
+
+    try {
+      Map<String, Map<String, Object>> config =
+          helium.getPackageConfig(packageName, artifact);
+
+      if (config == null) {
+        return new JsonResponse(Response.Status.BAD_REQUEST,
+            "Failed to find package for " + artifact).build();
+      }
+
+      return new JsonResponse(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @POST
+  @Path("config/{packageName}/{artifact}")
+  public Response updatePackageConfig(@PathParam("packageName") String packageName,
+                                      @PathParam("artifact") String artifact,
+                                      String rawConfig) {
+
+    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(artifact)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "package name or artifact is empty"
+      ).build();
+    }
+
+    Map<String, Object> packageConfig = null;
+
+    try {
+      packageConfig = gson.fromJson(
+          rawConfig, new TypeToken<Map<String, Object>>(){}.getType());
+      helium.updatePackageConfig(artifact, packageConfig);
+    } catch (JsonParseException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          e.getMessage()).build();
+    } catch (IOException | RuntimeException e) {
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR,
+          e.getMessage()).build();
+    }
+
+    return new JsonResponse(Response.Status.OK, packageConfig).build();
   }
 
   @POST

@@ -18,6 +18,8 @@ package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.annotation.Experimental;
 
+import java.util.Map;
+
 /**
  * Helium package definition
  */
@@ -33,7 +35,8 @@ public class HeliumPackage {
   private String license;
   private String icon;
 
-  public SpellPackageInfo spell;
+  private SpellPackageInfo spell;
+  private Map<String, Object> config;
 
   public HeliumPackage(HeliumType type,
                        String name,
@@ -100,6 +103,7 @@ public class HeliumPackage {
   public String getLicense() {
     return license;
   }
+
   public String getIcon() {
     return icon;
   }
@@ -107,4 +111,6 @@ public class HeliumPackage {
   public SpellPackageInfo getSpellInfo() {
     return spell;
   }
+
+  public Map<String, Object> getConfig() { return config; }
 }
