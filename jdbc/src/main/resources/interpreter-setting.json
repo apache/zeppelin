@@ -63,6 +63,12 @@
         "propertyName": "zeppelin.jdbc.principal",
         "defaultValue": "",
         "description": "Kerberos principal"
+      },
+      "zeppelin.interpreter.precode": {
+        "envName": null,
+        "propertyName": "zeppelin.interpreter.precode",
+        "defaultValue": "",
+        "description": "SQL which executes while opening connection"
       }
     },
     "editor": {

@@ -26,6 +26,8 @@ public class Constants {
 
   public static final String ZEPPELIN_INTERPRETER_HOST = "zeppelin.interpreter.host";
 
+  public static final String ZEPPELIN_PRECODE_PROPERTY_KEY = "zeppelin.interpreter.precode";
+
   public static final String EXISTING_PROCESS = "existing_process";
 
   public static final int ZEPPELIN_INTERPRETER_DEFAUlT_PORT = 29914;
