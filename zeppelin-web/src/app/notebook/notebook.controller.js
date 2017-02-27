@@ -709,6 +709,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.permissions.owners = angular.element('#selectOwners').val();
     $scope.permissions.readers = angular.element('#selectReaders').val();
     $scope.permissions.writers = angular.element('#selectWriters').val();
+    angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove();
   }
 
   $scope.restartInterpreter = function(interpeter) {
