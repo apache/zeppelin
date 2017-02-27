@@ -263,7 +263,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       renderApp(app);
     } else {
       if (type === 'TABLE') {
-        $scope.renderGraph($scope.graphMode, refresh);
+        $timeout(function() {
+          $scope.renderGraph($scope.graphMode, refresh);
+        }, 10);
       } else if (type === 'HTML') {
         renderHtml();
       } else if (type === 'ANGULAR') {
