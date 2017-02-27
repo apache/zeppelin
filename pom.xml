@@ -75,6 +75,7 @@
     <module>bigquery</module>
     <module>alluxio</module>
     <module>scio</module>
+    <module>neo4j</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>

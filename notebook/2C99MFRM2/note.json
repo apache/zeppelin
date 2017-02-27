@@ -1,0 +1,648 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\n### This notebook explains how to use the [Neo4j](https://neo4j.com/)™ interpreter and the new NETWORK visualization leveraging the Labelled Property Graph Model.\n\n#### What is Neo4j?\n\nNeo4j is a highly scalable native graph database that leverages data relationships as first-class entities, helping enterprises build intelligent applications to meet today’s evolving data challenges.\n\n#### What is the Labelled Property Graph Model?\n\nA [Property Graph](https://github.com/tinkerpop/gremlin/wiki/Defining-a-Property-Graph) is a graph that has these elements:\n\n* a set of vertices\n    * each vertex has a unique identifier.\n    * each vertex has a set of outgoing edges.\n    * each vertex has a set of incoming edges.\n    * each vertex has a collection of properties defined by a map from key to value\n* a set of edges\n    * each edge has a unique identifier.\n    * each edge has an outgoing tail vertex.\n    * each edge has an incoming head vertex.\n    * each edge has a label that denotes the type of relationship between its two vertices.\n    * each edge has a collection of properties defined by a map from key to value.\n\n![Property Graph](https://github.com/tinkerpop/gremlin/raw/master/doc/images/graph-example-1.jpg)\n\nA [Labelled Property Graph](https://neo4j.com/developer/graph-database/#property-graph) is a Property Graph where the nodes can be tagged with **labels** representing their different roles in the graph model\n\n![Labelled Property Graph](http://s3.amazonaws.com/dev.assets.neo4j.com/wp-content/uploads/property_graph_model.png)\n\nThis kind of graph can be easily *flatten* in order to support other visualization formats provided by Zeppelin.\n\nTo getting started you need a *running instance* of Neo4j then all you have to do is write your [Cypher](https://neo4j.com/developer/cypher-query-language/) queries.\n\nUse the mouse wheel to zoom-in/out and show the node and edge labels.",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 8:05:52 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eThis notebook explains how to use the \u003ca href\u003d\"https://neo4j.com/\"\u003eNeo4j\u003c/a\u003e™ interpreter and the new NETWORK visualization leveraging the Labelled Property Graph Model.\u003c/h3\u003e\n\u003ch4\u003eWhat is Neo4j?\u003c/h4\u003e\n\u003cp\u003eNeo4j is a highly scalable native graph database that leverages data relationships as first-class entities, helping enterprises build intelligent applications to meet today’s evolving data challenges.\u003c/p\u003e\n\u003ch4\u003eWhat is the Labelled Property Graph Model?\u003c/h4\u003e\n\u003cp\u003eA \u003ca href\u003d\"https://github.com/tinkerpop/gremlin/wiki/Defining-a-Property-Graph\"\u003eProperty Graph\u003c/a\u003e is a graph that has these elements:\u003c/p\u003e\n\u003cul\u003e\n  \u003cli\u003ea set of vertices\n    \u003cul\u003e\n      \u003cli\u003eeach vertex has a unique identifier.\u003c/li\u003e\n      \u003cli\u003eeach vertex has a set of outgoing edges.\u003c/li\u003e\n      \u003cli\u003eeach vertex has a set of incoming edges.\u003c/li\u003e\n      \u003cli\u003eeach vertex has a collection of properties defined by a map from key to value\u003c/li\u003e\n    \u003c/ul\u003e\n  \u003c/li\u003e\n  \u003cli\u003ea set of edges\n    \u003cul\u003e\n      \u003cli\u003eeach edge has a unique identifier.\u003c/li\u003e\n      \u003cli\u003eeach edge has an outgoing tail vertex.\u003c/li\u003e\n      \u003cli\u003eeach edge has an incoming head vertex.\u003c/li\u003e\n      \u003cli\u003eeach edge has a label that denotes the type of relationship between its two vertices.\u003c/li\u003e\n      \u003cli\u003eeach edge has a collection of properties defined by a map from key to value.\u003c/li\u003e\n    \u003c/ul\u003e\n  \u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003e\u003cimg src\u003d\"https://github.com/tinkerpop/gremlin/raw/master/doc/images/graph-example-1.jpg\" alt\u003d\"Property Graph\" /\u003e\u003c/p\u003e\n\u003cp\u003eA \u003ca href\u003d\"https://neo4j.com/developer/graph-database/#property-graph\"\u003eLabelled Property Graph\u003c/a\u003e is a Property Graph where the nodes can be tagged with \u003cstrong\u003elabels\u003c/strong\u003e representing their different roles in the graph model\u003c/p\u003e\n\u003cp\u003e\u003cimg src\u003d\"http://s3.amazonaws.com/dev.assets.neo4j.com/wp-content/uploads/property_graph_model.png\" alt\u003d\"Labelled Property Graph\" /\u003e\u003c/p\u003e\n\u003cp\u003eThis kind of graph can be easily \u003cem\u003eflatten\u003c/em\u003e in order to support other visualization formats provided by Zeppelin.\u003c/p\u003e\n\u003cp\u003eTo getting started you need a \u003cem\u003erunning instance\u003c/em\u003e of Neo4j then all you have to do is write your \u003ca href\u003d\"https://neo4j.com/developer/cypher-query-language/\"\u003eCypher\u003c/a\u003e queries.\u003c/p\u003e\n\u003cp\u003eUse the mouse wheel to zoom-in/out and show the node and edge labels.\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484489321698_1691467184",
+      "id": "20170109-185734_1552998102",
+      "dateCreated": "Jan 15, 2017 3:08:41 PM",
+      "dateStarted": "Jan 15, 2017 8:05:52 PM",
+      "dateFinished": "Jan 15, 2017 8:05:52 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Tutorial\nThis tutorial is based on [Rik Van Bruggen\u0027s Blog](http://blog.bruggen.com/) post [\"The Neo4j Knowledge Graph\"](http://blog.bruggen.com/2016/03/the-neo4j-knowledge-graph.html) which is a great start to understand the power of graph analytics to get insights from data.\nThere are two basic steps in this tutorial:\n\n1. Import the data into Neo4j from a csv file\n2. Query the data via Cypher queries\n\nThe graph model of our imported dataset looks like:",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 7:50:15 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eTutorial\u003c/h3\u003e\n\u003cp\u003eThis tutorial is based on \u003ca href\u003d\"http://blog.bruggen.com/\"\u003eRik Van Bruggen\u0026rsquo;s Blog\u003c/a\u003e post \u003ca href\u003d\"http://blog.bruggen.com/2016/03/the-neo4j-knowledge-graph.html\"\u003e\u0026ldquo;The Neo4j Knowledge Graph\u0026rdquo;\u003c/a\u003e which is a great start to understand the power of graph analytics to get insights from data.\u003cbr/\u003eThere are two basic steps in this tutorial:\u003c/p\u003e\n\u003col\u003e\n  \u003cli\u003eImport the data into Neo4j from a csv file\u003c/li\u003e\n  \u003cli\u003eQuery the data via Cypher queries\u003c/li\u003e\n\u003c/ol\u003e\n\u003cp\u003eThe graph model of our imported dataset looks like:\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484489548844_-369527049",
+      "id": "20170115-151228_289298576",
+      "dateCreated": "Jan 15, 2017 3:12:28 PM",
+      "dateStarted": "Jan 15, 2017 6:33:37 PM",
+      "dateFinished": "Jan 15, 2017 6:33:37 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\r\nprint(s\"\"\"\r\n%network {\r\n    \"nodes\": [\r\n        {\"id\": 1, \"label\": \"Author\"},\r\n        {\"id\": 2, \"label\": \"Resource\"},\r\n        {\"id\": 3, \"label\": \"Tag\"}\r\n    ],\r\n    \"edges\": [\r\n\t\t{\"source\": 1, \"target\": 2, \"id\" : 1, \"label\": \"CREATED\"},\r\n\t\t{\"source\": 2, \"target\": 3, \"id\" : 2, \"label\": \"TAGGED_AS\"}\r\n\t]\r\n}\r\n\"\"\")",
+      "user": "anonymous",
+      "dateUpdated": "Jan 16, 2017 9:12:54 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "network",
+              "height": 128.0,
+              "optionOpen": false,
+              "setting": {
+                "network": {
+                  "properties": {
+                    "Author": {
+                      "selected": "label",
+                      "keys": [
+                        "id",
+                        "label"
+                      ]
+                    },
+                    "Resource": {
+                      "selected": "label",
+                      "keys": [
+                        "id",
+                        "label"
+                      ]
+                    },
+                    "Tag": {
+                      "selected": "label",
+                      "keys": [
+                        "id",
+                        "label"
+                      ]
+                    }
+                  },
+                  "d3Graph": {
+                    "forceLayout": {
+                      "timeout": "5000",
+                      "charge": -120.0,
+                      "linkDistance": 80.0
+                    },
+                    "zoom": {
+                      "minScale": "1"
+                    }
+                  }
+                }
+              },
+              "commonSetting": {}
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\n"
+          },
+          {
+            "type": "NETWORK",
+            "data": "{\n    \"nodes\": [\n        {\"id\": 1, \"label\": \"Author\"},\n        {\"id\": 2, \"label\": \"Resource\"},\n        {\"id\": 3, \"label\": \"Tag\"}\n    ],\n    \"edges\": [\n\t\t{\"source\": 1, \"target\": 2, \"id\" : 1, \"label\": \"CREATED\"},\n\t\t{\"source\": 2, \"target\": 3, \"id\" : 2, \"label\": \"TAGGED_AS\"}\n\t]\n}\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484501116117_1953042985",
+      "id": "20170115-182516_489605271",
+      "dateCreated": "Jan 15, 2017 6:25:16 PM",
+      "dateStarted": "Jan 15, 2017 7:23:57 PM",
+      "dateFinished": "Jan 15, 2017 7:23:58 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\n//Step 0: Import the data into Neo4j from a csv file\ncreate index on :Resource(name)",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 3:22:01 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher",
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": ""
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484490033680_-60881287",
+      "id": "20170115-152033_542083475",
+      "dateCreated": "Jan 15, 2017 3:20:33 PM",
+      "dateStarted": "Jan 15, 2017 3:21:52 PM",
+      "dateFinished": "Jan 15, 2017 3:21:52 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\n//Step 0: mport the data into Neo4j from a csv file\ncreate index on :Resource(comments)",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 3:22:04 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher",
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": ""
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484490093873_-1082112137",
+      "id": "20170115-152133_1231910179",
+      "dateCreated": "Jan 15, 2017 3:21:33 PM",
+      "dateStarted": "Jan 15, 2017 3:21:56 PM",
+      "dateFinished": "Jan 15, 2017 3:21:56 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\r\n//Step 1: Import the csv data into Neo4j from a csv file\r\nload csv with headers from \"https://docs.google.com/a/neotechnology.com/spreadsheets/d/1X6DpFZoS01V1crgRED4dRz2UkbiYR8FJMPf9xey9Lwc/export?format\u003dcsv\u0026id\u003d1X6DpFZoS01V1crgRED4dRz2UkbiYR8FJMPf9xey9Lwc\u0026gid\u003d0\" as csv\r\nmerge (r:Resource {name: csv.What, url: csv.Where, comments: csv.Comments})\r\nwith csv\r\nmerge (a:Author {name: csv.Who})\r\nwith csv\r\nmatch (r:Resource {name: csv.What}), (a:Author {name: csv.Who})\r\nmerge (a)-[:CREATED]-\u003e(r)\r\nwith csv,a,r\r\nmerge (a)-[:CREATED]-\u003e(r)\r\nwith csv.What as Resource, csv.Tags as row\r\nunwind row as text\r\nwith Resource, [w in split(text,\", \") | trim(w)] as words\r\nunwind range(0,size(words)-2) as idx\r\nMATCH (r:Resource {name: Resource})\r\nMERGE (t1:Tag {name:words[idx]})\r\nMERGE (t2:Tag {name:words[idx+1]})\r\nMERGE (r)-[:TAGGED_AS]-\u003e(t1)\r\nMERGE (r)-[:TAGGED_AS]-\u003e(t2);",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 6:34:03 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher",
+        "tableHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": ""
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484489491100_483384642",
+      "id": "20170115-151131_929877784",
+      "dateCreated": "Jan 15, 2017 3:11:31 PM",
+      "dateStarted": "Jan 15, 2017 6:34:03 PM",
+      "dateFinished": "Jan 15, 2017 6:34:05 PM",
+      "status": "ABORT",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\n//Find some Authors, Resources and Tags\nMATCH p \u003d ((a:Author)--(r:Resource)--(t:Tag))\nreturn p\nlimit 25",
+      "user": "anonymous",
+      "dateUpdated": "Jan 16, 2017 9:17:13 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "network",
+              "height": 379.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "NETWORK",
+            "data": "{\"nodes\":[{\"id\":0,\"data\":{\"comments\":\"A WebGL distributed graph visualization library\",\"name\":\"3dg-viz\",\"url\":\"https://github.com/kbastani/3dg-viz\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":192,\"data\":{\"name\":\"import\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":1,\"data\":{\"comments\":\"Easily import data into Neo4j from a relational database\",\"name\":\"RDBMS2Neo4j\",\"url\":\"https://github.com/johnymontana/RDBMS2Neo4j\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":3,\"data\":{\"comments\":\"The lazy way to run multi-statement Neo4j Cypher scripts from the web\",\"name\":\"LazyWebCypher\",\"url\":\"https://github.com/johnymontana/LazyWebCypher\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":262,\"data\":{\"name\":\"big data\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":263,\"data\":{\"name\":\"spark\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":200,\"data\":{\"name\":\"document\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":266,\"data\":{\"name\":\"library\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":281,\"data\":{\"name\":\"classification\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":224,\"data\":{\"name\":\"nlp\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":225,\"data\":{\"name\":\"text\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":100,\"data\":{\"comments\":\"Will Lyon\\u0027s blog\",\"name\":\"Will Lyon\\u0027s blog\",\"url\":\"http://www.lyonwj.com/\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":306,\"data\":{\"name\":\"usa\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":116,\"data\":{\"comments\":\"Mazerunner extends a Neo4j graph database to run scheduled big data graph compute algorithms at scale with HDFS and Apache Spark.\",\"name\":\"neo4j-mazerunner\",\"url\":\"https://github.com/neo4j-contrib/neo4j-mazerunner\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":52,\"data\":{\"comments\":\"Graphify is a Neo4j unmanaged extension used for document and text classification using graph-based hierarchical pattern recognition.\",\"name\":\"graphify\",\"url\":\"https://github.com/Graphify/graphify\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":181,\"data\":{\"name\":\"code\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":182,\"data\":{\"name\":\"visualization\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":183,\"data\":{\"name\":\"webgl\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":120,\"data\":{\"name\":\"Kenny Bastani\"},\"label\":\"Author\",\"color\":\"#17F40D\"},{\"id\":184,\"data\":{\"name\":\"rdbms\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":121,\"data\":{\"name\":\"Will Lyon\"},\"label\":\"Author\",\"color\":\"#17F40D\"},{\"id\":185,\"data\":{\"name\":\"tool\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":186,\"data\":{\"name\":\"integration\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":315,\"data\":{\"name\":\"graph algorithms\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":187,\"data\":{\"name\":\"cypher\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":252,\"data\":{\"name\":\"blog\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":188,\"data\":{\"name\":\"script\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":191,\"data\":{\"name\":\"component\"},\"label\":\"Tag\",\"color\":\"#1B289C\"}],\"edges\":[{\"source\":120,\"target\":0,\"type\":\"arrow\",\"count\":1,\"id\":0,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":121,\"target\":1,\"type\":\"arrow\",\"count\":1,\"id\":1,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":121,\"target\":3,\"type\":\"arrow\",\"count\":1,\"id\":3,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":3,\"target\":181,\"type\":\"arrow\",\"count\":1,\"id\":131,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":3,\"target\":187,\"type\":\"arrow\",\"count\":1,\"id\":132,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":3,\"target\":188,\"type\":\"arrow\",\"count\":1,\"id\":133,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":100,\"target\":252,\"type\":\"arrow\",\"count\":1,\"id\":340,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":100,\"target\":306,\"type\":\"arrow\",\"count\":1,\"id\":471,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":121,\"target\":100,\"type\":\"arrow\",\"count\":1,\"id\":100,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":116,\"target\":315,\"type\":\"arrow\",\"count\":1,\"id\":487,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":52,\"target\":281,\"type\":\"arrow\",\"count\":1,\"id\":425,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":116,\"target\":181,\"type\":\"arrow\",\"count\":1,\"id\":366,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":116,\"target\":262,\"type\":\"arrow\",\"count\":1,\"id\":367,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":116,\"target\":263,\"type\":\"arrow\",\"count\":1,\"id\":368,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":52,\"target\":181,\"type\":\"arrow\",\"count\":1,\"id\":241,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":52,\"target\":191,\"type\":\"arrow\",\"count\":1,\"id\":242,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":52,\"target\":224,\"type\":\"arrow\",\"count\":1,\"id\":243,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":120,\"target\":116,\"type\":\"arrow\",\"count\":1,\"id\":116,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":120,\"target\":52,\"type\":\"arrow\",\"count\":1,\"id\":52,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":52,\"target\":200,\"type\":\"arrow\",\"count\":1,\"id\":244,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":52,\"target\":225,\"type\":\"arrow\",\"count\":1,\"id\":245,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":0,\"target\":266,\"type\":\"arrow\",\"count\":1,\"id\":373,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":1,\"target\":192,\"type\":\"arrow\",\"count\":1,\"id\":374,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":0,\"target\":181,\"type\":\"arrow\",\"count\":1,\"id\":120,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":3,\"target\":185,\"type\":\"arrow\",\"count\":1,\"id\":376,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":0,\"target\":182,\"type\":\"arrow\",\"count\":1,\"id\":121,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":0,\"target\":183,\"type\":\"arrow\",\"count\":1,\"id\":122,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":1,\"target\":181,\"type\":\"arrow\",\"count\":1,\"id\":123,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":1,\"target\":184,\"type\":\"arrow\",\"count\":1,\"id\":124,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":1,\"target\":185,\"type\":\"arrow\",\"count\":1,\"id\":125,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":1,\"target\":186,\"type\":\"arrow\",\"count\":1,\"id\":126,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"}],\"labels\":{\"Resource\":\"#9DE79F\",\"Author\":\"#17F40D\",\"Tag\":\"#1B289C\"},\"types\":[\"CREATED\",\"TAGGED_AS\"]}"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484554427445_-1764437803",
+      "id": "20170116-091347_2034270437",
+      "dateCreated": "Jan 16, 2017 9:13:47 AM",
+      "dateStarted": "Jan 16, 2017 9:13:51 AM",
+      "dateFinished": "Jan 16, 2017 9:13:54 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\n//Find some Authors, Resources and Tags connected to Rik or Max\nMATCH (t:Tag)--(r:Resource)--(a:Author)\nwhere a.name contains \"${Name To Find\u003dRik,Rik|Max}\"\nreturn t,r,a",
+      "user": "anonymous",
+      "dateUpdated": "Jan 16, 2017 9:16:47 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "network",
+              "height": 207.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {},
+                "network": {
+                  "properties": {
+                    "Resource": {
+                      "selected": "name",
+                      "keys": [
+                        "comments",
+                        "name",
+                        "url",
+                        "id",
+                        "label"
+                      ]
+                    },
+                    "Tag": {
+                      "selected": "name",
+                      "keys": [
+                        "name",
+                        "id",
+                        "label"
+                      ]
+                    },
+                    "Author": {
+                      "selected": "name",
+                      "keys": [
+                        "name",
+                        "id",
+                        "label"
+                      ]
+                    }
+                  },
+                  "d3Graph": {
+                    "forceLayout": {
+                      "timeout": 10000.0,
+                      "charge": -120.0,
+                      "linkDistance": 80.0
+                    },
+                    "zoom": {
+                      "minScale": "1"
+                    }
+                  }
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "label",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "label",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher"
+      },
+      "settings": {
+        "params": {
+          "First Name To Find,Rik": "",
+          "Second Name To Find,Max": "",
+          "First Name To Find": "Rik",
+          "Second Name To Find": "Max",
+          "Name To Find": "Rik"
+        },
+        "forms": {
+          "Name To Find": {
+            "name": "Name To Find",
+            "defaultValue": "Rik",
+            "options": [
+              {
+                "value": "Rik"
+              },
+              {
+                "value": "Max"
+              }
+            ],
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "NETWORK",
+            "data": "{\"nodes\":[{\"id\":241,\"data\":{\"name\":\"book\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":243,\"data\":{\"name\":\"english\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":244,\"data\":{\"name\":\"packt\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":250,\"data\":{\"name\":\"podcast\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":74,\"data\":{\"comments\":\"Run blazingly fast queries on complex graph datasets with the power of the Neo4j graph database.\",\"name\":\"Learning Neo4j\",\"url\":\"http://learningneo4j.net\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":155,\"data\":{\"name\":\"Rik Van Bruggen\"},\"label\":\"Author\",\"color\":\"#17F40D\"},{\"id\":251,\"data\":{\"name\":\"fun\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":252,\"data\":{\"name\":\"blog\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":93,\"data\":{\"comments\":\"Podcast on all things Neo4j\",\"name\":\"Neo4j podcast\",\"url\":\"http://graphistania.com\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":94,\"data\":{\"comments\":\"Rik Van Bruggen\\u0027s blog\",\"name\":\"Rik Van Bruggen\\u0027s blog\",\"url\":\"http://blog.bruggen.com\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":302,\"data\":{\"name\":\"audio\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":303,\"data\":{\"name\":\"belgium\"},\"label\":\"Tag\",\"color\":\"#1B289C\"}],\"edges\":[],\"labels\":{\"Resource\":\"#9DE79F\",\"Author\":\"#17F40D\",\"Tag\":\"#1B289C\"},\"types\":[\"CREATED\",\"TAGGED_AS\"]}"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484490205850_296812597",
+      "id": "20170115-152325_387433852",
+      "dateCreated": "Jan 15, 2017 3:23:25 PM",
+      "dateStarted": "Jan 15, 2017 8:05:18 PM",
+      "dateFinished": "Jan 15, 2017 8:05:18 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nWhen your Cypher query return data as a table the Network visualization is automatically excluded\n",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 6:32:14 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eWhen your Cypher query return data as a table the Network visualization is automatically excluded\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484501447412_1083770982",
+      "id": "20170115-183047_202915023",
+      "dateCreated": "Jan 15, 2017 6:30:47 PM",
+      "dateStarted": "Jan 15, 2017 6:32:14 PM",
+      "dateFinished": "Jan 15, 2017 6:32:15 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\r\n//find some resources and authors\r\nMATCH (r:Resource)--(a:Author)\r\nwhere a.name contains \"${First Name To Find\u003dRik}\" or a.name contains \"${Second Name To Find\u003dMax}\"\r\nreturn distinct a.name as Author, r.name as Resource, r.url as URL, r.comments as Description\r\norder by Author;",
+      "user": "anonymous",
+      "dateUpdated": "Jan 15, 2017 6:34:32 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "pieChart": {}
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "Author",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "Author",
+                  "index": 2.0,
+                  "aggr": "count"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher"
+      },
+      "settings": {
+        "params": {
+          "First Name To Find": "Rik",
+          "Second Name To Find": "Max"
+        },
+        "forms": {
+          "Second Name To Find": {
+            "name": "Second Name To Find",
+            "defaultValue": "Max",
+            "hidden": false
+          },
+          "First Name To Find": {
+            "name": "First Name To Find",
+            "defaultValue": "Rik",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Description\tResource\tAuthor\tURL\n\"Demo visualization of Neo4j data\"\t\"neovigator\"\t\"Max De Marzi\"\t\"https://github.com/maxdemarzi/neovigator\"\n\"Neo4j POC to Integrate VisualSearch.js and Cypher\"\t\"neo-visual-search\"\t\"Max De Marzi\"\t\"https://github.com/maxdemarzi/neo_visual_search\"\n\"Max De Marzi\u0027s blog\"\t\"Max De Marzi\u0027s blog\"\t\"Max De Marzi\"\t\"http://maxdemarzi.com\"\n\"A thin Ruby wrapper to the Neo4j Rest API.\"\t\"neography\"\t\"Max De Marzi\"\t\"https://github.com/maxdemarzi/neography\"\n\"Rik Van Bruggen\u0027s blog\"\t\"Rik Van Bruggen\u0027s blog\"\t\"Rik Van Bruggen\"\t\"http://blog.bruggen.com\"\n\"Podcast on all things Neo4j\"\t\"Neo4j podcast\"\t\"Rik Van Bruggen\"\t\"http://graphistania.com\"\n\"Run blazingly fast queries on complex graph datasets with the power of the Neo4j graph database.\"\t\"Learning Neo4j\"\t\"Rik Van Bruggen\"\t\"http://learningneo4j.net\"\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484500926122_1350835980",
+      "id": "20170115-182206_1701051593",
+      "dateCreated": "Jan 15, 2017 6:22:06 PM",
+      "dateStarted": "Jan 15, 2017 6:30:36 PM",
+      "dateFinished": "Jan 15, 2017 6:30:36 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%neo4j\r\n//find some paths between books and blogs\r\nmatch (t1:Tag {name:\"book\"}), (t2:Tag {name:\"blog\"}),\r\np \u003d allshortestpaths ((t1)-[*]-(t2))\r\nreturn p\r\nlimit 10",
+      "user": "anonymous",
+      "dateUpdated": "Jan 16, 2017 9:04:12 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "network",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "cypher",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/cypher"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "NETWORK",
+            "data": "{\"nodes\":[{\"id\":241,\"data\":{\"name\":\"book\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":74,\"data\":{\"comments\":\"Run blazingly fast queries on complex graph datasets with the power of the Neo4j graph database.\",\"name\":\"Learning Neo4j\",\"url\":\"http://learningneo4j.net\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":122,\"data\":{\"name\":\"Michael Hunger\"},\"label\":\"Author\",\"color\":\"#17F40D\"},{\"id\":155,\"data\":{\"name\":\"Rik Van Bruggen\"},\"label\":\"Author\",\"color\":\"#17F40D\"},{\"id\":75,\"data\":{\"comments\":\"Eine Graphdatenbank für alle\",\"name\":\"Neo4j 2.0\",\"url\":\"http://neo4j.com/books/neo4j-2-0-eine-graphdatenbank-fur-alle/\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":252,\"data\":{\"name\":\"blog\"},\"label\":\"Tag\",\"color\":\"#1B289C\"},{\"id\":94,\"data\":{\"comments\":\"Rik Van Bruggen\\u0027s blog\",\"name\":\"Rik Van Bruggen\\u0027s blog\",\"url\":\"http://blog.bruggen.com\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"},{\"id\":95,\"data\":{\"comments\":\"Michael Hunger\\u0027s blog\",\"name\":\"Michael Hunger\\u0027s blog\",\"url\":\"http://jexp.de/blog\"},\"label\":\"Resource\",\"color\":\"#9DE79F\"}],\"edges\":[{\"source\":74,\"target\":241,\"type\":\"arrow\",\"count\":1,\"id\":295,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":75,\"target\":241,\"type\":\"arrow\",\"count\":1,\"id\":297,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":155,\"target\":74,\"type\":\"arrow\",\"count\":1,\"id\":74,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":122,\"target\":75,\"type\":\"arrow\",\"count\":1,\"id\":75,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":155,\"target\":94,\"type\":\"arrow\",\"count\":1,\"id\":94,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":94,\"target\":252,\"type\":\"arrow\",\"count\":1,\"id\":334,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"},{\"source\":122,\"target\":95,\"type\":\"arrow\",\"count\":1,\"id\":95,\"data\":{},\"label\":\"CREATED\",\"color\":\"#D3D3D3\"},{\"source\":95,\"target\":252,\"type\":\"arrow\",\"count\":1,\"id\":335,\"data\":{},\"label\":\"TAGGED_AS\",\"color\":\"#D3D3D3\"}],\"labels\":{\"Resource\":\"#9DE79F\",\"Author\":\"#17F40D\",\"Tag\":\"#1B289C\"},\"types\":[\"CREATED\",\"TAGGED_AS\"]}"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1484506516640_1639023821",
+      "id": "20170115-195516_709966475",
+      "dateCreated": "Jan 15, 2017 7:55:16 PM",
+      "dateStarted": "Jan 15, 2017 8:06:11 PM",
+      "dateFinished": "Jan 15, 2017 8:06:12 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "user": "anonymous",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1484507139767_925173928",
+      "id": "20170115-200539_1236670114",
+      "dateCreated": "Jan 15, 2017 8:05:39 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Zeppelin Tutorial/Using Neo4j",
+  "id": "2C8QUSPXP",
+  "angularObjects": {
+    "2C69VZSHH:shared_process": [],
+    "2C7NPWJN9:shared_process": [],
+    "2C9CRSNEJ:shared_process": [],
+    "2C8FBTA2M:shared_process": [],
+    "2C7J47MSN:shared_process": [],
+    "2C772Q3UZ:shared_process": [],
+    "2C5NCX7B4:shared_process": [],
+    "2C98M48X5:shared_process": [],
+    "2C93N42FT:shared_process": [],
+    "2C8WAY6V3:shared_process": [],
+    "2C8D3NDXW:shared_process": [],
+    "2C7QW1QE4:shared_process": [],
+    "2C5S4JN33:shared_process": [],
+    "2C8GXP4YH:shared_process": [],
+    "2C5ZE5S93:shared_process": [],
+    "2C8YZ8XHF:shared_process": [],
+    "2C8CX1HH2:shared_process": [],
+    "2C5X2BVCC:shared_process": [],
+    "2C898P8HW:shared_process": [],
+    "2C7AC9CD7:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}

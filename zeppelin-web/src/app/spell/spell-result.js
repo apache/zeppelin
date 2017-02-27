@@ -21,6 +21,7 @@ export const DefaultDisplayType = {
   HTML: 'HTML',
   ANGULAR: 'ANGULAR',
   TEXT: 'TEXT',
+  NETWORK: 'NETWORK',
 };
 
 export const DefaultDisplayMagic = {
@@ -29,6 +30,7 @@ export const DefaultDisplayMagic = {
   '%html': DefaultDisplayType.HTML,
   '%angular': DefaultDisplayType.ANGULAR,
   '%text': DefaultDisplayType.TEXT,
+  '%network': DefaultDisplayType.NETWORK,
 };
 
 export class DataWithType {

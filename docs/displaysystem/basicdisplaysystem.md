@@ -60,4 +60,98 @@ If table contents start with `%html`, it is interpreted as an HTML.
 
 <img src="../assets/themes/zeppelin/img/screenshots/display_table_html.png" />
 
+## Network
+
+Zeppelin can render a network following this sample json structure:
+
+```json
+{"nodes" : [{"id" : 1}, {"id" : 2}], "edges" : [{"source" : 2, "target" : 1, "id" : 1 }]}
+```
+
+You can leverage this visualization by using the `%network` directive
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_network.png" />
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_network1.png" />
+
+The network visualization can also leverage the Property Graph with a json structure like this:
+
+```json
+{
+    "nodes": [
+        {
+        	"id": 1,
+        	"label": "User",
+        	"data": {"fullname": "Andrea Santurbano"}
+        },
+        {
+        	"id": 2,
+        	"label": "User",
+        	"data": {"fullname": "Moon soo Lee"}
+        }
+    ],
+    "edges": [
+    	{
+    		"source": 2,
+    		"target": 1,
+    		"id": 1,
+    		"label": "HELPS",
+    		"data": {
+    			"project" : "Zeppelin",
+    			"githubUrl": "https://github.com/apache/zeppelin/pull/1582"
+    		} 
+    	}
+    ]
+}
+```
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_network2.png" />
+
+## Network
+
+Zeppelin can render a network following this sample json structure:
+
+```json
+{"nodes" : [{"id" : 1}, {"id" : 2}], "edges" : [{"source" : 2, "target" : 1, "id" : 1 }]}
+```
+
+You can leverage this visualization by using the `%network` directive
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_network.png" />
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_network1.png" />
+
+The network visualization can also leverage the Property Graph with a json structure like this:
+
+```json
+{
+    "nodes": [
+        {
+        	"id": 1,
+        	"label": "User",
+        	"data": {"fullname": "Andrea Santurbano"}
+        },
+        {
+        	"id": 2,
+        	"label": "User",
+        	"data": {"fullname": "Moon soo Lee"}
+        }
+    ],
+    "edges": [
+    	{
+    		"source": 2,
+    		"target": 1,
+    		"id": 1,
+    		"label": "HELPS",
+    		"data": {
+    			"project" : "Zeppelin",
+    			"githubUrl": "https://github.com/apache/zeppelin/pull/1582"
+    		} 
+    	}
+    ]
+}
+```
+
+<img src="/assets/themes/zeppelin/img/screenshots/display_network2.png" />
+
 > **Note :** Display system is backend independent.

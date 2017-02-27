@@ -13,13 +13,14 @@ limitations under the License.
 -->
 
 <div id="{{id}}_switch"
-     ng-if="(type == 'TABLE' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+     ng-if="(type == 'TABLE' || type == 'NETWORK' || apps.length > 0 || suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
      class="result-chart-selector">
 
-  <div ng-if="type == 'TABLE'" class="btn-group">
+  <div ng-if="type == 'TABLE' || type == 'NETWORK'" class="btn-group">
     <button type="button" class="btn btn-default btn-sm"
             ng-repeat="viz in builtInTableDataVisualizationList track by $index"
             ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
+            ng-if="viz.supports.indexOf(type) > -1"
             ng-click="switchViz(viz.id)"
             ng-bind-html="viz.icon">
     </button>
@@ -27,7 +28,7 @@ limitations under the License.
 
   <div class="btn-group">
     <button type="button"
-            ng-if="type != 'TABLE'"
+            ng-if="type != 'TABLE' && type != 'NETWORK'"
             ng-click="switchApp()"
             ng-class="{'active' : !config.helium.activeApp}"
             class="btn btn-default btn-sm"><i class="fa fa-terminal"></i>
@@ -72,7 +73,7 @@ limitations under the License.
 </div>
 
 <div class="btn-group"
-     ng-if="type == 'TABLE' && !asIframe && !viewOnly"
+     ng-if="(type == 'TABLE' || type == 'NETWORK') && !asIframe && !viewOnly"
      style="margin-bottom: 10px;">
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
@@ -92,7 +93,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="type=='TABLE' && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
+   ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphSetting()">
     settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
