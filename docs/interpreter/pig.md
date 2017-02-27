@@ -15,13 +15,13 @@ group: manual
 [Apache Pig](https://pig.apache.org/) is a platform for analyzing large data sets that consists of a high-level language for expressing data analysis programs, coupled with infrastructure for evaluating these programs. The salient property of Pig programs is that their structure is amenable to substantial parallelization, which in turns enables them to handle very large data sets.
 
 ## Supported interpreter type
-  - `%pig.script` (default pig interpreter, so you can use `%pig`)
+  - `%pig.script` (default Pig interpreter, so you can use `%pig`)
     
-    `%pig.script` is like the pig grunt shell. Anything you can run in pig grunt shell can be run in `%pig.script` interpreter, it is used for running pig script where you don’t need to visualize the data, it is suitable for data munging. 
+    `%pig.script` is like the Pig grunt shell. Anything you can run in Pig grunt shell can be run in `%pig.script` interpreter, it is used for running Pig script where you don’t need to visualize the data, it is suitable for data munging. 
   
   - `%pig.query`
  
-    `%pig.query` is a little different compared with `%pig.script`. It is used for exploratory data analysis via pig latin where you can leverage zeppelin’s visualization ability. There're 2 minor differences in the last statement between `%pig.script` and `%pig.query`
+    `%pig.query` is a little different compared with `%pig.script`. It is used for exploratory data analysis via Pig latin where you can leverage Zeppelin’s visualization ability. There're 2 minor differences in the last statement between `%pig.script` and `%pig.query`
     - No pig alias in the last statement in `%pig.query` (read the examples below).
     - The last statement must be in single line in `%pig.query`
     
@@ -54,8 +54,8 @@ group: manual
 ### How to configure interpreter
 
 At the Interpreters menu, you have to create a new Pig interpreter. Pig interpreter has below properties by default.
-And you can set any pig properties here which will be passed to pig engine. (like tez.queue.name & mapred.job.queue.name).
-Besides, we use paragraph title as job name if it exists, else use the last line of pig script. So you can use that to find app running in YARN RM UI.
+And you can set any Pig properties here which will be passed to Pig engine. (like tez.queue.name & mapred.job.queue.name).
+Besides, we use paragraph title as job name if it exists, else use the last line of Pig script. So you can use that to find app running in YARN RM UI.
 
 <table class="table-configuration">
     <tr>
@@ -116,7 +116,7 @@ b = group bank_data by age;
 foreach b generate group, COUNT($1);
 ```
 
-The same as above, but use dynamic text form so that use can specify the variable maxAge in textbox. (See screenshot below). Dynamic form is a very cool feature of zeppelin, you can refer this [link]((../manual/dynamicform.html)) for details.
+The same as above, but use dynamic text form so that use can specify the variable maxAge in textbox. (See screenshot below). Dynamic form is a very cool feature of Zeppelin, you can refer this [link]((../manual/dynamicform.html)) for details.
 
 ```
 %pig.query
@@ -136,7 +136,7 @@ b = group bank_data by age;
 foreach b generate group, COUNT($1) as count;
 ```
 
-The above examples are in the pig tutorial note in Zeppelin, you can check that for details. Here's the screenshot.
+The above examples are in the Pig tutorial note in Zeppelin, you can check that for details. Here's the screenshot.
 
 <img class="img-responsive" width="1024px" style="margin:0 auto; padding: 26px;" src="../assets/themes/zeppelin/img/pig_zeppelin_tutorial.png" />
 
