@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 module.exports = {
-    entry: ['./'],
-    output: {
-        path: './',
-        filename: 'vis.bundle.js',
-    },
-    resolve: {
-        root: __dirname + "/node_modules"
-    },
+    entry: './load.js',
+    output: { path: './', filename: 'helium.bundle.js', },
     module: {
         loaders: [{
             test: /\.js$/,
-            //exclude: /node_modules/,
-            loader: 'babel-loader'
+            // DON'T exclude. since zeppelin will bundle all necessary packages: `exclude: /node_modules/,`
+            loader: 'babel-loader',
+            query: { presets: ['es2015', 'stage-0'] },
         }]
     }
 }
