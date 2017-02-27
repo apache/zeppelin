@@ -44,7 +44,8 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.server.port</h6></td>
     <td>8080</td>
     <td>Zeppelin server port. </br>
-    <span style="font-style:italic; color: gray"> Note: please do not a use web application port (default: 9000).</span></td>
+      <span style="font-style:italic; color: gray"> Note: Please make sure you're not using the same port with 
+      <a href="https://zeppelin.apache.org/contribution/webapplication.html#dev-mode">Zeppelin web application port</a> (default: 9000).</span></td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_SSL_PORT</h6></td>
