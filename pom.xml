@@ -900,8 +900,8 @@
               <exclude>scripts/**</exclude>
               <exclude>**/**/*.log</exclude>
               <exclude>**/**/logs/**</exclude>
-              
-              <!-- bundled from zeppelin-web module -->
+                           
+              <!-- bundled from zeppelin-web -->
               <exclude>**/test/karma.conf.js</exclude>
               <exclude>**/test/spec/**</exclude>     
               <exclude>**/.babelrc</exclude>
