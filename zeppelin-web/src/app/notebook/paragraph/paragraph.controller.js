@@ -31,6 +31,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.paragraph.results.msg = [];
   $scope.originalText = '';
   $scope.editor = null;
+  $scope.tooltipIsOpen = false;
 
   var editorSetting = {};
   // flag that is used to set editor setting on paste percent sign
@@ -449,6 +450,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     console.log('open the output');
     paragraph.config.tableHide = false;
     commitParagraph(paragraph);
+  };
+  
+  $scope.showTooltip = function () {
+    $scope.tooltipIsOpen = !$scope.tooltipIsOpen;
   };
 
   var openEditorAndCloseTable = function(paragraph) {
