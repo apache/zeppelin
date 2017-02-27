@@ -17,7 +17,6 @@
 {
   "type" : "SPELL",
   "name" : "translator-spell",
-  "version": "local",
   "description" : "Translate langauges using Google API (examaple)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-translator",
   "license" : "Apache-2.0",

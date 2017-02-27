@@ -17,7 +17,6 @@
 {
   "type" : "SPELL",
   "name" : "flowchart-spell",
-  "version": "local",
   "description" : "Draw flowchart using http://flowchart.js.org (example)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-flowchart",
   "license" : "Apache-2.0",

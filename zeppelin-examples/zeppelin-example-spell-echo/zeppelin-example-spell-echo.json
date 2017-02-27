@@ -17,7 +17,6 @@
 {
   "type" : "SPELL",
   "name" : "echo-spell",
-  "version": "local",
   "description" : "Return just what receive (example)",
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-echo",
   "license" : "Apache-2.0",
