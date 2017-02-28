@@ -341,7 +341,9 @@ public class JDBCInterpreter extends Interpreter {
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
-      executePreCode(DriverManager.getConnection(jdbcDriver));
+      try (Connection connection = DriverManager.getConnection(jdbcDriver)) {
+        executePreCode(connection);
+      }
     }
     return DriverManager.getConnection(jdbcDriver);
   }
@@ -546,25 +548,13 @@ public class JDBCInterpreter extends Interpreter {
     String precode = getProperty(ZEPPELIN_PRECODE_PROPERTY_KEY);
     if (StringUtils.isNotEmpty(precode)) {
       logger.info("Run SQL precode '{}'", precode);
-      try {
-        Statement statement = connection.createStatement();
+      try (Statement statement = connection.createStatement()) {
         statement.execute(precode);
         if (!connection.getAutoCommit()) {
           connection.commit();
         }
-        if (statement != null) {
-          statement.close();
-        }
       } catch (SQLException e) {
         logger.error("Cannot create precode statement", e);
-      } finally {
-        if (connection != null) {
-          try {
-            connection.close();
-          } catch (SQLException e) {
-            logger.error("Cannot close connection of precode", e);
-          }
-        }
       }
     }
   }
