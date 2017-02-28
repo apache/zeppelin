@@ -64,7 +64,6 @@ import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_PRECODE_PROPERTY_KEY;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
@@ -104,6 +103,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String PASSWORD_KEY = "password";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
+  static final String ZEPPELIN_JDBC_PRECODE_KEY = "zeppelin.jdbc.precode";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -342,7 +342,7 @@ public class JDBCInterpreter extends Interpreter {
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
       try (Connection connection = DriverManager.getConnection(jdbcDriver)) {
-        executePreCode(connection);
+        executePrecode(connection);
       }
     }
     return DriverManager.getConnection(jdbcDriver);
@@ -544,8 +544,8 @@ public class JDBCInterpreter extends Interpreter {
     return queries;
   }
 
-  private void executePreCode(Connection connection) {
-    String precode = getProperty(ZEPPELIN_PRECODE_PROPERTY_KEY);
+  private void executePrecode(Connection connection) throws SQLException {
+    String precode = getProperty(ZEPPELIN_JDBC_PRECODE_KEY);
     if (StringUtils.isNotEmpty(precode)) {
       logger.info("Run SQL precode '{}'", precode);
       try (Statement statement = connection.createStatement()) {
@@ -553,8 +553,6 @@ public class JDBCInterpreter extends Interpreter {
         if (!connection.getAutoCommit()) {
           connection.commit();
         }
-      } catch (SQLException e) {
-        logger.error("Cannot create precode statement", e);
       }
     }
   }

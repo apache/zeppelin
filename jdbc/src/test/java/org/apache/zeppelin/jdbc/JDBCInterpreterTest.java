@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -45,7 +44,7 @@ import org.junit.Test;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_PRECODE_PROPERTY_KEY;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.ZEPPELIN_JDBC_PRECODE_KEY;
 
 /**
  * JDBC interpreter unit tests
@@ -398,7 +397,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(ZEPPELIN_PRECODE_PROPERTY_KEY, "SET @testVariable=1");
+    properties.setProperty(ZEPPELIN_JDBC_PRECODE_KEY, "SET @testVariable=1");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -418,7 +417,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(ZEPPELIN_PRECODE_PROPERTY_KEY, "incorrect command");
+    properties.setProperty(ZEPPELIN_JDBC_PRECODE_KEY, "incorrect command");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -426,8 +425,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("1\n1\n", interpreterResult.message().get(0).getData());
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
   }
  }

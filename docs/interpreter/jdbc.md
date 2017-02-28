@@ -168,7 +168,7 @@ There are more JDBC interpreter properties you can specify like below.
     <td>jceks credential key</td>
   </tr>
   <tr>
-    <td>zeppelin.interpreter.precode</td>
+    <td>zeppelin.jdbc.precode</td>
     <td>Some SQL which executes while opening connection</td>
   </tr>
 </table>
