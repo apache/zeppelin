@@ -115,6 +115,17 @@ public class HDFSFileInterpreterTest extends TestCase {
       assertEquals(expectedResultOne, resultOne);
       assertEquals(expectedResultTwo, resultTwo);
 
+      // auto completion test
+      List expectedResultOne = Arrays.asList(
+        new InterpreterCompletion("ls", "ls"));
+      List expectedResultTwo = Arrays.asList(
+        new InterpreterCompletion("pwd", "pwd"));
+      List<InterpreterCompletion> resultOne = t.completion("l", 0);
+      List<InterpreterCompletion> resultTwo = t.completion("p", 0);
+
+      assertEquals(expectedResultOne, resultOne);
+      assertEquals(expectedResultTwo, resultTwo);
+
       t.close();
     }
   }
