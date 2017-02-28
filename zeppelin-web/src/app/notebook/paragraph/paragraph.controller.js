@@ -423,10 +423,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.changeColWidth = function(paragraph, width) {
     angular.element('.navbar-right.open').removeClass('open');
-    if (width !== paragraph.config.colWidth) {
-      paragraph.config.colWidth = width;
-      commitParagraph(paragraph);
-    }
+    paragraph.config.colWidth = width;
+    commitParagraph(paragraph);
   };
 
   $scope.toggleOutput = function(paragraph) {
