@@ -28,10 +28,10 @@ limitations under the License.
                     && config.graph.optionOpen && !asIframe && !viewOnly">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="trsetting{{id}}_{{viz.id}}"
-             ng-show="graphMode == viz.id"></div>
+             ng-if="graphMode == viz.id"></div>
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="vizsetting{{id}}_{{viz.id}}"
-             ng-show="graphMode == viz.id"></div>
+             ng-if="graphMode == viz.id"></div>
       </div>
 
       <!-- graph -->
@@ -41,7 +41,7 @@ limitations under the License.
            >
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="p{{id}}_{{viz.id}}"
-             ng-show="graphMode == viz.id">
+             ng-if="graphMode == viz.id">
         </div>
       </div>
 
