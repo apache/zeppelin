@@ -106,7 +106,7 @@ You can also set other Spark properties which are not listed in the table. For a
   <tr>
     <td>PYSPARK_PYTHON</td>
     <td>python</td>
-    <td>Python binary executable to use for PySpark in both driver and workers (default is <code>python</code> if available, otherwise <code>python</code>).
+    <td>Python binary executable to use for PySpark in both driver and workers (default is <code>python</code>).
             Property <code>spark.pyspark.python</code> take precedence if it is set</td>
   </tr>
   <tr>
