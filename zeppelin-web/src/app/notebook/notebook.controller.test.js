@@ -7,7 +7,8 @@ describe('Controller: NotebookCtrl', function() {
     getNote: function() {},
     listRevisionHistory: function() {},
     getInterpreterBindings: function() {},
-    updateNote: function() {}
+    updateNote: function() {},
+    renameNote: function() {}
   };
 
   var baseUrlSrvMock = {
@@ -100,24 +101,24 @@ describe('Controller: NotebookCtrl', function() {
   });
 
   it('should NOT update note name when updateNoteName() is called with an invalid name', function() {
-    spyOn(websocketMsgSrvMock, 'updateNote');
+    spyOn(websocketMsgSrvMock, 'renameNote');
     scope.updateNoteName('');
     expect(scope.note.name).toEqual(noteMock.name);
-    expect(websocketMsgSrvMock.updateNote).not.toHaveBeenCalled();
+    expect(websocketMsgSrvMock.renameNote).not.toHaveBeenCalled();
     scope.updateNoteName(' ');
     expect(scope.note.name).toEqual(noteMock.name);
-    expect(websocketMsgSrvMock.updateNote).not.toHaveBeenCalled();
+    expect(websocketMsgSrvMock.renameNote).not.toHaveBeenCalled();
     scope.updateNoteName(scope.note.name);
     expect(scope.note.name).toEqual(noteMock.name);
-    expect(websocketMsgSrvMock.updateNote).not.toHaveBeenCalled();
+    expect(websocketMsgSrvMock.renameNote).not.toHaveBeenCalled();
   });
 
   it('should update note name when updateNoteName() is called with a valid name', function() {
-    spyOn(websocketMsgSrvMock, 'updateNote');
+    spyOn(websocketMsgSrvMock, 'renameNote');
     var newName = 'Your Note';
     scope.updateNoteName(newName);
     expect(scope.note.name).toEqual(newName);
-    expect(websocketMsgSrvMock.updateNote).toHaveBeenCalled();
+    expect(websocketMsgSrvMock.renameNote).toHaveBeenCalled();
   });
 
   it('should reload note info once per one "setNoteMenu" event', function() {
