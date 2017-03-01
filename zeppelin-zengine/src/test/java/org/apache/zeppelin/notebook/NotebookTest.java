@@ -1176,14 +1176,13 @@ public class NotebookTest implements JobListenerFactory{
     
     // create private note
     Note notePrivate = notebook.createNote(new AuthenticationInfo("user1"));
-    notePrivate.setName("1111");
-    
+
     // only user1 have notePrivate right after creation
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 2);
     assertEquals(notes2.size(), 1);
-    assertEquals(notes1.get(0).getId(), notePrivate.getId());
+    assertEquals(true, notes1.contains(notePrivate));
     
     // user1 have all rights
     assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
