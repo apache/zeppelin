@@ -1765,7 +1765,7 @@ public class NotebookServer extends WebSocketServlet
     p.settings.setParams(params);
     p.setConfig(config);
 
-    if(note.isPersonalizedMode()) {
+    if (note.isPersonalizedMode()) {
       p = note.getParagraph(paragraphId);
       p.setText(text);
       p.setTitle(title);
