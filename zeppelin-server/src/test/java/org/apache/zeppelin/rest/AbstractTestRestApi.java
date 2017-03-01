@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -333,7 +334,7 @@ public abstract class AbstractTestRestApi {
     GetMethod request = null;
     boolean isRunning = true;
     try {
-      request = httpGet("/");
+      request = httpGet("/version");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
       LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
@@ -427,8 +428,14 @@ public abstract class AbstractTestRestApi {
     httpClient.executeMethod(postMethod);
     LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
     Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
-    java.util.regex.Matcher matcher = pattern.matcher(postMethod.getResponseHeaders("Set-Cookie")[0].toString());
-    return matcher.find()? matcher.group(1) : StringUtils.EMPTY;
+    Header[] setCookieHeaders = postMethod.getResponseHeaders("Set-Cookie");
+    for (Header setCookie : setCookieHeaders) {
+      java.util.regex.Matcher matcher = pattern.matcher(setCookie.toString());
+      if (matcher.find()) {
+        return matcher.group(1);
+      }
+    }
+    return StringUtils.EMPTY;
   }
 
   protected static boolean userAndPasswordAreNotBlank(String user, String pwd) {
