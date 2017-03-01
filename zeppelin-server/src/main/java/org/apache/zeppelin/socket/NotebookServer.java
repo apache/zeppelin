@@ -1765,6 +1765,15 @@ public class NotebookServer extends WebSocketServlet
     p.settings.setParams(params);
     p.setConfig(config);
 
+    if(note.isPersonalizedMode()) {
+      p = note.getParagraph(paragraphId);
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(subject);
+      p.settings.setParams(params);
+      p.setConfig(config);
+    }
+
     return p;
   }
 
@@ -1883,7 +1892,15 @@ public class NotebookServer extends WebSocketServlet
       InterpreterResult.Type type, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", noteId)
         .put("paragraphId", paragraphId).put("index", index).put("type", type).put("data", output);
-    broadcast(noteId, msg);
+    Note note = notebook().getNote(noteId);
+    if (note.isPersonalizedMode()) {
+      String user = note.getParagraph(paragraphId).getUser();
+      if (null != user) {
+        multicastToUser(user, msg);
+      }
+    } else {
+      broadcast(noteId, msg);
+    }
   }
 
 

@@ -584,7 +584,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public void setStatusToUserParagraph(Status status) {
-    getUserParagraph(getUser()).setStatus(status);
+    String user = getUser();
+    if (null != user) {
+      getUserParagraph(getUser()).setStatus(status);
+    }
   }
 
   static class ParagraphRunner extends InterpreterContextRunner {
