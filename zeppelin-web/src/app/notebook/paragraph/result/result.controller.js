@@ -267,7 +267,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
   $scope.renderDefaultDisplay = function(targetElemId, type, data, refresh) {
     if (type === DefaultDisplayType.TABLE) {
-      $scope.renderGraph(targetElemId, $scope.graphMode, refresh);
+      $timeout(function() {
+        $scope.renderGraph(targetElemId, $scope.graphMode, refresh);
+      }, 10);
     } else if (type === DefaultDisplayType.HTML) {
       renderHtml(targetElemId, data);
     } else if (type === DefaultDisplayType.ANGULAR) {

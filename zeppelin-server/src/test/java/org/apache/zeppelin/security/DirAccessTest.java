@@ -30,7 +30,7 @@ public class DirAccessTest extends AbstractTestRestApi {
   public void testDirAccessForbidden() throws Exception {
     synchronized (this) {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "false");
-      AbstractTestRestApi.startUpWithAuthenticationEnable();
+      AbstractTestRestApi.startUp();
       HttpClient httpClient = new HttpClient();
       GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
       httpClient.executeMethod(getMethod);
@@ -43,7 +43,7 @@ public class DirAccessTest extends AbstractTestRestApi {
   public void testDirAccessOk() throws Exception {
     synchronized (this) {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "true");
-      AbstractTestRestApi.startUpWithAuthenticationEnable();
+      AbstractTestRestApi.startUp();
       HttpClient httpClient = new HttpClient();
       GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
       httpClient.executeMethod(getMethod);
