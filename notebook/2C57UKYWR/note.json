@@ -115,7 +115,7 @@
     {
       "text": "%pig\n\nbankText \u003d load \u0027bank.csv\u0027 using PigStorage(\u0027;\u0027);\nbank \u003d foreach bankText generate $0 as age, $1 as job, $2 as marital, $3 as education, $5 as balance; \nbank \u003d filter bank by age !\u003d \u0027\"age\"\u0027;\nbank \u003d foreach bank generate (int)age, REPLACE(job,\u0027\"\u0027,\u0027\u0027) as job, REPLACE(marital, \u0027\"\u0027, \u0027\u0027) as marital, (int)(REPLACE(balance, \u0027\"\u0027, \u0027\u0027)) as balance;\n\n-- The following statement is optional, it depends on whether your needs.\n-- store bank into \u0027clean_bank.csv\u0027 using PigStorage(\u0027;\u0027);\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 22, 2017 12:49:11 PM",
+      "dateUpdated": "Feb 24, 2017 5:08:08 PM",
       "config": {
         "colWidth": 12.0,
         "editorMode": "ace/mode/pig",
@@ -138,15 +138,15 @@
       "jobName": "paragraph_1483277250237_-466604517",
       "id": "20161228-140640_1560978333",
       "dateCreated": "Jan 1, 2017 9:27:30 PM",
-      "dateStarted": "Jan 22, 2017 12:49:11 PM",
-      "dateFinished": "Jan 22, 2017 12:49:13 PM",
+      "dateStarted": "Feb 24, 2017 5:08:08 PM",
+      "dateFinished": "Feb 24, 2017 5:08:11 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%pig.query\n\nbank_data \u003d filter bank by age \u003c 30;\nb \u003d group bank_data by age;\nforeach b generate group, COUNT($1);\n\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 22, 2017 12:49:16 PM",
+      "dateUpdated": "Feb 24, 2017 5:08:13 PM",
       "config": {
         "colWidth": 4.0,
         "editorMode": "ace/mode/pig",
@@ -183,15 +183,15 @@
       "jobName": "paragraph_1483277250238_-465450270",
       "id": "20161228-140730_1903342877",
       "dateCreated": "Jan 1, 2017 9:27:30 PM",
-      "dateStarted": "Jan 22, 2017 12:49:16 PM",
-      "dateFinished": "Jan 22, 2017 12:49:30 PM",
+      "dateStarted": "Feb 24, 2017 5:08:13 PM",
+      "dateFinished": "Feb 24, 2017 5:08:26 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%pig.query\n\nbank_data \u003d filter bank by age \u003c ${maxAge\u003d40};\nb \u003d group bank_data by age;\nforeach b generate group, COUNT($1);",
+      "text": "%pig.query\n\nbank_data \u003d filter bank by age \u003c ${maxAge\u003d40};\nb \u003d group bank_data by age;\nforeach b generate group, COUNT($1) as count;",
       "user": "anonymous",
-      "dateUpdated": "Jan 22, 2017 12:49:18 PM",
+      "dateUpdated": "Feb 24, 2017 5:08:14 PM",
       "config": {
         "colWidth": 4.0,
         "editorMode": "ace/mode/pig",
@@ -228,7 +228,7 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "group\tcol_1\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n35\t180\n"
+            "data": "group\tcount\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n35\t180\n"
           }
         ]
       },
@@ -236,15 +236,15 @@
       "jobName": "paragraph_1483277250239_-465835019",
       "id": "20161228-154918_1551591203",
       "dateCreated": "Jan 1, 2017 9:27:30 PM",
-      "dateStarted": "Jan 22, 2017 12:49:18 PM",
-      "dateFinished": "Jan 22, 2017 12:49:32 PM",
+      "dateStarted": "Feb 24, 2017 5:08:14 PM",
+      "dateFinished": "Feb 24, 2017 5:08:29 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%pig.query\n\nbank_data \u003d filter bank by marital\u003d\u003d\u0027${marital\u003dsingle,single|divorced|married}\u0027;\nb \u003d group bank_data by age;\nforeach b generate group, COUNT($1) as c;\n\n\n",
+      "text": "%pig.query\n\nbank_data \u003d filter bank by marital\u003d\u003d\u0027${marital\u003dsingle,single|divorced|married}\u0027;\nb \u003d group bank_data by age;\nforeach b generate group, COUNT($1) as count;\n\n\n",
       "user": "anonymous",
-      "dateUpdated": "Jan 22, 2017 12:49:20 PM",
+      "dateUpdated": "Feb 24, 2017 5:08:15 PM",
       "config": {
         "colWidth": 4.0,
         "editorMode": "ace/mode/pig",
@@ -292,7 +292,7 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "group\tc\n23\t3\n24\t11\n25\t11\n26\t18\n27\t26\n28\t23\n29\t37\n30\t56\n31\t104\n32\t105\n33\t103\n34\t142\n35\t109\n36\t117\n37\t100\n38\t99\n39\t88\n40\t105\n41\t97\n42\t91\n43\t79\n44\t68\n45\t76\n46\t82\n47\t78\n48\t91\n49\t87\n50\t74\n51\t63\n52\t66\n53\t75\n54\t56\n55\t68\n56\t50\n57\t78\n58\t67\n59\t56\n60\t36\n61\t15\n62\t5\n63\t7\n64\t6\n65\t4\n66\t7\n67\t5\n68\t1\n69\t5\n70\t5\n71\t5\n72\t4\n73\t6\n74\t2\n75\t3\n76\t1\n77\t5\n78\t2\n79\t3\n80\t6\n81\t1\n83\t2\n86\t1\n87\t1\n"
+            "data": "group\tcount\n23\t3\n24\t11\n25\t11\n26\t18\n27\t26\n28\t23\n29\t37\n30\t56\n31\t104\n32\t105\n33\t103\n34\t142\n35\t109\n36\t117\n37\t100\n38\t99\n39\t88\n40\t105\n41\t97\n42\t91\n43\t79\n44\t68\n45\t76\n46\t82\n47\t78\n48\t91\n49\t87\n50\t74\n51\t63\n52\t66\n53\t75\n54\t56\n55\t68\n56\t50\n57\t78\n58\t67\n59\t56\n60\t36\n61\t15\n62\t5\n63\t7\n64\t6\n65\t4\n66\t7\n67\t5\n68\t1\n69\t5\n70\t5\n71\t5\n72\t4\n73\t6\n74\t2\n75\t3\n76\t1\n77\t5\n78\t2\n79\t3\n80\t6\n81\t1\n83\t2\n86\t1\n87\t1\n"
           }
         ]
       },
@@ -300,8 +300,8 @@
       "jobName": "paragraph_1483277250240_-480070728",
       "id": "20161228-142259_575675591",
       "dateCreated": "Jan 1, 2017 9:27:30 PM",
-      "dateStarted": "Jan 22, 2017 12:49:30 PM",
-      "dateFinished": "Jan 22, 2017 12:49:34 PM",
+      "dateStarted": "Feb 24, 2017 5:08:27 PM",
+      "dateFinished": "Feb 24, 2017 5:08:31 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
