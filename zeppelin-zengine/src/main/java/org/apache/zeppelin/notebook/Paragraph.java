@@ -143,7 +143,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     p.setTitle(getTitle());
     p.setText(getText());
     p.setResult(getReturn());
-    p.setStatus(getStatus());
+    p.setStatus(Status.READY);
     p.setId(getId());
     addUser(p, user);
     return p;
