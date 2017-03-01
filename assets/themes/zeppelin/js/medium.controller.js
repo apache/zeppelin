@@ -1,4 +1,4 @@
-angular.module("app", []).controller("MediumCtrl", function($scope, $window, $sce) {
+angular.module("app").controller("MediumCtrl", function($scope, $window, $sce) {
   $scope.mediumPost = mediumPost
 
   var postInfo = $scope.mediumPost[0].items
