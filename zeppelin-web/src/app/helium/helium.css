@@ -79,6 +79,10 @@
   width: 500px;
 }
 
+.spellConfigButton {
+  background-color: #FEFEFE;
+}
+
 .heliumPackageList .heliumPackageDisabledArtifact {
   color:gray;
 }
@@ -126,4 +130,27 @@
   text-decoration:
   underline;color:#3071a9;
   display: inline-block;
+}
+
+.heliumLocalPackage {
+  color: #636363;
+}
+
+.heliumConfig {
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.heliumConfigTable {
+  margin-top: 15px;
+  vertical-align:middle;
+  margin-bottom: 15px;
+}
+
+.heliumConfigValueInput {
+
+}
+
+.heliumConfigValueText {
+  vertical-align: top;
 }

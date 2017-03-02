@@ -182,6 +182,39 @@
 </property>
 -->
 
+<!-- MongoDB notebook storage -->
+<!--
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.MongoNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.mongo.uri</name>
+  <value>mongodb://localhost</value>
+  <description>MongoDB connection URI used to connect to a MongoDB database server</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.mongo.database</name>
+  <value>zeppelin</value>
+  <description>database name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.mongo.collection</name>
+  <value>notes</value>
+  <description>collection name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.mongo.autoimport</name>
+  <value>false</value>
+  <description>import local notes into MongoDB automatically on startup</description>
+</property>
+-->
+
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>

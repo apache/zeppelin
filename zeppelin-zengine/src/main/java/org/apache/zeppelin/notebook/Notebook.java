@@ -77,6 +77,7 @@ public class Notebook implements NoteEventListener {
   private SchedulerFactory schedulerFactory;
 
   private InterpreterFactory replFactory;
+  private InterpreterSettingManager interpreterSettingManager;
   /**
    * Keep the order.
    */
@@ -102,13 +103,14 @@ public class Notebook implements NoteEventListener {
    */
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
-      JobListenerFactory jobListenerFactory, SearchService noteSearchService,
-      NotebookAuthorization notebookAuthorization, Credentials credentials)
-      throws IOException, SchedulerException {
+      InterpreterSettingManager interpreterSettingManager, JobListenerFactory jobListenerFactory,
+      SearchService noteSearchService, NotebookAuthorization notebookAuthorization,
+      Credentials credentials) throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
+    this.interpreterSettingManager = interpreterSettingManager;
     this.jobListenerFactory = jobListenerFactory;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
@@ -138,7 +140,7 @@ public class Notebook implements NoteEventListener {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(replFactory.getDefaultInterpreterSettingList(), subject);
+      note = createNote(interpreterSettingManager.getDefaultInterpreterSettingList(), subject);
     } else {
       note = createNote(null, subject);
     }
@@ -154,7 +156,7 @@ public class Notebook implements NoteEventListener {
   public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
       throws IOException {
     Note note =
-        new Note(notebookRepo, replFactory, jobListenerFactory,
+        new Note(notebookRepo, replFactory, interpreterSettingManager, jobListenerFactory,
                 noteSearchService, credentials, this);
     note.setNoteNameListener(folders);
 
@@ -270,14 +272,15 @@ public class Notebook implements NoteEventListener {
       throws IOException {
     Note note = getNote(id);
     if (note != null) {
-      List<InterpreterSetting> currentBindings = replFactory.getInterpreterSettings(id);
+      List<InterpreterSetting> currentBindings =
+          interpreterSettingManager.getInterpreterSettings(id);
       for (InterpreterSetting setting : currentBindings) {
         if (!interpreterSettingIds.contains(setting.getId())) {
           fireUnbindInterpreter(note, setting);
         }
       }
 
-      replFactory.setInterpreters(user, note.getId(), interpreterSettingIds);
+      interpreterSettingManager.setInterpreters(user, note.getId(), interpreterSettingIds);
       // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
@@ -286,7 +289,7 @@ public class Notebook implements NoteEventListener {
   List<String> getBindedInterpreterSettingsIds(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return getInterpreterFactory().getInterpreters(note.getId());
+      return interpreterSettingManager.getInterpreters(note.getId());
     } else {
       return new LinkedList<>();
     }
@@ -295,7 +298,7 @@ public class Notebook implements NoteEventListener {
   public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return replFactory.getInterpreterSettings(note.getId());
+      return interpreterSettingManager.getInterpreterSettings(note.getId());
     } else {
       return new LinkedList<>();
     }
@@ -328,12 +331,12 @@ public class Notebook implements NoteEventListener {
       note = notes.remove(id);
       folders.removeNote(note);
     }
-    replFactory.removeNoteInterpreterSettingBinding(subject.getUser(), id);
+    interpreterSettingManager.removeNoteInterpreterSettingBinding(subject.getUser(), id);
     noteSearchService.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
-    for (InterpreterSetting settings : replFactory.get()) {
+    for (InterpreterSetting settings : interpreterSettingManager.get()) {
       AngularObjectRegistry registry =
           settings.getInterpreterGroup(subject.getUser(), id).getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -467,6 +470,7 @@ public class Notebook implements NoteEventListener {
     note.setCredentials(this.credentials);
 
     note.setInterpreterFactory(replFactory);
+    note.setInterpreterSettingManager(interpreterSettingManager);
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
@@ -510,7 +514,7 @@ public class Notebook implements NoteEventListener {
 
     for (String name : angularObjectSnapshot.keySet()) {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
-      List<InterpreterSetting> settings = replFactory.get();
+      List<InterpreterSetting> settings = interpreterSettingManager.get();
       for (InterpreterSetting setting : settings) {
         InterpreterGroup intpGroup = setting.getInterpreterGroup(subject.getUser(), note.getId());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
@@ -754,9 +758,10 @@ public class Notebook implements NoteEventListener {
 
     // set interpreter bind type
     String interpreterGroupName = null;
-    if (replFactory.getInterpreterSettings(jobNote.getId()) != null
-            && replFactory.getInterpreterSettings(jobNote.getId()).size() >= 1) {
-      interpreterGroupName = replFactory.getInterpreterSettings(jobNote.getId()).get(0).getName();
+    if (interpreterSettingManager.getInterpreterSettings(jobNote.getId()) != null
+            && interpreterSettingManager.getInterpreterSettings(jobNote.getId()).size() >= 1) {
+      interpreterGroupName =
+          interpreterSettingManager.getInterpreterSettings(jobNote.getId()).get(0).getName();
     }
 
     // note json object root information.
@@ -830,9 +835,10 @@ public class Notebook implements NoteEventListener {
 
       // set interpreter bind type
       String interpreterGroupName = null;
-      if (replFactory.getInterpreterSettings(note.getId()) != null
-          && replFactory.getInterpreterSettings(note.getId()).size() >= 1) {
-        interpreterGroupName = replFactory.getInterpreterSettings(note.getId()).get(0).getName();
+      if (interpreterSettingManager.getInterpreterSettings(note.getId()) != null
+          && interpreterSettingManager.getInterpreterSettings(note.getId()).size() >= 1) {
+        interpreterGroupName =
+            interpreterSettingManager.getInterpreterSettings(note.getId()).get(0).getName();
       }
 
       // not update and not running -> pass
@@ -882,9 +888,9 @@ public class Notebook implements NoteEventListener {
         logger.error(e.getMessage(), e);
       }
       if (releaseResource) {
-        for (InterpreterSetting setting : notebook.getInterpreterFactory()
+        for (InterpreterSetting setting : notebook.getInterpreterSettingManager()
             .getInterpreterSettings(note.getId())) {
-          notebook.getInterpreterFactory().restart(setting.getId());
+          notebook.getInterpreterSettingManager().restart(setting.getId());
         }
       }
     }
@@ -947,6 +953,10 @@ public class Notebook implements NoteEventListener {
 
   public InterpreterFactory getInterpreterFactory() {
     return replFactory;
+  }
+
+  public InterpreterSettingManager getInterpreterSettingManager() {
+    return interpreterSettingManager;
   }
 
   public NotebookAuthorization getNotebookAuthorization() {

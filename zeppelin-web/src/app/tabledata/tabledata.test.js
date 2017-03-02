@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import TableData from '../../../src/app/tabledata/tabledata.js';
+import TableData from './tabledata.js';
 
 describe('TableData build', function() {
   var td;

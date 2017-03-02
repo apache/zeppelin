@@ -150,6 +150,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
           }
         }]
       });
+    } else if (op === 'SESSION_LOGOUT') {
+      $rootScope.$broadcast('session_logout', data);
     } else if (op === 'CONFIGURATIONS_INFO') {
       $rootScope.$broadcast('configurationsInfo', data);
     } else if (op === 'INTERPRETER_SETTINGS') {
@@ -166,6 +168,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('setNoteRevisionResult', data);
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
+    } else {
+      console.error(`unknown websocket op: ${op}`);
     }
   });
 

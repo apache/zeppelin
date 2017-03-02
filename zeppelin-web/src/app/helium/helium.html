@@ -29,7 +29,7 @@ limitations under the License.
         <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
              as-sortable-item>
           <div class="btn btn-default btn-sm"
-               ng-bind-html='defaultVersions[pkgName].pkg.icon'
+               ng-bind-html='defaultPackages[pkgName].pkg.icon'
                as-sortable-item-handle>
           </div>
         </div>
@@ -45,27 +45,38 @@ limitations under the License.
 
 <div class="box width-full heliumPackageContainer">
   <div class="row heliumPackageList"
-       ng-repeat="(pkgName, pkgInfo) in defaultVersions">
+       ng-repeat="(pkgName, pkgSearchResult) in defaultPackages">
+
     <div class="col-md-12">
       <div class="heliumPackageHead">
         <div class="heliumPackageIcon"
-             ng-bind-html=pkgInfo.pkg.icon></div>
+             ng-bind-html=pkgSearchResult.pkg.icon></div>
         <div class="heliumPackageName">
-          {{pkgName}}
-          <span class="heliumType">{{pkgInfo.pkg.type}}</span>
+          <span ng-if="hasNpmLink(pkgSearchResult)">
+            <a target="_blank" href="https://www.npmjs.com/package/{{pkgName}}">{{pkgName}}</a>
+          </span>
+          <span ng-if="!hasNpmLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
+            {{pkgName}}
+          </span>
+          <span class="heliumType">{{pkgSearchResult.pkg.type}}</span>
         </div>
-        <div ng-show="!pkgInfo.enabled"
-             ng-click="enable(pkgName, pkgInfo.pkg.artifact)"
+        <div ng-show="!pkgSearchResult.enabled"
+             ng-click="enable(pkgName, pkgSearchResult.pkg.artifact)"
              class="btn btn-success btn-xs"
              style="float:right">Enable</div>
-        <div ng-show="pkgInfo.enabled"
+        <div ng-show="pkgSearchResult.enabled"
              ng-click="disable(pkgName)"
              class="btn btn-info btn-xs"
              style="float:right">Disable</div>
+        <div ng-show="configExists(pkgSearchResult)"
+             ng-click="toggleConfigButton(pkgSearchResult)"
+             ng-class="getConfigButtonClass(pkgSearchResult)"
+             class="btn btn-default btn-xs spellConfigButton"
+             style="float:right; margin-right:5px;">Config</div>
       </div>
-      <div ng-class="{heliumPackageDisabledArtifact: !pkgInfo.enabled, heliumPackageEnabledArtifact: pkgInfo.enabled}">
-        {{pkgInfo.pkg.artifact}}
-        <span ng-show="packageInfos[pkgName].length > 0"
+      <div ng-class="{heliumPackageDisabledArtifact: !pkgSearchResult.enabled, heliumPackageEnabledArtifact: pkgSearchResult.enabled}">
+        {{pkgSearchResult.pkg.artifact}}
+        <span ng-show="pkgSearchResults[pkgName].length > 0"
               ng-click="toggleVersions(pkgName)">
           versions
         </span>
@@ -73,28 +84,64 @@ limitations under the License.
       <ul class="heliumPackageVersions"
            ng-show="showVersions[pkgName]">
         <li class="heliumPackageDisabledArtifact"
-             ng-repeat="pkg in packageInfos[pkgName]">
-          {{pkg.pkg.artifact}} -
-          <span ng-click="enable(pkgName, pkg.pkg.artifact)"
+             ng-repeat="pkgSearchResult in pkgSearchResults[pkgName]">
+          {{pkgSearchResult.pkg.artifact}} -
+          <span ng-click="enable(pkgName, pkgSearchResult.pkg.artifact)"
                 style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
             enable
           </span>
         </li>
       </ul>
       <div class="heliumPackageDescription">
-        {{pkgInfo.pkg.description}}
+        {{pkgSearchResult.pkg.description}}
       </div>
-      <div ng-if="pkgInfo.pkg.type === 'SPELL' && pkgInfo.pkg.spell"
+      <div ng-if="pkgSearchResult.pkg.type === 'SPELL' && pkgSearchResult.pkg.spell"
            class="spellInfo">
         <div>
           <span class="spellInfoDesc">MAGIC</span>
-          <span class="spellInfoValue">{{pkgInfo.pkg.spell.magic}} </span>
+          <span class="spellInfoValue">{{pkgSearchResult.pkg.spell.magic}} </span>
         </div>
         <div>
           <span class="spellInfoDesc">USAGE</span>
-          <pre class="spellUsage">{{pkgInfo.pkg.spell.usage}} </pre>
+          <pre class="spellUsage">{{pkgSearchResult.pkg.spell.usage}} </pre>
         </div>
       </div>
+
+      <!--start: config-->
+      <div class="heliumConfig" ng-if="configOpened(pkgSearchResult)">
+        <h5>Configuration</h5>
+        <table class="heliumConfigTable table table-striped">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Value</th>
+          </tr>
+          <tr>
+          </tr>
+          <tr data-ng-repeat="cfg in defaultPackageConfigs[pkgSearchResult.pkg.name]">
+            <td style="vertical-align: middle;">{{cfg.name}}</td>
+            <td style="vertical-align: middle;">{{cfg.type}}</td>
+            <td style="vertical-align: middle;">{{cfg.description}}</td>
+            <td>
+              <div class="input-group">
+                <input type="text" class="form-control" style="border-radius: 5px;"
+                       data-ng-model="cfg.value" placeholder="{{cfg.defaultValue}}" />
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div>
+          <button class="btn btn-primary"
+                  ng-click="saveConfig(pkgSearchResult)">Save</button>
+          <button class="btn btn-default"
+                  ng-click="toggleConfigButton(pkgSearchResult)">Close</button>
+        </div>
+      </div>
+      <!--end: config-->
+
     </div>
+
   </div>
 </div>

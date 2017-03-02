@@ -17,7 +17,7 @@
     "dev": "npm-run-all --parallel dev:server dev:watch",
     "visdev": "npm-run-all --parallel visdev:server dev:watch",
     "pretest": "npm install karma-phantomjs-launcher",
-    "test": "karma start test/karma.conf.js"
+    "test": "karma start karma.conf.js"
   },
   "dependencies": {
     "grunt-angular-templates": "^0.5.7",

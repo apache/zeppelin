@@ -47,6 +47,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -199,9 +200,9 @@ public class NotebookServer extends WebSocketServlet
               messagereceived.ticket, ticket);
         } else {
           if (!messagereceived.op.equals(OP.PING)) {
-            conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
+            conn.send(serializeMessage(new Message(OP.SESSION_LOGOUT).put("info",
                 "Your ticket is invalid possibly due to server restart. "
-                    + "Please refresh the page and login again.")));
+                    + "Please login again.")));
           }
         }
         return;
@@ -473,7 +474,7 @@ public class NotebookServer extends WebSocketServlet
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
-      List<String> ids = notebook.getInterpreterFactory().getInterpreters(note.getId());
+      List<String> ids = notebook.getInterpreterSettingManager().getInterpreters(note.getId());
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(note.getId(), m);
@@ -716,7 +717,7 @@ public class NotebookServer extends WebSocketServlet
     LOG.info("Cannot {}. Connection readers {}. Allowed readers {}", op, userAndRoles, allowed);
 
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-        "Insufficient privileges to " + op + "note.\n\n" + "Allowed users or roles: " + allowed
+        "Insufficient privileges to " + op + " note.\n\n" + "Allowed users or roles: " + allowed
             .toString() + "\n\n" + "But the user " + userName + " belongs to: " + userAndRoles
             .toString())));
   }
@@ -991,7 +992,7 @@ public class NotebookServer extends WebSocketServlet
       if (!StringUtils.isEmpty(defaultInterpreterId)) {
         List<String> interpreterSettingIds = new LinkedList<>();
         interpreterSettingIds.add(defaultInterpreterId);
-        for (String interpreterSettingId : notebook.getInterpreterFactory().
+        for (String interpreterSettingId : notebook.getInterpreterSettingManager().
             getDefaultInterpreterSettingList()) {
           if (!interpreterSettingId.equals(defaultInterpreterId)) {
             interpreterSettingIds.add(interpreterSettingId);
@@ -1334,7 +1335,7 @@ public class NotebookServer extends WebSocketServlet
     Note note = notebook.getNote(noteId);
     if (note != null) {
       List<InterpreterSetting> settings =
-          notebook.getInterpreterFactory().getInterpreterSettings(note.getId());
+          notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
       for (InterpreterSetting setting : settings) {
         if (setting.getInterpreterGroup(user, note.getId()) == null) {
           continue;
@@ -1376,7 +1377,7 @@ public class NotebookServer extends WebSocketServlet
       // interpreter.
       for (Note n : notebook.getAllNotes()) {
         List<InterpreterSetting> settings =
-            notebook.getInterpreterFactory().getInterpreterSettings(note.getId());
+            notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
           if (setting.getInterpreterGroup(user, n.getId()) == null) {
             continue;
@@ -2197,7 +2198,7 @@ public class NotebookServer extends WebSocketServlet
   private void sendAllAngularObjects(Note note, String user, NotebookSocket conn)
       throws IOException {
     List<InterpreterSetting> settings =
-        notebook().getInterpreterFactory().getInterpreterSettings(note.getId());
+        notebook().getInterpreterSettingManager().getInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -2235,7 +2236,7 @@ public class NotebookServer extends WebSocketServlet
       }
 
       List<InterpreterSetting> intpSettings =
-          notebook.getInterpreterFactory().getInterpreterSettings(note.getId());
+          notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
       if (intpSettings.isEmpty()) {
         continue;
       }
@@ -2255,7 +2256,8 @@ public class NotebookServer extends WebSocketServlet
         continue;
       }
 
-      List<String> settingIds = notebook.getInterpreterFactory().getInterpreters(note.getId());
+      List<String> settingIds =
+          notebook.getInterpreterSettingManager().getInterpreters(note.getId());
       for (String id : settingIds) {
         if (interpreterGroupId.contains(id)) {
           broadcast(note.getId(),
@@ -2274,21 +2276,24 @@ public class NotebookServer extends WebSocketServlet
     String user = fromMessage.principal;
     Message resp = new Message(OP.EDITOR_SETTING);
     resp.put("paragraphId", paragraphId);
-    resp.put("editor", notebook().getInterpreterFactory().getEditorSetting(user, noteId, replName));
+    Interpreter interpreter =
+        notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+    resp.put("editor", notebook().getInterpreterSettingManager().
+        getEditorSetting(interpreter, user, noteId, replName));
     conn.send(serializeMessage(resp));
-    return;
   }
 
   private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject)
       throws IOException {
-    List<InterpreterSetting> availableSettings = notebook().getInterpreterFactory().get();
+    List<InterpreterSetting> availableSettings = notebook().getInterpreterSettingManager().get();
     conn.send(serializeMessage(
         new Message(OP.INTERPRETER_SETTINGS).put("interpreterSettings", availableSettings)));
   }
 
   @Override
   public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
-    InterpreterSetting interpreterSetting = notebook().getInterpreterFactory().get(settingId);
+    InterpreterSetting interpreterSetting =
+        notebook().getInterpreterSettingManager().get(settingId);
     interpreterSetting.setInfos(metaInfos);
   }
 
@@ -2318,11 +2323,31 @@ public class NotebookServer extends WebSocketServlet
         .equals(WatcherSecurityKey.getKey()));
   }
 
+  /**
+   * Send websocket message to all connections regardless of notebook id
+   */
+  private void broadcastToAllConnections(String serialized) {
+    broadcastToAllConnectionsExcept(null, serialized);
+  }
+
+  private void broadcastToAllConnectionsExcept(NotebookSocket exclude, String serialized) {
+    synchronized (connectedSockets) {
+      for (NotebookSocket conn: connectedSockets) {
+        if (exclude != null && exclude.equals(conn)) {
+          continue;
+        }
+
+        try {
+          conn.send(serialized);
+        } catch (IOException e) {
+          LOG.error("Cannot broadcast message to watcher", e);
+        }
+      }
+    }
+  }
+
   private void broadcastToWatchers(String noteId, String subject, Message message) {
     synchronized (watcherSockets) {
-      if (watcherSockets.isEmpty()) {
-        return;
-      }
       for (NotebookSocket watcher : watcherSockets) {
         try {
           watcher.send(
@@ -2342,8 +2367,8 @@ public class NotebookServer extends WebSocketServlet
     if (note != null) {
       Paragraph paragraph = note.getParagraph(paragraphId);
       if (paragraph != null) {
-        InterpreterSetting setting = notebook().getInterpreterFactory()
-                                               .get(interpreterSettingId);
+        InterpreterSetting setting = notebook().getInterpreterSettingManager()
+            .get(interpreterSettingId);
         setting.addNoteToPara(noteId, paragraphId);
         String label = metaInfos.get("label");
         String tooltip = metaInfos.get("tooltip");

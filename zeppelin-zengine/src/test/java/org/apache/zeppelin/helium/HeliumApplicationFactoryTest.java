@@ -16,8 +16,10 @@
  */
 package org.apache.zeppelin.helium;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -35,9 +37,11 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -49,6 +53,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
   private SchedulerFactory schedulerFactory;
   private DependencyResolver depResolver;
   private InterpreterFactory factory;
+  private InterpreterSettingManager interpreterSettingManager;
   private VFSNotebookRepo notebookRepo;
   private Notebook notebook;
   private HeliumApplicationFactory heliumAppFactory;
@@ -72,23 +77,30 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), home.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), tmpDir.getAbsolutePath() + "/conf");
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     conf = new ZeppelinConfiguration();
 
     this.schedulerFactory = new SchedulerFactory();
 
-    MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-    MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
-
     heliumAppFactory = new HeliumApplicationFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf,
-        new InterpreterOption(true), null, null, heliumAppFactory, depResolver, false);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, heliumAppFactory, depResolver, false, interpreterSettingManager);
     HashMap<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
     factory.setEnv(env);
+
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), new Properties());
+
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock2", interpreterInfos2, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock2", null);
+    interpreterSettingManager.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -98,6 +110,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         notebookRepo,
         schedulerFactory,
         factory,
+        interpreterSettingManager,
         this,
         search,
         notebookAuthorization,
@@ -112,7 +125,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
 
   @After
   public void tearDown() throws Exception {
-    List<InterpreterSetting> settings = factory.get();
+    List<InterpreterSetting> settings = interpreterSettingManager.get();
     for (InterpreterSetting setting : settings) {
       for (InterpreterGroup intpGroup : setting.getAllInterpreterGroups()) {
         intpGroup.close();
@@ -138,7 +151,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    factory.setInterpreters("user", note1.getId(),factory.getDefaultInterpreterSettingList());
+    interpreterSettingManager.setInterpreters("user", note1.getId(),interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -184,7 +197,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    factory.setInterpreters("user", note1.getId(), factory.getDefaultInterpreterSettingList());
+    interpreterSettingManager.setInterpreters("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -224,7 +237,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -285,7 +298,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), factory.getDefaultInterpreterSettingList());
+    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
       if (setting.getName().equals("mock1")) {
@@ -312,7 +325,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       Thread.yield();
     }
     // when restart interpreter
-    factory.restart(mock1IntpSettingId);
+    interpreterSettingManager.restart(mock1IntpSettingId);
     while (app.getStatus() == ApplicationState.Status.LOADED) {
       Thread.yield();
     }

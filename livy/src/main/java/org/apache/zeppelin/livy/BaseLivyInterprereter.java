@@ -30,6 +30,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -46,6 +47,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterprereter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+  private static String SESSION_NOT_FOUND_PATTERN = "\"Session '\\d+' not found.\"";
 
   protected volatile SessionInfo sessionInfo;
   private String livyURL;
@@ -266,7 +268,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     }
   }
 
-  private LivyVersion getLivyVersion() throws LivyException {
+  protected LivyVersion getLivyVersion() throws LivyException {
     return new LivyVersion((LivyVersionResponse.fromJson(callRestAPI("/version", "GET")).version));
   }
 
@@ -299,8 +301,14 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
-    if (stmtInfo.output.isError()) {
+    if (stmtInfo.output != null && stmtInfo.output.isError()) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, stmtInfo.output.evalue);
+    } else if (stmtInfo.isCancelled()) {
+      // corner case, output might be null if it is cancelled.
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
+    } else if (stmtInfo.output == null) {
+      // This case should never happen, just in case
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Empty output");
     } else {
       //TODO(zjffdu) support other types of data (like json, image and etc)
       String result = stmtInfo.output.data.plain_text;
@@ -407,6 +415,15 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       response = new ResponseEntity(e.getResponseBodyAsString(), e.getStatusCode());
       LOGGER.error(String.format("Error with %s StatusCode: %s",
           response.getStatusCode().value(), e.getResponseBodyAsString()));
+    } catch (RestClientException e) {
+      // Exception happens when kerberos is enabled.
+      if (e.getCause() instanceof HttpClientErrorException) {
+        HttpClientErrorException cause = (HttpClientErrorException) e.getCause();
+        if (cause.getResponseBodyAsString().matches(SESSION_NOT_FOUND_PATTERN)) {
+          throw new SessionNotFoundException(cause.getResponseBodyAsString());
+        }
+      }
+      throw new LivyException(e);
     }
     if (response == null) {
       throw new LivyException("No http response returned");
@@ -417,7 +434,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         || response.getStatusCode().value() == 201) {
       return response.getBody();
     } else if (response.getStatusCode().value() == 404) {
-      if (response.getBody().matches("\"Session '\\d+' not found.\"")) {
+      if (response.getBody().matches(SESSION_NOT_FOUND_PATTERN)) {
         throw new SessionNotFoundException(response.getBody());
       } else {
         throw new APINotFoundException("No rest api found for " + targetURL +
@@ -531,6 +548,10 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
     public boolean isAvailable() {
       return state.equals("available") || state.equals("cancelled");
+    }
+
+    public boolean isCancelled() {
+      return state.equals("cancelled");
     }
 
     private static class StatementOutput {

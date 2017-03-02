@@ -26,7 +26,28 @@ export default class EchoSpell extends SpellBase {
         super("%echo");
     }
 
-    interpret(paragraphText) {
-        return new SpellResult(paragraphText);
+    /**
+     * Consumes text and return `SpellResult`.
+     *
+     * @param paragraphText {string} which doesn't include magic
+     * @param config {Object}
+     * @return {SpellResult}
+     */
+    interpret(paragraphText, config) {
+        let repeat = 1;
+
+        try {
+            repeat = parseFloat(config.repeat);
+        } catch (error) {
+            /** ignore, use default value */
+        }
+
+        let repeated = "";
+
+        for (let i = 0; i < repeat; i++) {
+            repeated += `${paragraphText}\n`;
+        }
+
+        return new SpellResult(repeated);
     }
 }

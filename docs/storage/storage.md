@@ -32,6 +32,7 @@ There are few notebook storage systems available for a use out of the box:
   * all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
+  * storage using MongoDB - `MongoNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -184,7 +185,7 @@ Or using the following setting in **zeppelin-site.xml**:
 ```
 
 </br>
-## Notebook Storage  in Azure <a name="Azure"></a>
+## Notebook Storage in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
 
@@ -274,3 +275,72 @@ export ZEPPELINHUB_API_ADDRESS = address of ZeppelinHub service (e.g. https://ww
 ```
 
 You can get more information on generating `token` and using authentication on the corresponding [help page](http://help.zeppelinhub.com/zeppelin_integration/#add-a-new-zeppelin-instance-and-generate-a-token).
+
+
+## Notebook Storage in MongoDB <a name="MongoDB"></a>
+Using `MongoNotebookRepo`, you can store your notebook in [MongoDB](https://www.mongodb.com/).
+
+### Why MongoDB?
+* **[High Availability (HA)](https://en.wikipedia.org/wiki/High_availability)** by a [replica set](https://docs.mongodb.com/manual/reference/glossary/#term-replica-set)
+* Seperation of storage from server
+
+### How to use
+You can use MongoDB as notebook storage by editting `zeppelin-env.sh` or `zeppelin-site.xml`.
+
+#### (Method 1) by editting `zeppelin-env.sh`
+Add a line below to `$ZEPPELIN_HOME/conf/zeppelin-env.sh`:
+
+```sh
+export ZEPPELIN_NOTEBOOK_STORAGE=org.apache.zeppelin.notebook.repo.MongoNotebookRepo
+```
+
+> *NOTE:* The default MongoDB connection URI is `mongodb://localhost`
+
+#### (Method 2) by editting `zeppelin-site.xml`
+Or, **uncomment** lines below at `$ZEPPELIN_HOME/conf/zeppelin-site.xml`:
+
+```xml
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.MongoNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+And **comment** lines below:
+
+```xml
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
+</property>
+```
+
+### Configurable Options
+
+You can configure options below in `zeppelin-env.sh`.
+
+* `ZEPPELIN_NOTEBOOK_MONGO_URI` [MongoDB connection URI](https://docs.mongodb.com/manual/reference/connection-string/) used to connect to a MongoDB database server
+* `ZEPPELIN_NOTEBOOK_MONGO_DATABASE` Database name
+* `ZEPPELIN_NOTEBOOK_MONGO_COLLECTION` Collection name
+* `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` If `true`, import local notes (refer to description below for details)
+
+Or, you can configure them in `zeppelin-site.xml`. Corresponding option names as follows:
+
+* `zeppelin.notebook.mongo.uri`
+* `zeppelin.notebook.mongo.database`
+* `zeppelin.notebook.mongo.collection`
+* `zeppelin.notebook.mongo.autoimport`
+
+#### Example configurations in `zeppelin-env.sh`
+
+```sh
+export ZEPPELIN_NOTEBOOK_MONGO_URI=mongodb://db1.example.com:27017
+export ZEPPELIN_NOTEBOOK_MONGO_DATABASE=myfancy
+export ZEPPELIN_NOTEBOOK_MONGO_COLLECTION=notebook
+export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT=true
+```
+
+#### Import your local notes automatically
+By setting `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` as `true` (default `false`), you can import your local notes automatically when Zeppelin daemon starts up. This feature is for easy migration from local file system storage to MongoDB storage. A note with ID already existing in the collection will not be imported.

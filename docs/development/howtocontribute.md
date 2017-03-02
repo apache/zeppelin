@@ -64,6 +64,9 @@ git clone -b branch-0.5.6 git://git.apache.org/zeppelin.git zeppelin
 Apache Zeppelin follows [Fork & Pull](https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) as a source control workflow.
 If you want to not only build Zeppelin but also make any changes, then you need to fork [Zeppelin github mirror repository](https://github.com/apache/zeppelin) and make a pull request.
 
+Before making a pull request, please take a look [Contribution Guidelines](http://zeppelin.apache.org/contribution/contributions.html).
+
+
 ### Build
 
 ```

@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -84,7 +85,7 @@ public abstract class AbstractTestRestApi {
       "role1 = *\n" +
       "role2 = *\n" +
       "role3 = *\n" +
-      "admin = *" +
+      "admin = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
       "/** = authc";
@@ -188,7 +189,8 @@ public abstract class AbstractTestRestApi {
 
       // assume first one is spark
       InterpreterSetting sparkIntpSetting = null;
-      for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+      for(InterpreterSetting intpSetting :
+          ZeppelinServer.notebook.getInterpreterSettingManager().get()) {
         if (intpSetting.getName().equals("spark")) {
           sparkIntpSetting = intpSetting;
         }
@@ -208,7 +210,7 @@ public abstract class AbstractTestRestApi {
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
         sparkR = true;
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       } else {
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
@@ -225,7 +227,7 @@ public abstract class AbstractTestRestApi {
           sparkR = true;
         }
 
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       }
     }
   }
@@ -292,10 +294,10 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
+      List<String> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
           .getDefaultInterpreterSettingList();
       for (String setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting);
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);
@@ -332,7 +334,7 @@ public abstract class AbstractTestRestApi {
     GetMethod request = null;
     boolean isRunning = true;
     try {
-      request = httpGet("/");
+      request = httpGet("/version");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
       LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
@@ -426,8 +428,14 @@ public abstract class AbstractTestRestApi {
     httpClient.executeMethod(postMethod);
     LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
     Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
-    java.util.regex.Matcher matcher = pattern.matcher(postMethod.getResponseHeaders("Set-Cookie")[0].toString());
-    return matcher.find()? matcher.group(1) : StringUtils.EMPTY;
+    Header[] setCookieHeaders = postMethod.getResponseHeaders("Set-Cookie");
+    for (Header setCookie : setCookieHeaders) {
+      java.util.regex.Matcher matcher = pattern.matcher(setCookie.toString());
+      if (matcher.find()) {
+        return matcher.group(1);
+      }
+    }
+    return StringUtils.EMPTY;
   }
 
   protected static boolean userAndPasswordAreNotBlank(String user, String pwd) {
