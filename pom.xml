@@ -981,7 +981,7 @@
 
               <!-- compiled R packages (binaries) -->
               <exclude>**/R/lib/**</exclude> 
-              <exclude>r/lib/**</exclude> 
+              <exclude>**/r/lib/**</exclude> 
  
                <!--R-related files with alternative licenses--> 
 
