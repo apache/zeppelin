@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -756,6 +757,19 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    String remoteRepo = getProperty("zeppelin.interpreter.remoteRepo");
+    if (remoteRepo != null) {
+      try {
+        URL u = new URL(remoteRepo);
+        if (classpath.length() > 0) {
+          classpath += File.pathSeparator;
+        }
+        classpath += u.getFile();
+      } catch (MalformedURLException e) {
+        logger.error("Error", e);
+      }
+    }
+
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
@@ -780,7 +794,7 @@ public class SparkInterpreter extends Interpreter {
      *
      * As hashCode() can return a negative integer value and the minus character '-' is invalid
      * in a package name we change it to a numeric value '0' which still conforms to the regexp.
-     * 
+     *
      */
     System.setProperty("scala.repl.name.line", ("$line" + this.hashCode()).replace('-', '0'));
 
@@ -860,7 +874,7 @@ public class SparkInterpreter extends Interpreter {
       sqlc = getSQLContext();
 
       dep = getDependencyResolver();
-      
+
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
 
       z = new ZeppelinContext(sc, sqlc, null, dep, hooks,

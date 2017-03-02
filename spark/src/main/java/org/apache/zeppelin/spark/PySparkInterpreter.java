@@ -152,6 +152,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
+    String remoteRepo = getProperty("zeppelin.interpreter.remoteRepo");
+    if (remoteRepo != null) {
+      try {
+        urlList.add(new URL(remoteRepo));
+      } catch (MalformedURLException e) {
+        logger.error("Error", e);
+      }
+    }
+
     urls = urlList.toArray(urls);
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {

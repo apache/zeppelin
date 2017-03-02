@@ -43,8 +43,8 @@ public class RemoteInterpreterProcessTest {
   public void testStartStop() {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
-        INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null, null);
+        INTERPRETER_SCRIPT, "nonexists", "fakeRepo", "fakeRemoteRepo",
+        new HashMap<String, String>(), 10 * 1000, null, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     assertEquals(1, rip.reference(intpGroup, "anonymous", false));
@@ -60,8 +60,8 @@ public class RemoteInterpreterProcessTest {
   public void testClientFactory() throws Exception {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
-        INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        mock(RemoteInterpreterEventPoller.class), 10 * 1000);
+        INTERPRETER_SCRIPT, "nonexists", "fakeRepo", "fakeRemoteRepo",
+        new HashMap<String, String>(), mock(RemoteInterpreterEventPoller.class), 10 * 1000);
     rip.reference(intpGroup, "anonymous", false);
     assertEquals(0, rip.getNumActiveClient());
     assertEquals(0, rip.getNumIdleClient());
@@ -102,6 +102,7 @@ public class RemoteInterpreterProcessTest {
         INTERPRETER_SCRIPT,
         "nonexists",
         "fakeRepo",
+        "fakeRemoteRepo",
         new HashMap<String, String>(),
         mock(RemoteInterpreterEventPoller.class)
         , 10 * 1000);
@@ -116,8 +117,8 @@ public class RemoteInterpreterProcessTest {
   public void testPropagateError() throws TException, InterruptedException {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
-        "echo hello_world", "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null, null);
+        "echo hello_world", "nonexists", "fakeRepo", "fakeRemoteRepo",
+        new HashMap<String, String>(), 10 * 1000, null, null);
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
     try {
