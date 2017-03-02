@@ -56,12 +56,14 @@ public class InterpreterTest {
   public void testPropertyWithReplacedContextFields() {
     String noteId = "testNoteId";
     String paragraphTitle = "testParagraphTitle";
+    String paragraphText = "testParagraphText";
+    String paragraphId = "testParagraphId";
     String user = "username";
     InterpreterContext.set(new InterpreterContext(noteId,
-        null,
+        paragraphId,
         null,
         paragraphTitle,
-        null,
+        paragraphText,
         new AuthenticationInfo("testUser", "testTicket"),
         null,
         null,
@@ -70,7 +72,7 @@ public class InterpreterTest {
         null,
         null));
     Properties p = new Properties();
-    p.put("p1", "paragraphTitle #{noteId}, #{paragraphTitle}, #{replName}, #{noteId}, #{user}," +
+    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
         " #{authenticationInfo}");
     MockInterpreterA intp = new MockInterpreterA(p);
     intp.setUserName(user);
@@ -78,8 +80,8 @@ public class InterpreterTest {
     InterpreterContext.remove();
 
     assertEquals(
-        String.format("paragraphTitle %s, %s, , %s, %s, #{authenticationInfo}", noteId,
-            paragraphTitle, noteId, user),
+        String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , %s, %s, #{authenticationInfo}", noteId,
+            noteId, user),
         actual
     );
   }

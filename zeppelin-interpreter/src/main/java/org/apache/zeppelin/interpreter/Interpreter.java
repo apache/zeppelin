@@ -310,6 +310,7 @@ public abstract class Interpreter {
     InterpreterContext interpreterContext = InterpreterContext.get();
     if (interpreterContext != null) {
       String markerTemplate = "#\\{%s\\}";
+      List<String> skipFields = Arrays.asList("paragraphTitle", "paragraphId", "paragraphText");
       List typesToProcess = Arrays.asList(String.class, Double.class, Float.class, Short.class,
           Byte.class, Character.class, Boolean.class, Integer.class, Long.class);
       for (String key : properties.stringPropertyNames()) {
@@ -317,7 +318,8 @@ public abstract class Interpreter {
         if (StringUtils.isNotEmpty(p)) {
           for (Field field : InterpreterContext.class.getDeclaredFields()) {
             Class clazz = field.getType();
-            if (typesToProcess.contains(clazz) || clazz.isPrimitive()) {
+            if (!skipFields.contains(field.getName()) && (typesToProcess.contains(clazz)
+                || clazz.isPrimitive())) {
               try {
                 Object value = FieldUtils.readField(field, interpreterContext, true);
                 p = p.replaceAll(String.format(markerTemplate, field.getName()),
