@@ -368,7 +368,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     Preconditions.checkNotNull(name, "name should be not null");
 
     String className;
-    if (null != (className = getInterpreterClassFromInterpreterSetting(setting, name))) {
+    if (setting.getName().equals(name) &&
+        null != (className = getInterpreterClassFromInterpreterSetting(setting, name))) {
       List<Interpreter> interpreterGroup = createOrGetInterpreterList(user, noteId, setting);
       for (Interpreter interpreter : interpreterGroup) {
         if (className.equals(interpreter.getClassName())) {
