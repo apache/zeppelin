@@ -63,7 +63,7 @@ limitations under the License.
 <div class="box width-full heliumPackageContainer">
   <div class="row"
        style="padding-bottom: 15px"
-       ng-if="getPackageSize(defaultVersions, pkgListByType) === 0">
+       ng-if="getPackageSize(defaultPackages, pkgListByType) === 0">
     <div class="col-md-12 gray40-message">
       <em>Currently there is no available package to be listed</em>
     </div>
@@ -83,7 +83,7 @@ limitations under the License.
           <span ng-if="hasNpmLink(pkgSearchResult)">
             <a target="_blank" href="https://www.npmjs.com/package/{{pkgName}}">{{pkgName}}</a>
           </span>
-          <span ng-if="!hasNpmLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
+          <span ng-if="!hasNpmLink(pkgSearchResult) && !hasMavenLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
             {{pkgName}}
           </span>
           <span ng-if="hasMavenLink(pkgSearchResult)">
