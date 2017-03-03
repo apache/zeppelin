@@ -67,7 +67,15 @@ public class Booter {
   }
 
   public static RemoteRepository newCentralRepository() {
-    return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
+    String mvnRepo = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
+    if (mvnRepo == null) {
+      mvnRepo = System.getProperty("zeppelin.interpreter.dep.mvnRepo");
+    }
+    if (mvnRepo == null) {
+      mvnRepo = "http://repo1.maven.org/maven2/";
+    }
+
+    return new RemoteRepository("central", "default", mvnRepo);
   }
 
   public static RemoteRepository newLocalRepository() {
