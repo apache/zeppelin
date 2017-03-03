@@ -111,7 +111,28 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     },
     {
       "title": "paragraph title2",
-      "text": "paragraph text2"
+      "text": "paragraph text2",
+      "showTitle": true,
+      "colWidth": 9.0,
+      "graph": {
+        "mode": "pieChart"
+      }
+    }
+    {
+      "title": "paragraph title3",
+      "text": "paragraph text3",
+      "config": {
+        "title": true,
+        "colWidth": 6.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "scatterChart",
+              "optionOpen": true
+            }
+          }
+        ]
+      }
     }
   ]
 }</pre></td>
@@ -598,6 +619,39 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   "title": "Paragraph insert revised",
   "text": "%spark\nprintln(\"Paragraph insert revised\")",
   "index": 0
+}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON input (providing graph,showTitle and colWidth information) </td>
+      <td><pre>
+{
+  "title": "paragraph title2",
+  "text": "paragraph text2",
+  "showTitle": true,
+  "colWidth": 9.0,
+  "graph": {
+    "mode": "pieChart"
+  }
+ }</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON input (providing paragraph config) </td>
+      <td><pre>
+{
+  "title": "paragraph title3",
+  "text": "paragraph text3",
+  "config": {
+    "title": true,
+    "colWidth": 6.0,
+    "results": [
+      {
+        "graph": {
+          "mode": "scatterChart",
+          "optionOpen": true
+        }
+      }
+    ]
+  }
 }</pre></td>
     </tr>
     <tr>

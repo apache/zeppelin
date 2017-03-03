@@ -18,11 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -337,16 +333,16 @@ public class NotebookRestApi {
   @Path("/")
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
+    String user = SecurityUtils.getPrincipal();
     LOG.info("Create new note by JSON {}", message);
     NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(user);
     Note note = notebook.createNote(subject);
     List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
     if (initialParagraphs != null) {
       for (NewParagraphRequest paragraphRequest : initialParagraphs) {
         Paragraph p = note.addParagraph(subject);
-        p.setTitle(paragraphRequest.getTitle());
-        p.setText(paragraphRequest.getText());
+        initParagraph(p, paragraphRequest, user);
       }
     }
     note.addParagraph(subject); // add one paragraph to the last
@@ -425,6 +421,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response insertParagraph(@PathParam("noteId") String noteId, String message)
       throws IOException {
+    String user = SecurityUtils.getPrincipal();
     LOG.info("insert paragraph {} {}", noteId, message);
 
     Note note = notebook.getNote(noteId);
@@ -432,7 +429,7 @@ public class NotebookRestApi {
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot add paragraph to this note");
 
     NewParagraphRequest request = gson.fromJson(message, NewParagraphRequest.class);
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(user);
     Paragraph p;
     Double indexDouble = request.getIndex();
     if (indexDouble == null) {
@@ -440,9 +437,7 @@ public class NotebookRestApi {
     } else {
       p = note.insertParagraph(indexDouble.intValue(), subject);
     }
-    p.setTitle(request.getTitle());
-    p.setText(request.getText());
-
+    initParagraph(p, request, user);
     note.persist(subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK, "", p.getId()).build();
@@ -486,17 +481,7 @@ public class NotebookRestApi {
     checkIfParagraphIsNotNull(p);
 
     Map<String, Object> newConfig = gson.fromJson(message, HashMap.class);
-    if (newConfig == null || newConfig.isEmpty()) {
-      LOG.warn("{} is trying to update paragraph {} of note {} with empty config",
-          user, paragraphId, noteId);
-      throw new BadRequestException("paragraph config cannot be empty");
-    }
-    Map<String, Object> origConfig = p.getConfig();
-    for (String key : newConfig.keySet()) {
-      origConfig.put(key, newConfig.get(key));
-    }
-
-    p.setConfig(origConfig);
+    configureParagraph(p, newConfig, user);
     AuthenticationInfo subject = new AuthenticationInfo(user);
     note.persist(subject);
 
@@ -961,6 +946,64 @@ public class NotebookRestApi {
         note.persist(subject);
       }
     }
+  }
+
+  private void initParagraph(Paragraph p, NewParagraphRequest request, String user)
+      throws IOException {
+    LOG.info("Init Paragraph for user {}", user);
+    checkIfParagraphIsNotNull(p);
+    p.setTitle(request.getTitle());
+    p.setText(request.getText());
+    Map< String, Object > config = request.getConfig();
+    if ( config != null){
+      Vector< String > ignoredFields = new Vector<>();
+      if ( request.getGraph() != null)
+        ignoredFields.add("graph");
+      if ( request.getColWidth() != null)
+        ignoredFields.add("colWidth");
+      if ( request.getShowTitle() != null)
+        ignoredFields.add("showTitle");
+      if ( ignoredFields.size() > 0 )
+        LOG.warn("As config is provided, the following field(s) are ignored {}",
+                ignoredFields.toString());
+    }
+    else {
+      config = new HashMap<>();
+      Map graph = request.getGraph();
+      if (graph != null) {
+        List<Object> results = new ArrayList<>();
+        Map<String, Object> result = new HashMap<>();
+        result.put("graph", graph);
+        results.add(result);
+        config.put("results", results);
+      }
+      Double colWidth = request.getColWidth();
+      if (colWidth != null) {
+        config.put("colWidth", colWidth);
+      }
+      Boolean showTitle = request.getShowTitle();
+      if (showTitle != null) {
+        config.put("title", showTitle);
+      }
+    }
+    if ( !config.isEmpty()) {
+      configureParagraph(p, config, user);
+    }
+  }
+
+  private void configureParagraph(Paragraph p, Map< String, Object> newConfig, String user)
+      throws IOException {
+    LOG.info("Configure Paragraph for user {}", user);
+    if (newConfig == null || newConfig.isEmpty()) {
+      LOG.warn("{} is trying to update paragraph {} of note {} with empty config",
+              user, p.getId(), p.getNote().getId());
+      throw new BadRequestException("paragraph config cannot be empty");
+    }
+    Map<String, Object> origConfig = p.getConfig();
+    for (String key : newConfig.keySet()) {
+      origConfig.put(key, newConfig.get(key));
+    }
+    p.setConfig(origConfig);
   }
 
 }
