@@ -20,7 +20,6 @@ package org.apache.zeppelin.spark;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -42,12 +40,22 @@ import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -55,14 +63,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-
 import py4j.GatewayServer;
 
 /**
  *
  */
 public class PySparkInterpreter extends Interpreter implements ExecuteResultHandler {
-  Logger logger = LoggerFactory.getLogger(PySparkInterpreter.class);
+
+  public static final String ZEPPELIN_PYSPARK_PRECODE_KEY = "zeppelin.pyspark.precode";
+  public static Logger logger = LoggerFactory.getLogger(PySparkInterpreter.class);
+
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
   private int port;
@@ -94,11 +104,13 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
 
     try {
-      FileOutputStream outStream = new FileOutputStream(out);
-      IOUtils.copy(
-          classLoader.getResourceAsStream("python/zeppelin_pyspark.py"),
-          outStream);
-      outStream.close();
+      String pythonScript = IOUtils.toString(
+          classLoader.getResourceAsStream("python/zeppelin_pyspark.py"), "UTF-8");
+      String precode = getProperty(ZEPPELIN_PYSPARK_PRECODE_KEY);
+      if (StringUtils.isNotBlank(precode)) {
+        pythonScript = pythonScript.replace("#precode#", precode);
+      }
+      FileUtils.writeStringToFile(out, pythonScript, "UTF-8");
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
@@ -497,8 +509,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     String completionScriptText = "";
     try {
       completionScriptText = text.substring(0, cursor);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.error(e.toString());
       return null;
     }
@@ -517,13 +528,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     if (completionStartPosition == completionEndPosition) {
       completionStartPosition = 0;
-    }
-    else
-    {
+    } else {
       completionStartPosition = completionEndPosition - completionStartPosition;
     }
     resultCompletionText = completionScriptText.substring(
-            completionStartPosition , completionEndPosition);
+        completionStartPosition, completionEndPosition);
 
     return resultCompletionText;
   }

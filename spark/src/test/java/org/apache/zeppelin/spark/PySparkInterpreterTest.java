@@ -17,24 +17,35 @@
 
 package org.apache.zeppelin.spark;
 
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
@@ -56,6 +67,7 @@ public class PySparkInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
+    p.setProperty("zeppelin.pyspark.precode", "precodeVar = 'test'");
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
     return p;
   }
@@ -89,6 +101,7 @@ public class PySparkInterpreterTest {
     pySparkInterpreter.setInterpreterGroup(intpGroup);
     pySparkInterpreter.open();
 
+    
     context = new InterpreterContext("note", "id", null, "title", "text",
       new AuthenticationInfo(),
       new HashMap<String, Object>(),
@@ -118,6 +131,13 @@ public class PySparkInterpreterTest {
     if (getSparkVersionNumber() > 11) {
       List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
       assertTrue(completions.size() > 0);
+    }
+  }
+
+  @Test
+  public void testPrecode() {
+    if (getSparkVersionNumber() > 11) {
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret("print precodeVar\n", context).code());
     }
   }
 }
