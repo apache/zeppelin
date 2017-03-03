@@ -383,14 +383,11 @@ public class JDBCInterpreter extends Interpreter {
                         user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
-
                 try {
-                  ugi = property.getProperty("hive.proxy.user").equals("false") ?
-                          UserGroupInformation.getCurrentUser() :
-                          UserGroupInformation.createProxyUser(
-                                  user, UserGroupInformation.getCurrentUser());
+                  ugi = UserGroupInformation.createProxyUser(
+                          user, UserGroupInformation.getCurrentUser());
                 } catch (Exception e) {
-                  logger.error("Error in getCurrentUser or createProxyUser", e);
+                  logger.error("Error in getCurrentUser", e);
                   StringBuilder stringBuilder = new StringBuilder();
                   stringBuilder.append(e.getMessage()).append("\n");
                   stringBuilder.append(e.getCause());
