@@ -63,7 +63,7 @@ limitations under the License.
 <div class="box width-full heliumPackageContainer">
   <div class="row"
        style="padding-bottom: 15px"
-       ng-if="getPackageSize(defaultPackages, pkgListByType) === 0">
+       ng-if="getPackageSize(defaultVersions, pkgListByType) === 0">
     <div class="col-md-12 gray40-message">
       <em>Currently there is no available package to be listed</em>
     </div>
@@ -83,14 +83,14 @@ limitations under the License.
           <span ng-if="hasNpmLink(pkgSearchResult)">
             <a target="_blank" href="https://www.npmjs.com/package/{{pkgName}}">{{pkgName}}</a>
           </span>
+          <span ng-if="!hasNpmLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
+            {{pkgName}}
+          </span>
           <span ng-if="hasMavenLink(pkgSearchResult)">
             <a target="_blank"
                href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{{pkgSearchResult.pkg.artifact.split('@')[0]}}%22%20AND%20v%3A%22{{pkgSearchResult.pkg.artifact.split('@')[1]}}%22">
               {{pkgName}}
             </a>
-          </span>
-          <span ng-if="!hasNpmLink(pkgSearchResult) && !hasMavenLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
-            {{pkgName}}
           </span>
           <span class="heliumType">{{pkgSearchResult.pkg.type}}</span>
         </div>
@@ -109,10 +109,15 @@ limitations under the License.
              ng-if="pkgSearchResult.pkg.type === 'INTERPRETER'"
              class="btn btn-success disabled btn-xs"
              style="float:right">Coming soon</div>
+        <div ng-show="configExists(pkgSearchResult)"
+             ng-click="toggleConfigButton(pkgSearchResult)"
+             ng-class="getConfigButtonClass(pkgSearchResult)"
+             class="btn btn-default btn-xs spellConfigButton"
+             style="float:right; margin-right:5px;">Config</div>
       </div>
       <div ng-class="{heliumPackageDisabledArtifact: !pkgSearchResult.enabled, heliumPackageEnabledArtifact: pkgSearchResult.enabled}">
         {{pkgSearchResult.pkg.artifact}}
-        <span ng-show="packageInfos[pkgName].length > 0"
+        <span ng-show="pkgSearchResults[pkgName].length > 0"
               ng-click="toggleVersions(pkgName)">
           versions
         </span>
@@ -120,9 +125,9 @@ limitations under the License.
       <ul class="heliumPackageVersions"
           ng-show="showVersions[pkgName]">
         <li class="heliumPackageDisabledArtifact"
-            ng-repeat="pkg in packageInfos[pkgName]">
-          {{pkg.pkg.artifact}} -
-          <span ng-click="enable(pkgName, pkg.pkg.artifact)"
+            ng-repeat="pkgSearchResult in pkgSearchResults[pkgName]">
+          {{pkgSearchResult.pkg.artifact}} -
+          <span ng-click="enable(pkgName, pkgSearchResult.pkg.artifact)"
                 ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
                 style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
             enable
@@ -130,7 +135,7 @@ limitations under the License.
           <a target="_blank"
              ng-if="pkgSearchResult.pkg.type === 'INTERPRETER'"
              style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9"
-             href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{{pkg.pkg.artifact.split('@')[0]}}%22%20AND%20v%3A%22{{pkg.pkg.artifact.split('@')[1]}}%22">
+             href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{{pkgSearchResult.pkg.artifact.split('@')[0]}}%22%20AND%20v%3A%22{{pkgSearchResult.pkg.artifact.split('@')[1]}}%22">
             see more
           </a>
         </li>
@@ -149,6 +154,42 @@ limitations under the License.
           <pre class="spellUsage">{{pkgSearchResult.pkg.spell.usage}} </pre>
         </div>
       </div>
+
+      <!--start: config-->
+      <div class="heliumConfig" ng-if="configOpened(pkgSearchResult)">
+        <h5>Configuration</h5>
+        <table class="heliumConfigTable table table-striped">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Value</th>
+          </tr>
+          <tr>
+          </tr>
+          <tr data-ng-repeat="cfg in defaultPackageConfigs[pkgSearchResult.pkg.name]">
+            <td style="vertical-align: middle;">{{cfg.name}}</td>
+            <td style="vertical-align: middle;">{{cfg.type}}</td>
+            <td style="vertical-align: middle;">{{cfg.description}}</td>
+            <td>
+              <div class="input-group">
+                <input type="text" class="form-control" style="border-radius: 5px;"
+                       data-ng-model="cfg.value" placeholder="{{cfg.defaultValue}}" />
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div>
+          <button class="btn btn-primary"
+                  ng-click="saveConfig(pkgSearchResult)">Save</button>
+          <button class="btn btn-default"
+                  ng-click="toggleConfigButton(pkgSearchResult)">Close</button>
+        </div>
+      </div>
+      <!--end: config-->
+
     </div>
+
   </div>
 </div>

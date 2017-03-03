@@ -17,7 +17,7 @@ import { HeliumType, } from '../../components/helium/helium-type';
 export default function HeliumCtrl($scope, $rootScope, $sce,
                                    baseUrlSrv, ngToast, heliumService) {
   'ngInject';
-  
+
   $scope.pkgSearchResults = {};
   $scope.defaultPackages = {};
   $scope.showVersions = {};
@@ -32,7 +32,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   $scope.pkgListByType = 'VISUALIZATION'
   $scope.defaultPackageConfigs = {}; // { pkgName, [{name, type, desc, value, defaultValue}] }
   $scope.intpDefaultIcon = $sce.trustAsHtml('<img src="../assets/images/maven_default_icon.png" style="width: 12px"/>');
-  
+
   function init() {
     // get all package info and set config
     heliumService.getAllPackageInfoAndDefaultPackages()
@@ -45,7 +45,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       .then(defaultPackageConfigs => {
         $scope.defaultPackageConfigs = defaultPackageConfigs;
       });
-    
+
     // 2. get vis package order
     heliumService.getVisualizationPackageOrder()
       .then(visPackageOrder => {
@@ -53,17 +53,17 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
         $scope.bundleOrderChanged = false;
       });
   }
-  
+
   var classifyPkgType = function(packageInfos) {
     var vizTypePkg = {}
     var spellTypePkg = {}
     var intpTypePkg = {}
     var appTypePkg = {}
-    
+
     for (var name in packageInfos) {
       var pkgs = packageInfos[name]
       var pkgType = pkgs.pkg.type
-      
+
       switch (pkgType) {
         case HeliumType.VISUALIZATION:
           vizTypePkg[name] = pkgs;
@@ -78,15 +78,14 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
           appTypePkg[name] = pkgs;
           break;
       }
-      
     }
-    
+
     $scope.vizTypePkg = vizTypePkg
     $scope.spellTypePkg = spellTypePkg
     $scope.appTypePkg = appTypePkg
     $scope.intpTypePkg = intpTypePkg
   };
-  
+
   $scope.bundleOrderListeners = {
     accept: function(sourceItemHandleScope, destSortableScope) {return true;},
     itemMoved: function(event) {},
@@ -94,7 +93,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       $scope.bundleOrderChanged = true;
     }
   };
-  
+
   $scope.saveBundleOrder = function() {
     var confirm = BootstrapDialog.confirm({
       closable: false,
@@ -125,34 +124,34 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       }
     });
   };
-  
+
   var getLicense = function(name, artifact) {
     var filteredPkgSearchResults = _.filter($scope.defaultPackages[name], function(p) {
       return p.artifact === artifact;
     });
-    
+
     var license;
     if (filteredPkgSearchResults.length === 0) {
       filteredPkgSearchResults = _.filter($scope.pkgSearchResults[name], function(p) {
         return p.pkg.artifact === artifact;
       });
-      
+
       if (filteredPkgSearchResults.length > 0) {
         license  = filteredPkgSearchResults[0].pkg.license;
       }
     } else {
       license = filteredPkgSearchResults[0].license;
     }
-    
+
     if (!license) {
       license = 'Unknown';
     }
     return license;
   }
-  
+
   $scope.enable = function(name, artifact) {
     var license = getLicense(name, artifact);
-    
+
     var confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
@@ -185,7 +184,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       }
     });
   };
-  
+
   $scope.disable = function(name) {
     var confirm = BootstrapDialog.confirm({
       closable: false,
@@ -216,7 +215,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       }
     });
   };
-  
+
   $scope.toggleVersions = function(pkgName) {
     if ($scope.showVersions[pkgName]) {
       $scope.showVersions[pkgName] = false;
@@ -224,24 +223,24 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       $scope.showVersions[pkgName] = true;
     }
   };
-  
+
   $scope.isLocalPackage = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return pkg.artifact && !pkg.artifact.includes('@');
   };
-  
+
   $scope.hasNpmLink = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return (pkg.type === HeliumType.SPELL || pkg.type === HeliumType.VISUALIZATION) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
-  
+
   $scope.hasMavenLink = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return (pkg.type === HeliumType.APPLICATION || pkg.type === HeliumType.INTERPRETER) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
-  
+
   $scope.getPackageSize = function(pkgSearchResult, targetPkgType) {
     var result = []
     _.map(pkgSearchResult, function (pkg) {
@@ -249,48 +248,48 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     })
     return _.compact(result).length
   }
-  
+
   $scope.configExists = function(pkgSearchResult) {
     // helium package config is persisted per version
     return pkgSearchResult.pkg.config && pkgSearchResult.pkg.artifact;
   };
-  
+
   $scope.configOpened = function(pkgSearchResult) {
     return pkgSearchResult.configOpened && !pkgSearchResult.configFetching;
   };
-  
+
   $scope.getConfigButtonClass = function(pkgSearchResult) {
     return (pkgSearchResult.configOpened && pkgSearchResult.configFetching) ?
       'disabled' : '';
   }
-  
+
   $scope.toggleConfigButton = function(pkgSearchResult) {
     if (pkgSearchResult.configOpened) {
       pkgSearchResult.configOpened = false;
       return;
     }
-    
+
     const pkg = pkgSearchResult.pkg;
     const pkgName = pkg.name;
     pkgSearchResult.configFetching = true;
     pkgSearchResult.configOpened = true;
-    
+
     heliumService.getSinglePackageConfigs(pkg)
       .then(confs => {
         $scope.defaultPackageConfigs[pkgName] = confs;
         pkgSearchResult.configFetching = false;
       });
   };
-  
+
   $scope.saveConfig = function(pkgSearchResult) {
     const pkgName = pkgSearchResult.pkg.name;
     const currentConf = $scope.defaultPackageConfigs[pkgName];
-    
+
     heliumService.saveConfig(pkgSearchResult.pkg, currentConf, () => {
       // close after config is saved
       pkgSearchResult.configOpened = false;
     });
   };
-  
+
   init();
 }
