@@ -79,6 +79,10 @@
   width: 500px;
 }
 
+.spellConfigButton {
+  background-color: #FEFEFE;
+}
+
 .heliumPackageList .heliumPackageDisabledArtifact {
   color:gray;
 }
@@ -157,4 +161,19 @@
   font-style: italic;
   color: #aaaaaa;
   text-align: right;
+}
+
+.heliumConfig {
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.heliumConfigTable {
+  margin-top: 15px;
+  vertical-align:middle;
+  margin-bottom: 15px;
+}
+
+.heliumConfigValueText {
+  vertical-align: top;
 }

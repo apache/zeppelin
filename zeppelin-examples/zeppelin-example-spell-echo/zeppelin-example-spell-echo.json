@@ -21,6 +21,13 @@
   "artifact" : "./zeppelin-examples/zeppelin-example-spell-echo",
   "license" : "Apache-2.0",
   "icon" : "<i class='fa fa-repeat'></i>",
+  "config": {
+    "repeat": {
+      "type": "number",
+      "description": "How many times to repeat",
+      "defaultValue": 1
+    }
+  },
   "spell": {
     "magic": "%echo",
     "usage": "%echo <TEXT>"

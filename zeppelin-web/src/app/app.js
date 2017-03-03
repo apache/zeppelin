@@ -96,7 +96,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
       .when('/helium', {
         templateUrl: 'app/helium/helium.html',
         controller: 'HeliumCtrl'
-      })    
+      })
       .when('/configuration', {
         templateUrl: 'app/configuration/configuration.html',
         controller: 'ConfigurationCtrl'
@@ -115,6 +115,24 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
       combineDuplications: true,
       timeout: 6000
     });
+  })
+
+  //handel logout on API failure
+  .config(function ($httpProvider, $provide) {
+    $provide.factory('httpInterceptor', function ($q, $rootScope) {
+      return {
+        'responseError': function (rejection) {
+          if (rejection.status === 405) {
+            var data = {};
+            data.info = '';
+            $rootScope.$broadcast('session_logout', data);
+          }
+          $rootScope.$broadcast('httpResponseError', rejection);
+          return $q.reject(rejection);
+        }
+      };
+    });
+    $httpProvider.interceptors.push('httpInterceptor');
   })
   .constant('TRASH_FOLDER_ID', '~Trash');
 

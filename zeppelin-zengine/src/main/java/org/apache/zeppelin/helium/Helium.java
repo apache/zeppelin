@@ -19,6 +19,7 @@ package org.apache.zeppelin.helium;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.resource.DistributedResourcePool;
@@ -47,6 +48,8 @@ public class Helium {
   private final Gson gson;
   private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
+
+  Map<String, List<HeliumPackageSearchResult>> allPackages;
 
   public Helium(
       String heliumConfPath,
@@ -142,7 +145,7 @@ public class Helium {
   }
 
   private void clearNotExistsPackages() {
-    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo();
+    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfoWithoutRefresh();
 
     // clear visualization display order
     List<String> packageOrder = heliumConf.getBundleDisplayOrder();
@@ -163,47 +166,110 @@ public class Helium {
     }
   }
 
+  public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfoWithoutRefresh() {
+    return getAllPackageInfo(false, null);
+  }
+
   public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo() {
+    return getAllPackageInfo(true, null);
+  }
+
+  /**
+   * @param refresh
+   * @param packageName
+   */
+  public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo(boolean refresh,
+                                                                        String packageName) {
     Map<String, String> enabledPackageInfo = heliumConf.getEnabledPackages();
 
-    Map<String, List<HeliumPackageSearchResult>> map = new HashMap<>();
     synchronized (registry) {
-      for (HeliumRegistry r : registry) {
-        try {
-          for (HeliumPackage pkg : r.getAll()) {
-            String name = pkg.getName();
-            String artifact = enabledPackageInfo.get(name);
-            boolean enabled = (artifact != null && artifact.equals(pkg.getArtifact()));
+      if (refresh || allPackages == null) {
+        allPackages = new HashMap<>();
+        for (HeliumRegistry r : registry) {
+          try {
+            for (HeliumPackage pkg : r.getAll()) {
+              String name = pkg.getName();
 
-            if (!map.containsKey(name)) {
-              map.put(name, new LinkedList<HeliumPackageSearchResult>());
+              if (!StringUtils.isEmpty(packageName) &&
+                  !name.equals(packageName)) {
+                continue;
+              }
+
+              String artifact = enabledPackageInfo.get(name);
+              boolean enabled = (artifact != null && artifact.equals(pkg.getArtifact()));
+
+              if (!allPackages.containsKey(name)) {
+                allPackages.put(name, new LinkedList<HeliumPackageSearchResult>());
+              }
+              allPackages.get(name).add(new HeliumPackageSearchResult(r.name(), pkg, enabled));
             }
-            map.get(name).add(new HeliumPackageSearchResult(r.name(), pkg, enabled));
+          } catch (IOException e) {
+            logger.error(e.getMessage(), e);
           }
-        } catch (IOException e) {
-          logger.error(e.getMessage(), e);
         }
+      } else {
+        for (String name : allPackages.keySet()) {
+          if (!StringUtils.isEmpty(packageName) &&
+              !name.equals(packageName)) {
+            continue;
+          }
+
+          List<HeliumPackageSearchResult> pkgs = allPackages.get(name);
+          String artifact = enabledPackageInfo.get(name);
+          LinkedList<HeliumPackageSearchResult> newResults =
+              new LinkedList<HeliumPackageSearchResult>();
+
+          for (HeliumPackageSearchResult pkg : pkgs) {
+            boolean enabled = (artifact != null && artifact.equals(pkg.getPkg().getArtifact()));
+            newResults.add(new HeliumPackageSearchResult(pkg.getRegistry(), pkg.getPkg(), enabled));
+          }
+
+          allPackages.put(name, newResults);
+        }
+      }
+
+      // sort version (artifact)
+      for (String name : allPackages.keySet()) {
+        List<HeliumPackageSearchResult> packages = allPackages.get(name);
+        Collections.sort(packages, new Comparator<HeliumPackageSearchResult>() {
+          @Override
+          public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
+            return o2.getPkg().getArtifact().compareTo(o1.getPkg().getArtifact());
+          }
+        });
+      }
+      return allPackages;
+    }
+  }
+
+  public List<HeliumPackageSearchResult> getSinglePackageInfo(String packageName) {
+    Map<String, List<HeliumPackageSearchResult>> result = getAllPackageInfo(false, packageName);
+
+    if (!result.containsKey(packageName)) {
+      return new ArrayList<>();
+    }
+
+    return result.get(packageName);
+  }
+
+  public HeliumPackageSearchResult getEnabledPackageInfo(String packageName) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfoWithoutRefresh();
+    List<HeliumPackageSearchResult> packages = infos.get(packageName);
+
+    for (HeliumPackageSearchResult pkgSearchResult : packages) {
+      if (pkgSearchResult.isEnabled()) {
+        return pkgSearchResult;
       }
     }
 
-    // sort version (artifact)
-    for (String name : map.keySet()) {
-      List<HeliumPackageSearchResult> packages = map.get(name);
-      Collections.sort(packages, new Comparator<HeliumPackageSearchResult>() {
-        @Override
-        public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
-          return o2.getPkg().getArtifact().compareTo(o1.getPkg().getArtifact());
-        }
-      });
-    }
-    return map;
+    return null;
   }
 
-  public HeliumPackageSearchResult getPackageInfo(String name, String artifact) {
-    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo();
-    List<HeliumPackageSearchResult> packages = infos.get(name);
+  public HeliumPackageSearchResult getPackageInfo(String pkgName, String artifact) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo(false, pkgName);
+    List<HeliumPackageSearchResult> packages = infos.get(pkgName);
     if (artifact == null) {
-      return packages.get(0);
+      return packages.get(0); /** return the FIRST package */
     } else {
       for (HeliumPackageSearchResult pkg : packages) {
         if (pkg.getPkg().getArtifact().equals(artifact)) {
@@ -255,6 +321,21 @@ public class Helium {
     save();
   }
 
+  public void updatePackageConfig(String artifact, Map<String, Object> pkgConfig)
+      throws IOException {
+
+    heliumConf.updatePackageConfig(artifact, pkgConfig);
+    save();
+  }
+
+  public Map<String, Map<String, Object>> getAllPackageConfig() {
+    return heliumConf.getAllPackageConfigs();
+  }
+
+  public Map<String, Object> getPackagePersistedConfig(String artifact) {
+    return heliumConf.getPackagePersistedConfig(artifact);
+  }
+
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
     HeliumPackageSuggestion suggestion = new HeliumPackageSuggestion();
 
@@ -276,7 +357,7 @@ public class Helium {
       allResources = ResourcePoolUtils.getAllResources();
     }
 
-    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo().values()) {
+    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfoWithoutRefresh().values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
         if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
           ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
@@ -304,7 +385,7 @@ public class Helium {
    * @return ordered list of enabled buildBundle package
    */
   public List<HeliumPackage> getBundlePackagesToBundle() {
-    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo();
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
     List<String> visOrder = heliumConf.getBundleDisplayOrder();
 
     List<HeliumPackage> orderedBundlePackages = new LinkedList<>();
@@ -367,5 +448,52 @@ public class Helium {
     bundleFactory.buildBundle(getBundlePackagesToBundle());
 
     save();
+  }
+
+  /**
+   * @param packageName
+   * @return { "confPersisted", "confSpec" } or return null if failed to found enabled package
+   */
+  public Map<String, Map<String, Object>> getSpellConfig(String packageName) {
+    HeliumPackageSearchResult result = getEnabledPackageInfo(packageName);
+
+    if (result == null) {
+      return null;
+    }
+
+    HeliumPackage enabledPackage = result.getPkg();
+
+    Map<String, Object> configSpec = enabledPackage.getConfig();
+    Map<String, Object> configPersisted =
+        getPackagePersistedConfig(enabledPackage.getArtifact());
+
+    return createMixedConfig(configPersisted, configSpec);
+  }
+
+  public Map<String, Map<String, Object>> getPackageConfig(String pkgName,
+                                                           String artifact) {
+
+    HeliumPackageSearchResult result = getPackageInfo(pkgName, artifact);
+
+    if (result == null) {
+      return null;
+    }
+
+    HeliumPackage requestedPackage = result.getPkg();
+
+    Map<String, Object> configSpec = requestedPackage.getConfig();
+    Map<String, Object> configPersisted =
+        getPackagePersistedConfig(artifact);
+
+    return createMixedConfig(configPersisted, configSpec);
+  }
+
+  public static Map<String, Map<String, Object>> createMixedConfig(Map<String, Object> persisted,
+                                                                   Map<String, Object> spec) {
+    Map<String, Map<String, Object>> mixed = new HashMap<>();
+    mixed.put("confPersisted", persisted);
+    mixed.put("confSpec", spec);
+
+    return mixed;
   }
 }

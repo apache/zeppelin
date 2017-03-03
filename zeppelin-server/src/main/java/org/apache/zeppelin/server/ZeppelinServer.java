@@ -126,7 +126,7 @@ public class ZeppelinServer extends Application {
           new File(conf.getRelativeDir("zeppelin-web/src/app/spell")));
     }
 
-    this.helium = new Helium(
+    ZeppelinServer.helium = new Helium(
         conf.getHeliumConfPath(),
         conf.getHeliumRegistry(),
         new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO),
@@ -177,7 +177,7 @@ public class ZeppelinServer extends Application {
     // Web UI
     final WebAppContext webApp = setupWebAppContext(contexts, conf);
 
-    // REST api
+    // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
 
     // Notebook server

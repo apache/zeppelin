@@ -79,19 +79,19 @@ limitations under the License.
            data-ng-model="permissions">
         <p><span class="owners">Owners </span>
           <select id="selectOwners" multiple="multiple">
-            <option ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
+            <option is-select2="false" ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
           </select>
           Owners can change permissions,read and write the note.
         </p>
         <p><span class="writers">Writers </span>
           <select id="selectWriters" multiple="multiple">
-            <option ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
+            <option is-select2="false" ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
           </select>
             Writers can read and write the note.
         </p>
         <p><span class="readers">Readers </span>
           <select id="selectReaders" multiple="multiple">
-            <option ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>
+            <option is-select2="false" ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>
           </select>
             Readers can only read the note.
         </p>
@@ -112,7 +112,7 @@ limitations under the License.
        ng-controller="ParagraphCtrl"
        ng-init="init(currentParagraph, note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
-       class="paragraph-col">
+       style="margin: 0; padding: 0;">
     <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe || revisionView">
       <h4 class="plus-sign">&#43;</h4>
     </div>

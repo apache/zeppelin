@@ -13,21 +13,32 @@
  */
 
 import { HeliumType, } from './helium-type';
+import {
+  createAllPackageConfigs,
+  createPersistableConfig,
+  mergePersistedConfWithSpec,
+} from './helium-conf';
+import {
+  createDefaultPackages,
+} from './helium-package';
 
 angular.module('zeppelinWebApp').service('heliumService', heliumService);
 
-function heliumService($http, baseUrlSrv, ngToast) {
+export default function heliumService($http, $sce, baseUrlSrv) {
   'ngInject';
 
   var url = baseUrlSrv.getRestApiBase() + '/helium/bundle/load';
   if (process.env.HELIUM_BUNDLE_DEV) {
     url = url + '?refresh=true';
   }
+
+  let visualizationBundles = [];
   // name `heliumBundles` should be same as `HelumBundleFactory.HELIUM_BUNDLES_VAR`
-  var heliumBundles = [];
+  let heliumBundles = [];
   // map for `{ magic: interpreter }`
   let spellPerMagic = {};
-  let visualizationBundles = [];
+  // map for `{ magic: package-name }`
+  let pkgNamePerMagic = {}
 
   // load should be promise
   this.load = $http.get(url).success(function(response) {
@@ -39,7 +50,9 @@ function heliumService($http, baseUrlSrv, ngToast) {
       heliumBundles.map(b => {
         if (b.type === HeliumType.SPELL) {
           const spell = new b.class(); // eslint-disable-line new-cap
+          const pkgName = b.id;
           spellPerMagic[spell.getMagic()] = spell;
+          pkgNamePerMagic[spell.getMagic()] = pkgName;
         } else if (b.type === HeliumType.VISUALIZATION) {
           visualizationBundles.push(b);
         }
@@ -57,27 +70,52 @@ function heliumService($http, baseUrlSrv, ngToast) {
     return spellPerMagic[magic];
   };
 
-  /**
-   * @returns {Object} map for `{ magic : spell }`
-   */
-  this.getAllSpells = function() {
-    return spellPerMagic;
+  this.executeSpell = function(magic, textWithoutMagic) {
+    const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
+      .then(confs => createPersistableConfig(confs));
+
+    return promisedConf.then(conf => {
+      const spell = this.getSpellByMagic(magic);
+      const spellResult = spell.interpret(textWithoutMagic, conf);
+      const parsed = spellResult.getAllParsedDataWithTypes(
+        spellPerMagic, magic, textWithoutMagic);
+
+      return parsed;
+    });
+  };
+
+  this.executeSpellAsDisplaySystem = function(magic, textWithoutMagic) {
+    const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
+      .then(confs => createPersistableConfig(confs));
+
+    return promisedConf.then(conf => {
+      const spell = this.getSpellByMagic(magic);
+      const spellResult = spell.interpret(textWithoutMagic.trim(), conf);
+      const parsed = spellResult.getAllParsedDataWithTypes(spellPerMagic);
+
+      return parsed;
+    });
   };
 
   this.getVisualizationBundles = function() {
     return visualizationBundles;
   };
 
+  /**
+   * @returns {Promise} which returns bundleOrder
+   */
   this.getVisualizationPackageOrder = function() {
-    return $http.get(baseUrlSrv.getRestApiBase() + '/helium/order/visualization');
+    return $http.get(baseUrlSrv.getRestApiBase() + '/helium/order/visualization')
+      .then(function(response, status) {
+        return response.data.body;
+      })
+      .catch(function(error) {
+        console.error('Can not get bundle order', error);
+      });
   };
 
   this.setVisualizationPackageOrder = function(list) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/order/visualization', list);
-  };
-
-  this.getAllPackageInfo = function() {
-    return $http.get(baseUrlSrv.getRestApiBase() + '/helium/all');
   };
 
   this.enable = function(name, artifact) {
@@ -87,4 +125,120 @@ function heliumService($http, baseUrlSrv, ngToast) {
   this.disable = function(name) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
   };
+
+  this.saveConfig = function(pkg , defaultPackageConfig, closeConfigPanelCallback) {
+    // in case of local package, it will include `/`
+    const pkgArtifact = encodeURIComponent(pkg.artifact);
+    const pkgName = pkg.name;
+    const filtered = createPersistableConfig(defaultPackageConfig);
+
+    if (!pkgName || !pkgArtifact|| !filtered) {
+      console.error(
+        `Can't save config for helium package '${pkgArtifact}'`, filtered);
+      return;
+    }
+
+    const url = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgArtifact}`;
+    return $http.post(url, filtered)
+      .then(() => {
+        if (closeConfigPanelCallback) { closeConfigPanelCallback(); }
+      }).catch((error) => {
+        console.error(`Failed to save config for ${pkgArtifact}`, error);
+      });
+  };
+
+  /**
+   * @returns {Promise<Object>} which including {name, Array<package info for artifact>}
+   */
+  this.getAllPackageInfo = function() {
+    return $http.get(`${baseUrlSrv.getRestApiBase()}/helium/package`)
+      .then(function(response, status) {
+        return response.data.body;
+      })
+      .catch(function(error) {
+        console.error('Failed to get all package infos', error);
+      });
+  };
+
+  this.getDefaultPackages = function() {
+    return this.getAllPackageInfo()
+      .then(pkgSearchResults => {
+        return createDefaultPackages(pkgSearchResults, $sce);
+      });
+  };
+
+  this.getAllPackageInfoAndDefaultPackages = function() {
+    return this.getAllPackageInfo()
+      .then(pkgSearchResults => {
+        return {
+          pkgSearchResults: pkgSearchResults,
+          defaultPackages: createDefaultPackages(pkgSearchResults, $sce),
+        };
+      });
+  };
+
+  /**
+   * get all package configs.
+   * @return { Promise<{name, Array<Object>}> }
+   */
+  this.getAllPackageConfigs = function() {
+    const promisedDefaultPackages = this.getDefaultPackages();
+    const promisedPersistedConfs =
+      $http.get(`${baseUrlSrv.getRestApiBase()}/helium/config`)
+      .then(function(response, status) {
+        return response.data.body;
+      });
+
+    return Promise.all([promisedDefaultPackages, promisedPersistedConfs])
+      .then(values => {
+        const defaultPackages = values[0];
+        const persistedConfs = values[1];
+
+        return createAllPackageConfigs(defaultPackages, persistedConfs);
+      })
+      .catch(function(error) {
+        console.error('Failed to get all package configs', error);
+      });
+  };
+
+  /**
+   * get the package config which is persisted in server.
+   * @return { Promise<Array<Object>> }
+   */
+  this.getSinglePackageConfigs = function(pkg) {
+    const pkgName = pkg.name;
+    // in case of local package, it will include `/`
+    const pkgArtifact = encodeURIComponent(pkg.artifact);
+
+    if (!pkgName || !pkgArtifact) {
+      console.error('Failed to fetch config for\n', pkg);
+      return Promise.resolve([]);
+    }
+
+    const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgArtifact}`;
+    const promisedConf = $http.get(confUrl)
+      .then(function(response, status) {
+        return response.data.body;
+      });
+
+    return promisedConf.then(({confSpec, confPersisted}) => {
+      const merged = mergePersistedConfWithSpec(confPersisted, confSpec)
+      return merged;
+    });
+  };
+
+  this.getSinglePackageConfigUsingMagic = function(magic) {
+    const pkgName = pkgNamePerMagic[magic];
+
+    const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/spell/config/${pkgName}`;
+    const promisedConf = $http.get(confUrl)
+      .then(function(response, status) {
+        return response.data.body;
+      });
+
+    return promisedConf.then(({confSpec, confPersisted}) => {
+      const merged = mergePersistedConfWithSpec(confPersisted, confSpec)
+      return merged;
+    });
+  }
 }
