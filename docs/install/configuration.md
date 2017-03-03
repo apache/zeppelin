@@ -26,7 +26,7 @@ limitations under the License.
 ## Zeppelin Properties
 There are two locations you can configure Apache Zeppelin.
 
-* **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows). 
+* **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
 * **Java properties** can ba defined in `conf/zeppelin-site.xml`.
 
 If both are defined, then the **environment variables** will take priority.
@@ -258,6 +258,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Interpreter directory</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_DEP_MVNREPO</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.dep.mvnRepo</h6></td>
+    <td>http://repo1.maven.org/maven2/</td>
+    <td>Remote principal repository for interpreter's additional dependency loading</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</h6></td>
     <td><h6 class="properties">zeppelin.interpreter.output.limit</h6></td>
     <td>102400</td>
@@ -391,7 +397,7 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 ### Obfuscating Passwords using the Jetty Password Tool
 
 Security best practices advise to not use plain text passwords and Jetty provides a password tool to help obfuscating the passwords used to access the KeyStore and TrustStore.
- 
+
 The Password tool documentation can be found [here](http://www.eclipse.org/jetty/documentation/current/configuring-security-secure-passwords.html).
 
 After using the tool:
