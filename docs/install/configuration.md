@@ -26,7 +26,7 @@ limitations under the License.
 ## Zeppelin Properties
 There are two locations you can configure Apache Zeppelin.
 
-* **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows). 
+* **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
 * **Java properties** can ba defined in `conf/zeppelin-site.xml`.
 
 If both are defined, then the **environment variables** will take priority.
@@ -43,7 +43,7 @@ If both are defined, then the **environment variables** will take priority.
     <td>zeppelin.server.port</td>
     <td>8080</td>
     <td>Zeppelin server port </br>
-      <span style="font-style:italic; color: gray"> Note: Please make sure you're not using the same port with 
+      <span style="font-style:italic; color: gray"> Note: Please make sure you're not using the same port with
       <a href="https://zeppelin.apache.org/contribution/webapplication.html#dev-mode" target="_blank">Zeppelin web application development port</a> (default: 9000).</span></td>
   </tr>
   <tr>
@@ -251,8 +251,32 @@ If both are defined, then the **environment variables** will take priority.
     <td>Interpreter directory</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</td>
-    <td>zeppelin.websocket.max.text.message.size</td>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_DEP_MVNREPO</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.dep.mvnRepo</h6></td>
+    <td>http://repo1.maven.org/maven2/</td>
+    <td>Remote principal repository for interpreter's additional dependency loading</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.output.limit</h6></td>
+    <td>102400</td>
+    <td>Output message from interpreter exceeding the limit will be truncated</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.connect.timeout</h6></td>
+    <td>30000</td>
+    <td>Output message from interpreter exceeding the limit will be truncated</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
+    <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
+    <td>local-repo</td>
+    <td>Local repository for dependency loader.<br>ex)visualiztion modules of npm.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.max.text.message.size</h6></td>
     <td>1024000</td>
     <td>Size (in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
@@ -360,7 +384,7 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 ### Obfuscating Passwords using the Jetty Password Tool
 
 Security best practices advise to not use plain text passwords and Jetty provides a password tool to help obfuscating the passwords used to access the KeyStore and TrustStore.
- 
+
 The Password tool documentation can be found [here](http://www.eclipse.org/jetty/documentation/current/configuring-security-secure-passwords.html).
 
 After using the tool:
