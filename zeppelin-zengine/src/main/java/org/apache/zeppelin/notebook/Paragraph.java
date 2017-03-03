@@ -49,6 +49,7 @@ import com.google.common.annotations.VisibleForTesting;
  * Paragraph is a representation of an execution unit.
  */
 public class Paragraph extends Job implements Serializable, Cloneable {
+
   private static final long serialVersionUID = -6328572073497992016L;
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
@@ -124,6 +125,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph getUserParagraph(String user) {
+    if (!userParagraphMap.containsKey(user)) {
+      cloneParagraphForUser(user);
+    }
     return userParagraphMap.get(user);
   }
 
@@ -140,10 +144,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     p.setTitle(getTitle());
     p.setText(getText());
     p.setResult(getReturn());
-    p.setStatus(getStatus());
+    p.setStatus(Status.READY);
     p.setId(getId());
     addUser(p, user);
     return p;
+  }
+
+  public void clearUserParagraphs() {
+    userParagraphMap.clear();
   }
 
   public void addUser(Paragraph p, String user) {
@@ -371,6 +379,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     }
 
+    for (Paragraph p : userParagraphMap.values()) {
+      p.setText(getText());
+    }
+
     String script = getScriptBody();
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {
@@ -402,13 +414,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
       resultMessages.addAll(ret.message());
 
-      for (Paragraph p : userParagraphMap.values()) {
-        p.setText(getText());
-      }
-
       InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
 
-      Paragraph p = userParagraphMap.get(getUser());
+      Paragraph p = getUserParagraph(getUser());
       if (null != p) {
         p.setResult(res);
         p.settings.setParams(settings.getParams());
@@ -527,12 +535,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
       UserCredentials userCredentials =
-              credentials.getUserCredentials(authenticationInfo.getUser());
+          credentials.getUserCredentials(authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
     }
 
     InterpreterContext interpreterContext =
-            new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
+        new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
             this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
             resourcePool, runners, output);
     return interpreterContext;
@@ -575,7 +583,15 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return new ParagraphRunner(note, note.getId(), getId());
   }
 
+  public void setStatusToUserParagraph(Status status) {
+    String user = getUser();
+    if (null != user) {
+      getUserParagraph(getUser()).setStatus(status);
+    }
+  }
+
   static class ParagraphRunner extends InterpreterContextRunner {
+
     private transient Note note;
 
     public ParagraphRunner(Note note, String noteId, String paragraphId) {
@@ -700,7 +716,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       for (String key : infos.keySet()) {
         ParagraphRuntimeInfo info = this.runtimeInfos.get(key);
         if (info == null) {
-          info = new ParagraphRuntimeInfo(key, label, tooltip,  group, intpSettingId);
+          info = new ParagraphRuntimeInfo(key, label, tooltip, group, intpSettingId);
           this.runtimeInfos.put(key, info);
         }
         info.addValue(infos.get(key));
