@@ -36,7 +36,6 @@ import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.MutablePrincipalCollection;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.StringUtils;
-import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -107,6 +105,8 @@ import javax.naming.ldap.PagedResultsControl;
  * apache,dc=org 
  * ldapRealm.contextFactory.systemPassword=S{ALIAS=ldcSystemPassword} [urls]
  * **=authcBasic
+ * # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
+ * ldapRealm.groupSearchEnableMatchingRuleInChain = true
  *
  * <p># optional mapping from physical groups to logical application roles
  * ldapRealm.rolesByGroup = \ LDN_USERS: user_role,\ NYK_USERS: user_role,\
@@ -128,6 +128,8 @@ public class LdapRealm extends JndiLdapRealm {
   private static final String SUBJECT_USER_GROUPS = "subject.userGroups";
   private static final String MEMBER_URL = "memberUrl";
   private static final String POSIX_GROUP = "posixGroup";
+  private static final String MATCHING_RULE_IN_CHAIN_FORMAT = 
+      "(&(objectClass=%s)(%s:1.2.840.113556.1.4.1941:=%s))";
 
   private static Pattern TEMPLATE_PATTERN = Pattern.compile("\\{(\\d+?)\\}");
   private static String DEFAULT_PRINCIPAL_REGEX = "(.*)";
@@ -153,13 +155,14 @@ public class LdapRealm extends JndiLdapRealm {
   private String userSearchAttributeTemplate = "{0}";
   private String userSearchScope = "subtree";
   private String groupSearchScope = "subtree";
+  private boolean groupSearchEnableMatchingRuleInChain;
 
 
   private String groupSearchBase;
 
   private String groupObjectClass = "groupOfNames";
 
-  // typical value: member, uniqueMember, meberUrl
+  // typical value: member, uniqueMember, memberUrl
   private String memberAttribute = "member";
 
   private String groupIdAttribute = "cn";
@@ -282,16 +285,38 @@ public class LdapRealm extends JndiLdapRealm {
         NamingEnumeration<SearchResult> searchResultEnum = null;
         SearchControls searchControls = getGroupSearchControls();
         try {
-          searchResultEnum = ldapCtx.search(
+          if (groupSearchEnableMatchingRuleInChain) {
+            searchResultEnum = ldapCtx.search(
+                getGroupSearchBase(),
+                String.format(
+                    MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
+                searchControls);
+            while (searchResultEnum != null && searchResultEnum.hasMore()) { 
+              // searchResults contains all the groups in search scope
+              numResults++;
+              final SearchResult group = searchResultEnum.next();
+
+              Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
+              String groupName = attribute.get().toString();            
+              
+              String roleName = roleNameFor(groupName);
+              if (roleName != null) {
+                roleNames.add(roleName);
+              } else {
+                roleNames.add(groupName);
+              }
+            }                
+          } else {
+            searchResultEnum = ldapCtx.search(
                 getGroupSearchBase(),
                 "objectClass=" + groupObjectClass,
                 searchControls);
-
-          while (searchResultEnum != null && searchResultEnum.hasMore()) { 
-            // searchResults contains all the groups in search scope
-            numResults++;
-            final SearchResult group = searchResultEnum.next();
-            addRoleIfMember(userDn, group, roleNames, groupNames, ldapContextFactory);
+            while (searchResultEnum != null && searchResultEnum.hasMore()) { 
+              // searchResults contains all the groups in search scope
+              numResults++;
+              final SearchResult group = searchResultEnum.next();
+              addRoleIfMember(userDn, group, roleNames, groupNames, ldapContextFactory);
+            }
           }
         } catch (PartialResultException e) {
           log.debug("Ignoring PartitalResultException");
@@ -681,6 +706,15 @@ public class LdapRealm extends JndiLdapRealm {
 
   public void setGroupSearchScope(final String scope) {
     this.groupSearchScope = (scope == null ? null : scope.trim().toLowerCase());
+  }
+  
+  public boolean isGroupSearchEnableMatchingRuleInChain() {
+    return groupSearchEnableMatchingRuleInChain;
+  }
+
+  public void setGroupSearchEnableMatchingRuleInChain(
+      boolean groupSearchEnableMatchingRuleInChain) {
+    this.groupSearchEnableMatchingRuleInChain = groupSearchEnableMatchingRuleInChain;
   }
 
   private SearchControls getUserSearchControls() {
