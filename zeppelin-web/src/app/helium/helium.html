@@ -95,7 +95,7 @@ limitations under the License.
           <span class="heliumType">{{pkgSearchResult.pkg.type}}</span>
         </div>
         <div ng-show="!pkgSearchResult.enabled"
-             ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact)"
+             ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact, pkgSearchResult.pkg.type, pkgSearchResult.pkg.groupId)"
              class="btn btn-success btn-xs"
              style="float:right">Enable</div>
         <div ng-show="pkgSearchResult.enabled"
@@ -126,7 +126,7 @@ limitations under the License.
         <li class="heliumPackageDisabledArtifact"
             ng-repeat="pkgSearchResult in pkgSearchResults[pkgSearchResult.pkg.name]">
           {{pkgSearchResult.pkg.artifact}} -
-          <span ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact)"
+          <span ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact, pkgSearchResult.pkg.type, pkgSearchResult.pkg.groupId)"
                 ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
                 style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
             enable
