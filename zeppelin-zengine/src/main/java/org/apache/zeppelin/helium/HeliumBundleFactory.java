@@ -34,7 +34,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * Load helium visualization
+ * Load helium visualization & spell
  */
 public class HeliumBundleFactory {
   Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
