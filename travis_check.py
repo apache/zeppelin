@@ -54,8 +54,11 @@ def getBuildStatus(author, commit):
     # get latest 25 builds
     resp = requests.get(url=travisApi + "/repos/" + author + "/zeppelin/builds")
     data = json.loads(resp.text)
-
     build = None
+
+    if len(data) == 0:
+        return build;
+
     for b in data:
         if b["commit"][:len(commit)] == commit:
             resp = requests.get(url=travisApi + "/repos/" + author + "/zeppelin/builds/" + str(b["id"]))
@@ -103,8 +106,8 @@ for sleep in check:
     info("Get build status ...")
     build = getBuildStatus(author, commit)
     if build == None:
-        info("Can't find build for commit= " + commit)
-        sys.exit(1)
+        info("Can't find build for commit " + commit + " from " + author)
+        sys.exit(2)
 
     print("Build https://travis-ci.org/" + author + "/zeppelin/builds/" + str(build["id"]))
     failure, running = printBuildStatus(build)
