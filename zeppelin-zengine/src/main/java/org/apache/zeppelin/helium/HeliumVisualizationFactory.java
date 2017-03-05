@@ -41,6 +41,10 @@ public class HeliumVisualizationFactory {
   private final String NODE_VERSION = "v6.9.1";
   private final String NPM_VERSION = "3.10.8";
   private final String DEFAULT_NPM_REGISTRY_URL = "http://registry.npmjs.org/";
+  private final int FETCH_RETRY_COUNT = 2;
+  private final int FETCH_RETRY_FACTOR_COUNT = 1;
+  // Milliseconds
+  private final int FETCH_RETRY_MIN_TIMEOUT = 5000;
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File workingDirectory;
@@ -214,7 +218,11 @@ public class HeliumVisualizationFactory {
 
     out.reset();
     try {
-      npmCommand("install");
+      String commandForNpmInstall =
+              String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
+                              "--fetch-retry-mintimeout=%d",
+                      FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      npmCommand(commandForNpmInstall);
       npmCommand("run bundle");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
@@ -334,7 +342,11 @@ public class HeliumVisualizationFactory {
   }
 
   public synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
-    npmCommand("install " + pkg.getArtifact());
+    String commandForNpmInstallArtifact =
+        String.format("install %s --fetch-retries=%d --fetch-retry-factor=%d " +
+                        "--fetch-retry-mintimeout=%d", pkg.getArtifact(),
+                FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+    npmCommand(commandForNpmInstallArtifact);
   }
 
   private void npmCommand(String args) throws TaskRunnerException {
