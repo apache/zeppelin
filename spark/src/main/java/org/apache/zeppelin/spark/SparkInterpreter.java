@@ -585,9 +585,9 @@ public class SparkInterpreter extends Interpreter {
         archives = conf.get("spark.yarn.dist.archives");
       }
       if (archives != null) {
-        archives = archives + "," + "file:/" + sparkRPath + "#sparkr";
+        archives = archives + "," + sparkRPath + "#sparkr";
       } else {
-        archives = "file:/" + sparkRPath + "#sparkr";
+        archives = sparkRPath + "#sparkr";
       }
       conf.set("spark.yarn.dist.archives", archives);
     } else {
@@ -1433,6 +1433,7 @@ public class SparkInterpreter extends Interpreter {
       }
       sparkSession = null;
       sc = null;
+      jsc = null;
       if (classServer != null) {
         Utils.invokeMethod(classServer, "stop");
         classServer = null;
