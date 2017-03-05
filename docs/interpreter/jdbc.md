@@ -167,6 +167,10 @@ There are more JDBC interpreter properties you can specify like below.
     <td>default.jceks.credentialKey</td>
     <td>jceks credential key</td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.precode</td>
+    <td>Some SQL which executes while opening connection</td>
+  </tr>
 </table>
 
 You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
