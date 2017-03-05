@@ -90,6 +90,7 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
           action: function(dialog) {
             dialog.close();
             // using $rootScope.apply to trigger angular digest cycle
+            // changing $location.path inside bootstrap modal wont trigger digest
             $rootScope.$apply(function() {
               $location.path('/');
             });
