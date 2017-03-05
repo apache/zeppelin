@@ -31,7 +31,7 @@ $ yarn run build
 # you need to run zeppelin backend instance also
 $ yarn run dev
 
-# If you are using a custom port, you must use 'SERVER_PORT' variables to run the web application development mode.
+# If you are using a custom port, you must use the 'SERVER_PORT' variable to run the web application development mode
 $ SERVER_PORT=8080 yarn run dev
 
 # execute tests
