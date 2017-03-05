@@ -547,6 +547,7 @@ public class JDBCInterpreter extends Interpreter {
   private void executePrecode(Connection connection) throws SQLException {
     String precode = getProperty(ZEPPELIN_JDBC_PRECODE_KEY);
     if (StringUtils.isNotBlank(precode)) {
+      precode = StringUtils.trim(precode);
       logger.info("Run SQL precode '{}'", precode);
       try (Statement statement = connection.createStatement()) {
         statement.execute(precode);
