@@ -52,7 +52,7 @@ limitations under the License.
         <input type="checkbox"
                ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                ng-checked="paragraph.settings.params[formulaire.name].indexOf(option.value) > -1"
-               ng-click="toggleCheckbox(formulaire, option, false)"/>{{option.displayName||option.value}}
+               ng-click="toggleCheckbox(formulaire, option, false)"/> {{option.displayName||option.value}}
       </label>
     </div>
   </div>
