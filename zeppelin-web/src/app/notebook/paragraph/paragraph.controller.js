@@ -25,6 +25,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   'ngInject';
 
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $rootScope.keys = Object.keys;
   $scope.parentNote = null;
   $scope.paragraph = {};
   $scope.paragraph.results = {};
@@ -113,6 +114,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
     }
+    // set dynamic select form's 'Auto Run' true by default
+    $scope.isAutoRunTrue = true;
 
     noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
@@ -374,6 +377,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphFromButton = function(paragraphText) {
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph(paragraphText, false, false)
+  };
+
+  $scope.turnOnAutoRun = function () {
+    $scope.isAutoRunTrue = !$scope.isAutoRunTrue;
   };
 
   $scope.moveUp = function(paragraph) {

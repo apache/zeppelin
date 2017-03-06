@@ -89,6 +89,18 @@ limitations under the License.
           </a>
         </li>
         <li role="separator" class="divider"></li>
+        <li style="padding-top:8px"
+            ng-if="paragraph.settings.forms[$root.keys(paragraph.settings.forms)].options &&
+                   paragraph.settings.forms[$root.keys(paragraph.settings.forms)].type != 'checkbox'">
+          <span ng-if="isAutoRunTrue == true" class="fa fa-toggle-on shortcut-icon" style="padding:3px 8px 8px 20px"></span>
+          <span ng-if="isAutoRunTrue == false" class="fa fa-toggle-off shortcut-icon" style="padding:3px 8px 8px 20px"></span>Auto Run
+          <form style="display:inline; float:right">
+            <input type="checkbox"
+                   style="width:16px; margin-right:20px"
+                   ng-model="isAutoRunTrue"
+                   ng-change="turnOnAutoRun()"/>
+          </form>
+        </li>
         <li>
           <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-arrows-h shortcut-icon"></span>Width
             <form style="display:inline; margin-left:5px; float:right">
