@@ -32,7 +32,7 @@
   <name>Zeppelin: Apache Ignite interpreter</name>
 
   <properties>
-    <ignite.version>1.8.0</ignite.version>
+    <ignite.version>1.9.0</ignite.version>
   </properties>
 
   <dependencies>
