@@ -101,7 +101,7 @@ public class PySparkInterpreterTest {
     pySparkInterpreter.setInterpreterGroup(intpGroup);
     pySparkInterpreter.open();
 
-    
+
     context = new InterpreterContext("note", "id", null, "title", "text",
       new AuthenticationInfo(),
       new HashMap<String, Object>(),
@@ -136,8 +136,6 @@ public class PySparkInterpreterTest {
 
   @Test
   public void testPrecode() {
-    if (getSparkVersionNumber() > 11) {
-      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret("print precodeVar\n", context).code());
-    }
+    assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret("print(precodeVar)\n", context).code());
   }
 }

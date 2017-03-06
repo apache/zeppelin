@@ -108,7 +108,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           classLoader.getResourceAsStream("python/zeppelin_pyspark.py"), "UTF-8");
       String precode = getProperty(ZEPPELIN_PYSPARK_PRECODE_KEY);
       if (StringUtils.isNotBlank(precode)) {
-        pythonScript = pythonScript.replace("#precode#", precode);
+        pythonScript = pythonScript.replace("#precode#", StringUtils.trim(precode));
       }
       FileUtils.writeStringToFile(out, pythonScript, "UTF-8");
     } catch (IOException e) {
