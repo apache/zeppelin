@@ -137,6 +137,15 @@ public class Note implements Serializable, ParagraphJobListener {
       valueString = "false";
     }
     getConfig().put("personalizedMode", valueString);
+    clearUserParagraphs(value);
+  }
+
+  private void clearUserParagraphs(boolean isPersonalized) {
+    if (!isPersonalized) {
+      for (Paragraph p : paragraphs) {
+        p.clearUserParagraphs();
+      }
+    }
   }
 
   public String getId() {

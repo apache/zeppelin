@@ -1127,6 +1127,17 @@ public class NotebookServer extends WebSocketServlet
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
+
+    subject = new AuthenticationInfo(fromMessage.principal);
+    if (note.isPersonalizedMode()) {
+      p = p.getUserParagraph(subject.getUser());
+      p.settings.setParams(params);
+      p.setConfig(config);
+      p.setTitle((String) fromMessage.get("title"));
+      p.setText((String) fromMessage.get("paragraph"));
+    }
+
+
     note.persist(subject);
 
     if (note.isPersonalizedMode()) {
@@ -1647,6 +1658,15 @@ public class NotebookServer extends WebSocketServlet
     p.settings.setParams(params);
     p.setConfig(config);
 
+    if (note.isPersonalizedMode()) {
+      p = note.getParagraph(paragraphId);
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(subject);
+      p.settings.setParams(params);
+      p.setConfig(config);
+    }
+
     return p;
   }
 
@@ -1767,7 +1787,15 @@ public class NotebookServer extends WebSocketServlet
       InterpreterResult.Type type, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", noteId)
         .put("paragraphId", paragraphId).put("index", index).put("type", type).put("data", output);
-    broadcast(noteId, msg);
+    Note note = notebook().getNote(noteId);
+    if (note.isPersonalizedMode()) {
+      String user = note.getParagraph(paragraphId).getUser();
+      if (null != user) {
+        multicastToUser(user, msg);
+      }
+    } else {
+      broadcast(noteId, msg);
+    }
   }
 
 
@@ -2036,7 +2064,9 @@ public class NotebookServer extends WebSocketServlet
         }
       }
       if (job instanceof Paragraph) {
-        notebookServer.broadcastParagraph(note, (Paragraph) job);
+        Paragraph p = (Paragraph) job;
+        p.setStatusToUserParagraph(job.getStatus());
+        notebookServer.broadcastParagraph(note, p);
       }
       try {
         notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
