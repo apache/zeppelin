@@ -25,6 +25,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -484,6 +485,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         if (cause.getResponseBodyAsString().matches(SESSION_NOT_FOUND_PATTERN)) {
           throw new SessionNotFoundException(cause.getResponseBodyAsString());
         }
+        throw new LivyException(cause.getResponseBodyAsString() + "\n"
+            + ExceptionUtils.getFullStackTrace(ExceptionUtils.getRootCause(e)));
       }
       throw new LivyException(e);
     }
