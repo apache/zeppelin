@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkRBackend;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -45,6 +46,7 @@ public class SparkRInterpreter extends Interpreter {
   private SparkInterpreter sparkInterpreter;
   private ZeppelinR zeppelinR;
   private SparkContext sc;
+  private JavaSparkContext jsc;
 
   public SparkRInterpreter(Properties property) {
     super(property);
@@ -73,8 +75,10 @@ public class SparkRInterpreter extends Interpreter {
 
     this.sparkInterpreter = getSparkInterpreter();
     this.sc = sparkInterpreter.getSparkContext();
+    this.jsc = sparkInterpreter.getJavaSparkContext();
     SparkVersion sparkVersion = new SparkVersion(sc.version());
     ZeppelinRContext.setSparkContext(sc);
+    ZeppelinRContext.setJavaSparkContext(jsc);
     if (Utils.isSpark2()) {
       ZeppelinRContext.setSparkSession(sparkInterpreter.getSparkSession());
     }
