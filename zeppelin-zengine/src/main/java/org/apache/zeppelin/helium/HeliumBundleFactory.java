@@ -45,6 +45,10 @@ public class HeliumBundleFactory {
   public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   public static final String HELIUM_BUNDLE = "helium.bundle.js";
   public static final String HELIUM_BUNDLES_VAR = "heliumBundles";
+  private final int FETCH_RETRY_COUNT = 2;
+  private final int FETCH_RETRY_FACTOR_COUNT = 1;
+  // Milliseconds
+  private final int FETCH_RETRY_MIN_TIMEOUT = 5000;
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File workingDirectory;
@@ -194,7 +198,11 @@ public class HeliumBundleFactory {
 
     try {
       out.reset();
-      npmCommand("install --loglevel=error");
+      String commandForNpmInstall =
+              String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
+                              "--fetch-retry-mintimeout=%d",
+                      FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      npmCommand(commandForNpmInstall);
     } catch (TaskRunnerException e) {
       // ignore `(empty)` warning
       String cause = new String(out.toByteArray());
@@ -373,7 +381,11 @@ public class HeliumBundleFactory {
   }
 
   public synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
-    npmCommand("install " + pkg.getArtifact() + " npm install --loglevel=error");
+    String commandForNpmInstallArtifact =
+        String.format("install %s --fetch-retries=%d --fetch-retry-factor=%d " +
+                        "--fetch-retry-mintimeout=%d", pkg.getArtifact(),
+                FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+    npmCommand(commandForNpmInstallArtifact);
   }
 
   private void npmCommand(String args) throws TaskRunnerException {
