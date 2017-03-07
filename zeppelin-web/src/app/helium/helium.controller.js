@@ -156,7 +156,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
     
     var confirm = ''
-    if (type == 'INTERPRETER') {
+    if (type === 'INTERPRETER') {
     confirm = BootstrapDialog.show({
       title: '',
       message: '<p>Below command will download maven artifact ' +

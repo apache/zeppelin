@@ -70,7 +70,7 @@ limitations under the License.
   </div>
   <div class="row heliumPackageList"
        ng-repeat="pkgSearchResult in defaultPackages | toArray:false | orderBy: 'pkg.published':true"
-       ng-show="$parent.pkgListByType == pkgSearchResult.pkg.type">
+       ng-show="$parent.pkgListByType === pkgSearchResult.pkg.type">
     <div class="col-md-12">
       <div class="heliumPackageHead">
         <div class="heliumPackageIcon"
