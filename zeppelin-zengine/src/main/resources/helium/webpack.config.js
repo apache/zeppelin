@@ -17,7 +17,7 @@
 
 module.exports = {
     entry: './load.js',
-    output: { path: './', filename: 'helium.bundle.js', },
+    output: { path: './', filename: 'vis.bundle.js', },
     module: {
         loaders: [{
             test: /\.js$/,
