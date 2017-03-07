@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.exec.CommandLine;
@@ -147,7 +146,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
-      //env.put("PYTHONPATH", "python/py4j-0.8.2.1-src.zip");
       env.put("PYTHONPATH", ZEPPELIN_PY4JPATH);
       executor.execute(cmd, env, this);
       //executor.execute(cmd);
@@ -345,26 +343,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
       return new InterpreterResult(Code.SUCCESS);
     }
-  }
-
-  /**
-   * Checks if there is a syntax error or an exception
-   *
-   * @param output Python interpreter output
-   * @return true if syntax error or exception has happened
-   */
-  private boolean pythonErrorIn(String output) {
-    boolean isError = false;
-    String[] outputMultiline = output.split("\n");
-    Matcher errorMatcher;
-    for (String row : outputMultiline) {
-      errorMatcher = errorInLastLine.matcher(row);
-      if (errorMatcher.find() == true) {
-        isError = true;
-        break;
-      }
-    }
-    return isError;
   }
 
   public void interrupt() throws IOException {
