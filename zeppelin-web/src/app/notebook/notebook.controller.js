@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-// import { ParagraphStatus } from './paragraph/paragraph.status';
+import { isParagraphRunning, } from './paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
 
@@ -351,8 +351,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     if (!$scope.note) { return false; }
 
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
-      const status = $scope.note.paragraphs[i].status;
-      if (status === 'PENDING' || status === 'RUNNING') {
+      if (isParagraphRunning($scope.note.paragraphs[i])) {
         return true;
       }
     }

@@ -23,6 +23,7 @@ import {
   DefaultDisplayType,
   SpellResult,
 } from '../../../spell'
+import { ParagraphStatus, } from '../paragraph.status';
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
@@ -198,7 +199,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
      */
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
-      (paragraph.status === 'RUNNING' || paragraph.status === 'PENDING')) {
+      (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
 
       if (DefaultDisplayType.TEXT !== $scope.type) {
         $scope.type = DefaultDisplayType.TEXT;
