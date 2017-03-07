@@ -17,29 +17,37 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkRBackend;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
 
 /**
  * R and SparkR interpreter with visualization support.
  */
 public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
+  private static final String ZEPPELIN_R_PRECODE_KEY = "zeppelin.R.precode";
 
   private static String renderOptions;
   private SparkInterpreter sparkInterpreter;
@@ -84,6 +92,7 @@ public class SparkRInterpreter extends Interpreter {
     zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port, sparkVersion);
     try {
       zeppelinR.open();
+      executePrecode();
     } catch (IOException e) {
       logger.error("Exception while opening SparkRInterpreter", e);
       throw new InterpreterException(e);
@@ -232,6 +241,15 @@ public class SparkRInterpreter extends Interpreter {
       return Boolean.parseBoolean(getProperty("zeppelin.R.knitr"));
     } catch (Exception e) {
       return false;
+    }
+  }
+
+  private void executePrecode() {
+    String precode = getProperty(ZEPPELIN_R_PRECODE_KEY);
+    if (StringUtils.isNotBlank(precode)) {
+      precode = StringUtils.trim(precode);
+      logger.info("Run R precode '{}'", precode);
+      zeppelinR.eval(precode);
     }
   }
 }

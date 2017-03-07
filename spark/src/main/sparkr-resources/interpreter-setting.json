@@ -159,6 +159,12 @@
         "propertyName": "zeppelin.R.render.options",
         "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F",
         "description": ""
+      },
+      "zeppelin.R.precode": {
+        "envName": null,
+        "propertyName": "zeppelin.R.precode",
+        "defaultValue": "",
+        "description": "Snippet of code which executes when interpreter initialize"
       }
     },
     "editor": {

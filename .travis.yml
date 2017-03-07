@@ -89,6 +89,7 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
+  - source conf/zeppelin-env.sh
 
 script:
   - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
