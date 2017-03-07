@@ -60,8 +60,8 @@ import py4j.GatewayServer;
  */
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
-
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
+  public static final String ZEPPELIN_PY4JPATH = "python/python/py4j-0.8.2.1.zip";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
@@ -119,11 +119,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   private void createGatewayServerAndStartScript() {
-    // create python script
     createPythonScript();
 
     port = findRandomOpenPortOnAllLocalInterfaces();
-
     gatewayServer = new GatewayServer(this, port);
     gatewayServer.start();
 
@@ -149,8 +147,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
-      env.put("PYTHONPATH", "/Users/shim/zeppelin/interpreter/python/py4j-0.8.2.1-src.zip");
+      //env.put("PYTHONPATH", "python/py4j-0.8.2.1-src.zip");
+      env.put("PYTHONPATH", ZEPPELIN_PY4JPATH);
       executor.execute(cmd, env, this);
+      //executor.execute(cmd);
       pythonscriptRunning = true;
     } catch (IOException e) {
       throw new InterpreterException(e);
@@ -205,9 +205,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   PythonInterpretRequest pythonInterpretRequest = null;
-
   /**
-   *
+   * Result class of python interpreter
    */
   public class PythonInterpretRequest {
     public String statements;
@@ -232,9 +231,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
       while (pythonInterpretRequest == null && pythonscriptRunning && pythonScriptInitialized) {
         try {
-          logger.info("astro statementSetNotifier waiting... : {}, {}, {}",
-            statementSetNotifier, pythonscriptRunning, pythonScriptInitialized);
-
           statementSetNotifier.wait(1000);
         } catch (InterruptedException e) {
         }
@@ -272,8 +268,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   public void appendOutput(String message) throws IOException {
     outputStream.getInterpreterOutput().write(message);
   }
-
-  /////////////////////////////////////////////
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
