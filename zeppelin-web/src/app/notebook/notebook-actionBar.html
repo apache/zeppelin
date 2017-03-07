@@ -74,6 +74,7 @@ limitations under the License.
 
       <button type="button"
               class="btn btn-primary btn-xs"
+              ng-class="isNoteRunning() ? 'disabled' : ''"
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode !== 'true'"
               ng-click="toggleNotePersonalizedMode()"
@@ -83,6 +84,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="isNoteRunning() ? 'disabled' : ''"
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode === 'true'"
               ng-click="toggleNotePersonalizedMode()"

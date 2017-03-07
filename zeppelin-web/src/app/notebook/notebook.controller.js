@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+// import { ParagraphStatus } from './paragraph/paragraph.status';
+
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
 
 function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
@@ -342,16 +344,20 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('closeTable');
   };
 
+  /**
+   * @returns {boolean} true if one more paragraphs are running. otherwise return false.
+   */
   $scope.isNoteRunning = function() {
-    var running = false;
     if (!$scope.note) { return false; }
-    for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-      if ($scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
-        running = true;
-        break;
+
+    for (let i = 0; i < $scope.note.paragraphs.length; i++) {
+      const status = $scope.note.paragraphs[i].status;
+      if (status === 'PENDING' || status === 'RUNNING') {
+        return true;
       }
     }
-    return running;
+
+    return false;
   };
 
   $scope.killSaveTimer = function() {
