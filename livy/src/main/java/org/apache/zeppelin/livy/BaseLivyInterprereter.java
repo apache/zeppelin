@@ -368,13 +368,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
 
       if (displayAppInfo) {
-        //TODO(zjffdu), use multiple InterpreterResult to display appInfo
         InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
         interpreterResult.add(InterpreterResult.Type.TEXT, result);
         String appInfoHtml = "<hr/>Spark Application Id: " + sessionInfo.appId + "<br/>"
             + "Spark WebUI: <a href=\"" + sessionInfo.webUIAddress + "\">"
             + sessionInfo.webUIAddress + "</a>";
-        LOGGER.info("appInfoHtml:" + appInfoHtml);
         interpreterResult.add(InterpreterResult.Type.HTML, appInfoHtml);
         return interpreterResult;
       } else {
