@@ -350,6 +350,7 @@ public class PythonCondaInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     PythonInterpreter pythonInterpreter = getPythonInterpreter();
+
     if (pythonInterpreter != null) {
       return pythonInterpreter.getScheduler();
     } else {
