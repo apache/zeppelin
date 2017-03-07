@@ -44,6 +44,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
+  private final String interpreterName;
 
   private Map<String, String> env;
 
@@ -54,14 +55,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       Map<String, String> env,
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      String interpreterName) {
     super(new RemoteInterpreterEventPoller(listener, appListener),
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-
+    this.interpreterName = interpreterName;
   }
 
   RemoteInterpreterManagedProcess(String intpRunner,
@@ -69,13 +71,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
                                   String localRepoDir,
                                   Map<String, String> env,
                                   RemoteInterpreterEventPoller remoteInterpreterEventPoller,
-                                  int connectTimeout) {
+                                  int connectTimeout,
+                                  String interpreterName) {
     super(remoteInterpreterEventPoller,
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
+    this.interpreterName = interpreterName;
   }
 
   @Override
@@ -108,6 +112,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     }
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
+    cmdLine.addArgument("-n", false);
+    cmdLine.addArgument(interpreterName, false);
 
     executor = new DefaultExecutor();
 

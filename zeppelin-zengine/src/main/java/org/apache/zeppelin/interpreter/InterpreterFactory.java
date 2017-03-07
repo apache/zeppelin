@@ -302,6 +302,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     String interpreterRunnerPath;
+    String interpreterName = interpreterSettingManager.get(interpreterSettingId).getName();
     if (null != interpreterRunner) {
       interpreterRunnerPath = interpreterRunner.getPath();
       Path p = Paths.get(interpreterRunnerPath);
@@ -317,7 +318,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         new RemoteInterpreter(property, interpreterSessionKey, className,
             interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate,
-            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT));
+            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT), interpreterName);
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
