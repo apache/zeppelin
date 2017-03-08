@@ -182,22 +182,16 @@ public abstract class Job {
       this.exception = null;
       errorMessage = null;
       dateFinished = new Date();
-      progressUpdator.terminate();
-    } catch (NullPointerException e) {
-      LOGGER.error("Job failed", e);
-      progressUpdator.terminate();
-      this.exception = e;
-      setResult(e.getMessage());
-      errorMessage = getStack(e);
-      dateFinished = new Date();
     } catch (Throwable e) {
       LOGGER.error("Job failed", e);
-      progressUpdator.terminate();
       this.exception = e;
       setResult(e.getMessage());
       errorMessage = getStack(e);
       dateFinished = new Date();
     } finally {
+      if (progressUpdator != null) {
+        progressUpdator.interrupt();
+      }
       //aborted = false;
     }
   }
