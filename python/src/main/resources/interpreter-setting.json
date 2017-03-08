@@ -28,8 +28,9 @@
     "className": "org.apache.zeppelin.python.PythonCondaInterpreter",
     "properties": {
     },
-    "editor":{
+    "editor": {
       "language": "sh",
       "editOnDblClick": false
+    }
   }
 ]
