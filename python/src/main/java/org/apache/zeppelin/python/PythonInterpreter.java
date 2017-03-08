@@ -102,43 +102,36 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     py4jLibPath = System.getProperty("user.dir") +
             File.separator + "interpreter" + File.separator + ZEPPELIN_PY4JPATH;
     File py4jLib = new File(py4jLibPath);
-    if (!py4jLib.exists()) {
+    if (py4jLib.exists()) {
       return;
     }
 
-    ClassLoader classLoader = getClass().getClassLoader();
-    try {
-      FileOutputStream outStream = new FileOutputStream(py4jLib);
-      IOUtils.copy(
-          classLoader.getResourceAsStream(ZEPPELIN_PY4JPATH),
-          outStream);
-      outStream.close();
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-
+    copyFile(py4jLib, ZEPPELIN_PY4JPATH);
     logger.info("py4j library path : {}", py4jLibPath);
   }
 
   private void createPythonScript() {
-    ClassLoader classLoader = getClass().getClassLoader();
     File out = new File(scriptPath);
 
     if (out.exists() && out.isDirectory()) {
       throw new InterpreterException("Can't create python script " + out.getAbsolutePath());
     }
 
+    copyFile(out, ZEPPELIN_PYTHON);
+    logger.info("File {} created", scriptPath);
+  }
+
+  private void copyFile(File out, String sourceFile) {
+    ClassLoader classLoader = getClass().getClassLoader();
     try {
       FileOutputStream outStream = new FileOutputStream(out);
       IOUtils.copy(
-        classLoader.getResourceAsStream(ZEPPELIN_PYTHON),
-        outStream);
+          classLoader.getResourceAsStream(sourceFile),
+          outStream);
       outStream.close();
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
-
-    logger.info("File {} created", scriptPath);
   }
 
   private void createGatewayServerAndStartScript() {
@@ -294,7 +287,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("origial python interpreter---->" + this);
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
