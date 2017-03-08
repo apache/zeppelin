@@ -38,6 +38,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
 
 import org.apache.spark.SecurityManager;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
@@ -126,6 +127,7 @@ public class SparkInterpreter extends Interpreter {
   private SparkVersion sparkVersion;
   private static File outputDir;          // class outputdir for scala 2.11
   private Object classServer;      // classserver for scala 2.11
+  private JavaSparkContext jsc;
 
 
   public SparkInterpreter(Properties property) {
@@ -149,6 +151,15 @@ public class SparkInterpreter extends Interpreter {
         sparkListener = setupListeners(sc);
       }
       return sc;
+    }
+  }
+
+  public JavaSparkContext getJavaSparkContext() {
+    synchronized (sharedInterpreterLock) {
+      if (jsc == null) {
+        jsc = JavaSparkContext.fromSparkContext(sc);
+      }
+      return jsc;
     }
   }
 
@@ -1422,6 +1433,7 @@ public class SparkInterpreter extends Interpreter {
       }
       sparkSession = null;
       sc = null;
+      jsc = null;
       if (classServer != null) {
         Utils.invokeMethod(classServer, "stop");
         classServer = null;

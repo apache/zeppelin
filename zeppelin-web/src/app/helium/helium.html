@@ -18,6 +18,23 @@ limitations under the License.
         <h3 class="new_h3">
           Helium
         </h3>
+        <div class="pull-right heliumLearnMore">
+          <a target="_blank"
+             class="helium-repo-btn"
+             ng-href="https://zeppelin.apache.org/helium_packages.html"
+             tooltip-placement="bottom"
+             tooltip="Learn more">
+            <i class="icon-question" ng-style="{color: 'black'}"></i>
+          </a>
+          <button tabindex="0" class="btn btn-default btn-sm heliumRepoBtn helium-popover"
+                  role="button"
+                  ng-repeat="pkgTypes in allPackageTypes"
+                  ng-click="$parent.pkgListByType = pkgTypes">
+            <i class="fa fa-cube"></i>
+            {{pkgTypes}}
+          </button>
+          <p class="localPkgInfo">* Local registry package's name is gray colored.</p>
+        </div>
       </div>
     </div>
     <div ng-show="bundleOrder.length > 1"
@@ -34,8 +51,8 @@ limitations under the License.
           </div>
         </div>
         <span class="saveLink"
-           ng-show="bundleOrderChanged"
-           ng-click="saveBundleOrder()">
+              ng-show="bundleOrderChanged"
+              ng-click="saveBundleOrder()">
           save
         </span>
       </div>
@@ -44,28 +61,46 @@ limitations under the License.
 </div>
 
 <div class="box width-full heliumPackageContainer">
+  <div class="row"
+       style="padding-bottom: 15px"
+       ng-if="getPackageSize(defaultPackages, pkgListByType) === 0">
+    <div class="col-md-12 gray40-message">
+      <em>Currently there is no available package to be listed</em>
+    </div>
+  </div>
   <div class="row heliumPackageList"
-       ng-repeat="(pkgName, pkgSearchResult) in defaultPackages">
-
+       ng-repeat="pkgSearchResult in defaultPackages | toArray:false | orderBy: 'pkg.published':true"
+       ng-show="$parent.pkgListByType === pkgSearchResult.pkg.type">
     <div class="col-md-12">
       <div class="heliumPackageHead">
         <div class="heliumPackageIcon"
+             ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
              ng-bind-html=pkgSearchResult.pkg.icon></div>
+        <div class="heliumPackageIcon"
+             ng-if="pkgSearchResult.pkg.type === 'INTERPRETER'"
+             ng-bind-html=intpDefaultIcon></div>
         <div class="heliumPackageName">
           <span ng-if="hasNpmLink(pkgSearchResult)">
-            <a target="_blank" href="https://www.npmjs.com/package/{{pkgName}}">{{pkgName}}</a>
+            <a target="_blank" href="https://www.npmjs.com/package/{{pkgSearchResult.pkg.name}}">{{pkgSearchResult.pkg.name}}</a>
           </span>
-          <span ng-if="!hasNpmLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
-            {{pkgName}}
+          <span ng-if="!hasNpmLink(pkgSearchResult) && !hasMavenLink(pkgSearchResult)" ng-class="{'heliumLocalPackage': isLocalPackage(pkgSearchResult)}">
+            {{pkgSearchResult.pkg.name}}
+          </span>
+          <span ng-if="hasMavenLink(pkgSearchResult)">
+            <a target="_blank"
+               href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{{pkgSearchResult.pkg.artifact.split('@')[0]}}%22%20AND%20v%3A%22{{pkgSearchResult.pkg.artifact.split('@')[1]}}%22">
+               {{pkgSearchResult.pkg.name}}
+            </a>
           </span>
           <span class="heliumType">{{pkgSearchResult.pkg.type}}</span>
         </div>
         <div ng-show="!pkgSearchResult.enabled"
-             ng-click="enable(pkgName, pkgSearchResult.pkg.artifact)"
+             ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact, pkgSearchResult.pkg.type, pkgSearchResult.pkg.groupId)"
              class="btn btn-success btn-xs"
              style="float:right">Enable</div>
         <div ng-show="pkgSearchResult.enabled"
-             ng-click="disable(pkgName)"
+             ng-click="disable(pkgSearchResult.pkg.name)"
+             ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
              class="btn btn-info btn-xs"
              style="float:right">Disable</div>
         <div ng-show="configExists(pkgSearchResult)"
@@ -76,20 +111,27 @@ limitations under the License.
       </div>
       <div ng-class="{heliumPackageDisabledArtifact: !pkgSearchResult.enabled, heliumPackageEnabledArtifact: pkgSearchResult.enabled}">
         {{pkgSearchResult.pkg.artifact}}
-        <span ng-show="pkgSearchResults[pkgName].length > 0"
-              ng-click="toggleVersions(pkgName)">
+        <span ng-show="pkgSearchResults[pkgSearchResult.pkg.name].length > 0"
+              ng-click="toggleVersions(pkgSearchResult.pkg.name)">
           versions
         </span>
       </div>
       <ul class="heliumPackageVersions"
-           ng-show="showVersions[pkgName]">
+          ng-show="showVersions[pkgSearchResult.pkg.name]">
         <li class="heliumPackageDisabledArtifact"
-             ng-repeat="pkgSearchResult in pkgSearchResults[pkgName]">
+            ng-repeat="pkgSearchResult in pkgSearchResults[pkgSearchResult.pkg.name]">
           {{pkgSearchResult.pkg.artifact}} -
-          <span ng-click="enable(pkgName, pkgSearchResult.pkg.artifact)"
+          <span ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact, pkgSearchResult.pkg.type, pkgSearchResult.pkg.groupId)"
+                ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
                 style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9">
             enable
           </span>
+          <a target="_blank"
+             ng-if="pkgSearchResult.pkg.type === 'INTERPRETER'"
+             style="margin-left:3px;cursor:pointer;text-decoration: underline;color:#3071a9"
+             href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{{pkgSearchResult.pkg.artifact.split('@')[0]}}%22%20AND%20v%3A%22{{pkgSearchResult.pkg.artifact.split('@')[1]}}%22">
+            see more
+          </a>
         </li>
       </ul>
       <div class="heliumPackageDescription">
