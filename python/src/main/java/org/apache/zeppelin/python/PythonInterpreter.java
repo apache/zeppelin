@@ -60,7 +60,7 @@ import py4j.GatewayServer;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
-  public static final String ZEPPELIN_PY4JPATH = "python/py4j-0.8.2.1.zip";
+  public static final String ZEPPELIN_PY4JPATH = "python/py4j-0.9-src.zip";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
@@ -68,6 +68,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private Pattern errorInLastLine = Pattern.compile(".*(Error|Exception): .*$");
   private String pythonPath;
   private int maxResult;
+  private String py4jLibPath;
 
   private String pythonCommand = DEFAULT_ZEPPELIN_PYTHON;
 
@@ -86,6 +87,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   Integer statementSetNotifier = new Integer(0);
 
+
   public PythonInterpreter(Properties property) {
     super(property);
     try {
@@ -94,6 +96,28 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
+  }
+
+  private void createPy4jLib() {
+    py4jLibPath = System.getProperty("user.dir") +
+            File.separator + "interpreter" + File.separator + ZEPPELIN_PY4JPATH;
+    File py4jLib = new File(py4jLibPath);
+    if (!py4jLib.exists()) {
+      return;
+    }
+
+    ClassLoader classLoader = getClass().getClassLoader();
+    try {
+      FileOutputStream outStream = new FileOutputStream(py4jLib);
+      IOUtils.copy(
+          classLoader.getResourceAsStream(ZEPPELIN_PY4JPATH),
+          outStream);
+      outStream.close();
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
+
+    logger.info("py4j library path : {}", py4jLibPath);
   }
 
   private void createPythonScript() {
@@ -119,6 +143,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   private void createGatewayServerAndStartScript() {
     createPythonScript();
+    createPy4jLib();
 
     port = findRandomOpenPortOnAllLocalInterfaces();
     gatewayServer = new GatewayServer(this, port);
@@ -146,9 +171,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
-      env.put("PYTHONPATH", ZEPPELIN_PY4JPATH);
+      if (!env.containsKey("PYTHONPATH")) {
+        env.put("PYTHONPATH", py4jLibPath);
+      }
       executor.execute(cmd, env, this);
-      //executor.execute(cmd);
       pythonscriptRunning = true;
     } catch (IOException e) {
       throw new InterpreterException(e);
@@ -169,7 +195,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
       registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
     }
-
     // Add matplotlib display hook
     createGatewayServerAndStartScript();
   }
@@ -269,6 +294,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+    logger.info("origial python interpreter---->" + this);
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
