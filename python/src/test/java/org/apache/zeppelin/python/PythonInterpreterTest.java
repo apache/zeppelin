@@ -78,6 +78,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         out);
+    pythonInterpreter.open();
   }
 
   @After
@@ -87,14 +88,12 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
 
   @Test
   public void testInterpret() throws InterruptedException, IOException {
-    pythonInterpreter.open();
     InterpreterResult result = pythonInterpreter.interpret("print \"hi\"", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   @Test
   public void testInterpretInvalidSyntax() throws IOException {
-    pythonInterpreter.open();
     InterpreterResult result = pythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\n", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("hi\nhi\nhi"));
