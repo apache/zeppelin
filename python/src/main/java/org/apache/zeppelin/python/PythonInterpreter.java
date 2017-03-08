@@ -60,7 +60,7 @@ import py4j.GatewayServer;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
-  public static final String ZEPPELIN_PY4JPATH = "python/python/py4j-0.8.2.1.zip";
+  public static final String ZEPPELIN_PY4JPATH = "python/py4j-0.8.2.1.zip";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
