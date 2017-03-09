@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -84,6 +83,8 @@ function publish_snapshot_to_maven() {
     exit 1
   fi
 
+  tmp_repo="$(mktemp -d /tmp/zeppelin-repo-XXXXX)"
+
   mvn versions:set -DnewVersion=$RELEASE_VERSION
   tmp_settings="tmp-settings.xml"
   echo "<settings><servers><server>" > $tmp_settings
@@ -91,11 +92,15 @@ function publish_snapshot_to_maven() {
   echo "<password>$ASF_PASSWORD</password>" >> $tmp_settings
   echo "</server></servers></settings>" >> $tmp_settings
 
-  mvn --settings $tmp_settings -DskipTests $PUBLISH_PROFILES -Drat.skip=true deploy
+  mvn --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -Pbeam -DskipTests \
+    $PUBLISH_PROFILES -Drat.skip=true deploy
+
   "${BASEDIR}/change_scala_version.sh" 2.11
-  mvn -Pscala-2.11 --settings $tmp_settings -DskipTests $PUBLISH_PROFILES -Drat.skip=true clean deploy
+  mvn -Pscala-2.11 --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -Pbeam -DskipTests \
+    $PUBLISH_PROFILES -Drat.skip=true clean deploy
 
   rm $tmp_settings
+  rm -rf $tmp_repo
 }
 
 function publish_to_maven() {
