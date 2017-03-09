@@ -184,6 +184,10 @@ module.exports = function makeWebpackConfig () {
       test: /\.html$/,
       loader: 'raw'
     }, {
+      // STRING REPLACE PLUGIN
+      // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
+      // Allow for arbitrary strings to be replaced as part of the module build process
+      // Configure replacements for file patterns
       test: /index.html$/,
       loader: stringReplacePlugin.replace({
         replacements: [{
@@ -278,6 +282,8 @@ module.exports = function makeWebpackConfig () {
   } else {
       config.plugins.push(
         new InsertLiveReloadPlugin(),
+        // string replace plugin instance
+        // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
         new stringReplacePlugin()
       )
   }
