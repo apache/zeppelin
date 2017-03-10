@@ -33,7 +33,7 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   };
 
   render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+    const d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -42,17 +42,25 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
       true,
       false,
       false);
-    var d = d3Data.d3g;
-    var d3g = [];
-    if (d.length > 0) {
-      for (var i = 0; i < d[0].values.length ; i++) {
-        var e = d[0].values[i];
-        d3g.push({
-          label: e.x,
-          value: e.y
-        });
-      }
+    const d = d3Data.d3g;
+
+    let generateLabel;
+    // data is grouped
+    if (pivot.groups && pivot.groups.length > 0) {
+      generateLabel = (suffix, prefix) => `${prefix}.${suffix}`;
+    } else { // data isn't grouped
+      generateLabel = suffix => suffix;
     }
+
+    let d3g = d.map(group => {
+      return group.values.map(row => ({
+        label: generateLabel(row.x, group.key),
+        value: row.y
+      }));
+    });
+    // the map function returns d3g as a nested array
+    // [].concat flattens it, http://stackoverflow.com/a/10865042/5154397
+    d3g = [].concat.apply([], d3g);
     super.render({d3g: d3g});
   };
 
