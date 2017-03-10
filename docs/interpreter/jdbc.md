@@ -118,6 +118,11 @@ The JDBC interpreter properties are defined by default like below.
     <td>gpadmin</td>
     <td>The JDBC user name</td>
   </tr>
+  <tr>
+    <td>default.precode</td>
+    <td></td>
+    <td>Some SQL which executes while opening connection</td>
+  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
@@ -166,10 +171,6 @@ There are more JDBC interpreter properties you can specify like below.
   <tr>
     <td>default.jceks.credentialKey</td>
     <td>jceks credential key</td>
-  </tr>
-  <tr>
-    <td>zeppelin.jdbc.precode</td>
-    <td>Some SQL which executes while opening connection</td>
   </tr>
 </table>
 

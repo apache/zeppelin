@@ -28,6 +28,12 @@
         "defaultValue": "org.postgresql.Driver",
         "description": "JDBC Driver Name"
       },
+      "default.precode": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.precode",
+        "defaultValue": "",
+        "description": "SQL which executes while opening connection"
+      },
       "common.max_count": {
         "envName": null,
         "propertyName": "common.max_count",
@@ -63,12 +69,6 @@
         "propertyName": "zeppelin.jdbc.principal",
         "defaultValue": "",
         "description": "Kerberos principal"
-      },
-      "zeppelin.jdbc.precode": {
-        "envName": null,
-        "propertyName": "zeppelin.jdbc.precode",
-        "defaultValue": "",
-        "description": "SQL which executes while opening connection"
       }
     },
     "editor": {
