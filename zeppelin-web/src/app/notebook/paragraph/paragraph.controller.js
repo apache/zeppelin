@@ -1120,7 +1120,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   function isUpdateRequired(oldPara, newPara) {
     return (newPara.id === oldPara.id &&
       (newPara.dateCreated !== oldPara.dateCreated ||
-      newPara.paragraph.text !== oldPara.paragraph.text ||
+      newPara.text !== oldPara.text ||
       newPara.dateFinished !== oldPara.dateFinished ||
       newPara.dateStarted !== oldPara.dateStarted ||
       newPara.dateUpdated !== oldPara.dateUpdated ||
