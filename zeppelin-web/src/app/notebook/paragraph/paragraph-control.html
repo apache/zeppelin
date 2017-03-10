@@ -48,7 +48,7 @@ limitations under the License.
           ng-click="runParagraphFromButton(getEditorValue())"
           ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top"
-          tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+c)"
+          tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
           ng-click="cancelParagraph(paragraph)"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.length == 1">
@@ -66,10 +66,10 @@ limitations under the License.
       </ul>
     </span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
-          tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+e)"
+          tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"
           ng-click="toggleEditor(paragraph)"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer" tooltip-placement="top"
-          tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+o)"
+          tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
           ng-click="toggleOutput(paragraph)"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
@@ -113,54 +113,54 @@ limitations under the License.
         </li>
         <li>
           <a ng-click="moveUp(paragraph)" ng-hide="$first"><span class="icon-arrow-up shortcut-icon"></span>Move up
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+k</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+K</span></a>
         </li>
         <li>
           <a ng-click="moveDown(paragraph)" ng-hide="$last"><span class="icon-arrow-down shortcut-icon"></span>Move down
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+j</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+J</span></a>
         </li>
         <li>
           <a ng-click="insertNew('below')"><span class="icon-plus shortcut-icon"></span>Insert new
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+b</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+B</span></a>
         </li>
         <li>
           <a ng-click="copyParagraph(getEditorValue())"><span class="fa fa-copy shortcut-icon"></span>Clone paragraph
-            <span class="shortcut-keys">Ctrl+Shift+c</span></a>
+            <span class="shortcut-keys">Ctrl+Shift+C</span></a>
         </li>
         <li>
           <!-- paragraph handler -->
           <a ng-click="hideTitle(paragraph)"
              ng-show="paragraph.config.title"><span class="fa fa-font shortcut-icon"></span>Hide title
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+t</span></a>
+            <span class="shortcut-keys">Ctrl+ {{ isMac ? 'Option' : 'Alt'}} +T</span></a>
           <a ng-click="showTitle(paragraph)"
              ng-show="!paragraph.config.title"><span class="fa fa-font shortcut-icon"></span>Show title
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+t</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+T</span></a>
         </li>
         <li>
           <a ng-click="hideLineNumbers(paragraph)"
              ng-show="paragraph.config.lineNumbers"><span class="fa fa-list-ol shortcut-icon"></span>Hide line numbers
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+m</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+M</span></a>
           <a ng-click="showLineNumbers(paragraph)"
              ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol shortcut-icon"></span>Show line numbers
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+m</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+M</span></a>
         </li>
         <li>
           <a ng-click="toggleEnableDisable(paragraph)"><span class="icon-control-play shortcut-icon"></span>
             {{paragraph.config.enabled ? "Disable" : "Enable"}} run
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+r</span></a>
+            <span class="shortcut-keys">Ctrl+ {{ isMac ? 'Option' : 'Alt'}}+R</span></a>
         </li>
         <li>
           <a ng-click="goToSingleParagraph()"><span class="icon-share-alt shortcut-icon"></span>Link this paragraph
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+w</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+W</span></a>
         </li>
         <li>
           <a ng-click="clearParagraphOutput(paragraph)"><span class="fa fa-eraser shortcut-icon"></span>Clear output
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+l</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+L</span></a>
         </li>
         <li>
           <!-- remove paragraph -->
           <a ng-click="removeParagraph(paragraph)" ng-hide="$last"><span class="fa fa-times shortcut-icon"></span>Remove
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+d</span></a>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+D</span></a>
         </li>
       </ul>
     </span>
