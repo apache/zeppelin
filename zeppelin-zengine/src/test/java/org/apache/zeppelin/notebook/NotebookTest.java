@@ -284,7 +284,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals("repl1: hello world", p1.getResult().message().get(0).getData());
 
     // clear paragraph output/result
-    note.clearParagraphOutput(p1.getId());
+    note.clearParagraphOutput(p1.getId(), null);
     assertNull(p1.getResult());
     notebook.removeNote(note.getId(), anonymous);
   }
