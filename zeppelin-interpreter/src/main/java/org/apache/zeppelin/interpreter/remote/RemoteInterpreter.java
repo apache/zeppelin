@@ -26,7 +26,6 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
@@ -64,6 +63,7 @@ public class RemoteInterpreter extends Interpreter {
   private String userName;
   private Boolean isUserImpersonate;
   private int outputLimit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
+  private String interpreterGroupName;
 
   /**
    * Remote interpreter and manage interpreter process
@@ -72,7 +72,7 @@ public class RemoteInterpreter extends Interpreter {
       String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
       int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
-      int outputLimit) {
+      int outputLimit, String interpreterGroupName) {
     super(property);
     this.sessionKey = sessionKey;
     this.className = className;
@@ -88,6 +88,7 @@ public class RemoteInterpreter extends Interpreter {
     this.userName = userName;
     this.isUserImpersonate = isUserImpersonate;
     this.outputLimit = outputLimit;
+    this.interpreterGroupName = interpreterGroupName;
   }
 
 
@@ -185,7 +186,7 @@ public class RemoteInterpreter extends Interpreter {
           // create new remote process
           remoteProcess = new RemoteInterpreterManagedProcess(
               interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener);
+              remoteInterpreterProcessListener, applicationEventListener, interpreterGroupName);
         }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
