@@ -26,9 +26,10 @@ limitations under the License.
              tooltip="Learn more">
             <i class="icon-question" ng-style="{color: 'black'}"></i>
           </a>
-          <button tabindex="0" class="btn btn-default btn-sm heliumRepoBtn helium-popover"
-                  role="button"
+          <button tabindex="0" role="button"
                   ng-repeat="pkgTypes in allPackageTypes"
+                  class="btn btn-default btn-sm heliumRepoBtn helium-popover"
+                  ng-class="($parent.pkgListByType === pkgTypes) ? 'heliumRepoBtnToggled' : ''"
                   ng-click="$parent.pkgListByType = pkgTypes">
             <i class="fa fa-cube"></i>
             {{pkgTypes}}

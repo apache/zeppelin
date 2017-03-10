@@ -155,6 +155,12 @@
   outline: 0;
 }
 
+.heliumRepoBtnToggled {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color:#adadad;
+}
+
 .localPkgInfo {
   margin: 10px 12px 0 0;
   font-size: 11px;
