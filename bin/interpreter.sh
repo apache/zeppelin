@@ -20,7 +20,7 @@ bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)
 
 function usage() {
-    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -n <interpreter name>"
+    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
 while getopts "hp:d:l:v:u:n:" o; do
@@ -50,8 +50,8 @@ while getopts "hp:d:l:v:u:n:" o; do
               ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
             fi
             ;;
-        n)
-            INTERPRETER_NAME=${OPTARG}
+        g)
+            INTERPRETER_GROUP_NAME=${OPTARG}
             ;;
         esac
 done
@@ -89,8 +89,8 @@ ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-"
-if [[ ! -z "$INTERPRETER_NAME" ]]; then
-    ZEPPELIN_LOGFILE+="${INTERPRETER_NAME}-"
+if [[ ! -z "$INTERPRETER_GROUP_NAME" ]]; then
+    ZEPPELIN_LOGFILE+="${INTERPRETER_GROUP_NAME}-"
 fi
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"

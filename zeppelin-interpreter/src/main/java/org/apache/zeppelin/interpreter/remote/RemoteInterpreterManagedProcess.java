@@ -44,7 +44,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
-  private final String interpreterName;
+  private final String interpreterGroupName;
 
   private Map<String, String> env;
 
@@ -56,14 +56,14 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
       ApplicationEventListener appListener,
-      String interpreterName) {
+      String interpreterGroupName) {
     super(new RemoteInterpreterEventPoller(listener, appListener),
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-    this.interpreterName = interpreterName;
+    this.interpreterGroupName = interpreterGroupName;
   }
 
   RemoteInterpreterManagedProcess(String intpRunner,
@@ -72,14 +72,14 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
                                   Map<String, String> env,
                                   RemoteInterpreterEventPoller remoteInterpreterEventPoller,
                                   int connectTimeout,
-                                  String interpreterName) {
+                                  String interpreterGroupName) {
     super(remoteInterpreterEventPoller,
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-    this.interpreterName = interpreterName;
+    this.interpreterGroupName = interpreterGroupName;
   }
 
   @Override
@@ -113,7 +113,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
     cmdLine.addArgument("-n", false);
-    cmdLine.addArgument(interpreterName, false);
+    cmdLine.addArgument(interpreterGroupName, false);
 
     executor = new DefaultExecutor();
 
