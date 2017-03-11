@@ -633,7 +633,7 @@ public class JDBCInterpreter extends Interpreter {
         } catch (SQLException e) { /*ignored*/ }
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
-    } catch (Exception e) {
+    } catch (Throwable e) {
       if (e.getCause() instanceof TTransportException &&
           Throwables.getStackTraceAsString(e).contains("GSS") &&
           getJDBCConfiguration(user).isConnectionInDBDriverPoolSuccessful(propertyKey)) {
