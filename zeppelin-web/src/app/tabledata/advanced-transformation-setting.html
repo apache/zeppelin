@@ -56,14 +56,15 @@ limitations under the License.
             group by
           </span>
 
-            <!-- axis box: in case of single dimension -->
+          <!-- axis box: in case of single dimension -->
           <ul data-drop="true"
               ng-if="isSingleDimensionAxis(axisSpec)"
               ng-model="config.axis[axisSpec.name]"
               jqyoui-droppable="{onDrop:'axisChanged(axisSpec)'}"
               class="list-unstyled"
-              style="height:36px; border-radius: 6px; margin-top: 7px;">
+              style="height:36px; border-radius: 6px; margin-top: 7px; overflow: visible !important;">
             <li ng-if="config.axis[axisSpec.name]">
+
               <!-- in case of axis is single dimension and not aggregator -->
               <div ng-if="!isAggregatorAxis(axisSpec)"
                    class="btn btn-default btn-xs"
@@ -72,10 +73,31 @@ limitations under the License.
                 <span class="fa fa-close" ng-click="removeFromSingleDimension(axisSpec.name)"></span>
               </div>
 
+              <!-- in case of axis is single dimension and aggregator -->
+              <div class="btn-group">
+                <div ng-if="isAggregatorAxis(axisSpec)"
+                     class="btn btn-default btn-xs dropdown-toggle"
+                     style="background-color: #EFEFEF; "
+                     type="button" data-toggle="dropdown">
+                  {{config.axis[axisSpec.name].name | limitTo: 30}}{{config.axis[axisSpec.name].name > 30 ? '...' : ''}}
+                  <span style="color:#717171;">
+                    <span class="lightBold" style="text-transform: uppercase;">{{config.axis[axisSpec.name].aggr}}</span>
+                  </span>
+                  <span class="fa fa-close" ng-click="removeFromSingleDimension(axisSpec.name)"></span>
+                </div>
+                <ul class="dropdown-menu" role="menu">
+                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'sum')"><a>sum</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'count')"><a>count</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'avg')"><a>avg</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'min')"><a>min</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'max')"><a>max</a></li>
+                </ul>
+              </div>
+
             </li>
           </ul>
 
-            <!-- axis box: in case of multiple dimensions -->
+          <!-- axis box: in case of multiple dimensions -->
           <ul data-drop="true"
               ng-if="!isSingleDimensionAxis(axisSpec) "
               ng-model="config.axis[axisSpec.name]"
@@ -83,6 +105,7 @@ limitations under the License.
               class="list-unstyled"
               style="height:130px; border-radius: 6px; margin-top: 7px;">
             <li ng-repeat="col in config.axis[axisSpec.name]">
+
               <!-- in case of axis is multiple dimensions and not aggregator -->
               <div ng-if="!isAggregatorAxis(axisSpec)"
                    class="btn btn-default btn-xs"
@@ -91,7 +114,7 @@ limitations under the License.
                 <span class="fa fa-close" ng-click="removeFromMultipleDimension($index, axisSpec.name)"></span>
               </div>
 
-                <!-- in case of axis is multiple dimension and aggregator -->
+              <!-- in case of axis is multiple dimension and aggregator -->
               <div class="btn-group">
                 <div ng-if="isAggregatorAxis(axisSpec)"
                      class="btn btn-default btn-xs dropdown-toggle"
