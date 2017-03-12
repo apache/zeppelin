@@ -172,7 +172,7 @@ public class InterpreterSetting {
     }
   }
 
-  private String getInterpreterSessionKey(String user, String noteId) {
+  String getInterpreterSessionKey(String user, String noteId) {
     InterpreterOption option = getOption();
     String key;
     if (option.isExistingProcess()) {
@@ -250,15 +250,30 @@ public class InterpreterSetting {
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
       if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
-        groupItem = interpreterGroupRef.remove(intpKey);
+        // TODO(jl): interpreterGroup has two or more sessionKeys inside it. thus we should not
+        // remove interpreterGroup if it has two or more values.
+        groupItem = interpreterGroupRef.get(intpKey);
         interpreterGroupWriteLock.unlock();
         groupToRemove.add(groupItem);
       }
     }
 
     for (InterpreterGroup groupToClose : groupToRemove) {
+      // TODO(jl): Fix the logic removing session. For now, it's handled into groupToClose.clsose()
       groupToClose.close(sessionKey);
     }
+
+    cleanUpInterpreterGroupRef();
+  }
+
+  private void cleanUpInterpreterGroupRef() {
+    interpreterGroupWriteLock.lock();
+    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      if (interpreterGroupRef.get(intpKey).isEmpty()) {
+        interpreterGroupRef.remove(intpKey);
+      }
+    }
+    interpreterGroupWriteLock.unlock();
   }
 
   void closeAndRemoveAllInterpreterGroups() {

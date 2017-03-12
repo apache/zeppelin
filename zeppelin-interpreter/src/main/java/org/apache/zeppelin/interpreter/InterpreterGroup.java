@@ -17,10 +17,16 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -165,11 +171,15 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    */
   public void close(String sessionId) {
     LOGGER.info("Close interpreter group " + getId() + " for session: " + sessionId);
-    List<Interpreter> intpForSession = this.get(sessionId);
+    List<Interpreter> intpForSession = this.remove(sessionId);
     close(intpForSession);
 
     if (remoteInterpreterProcess != null) {
-      remoteInterpreterProcess.dereference();
+      //TODO(jl): Because interpreter.close() runs as a seprate thread, we cannot guarantee
+      // refernceCount is a proper value. And as the same reason, we must not call
+      // remoteInterpreterProcess.dereference twice - this method also be called by
+      // interpreter.close().
+//      remoteInterpreterProcess.dereference();
       if (remoteInterpreterProcess.referenceCount() <= 0) {
         remoteInterpreterProcess = null;
         allInterpreterGroups.remove(id);
