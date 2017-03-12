@@ -20,6 +20,10 @@ limitations under the License.
         <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Configured Columns</span>
         <span style="float: right;">
           <div class="btn-group" role="group" aria-label="...">
+            <div type="button" ng-click="parameterChanged()"
+                 class="btn btn-default" style="padding: 2px 5px 2px 5px;">
+              <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            </div>
             <div type="button" ng-if="config.panel.columnPanelOpened"
                  ng-click="toggleColumnPanel()"
                  class="btn btn-default" style="padding: 2px 5px 2px 5px;">
@@ -74,7 +78,7 @@ limitations under the License.
               <div ng-if="!isAggregatorAxis(axisSpec)"
                    class="btn btn-default btn-xs"
                    style="background-color: #EFEFEF;">
-                {{config.axis[axisSpec.name].name}}
+                {{ getAxisInSingleDimension(axisSpec).name }}
                 <span class="fa fa-close" ng-click="removeFromSingleDimension(axisSpec.name)"></span>
               </div>
 
@@ -84,9 +88,9 @@ limitations under the License.
                      class="btn btn-default btn-xs dropdown-toggle"
                      style="background-color: #EFEFEF; "
                      type="button" data-toggle="dropdown">
-                  {{config.axis[axisSpec.name].name | limitTo: 30}}{{config.axis[axisSpec.name].name > 30 ? '...' : ''}}
+                  {{getAxisInSingleDimension(axisSpec).name | limitTo: 30}}{{getAxisInSingleDimension(axisSpec).name > 30 ? '...' : ''}}
                   <span style="color:#717171;">
-                    <span class="lightBold" style="text-transform: uppercase;">{{config.axis[axisSpec.name].aggr}}</span>
+                    <span class="lightBold" style="text-transform: uppercase;">{{getAxisInSingleDimension(axisSpec).aggr}}</span>
                   </span>
                   <span class="fa fa-close" ng-click="removeFromSingleDimension(axisSpec.name)"></span>
                 </div>
@@ -177,8 +181,7 @@ limitations under the License.
         <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Dynamic Parameters</span>
         <span style="float: right;">
           <div class="btn-group" role="group" aria-label="...">
-            <div type="button"
-                 ng-click="parameterChanged()"
+            <div type="button" ng-click="parameterChanged()"
                  class="btn btn-default" style="padding: 2px 5px 2px 5px;">
               <i class="fa fa-floppy-o" aria-hidden="true"></i>
             </div>

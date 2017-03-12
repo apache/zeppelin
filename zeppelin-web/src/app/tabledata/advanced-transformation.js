@@ -99,10 +99,18 @@ class AdvancedTransformation extends Transformation {
           return `${axisSpec.name} (${axisSpec.type})`
         },
 
+        getAxisInSingleDimension: (axisSpec) => {
+          return configInstance.axis[axisSpec.name]
+        },
+
         toggleColumnPanel: () => {
           configInstance.panel.columnPanelOpened =
             !configInstance.panel.columnPanelOpened
           self.emitConfig(configInstance)
+        },
+
+        clearConfig: () => {
+
         },
 
         toggleParameterPanel: () => {
