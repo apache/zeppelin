@@ -16,6 +16,7 @@ import Transformation from './transformation';
 
 import {
   isAggregator, isGroup, isGroupBase, isSingleDimension,
+  initializeConfig,
   groupAndAggregateRows, getGroupAndAggrColumns,
 } from './advanced-transformation-util';
 
@@ -50,34 +51,7 @@ class AdvancedTransformation extends Transformation {
     }
     this.paramSpecs = paramSpecs;
 
-    /** initialize config.axis */
-    if (!this.config.axis) { this.config.axis = {}; }
-    for (let i = 0; i < axisSpecs.length; i++) {
-      const axisSpec = axisSpecs[i];
-      const persistedConfig = this.config.axis[axisSpec.name];
-
-      // // behavior of jqyoui-element depends on its model (ng-model)
-      // // so, we have to initialize its underlying ng-model to array if it's not array
-      if (!isSingleDimension(axisSpec) && !Array.isArray(persistedConfig)) {
-        this.config.axis[axisSpec.name] = [];
-      } else if (isSingleDimension(axisSpec) && Array.isArray(persistedConfig)) {
-        this.config.axis[axisSpec.name] = {};
-      }
-    }
-
-    /** initialize config.parameter*/
-    if (!this.config.parameter) { this.config.parameter = {}; }
-    for (let i = 0; i < paramSpecs.length; i++) {
-      const paramSpec = paramSpecs[i];
-      if (!this.config.parameter[paramSpec.name]) {
-        this.config.parameter[paramSpec.name] = paramSpec.defaultValue;
-      }
-    }
-
-    /** initialize config.panel */
-    if (!this.config.panel) {
-      this.config.panel = { columnPanelOpened: true, parameterPanelOpened: true, };
-    }
+    initializeConfig(this.config, axisSpecs, paramSpecs)
   }
 
   getSetting() {
@@ -85,7 +59,7 @@ class AdvancedTransformation extends Transformation {
     /**
      * config: { axis, parameter }
      */
-    const configInstance = self.config; /** for closure */
+    let configInstance = self.config; /** for closure */
 
     return {
       template: SETTING_TEMPLATE,
@@ -110,7 +84,8 @@ class AdvancedTransformation extends Transformation {
         },
 
         clearConfig: () => {
-
+          initializeConfig(configInstance, this.axisSpecs, this.paramSpecs)
+          self.emitConfig(configInstance)
         },
 
         toggleParameterPanel: () => {

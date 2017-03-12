@@ -15,16 +15,58 @@
 const lo = _; /** provided by bower */
 
 export const Aggregator = {
-    SUM: 'sum',
-    COUNT: 'count',
-    AVG: 'avg',
-    MIN: 'min',
-    MAX: 'max',
-  }
+  SUM: 'sum',
+  COUNT: 'count',
+  AVG: 'avg',
+  MIN: 'min',
+  MAX: 'max',
+}
+
 export function isAggregator(axisSpec) { return axisSpec.aggregator; }
 export function isGroup(axisSpec) { return axisSpec.group; }
 export function isGroupBase(axisSpec) { return axisSpec.groupBase; }
 export function isSingleDimension(axisSpec) { return axisSpec.dimension === 'single'; }
+
+export function clearConfig(configInstance) {
+  delete configInstance.panel
+  delete configInstance.axis
+  delete configInstance.parameter
+
+  return configInstance
+}
+
+export function initializeConfig(config, axisSpecs, paramSpecs) {
+  config = clearConfig(config)
+
+  /** initialize config.axis */
+  if (!config.axis) { config.axis = {}; }
+  for (let i = 0; i < axisSpecs.length; i++) {
+    const axisSpec = axisSpecs[i];
+    const persistedConfig = config.axis[axisSpec.name];
+
+    // behavior of jqyoui-element depends on its model (ng-model)
+    // so, we have to initialize its underlying ng-model to array if it's not array
+    if (!isSingleDimension(axisSpec) && !Array.isArray(persistedConfig)) {
+      config.axis[axisSpec.name] = [];
+    } else if (isSingleDimension(axisSpec) && Array.isArray(persistedConfig)) {
+      config.axis[axisSpec.name] = {};
+    }
+  }
+
+  /** initialize config.parameter*/
+  if (!config.parameter) { config.parameter = {}; }
+  for (let i = 0; i < paramSpecs.length; i++) {
+    const paramSpec = paramSpecs[i];
+    if (!config.parameter[paramSpec.name]) {
+      config.parameter[paramSpec.name] = paramSpec.defaultValue;
+    }
+  }
+
+  /** initialize config.panel */
+  if (!config.panel) {
+    config.panel = { columnPanelOpened: true, parameterPanelOpened: true, };
+  }
+}
 
 
 export function getGroupAndAggrColumns(axisSpecs, axisConfig) {
