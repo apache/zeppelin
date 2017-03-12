@@ -34,11 +34,11 @@
 
   <properties>
     <!--library versions-->
-    <cxf.version>2.7.8</cxf.version>
+    <cxf.version>3.1.6</cxf.version>
     <hadoop-common.version>2.6.0</hadoop-common.version>
     <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
-    <jersey.servlet.version>1.13</jersey.servlet.version>
-    <javax.ws.rsapi.version>2.0-m10</javax.ws.rsapi.version>
+    <jersey.servlet.version>2.25.1</jersey.servlet.version>
+    <javax.ws.rsapi.version>2.0.1</javax.ws.rsapi.version>
     <libpam4j.version>1.8</libpam4j.version>
     <jna.version>4.1.0</jna.version>
 
@@ -170,18 +170,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-api</artifactId>
-      <version>${cxf.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
       <version>${jetty.version}</version>
@@ -292,9 +280,14 @@
       <version>${quartz.scheduler.version}</version>
     </dependency>
 
-    <dependency>
+    <!--<dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
+      <version>${jersey.servlet.version}</version>
+    </dependency>-->
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet</artifactId>
       <version>${jersey.servlet.version}</version>
     </dependency>
 
