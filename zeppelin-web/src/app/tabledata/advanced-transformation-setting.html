@@ -95,11 +95,11 @@ limitations under the License.
                   <span class="fa fa-close" ng-click="removeFromSingleDimension(axisSpec.name)"></span>
                 </div>
                 <ul class="dropdown-menu" role="menu">
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'sum')"><a>sum</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'count')"><a>count</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'avg')"><a>avg</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'min')"><a>min</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'max')"><a>max</a></li>
+                  <li ng-click="singleDimensionAggregatorChanged($index, axisSpec.name, 'sum')"><a>sum</a></li>
+                  <li ng-click="singleDimensionAggregatorChanged($index, axisSpec.name, 'count')"><a>count</a></li>
+                  <li ng-click="singleDimensionAggregatorChanged($index, axisSpec.name, 'avg')"><a>avg</a></li>
+                  <li ng-click="singleDimensionAggregatorChanged($index, axisSpec.name, 'min')"><a>min</a></li>
+                  <li ng-click="singleDimensionAggregatorChanged($index, axisSpec.name, 'max')"><a>max</a></li>
                 </ul>
               </div>
 
@@ -136,11 +136,11 @@ limitations under the License.
                   <span class="fa fa-close" ng-click="removeFromMultipleDimension($index, axisSpec.name)"></span>
                 </div>
                 <ul class="dropdown-menu" role="menu">
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'sum')"><a>sum</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'count')"><a>count</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'avg')"><a>avg</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'min')"><a>min</a></li>
-                  <li ng-click="aggregatorChanged($index, axisSpec.name, 'max')"><a>max</a></li>
+                  <li ng-click="multipleDimensionAggregatorChanged($index, axisSpec.name, 'sum')"><a>sum</a></li>
+                  <li ng-click="multipleDimensionAggregatorChanged($index, axisSpec.name, 'count')"><a>count</a></li>
+                  <li ng-click="multipleDimensionAggregatorChanged($index, axisSpec.name, 'avg')"><a>avg</a></li>
+                  <li ng-click="multipleDimensionAggregatorChanged($index, axisSpec.name, 'min')"><a>min</a></li>
+                  <li ng-click="multipleDimensionAggregatorChanged($index, axisSpec.name, 'max')"><a>max</a></li>
                 </ul>
               </div>
 

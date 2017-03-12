@@ -103,7 +103,12 @@ class AdvancedTransformation extends Transformation {
           self.emitConfig(configInstance)
         },
 
-        aggregatorChanged: (colIndex, axisName, aggregator) => {
+        singleDimensionAggregatorChanged: (colIndex, axisName, aggregator) => {
+          configInstance.axis[axisName].aggr = aggregator
+          self.emitConfig(configInstance)
+        },
+
+        multipleDimensionAggregatorChanged: (colIndex, axisName, aggregator) => {
           configInstance.axis[axisName][colIndex].aggr = aggregator
           self.emitConfig(configInstance)
         },
