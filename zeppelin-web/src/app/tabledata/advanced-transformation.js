@@ -16,7 +16,7 @@ import Transformation from './transformation';
 
 import {
   isAggregator, isGroup, isGroupBase, isSingleDimension,
-  initializeConfig,
+  clearConfig, initializeConfig,
   groupAndAggregateRows, getGroupAndAggrColumns,
 } from './advanced-transformation-util';
 
@@ -84,7 +84,7 @@ class AdvancedTransformation extends Transformation {
         },
 
         clearConfig: () => {
-          initializeConfig(configInstance, this.axisSpecs, this.paramSpecs)
+          clearConfig(configInstance, this.axisSpecs, this.paramSpecs)
           self.emitConfig(configInstance)
         },
 
@@ -130,20 +130,25 @@ class AdvancedTransformation extends Transformation {
     const axisSpecs = this.axisSpecs; /** specs */
     const axisConfig = this.config.axis; /** configured columns */
 
-    const {
-        groupColumns, aggregatedColumns, normalColumns
-      } = getGroupAndAggrColumns(axisSpecs, axisConfig);
+    const columns = getGroupAndAggrColumns(axisSpecs, axisConfig);
+    const groupBaseColumns = columns.groupBase;
+    const groupColumns = columns.group;
+    const aggregatorColumns = columns.aggregator;
+    const otherColumns = columns.others;
 
-    const grouped = groupAndAggregateRows(tableData.rows, groupColumns, aggregatedColumns)
+    const grouped = groupAndAggregateRows(tableData.rows, groupBaseColumns, groupColumns, aggregatorColumns)
 
     return {
-      raw: tableData.rows,
-      grouped: grouped, /** [{ group, groupedRows, aggregated }] */
+      row: {
+        all: tableData.rows,
+        grouped: grouped, /** [ { group<String>, rows<Array>, aggregatedValues<Object> } ] */
+      },
       column: {
-        allColumns: tableData.columns,
-        groupColumns: groupColumns,
-        aggregatedColumns,
-        normalColumns: normalColumns,
+        all: tableData.columns,
+        groupBase: groupBaseColumns,
+        group: groupColumns,
+        aggregator: aggregatorColumns,
+        others: otherColumns,
       }
     }
   }
