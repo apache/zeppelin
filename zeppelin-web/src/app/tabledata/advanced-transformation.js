@@ -15,7 +15,7 @@
 import Transformation from './transformation';
 
 import {
-  isAggregator, isGroup, isSingleDimension,
+  isAggregator, isGroup, isGroupBase, isSingleDimension,
   groupAndAggregateRows, getGroupAndAggrColumns,
 } from './advanced-transformation-util';
 
@@ -99,10 +99,6 @@ class AdvancedTransformation extends Transformation {
           return `${axisSpec.name} (${axisSpec.type})`
         },
 
-        isAggregatorAxis: (axisSpec) => {
-          return isAggregator(axisSpec)
-        },
-
         toggleColumnPanel: () => {
           configInstance.panel.columnPanelOpened =
             !configInstance.panel.columnPanelOpened
@@ -115,13 +111,10 @@ class AdvancedTransformation extends Transformation {
           self.emitConfig(configInstance)
         },
 
-        isGroupAxis: (axisSpec) => {
-          return isGroup(axisSpec)
-        },
-
-        isSingleDimensionAxis: (axisSpec) => {
-          return isSingleDimension(axisSpec)
-        },
+        isGroupAxis: (axisSpec) => { return isGroup(axisSpec) },
+        isGroupBaseAxis: (axisSpec) => { return isGroupBase(axisSpec) },
+        isAggregatorAxis: (axisSpec) => { return isAggregator(axisSpec) },
+        isSingleDimensionAxis: (axisSpec) => { return isSingleDimension(axisSpec) },
 
         parameterChanged: (paramSpec) => {
           self.emitConfig(configInstance)

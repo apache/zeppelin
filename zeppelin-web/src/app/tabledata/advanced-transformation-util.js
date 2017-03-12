@@ -23,6 +23,7 @@ export const Aggregator = {
   }
 export function isAggregator(axisSpec) { return axisSpec.aggregator; }
 export function isGroup(axisSpec) { return axisSpec.group; }
+export function isGroupBase(axisSpec) { return axisSpec.groupBase; }
 export function isSingleDimension(axisSpec) { return axisSpec.dimension === 'single'; }
 
 

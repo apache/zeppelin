@@ -52,8 +52,13 @@ limitations under the License.
           </span>
           <span ng-if="isGroupAxis(axisSpec)"
                 class="label label-default"
-                style="background-color: #CD5C5C; font-weight: 300; font-size: 13px; margin-left: 3px;">
+                style="background-color: #cd5c5c; font-weight: 300; font-size: 13px; margin-left: 3px;">
             group by
+          </span>
+          <span ng-if="isGroupBaseAxis(axisSpec)"
+                class="label label-default"
+                style="background-color: #906ebd; font-weight: 300; font-size: 13px; margin-left: 3px;">
+            group base
           </span>
 
           <!-- axis box: in case of single dimension -->
