@@ -86,6 +86,12 @@ module.exports = function makeWebpackConfig () {
     app: './src/index.js'
   };
 
+  var serverPort = 8080;
+
+  if(process.env.SERVER_PORT) {
+    serverPort = process.env.SERVER_PORT;
+  }
+
   /**
    * Output
    * Reference: http://webpack.github.io/docs/configuration.html#output
@@ -210,7 +216,8 @@ module.exports = function makeWebpackConfig () {
       // Reference: https://webpack.github.io/docs/list-of-plugins.html#defineplugin
       new webpack.DefinePlugin({
         'process.env': {
-          HELIUM_VIS_DEV: process.env.HELIUM_VIS_DEV
+          HELIUM_VIS_DEV: process.env.HELIUM_VIS_DEV,
+          SERVER_PORT: serverPort
         }
       })
     )
