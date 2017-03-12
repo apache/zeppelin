@@ -222,6 +222,67 @@ SELECT name, country, performer
 FROM demo.performers
 WHERE name='{{"{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia"}}}}'
 ```
+### Usage `precode`
+You can set `precode` for each data source. Code runs once while opening the connection.
+
+##### Properties
+<table class="table-configuration">
+  <tr>
+    <th>Property Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>default.driver</td>
+    <td>org.postgresql.Driver</td>
+  </tr>
+  <tr>
+    <td>default.password</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>default.url</td>
+    <td>jdbc:postgresql://localhost:5432/</td>
+  </tr>
+  <tr>
+    <td>default.user</td>
+    <td>postgres</td>
+  </tr>
+  <tr>
+    <td>default.precode</td>
+    <td>set search_path='test_path'</td>
+  </tr>
+  <tr>
+    <td>mysql.driver</td>
+    <td>com.mysql.jdbc.Driver</td>
+  </tr>
+  <tr>
+    <td>mysql.password</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td>mysql.url</td>
+    <td>jdbc:mysql://localhost:3306/</td>
+  </tr>
+  <tr>
+    <td>mysql.user</td>
+    <td>root</td>
+  </tr>
+  <tr>
+    <td>mysql.precode</td>
+    <td>set @v=12</td>
+  </tr>
+</table>
+
+##### Usage
+```sql
+%jdbc
+show search_path
+```
+
+```sql
+%jdbc(mysql)
+select @v
+```
 
 ## Examples
 Here are some examples you can refer to. Including the below connectors, you can connect every databases as long as it can be configured with it's JDBC driver.
