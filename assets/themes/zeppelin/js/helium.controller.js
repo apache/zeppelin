@@ -19,7 +19,11 @@ angular.module("app", ['ui.bootstrap'])
   var init = function () {
     createLatestPkgInfo()
     classifyPkgByType($scope.latestPkgInfo)
-    setPagination()
+    
+    // pagination
+    $scope.itemsPerPage = 10
+    $scope.currentPage = 1
+    $scope.maxSize = 5
   }
 
   var createLatestPkgInfo = function() {
@@ -75,20 +79,6 @@ angular.module("app", ['ui.bootstrap'])
     }
 
     $scope.allTypePkgs = allTypePkgs
-  }
-
-  var setPagination = function() {
-    $scope.itemsPerPage = 10
-    $scope.currentPage = 1
-    $scope.maxSize = 5
-
-    $scope.setPage = function (pageNo) {
-      $scope.currentPage = pageNo
-    }
-
-    $scope.pageChanged = function() {
-      $log.log('Page changed to: ' + $scope.currentPage)
-    }
   }
 
   init()
