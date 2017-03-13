@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.python;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -60,7 +62,7 @@ import py4j.GatewayServer;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
-  public static final String ZEPPELIN_PY4JPATH = "python/py4j-0.9-src.zip";
+  public static final String ZEPPELIN_PY4JPATH = "/interpreter/python/py4j-0.9.2/src";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
@@ -98,18 +100,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
-  private void createPy4jLib() {
-    py4jLibPath = System.getProperty("user.dir") +
-            File.separator + "interpreter" + File.separator + ZEPPELIN_PY4JPATH;
-    File py4jLib = new File(py4jLibPath);
-    if (py4jLib.exists()) {
-      return;
-    }
-
-    copyFile(py4jLib, ZEPPELIN_PY4JPATH);
-    logger.info("py4j library path : {}", py4jLibPath);
-  }
-
   private void createPythonScript() {
     File out = new File(scriptPath);
 
@@ -136,7 +126,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   private void createGatewayServerAndStartScript() {
     createPythonScript();
-    createPy4jLib();
+    py4jLibPath = System.getenv("ZEPPELIN_HOME") + ZEPPELIN_PY4JPATH;
 
     port = findRandomOpenPortOnAllLocalInterfaces();
     gatewayServer = new GatewayServer(this, port);
@@ -253,7 +243,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       }
       PythonInterpretRequest req = pythonInterpretRequest;
       pythonInterpretRequest = null;
-
       return req;
     }
   }
@@ -425,6 +414,19 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       }
     }
     return foundJob;
+  }
+
+  void bootStrapInterpreter(String file) throws IOException {
+    BufferedReader bootstrapReader = new BufferedReader(
+        new InputStreamReader(
+            PythonInterpreter.class.getResourceAsStream(file)));
+    String line = null;
+    String bootstrapCode = "";
+
+    while ((line = bootstrapReader.readLine()) != null) {
+      bootstrapCode += line + "\n";
+    }
+    interpret(bootstrapCode, context);
   }
 
   public GUI getGui() {

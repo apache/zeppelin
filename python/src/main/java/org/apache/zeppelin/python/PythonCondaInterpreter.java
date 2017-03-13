@@ -135,7 +135,6 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private void restartPythonProcess() {
     PythonInterpreter python = getPythonInterpreter();
-    logger.info("-----------> " + python);
     python.close();
     python.open();
   }

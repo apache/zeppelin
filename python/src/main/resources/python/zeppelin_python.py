@@ -25,6 +25,11 @@ import traceback
 import warnings
 import signal
 
+from io import BytesIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 # for back compatibility
 

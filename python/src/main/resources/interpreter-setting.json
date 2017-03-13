@@ -24,6 +24,17 @@
   },
   {
     "group": "python",
+    "name": "sql",
+    "className": "org.apache.zeppelin.python.PythonInterpreterPandasSql",
+    "properties": {
+    },
+    "editor":{
+      "language": "sql",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "python",
     "name": "conda",
     "className": "org.apache.zeppelin.python.PythonCondaInterpreter",
     "properties": {
