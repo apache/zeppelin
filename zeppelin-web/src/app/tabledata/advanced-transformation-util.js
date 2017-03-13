@@ -136,7 +136,10 @@ export function initializeConfig(config, spec) {
 
   /** initialize config.panel */
   if (!config.panel) {
-    config.panel = { columnPanelOpened: true, parameterPanelOpened: true, };
+    config.panel = {
+      columnPanelOpened: true,
+      parameterPanelOpened: true,
+    };
   }
 
   return config

@@ -72,10 +72,17 @@ class AdvancedTransformation extends Transformation {
         isAggregatorAxis: (axisSpec) => { return isAggregator(axisSpec) },
         isSingleDimensionAxis: (axisSpec) => { return isSingleDimension(axisSpec) },
 
-        parameterChanged: (paramSpec) => { self.emitConfig(configInstance) },
+        chartChanged: (selected) => {
+          configInstance.chart.current = selected
+          self.emitConfig(configInstance)
+        },
+
+        parameterChanged: (paramSpec) => {
+          self.emitConfig(configInstance)
+        },
+
         axisChanged: function(e, ui, axisSpec) {
           removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
-
           self.emitConfig(configInstance)
         },
 

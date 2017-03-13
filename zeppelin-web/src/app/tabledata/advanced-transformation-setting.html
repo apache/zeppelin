@@ -17,7 +17,7 @@ limitations under the License.
   <!-- panel: axis (configured column) information -->
   <div class="panel-heading"
        style="padding: 6px 12px 6px 12px; font-size: 13px;">
-    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Configured Columns</span>
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Charts</span>
     <span style="float: right;">
        <div class="btn-group" role="group" aria-label="...">
          <div type="button" ng-click="clearConfig()"
@@ -38,6 +38,44 @@ limitations under the License.
     </span>
     <div style="clear: both;"></div> <!-- to fix previous span which has float: right -->
   </div>
+  <div class="panel-body" ng-if="config.panel.columnPanelOpened"
+       style="padding: 8px; margin-top: 3px;">
+    <ul class="noDot">
+      <li class="liVertical" ng-repeat="chart in config.chart.available">
+        <label class="radio-inline">
+          <input type="radio" style="margin-left: -15px;"
+                 ng-checked="config.chart.current === chart"
+                 ng-click="chartChanged(chart)"
+                 name="inlineRadioOptions" id="inlineRadio_{{chart}}" value="{{chart}}">
+          <span style="vertical-align: middle;">{{chart}}</span>
+        </label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- panel: available columns -->
+  <div class="panel-heading" ng-if="config.panel.columnPanelOpened"
+       style="padding: 6px 12px 6px 12px; font-size: 13px; border-top: 1px solid #ddd; border-top-left-radius: 0px; border-top-right-radius: 0px;">
+    <span>Available Columns</span>
+  </div>
+  <div class="panel-body" ng-if="config.panel.columnPanelOpened"
+       style="padding: 8px; margin-top: 3px;">
+    <ul class="noDot">
+      <li class="liVertical" ng-repeat="column in columns">
+        <div class="btn btn-default btn-xs"
+             style="background-color: #EFEFEF;"
+             data-drag="true"
+             data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+             ng-model="columns"
+             jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+          {{column.name | limitTo: 30}}{{column.name.length > 30 ? '...' : ''}}
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- panel: axis (configured columns) -->
+  <hr style="margin: 1px;" ng-if="config.panel.columnPanelOpened" />
   <div class="panel-body" ng-if="config.panel.columnPanelOpened"
        style="margin-top: 7px; padding-top: 9px; padding-bottom: 4px;">
     <div class="row">
@@ -153,27 +191,6 @@ limitations under the License.
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- panel: available columns -->
-  <div class="panel-heading" ng-if="config.panel.columnPanelOpened"
-       style="padding: 6px 12px 6px 12px; font-size: 13px; border-top: 1px solid #ddd; border-top-left-radius: 0px; border-top-right-radius: 0px;">
-    <span>Available Columns</span>
-  </div>
-  <div class="panel-body" ng-if="config.panel.columnPanelOpened"
-       style="padding: 8px; margin-top: 3px;">
-    <ul class="noDot">
-      <li class="liVertical" ng-repeat="column in columns">
-        <div class="btn btn-default btn-xs"
-             style="background-color: #EFEFEF;"
-             data-drag="true"
-             data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
-             ng-model="columns"
-             jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
-          {{column.name | limitTo: 30}}{{column.name.length > 30 ? '...' : ''}}
-        </div>
-      </li>
-    </ul>
   </div>
 
 </div>
