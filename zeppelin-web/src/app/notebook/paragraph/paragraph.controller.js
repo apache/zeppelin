@@ -681,6 +681,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       $scope.editor.on('blur', function() {
         handleFocus(false);
+        $scope.saveParagraph($scope.paragraph);
       });
 
       $scope.editor.on('paste', function(e) {
@@ -1120,6 +1121,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   function isUpdateRequired(oldPara, newPara) {
     return (newPara.id === oldPara.id &&
       (newPara.dateCreated !== oldPara.dateCreated ||
+      newPara.text !== oldPara.text ||
       newPara.dateFinished !== oldPara.dateFinished ||
       newPara.dateStarted !== oldPara.dateStarted ||
       newPara.dateUpdated !== oldPara.dateUpdated ||
