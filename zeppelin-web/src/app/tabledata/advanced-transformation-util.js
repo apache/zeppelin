@@ -27,37 +27,110 @@ export function isGroup(axisSpec) { return axisSpec.group; }
 export function isGroupBase(axisSpec) { return axisSpec.groupBase; }
 export function isSingleDimension(axisSpec) { return axisSpec.dimension === 'single'; }
 
-export function clearConfig(configInstance, axisSpecs, paramSpecs) {
-  delete configInstance.panel
-  delete configInstance.axis
-  delete configInstance.parameter
+/**
+ * before: { name: { ... } }
+ * after: [ { name, ... } ]
+ *
+ * add the `name` field while converting to array to easily manipulate
+ */
+export function getSpecs(specObject) {
+  const specs = [];
+  for (let name in specObject) {
+    const singleSpec = specObject[name];
+    singleSpec.name = name;
+    specs.push(singleSpec);
+  }
 
-  return initializeConfig(configInstance, axisSpecs, paramSpecs)
+  return specs
 }
 
-export function initializeConfig(config, axisSpecs, paramSpecs) {
+export function getAvailableChartNames(charts) {
+  const available = []
+  for (var name in charts) {
+    available.push(name)
+  }
 
-  /** initialize config.axis */
+  return available
+}
+
+export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
+  if (isSingleDimension(axisSpec)) { return config; }
+
+  const columns = config.axis[config.chart.current][axisSpec.name]
+  const uniqObject = columns.reduce((acc, col) => {
+    if (!acc[col.name]) { acc[col.name] = col; }
+    return acc
+  }, {});
+
+  const filtered = [] ;
+  for (let name in uniqObject) {
+    const col = uniqObject[name];
+    filtered.push(col)
+  }
+
+  config.axis[config.chart.current][axisSpec.name] = filtered
+  return config
+}
+
+export function clearConfig(config) {
+  delete config.chart;      /** Object: contains current, available chart */
+  delete config.panel;      /** Object: persisted config values for panel */
+  delete config.spec;       /** Object: axis, parameter spec for each chart */
+
+  delete config.axis;       /** Object: persisted axis for each chart */
+  delete config.parameter;  /** Object: persisted parameter for each chart */
+  delete config.axisSpecs;  /** Object: persisted axisSpecs for each chart */
+  delete config.paramSpecs; /** Object: persisted paramSpecs for each chart */
+}
+
+export function initializeConfig(config, spec) {
+  // if (!config.spec || config.spec.version !== spec.version) {
+  //   clearConfig(config)
+  // }
+
+  const availableCharts = getAvailableChartNames(spec.charts);
+
+  if (!config.spec) { config.spec = spec; }
+
+  if (!config.chart) {
+    config.chart = {};
+    config.chart.current = availableCharts[0];
+    config.chart.available = availableCharts;
+  }
+
+  /** initialize config.axis, config.axisSpecs for each chart */
   if (!config.axis) { config.axis = {}; }
-  for (let i = 0; i < axisSpecs.length; i++) {
-    const axisSpec = axisSpecs[i];
-    const persistedConfig = config.axis[axisSpec.name];
+  if (!config.axisSpecs) { config.axisSpecs = {}; }
+  for (let i = 0; i < availableCharts.length; i++) {
+    const chartName = availableCharts[i];
 
-    // behavior of jqyoui-element depends on its model (ng-model)
-    // so, we have to initialize its underlying ng-model to array if it's not array
-    if (!isSingleDimension(axisSpec) && !Array.isArray(persistedConfig)) {
-      config.axis[axisSpec.name] = [];
-    } else if (isSingleDimension(axisSpec) && Array.isArray(persistedConfig)) {
-      config.axis[axisSpec.name] = {};
+    if (!config.axis[chartName]) { config.axis[chartName] = {}; }
+    const axisSpecs = getSpecs(spec.charts[chartName].axis)
+    if (!config.axisSpecs[chartName]) { config.axisSpecs[chartName] = axisSpecs; }
+
+    for (let i = 0; i < axisSpecs.length; i++) {
+      const axisSpec = axisSpecs[i]
+      if (!isSingleDimension(axisSpec) && !Array.isArray(config.axis[chartName][axisSpec.name])) {
+        config.axis[chartName][axisSpec.name] = []
+      }
     }
   }
 
-  /** initialize config.parameter*/
+  /** initialize config.parameter for each chart */
   if (!config.parameter) { config.parameter = {}; }
-  for (let i = 0; i < paramSpecs.length; i++) {
-    const paramSpec = paramSpecs[i];
-    if (!config.parameter[paramSpec.name]) {
-      config.parameter[paramSpec.name] = paramSpec.defaultValue;
+  if (!config.paramSpecs) { config.paramSpecs = {}; }
+  for (let i = 0; i < availableCharts.length; i++) {
+    const chartName = availableCharts[i];
+
+    if (!config.parameter[chartName]) { config.parameter[chartName] = {}; }
+    const paramSpecs = getSpecs(spec.charts[chartName].parameter)
+    if (!config.paramSpecs[chartName]) { config.paramSpecs[chartName] = paramSpecs; }
+
+    for (let i = 0; i < paramSpecs.length; i++) {
+      const paramSpec = paramSpecs[i];
+      if (!config.parameter[chartName][paramSpec.name]) {
+        config.parameter[chartName][paramSpec.name] = paramSpec.defaultValue;
+      }
     }
   }
 
