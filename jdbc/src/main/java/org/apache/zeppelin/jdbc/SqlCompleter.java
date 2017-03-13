@@ -217,6 +217,8 @@ public class SqlCompleter extends StringsCompleter {
       try {
         while (schemas.next()) {
           String schemaName = schemas.getString("TABLE_SCHEM");
+          if (schemaName == null)
+            schemaName = "";
           if (!isBlank(schemaName)) {
             names.add(schemaName + ".");
           }
