@@ -37,4 +37,6 @@ $(function() {
   $(window).bind('hashchange', function() {
     maybeScrollToHash();
   });
+
+  $('[data-toggle="tooltip"]').tooltip();
 });
