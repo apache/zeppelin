@@ -512,4 +512,99 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       handleException("Exception in ParagraphActionsIT while testEditOnDoubleClick ", e);
     }
   }
+
+  @Test
+  public void testSingleDynamicFormTextInput() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      // Insert text in paragraph 1
+
+      // Run the paragraph
+
+      // Verify status of paragraph
+
+      // Verify there is the text "Hello World"
+
+      // Somehow, change the text of the field, maybe search for World?
+
+      // Verify that there is STILL the text "Hello World"
+
+      // 2nd part of test - Now run this paragraph
+
+      // Verify that we have an expected change "Hello Zeppelin"
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+    }
+  }
+
+    @Test
+    public void testSingleDynamicFormSelectForm() throws Exception {
+      if (!endToEndTestEnabled()) {
+        return;
+      }
+      try {
+        createNewNote();
+
+        //desc: Insert 1 select form in paragraph -> modify it
+        //exp: Nothing should happen or run then introduce change and verify there is a change
+
+      } catch (Exception e) {
+        handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+      }
+    }
+
+
+    @Test
+    public void testSingleDynamicFormCheckboxForm() throws Exception {
+      if (!endToEndTestEnabled()) {
+        return;
+      }
+      try {
+        createNewNote();
+
+        //desc: Insert 1 checkbox in paragraph -> modify it
+        //exp: Nothing should happen or run then introduce change and verify there is a change
+
+      } catch (Exception e) {
+        handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+      }
+    }
+
+      @Test
+      public void testMultipleDynamicFormsSameType () throws Exception {
+        if (!endToEndTestEnabled()) {
+          return;
+        }
+        try {
+          createNewNote();
+
+          //desc: Insert 2 dynamic forms (select forms) in paragraph -> modify one
+          //exp: nothing should run, then introduce change and verify there is a change
+
+        } catch (Exception e) {
+          handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+        }
+      }
+
+  @Test
+  public void testMultipleDynamicFormsDifferentTypes() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      //desc: Insert 2 different dynamic forms (select form and check box) in paragraph -> modify one
+      //exp: nothing should run then introduce change and verify there is a change
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+    }
+  }
+
 }
