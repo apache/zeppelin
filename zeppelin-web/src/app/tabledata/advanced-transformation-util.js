@@ -14,6 +14,10 @@
 
 const lo = _; /** provided by bower */
 
+import {
+  getCurrentChartAxis,
+} from './advanced-transformation-api'
+
 export const Aggregator = {
   SUM: 'sum',
   COUNT: 'count',
@@ -56,7 +60,7 @@ export function getAvailableChartNames(charts) {
 export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
   if (isSingleDimension(axisSpec)) { return config; }
 
-  const columns = config.axis[config.chart.current][axisSpec.name]
+  const columns = getCurrentChartAxis(config)[axisSpec.name]
   const uniqObject = columns.reduce((acc, col) => {
     if (!acc[col.name]) { acc[col.name] = col; }
     return acc
@@ -68,7 +72,7 @@ export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
     filtered.push(col)
   }
 
-  config.axis[config.chart.current][axisSpec.name] = filtered
+  getCurrentChartAxis(config)[axisSpec.name] = filtered
   return config
 }
 
@@ -84,9 +88,9 @@ export function clearConfig(config) {
 }
 
 export function initializeConfig(config, spec) {
-  // if (!config.spec || config.spec.version !== spec.version) {
-  //   clearConfig(config)
-  // }
+  if (!config.spec || config.spec.version !== spec.version) {
+    clearConfig(config)
+  }
 
   const availableCharts = getAvailableChartNames(spec.charts);
 

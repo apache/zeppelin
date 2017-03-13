@@ -20,6 +20,10 @@ import {
   // groupAndAggregateRows, getGroupAndAggrColumns,
 } from './advanced-transformation-util';
 
+import {
+  getCurrentChartAxis,
+} from './advanced-transformation-api'
+
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
 
 class AdvancedTransformation extends Transformation {
@@ -48,7 +52,7 @@ class AdvancedTransformation extends Transformation {
         },
 
         getSingleDimensionAxis: (axisSpec) => {
-          return configInstance.axis[configInstance.chart.current][axisSpec.name]
+          return getCurrentChartAxis(configInstance)[axisSpec.name]
         },
 
         toggleColumnPanel: () => {
@@ -88,18 +92,18 @@ class AdvancedTransformation extends Transformation {
 
         aggregatorChanged: (colIndex, axisSpec, aggregator) => {
           if (isSingleDimension(axisSpec)) {
-            configInstance.axis[configInstance.chart.current][axisSpec.name].aggr = aggregator
+            getCurrentChartAxis(configInstance)[axisSpec.name].aggr = aggregator
           } else {
-            configInstance.axis[configInstance.chart.current][axisSpec.name][colIndex].aggr = aggregator
+            getCurrentChartAxis(configInstance)[axisSpec.name][colIndex].aggr = aggregator
           }
           self.emitConfig(configInstance)
         },
 
         removeFromAxis: function(colIndex, axisSpec) {
           if (isSingleDimension(axisSpec)) {
-            configInstance.axis[configInstance.chart.current][axisSpec.name] = null
+            getCurrentChartAxis(configInstance)[axisSpec.name] = null
           } else {
-            configInstance.axis[configInstance.chart.current][axisSpec.name].splice(colIndex, 1)
+            getCurrentChartAxis(configInstance)[axisSpec.name].splice(colIndex, 1)
           }
           self.emitConfig(configInstance)
         }
