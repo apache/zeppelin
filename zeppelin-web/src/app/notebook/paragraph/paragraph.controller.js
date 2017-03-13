@@ -554,6 +554,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       $scope.editor.on('blur', function() {
         handleFocus(false);
+        $scope.saveParagraph($scope.paragraph);
       });
 
       $scope.editor.on('paste', function(e) {
@@ -993,6 +994,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
       (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
+      data.paragraph.text !== $scope.paragraph.text ||
       data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
       data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
       data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
