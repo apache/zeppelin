@@ -43,6 +43,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
+
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.ZEPPELIN_JDBC_PRECODE_KEY;
+
 /**
  * JDBC interpreter unit tests
  */
@@ -385,5 +388,44 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertNull(user2JDBC2Conf.getPropertyMap("default").get("user"));
     assertNull(user2JDBC2Conf.getPropertyMap("default").get("password"));
     jdbc2.close();
+  }
+
+  @Test
+  public void testPrecode() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    properties.setProperty(ZEPPELIN_JDBC_PRECODE_KEY, "SET @testVariable=1");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+
+    String sqlQuery = "select @testVariable";
+
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("@TESTVARIABLE\n1\n", interpreterResult.message().get(0).getData());
+  }
+
+  @Test
+  public void testIncorrectPrecode() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    properties.setProperty(ZEPPELIN_JDBC_PRECODE_KEY, "incorrect command");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+
+    String sqlQuery = "select 1";
+
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
   }
  }

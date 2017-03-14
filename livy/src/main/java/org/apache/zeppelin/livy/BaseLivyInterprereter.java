@@ -55,7 +55,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private int pullStatusInterval;
   protected boolean displayAppInfo;
   private AtomicBoolean sessionExpired = new AtomicBoolean(false);
-  private LivyVersion livyVersion;
+  protected LivyVersion livyVersion;
 
   // keep tracking the mapping between paragraphId and statementId, so that we can cancel the
   // statement after we execute it.

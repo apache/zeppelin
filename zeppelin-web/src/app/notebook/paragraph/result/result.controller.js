@@ -23,6 +23,7 @@ import {
   DefaultDisplayType,
   SpellResult,
 } from '../../../spell'
+import { ParagraphStatus, } from '../paragraph.status';
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
@@ -198,7 +199,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
      */
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
-      (paragraph.status === 'RUNNING' || paragraph.status === 'PENDING')) {
+      (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
 
       if (DefaultDisplayType.TEXT !== $scope.type) {
         $scope.type = DefaultDisplayType.TEXT;
@@ -266,21 +267,23 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.renderDefaultDisplay = function(targetElemId, type, data, refresh) {
-    if (type === DefaultDisplayType.TABLE) {
-      $timeout(function() {
-        $scope.renderGraph(targetElemId, $scope.graphMode, refresh);
-      }, 10);
-    } else if (type === DefaultDisplayType.HTML) {
-      renderHtml(targetElemId, data);
-    } else if (type === DefaultDisplayType.ANGULAR) {
-      renderAngular(targetElemId, data);
-    } else if (type === DefaultDisplayType.TEXT) {
-      renderText(targetElemId, data);
-    } else if (type === DefaultDisplayType.ELEMENT) {
-      renderElem(targetElemId, data);
-    } else {
-      console.error(`Unknown Display Type: ${type}`);
+    const afterLoaded = () => {
+      if (type === DefaultDisplayType.TABLE) {
+        renderGraph(targetElemId, $scope.graphMode, refresh);
+      } else if (type === DefaultDisplayType.HTML) {
+        renderHtml(targetElemId, data);
+      } else if (type === DefaultDisplayType.ANGULAR) {
+        renderAngular(targetElemId, data);
+      } else if (type === DefaultDisplayType.TEXT) {
+        renderText(targetElemId, data);
+      } else if (type === DefaultDisplayType.ELEMENT) {
+        renderElem(targetElemId, data);
+      } else {
+        console.error(`Unknown Display Type: ${type}`);
+      }
     }
+
+    retryUntilElemIsLoaded(targetElemId, afterLoaded);
 
     // send message to parent that this result is rendered
     const paragraphId = $scope.$parent.paragraph.id;
@@ -379,50 +382,38 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const renderElem = function(targetElemId, data) {
-    const afterLoaded = () => {
-      const elem = angular.element(`#${targetElemId}`);
-      handleData(() => { data(targetElemId) }, DefaultDisplayType.ELEMENT,
-        () => {}, /** HTML element will be filled with data. thus pass empty success callback */
-        (error) => { elem.html(`${error.stack}`); }
-      );
-    };
-
-    retryUntilElemIsLoaded(targetElemId, afterLoaded);
+    const elem = angular.element(`#${targetElemId}`);
+    handleData(() => { data(targetElemId) }, DefaultDisplayType.ELEMENT,
+      () => {}, /** HTML element will be filled with data. thus pass empty success callback */
+      (error) => { elem.html(`${error.stack}`); }
+    );
   };
 
   const renderHtml = function(targetElemId, data) {
-    const afterLoaded = () => {
-      const elem = angular.element(`#${targetElemId}`);
-      handleData(data, DefaultDisplayType.HTML,
-        (generated) => {
-          elem.html(generated);
-          elem.find('pre code').each(function(i, e) {
-            hljs.highlightBlock(e);
-          });
-          /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
-          MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
-        },
-        (error) => {  elem.html(`${error.stack}`); }
-      );
-    };
-
-    retryUntilElemIsLoaded(targetElemId, afterLoaded);
+    const elem = angular.element(`#${targetElemId}`);
+    handleData(data, DefaultDisplayType.HTML,
+      (generated) => {
+        elem.html(generated);
+        elem.find('pre code').each(function(i, e) {
+          hljs.highlightBlock(e);
+        });
+        /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
+      },
+      (error) => {  elem.html(`${error.stack}`); }
+    );
   };
 
   const renderAngular = function(targetElemId, data) {
-    const afterLoaded = () => {
-      const elem = angular.element(`#${targetElemId}`);
-      const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
-      handleData(data, DefaultDisplayType.ANGULAR,
-        (generated) => {
-          elem.html(generated);
-          $compile(elem.contents())(paragraphScope);
-        },
-        (error) => {  elem.html(`${error.stack}`); }
-      );
-    };
-
-    retryUntilElemIsLoaded(targetElemId, afterLoaded);
+    const elem = angular.element(`#${targetElemId}`);
+    const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
+    handleData(data, DefaultDisplayType.ANGULAR,
+      (generated) => {
+        elem.html(generated);
+        $compile(elem.contents())(paragraphScope);
+      },
+      (error) => {  elem.html(`${error.stack}`); }
+    );
   };
 
   const getTextResultElemId = function (resultId) {
@@ -430,25 +421,21 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const renderText = function(targetElemId, data) {
-    const afterLoaded = () => {
-      const elem = angular.element(`#${targetElemId}`);
-      handleData(data, DefaultDisplayType.TEXT,
-        (generated) => {
-          // clear all lines before render
-          removeChildrenDOM(targetElemId);
+    const elem = angular.element(`#${targetElemId}`);
+    handleData(data, DefaultDisplayType.TEXT,
+      (generated) => {
+        // clear all lines before render
+        removeChildrenDOM(targetElemId);
 
-          if (generated) {
-            const divDOM = angular.element('<div></div>').text(generated);
-            elem.append(divDOM);
-          }
+        if (generated) {
+          const divDOM = angular.element('<div></div>').text(generated);
+          elem.append(divDOM);
+        }
 
-          elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false; });
-        },
-        (error) => {  elem.html(`${error.stack}`); }
-      );
-    };
-
-    retryUntilElemIsLoaded(targetElemId, afterLoaded);
+        elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false; });
+      },
+      (error) => {  elem.html(`${error.stack}`); }
+    );
   };
 
   const removeChildrenDOM = function(targetElemId) {
@@ -481,14 +468,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   }
 
-  $scope.renderGraph = function(graphElemId, graphMode, refresh) {
+  const renderGraph = function(graphElemId, graphMode, refresh) {
     // set graph height
     const height = $scope.config.graph.height;
     const graphElem = angular.element(`#${graphElemId}`);
     graphElem.height(height);
 
     if (!graphMode) { graphMode = 'table'; }
-    const tableElemId = `p${$scope.id}_${graphMode}`;
 
     const builtInViz = builtInVisualizations[graphMode];
     if (!builtInViz) { return; }
@@ -503,9 +489,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
     }
 
+    let afterLoaded = function() { /** will be overwritten */ };
+
     if (!builtInViz.instance) { // not instantiated yet
       // render when targetEl is available
-      const afterLoaded = (loadedElem) => {
+      afterLoaded = function(loadedElem) {
         try {
           const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
           const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
@@ -544,12 +532,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         }
       };
 
-      retryUntilElemIsLoaded(tableElemId, afterLoaded);
     } else if (refresh) {
       // when graph options or data are changed
       console.log('Refresh data %o', tableData);
 
-      const afterLoaded = (loadedElem) => {
+      afterLoaded = function(loadedElem) {
         const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
         const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
         const config = getVizConfig(graphMode);
@@ -563,15 +550,15 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         builtInViz.instance.renderSetting(visualizationSettingTargetEl);
       };
 
-      retryUntilElemIsLoaded(tableElemId, afterLoaded);
     } else {
-      const afterLoaded = (loadedElem) => {
+      afterLoaded = function(loadedElem) {
         loadedElem.height(height);
         builtInViz.instance.activate();
       };
-
-      retryUntilElemIsLoaded(tableElemId, afterLoaded);
     }
+
+    const tableElemId = `p${$scope.id}_${graphMode}`;
+    retryUntilElemIsLoaded(tableElemId, afterLoaded);
   };
 
   $scope.switchViz = function(newMode) {

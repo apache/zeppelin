@@ -308,6 +308,32 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <flattenMode>ossrh</flattenMode>
+          <updatePomFile>true</updatePomFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Test coverage plugin -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -475,7 +501,7 @@
         <version>${plugin.deploy.version}</version>
       </plugin>
 
-      <!--TODO(alex): make part of the build and reconcile conflicts
+    <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
       <artifactId>maven-duplicate-finder-plugin</artifactId>
@@ -898,6 +924,39 @@
               <exclude>**/interpreter-setting.json</exclude>
               <exclude>**/constants.json</exclude>
               <exclude>scripts/**</exclude>
+              <exclude>**/**/*.log</exclude> 
+              <exclude>**/**/logs/**</exclude> 
+
+              <!-- bundled from zeppelin-web --> 
+              <exclude>**/test/karma.conf.js</exclude> 
+              <exclude>**/test/spec/**</exclude>      
+              <exclude>**/.babelrc</exclude> 
+              <exclude>**/.bowerrc</exclude> 
+              <exclude>.editorconfig</exclude> 
+              <exclude>.eslintrc</exclude> 
+              <exclude>**/.tmp/**</exclude> 
+              <exclude>**/target/**</exclude> 
+              <exclude>**/node/**</exclude> 
+              <exclude>**/node_modules/**</exclude> 
+              <exclude>**/bower_components/**</exclude> 
+              <exclude>**/dist/**</exclude> 
+              <exclude>**/.buildignore</exclude> 
+              <exclude>**/.npmignore</exclude> 
+              <exclude>**/.jshintrc</exclude> 
+              <exclude>**/yarn.lock</exclude> 
+              <exclude>**/bower.json</exclude> 
+              <exclude>**/src/fonts/Patua-One*</exclude> 
+              <exclude>**/src/fonts/patua-one*</exclude> 
+              <exclude>**/src/fonts/Roboto*</exclude> 
+              <exclude>**/src/fonts/roboto*</exclude> 
+              <exclude>**/src/fonts/fontawesome*</exclude> 
+              <exclude>**/src/fonts/font-awesome*</exclude> 
+              <exclude>**/src/styles/font-awesome*</exclude> 
+              <exclude>**/src/fonts/Simple-Line*</exclude> 
+              <exclude>**/src/fonts/simple-line*</exclude> 
+              <exclude>**/src/fonts/Source-Code-Pro*</exclude> 
+              <exclude>**/src/fonts/source-code-pro*</exclude>
+              <exclude>**/src/**/**.test.js</exclude>               
 
               <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>
@@ -947,22 +1006,24 @@
               <exclude>**/package.json</exclude>
 
               <!-- compiled R packages (binaries) -->
-              <exclude>R/lib/**</exclude>
-              <exclude>r/lib/**</exclude>
+              <exclude>**/R/lib/**</exclude> 
+              <exclude>**/r/lib/**</exclude> 
+ 
+               <!--R-related files with alternative licenses--> 
 
-              <!--R-related files with alternative licenses-->
-              <exclude>r/R/rzeppelin/R/globals.R</exclude>
-              <exclude>r/R/rzeppelin/R/common.R</exclude>
-              <exclude>r/R/rzeppelin/R/protocol.R</exclude>
-              <exclude>r/R/rzeppelin/R/rServer.R</exclude>
-              <exclude>r/R/rzeppelin/R/scalaInterpreter.R</exclude>
-              <exclude>r/R/rzeppelin/R/zzz.R</exclude>
-              <exclude>r/src/main/scala/scala/Console.scala</exclude>
-              <exclude>r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude>
-              <exclude>r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
-              <!--The following files are mechanical-->
-              <exclude>r/R/rzeppelin/DESCRIPTION</exclude>
-              <exclude>r/R/rzeppelin/NAMESPACE</exclude>
+              <exclude>**/R/rzeppelin/R/globals.R</exclude> 
+              <exclude>**/R/rzeppelin/R/common.R</exclude> 
+              <exclude>**/R/rzeppelin/R/protocol.R</exclude> 
+              <exclude>**/R/rzeppelin/R/rServer.R</exclude> 
+              <exclude>**/R/rzeppelin/R/scalaInterpreter.R</exclude> 
+              <exclude>**/R/rzeppelin/R/zzz.R</exclude> 
+              <exclude>**/src/main/scala/scala/Console.scala</exclude> 
+              <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude> 
+              <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude> 
+ 
+               <!--The following files are mechanical--> 
+              <exclude>**/R/rzeppelin/DESCRIPTION</exclude> 
+              <exclude>**/R/rzeppelin/NAMESPACE</exclude> 
             </excludes>
           </configuration>
 

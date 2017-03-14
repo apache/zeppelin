@@ -167,6 +167,10 @@ There are more JDBC interpreter properties you can specify like below.
     <td>default.jceks.credentialKey</td>
     <td>jceks credential key</td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.precode</td>
+    <td>Some SQL which executes while opening connection</td>
+  </tr>
 </table>
 
 You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
@@ -423,7 +427,12 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td>default.password</td>
     <td>hive_password</td>
   </tr>
+  <tr>
+    <td>hive.proxy.user</td>
+    <td>true or false</td>
 </table>
+
+Connection to Hive JDBC with a proxy user can be disabled with `hive.proxy.user` property (set to true by default)
 
 [Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
 [Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)

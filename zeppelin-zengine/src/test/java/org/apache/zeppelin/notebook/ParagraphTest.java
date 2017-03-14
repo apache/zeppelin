@@ -19,22 +19,48 @@ package org.apache.zeppelin.notebook;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.Interpreter.FormType;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.scheduler.JobListener;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 public class ParagraphTest {
   @Test
@@ -124,5 +150,86 @@ public class ParagraphTest {
     verify(registry).get("name", noteId, paragraphId);
     verify(registry).get("age", noteId, null);
     assertEquals(actual, expected);
+  }
+
+  @Test
+  public void returnDefaultParagraphWithNewUser() {
+    Paragraph p = new Paragraph("para_1", null, null, null, null);
+    Object defaultValue = "Default Value";
+    p.setResult(defaultValue);
+    Paragraph newUserParagraph = p.getUserParagraph("new_user");
+    assertNotNull(newUserParagraph);
+    assertEquals(defaultValue, newUserParagraph.getReturn());
+  }
+
+  @Test
+  public void returnUnchangedResultsWithDifferentUser() throws Throwable {
+    InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
+    Note mockNote = mock(Note.class);
+    when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
+    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote,  null, null, mockInterpreterSettingManager));
+
+    doReturn("spy").when(spyParagraph).getRequiredReplName();
+
+
+    Interpreter mockInterpreter = mock(Interpreter.class);
+    doReturn(mockInterpreter).when(spyParagraph).getRepl(anyString());
+
+    InterpreterGroup mockInterpreterGroup = mock(InterpreterGroup.class);
+    when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
+    when(mockInterpreterGroup.getId()).thenReturn("mock_id_1");
+    when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
+    when(mockInterpreterGroup.getResourcePool()).thenReturn(mock(ResourcePool.class));
+
+    List<InterpreterSetting> spyInterpreterSettingList = spy(Lists.<InterpreterSetting>newArrayList());
+    InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
+    InterpreterOption mockInterpreterOption = mock(InterpreterOption.class);
+    when(mockInterpreterSetting.getOption()).thenReturn(mockInterpreterOption);
+    when(mockInterpreterOption.permissionIsSet()).thenReturn(false);
+    when(mockInterpreterSetting.getStatus()).thenReturn(Status.READY);
+    when(mockInterpreterSetting.getId()).thenReturn("mock_id_1");
+    when(mockInterpreterSetting.getInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
+    spyInterpreterSettingList.add(mockInterpreterSetting);
+    when(mockNote.getId()).thenReturn("any_id");
+    when(mockInterpreterSettingManager.getInterpreterSettings(anyString())).thenReturn(spyInterpreterSettingList);
+
+    doReturn("spy script body").when(spyParagraph).getScriptBody();
+
+    when(mockInterpreter.getFormType()).thenReturn(FormType.NONE);
+
+    ParagraphJobListener mockJobListener = mock(ParagraphJobListener.class);
+    doReturn(mockJobListener).when(spyParagraph).getListener();
+    doNothing().when(mockJobListener).onOutputUpdateAll(Mockito.<Paragraph>any(), Mockito.anyList());
+
+    InterpreterResult mockInterpreterResult = mock(InterpreterResult.class);
+    when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any())).thenReturn(mockInterpreterResult);
+    when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
+
+
+    // Actual test
+    List<InterpreterResultMessage> result1 = Lists.newArrayList();
+    result1.add(new InterpreterResultMessage(Type.TEXT, "result1"));
+    when(mockInterpreterResult.message()).thenReturn(result1);
+
+    AuthenticationInfo user1 = new AuthenticationInfo("user1");
+    spyParagraph.setAuthenticationInfo(user1);
+    spyParagraph.jobRun();
+    Paragraph p1 = spyParagraph.getUserParagraph(user1.getUser());
+
+    List<InterpreterResultMessage> result2 = Lists.newArrayList();
+    result2.add(new InterpreterResultMessage(Type.TEXT, "result2"));
+    when(mockInterpreterResult.message()).thenReturn(result2);
+
+    AuthenticationInfo user2 = new AuthenticationInfo("user2");
+    spyParagraph.setAuthenticationInfo(user2);
+    spyParagraph.jobRun();
+    Paragraph p2 = spyParagraph.getUserParagraph(user2.getUser());
+
+    assertNotEquals(p1.getReturn().toString(), p2.getReturn().toString());
+
+    assertEquals(p1, spyParagraph.getUserParagraph(user1.getUser()));
+
+
+
   }
 }
