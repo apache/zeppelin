@@ -2035,7 +2035,7 @@ public class NotebookServer extends WebSocketServlet
     @Override
     public void onProgressUpdate(Job job, int progress) {
       notebookServer.broadcast(note.getId(),
-          new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
+          new Message(OP.PROGRESS).put("id", job.getId()).put("progress", progress));
     }
 
     @Override
