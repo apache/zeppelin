@@ -59,7 +59,9 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   // keep tracking the mapping between paragraphId and statementId, so that we can cancel the
   // statement after we execute it.
-  private ConcurrentHashMap<String, Integer> paragraphId2StmtIdMapping = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, Integer> paragraphId2StmtIdMap = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, Integer> paragraphId2StmtProgressMap =
+      new ConcurrentHashMap<>();
 
   public BaseLivyInterprereter(Properties property) {
     super(property);
@@ -151,7 +153,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   public void cancel(InterpreterContext context) {
     if (livyVersion.isCancelSupported()) {
       String paraId = context.getParagraphId();
-      Integer stmtId = paragraphId2StmtIdMapping.get(paraId);
+      Integer stmtId = paragraphId2StmtIdMap.get(paraId);
       try {
         if (stmtId != null) {
           cancelStatement(stmtId);
@@ -159,7 +161,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       } catch (LivyException e) {
         LOGGER.error("Fail to cancel statement " + stmtId + " for paragraph " + paraId, e);
       } finally {
-        paragraphId2StmtIdMapping.remove(paraId);
+        paragraphId2StmtIdMap.remove(paraId);
       }
     } else {
       LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
@@ -173,6 +175,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (livyVersion.isGetProgressSupported()) {
+      String paraId = context.getParagraphId();
+      Integer progress = paragraphId2StmtProgressMap.get(paraId);
+      return progress == null ? 0 : progress;
+    }
     return 0;
   }
 
@@ -243,7 +250,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         stmtInfo = executeStatement(new ExecuteRequest(code));
       }
       if (paragraphId != null) {
-        paragraphId2StmtIdMapping.put(paragraphId, stmtInfo.id);
+        paragraphId2StmtIdMap.put(paragraphId, stmtInfo.id);
       }
       // pull the statement status
       while (!stmtInfo.isAvailable()) {
@@ -254,6 +261,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           throw new LivyException(e);
         }
         stmtInfo = getStatementInfo(stmtInfo.id);
+        paragraphId2StmtProgressMap.put(paragraphId, (int) (stmtInfo.progress * 100));
       }
       if (appendSessionExpired) {
         return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
@@ -263,7 +271,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
     } finally {
       if (paragraphId != null) {
-        paragraphId2StmtIdMapping.remove(paragraphId);
+        paragraphId2StmtIdMap.remove(paragraphId);
+        paragraphId2StmtProgressMap.remove(paragraphId);
       }
     }
   }
@@ -537,6 +546,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private static class StatementInfo {
     public Integer id;
     public String state;
+    public double progress;
     public StatementOutput output;
 
     public StatementInfo() {

@@ -28,6 +28,7 @@ public class LivyVersion {
 
   protected static final LivyVersion LIVY_0_2_0 = LivyVersion.fromVersionString("0.2.0");
   protected static final LivyVersion LIVY_0_3_0 = LivyVersion.fromVersionString("0.3.0");
+  protected static final LivyVersion LIVY_0_4_0 = LivyVersion.fromVersionString("0.4.0");
 
   private int version;
   private String versionString;
@@ -72,6 +73,10 @@ public class LivyVersion {
 
   public boolean isCancelSupported() {
     return this.newerThanEquals(LIVY_0_3_0);
+  }
+
+  public boolean isGetProgressSupported() {
+    return this.newerThanEquals(LIVY_0_4_0);
   }
 
   public boolean equals(Object versionToCompare) {
