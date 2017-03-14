@@ -537,7 +537,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if ($scope.asIframe) {
       return 'col-md-12';
     } else {
-      return 'col-md-' + n;
+      return 'paragraph-col col-md-' + n;
     }
   };
 
