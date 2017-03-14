@@ -33,6 +33,8 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   };
 
   render(pivot) {
+    // [ZEPPELIN-2253] New chart function will be created each time inside super.render()
+    this.chart = null;
     var d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
