@@ -60,6 +60,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
+  /*
   @Test
   public void testCreateNewButton() throws Exception {
     if (!endToEndTestEnabled()) {
@@ -464,6 +465,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
+  */
+
   @Test
   public void testEditOnDoubleClick() throws Exception {
     if (!endToEndTestEnabled()) {
@@ -522,26 +525,42 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       // Insert text in paragraph 1
+      setTextOfParagraph(1, "%spark println(\"Hello \"+z.input(\"name\", \"world\")) ");
 
       // Run the paragraph
-
-      // Verify status of paragraph
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
 
       // Verify there is the text "Hello World"
+      collector.checkThat("Output text is equal to value specified initially",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+              CoreMatchers.equalTo("Hello world"));
 
-      // Somehow, change the text of the field, maybe search for World?
+      // Somehow, change the text of the field, maybe search for World
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).clear();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("Zeppelin");
 
-      // Verify that there is STILL the text "Hello World"
+      // Checking again as even if we changed content in dynamic form, nothing should have changed
+      collector.checkThat("After new data in text input form, data still has not changed",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+              CoreMatchers.equalTo("Hello world"));
 
       // 2nd part of test - Now run this paragraph
+      runParagraph(1);
 
       // Verify that we have an expected change "Hello Zeppelin"
+      collector.checkThat("Only after paragraph run we should see the new data entered",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+              CoreMatchers.equalTo("Hello Zeppelin"));
+
+      deleteTestNotebook(driver);
 
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
     }
   }
 
+  /*
     @Test
     public void testSingleDynamicFormSelectForm() throws Exception {
       if (!endToEndTestEnabled()) {
@@ -606,5 +625,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
     }
   }
+
+  */
 
 }
