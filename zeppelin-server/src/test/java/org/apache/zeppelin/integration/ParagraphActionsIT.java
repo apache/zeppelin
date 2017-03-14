@@ -33,6 +33,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
+import org.scalatest.selenium.WebBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +60,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
     driver.quit();
   }
-
-  /*
+  
   @Test
   public void testCreateNewButton() throws Exception {
     if (!endToEndTestEnabled()) {
@@ -465,8 +465,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  */
-
   @Test
   public void testEditOnDoubleClick() throws Exception {
     if (!endToEndTestEnabled()) {
@@ -524,31 +522,23 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     try {
       createNewNote();
 
-      // Insert text in paragraph 1
       setTextOfParagraph(1, "%spark println(\"Hello \"+z.input(\"name\", \"world\")) ");
 
-      // Run the paragraph
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-
-      // Verify there is the text "Hello World"
       collector.checkThat("Output text is equal to value specified initially",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Hello world"));
 
-      // Somehow, change the text of the field, maybe search for World
       driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).clear();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("Zeppelin");
 
-      // Checking again as even if we changed content in dynamic form, nothing should have changed
       collector.checkThat("After new data in text input form, data still has not changed",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Hello world"));
 
-      // 2nd part of test - Now run this paragraph
       runParagraph(1);
-
-      // Verify that we have an expected change "Hello Zeppelin"
+      waitForParagraph(1, "FINISHED");
       collector.checkThat("Only after paragraph run we should see the new data entered",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Hello Zeppelin"));
@@ -560,7 +550,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  /*
     @Test
     public void testSingleDynamicFormSelectForm() throws Exception {
       if (!endToEndTestEnabled()) {
@@ -569,8 +558,28 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       try {
         createNewNote();
 
-        //desc: Insert 1 select form in paragraph -> modify it
-        //exp: Nothing should happen or run then introduce change and verify there is a change
+        setTextOfParagraph(1, "%spark println(\"Howdy \"+z.select(\"names\", Seq((\"1\",\"Alice\"), " +
+                "(\"2\",\"Bob\"),(\"3\",\"stranger\"))))");
+
+        runParagraph(1);
+        waitForParagraph(1, "FINISHED");
+        collector.checkThat("Output text should not display any of the options in select form",
+                driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                CoreMatchers.equalTo("Howdy "));
+
+        Select dropdownMenu = new Select(driver.findElement(By.xpath((getParagraphXPath(1) + "//select"))));
+        dropdownMenu.selectByVisibleText("Alice");
+        collector.checkThat("After selection in drop down menu, text should still not display any of the options",
+                driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                CoreMatchers.equalTo("Howdy "));
+
+        runParagraph(1);
+        waitForParagraph(1, "FINISHED");
+        collector.checkThat("Only after paragraph run we should see the new greeting including the selected option",
+                driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                CoreMatchers.equalTo("Howdy 1"));
+
+        deleteTestNotebook(driver);
 
       } catch (Exception e) {
         handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
@@ -586,46 +595,75 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       try {
         createNewNote();
 
-        //desc: Insert 1 checkbox in paragraph -> modify it
-        //exp: Nothing should happen or run then introduce change and verify there is a change
+        setTextOfParagraph(1, "%spark val options = Seq((\"han\",\"Han\"), (\"leia\",\"Leia\"), " +
+                "(\"luke\",\"Luke\")); println(\"Greetings \"+z.checkbox(\"skywalkers\",options).mkString(\" and \"))");
+
+        runParagraph(1);
+        waitForParagraph(1, "FINISHED");
+        collector.checkThat("Output text should display all of the options included in check boxes",
+                driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                CoreMatchers.containsString("Greetings han and leia and luke"));
+
+        WebElement firstCheckbox = driver.findElement(By.xpath(getParagraphXPath(1) + "//input[1]"));
+        if(firstCheckbox.isSelected()) {
+          firstCheckbox.click();
+          collector.checkThat("After unchecking one of the boxes, text should still not display any change",
+                  driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                  CoreMatchers.containsString("Greetings han and leia and luke"));
+
+          runParagraph(1);
+          waitForParagraph(1, "FINISHED");
+          collector.checkThat("Only after paragraph run we should see the new greeting without the box we unchecked",
+                  driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                  CoreMatchers.containsString("Greetings leia and luke"));
+
+        } else {
+          collector.checkThat("All checkboxes should initially be selected",
+                  driver.findElement(By.xpath(getParagraphXPath(1) + "//input[1]")).isSelected(),
+                  CoreMatchers.equalTo(true));
+        }
+
+        deleteTestNotebook(driver);
 
       } catch (Exception e) {
         handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
       }
     }
 
-      @Test
-      public void testMultipleDynamicFormsSameType () throws Exception {
-        if (!endToEndTestEnabled()) {
-          return;
-        }
-        try {
-          createNewNote();
+    @Test
+    public void testMultipleDynamicFormsSameType () throws Exception {
+       if (!endToEndTestEnabled()) {
+         return;
+       }
+       try {
+         createNewNote();
 
-          //desc: Insert 2 dynamic forms (select forms) in paragraph -> modify one
-          //exp: nothing should run, then introduce change and verify there is a change
+         setTextOfParagraph(1, "%spark println(\"Howdy \"+z.select(\"fruits\", Seq((\"1\",\"Apple\")," +
+                 "(\"2\",\"Orange\"),(\"3\",\"Peach\")))); println(\"Howdy \"+z.select(\"planets\", " +
+                 "Seq((\"1\",\"Venus\"),(\"2\",\"Earth\"),(\"3\",\"Mars\"))))");
 
-        } catch (Exception e) {
-          handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
-        }
-      }
+         runParagraph(1);
+         waitForParagraph(1, "FINISHED");
+         collector.checkThat("Output text should not display any of the options in select form",
+                 driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                 CoreMatchers.equalTo("Howdy \nHowdy "));
 
-  @Test
-  public void testMultipleDynamicFormsDifferentTypes() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
+         Select dropdownMenu = new Select(driver.findElement(By.xpath((getParagraphXPath(1) + "//select[1]"))));
+         dropdownMenu.selectByVisibleText("Apple");
+         collector.checkThat("After selection in drop down menu, text should still not display any of the options",
+                 driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                 CoreMatchers.equalTo("Howdy \nHowdy "));
+
+         runParagraph(1);
+         waitForParagraph(1, "FINISHED");
+         collector.checkThat("Only after paragraph run we should see the new greeting including the selected option",
+                 driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+                 CoreMatchers.equalTo("Howdy 1\nHowdy "));
+
+         deleteTestNotebook(driver);
+
+       } catch (Exception e) {
+         handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+       }
     }
-    try {
-      createNewNote();
-
-      //desc: Insert 2 different dynamic forms (select form and check box) in paragraph -> modify one
-      //exp: nothing should run then introduce change and verify there is a change
-
-    } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
-    }
-  }
-
-  */
-
 }
