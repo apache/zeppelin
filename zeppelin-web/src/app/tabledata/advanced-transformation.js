@@ -15,13 +15,16 @@
 import Transformation from './transformation';
 
 import {
-  isAggregator, isGroup, isGroupBase, isSingleDimension,
+  isAggregator, isGroup, isKey, isSingleDimension,
   clearConfig, initializeConfig, removeDuplicatedColumnsInMultiDimensionAxis,
-  // groupAndAggregateRows, getGroupAndAggrColumns,
+  groupAndAggregateRows, getColumnsFromAxis,
 } from './advanced-transformation-util';
 
 import {
+  getCurrentChart,
   getCurrentChartAxis,
+  getCurrentChartAxisSpecs,
+  getCurrentChartParam,
 } from './advanced-transformation-api'
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
@@ -48,7 +51,7 @@ class AdvancedTransformation extends Transformation {
         columns: self.columns,
 
         getAxisAnnotation: (axisSpec) => {
-          return `${axisSpec.name} (${axisSpec.type})`
+          return `${axisSpec.name} (${axisSpec.valueType})`
         },
 
         getSingleDimensionAxis: (axisSpec) => {
@@ -72,7 +75,7 @@ class AdvancedTransformation extends Transformation {
         },
 
         isGroupAxis: (axisSpec) => { return isGroup(axisSpec) },
-        isGroupBaseAxis: (axisSpec) => { return isGroupBase(axisSpec) },
+        isKeyAxis: (axisSpec) => { return isKey(axisSpec) },
         isAggregatorAxis: (axisSpec) => { return isAggregator(axisSpec) },
         isSingleDimensionAxis: (axisSpec) => { return isSingleDimension(axisSpec) },
 
@@ -114,31 +117,39 @@ class AdvancedTransformation extends Transformation {
   transform(tableData) {
     this.columns = tableData.columns; /** used in `getSetting` */
 
-    return tableData
-  //   const axisSpecs = this.axisSpecs; /** specs */
-  //   const axisConfig = this.config.axis; /** configured columns */
-  //
-  //   const columns = getGroupAndAggrColumns(axisSpecs, axisConfig);
-  //   const groupBaseColumns = columns.groupBase;
-  //   const groupColumns = columns.group;
-  //   const aggregatorColumns = columns.aggregator;
-  //   const otherColumns = columns.others;
-  //
-  //   const grouped = groupAndAggregateRows(tableData.rows, groupBaseColumns, groupColumns, aggregatorColumns)
-  //
-  //   return {
-  //     row: {
-  //       all: tableData.rows,
-  //       grouped: grouped, /** [ { group<String>, rows<Array>, aggregatedValues<Object> } ] */
-  //     },
-  //     column: {
-  //       all: tableData.columns,
-  //       groupBase: groupBaseColumns,
-  //       group: groupColumns,
-  //       aggregator: aggregatorColumns,
-  //       others: otherColumns,
-  //     }
-  //   }
+    const conf = this.config
+    const chart = getCurrentChart(conf)
+    const axis = getCurrentChartAxis(conf)
+    const param = getCurrentChartParam(conf)
+    const axisSpecs = getCurrentChartAxisSpecs(conf)
+
+    const columns = getColumnsFromAxis(axisSpecs, axis);
+    const keyColumns = columns.key;
+    const groupColumns = columns.group;
+    const aggregatorColumns = columns.aggregator;
+    const otherColumns = columns.others;
+
+    const grouped = groupAndAggregateRows(tableData.rows, keyColumns, groupColumns, aggregatorColumns)
+
+    return {
+      chart: chart,
+      axis: axis,
+      parameter: param,
+
+      row: {
+        all: tableData.rows,
+      },
+
+      column: {
+        all: tableData.columns,
+        key: keyColumns,
+        group: groupColumns,
+        aggregator: aggregatorColumns,
+        others: otherColumns,
+      },
+
+      cube: null,
+    }
   }
 }
 

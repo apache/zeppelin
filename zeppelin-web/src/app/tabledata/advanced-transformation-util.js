@@ -26,10 +26,18 @@ export const Aggregator = {
   MAX: 'max',
 }
 
-export function isAggregator(axisSpec) { return axisSpec.aggregator; }
-export function isGroup(axisSpec) { return axisSpec.group; }
-export function isGroupBase(axisSpec) { return axisSpec.groupBase; }
-export function isSingleDimension(axisSpec) { return axisSpec.dimension === 'single'; }
+export function isAggregator(axisSpec) {
+  return axisSpec && axisSpec.axisType === 'aggregator';
+}
+export function isGroup(axisSpec) {
+  return axisSpec && axisSpec.axisType === 'group';
+}
+export function isKey(axisSpec) {
+  return axisSpec && axisSpec.axisType === 'key';
+}
+export function isSingleDimension(axisSpec) {
+  return axisSpec && axisSpec.dimension === 'single';
+}
 
 /**
  * before: { name: { ... } }
@@ -150,29 +158,29 @@ export function initializeConfig(config, spec) {
 }
 
 
-export function getGroupAndAggrColumns(axisSpecs, axisConfig) {
+export function getColumnsFromAxis(axisSpecs, axisConfig) {
   const groupAxisNames = [];
-  const groupBaseAxisNames = [];
+  const keyAxisNames = [];
   const aggrAxisNames = [];
 
   for(let i = 0; i < axisSpecs.length; i++) {
     const axisSpec = axisSpecs[i];
 
     // do not allow duplication and beware of if-else stmt order
-    if (isGroupBase(axisSpec)) { groupBaseAxisNames.push(axisSpec.name); }
+    if (isKey(axisSpec)) { keyAxisNames.push(axisSpec.name); }
     else if (isGroup(axisSpec)) { groupAxisNames.push(axisSpec.name); }
     else if (isAggregator(axisSpec)) { aggrAxisNames.push(axisSpec.name); }
   }
 
-  let groupBaseColumns = []; /** `groupBase` */
+  let keyColumns = []; /** `groupBase` */
   let groupColumns = []; /** `group` */
   let aggregatorColumns = []; /** `aggregator` */
   let otherColumns = []; /** specified, but not group and aggregator */
 
   for(let colName in axisConfig) {
     const columns = axisConfig[colName];
-    if (groupBaseAxisNames.includes(colName)) {
-      groupBaseColumns = groupBaseColumns.concat(columns);
+    if (keyAxisNames.includes(colName)) {
+      keyColumns = keyColumns.concat(columns);
     } else if (groupAxisNames.includes(colName)) {
       groupColumns = groupColumns.concat(columns);
     } else if (aggrAxisNames.includes(colName)) {
@@ -183,26 +191,14 @@ export function getGroupAndAggrColumns(axisSpecs, axisConfig) {
   }
 
   return {
-    groupBase: groupBaseColumns,
+    key: keyColumns,
     group: groupColumns,
     aggregator: aggregatorColumns,
     others: otherColumns,
   }
 }
 
-export function getConfiguredColumnIndices(allColumns, configuredColumns) {
-
-  const configuredColumnNames = configuredColumns.map(c => c.name);
-
-  const configuredColumnIndices = allColumns.reduce((acc, c) => {
-    if (configuredColumnNames.includes(c.name)) { return acc.concat(c.index) }
-    else { return acc }
-  }, []);
-
-  return configuredColumnIndices;
-}
-
-export function groupAndAggregateRows(rows, groupBaseColumns, groupColumns, aggregatorColumns) {
+export function groupAndAggregateRows(rows, keyColumns, groupColumns, aggregatorColumns) {
   const groupColumnIndices = groupColumns.map(c => c.index);
 
   const converted = lo.chain(rows)
