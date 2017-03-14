@@ -28,6 +28,10 @@ import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.ServerSocket;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +66,8 @@ import py4j.GatewayServer;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
-  public static final String ZEPPELIN_PY4JPATH = "/interpreter/python/py4j-0.9.2/src";
+  public static final String ZEPPELIN_PY4JPATH = "interpreter/python/py4j-0.9.2/src";
+  public static final String ZEPPELIN_PYTHON_LIBS = "interpreter/lib/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
@@ -71,6 +76,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private String pythonPath;
   private int maxResult;
   private String py4jLibPath;
+  private String pythonLibPath;
 
   private String pythonCommand = DEFAULT_ZEPPELIN_PYTHON;
 
@@ -100,6 +106,17 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
+  private String workingDir() {
+    URL myURL = getClass().getProtectionDomain().getCodeSource().getLocation();
+    java.net.URI myURI = null;
+    try {
+      myURI = myURL.toURI();
+    } catch (URISyntaxException e1)
+    {}
+    String path = java.nio.file.Paths.get(myURI).toFile().toString();
+    return path;
+  }
+
   private void createPythonScript() {
     File out = new File(scriptPath);
 
@@ -126,7 +143,14 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   private void createGatewayServerAndStartScript() {
     createPythonScript();
-    py4jLibPath = System.getenv("ZEPPELIN_HOME") + ZEPPELIN_PY4JPATH;
+    if (System.getenv("ZEPPELIN_HOME") != null) {
+      py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator + ZEPPELIN_PY4JPATH;
+      pythonLibPath = System.getenv("ZEPPELIN_HOME") + File.separator + ZEPPELIN_PYTHON_LIBS;
+    } else {
+      Path workingPath = Paths.get("..").toAbsolutePath();
+      py4jLibPath = workingPath + File.separator + ZEPPELIN_PY4JPATH;
+      pythonLibPath = workingPath + File.separator + ZEPPELIN_PYTHON_LIBS;
+    }
 
     port = findRandomOpenPortOnAllLocalInterfaces();
     gatewayServer = new GatewayServer(this, port);
@@ -155,8 +179,12 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
       if (!env.containsKey("PYTHONPATH")) {
-        env.put("PYTHONPATH", py4jLibPath);
+        env.put("PYTHONPATH", py4jLibPath + File.pathSeparator + pythonLibPath);
+      } else {
+        env.put("PYTHONPATH", env.get("PYTHONPATH") + File.pathSeparator +
+                py4jLibPath + File.pathSeparator + pythonLibPath);
       }
+
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
     } catch (IOException e) {
