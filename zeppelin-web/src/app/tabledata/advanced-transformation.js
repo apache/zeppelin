@@ -17,7 +17,7 @@ import Transformation from './transformation';
 import {
   isAggregator, isGroup, isKey, isSingleDimension,
   clearConfig, initializeConfig, removeDuplicatedColumnsInMultiDimensionAxis,
-  groupAndAggregateRows, getColumnsFromAxis,
+  getCube, getColumnsFromAxis,
 } from './advanced-transformation-util';
 
 import {
@@ -129,7 +129,10 @@ class AdvancedTransformation extends Transformation {
     const aggregatorColumns = columns.aggregator;
     const otherColumns = columns.others;
 
-    const grouped = groupAndAggregateRows(tableData.rows, keyColumns, groupColumns, aggregatorColumns)
+    const cube = getCube(tableData.rows, keyColumns, groupColumns, aggregatorColumns)
+
+    console.log('cube')
+    console.log(cube)
 
     return {
       chart: chart,

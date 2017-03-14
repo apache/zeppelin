@@ -158,35 +158,38 @@ export function initializeConfig(config, spec) {
 }
 
 
-export function getColumnsFromAxis(axisSpecs, axisConfig) {
-  const groupAxisNames = [];
+export function getColumnsFromAxis(axisSpecs, axis) {
   const keyAxisNames = [];
+  const groupAxisNames = [];
   const aggrAxisNames = [];
 
   for(let i = 0; i < axisSpecs.length; i++) {
     const axisSpec = axisSpecs[i];
 
-    // do not allow duplication and beware of if-else stmt order
     if (isKey(axisSpec)) { keyAxisNames.push(axisSpec.name); }
     else if (isGroup(axisSpec)) { groupAxisNames.push(axisSpec.name); }
     else if (isAggregator(axisSpec)) { aggrAxisNames.push(axisSpec.name); }
   }
 
-  let keyColumns = []; /** `groupBase` */
-  let groupColumns = []; /** `group` */
-  let aggregatorColumns = []; /** `aggregator` */
-  let otherColumns = []; /** specified, but not group and aggregator */
+  let keyColumns = {};
+  let groupColumns = {};
+  let aggregatorColumns = {};
+  let otherColumns = {};
 
-  for(let colName in axisConfig) {
-    const columns = axisConfig[colName];
-    if (keyAxisNames.includes(colName)) {
-      keyColumns = keyColumns.concat(columns);
-    } else if (groupAxisNames.includes(colName)) {
-      groupColumns = groupColumns.concat(columns);
-    } else if (aggrAxisNames.includes(colName)) {
-      aggregatorColumns = aggregatorColumns.concat(columns);
+  for(let axisName in axis) {
+    const columns = axis[axisName];
+    if (keyAxisNames.includes(axisName)) {
+      if (!keyColumns[axisName]) { keyColumns[axisName] = []; }
+      keyColumns[axisName] = keyColumns[axisName].concat(columns);
+    } else if (groupAxisNames.includes(axisName)) {
+      if (!groupColumns[axisName]) { groupColumns[axisName] = []; }
+      groupColumns[axisName] = groupColumns[axisName].concat(columns);
+    } else if (aggrAxisNames.includes(axisName)) {
+      if (!aggregatorColumns[axisName]) { aggregatorColumns[axisName] = []; }
+      aggregatorColumns[axisName] = aggregatorColumns[axisName].concat(columns);
     } else {
-      otherColumns = otherColumns.concat(columns);
+      if (!otherColumns[axisName]) { otherColumns[axisName] = []; }
+      otherColumns[axisName] = otherColumns[axisName].concat(columns);
     }
   }
 
@@ -198,73 +201,7 @@ export function getColumnsFromAxis(axisSpecs, axisConfig) {
   }
 }
 
-export function groupAndAggregateRows(rows, keyColumns, groupColumns, aggregatorColumns) {
-  const groupColumnIndices = groupColumns.map(c => c.index);
-
-  const converted = lo.chain(rows)
-    .groupBy(row => {
-      /** 1. group */
-      let group = '';
-
-      for (let i = 0; i < groupColumnIndices.length; i++) {
-        const colIndex = groupColumnIndices[i];
-        const colValue = row[colIndex];
-
-        if (group === '') { group = colValue; }
-        else { group = `${group}.${colValue}`; }
-      }
-
-      return group;
-    })
-    .map((groupedRows, groupKey) => {
-      /** 2. aggregate */
-      const aggregated = {};
-
-      // avoid unnecessary computation
-      if (!groupColumns.length || !groupedRows.length) {
-        return { group: groupKey, rows: groupedRows, aggregatedValues: aggregated, }
-      }
-
-      // accumulate columnar values to compute
-      const columnar = {}
-      for (let i = 0; i < groupedRows.length; i++) {
-        const row = groupedRows[i]
-
-        for(let j = 0; j < aggregatorColumns.length; j++) {
-          const aggrColumn = aggregatorColumns[j];
-          if (!columnar[aggrColumn.name]) {
-            columnar[aggrColumn.name] = { aggregator: aggrColumn.aggr, values: [], };
-          }
-
-          const colValue = row[aggrColumn.index];
-          columnar[aggrColumn.name].values.push(colValue);
-        }
-      }
-
-      // execute aggregator functions
-      for(let aggrColName in columnar) {
-        const { aggregator, values, } = columnar[aggrColName];
-        let computed = null;
-
-        try {
-          switch(aggregator) {
-            case Aggregator.SUM: computed = lo.sum(values); break
-            case Aggregator.COUNT: computed = values.length; break
-            case Aggregator.AVG: computed = lo.sum(values) / values.length; break
-            case Aggregator.MIN: computed = lo.min(values); break
-            case Aggregator.MAX: computed = lo.max(values); break
-          }
-        } catch(error) {
-          console.error(`Failed to compute aggregator: ${aggregator} on the field ${aggrColName}`, error);
-        }
-
-        aggregated[aggrColName] = computed;
-      }
-
-      return { group: groupKey, rows: groupedRows, aggregatedValues: aggregated, }
-    })
-    .value();
-
-  return converted;
+export function getCube(rows, keyColumns, groupColumns, aggregatorColumns) {
+  return {}
 }
 
