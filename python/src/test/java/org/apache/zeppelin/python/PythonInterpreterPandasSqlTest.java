@@ -21,13 +21,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -35,7 +38,10 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,13 +59,14 @@ import org.junit.Test;
  *   mvn -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
-public class PythonInterpreterPandasSqlTest {
+public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener {
 
   private InterpreterGroup intpGroup;
   private PythonInterpreterPandasSql sql;
   private PythonInterpreter python;
 
   private InterpreterContext context;
+  private InterpreterOutput out;
 
   @Before
   public void setUp() throws Exception {
@@ -71,21 +78,29 @@ public class PythonInterpreterPandasSqlTest {
 
     python = new PythonInterpreter(p);
     python.setInterpreterGroup(intpGroup);
-    python.open();
 
     sql = new PythonInterpreterPandasSql(p);
     sql.setInterpreterGroup(intpGroup);
 
     intpGroup.put("note", Arrays.asList(python, sql));
 
-    context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
-        new HashMap<String, Object>(), new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null), null,
-        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
+    out = new InterpreterOutput(this);
 
-    //important to be last step
+    context = new InterpreterContext("note", "id", null, "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        out);
+    python.open();
     sql.open();
-    //it depends on python interpreter presence in the same group
+  }
+
+  @After
+  public void afterTest() throws IOException {
+    sql.close();
   }
 
   @Test
@@ -171,5 +186,20 @@ public class PythonInterpreterPandasSqlTest {
     assertTrue(ret.message().get(0).getData().indexOf("13") > 0);
     assertTrue(ret.message().get(0).getData().indexOf("nan") > 0);
     assertTrue(ret.message().get(0).getData().indexOf("6.7") > 0);
+  }
+
+  @Override
+  public void onUpdateAll(InterpreterOutput out) {
+
+  }
+
+  @Override
+  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+
+  }
+
+  @Override
+  public void onUpdate(int index, InterpreterResultMessageOutput out) {
+
   }
 }

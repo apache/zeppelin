@@ -454,6 +454,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     while ((line = bootstrapReader.readLine()) != null) {
       bootstrapCode += line + "\n";
     }
+
     interpret(bootstrapCode, context);
   }
 

@@ -59,7 +59,6 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
     Properties p = new Properties();
     p.setProperty(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
     p.setProperty(MAX_RESULT, "1000");
-    //p.setProperty("python.path", "/Users/shim/zeppelin/interpreter/lib/python");
     return p;
   }
 
@@ -106,22 +105,6 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("hi\nhi\nhi"));
  }
-
-  @Test
-  public void testMy() throws IOException {
-    InterpreterResult ret;
-    ret = pythonInterpreter.interpret("import matplotlib.pyplot as plt", context);
-    ret = pythonInterpreter.interpret("z.configure_mpl(interactive=False)", context);
-    ret = pythonInterpreter.interpret("plt.plot([1, 2, 3])", context);
-    ret = pythonInterpreter.interpret("plt.show()", context);
-
-    System.out.println("===>" + new String(out.getOutputAt(0).toByteArray()));
-
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Type.HTML, ret.message().get(0).getType());
-    assertTrue(ret.message().get(0).getData().contains("data:image/png;base64"));
-    assertTrue(ret.message().get(0).getData().contains("<div>"));
-  }
 
   @Override
   public void onUpdateAll(InterpreterOutput out) {
