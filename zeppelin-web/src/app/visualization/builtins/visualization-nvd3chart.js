@@ -44,7 +44,7 @@ export default class Nvd3ChartVisualization extends Visualization {
     var height = this.targetEl.height();
 
     // turn off animation when dataset is too large. (for performance issue)
-    // still, since dataset is large, the chart content sequentially appears like animated.
+    // still, since dataset is large, the chart content sequentially appears like animated
     try {
       if (d3g[0].values.length > numberOfDataThreshold) {
         animationDuration = 0;
