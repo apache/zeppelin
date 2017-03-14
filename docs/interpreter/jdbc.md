@@ -222,10 +222,12 @@ SELECT name, country, performer
 FROM demo.performers
 WHERE name='{{"{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia"}}}}'
 ```
-### Usage `precode`
-You can set `precode` for each data source. Code runs once while opening the connection.
+### Usage *precode*
+You can set *precode* for each data source. Code runs once while opening the connection.
 
 ##### Properties
+An example settings of interpreter for the two data sources, each of which has its *precode* parameter.
+
 <table class="table-configuration">
   <tr>
     <th>Property Name</th>
@@ -274,15 +276,21 @@ You can set `precode` for each data source. Code runs once while opening the con
 </table>
 
 ##### Usage
+Test of execution *precode* for each data source. 
+
 ```sql
 %jdbc
 show search_path
 ```
+Returns value of `search_path` which is set in the *default.precode*.
+
 
 ```sql
 %jdbc(mysql)
 select @v
 ```
+Returns value of `v` which is set in the *mysql.precode*.
+
 
 ## Examples
 Here are some examples you can refer to. Including the below connectors, you can connect every databases as long as it can be configured with it's JDBC driver.
