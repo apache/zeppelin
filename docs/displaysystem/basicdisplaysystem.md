@@ -114,3 +114,51 @@ If you click on a node or edge on the bottom of the paragraph you find a list of
 This kind of graph can be easily *flatten* in order to support other visualization formats provided by Zeppelin.
 
 <img src="../assets/themes/zeppelin/img/screenshots/display_network_flatten.png" />
+
+### How to use it?
+
+An example of a simple graph
+
+```
+%spark
+print(s"""
+%network {
+    "nodes": [
+        {"id": 1},
+        {"id": 2},
+        {"id": 3}
+    ],
+    "edges": [
+		{"source": 1, "target": 2, "id" : 1},
+		{"source": 2, "target": 3, "id" : 2},
+		{"source": 1, "target": 2, "id" : 3},
+		{"source": 1, "target": 2, "id" : 4},
+		{"source": 2, "target": 1, "id" : 5},
+		{"source": 2, "target": 1, "id" : 6}
+	]
+}
+""")
+```
+
+that will look like:
+
+<img src="../assets/themes/zeppelin/img/screenshots/display_simple_network.png" />
+
+A little more complex graph:
+
+```
+%spark
+print(s"""
+%network {
+    "nodes": [{"id": 1, "label": "User", "data": {"fullName":"Andrea Santurbano"}},{"id": 2, "label": "User", "data": {"fullName":"Lee Moon Soo"}},{"id": 3, "label": "Project", "data": {"name":"Zeppelin"}}],
+    "edges": [{"source": 2, "target": 1, "id" : 1, "label": "HELPS"},{"source": 2, "target": 3, "id" : 2, "label": "CREATE"},{"source": 1, "target": 3, "id" : 3, "label": "CONTRIBUTE_TO", "data": {"oldPR": "https://github.com/apache/zeppelin/pull/1582"}}],
+	"labels": {"User": "#8BC34A", "Project": "#3071A9"},
+	"directed": true,
+	"types": ["HELPS", "CREATE", "CONTRIBUTE_TO"]
+}
+""")
+```
+
+that will look like:
+
+<img src="../assets/themes/zeppelin/img/screenshots/display_complex_network.png" />
