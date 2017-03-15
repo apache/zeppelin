@@ -230,6 +230,7 @@ limitations under the License.
           <div class="input-group">
             <input type="text" class="form-control"
                    style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
+                   ng-keypress="keyEventOnDynamicParameter($event)"
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
         </td>

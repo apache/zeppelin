@@ -116,6 +116,14 @@ class AdvancedTransformation extends Transformation {
           self.emitConfig(configInstance)
         },
 
+        keyEventOnDynamicParameter: (event) => {
+          if (event.which == 13 || event.keyCode == 13) {
+            /** enter */
+            configInstance.panel.parameterPanelOpened = !configInstance.panel.parameterPanelOpened
+            self.emitConfig(configInstance)
+          }
+        },
+
         axisChanged: function(e, ui, axisSpec) {
           removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
           applyMaxAxisCount(configInstance, axisSpec)
