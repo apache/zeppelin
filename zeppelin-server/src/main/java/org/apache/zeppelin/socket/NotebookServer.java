@@ -1142,7 +1142,7 @@ public class NotebookServer extends WebSocketServlet
     if (note.isPersonalizedMode()) {
       Map<String, Paragraph> userParagraphMap =
           note.getParagraph(paragraphId).getUserParagraphMap();
-      broadcastParagraphs(userParagraphMap, p);
+      broadcastParagraphs(userParagraphMap);
     } else {
       broadcastParagraph(note, p);
     }
