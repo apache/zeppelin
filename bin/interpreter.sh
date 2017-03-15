@@ -91,6 +91,7 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
 fi
 ZEPPELIN_LOGFILE+="${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
+JAVA_INTP_OPTS+=" -agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005,suspend=y"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"

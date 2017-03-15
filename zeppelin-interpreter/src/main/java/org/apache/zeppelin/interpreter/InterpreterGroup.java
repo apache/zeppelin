@@ -173,14 +173,20 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     LOGGER.info("Close interpreter group " + getId() + " for session: " + sessionId);
     final List<Interpreter> intpForSession = this.get(sessionId);
 
-    close(this, sessionId, intpForSession);
+    close(intpForSession);
   }
 
   private void close(final Collection<Interpreter> intpToClose) {
-    close(null, null, intpToClose);
+    close(null, null, null, intpToClose);
   }
-  private void close(final InterpreterGroup interpreterGroup, final String sessionId,
-      final Collection<Interpreter> intpToClose) {
+
+  public void close(final Map<String, InterpreterGroup> interpreterGroupRef,
+      final String processKey, final String sessionKey) {
+    close(interpreterGroupRef, processKey, sessionKey, this.get(sessionKey));
+  }
+
+  private void close(final Map<String, InterpreterGroup> interpreterGroupRef,
+      final String processKey, final String sessionKey, final Collection<Interpreter> intpToClose) {
     if (intpToClose == null) {
       return;
     }
@@ -208,10 +214,15 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
           }
         }
 
-        // While closing interpreters in a same session, we should remove after all interpreters are
-        // removed
-        if (null != interpreterGroup && null != sessionId) {
-          interpreterGroup.remove(sessionId);
+        // TODO(jl): While closing interpreters in a same session, we should remove after all
+        // interpreters are removed. OMG. It's too dirty!!
+        if (null != interpreterGroupRef && null != processKey && null != sessionKey) {
+          InterpreterGroup interpreterGroup = interpreterGroupRef.get(processKey);
+          if (1 == interpreterGroup.size() && interpreterGroup.containsKey(sessionKey)) {
+            interpreterGroupRef.remove(processKey);
+          } else {
+            interpreterGroup.remove(sessionKey);
+          }
         }
       }
     };
