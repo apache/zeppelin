@@ -171,25 +171,21 @@ export function getColumnsFromAxis(axisSpecs, axis) {
     else if (isAggregator(axisSpec)) { aggrAxisNames.push(axisSpec.name); }
   }
 
-  let keyColumns = {};
-  let groupColumns = {};
-  let aggregatorColumns = {};
-  let otherColumns = {};
+  let keyColumns = [];
+  let groupColumns = [];
+  let aggregatorColumns = [];
+  let otherColumns = [];
 
   for(let axisName in axis) {
     const columns = axis[axisName];
     if (keyAxisNames.includes(axisName)) {
-      if (!keyColumns[axisName]) { keyColumns[axisName] = []; }
-      keyColumns[axisName] = keyColumns[axisName].concat(columns);
+      keyColumns = keyColumns.concat(columns);
     } else if (groupAxisNames.includes(axisName)) {
-      if (!groupColumns[axisName]) { groupColumns[axisName] = []; }
-      groupColumns[axisName] = groupColumns[axisName].concat(columns);
+      groupColumns = groupColumns.concat(columns);
     } else if (aggrAxisNames.includes(axisName)) {
-      if (!aggregatorColumns[axisName]) { aggregatorColumns[axisName] = []; }
-      aggregatorColumns[axisName] = aggregatorColumns[axisName].concat(columns);
+      aggregatorColumns = aggregatorColumns.concat(columns);
     } else {
-      if (!otherColumns[axisName]) { otherColumns[axisName] = []; }
-      otherColumns[axisName] = otherColumns[axisName].concat(columns);
+      otherColumns = otherColumns.concat(columns);
     }
   }
 
@@ -201,7 +197,109 @@ export function getColumnsFromAxis(axisSpecs, axis) {
   }
 }
 
-export function getCube(rows, keyColumns, groupColumns, aggregatorColumns) {
-  return {}
+const AggregatorFunctions = {
+  sum: function(a, b) {
+    var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+    var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+    return varA + varB;
+  },
+  count: function(a, b) {
+    var varA = (a !== undefined) ? parseInt(a) : 0;
+    var varB = (b !== undefined) ? 1 : 0;
+    return varA + varB;
+  },
+  min: function(a, b) {
+    var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+    var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+    return Math.min(varA,varB);
+  },
+  max: function(a, b) {
+    var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+    var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+    return Math.max(varA,varB);
+  },
+  avg: function(a, b, c) {
+    var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+    var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+    return varA + varB;
+  }
+};
+
+var AggregatorFunctionDiv = {
+  sum: false,
+  count: false,
+  min: false,
+  max: false,
+  avg: true
+};
+
+export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
+
+  const schema = {
+    key: keyColumns.length !== 0,
+    keyColumns: keyColumns,
+    group: groupColumns.length !== 0,
+    groupColumns: groupColumns,
+    aggregator: aggrColumns.length !== 0,
+    aggregatorColumns: aggrColumns,
+  };
+
+  const cube = {};
+  const entry = {};
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    let e = entry;
+    let c = cube;
+
+    // key: add to entry
+    if (keyColumns.length > 0) {
+      const mergedKeyName = keyColumns.map(c => row[c.index]).join('.')
+      if (!e[mergedKeyName]) { e[mergedKeyName] = { children: {}, }; }
+      e = e[mergedKeyName].children;
+      // key: add to row
+      if (!c[mergedKeyName]) { c[mergedKeyName] = {}; }
+      c = c[mergedKeyName];
+    }
+
+    // group: add to entry
+    if (groupColumns.length > 0) {
+      const mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
+      if (!e[mergedGroupName]) { e[mergedGroupName] = { children: {}, }; }
+      e = e[mergedGroupName].children;
+      // group: add to row
+      if (!c[mergedGroupName]) { c[mergedGroupName] = {}; }
+      c = c[mergedGroupName];
+    }
+
+    for (let a = 0; a < aggrColumns.length; a++) {
+      const aggrColumn = aggrColumns[a];
+      const aggrName = aggrColumn.name;
+
+      // add aggregator to entry
+      if (!e[aggrName]) {
+        e[aggrName] = { type: 'aggregator', order: aggrColumn, index: aggrColumn.index, };
+      }
+
+      // add aggregatorName to row
+      if (!c[aggrName]) {
+        c[aggrName] = {
+          aggr: aggrColumn.aggr,
+          value: (aggrColumn.aggr !== 'count') ? row[aggrColumn.index] : 1,
+          count: 1,
+        };
+      } else {
+        const value = AggregatorFunctions[aggrColumn.aggr](
+          c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1);
+        const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
+          c[aggrName].count + 1 : c[aggrName].count;
+
+        c[aggrName].value = value;
+        c[aggrName].count = count;
+      }
+    }
+  }
+
+  return { cube: cube, schema: schema, };
 }
 
