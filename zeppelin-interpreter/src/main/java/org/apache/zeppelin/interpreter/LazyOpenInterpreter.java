@@ -74,12 +74,9 @@ public class LazyOpenInterpreter
 
   @Override
   public void close() {
-    synchronized (intp) {
-      if (opened == true) {
-        intp.close();
-        opened = false;
-      }
-    }
+    // To close interpreter, you should open it first.
+    open();
+    intp.close();
   }
 
   public boolean isOpen() {
@@ -102,6 +99,9 @@ public class LazyOpenInterpreter
 
   @Override
   public FormType getFormType() {
+    // RemoteInterpreter's this method calls init() internally, and which cause to increase the
+    // number of referenceCount and it affects incorrectly
+    open();
     return intp.getFormType();
   }
 
