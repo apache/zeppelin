@@ -117,17 +117,8 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   @Test
   public void errorMessageIfDependenciesNotInstalled() {
     InterpreterResult ret;
-    // given
-    ret = python.interpret(
-        "pysqldf = lambda q: print('Can not execute SQL as Python dependency is not installed')",
-        context);
-
-    assertEquals(ret.message().toString(), InterpreterResult.Code.ERROR, ret.code());
-
-    // when
     ret = sql.interpret("SELECT * from something", context);
 
-    // then
     assertNotNull(ret);
     assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.ERROR, ret.code());
     assertTrue(ret.message().get(0).getData().contains("no such table: something"));
