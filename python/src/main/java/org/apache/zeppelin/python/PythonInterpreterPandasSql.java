@@ -68,6 +68,7 @@ public class PythonInterpreterPandasSql extends Interpreter {
     try {
       LOG.info("Bootstrap {} interpreter with {}", this.toString(), SQL_BOOTSTRAP_FILE_PY);
       PythonInterpreter python = getPythonInterpreter();
+
       python.bootStrapInterpreter(SQL_BOOTSTRAP_FILE_PY);
     } catch (IOException e) {
       LOG.error("Can't execute " + SQL_BOOTSTRAP_FILE_PY + " to import SQL dependencies", e);

@@ -66,7 +66,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   private PythonInterpreter python;
 
   private InterpreterContext context;
-  private InterpreterOutput out;
+  InterpreterOutput out;
 
   @Before
   public void setUp() throws Exception {
@@ -78,6 +78,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
 
     python = new PythonInterpreter(p);
     python.setInterpreterGroup(intpGroup);
+    python.open();
 
     sql = new PythonInterpreterPandasSql(p);
     sql.setInterpreterGroup(intpGroup);
@@ -94,7 +95,11 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         out);
-    python.open();
+
+    // to make sure python is running.
+    InterpreterResult ret = python.interpret("\n", context);
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+
     sql.open();
   }
 
@@ -116,19 +121,20 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = python.interpret(
         "pysqldf = lambda q: print('Can not execute SQL as Python dependency is not installed')",
         context);
-    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+
+    assertEquals(ret.message().toString(), InterpreterResult.Code.ERROR, ret.code());
 
     // when
     ret = sql.interpret("SELECT * from something", context);
 
     // then
     assertNotNull(ret);
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertTrue(ret.message().get(0).getData().contains("dependency is not installed"));
+    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.ERROR, ret.code());
+    assertTrue(ret.message().get(0).getData().contains("no such table: something"));
   }
 
   @Test
-  public void sqlOverTestDataPrintsTable() {
+  public void sqlOverTestDataPrintsTable() throws IOException {
     InterpreterResult ret;
     // given
     //String expectedTable = "name\tage\n\nmoon\t33\n\npark\t34";
@@ -143,29 +149,27 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = sql.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message().get(0).getData(), Type.TABLE, ret.message().get(0).getType());
-    //assertEquals(expectedTable, ret.message()); //somehow it's same but not equal
-    assertTrue(ret.message().get(0).getData().indexOf("moon\t33") > 0);
-    assertTrue(ret.message().get(0).getData().indexOf("park\t34") > 0);
+    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(0).toByteArray()), Type.TABLE, out.getOutputAt(0).getType());
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).indexOf("moon\t33") > 0);
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from df2", context).code());
   }
 
   @Test
-  public void badSqlSyntaxFails() {
+  public void badSqlSyntaxFails() throws IOException {
     //when
     InterpreterResult ret = sql.interpret("select wrong syntax", context);
 
     //then
     assertNotNull("Interpreter returned 'null'", ret);
-    //System.out.println("\nInterpreter response: \n" + ret.message());
     assertEquals(ret.toString(), InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(ret.message().get(0).getData().length() > 0);
+    assertTrue(out.toInterpreterResultMessage().size() == 0);
   }
 
   @Test
-  public void showDataFrame() {
+  public void showDataFrame() throws IOException {
     InterpreterResult ret;
     ret = python.interpret("import pandas as pd", context);
     ret = python.interpret("import numpy as np", context);
@@ -180,12 +184,11 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = python.interpret("z.show(df1, show_index=True)", context);
 
     // then
-    assertEquals(ret.message().get(0).getData(), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message().get(0).getData(), Type.TABLE, ret.message().get(0).getType());
-    assertTrue(ret.message().get(0).getData().indexOf("index_name") == 0);
-    assertTrue(ret.message().get(0).getData().indexOf("13") > 0);
-    assertTrue(ret.message().get(0).getData().indexOf("nan") > 0);
-    assertTrue(ret.message().get(0).getData().indexOf("6.7") > 0);
+    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(0).toByteArray()), Type.TABLE, out.getOutputAt(0).getType());
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("index_name"));
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("nan"));
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("6.7"));
   }
 
   @Override
