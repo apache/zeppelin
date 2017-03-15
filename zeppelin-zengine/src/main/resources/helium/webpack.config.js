@@ -49,6 +49,10 @@ module.exports = {
             test: /\.svg(\?\S*)?$/,
             loader: 'url-loader',
           },
+          {
+            test: /\.json$/,
+            loader: 'json-loader'
+          },
         ],
     }
 }

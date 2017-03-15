@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import { isParagraphRunning, } from './paragraph/paragraph.status';
+
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
 
 function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
@@ -342,16 +344,19 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('closeTable');
   };
 
+  /**
+   * @returns {boolean} true if one more paragraphs are running. otherwise return false.
+   */
   $scope.isNoteRunning = function() {
-    var running = false;
     if (!$scope.note) { return false; }
-    for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-      if ($scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
-        running = true;
-        break;
+
+    for (let i = 0; i < $scope.note.paragraphs.length; i++) {
+      if (isParagraphRunning($scope.note.paragraphs[i])) {
+        return true;
       }
     }
-    return running;
+
+    return false;
   };
 
   $scope.killSaveTimer = function() {
@@ -980,15 +985,20 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       $location.path('/');
     }
 
+    $scope.note = note;
+
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
-      note = cleanParagraphExcept($scope.paragraphUrl, note);
+      $scope.note = cleanParagraphExcept($scope.paragraphUrl, $scope.note);
+      $scope.$broadcast('$unBindKeyEvent', $scope.$unBindKeyEvent);
       $rootScope.$broadcast('setIframe', $scope.asIframe);
+      initializeLookAndFeel();
+      return;
     }
 
-    $scope.note = note;
     initializeLookAndFeel();
+
     //open interpreter binding setting when there're none selected
     getInterpreterBindings();
     getPermissions();
@@ -1002,6 +1012,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.killSaveTimer();
     $scope.saveNote();
 
+    document.removeEventListener('click', $scope.focusParagraphOnClick);
+    document.removeEventListener('keydown', $scope.keyboardShortcut);
+  });
+
+  $scope.$on('$unBindKeyEvent', function() {
     document.removeEventListener('click', $scope.focusParagraphOnClick);
     document.removeEventListener('keydown', $scope.keyboardShortcut);
   });

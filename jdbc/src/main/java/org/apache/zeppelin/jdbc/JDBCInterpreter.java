@@ -101,9 +101,10 @@ public class JDBCInterpreter extends Interpreter {
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
+  static final String PRECODE_KEY = "precode";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
-  static final String ZEPPELIN_JDBC_PRECODE_KEY = "zeppelin.jdbc.precode";
+  static final String PRECODE_KEY_TEMPLATE = "%s.precode";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -118,6 +119,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_URL = DEFAULT_KEY + DOT + URL_KEY;
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
+  static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
@@ -342,7 +344,7 @@ public class JDBCInterpreter extends Interpreter {
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
       try (Connection connection = DriverManager.getConnection(jdbcDriver)) {
-        executePrecode(connection);
+        executePrecode(connection, propertyKey);
       }
     }
     return DriverManager.getConnection(jdbcDriver);
@@ -548,8 +550,8 @@ public class JDBCInterpreter extends Interpreter {
     return queries;
   }
 
-  private void executePrecode(Connection connection) throws SQLException {
-    String precode = getProperty(ZEPPELIN_JDBC_PRECODE_KEY);
+  private void executePrecode(Connection connection, String propertyKey) throws SQLException {
+    String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
     if (StringUtils.isNotBlank(precode)) {
       precode = StringUtils.trim(precode);
       logger.info("Run SQL precode '{}'", precode);

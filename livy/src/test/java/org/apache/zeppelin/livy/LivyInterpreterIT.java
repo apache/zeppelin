@@ -82,13 +82,13 @@ public class LivyInterpreterIT {
     }
     InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
     interpreterGroup.put("session_1", new ArrayList<Interpreter>());
-    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    final LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
     sparkInterpreter.setInterpreterGroup(interpreterGroup);
     interpreterGroup.get("session_1").add(sparkInterpreter);
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
         "title", "text", authInfo, null, null, null, null, null, output);
     sparkInterpreter.open();
 
@@ -158,6 +158,31 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("incomplete statement"));
+
+      // cancel
+      if (sparkInterpreter.livyVersion.newerThanEquals(LivyVersion.LIVY_0_3_0)) {
+        Thread cancelThread = new Thread() {
+          @Override
+          public void run() {
+            // invoke cancel after 3 seconds to wait job starting
+            try {
+              Thread.sleep(3000);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+            sparkInterpreter.cancel(context);
+          }
+        };
+        cancelThread.start();
+        result = sparkInterpreter
+            .interpret("sc.parallelize(1 to 10).foreach(e=>Thread.sleep(10*1000))", context);
+        assertEquals(InterpreterResult.Code.ERROR, result.code());
+        String message = result.message().get(0).getData();
+        // 2 possibilities, sometimes livy doesn't return the real cancel exception
+        assertTrue(message.contains("cancelled part of cancelled job group") ||
+            message.contains("Job is cancelled"));
+      }
+
     } finally {
       sparkInterpreter.close();
     }
@@ -289,11 +314,11 @@ public class LivyInterpreterIT {
       return;
     }
 
-    LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
+    final LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
         "title", "text", authInfo, null, null, null, null, null, output);
     pysparkInterpreter.open();
 
@@ -341,6 +366,31 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("name 'a' is not defined"));
+
+      // cancel
+      if (pysparkInterpreter.livyVersion.newerThanEquals(LivyVersion.LIVY_0_3_0)) {
+        Thread cancelThread = new Thread() {
+          @Override
+          public void run() {
+            // invoke cancel after 3 seconds to wait job starting
+            try {
+              Thread.sleep(3000);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+            pysparkInterpreter.cancel(context);
+          }
+        };
+        cancelThread.start();
+        result = pysparkInterpreter
+            .interpret("import time\n" +
+                "sc.range(1, 10).foreach(lambda a: time.sleep(10))", context);
+        assertEquals(InterpreterResult.Code.ERROR, result.code());
+        String message = result.message().get(0).getData();
+        // 2 possibilities, sometimes livy doesn't return the real cancel exception
+        assertTrue(message.contains("cancelled part of cancelled job group") ||
+            message.contains("Job is cancelled"));
+      }
     } finally {
       pysparkInterpreter.close();
     }
@@ -384,7 +434,7 @@ public class LivyInterpreterIT {
       return;
     }
 
-    LivySparkRInterpreter sparkRInterpreter = new LivySparkRInterpreter(properties);
+    final LivySparkRInterpreter sparkRInterpreter = new LivySparkRInterpreter(properties);
     try {
       sparkRInterpreter.getLivyVersion();
     } catch (APINotFoundException e) {
@@ -394,7 +444,7 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sparkr",
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sparkr",
         "title", "text", authInfo, null, null, null, null, null, output);
     sparkRInterpreter.open();
 
@@ -408,6 +458,29 @@ public class LivyInterpreterIT {
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
+
+        // cancel
+        Thread cancelThread = new Thread() {
+          @Override
+          public void run() {
+            // invoke cancel after 3 seconds to wait job starting
+            try {
+              Thread.sleep(3000);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+            sparkRInterpreter.cancel(context);
+          }
+        };
+        cancelThread.start();
+        result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\n" +
+            "df1 <- dapplyCollect(df, function(x) " +
+            "{ Sys.sleep(10); x <- cbind(x, x$waiting * 60) })", context);
+        assertEquals(InterpreterResult.Code.ERROR, result.code());
+        String message = result.message().get(0).getData();
+        // 2 possibilities, sometimes livy doesn't return the real cancel exception
+        assertTrue(message.contains("cancelled part of cancelled job group") ||
+            message.contains("Job is cancelled"));
       } else {
         result = sparkRInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)" +
             "\nhead(df)", context);

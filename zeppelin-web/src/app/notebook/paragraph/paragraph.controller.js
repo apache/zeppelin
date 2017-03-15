@@ -12,9 +12,10 @@
  * limitations under the License.
  */
 
+import { SpellResult, } from '../../spell';
 import {
-  SpellResult,
-} from '../../spell';
+  ParagraphStatus, isParagraphRunning,
+} from './paragraph.status';
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
@@ -208,7 +209,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.isRunning = function(paragraph) {
-    return paragraph.status === 'RUNNING' || paragraph.status === 'PENDING';
+    return isParagraphRunning(paragraph);
   };
 
   $scope.cancelParagraph = function(paragraph) {
@@ -230,7 +231,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.handleSpellError = function(paragraphText, error,
                                      digestRequired, propagated) {
     const errorMessage = error.stack;
-    $scope.paragraph.status = 'ERROR';
+    $scope.paragraph.status = ParagraphStatus.ERROR;
     $scope.paragraph.errorMessage = errorMessage;
     console.error('Failed to execute interpret() in spell\n', error);
 
@@ -264,7 +265,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.cleanupSpellTransaction = function() {
-    const status = 'FINISHED';
+    const status = ParagraphStatus.FINISHED;
     $scope.paragraph.status = status;
     $scope.paragraph.results.code = status;
 
@@ -284,7 +285,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
     $scope.paragraph.results = {};
-    $scope.paragraph.status = 'PENDING';
+    $scope.paragraph.status = ParagraphStatus.RUNNING;
     $scope.paragraph.errorMessage = '';
     if (digestRequired) { $scope.$digest(); }
 
@@ -1143,7 +1144,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.title = newPara.title;
     $scope.paragraph.lineNumbers = newPara.lineNumbers;
     $scope.paragraph.status = newPara.status;
-    if (newPara.status !== 'RUNNING') {
+    if (newPara.status !== ParagraphStatus.RUNNING) {
       $scope.paragraph.results = newPara.results;
     }
     $scope.paragraph.settings = newPara.settings;
@@ -1167,7 +1168,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
      const statusChanged = (newPara.status !== oldPara.status);
      const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
        isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
-       newPara.status === 'ERROR' || (newPara.status === 'FINISHED' && statusChanged);
+       newPara.status === ParagraphStatus.ERROR ||
+       (newPara.status === ParagraphStatus.FINISHED && statusChanged);
 
      // 2. update texts managed by $scope
      $scope.updateAllScopeTexts(oldPara, newPara);
