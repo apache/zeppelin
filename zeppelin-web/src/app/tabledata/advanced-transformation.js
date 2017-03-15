@@ -77,6 +77,8 @@ class AdvancedTransformation extends Transformation {
             return { 'background-color': '#cd5c5c' };
           } else if (isKey(axisSpec)) {
             return { 'background-color': '#906ebd' };
+          } else {
+            return { 'background-color': '#62bda9' };
           }
         },
 
@@ -154,7 +156,7 @@ class AdvancedTransformation extends Transformation {
     const keyColumns = columns.key;
     const groupColumns = columns.group;
     const aggregatorColumns = columns.aggregator;
-    const otherColumns = columns.others
+    const customColumns = columns.custom
 
     let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
 
@@ -163,10 +165,10 @@ class AdvancedTransformation extends Transformation {
       axis: axis, /** persisted axis */
       parameter: param, /** persisted parameter */
       column: {
-        key: keyColumns, group: groupColumns, aggregator: aggregatorColumns, other: otherColumns,
+        key: keyColumns, group: groupColumns, aggregator: aggregatorColumns, custom: customColumns,
       },
 
-      transformer: transformer, /** { rows, keyColumnName, groupNameSet, } */
+      transformer: transformer,
     }
   }
 }

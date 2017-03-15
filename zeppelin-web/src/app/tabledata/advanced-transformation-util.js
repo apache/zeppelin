@@ -189,7 +189,7 @@ export function getColumnsFromAxis(axisSpecs, axis) {
   let keyColumns = [];
   let groupColumns = [];
   let aggregatorColumns = [];
-  let otherColumns = [];
+  let customColumn = {};
 
   for(let axisName in axis) {
     const columns = axis[axisName];
@@ -200,7 +200,9 @@ export function getColumnsFromAxis(axisSpecs, axis) {
     } else if (aggrAxisNames.includes(axisName)) {
       aggregatorColumns = aggregatorColumns.concat(columns);
     } else {
-      otherColumns = otherColumns.concat(columns);
+      const axisType = axisSpecs.filter(s => s.name === axisName)[0].axisType
+      if (!customColumn[axisType]) { customColumn[axisType] = []; }
+      customColumn[axisType] = customColumn[axisType].concat(columns);
     }
   }
 
@@ -208,7 +210,7 @@ export function getColumnsFromAxis(axisSpecs, axis) {
     key: keyColumns,
     group: groupColumns,
     aggregator: aggregatorColumns,
-    others: otherColumns,
+    custom: customColumn,
   }
 }
 
