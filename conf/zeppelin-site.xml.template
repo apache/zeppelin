@@ -240,6 +240,12 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.remoteRepo</name>
+  <value>remote-repo</value>
+  <description>Remote principal repository for interpreter's additional dependency loading</description>
+</property>
+
+<property>
   <name>zeppelin.dep.localrepo</name>
   <value>local-repo</value>
   <description>Local repository for dependency loader</description>

@@ -75,6 +75,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "fakeRemoteRepo",
         env,
         10 * 1000,
         this,
@@ -177,6 +178,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "fakeRemoteRepo",
         env,
         10 * 1000,
         this,
@@ -358,7 +360,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   }
 
   @Override
-  public void onParaInfosReceived(String noteId, String paragraphId, 
+  public void onParaInfosReceived(String noteId, String paragraphId,
       String interpreterSettingId, Map<String, String> metaInfos) {
   }
 }

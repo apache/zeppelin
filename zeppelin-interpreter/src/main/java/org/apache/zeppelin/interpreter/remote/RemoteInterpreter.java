@@ -52,6 +52,7 @@ public class RemoteInterpreter extends Interpreter {
   private String interpreterRunner;
   private String interpreterPath;
   private String localRepoPath;
+  private String remoteRepoPath;
   private String className;
   private String sessionKey;
   private FormType formType;
@@ -69,8 +70,9 @@ public class RemoteInterpreter extends Interpreter {
    * Remote interpreter and manage interpreter process
    */
   public RemoteInterpreter(Properties property, String sessionKey, String className,
-      String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
-      int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      String interpreterRunner, String interpreterPath, String localRepoPath,
+      String remoteRepoPath, int connectTimeout, int maxPoolSize,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
       int outputLimit) {
     super(property);
@@ -80,6 +82,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.localRepoPath = localRepoPath;
+    this.remoteRepoPath = remoteRepoPath;
     env = getEnvFromInterpreterProperty(property);
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = maxPoolSize;
@@ -95,7 +98,7 @@ public class RemoteInterpreter extends Interpreter {
    * Connect to existing process
    */
   public RemoteInterpreter(Properties property, String sessionKey, String className, String host,
-      int port, String localRepoPath, int connectTimeout, int maxPoolSize,
+      int port, String localRepoPath, String remoteRepoPath, int connectTimeout, int maxPoolSize,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
       int outputLimit) {
@@ -106,6 +109,7 @@ public class RemoteInterpreter extends Interpreter {
     this.host = host;
     this.port = port;
     this.localRepoPath = localRepoPath;
+    this.remoteRepoPath = remoteRepoPath;
     this.connectTimeout = connectTimeout;
     this.maxPoolSize = maxPoolSize;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
@@ -118,7 +122,7 @@ public class RemoteInterpreter extends Interpreter {
 
   // VisibleForTesting
   public RemoteInterpreter(Properties property, String sessionKey, String className,
-      String interpreterRunner, String interpreterPath, String localRepoPath,
+      String interpreterRunner, String interpreterPath, String localRepoPath, String remoteRepoPath,
       Map<String, String> env, int connectTimeout,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate) {
@@ -128,6 +132,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.localRepoPath = localRepoPath;
+    this.remoteRepoPath = remoteRepoPath;
     env.putAll(getEnvFromInterpreterProperty(property));
     this.env = env;
     this.connectTimeout = connectTimeout;
@@ -184,8 +189,8 @@ public class RemoteInterpreter extends Interpreter {
         } else {
           // create new remote process
           remoteProcess = new RemoteInterpreterManagedProcess(
-              interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener);
+              interpreterRunner, interpreterPath, localRepoPath, remoteRepoPath, env,
+              connectTimeout, remoteInterpreterProcessListener, applicationEventListener);
         }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
@@ -221,6 +226,9 @@ public class RemoteInterpreter extends Interpreter {
         logger.info("Create remote interpreter {}", getClassName());
         if (localRepoPath != null) {
           property.put("zeppelin.interpreter.localRepo", localRepoPath);
+        }
+        if (remoteRepoPath != null) {
+          property.put("zeppelin.interpreter.remoteRepo", remoteRepoPath);
         }
 
         property.put("zeppelin.interpreter.output.limit", Integer.toString(outputLimit));

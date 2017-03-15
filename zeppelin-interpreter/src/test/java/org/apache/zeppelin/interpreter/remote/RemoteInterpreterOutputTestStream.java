@@ -68,6 +68,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "fakeRemoteRepo",
         env,
         10 * 1000,
         this,

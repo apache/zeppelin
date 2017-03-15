@@ -288,10 +288,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
+    String remoteRepoPath = "http://repo1.maven.org/maven2/";
     LazyOpenInterpreter intp = new LazyOpenInterpreter(
         new RemoteInterpreter(property, interpreterSessionKey, className, host, port, localRepoPath,
-            connectTimeout, maxPoolSize, remoteInterpreterProcessListener, appEventListener,
-            userName, isUserImpersonate, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT)));
+            remoteRepoPath, connectTimeout, maxPoolSize, remoteInterpreterProcessListener,
+            appEventListener, userName, isUserImpersonate,
+            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT)));
     return intp;
   }
 
@@ -300,6 +302,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String userName, Boolean isUserImpersonate, InterpreterRunner interpreterRunner) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
+    String remoteRepoPath = "http://repo1.maven.org/maven2/";
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     String interpreterRunnerPath;
     if (null != interpreterRunner) {
@@ -315,9 +318,9 @@ public class InterpreterFactory implements InterpreterGroupFactory {
 
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(property, interpreterSessionKey, className,
-            interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
-            remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate,
-            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT));
+            interpreterRunnerPath, interpreterPath, localRepoPath, remoteRepoPath,
+            connectTimeout, maxPoolSize, remoteInterpreterProcessListener, appEventListener,
+            userName, isUserImpersonate, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT));
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);

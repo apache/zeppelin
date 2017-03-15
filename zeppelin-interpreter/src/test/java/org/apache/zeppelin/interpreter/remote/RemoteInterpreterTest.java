@@ -87,6 +87,7 @@ public class RemoteInterpreterTest {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "fakeRemoteRepo",
         env,
         10 * 1000,
         null,
@@ -107,6 +108,7 @@ public class RemoteInterpreterTest {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "fakeRemoteRepo",
         env,
         10 * 1000,
         null,
@@ -210,6 +212,7 @@ public class RemoteInterpreterTest {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "remoteRepo",
         env,
         10 * 1000,
         null,
@@ -227,6 +230,7 @@ public class RemoteInterpreterTest {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "remoteRepo",
         env,
         10 * 1000,
         null,
@@ -759,8 +763,8 @@ public class RemoteInterpreterTest {
     //Given
     final Client client = Mockito.mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
-        MockInterpreterA.class.getName(), "runner", "path", "localRepo", env, 10 * 1000, null,
-        null, "anonymous", false);
+        MockInterpreterA.class.getName(), "runner", "path", "localRepo", "remoteRepo",
+        env, 10 * 1000, null, null, "anonymous", false);
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");
     final InterpreterGroup interpreterGroup = new InterpreterGroup("groupId");
@@ -803,6 +807,7 @@ public class RemoteInterpreterTest {
         new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
+        "remoteRepo",
         env,
         10 * 1000,
         null,
