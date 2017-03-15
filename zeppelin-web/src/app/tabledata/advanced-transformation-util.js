@@ -109,7 +109,9 @@ export function clearConfig(config) {
 }
 
 export function initializeConfig(config, spec) {
-  if (!config.spec || config.spec.version !== spec.version) {
+  const currentVersion = JSON.stringify(spec)
+  if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
+    spec.version = currentVersion
     clearConfig(config)
   }
 
