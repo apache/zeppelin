@@ -257,6 +257,35 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  public void testRunOnSelectionCheckbox() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      String xpathToCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@class, 'ng-not-empty')]";
+
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      setTextOfParagraph(1, "%md My selection is ${my selection=1,1|2|3}");
+      runParagraph(1);
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      collector.checkThat("'Run on selection change' checkbox will be shown under dropdown menu ",
+        driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-model, 'isAutoRunTrue')]")).isDisplayed(),
+        CoreMatchers.equalTo(true));
+
+      driver.findElement(By.xpath(xpathToCheckbox)).click();
+      collector.checkThat("If 'Run on selection change' checkbox is unchecked, 'isAutoRunTrue' will be false ",
+        driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/span[contains(@ng-if, 'isAutoRunTrue == false')]")).isDisplayed(),
+        CoreMatchers.equalTo(true));
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testRunOnSelectionButton ", e);
+    }
+  }
+
+  @Test
   public void testClearOutputButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
