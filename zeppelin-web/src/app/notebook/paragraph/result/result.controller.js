@@ -263,7 +263,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       renderApp(app);
     } else {
       if (type === 'TABLE') {
-        $scope.renderGraph($scope.graphMode, refresh);
+        var retryRenderer = function() {
+          var elem = angular.element('#p' + $scope.id + '_graph');
+          if (elem.length) { $scope.renderGraph($scope.graphMode, refresh); }
+          else { $timeout(retryRenderer, 10); }
+        };
+        $timeout(retryRenderer);
       } else if (type === 'HTML') {
         renderHtml();
       } else if (type === 'ANGULAR') {
