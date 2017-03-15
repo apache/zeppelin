@@ -373,7 +373,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(xpathToShowTitle)).getText(),
           CoreMatchers.allOf(CoreMatchers.startsWith("Show title"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
-              CoreMatchers.containsString("+t")));
+              CoreMatchers.containsString("+T")));
 
       clickAndWait(By.xpath(xpathToShowTitle));
       collector.checkThat("After Show Title : The title field contains",
@@ -385,7 +385,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
           CoreMatchers.allOf(CoreMatchers.startsWith("Hide title"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
-              CoreMatchers.containsString("+t")));
+              CoreMatchers.containsString("+T")));
 
       clickAndWait(By.xpath(xpathToHideTitle));
       ZeppelinITUtils.turnOffImplicitWaits(driver);
@@ -439,7 +439,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(xpathToShowLineNumberButton)).getText(),
           CoreMatchers.allOf(CoreMatchers.startsWith("Show line numbers"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
-              CoreMatchers.containsString("+m")));
+              CoreMatchers.containsString("+M")));
 
 
       clickAndWait(By.xpath(xpathToShowLineNumberButton));
@@ -452,7 +452,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(xpathToHideLineNumberButton)).getText(),
           CoreMatchers.allOf(CoreMatchers.startsWith("Hide line numbers"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
-              CoreMatchers.containsString("+m")));
+              CoreMatchers.containsString("+M")));
 
       clickAndWait(By.xpath(xpathToHideLineNumberButton));
       collector.checkThat("After \"Hide line number\" the Line Number is Enabled",
