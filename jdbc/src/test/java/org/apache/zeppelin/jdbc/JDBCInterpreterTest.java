@@ -19,6 +19,8 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
 import static org.junit.Assert.*;
 
@@ -43,8 +45,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
-
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.ZEPPELIN_JDBC_PRECODE_KEY;
 
 /**
  * JDBC interpreter unit tests
@@ -397,7 +397,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(ZEPPELIN_JDBC_PRECODE_KEY, "SET @testVariable=1");
+    properties.setProperty(DEFAULT_PRECODE, "SET @testVariable=1");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -417,7 +417,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(ZEPPELIN_JDBC_PRECODE_KEY, "incorrect command");
+    properties.setProperty(DEFAULT_PRECODE, "incorrect command");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -428,4 +428,24 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
   }
- }
+
+  @Test
+  public void testPrecodeWithAnotherPrefix() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("anotherPrefix.driver", "org.h2.Driver");
+    properties.setProperty("anotherPrefix.url", getJdbcConnection());
+    properties.setProperty("anotherPrefix.user", "");
+    properties.setProperty("anotherPrefix.password", "");
+    properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "anotherPrefix"), "SET @testVariable=2");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+
+    String sqlQuery = "(anotherPrefix) select @testVariable";
+
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("@TESTVARIABLE\n2\n", interpreterResult.message().get(0).getData());
+  }
+}
