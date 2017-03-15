@@ -1,7 +1,6 @@
 ## Groovy Interpreter
 
 
-
 ### Samples
 
 ```groovy
