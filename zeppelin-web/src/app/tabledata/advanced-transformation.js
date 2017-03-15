@@ -16,7 +16,8 @@ import Transformation from './transformation';
 
 import {
   isAggregator, isGroup, isKey, isSingleDimension,
-  clearConfig, initializeConfig, removeDuplicatedColumnsInMultiDimensionAxis,
+  clearConfig, initializeConfig,
+  removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount,
   getCubeWithSchema, getColumnsFromAxis,
 } from './advanced-transformation-util';
 
@@ -59,6 +60,25 @@ class AdvancedTransformation extends Transformation {
           return anno
         },
 
+        getAxisTypeAnnotation: (axisSpec) => {
+          let anno = `${axisSpec.axisType}`
+          if (typeof axisSpec.maxAxisCount !== "undefined") {
+            anno = `${anno} (${axisSpec.maxAxisCount})`
+          }
+
+          return anno
+        },
+
+        getAxisTypeAnnotationColor: (axisSpec) => {
+          if (isAggregator(axisSpec)) {
+            return { 'background-color': '#5782bd' };
+          } else if (isGroup(axisSpec)) {
+            return { 'background-color': '#cd5c5c' };
+          } else if (isKey(axisSpec)) {
+            return { 'background-color': '#906ebd' };
+          }
+        },
+
         getSingleDimensionAxis: (axisSpec) => {
           return getCurrentChartAxis(configInstance)[axisSpec.name]
         },
@@ -95,6 +115,7 @@ class AdvancedTransformation extends Transformation {
 
         axisChanged: function(e, ui, axisSpec) {
           removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
+          applyMaxAxisCount(configInstance, axisSpec)
           self.emitConfig(configInstance)
         },
 

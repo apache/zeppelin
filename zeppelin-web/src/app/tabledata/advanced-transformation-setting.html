@@ -87,20 +87,10 @@ limitations under the License.
                 style="font-weight: 300; font-size: 13px; margin-left: 1px;">
             {{getAxisAnnotation(axisSpec)}}
           </span>
-          <span ng-if="isAggregatorAxis(axisSpec)"
-                class="label label-default"
-                style="background-color: #5782bd; font-weight: 300; font-size: 13px; margin-left: 3px;">
-            aggregator
-          </span>
-          <span ng-if="isGroupAxis(axisSpec)"
-                class="label label-default"
-                style="background-color: #cd5c5c; font-weight: 300; font-size: 13px; margin-left: 3px;">
-            group
-          </span>
-          <span ng-if="isKeyAxis(axisSpec)"
-                class="label label-default"
-                style="background-color: #906ebd; font-weight: 300; font-size: 13px; margin-left: 3px;">
-            key
+          <span class="label label-default"
+                ng-style="getAxisTypeAnnotationColor(axisSpec)"
+                style="font-weight: 300; font-size: 13px; margin-left: 3px;">
+            {{getAxisTypeAnnotation(axisSpec)}}
           </span>
 
           <!-- axis box: in case of single dimension -->
@@ -226,7 +216,7 @@ limitations under the License.
     <table class="table table-striped">
       <tr>
         <th style="font-size: 12px; font-style: italic">Name</th>
-        <th style="font-size: 13px; font-style: italic">Type</th>
+        <th style="font-size: 12px; font-style: italic">Type</th>
         <th style="font-size: 12px; font-style: italic">Description</th>
         <th style="font-size: 12px; font-style: italic">Value</th>
       </tr>

@@ -65,6 +65,19 @@ export function getAvailableChartNames(charts) {
   return available
 }
 
+export function applyMaxAxisCount(config, axisSpec) {
+  console.log(axisSpec)
+  if (isSingleDimension(axisSpec) || typeof axisSpec.maxAxisCount === "undefined") {
+    return;
+  }
+
+  const columns = getCurrentChartAxis(config)[axisSpec.name]
+  if (columns.length <= axisSpec.maxAxisCount) { return; }
+
+  const sliced = columns.slice(1)
+  getCurrentChartAxis(config)[axisSpec.name] = sliced
+}
+
 export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
   if (isSingleDimension(axisSpec)) { return config; }
 
