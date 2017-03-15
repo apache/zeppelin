@@ -59,6 +59,13 @@ public class HeliumBundleFactoryTest {
 
   @Test
   public void testInstallNpm() throws InstallationException {
+    assertFalse(new File(tmpDir,
+        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/npm").isFile());
+    assertFalse(new File(tmpDir,
+        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/node").isFile());
+
+    hbf.installNodeAndNpm();
+
     assertTrue(new File(tmpDir,
         HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/npm").isFile());
     assertTrue(new File(tmpDir,
