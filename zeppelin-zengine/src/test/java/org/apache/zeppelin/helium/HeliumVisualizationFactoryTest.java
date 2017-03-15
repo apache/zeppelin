@@ -58,6 +58,11 @@ public class HeliumVisualizationFactoryTest {
 
   @Test
   public void testInstallNpm() throws InstallationException {
+    assertFalse(new File(tmpDir, "vis/node/npm").isFile());
+    assertFalse(new File(tmpDir, "vis/node/node").isFile());
+
+    hvf.installNodeAndNpm();
+
     assertTrue(new File(tmpDir, "vis/node/npm").isFile());
     assertTrue(new File(tmpDir, "vis/node/node").isFile());
   }

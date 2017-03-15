@@ -51,6 +51,7 @@ public class HeliumVisualizationFactory {
   private File tabledataModulePath;
   private File visualizationModulePath;
   private Gson gson;
+  private boolean nodeAndNpmInstalled = false;
 
   String bundleCacheKey = "";
   File currentBundle;
@@ -75,11 +76,12 @@ public class HeliumVisualizationFactory {
 
     currentBundle = new File(workingDirectory, "vis.bundle.cache.js");
     gson = new Gson();
-    installNodeAndNpm();
-    configureLogger();
   }
 
-  private void installNodeAndNpm() {
+  void installNodeAndNpm() {
+    if (nodeAndNpmInstalled) {
+      return;
+    }
     try {
       NPMInstaller npmInstaller = frontEndPluginFactory.getNPMInstaller(getProxyConfig());
       npmInstaller.setNpmVersion(NPM_VERSION);
@@ -88,6 +90,8 @@ public class HeliumVisualizationFactory {
       NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
       nodeInstaller.setNodeVersion(NODE_VERSION);
       nodeInstaller.install();
+      configureLogger();
+      nodeAndNpmInstalled = true;
     } catch (InstallationException e) {
       logger.error(e.getMessage(), e);
     }
@@ -104,6 +108,19 @@ public class HeliumVisualizationFactory {
 
   public synchronized File bundle(List<HeliumPackage> pkgs, boolean forceRefresh)
       throws IOException {
+    if (pkgs == null || pkgs.size() == 0) {
+      // when no package is selected, simply return an empty file instead of try bundle package
+      synchronized (this) {
+        currentBundle.getParentFile().mkdirs();
+        currentBundle.delete();
+        currentBundle.createNewFile();
+        bundleCacheKey = "";
+        return currentBundle;
+      }
+    }
+
+    installNodeAndNpm();
+
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
@@ -341,7 +358,7 @@ public class HeliumVisualizationFactory {
     }
   }
 
-  public synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
+  synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
     String commandForNpmInstallArtifact =
         String.format("install %s --fetch-retries=%d --fetch-retry-factor=%d " +
                         "--fetch-retry-mintimeout=%d", pkg.getArtifact(),
@@ -354,8 +371,8 @@ public class HeliumVisualizationFactory {
   }
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
+    installNodeAndNpm();
     NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), DEFAULT_NPM_REGISTRY_URL);
-
     npm.execute(args, env);
   }
 
