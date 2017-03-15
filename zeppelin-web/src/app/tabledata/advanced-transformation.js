@@ -51,7 +51,12 @@ class AdvancedTransformation extends Transformation {
         columns: self.columns,
 
         getAxisAnnotation: (axisSpec) => {
-          return `${axisSpec.name} (${axisSpec.valueType})`
+          let anno = `${axisSpec.name}`
+          if (axisSpec.valueType) {
+            anno = `${anno} (${axisSpec.valueType})`
+          }
+
+          return anno
         },
 
         getSingleDimensionAxis: (axisSpec) => {
