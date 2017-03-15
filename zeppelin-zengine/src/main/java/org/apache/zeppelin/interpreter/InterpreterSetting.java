@@ -261,11 +261,11 @@ public class InterpreterSetting {
         interpreterGroupWriteLock.unlock();
         groupToRemove.add(groupItem);
       }
-    }
-
-    for (InterpreterGroup groupToClose : groupToRemove) {
-      // TODO(jl): Fix the logic removing session. For now, it's handled into groupToClose.clsose()
-      groupToClose.close(sessionKey);
+      for (InterpreterGroup groupToClose : groupToRemove) {
+        // TODO(jl): Fix the logic removing session. For now, it's handled into groupToClose.clsose()
+        groupToClose.close(interpreterGroupRef, intpKey, sessionKey);
+      }
+      groupToRemove.clear();
     }
 
     //Remove session because all interpreters in this session are closed
