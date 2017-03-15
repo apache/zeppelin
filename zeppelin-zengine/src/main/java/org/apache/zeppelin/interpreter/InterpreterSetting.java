@@ -257,7 +257,7 @@ public class InterpreterSetting {
         groupToRemove.add(groupItem);
       }
       for (InterpreterGroup groupToClose : groupToRemove) {
-        // TODO(jl): Fix the logic removing session. For now, it's handled into groupToClose.clsose()
+        // TODO(jl): Fix the logic removing session. Now, it's handled into groupToClose.clsose()
         groupToClose.close(interpreterGroupRef, intpKey, sessionKey);
       }
       groupToRemove.clear();
