@@ -395,15 +395,25 @@ public class Note implements Serializable, ParagraphJobListener {
    * Clear paragraph output by id.
    *
    * @param paragraphId ID of paragraph
+   * @param user not null if personalized mode is enabled
    * @return Paragraph
    */
-  public Paragraph clearParagraphOutput(String paragraphId) {
+  public Paragraph clearParagraphOutput(String paragraphId, String user) {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
-        if (p.getId().equals(paragraphId)) {
-          p.setReturn(null, null);
-          return p;
+        if (!p.getId().equals(paragraphId)) {
+          continue;
         }
+
+        /** `broadcastParagraph` requires original paragraph */
+        Paragraph originParagraph = p;
+
+        if (user != null) {
+          p = p.getUserParagraphMap().get(user);
+        }
+
+        p.setReturn(null, null);
+        return originParagraph;
       }
     }
     return null;

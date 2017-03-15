@@ -621,14 +621,13 @@ public class NotebookServer extends WebSocketServlet
 
   public void broadcastParagraph(Note note, Paragraph p) {
     if (note.isPersonalizedMode()) {
-      broadcastParagraphs(p.getUserParagraphMap(), p);
+      broadcastParagraphs(p.getUserParagraphMap());
     } else {
       broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
     }
   }
 
-  public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap,
-      Paragraph defaultParagraph) {
+  public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap) {
     if (null != userParagraphMap) {
       for (String user : userParagraphMap.keySet()) {
         multicastToUser(user,
@@ -1143,7 +1142,7 @@ public class NotebookServer extends WebSocketServlet
     if (note.isPersonalizedMode()) {
       Map<String, Paragraph> userParagraphMap =
           note.getParagraph(paragraphId).getUserParagraphMap();
-      broadcastParagraphs(userParagraphMap, p);
+      broadcastParagraphs(userParagraphMap);
     } else {
       broadcastParagraph(note, p);
     }
@@ -1239,9 +1238,11 @@ public class NotebookServer extends WebSocketServlet
           notebookAuthorization.getWriters(noteId));
       return;
     }
-    note.clearParagraphOutput(paragraphId);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    broadcastParagraph(note, paragraph);
+
+    String user = (note.isPersonalizedMode()) ?
+            new AuthenticationInfo(fromMessage.principal).getUser() : null;
+    Paragraph p = note.clearParagraphOutput(paragraphId, user);
+    broadcastParagraph(note, p);
   }
 
   private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1806,7 +1807,7 @@ public class NotebookServer extends WebSocketServlet
   public void onOutputClear(String noteId, String paragraphId) {
     Notebook notebook = notebook();
     final Note note = notebook.getNote(noteId);
-    note.clearParagraphOutput(paragraphId);
+    note.clearParagraphOutput(paragraphId, null);
     Paragraph paragraph = note.getParagraph(paragraphId);
     broadcastParagraph(note, paragraph);
   }
