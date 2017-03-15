@@ -381,12 +381,24 @@ export function getFlattenCube(cube, schema) {
   return { rows: rows, keyColumnName: keyColumnName, groupNameSet: groupNameSet, }
 }
 
-export function getTransform(conf, cube, schema) {
-  let transformer = undefined
+/** return function for lazy computation */
+export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorColumns) {
+  let transformer = () => {
+    /** default is flatten cube */
+    const { cube, schema, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
+    return getFlattenCube(cube, schema)
+  }
+
   const transformSpec = getCurrentChartTransform(conf)
-  if (transformSpec && transformSpec.method === 'flatten') {
-    /** return function for lazy computation */
-    transformer = () => getFlattenCube(cube, schema)
+  if (!transformSpec) { return transformer; }
+
+  if (transformSpec.method === 'raw') {
+    transformer = () => { return rows; }
+  } else if (transformSpec.method === 'cube') {
+    transformer = () => {
+      const { cube, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
+      return cube
+    }
   }
 
   return transformer

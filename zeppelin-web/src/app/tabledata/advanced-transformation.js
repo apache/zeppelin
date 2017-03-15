@@ -18,8 +18,8 @@ import {
   isAggregator, isGroup, isKey, isSingleDimension,
   clearConfig, initializeConfig,
   removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount,
-  getCubeWithSchema, getColumnsFromAxis,
-  getTransform,
+  getColumnsFromAxis,
+  getTransformer,
 } from './advanced-transformation-util';
 
 import {
@@ -27,7 +27,6 @@ import {
   getCurrentChartAxis,
   getCurrentChartAxisSpecs,
   getCurrentChartParam,
-  getCurrentChartTransform,
 } from './advanced-transformation-api'
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
@@ -155,19 +154,18 @@ class AdvancedTransformation extends Transformation {
     const keyColumns = columns.key;
     const groupColumns = columns.group;
     const aggregatorColumns = columns.aggregator;
+    const otherColumns = columns.others
 
-    const { cube, schema, } =
-      getCubeWithSchema(tableData.rows, keyColumns, groupColumns, aggregatorColumns);
-
-    let transformer = getTransform(conf, cube, schema)
+    let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
 
     return {
       chart: chart, /** current chart */
       axis: axis, /** persisted axis */
       parameter: param, /** persisted parameter */
+      column: {
+        key: keyColumns, group: groupColumns, aggregator: aggregatorColumns, other: otherColumns,
+      },
 
-      cube: cube, /** multi-dimensional data cube */
-      schema: schema, /** schema for key, group, aggr info */
       transformer: transformer, /** { rows, keyColumnName, groupNameSet, } */
     }
   }
