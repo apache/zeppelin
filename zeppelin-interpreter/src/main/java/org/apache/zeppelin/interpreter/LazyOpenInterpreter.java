@@ -77,6 +77,7 @@ public class LazyOpenInterpreter
     // To close interpreter, you should open it first.
     open();
     intp.close();
+    opened = false;
   }
 
   public boolean isOpen() {
