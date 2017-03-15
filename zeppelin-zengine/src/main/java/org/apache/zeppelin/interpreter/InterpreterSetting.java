@@ -263,17 +263,9 @@ public class InterpreterSetting {
       groupToClose.close(sessionKey);
     }
 
-    cleanUpInterpreterGroupRef();
-  }
+    //Remove session because all interpreters in this session are closed
+    //TODO(jl): Change all code to handle interpreter one by one or all at once
 
-  private void cleanUpInterpreterGroupRef() {
-    interpreterGroupWriteLock.lock();
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (interpreterGroupRef.get(intpKey).isEmpty()) {
-        interpreterGroupRef.remove(intpKey);
-      }
-    }
-    interpreterGroupWriteLock.unlock();
   }
 
   void closeAndRemoveAllInterpreterGroups() {
@@ -283,29 +275,9 @@ public class InterpreterSetting {
     }
   }
 
-  void shutdownAndRemoveInterpreterGroup(String interpreterGroupKey) {
-    String key = getInterpreterProcessKey("", interpreterGroupKey);
-
-    List<InterpreterGroup> groupToRemove = new LinkedList<>();
-    InterpreterGroup groupItem;
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKeyProcessKey(intpKey, key)) {
-        interpreterGroupWriteLock.lock();
-        groupItem = interpreterGroupRef.remove(intpKey);
-        interpreterGroupWriteLock.unlock();
-        groupToRemove.add(groupItem);
-      }
-    }
-
-    for (InterpreterGroup groupToClose : groupToRemove) {
-      groupToClose.shutdown();
-    }
-  }
-
   void shutdownAndRemoveAllInterpreterGroups() {
-    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
-    for (String interpreterGroupKey : groupsToRemove) {
-      shutdownAndRemoveInterpreterGroup(interpreterGroupKey);
+    for (InterpreterGroup interpreterGroup : interpreterGroupRef.values()) {
+      interpreterGroup.shutdown();
     }
   }
 

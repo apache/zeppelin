@@ -25,13 +25,13 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
-
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * InterpreterGroup is list of interpreters in the same interpreter group.
@@ -49,7 +49,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter>> {
   String id;
 
-  Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterGroup.class);
 
   AngularObjectRegistry angularObjectRegistry;
   InterpreterHookRegistry hookRegistry;
@@ -171,51 +171,59 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    */
   public void close(String sessionId) {
     LOGGER.info("Close interpreter group " + getId() + " for session: " + sessionId);
-    List<Interpreter> intpForSession = this.remove(sessionId);
-    close(intpForSession);
+    final List<Interpreter> intpForSession = this.get(sessionId);
 
-    if (remoteInterpreterProcess != null) {
-      //TODO(jl): Because interpreter.close() runs as a seprate thread, we cannot guarantee
-      // refernceCount is a proper value. And as the same reason, we must not call
-      // remoteInterpreterProcess.dereference twice - this method also be called by
-      // interpreter.close().
-//      remoteInterpreterProcess.dereference();
-      if (remoteInterpreterProcess.referenceCount() <= 0) {
-        remoteInterpreterProcess = null;
-        allInterpreterGroups.remove(id);
-      }
-    }
+    close(this, sessionId, intpForSession);
   }
 
-  private void close(Collection<Interpreter> intpToClose) {
+  private void close(final Collection<Interpreter> intpToClose) {
+    close(null, null, intpToClose);
+  }
+  private void close(final InterpreterGroup interpreterGroup, final String sessionId,
+      final Collection<Interpreter> intpToClose) {
     if (intpToClose == null) {
       return;
     }
-    List<Thread> closeThreads = new LinkedList<>();
+    Thread t = new Thread() {
+      public void run() {
+        for (Interpreter interpreter : intpToClose) {
+          Scheduler scheduler = interpreter.getScheduler();
+          interpreter.close();
 
-    for (final Interpreter intp : intpToClose) {
-      Thread t = new Thread() {
-        public void run() {
-          Scheduler scheduler = intp.getScheduler();
-          intp.close();
-
-          if (scheduler != null) {
+          if (null != scheduler) {
             SchedulerFactory.singleton().removeScheduler(scheduler.getName());
           }
         }
-      };
 
-      t.start();
-      closeThreads.add(t);
-    }
+        if (remoteInterpreterProcess != null) {
+          //TODO(jl): Because interpreter.close() runs as a seprate thread, we cannot guarantee
+          // refernceCount is a proper value. And as the same reason, we must not call
+          // remoteInterpreterProcess.dereference twice - this method also be called by
+          // interpreter.close().
 
-    for (Thread t : closeThreads) {
-      try {
-        t.join();
-      } catch (InterruptedException e) {
-        LOGGER.error("Can't close interpreter", e);
+          // remoteInterpreterProcess.dereference();
+          if (remoteInterpreterProcess.referenceCount() <= 0) {
+            remoteInterpreterProcess = null;
+            allInterpreterGroups.remove(id);
+          }
+        }
+
+        // While closing interpreters in a same session, we should remove after all interpreters are
+        // removed
+        if (null != interpreterGroup && null != sessionId) {
+          interpreterGroup.remove(sessionId);
+        }
       }
+    };
+
+    t.start();
+    try {
+      t.join();
+    } catch (InterruptedException e) {
+      LOGGER.error("Can't close interpreter: {}", getId(), e);
     }
+
+
   }
 
   /**
