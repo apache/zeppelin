@@ -16,6 +16,10 @@ export function getCurrentChart(config) {
   return config.chart.current;
 }
 
+export function getCurrentChartTransform(config) {
+  return config.spec.charts[getCurrentChart(config)].transform
+}
+
 export function getCurrentChartAxis(config) {
   return config.axis[getCurrentChart(config)]
 }

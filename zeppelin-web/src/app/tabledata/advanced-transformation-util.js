@@ -16,6 +16,7 @@ const lo = _; /** provided by bower */
 
 import {
   getCurrentChartAxis,
+  getCurrentChartTransform,
 } from './advanced-transformation-api'
 
 export const Aggregator = {
@@ -66,7 +67,6 @@ export function getAvailableChartNames(charts) {
 }
 
 export function applyMaxAxisCount(config, axisSpec) {
-  console.log(axisSpec)
   if (isSingleDimension(axisSpec) || typeof axisSpec.maxAxisCount === "undefined") {
     return;
   }
@@ -316,3 +316,76 @@ export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
   return { cube: cube, schema: schema, };
 }
 
+
+export function getNames(obj) {
+  const names = []
+  for (let name in obj) {
+    names.push(name)
+  }
+
+  return names
+}
+
+export function getFlattenRow(schema, obj, groupNameSet) {
+  const aggrColumns = schema.aggregatorColumns
+  const row = {}
+
+  /** when group is empty */
+  if (!schema.group) {
+    for(let i = 0; i < aggrColumns.length; i++) {
+      const aggrColumn = aggrColumns[i]
+
+      row[aggrColumn.name] = obj[aggrColumn.name].value
+      groupNameSet.add(aggrColumn.name)
+    }
+
+    return row
+  }
+
+  /** when group is specified */
+  for(let i = 0; i < aggrColumns.length; i++) {
+    const aggrColumn = aggrColumns[i]
+
+    for (let groupName in obj) {
+      const selector = `${groupName}.${aggrColumn.name}`
+      groupNameSet.add(selector)
+      const grouped = obj[groupName]
+      row[selector] = grouped[aggrColumn.name].value
+    }
+  }
+
+  return row
+}
+
+export function getFlattenCube(cube, schema) {
+  let keys = getNames(cube)
+  const keyColumnName = schema.keyColumns.map(c => c.name).join('.')
+
+  if (!schema.key) {
+    keys = [ "root", ]
+    cube = { root: cube, }
+  }
+
+  const groupNameSet = new Set()
+  const rows = keys.reduce((acc, key) => {
+    const keyed = cube[key]
+    const row = getFlattenRow(schema, keyed, groupNameSet)
+    if (schema.key) { row[keyColumnName] = key }
+    acc.push(row)
+
+    return acc
+  }, [])
+
+  return { rows: rows, keyColumnName: keyColumnName, groupNameSet: groupNameSet, }
+}
+
+export function getTransform(conf, cube, schema) {
+  let transformer = undefined
+  const transformSpec = getCurrentChartTransform(conf)
+  if (transformSpec && transformSpec.method === 'flatten') {
+    /** return function for lazy computation */
+    transformer = () => getFlattenCube(cube, schema)
+  }
+
+  return transformer
+}

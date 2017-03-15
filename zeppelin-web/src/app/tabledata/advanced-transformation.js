@@ -19,6 +19,7 @@ import {
   clearConfig, initializeConfig,
   removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount,
   getCubeWithSchema, getColumnsFromAxis,
+  getTransform,
 } from './advanced-transformation-util';
 
 import {
@@ -26,6 +27,7 @@ import {
   getCurrentChartAxis,
   getCurrentChartAxisSpecs,
   getCurrentChartParam,
+  getCurrentChartTransform,
 } from './advanced-transformation-api'
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
@@ -157,6 +159,8 @@ class AdvancedTransformation extends Transformation {
     const { cube, schema, } =
       getCubeWithSchema(tableData.rows, keyColumns, groupColumns, aggregatorColumns);
 
+    let transformer = getTransform(conf, cube, schema)
+
     return {
       chart: chart, /** current chart */
       axis: axis, /** persisted axis */
@@ -164,6 +168,7 @@ class AdvancedTransformation extends Transformation {
 
       cube: cube, /** multi-dimensional data cube */
       schema: schema, /** schema for key, group, aggr info */
+      transformer: transformer, /** { rows, keyColumnName, groupNameSet, } */
     }
   }
 }
