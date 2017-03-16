@@ -225,7 +225,8 @@ limitations under the License.
       <tr data-ng-repeat="paramSpec in config.paramSpecs[config.chart.current]">
         <td style="font-weight: 400; vertical-align: middle;">{{paramSpec.name}}</td>
         <td style="font-weight: 400; vertical-align: middle;">{{paramSpec.valueType}}</td>
-        <td style="font-weight: 400; vertical-align: middle;">{{paramSpec.description}}</td>
+        <td ng-bind-html="paramSpec.description"
+          style="font-weight: 400; vertical-align: middle;"></td>
         <td>
           <div ng-if="isInputWidget(paramSpec)"
                class="input-group">
