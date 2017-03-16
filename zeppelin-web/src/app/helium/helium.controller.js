@@ -151,9 +151,9 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
   const getHeliumTypeText = function(type) {
     if (type === HeliumType.VISUALIZATION) {
-      return `<a href="https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html">${type}</a>`;
+      return `<a href="https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html">${type}</a>`; // eslint-disable-line max-len
     } else if (type === HeliumType.SPELL) {
-      return `<a href="https://zeppelin.apache.org/docs/latest/development/writingzeppelinspell.html">${type}</a>`;
+      return `<a href="https://zeppelin.apache.org/docs/latest/development/writingzeppelinspell.html">${type}</a>`; // eslint-disable-line max-len
     } else {
       return type;
     }
@@ -185,18 +185,18 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
         closable: false,
         closeByBackdrop: false,
         closeByKeyboard: false,
-        title: `<div style="font-weight: 300;">Do you want to enable new Helium Package?</div>`,
+        title: '<div style="font-weight: 300;">Do you want to enable Helium Package?</div>',
         message:
-          `<div style="font-size: 14px; margin-top: 5px;">Artifact</div>` +
+          '<div style="font-size: 14px; margin-top: 5px;">Artifact</div>' +
           `<div style="color:gray">${artifact}</div>` +
-          `<hr style="margin-top: 10px; margin-bottom: 10px;" />` +
-          `<div style="font-size: 14px; margin-bottom: 2px;">Type</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px; margin-bottom: 2px;">Type</div>' +
           `<div style="color:gray">${getHeliumTypeText(type)}</div>` +
-          `<hr style="margin-top: 10px; margin-bottom: 10px;" />` +
-          `<div style="font-size: 14px;">Description</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px;">Description</div>' +
           `<div style="color:gray">${description}</div>` +
-          `<hr style="margin-top: 10px; margin-bottom: 10px;" />` +
-          `<div style="font-size: 14px;">License</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px;">License</div>' +
           `<div style="color:gray">${license}</div>`,
         callback: function (result) {
           if (result) {
@@ -226,7 +226,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
-      title: `<div style="font-weight: 300;">Do you want to disable Helium Package?</div>`,
+      title: '<div style="font-weight: 300;">Do you want to disable Helium Package?</div>',
       message: artifact,
       callback: function(result) {
         if (result) {
