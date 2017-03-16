@@ -231,12 +231,13 @@ limitations under the License.
                class="input-group">
             <input type="text" class="form-control input-sm"
                    style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
-                   ng-keydown="saveConfigOnEnter($event)"
+                   ng-keydown="parameterOnKeyDown($event, paramSpec)"
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
           <div class="btn-group"
                ng-if="isOptionWidget(paramSpec)">
             <select class="form-control input-sm"
+                    ng-keydown="parameterOnKeyDown($event, paramSpec)"
                     ng-change="parameterChanged(paramSpec)"
                     data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                     data-ng-options="optionValue for optionValue in paramSpec.optionValues"
@@ -246,6 +247,7 @@ limitations under the License.
 
           <div ng-if="isCheckboxWidget(paramSpec)">
             <input type="checkbox"
+                   ng-keydown="parameterOnKeyDown($event, paramSpec)"
                    ng-click="parameterChanged(paramSpec)"
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                    data-ng-checked="config.parameter[config.chart.current][paramSpec.name]" />
@@ -253,7 +255,7 @@ limitations under the License.
 
           <div ng-if="isTextareaWidget(paramSpec)">
             <textarea class="form-control" rows="3"
-                      ng-keydown="saveConfigOnShiftEnter($event)"
+                      ng-keydown="parameterOnKeyDown($event, paramSpec)"
                       data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                       style="font-weight: 400; font-size: 12px;">
             </textarea>

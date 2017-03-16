@@ -137,21 +137,16 @@ class AdvancedTransformation extends Transformation {
           self.emitConfig(configInstance)
         },
 
-        saveConfigOnEnter: function(event) {
+        parameterOnKeyDown: function(event, paramSpec) {
           const code = event.keyCode || event.which;
-          if (code === 13) {
+          if (code === 13 && isInputWidget(paramSpec)) {
             self.emitConfig(configInstance)
-          }
-        },
 
-        saveConfigOnShiftEnter: function(event) {
-          const code = event.keyCode || event.which;
-
-          if (code === 13 && event.shiftKey) {
-            event.stopPropagation(); /** avoid to run paragraph */
+          } else if (code === 13 && event.shiftKey && isTextareaWidget(paramSpec)) {
             self.emitConfig(configInstance)
           }
 
+          event.stopPropagation(); /** avoid to conflict with paragraph shortcuts */
         },
 
       }
@@ -175,9 +170,7 @@ class AdvancedTransformation extends Transformation {
     const aggregatorColumns = columns.aggregator;
     const customColumns = columns.custom
 
-    console.log(parsedParam)
-
-    let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
+   let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
 
     return {
       chart: chart, /** current chart */
