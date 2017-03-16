@@ -56,7 +56,11 @@ Also you can separate option's display name and value, using `${formName=default
 
 <img src="../assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
-Hit enter after selecting option to run the paragraph with new value.
+The paragraph will be automatically run after you change your selection by default.
+But in case you have multiple select forms in one paragraph, you might want to run the paragraph after changing all the selections.
+You can control this by unchecking the below **Run on selection change** option in the setting menu. Even if you uncheck this option, still you can run it by pressing `Enter`.
+
+<img src="../assets/themes/zeppelin/img/screenshots/selectForm-checkbox.png" />
 
 ### Checkbox form
 
