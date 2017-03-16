@@ -59,6 +59,14 @@ export function isTextareaWidget(paramSpec) {
   return paramSpec && paramSpec.widget === Widget.TEXTAREA;
 }
 
+export const AxisValueType = {
+  NUMBER: 'number',
+  INT: 'int',
+  FLOAT: 'float',
+  JSON: 'json',
+  STRING: 'string',
+}
+
 export const Aggregator = {
   SUM: 'sum',
   COUNT: 'count',

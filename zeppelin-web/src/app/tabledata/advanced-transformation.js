@@ -133,14 +133,12 @@ class AdvancedTransformation extends Transformation {
         isTextareaWidget: function(paramSpec) { return isTextareaWidget(paramSpec) },
 
         parameterChanged: (paramSpec) => {
-          console.log(configInstance.parameter[configInstance.chart.current])
           self.emitConfig(configInstance)
         },
 
         keyEventOnDynamicParameter: (event) => {
           if (event.which === 13 || event.keyCode === 13) {
             /** enter */
-            configInstance.panel.parameterPanelOpened = !configInstance.panel.parameterPanelOpened
             self.emitConfig(configInstance)
           }
         },
