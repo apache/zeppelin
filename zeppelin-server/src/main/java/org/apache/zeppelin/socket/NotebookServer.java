@@ -289,6 +289,9 @@ public class NotebookServer extends WebSocketServlet
           case RUN_ALL_PARAGRAPHS:
             runAllParagraphs(conn, userAndRoles, notebook, messagereceived);
             break;
+          case RUN_SUBSEQUENT_PARAGRAPHS:
+            runSubsequentParagraphs(conn, userAndRoles, notebook, messagereceived);
+            break;
           case CANCEL_PARAGRAPH:
             cancelParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -1607,38 +1610,46 @@ public class NotebookServer extends WebSocketServlet
   private void runAllParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
                                 Notebook notebook,
       Message fromMessage) throws IOException {
+    List<Map<String, Object>> all_paragraphs =
+            gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
+                    new TypeToken<List<Map<String, Object>>>() {}.getType());
+
+    runParagraphs(conn, userAndRoles, notebook, fromMessage, all_paragraphs);
+  }
+
+  private void runSubsequentParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+                                       Notebook notebook,
+                                       Message fromMessage) throws IOException {
+    String id = (String) fromMessage.get("paragraphId");
+
+    List<Map<String, Object>> all_paragraphs =
+            gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
+                    new TypeToken<List<Map<String, Object>>>() {}.getType());
+
+    runParagraphs(conn, userAndRoles, notebook, fromMessage,
+            all_paragraphs.subList(indexOfParagraph(all_paragraphs, id), all_paragraphs.size()));
+  }
+
+  private void runParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+                             Notebook notebook,
+                             Message fromMessage,
+                             List<Map<String, Object>> paragraphs) throws IOException {
     final String noteId = (String) fromMessage.get("noteId");
     if (StringUtils.isBlank(noteId)) {
       return;
     }
+    Note note = notebook.getNote(noteId);
 
     if (!hasParagraphWriterPermission(conn, notebook, noteId,
-        userAndRoles, fromMessage.principal, "run all paragraphs")) {
+            userAndRoles, fromMessage.principal, "run all paragraphs")) {
       return;
     }
 
-    List<Map<String, Object>> paragraphs =
-        gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
-            new TypeToken<List<Map<String, Object>>>() {}.getType());
-
     for (Map<String, Object> raw : paragraphs) {
-      String paragraphId = (String) raw.get("id");
-      if (paragraphId == null) {
-        continue;
-      }
-
-      String text = (String) raw.get("paragraph");
-      String title = (String) raw.get("title");
-      Map<String, Object> params = (Map<String, Object>) raw.get("params");
-      Map<String, Object> config = (Map<String, Object>) raw.get("config");
-
-      Note note = notebook.getNote(noteId);
-      Paragraph p = setParagraphUsingMessage(note, fromMessage,
-          paragraphId, text, title, params, config);
-
-      persistAndExecuteSingleParagraph(conn, note, p);
+      runParagraph(conn, note, fromMessage, raw);
     }
   }
+
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,
                                        Notebook notebook, Message fromMessage)
@@ -1681,26 +1692,33 @@ public class NotebookServer extends WebSocketServlet
 
   private void runParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
                             Message fromMessage) throws IOException {
-    final String paragraphId = (String) fromMessage.get("id");
+    String noteId = getOpenNoteId(conn);
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+            userAndRoles, fromMessage.principal, "write")) {
+      return;
+    }
+    runParagraph(conn, notebook.getNote(noteId), fromMessage);
+  }
+
+  private void runParagraph(NotebookSocket conn, Note note,
+                            Message fromMessage) throws IOException {
+    runParagraph(conn, note, fromMessage, fromMessage.data);
+  }
+
+  private void runParagraph(NotebookSocket conn, Note note, Message fromMessage,
+                            Map<String, Object> data) throws IOException {
+    final String paragraphId = (String) data.get("id");
     if (paragraphId == null) {
       return;
     }
 
-    String noteId = getOpenNoteId(conn);
-
-    if (!hasParagraphWriterPermission(conn, notebook, noteId,
-        userAndRoles, fromMessage.principal, "write")) {
-      return;
-    }
-
-    String text = (String) fromMessage.get("paragraph");
-    String title = (String) fromMessage.get("title");
-    Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
-    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
-
-    final Note note = notebook.getNote(noteId);
+    String text = (String) data.get("paragraph");
+    String title = (String) data.get("title");
+    Map<String, Object> params = (Map<String, Object>) data.get("params");
+    Map<String, Object> config = (Map<String, Object>) data.get("config");
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
-        text, title, params, config);
+            text, title, params, config);
 
     persistAndExecuteSingleParagraph(conn, note, p);
   }
@@ -2432,4 +2450,13 @@ public class NotebookServer extends WebSocketServlet
     }
     setting.clearNoteIdAndParaMap();
   }
+
+  private int indexOfParagraph(List<Map<String, Object>> paragraphs, String id){
+    for (int i = 0; i < paragraphs.size(); i++){
+      if ( ((String) paragraphs.get(i).get("id")).equals(id) )
+        return i;
+    }
+    return paragraphs.size();
+  }
 }
+

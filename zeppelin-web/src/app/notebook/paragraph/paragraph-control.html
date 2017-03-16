@@ -65,6 +65,9 @@ limitations under the License.
          </li>
       </ul>
     </span>
+    <span class="icon-control-end" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph and the following ones (Ctrl+Shift+Enter)"
+          ng-click="runSubsequentParagraphs(parentNote.id,paragraph.id)"
+          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
           tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+e)"
           ng-click="toggleEditor(paragraph)"></span>

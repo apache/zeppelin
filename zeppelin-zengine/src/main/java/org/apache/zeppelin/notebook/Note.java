@@ -560,11 +560,31 @@ public class Note implements Serializable, ParagraphJobListener {
    * Run all paragraphs sequentially.
    */
   public synchronized void runAll() {
+    runRange(0, getParagraphs().size());
+  }
+
+  /**
+   * Run a paragraph and all the ones after.
+   *
+   * @param paragraphId ID of start paragraph
+   */
+  public synchronized void runAllAfter(String paragraphId) {
+    runRange(getParagraphs().indexOf(getParagraph(paragraphId)), getParagraphs().size());
+  }
+
+  /**
+   * Run paragraphs between beg (included) to end (excluded)
+   *
+   * @param beg index of first paragraph to run
+   * @param end index of first paragraph not to run
+   */
+  public synchronized void runRange(int beg, int end){
     String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
-    for (Paragraph p : getParagraphs()) {
+    List<Paragraph> paragraphs = getParagraphs();
+    for (Paragraph p : paragraphs.subList(beg, end)) {
       if (!p.isEnabled()) {
         continue;
       }
@@ -604,7 +624,7 @@ public class Note implements Serializable, ParagraphJobListener {
       p.setStatus(Job.Status.ERROR);
       throw intpException;
     }
-    if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
+    if (p.isEnabled()) {
       p.setAuthenticationInfo(p.getAuthenticationInfo());
       intp.getScheduler().submit(p);
     }

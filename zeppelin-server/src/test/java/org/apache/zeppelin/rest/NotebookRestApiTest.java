@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -116,6 +118,21 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertNotEquals(p.getStatus(), Job.Status.READY);
+
+    // run non-blank paragraph and the ones after
+    List<Paragraph> paragraphs = new ArrayList<Paragraph>();
+    for (int i = 0; i < 3; i++ )
+      paragraphs.add(note1.addParagraph(AuthenticationInfo.ANONYMOUS));
+    post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId() + "?subsequent=true", "");
+    assertThat(post, isAllowed());
+    resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    assertEquals(resp.get("status"), "OK");
+    post.releaseConnection();
+    for (Paragraph aParagraph : paragraphs){
+      assertNotEquals(aParagraph.getStatus(), Job.Status.READY); // should be running, run or about to be run
+    }
+    assertEquals(note1.getParagraphs().get(0).getStatus(), Job.Status.READY); // should not have changed
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);

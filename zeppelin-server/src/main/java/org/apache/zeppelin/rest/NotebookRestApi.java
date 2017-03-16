@@ -693,6 +693,8 @@ public class NotebookRestApi {
    *
    * @param message - JSON with params if user wants to update dynamic form's value
    *                null, empty string, empty json if user doesn't want to update
+   * @param subsequent - boolean, if set to true the following paragraphs will be run as well.
+   *
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
@@ -700,9 +702,10 @@ public class NotebookRestApi {
   @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
   public Response runParagraph(@PathParam("noteId") String noteId,
-      @PathParam("paragraphId") String paragraphId, String message)
-      throws IOException, IllegalArgumentException {
-    LOG.info("run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
+      @PathParam("paragraphId") String paragraphId, String message,
+      @QueryParam("subsequent") boolean subsequent) throws IOException, IllegalArgumentException {
+    LOG.info("run paragraph {}job asynchronously {} {} {}", subsequent ? "and subsequents " : "",
+            noteId, paragraphId, message);
 
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
@@ -718,7 +721,14 @@ public class NotebookRestApi {
     paragraph.setAuthenticationInfo(subject);
     note.persist(subject);
 
-    note.run(paragraph.getId());
+
+    if (subsequent){
+      note.runAllAfter(paragraphId);
+    }
+    else {
+      note.run(paragraph.getId());
+    }
+
     return new JsonResponse<>(Status.OK).build();
   }
 
@@ -729,6 +739,7 @@ public class NotebookRestApi {
    * @param paragraphId - paragraphId
    * @param message - JSON with params if user wants to update dynamic form's value
    *                null, empty string, empty json if user doesn't want to update
+   * @param subsequent - boolean, if set to true the following paragraphs will be run as well.
    *
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
@@ -738,7 +749,8 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response runParagraphSynchronously(@PathParam("noteId") String noteId,
                                             @PathParam("paragraphId") String paragraphId,
-                                            String message) throws
+                                            String message,
+                                            @QueryParam("subsequent") boolean subsequent) throws
                                             IOException, IllegalArgumentException {
     LOG.info("run paragraph synchronously {} {} {}", noteId, paragraphId, message);
 
@@ -750,20 +762,31 @@ public class NotebookRestApi {
 
     // handle params if presented
     handleParagraphParams(message, note, paragraph);
-
-    if (paragraph.getListener() == null) {
+    if ( paragraph.getListener() == null){
       note.initializeJobListenerForParagraph(paragraph);
     }
-
     paragraph.run();
-
     final InterpreterResult result = paragraph.getResult();
-
-    if (result.code() == InterpreterResult.Code.SUCCESS) {
-      return new JsonResponse<>(Status.OK, result).build();
-    } else {
+    if ( result.code() != InterpreterResult.Code.SUCCESS){
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, result).build();
     }
+    InterpreterResult resultFollowers;
+    if ( subsequent ) {
+      List<Paragraph> paragraphList = note.getParagraphs();
+      for (Paragraph p : paragraphList.subList(paragraphList.indexOf(paragraph) + 1,
+                                               paragraphList.size())) {
+        if (p.getListener() == null) {
+          note.initializeJobListenerForParagraph(p);
+        }
+        p.run();
+        resultFollowers = p.getResult();
+        if (resultFollowers.code() != InterpreterResult.Code.SUCCESS) { // return if one fails
+          return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, resultFollowers).build();
+        }
+      }
+    }
+
+    return new JsonResponse<>(Status.OK, result).build();
   }
 
   /**

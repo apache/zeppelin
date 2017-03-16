@@ -894,6 +894,10 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> 500 </td>
     </tr>
     <tr>
+      <td> subsequent parameter (optionnal) </td>
+      <td> If set to true, all the paragraphs following the paragraph will be run as well.```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]?subsequent=true```</td>
+    </tr>
+    <tr>
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
       <td><pre>
 {
@@ -930,6 +934,10 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <tr>
       <td> Fail code</td>
       <td> 500 </td>
+    </tr>
+    <tr>
+      <td> subsequent parameter (optionnal) </td>
+      <td> If set to true, all the paragraphs following the paragraph will be run as well. Warning: if one of the paragraphs fails the API will return ERROR ```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]?subsequent=true```</td>
     </tr>
     <tr>
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
