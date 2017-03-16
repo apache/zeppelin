@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.scheduler;
 
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinhubClient;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class ZeppelinHubHeartbeat implements Runnable {
   @Override
   public void run() {
     LOG.debug("Sending PING to zeppelinhub");
-    client.send(ZeppelinhubUtils.pingMessage(client.getToken()));
+    for (String token: UserTokenContainer.instance.getAllTokens()) {
+      LOG.info("Sending PING to zeppelinhub token {}", token);
+      client.send(ZeppelinhubUtils.pingMessage(token), token);
+    }
   }  
 }

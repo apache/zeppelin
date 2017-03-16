@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,6 @@ public class ZeppelinhubClient {
 
   private final WebSocketClient client;
   private final URI zeppelinhubWebsocketUrl;
-  private final ClientUpgradeRequest conectionRequest;
   private final String zeppelinhubToken;
 
   private static final long CONNECTION_IDLE_TIME = TimeUnit.SECONDS.toMillis(30);
@@ -66,7 +66,8 @@ public class ZeppelinhubClient {
   private static Gson gson;
   
   private SchedulerService schedulerService;
-  private ZeppelinhubSession zeppelinhubSession;
+  private Map<String, ZeppelinhubSession> sessionMap = 
+      new ConcurrentHashMap<String, ZeppelinhubSession>();
 
   public static ZeppelinhubClient initialize(String zeppelinhubUrl, String token) {
     if (instance == null) {
@@ -82,7 +83,6 @@ public class ZeppelinhubClient {
   private ZeppelinhubClient(String url, String token) {
     zeppelinhubWebsocketUrl = URI.create(url);
     client = createNewWebsocketClient();
-    conectionRequest = setConnectionrequest(token);
     zeppelinhubToken = token;
     schedulerService = SchedulerService.create(10);
     gson = new Gson();
@@ -92,17 +92,19 @@ public class ZeppelinhubClient {
   public void start() {
     try {
       client.start();
-      zeppelinhubSession = connect();
       addRoutines();
     } catch (Exception e) {
       LOG.error("Cannot connect to zeppelinhub via websocket", e);
     }
   }
   
+  public void initUser(String token) {
+    
+  }
+
   public void stop() {
     LOG.info("Stopping Zeppelinhub websocket client");
     try {
-      zeppelinhubSession.close();
       schedulerService.close();
       client.stop();
     } catch (Exception e) {
@@ -110,14 +112,19 @@ public class ZeppelinhubClient {
     }
   }
 
+  public void stopUser(String token) {
+    removeSession(token);
+  }
+
   public String getToken() {
     return this.zeppelinhubToken;
   }
   
-  public void send(String msg) {
-    if (!isConnectedToZeppelinhub()) {
+  public void send(String msg, String token) {
+    ZeppelinhubSession zeppelinhubSession = getSession(token);
+    if (!isConnectedToZeppelinhub(zeppelinhubSession)) {
       LOG.info("Zeppelinhub connection is not open, opening it");
-      zeppelinhubSession = connect();
+      zeppelinhubSession = connect(token);
       if (zeppelinhubSession == ZeppelinhubSession.EMPTY) {
         LOG.warn("While connecting to ZeppelinHub received empty session, cannot send the message");
         return;
@@ -126,25 +133,48 @@ public class ZeppelinhubClient {
     zeppelinhubSession.sendByFuture(msg);
   }
   
-  private boolean isConnectedToZeppelinhub() {
+  private boolean isConnectedToZeppelinhub(ZeppelinhubSession zeppelinhubSession) {
     return (zeppelinhubSession != null && zeppelinhubSession.isSessionOpen());
   }
 
-  private ZeppelinhubSession connect() {
-    ZeppelinhubSession zeppelinSession;
-    try {
-      ZeppelinhubWebsocket ws = ZeppelinhubWebsocket.newInstance(zeppelinhubToken);
-      Future<Session> future = client.connect(ws, zeppelinhubWebsocketUrl, conectionRequest);
-      Session session = future.get();
-      zeppelinSession = ZeppelinhubSession.createInstance(session, zeppelinhubToken);
-    } catch (IOException | InterruptedException | ExecutionException e) {
-      LOG.info("Couldnt connect to zeppelinhub - {}", e.toString());
-      zeppelinSession = ZeppelinhubSession.EMPTY;
+  private ZeppelinhubSession connect(String token) {
+    if (StringUtils.isBlank(token)) {
+      LOG.debug("Can't connect with empty token");
+      return ZeppelinhubSession.EMPTY;
     }
-    return zeppelinSession;
+    ZeppelinhubSession zeppelinhubSession;
+    try {
+      ZeppelinhubWebsocket ws = ZeppelinhubWebsocket.newInstance(token);
+      ClientUpgradeRequest request = getConnectionRequest(token);
+      Future<Session> future = client.connect(ws, zeppelinhubWebsocketUrl, request);
+      Session session = future.get();
+      zeppelinhubSession = ZeppelinhubSession.createInstance(session, token);
+      setSession(token, zeppelinhubSession);
+    } catch (IOException | InterruptedException | ExecutionException e) {
+      LOG.info("Couldnt connect to zeppelinhub", e);
+      zeppelinhubSession = ZeppelinhubSession.EMPTY;
+    }
+    return zeppelinhubSession;
   }
-  
-  private ClientUpgradeRequest setConnectionrequest(String token) {
+
+  private void setSession(String token, ZeppelinhubSession session) {
+    sessionMap.put(token, session);
+  }
+
+  private ZeppelinhubSession getSession(String token) {
+    return sessionMap.get(token);
+  }
+
+  public void removeSession(String token) {
+    ZeppelinhubSession zeppelinhubSession = getSession(token);
+    if (zeppelinhubSession == null) {
+      return;
+    }
+    zeppelinhubSession.close();
+    sessionMap.remove(token);
+  }
+
+  private ClientUpgradeRequest getConnectionRequest(String token) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setCookies(Lists.newArrayList(new HttpCookie(ZeppelinHubRepo.TOKEN_HEADER, token)));
     return request;
@@ -193,7 +223,7 @@ public class ZeppelinhubClient {
           runAllParagraph(hubMsg.meta.get("noteId"), msg);
           break;
         default:
-          LOG.warn("Received {} from ZeppelinHub, not handled", op);
+          LOG.debug("Received {} from ZeppelinHub, not handled", op);
           break;
     }
   }

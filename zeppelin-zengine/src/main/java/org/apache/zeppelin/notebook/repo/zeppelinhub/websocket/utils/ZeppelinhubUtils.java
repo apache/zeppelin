@@ -19,6 +19,8 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinhubClient;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinHubOp;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinhubMessage;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -94,5 +96,26 @@ public class ZeppelinhubUtils {
 
   public static boolean isZeppelinOp(String text) {
     return (toZeppelinOp(text) != null); 
+  }
+  
+  public static void userLoginRoutine(String username) {
+    LOG.info("Executing user login routine");
+    String token = UserTokenContainer.instance.getUserToken(username);
+    UserTokenContainer.instance.setUserToken(username, token);
+    LOG.info("Token for {} is {} ", username, token);
+    String msg = ZeppelinhubUtils.liveMessage(token);
+    LOG.info("Live message is {} with token {}", msg, token);
+    ZeppelinhubClient.getInstance()
+        .send(msg, token);
+  }
+  
+  public static void userLogoutRoutine(String username) {
+    LOG.info("Executing user logout routine");
+    String token = UserTokenContainer.instance.removeUserToken(username);
+    String msg = ZeppelinhubUtils.deadMessage(token);
+    LOG.info("Dead message is {} with token {}", msg, token);
+    ZeppelinhubClient.getInstance()
+        .send(msg, token);
+    ZeppelinhubClient.getInstance().removeSession(token);
   }
 }

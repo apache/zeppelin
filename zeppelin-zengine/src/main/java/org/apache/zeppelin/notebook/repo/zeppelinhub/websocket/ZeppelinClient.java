@@ -18,8 +18,11 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +30,8 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.WatcherWebsocket;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.ZeppelinWebsocket;
@@ -53,7 +58,6 @@ import com.google.gson.JsonSyntaxException;
 public class ZeppelinClient {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinClient.class);
   private final URI zeppelinWebsocketUrl;
-  private final String zeppelinhubToken;
   private final WebSocketClient wsClient;
   private static Gson gson;
   // Keep track of current open connection per notebook.
@@ -64,6 +68,12 @@ public class ZeppelinClient {
   private SchedulerService schedulerService;
   private Authentication authModule;
   private static final int MIN = 60;
+
+  private static final Set<String> actionable = new  HashSet<String>(Arrays.asList(
+      "PROGRESS",
+      "NOTE",
+      "PARAGRAPH",
+      "PARAGRAPH_UPDATE_OUTPUT"));
 
   public static ZeppelinClient initialize(String zeppelinUrl, String token, 
       ZeppelinConfiguration conf) {
@@ -79,7 +89,6 @@ public class ZeppelinClient {
 
   private ZeppelinClient(String zeppelinUrl, String token, ZeppelinConfiguration conf) {
     zeppelinWebsocketUrl = URI.create(zeppelinUrl);
-    zeppelinhubToken = token;
     wsClient = createNewWebsocketClient();
     gson = new Gson();
     notesConnection = new ConcurrentHashMap<>();
@@ -121,7 +130,7 @@ public class ZeppelinClient {
       public void run() {
         watcherSession = openWatcherSession();
       }
-    }, 5000);
+    }, 10000);
   }
 
   public void stop() {
@@ -260,21 +269,64 @@ public class ZeppelinClient {
 
   public void handleMsgFromZeppelin(String message, String noteId) {
     Map<String, String> meta = new HashMap<>();
-    meta.put("token", zeppelinhubToken);
+    //TODO(khalid): don't use zeppelinhubToken in this class, decouple
     meta.put("noteId", noteId);
     Message zeppelinMsg = deserialize(message);
     if (zeppelinMsg == null) {
       return;
     }
-    ZeppelinhubMessage hubMsg = ZeppelinhubMessage.newMessage(zeppelinMsg, meta);
+    LOG.info("message from {}", zeppelinMsg.principal);
+    String token;
+    if (!isActionable(zeppelinMsg.op)) {
+      return;
+    }
+    if (StringUtils.isEmpty(zeppelinMsg.principal) || zeppelinMsg.principal == "anonymous") {
+      token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
+    } else {
+      token = "anonymous";
+    }
+    meta.put("token", token);
     Client client = Client.getInstance();
     if (client == null) {
       LOG.warn("Client isn't initialized yet");
       return;
     }
-    client.relayToZeppelinHub(hubMsg.serialize());
+    ZeppelinhubMessage hubMsg = ZeppelinhubMessage.newMessage(zeppelinMsg, meta);
+    if (token == "anonymous") {
+      relayToAllZeppelinHub(hubMsg, noteId);
+    } else {
+      client.relayToZeppelinHub(hubMsg.serialize(), zeppelinMsg.ticket);
+    }
+
   }
 
+  private void relayToAllZeppelinHub(ZeppelinhubMessage hubMsg, String noteId) {
+    if (StringUtils.isBlank(noteId)) {
+      return;
+    }
+    NotebookAuthorization noteAuth = NotebookAuthorization.getInstance();
+    Map<String, String> userTokens = UserTokenContainer.instance.getAllUserTokens();
+    Client client = Client.getInstance();
+    Set<String> userAndRoles;
+    String token;
+    for (String user: userTokens.keySet()) {
+      userAndRoles = noteAuth.getRoles(user);
+      userAndRoles.add(user);
+      if (noteAuth.isReader(noteId, userAndRoles)) {
+        token = userTokens.get(user);
+        hubMsg.meta.put("token", token);
+        client.relayToZeppelinHub(hubMsg.serialize(), token);
+      }
+    }
+  }
+
+  private boolean isActionable(OP action) {
+    if (action == null) {
+      return false;
+    }
+    return actionable.contains(action.name());
+  }
+  
   public void removeNoteConnection(String noteId) {
     if (StringUtils.isBlank(noteId)) {
       LOG.error("Cannot remove session for empty noteId");
@@ -307,7 +359,7 @@ public class ZeppelinClient {
 
   public void ping() {
     if (watcherSession == null) {
-      LOG.info("Cannot send PING event, no watcher found");
+      LOG.debug("Cannot send PING event, no watcher found");
       return;
     }
     watcherSession.getRemote().sendStringByFuture(serialize(new Message(OP.PING)));

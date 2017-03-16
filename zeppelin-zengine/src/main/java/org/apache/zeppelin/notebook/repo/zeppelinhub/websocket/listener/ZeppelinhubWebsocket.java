@@ -53,7 +53,7 @@ public class ZeppelinhubWebsocket implements WebSocketListener {
   public void onWebSocketConnect(Session session) {
     LOG.info("Opening a new session to Zeppelinhub {}", session.hashCode());
     this.zeppelinHubSession = session;
-    send(ZeppelinhubUtils.liveMessage(token));
+    //send(ZeppelinhubUtils.liveMessage(token));
   }
 
   @Override
