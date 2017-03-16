@@ -154,6 +154,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     var mavenArtifactInfoToHTML = groupId +':'+ artifact.split('@')[0] + ':' + artifact.split('@')[1];
     var zeppelinVersion = $rootScope.zeppelinVersion;
     var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
+    
     var confirm = ''
     if (type === 'INTERPRETER') {
     confirm = BootstrapDialog.show({
