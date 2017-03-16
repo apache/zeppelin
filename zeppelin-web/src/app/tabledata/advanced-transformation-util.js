@@ -12,10 +12,52 @@
  * limitations under the License.
  */
 
-import {
-  getCurrentChartAxis,
-  getCurrentChartTransform,
-} from './advanced-transformation-api'
+export function getCurrentChart(config) {
+  return config.chart.current;
+}
+
+export function getCurrentChartTransform(config) {
+  return config.spec.charts[getCurrentChart(config)].transform
+}
+
+export function getCurrentChartAxis(config) {
+  return config.axis[getCurrentChart(config)]
+}
+
+export function getCurrentChartParam(config) {
+  return config.parameter[getCurrentChart(config)]
+}
+
+export function getCurrentChartAxisSpecs(config) {
+  return config.axisSpecs[getCurrentChart(config)]
+}
+
+export function getCurrentChartParamSpecs(config) {
+  return config.paramSpecs[getCurrentChart(config)]
+}
+
+export const Widget = {
+  INPUT: 'input', /** default */
+  OPTION: 'option',
+  CHECKBOX: 'checkbox',
+  TEXTAREA: 'textarea',
+}
+
+export function isInputWidget(paramSpec) {
+  return (paramSpec && !paramSpec.widget) || (paramSpec && paramSpec.widget === Widget.INPUT);
+}
+
+export function isOptionWidget(paramSpec) {
+  return paramSpec && paramSpec.widget === Widget.OPTION;
+}
+
+export function isCheckboxWidget(paramSpec) {
+  return paramSpec && paramSpec.widget === Widget.CHECKBOX;
+}
+
+export function isTextareaWidget(paramSpec) {
+  return paramSpec && paramSpec.widget === Widget.TEXTAREA;
+}
 
 export const Aggregator = {
   SUM: 'sum',
@@ -25,16 +67,16 @@ export const Aggregator = {
   MAX: 'max',
 }
 
-export function isAggregator(axisSpec) {
+export function isAggregatorAxis(axisSpec) {
   return axisSpec && axisSpec.axisType === 'aggregator';
 }
-export function isGroup(axisSpec) {
+export function isGroupAxis(axisSpec) {
   return axisSpec && axisSpec.axisType === 'group';
 }
-export function isKey(axisSpec) {
+export function isKeyAxis(axisSpec) {
   return axisSpec && axisSpec.axisType === 'key';
 }
-export function isSingleDimension(axisSpec) {
+export function isSingleDimensionAxis(axisSpec) {
   return axisSpec && axisSpec.dimension === 'single';
 }
 
@@ -65,7 +107,7 @@ export function getAvailableChartNames(charts) {
 }
 
 export function applyMaxAxisCount(config, axisSpec) {
-  if (isSingleDimension(axisSpec) || typeof axisSpec.maxAxisCount === 'undefined') {
+  if (isSingleDimensionAxis(axisSpec) || typeof axisSpec.maxAxisCount === 'undefined') {
     return;
   }
 
@@ -77,7 +119,7 @@ export function applyMaxAxisCount(config, axisSpec) {
 }
 
 export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
-  if (isSingleDimension(axisSpec)) { return config; }
+  if (isSingleDimensionAxis(axisSpec)) { return config; }
 
   const columns = getCurrentChartAxis(config)[axisSpec.name]
   const uniqObject = columns.reduce((acc, col) => {
@@ -135,7 +177,8 @@ export function initializeConfig(config, spec) {
 
     for (let i = 0; i < axisSpecs.length; i++) {
       const axisSpec = axisSpecs[i]
-      if (!isSingleDimension(axisSpec) && !Array.isArray(config.axis[chartName][axisSpec.name])) {
+      if (!isSingleDimensionAxis(axisSpec) &&
+        !Array.isArray(config.axis[chartName][axisSpec.name])) {
         config.axis[chartName][axisSpec.name] = []
       }
     }
@@ -179,9 +222,9 @@ export function getColumnsFromAxis(axisSpecs, axis) {
   for(let i = 0; i < axisSpecs.length; i++) {
     const axisSpec = axisSpecs[i];
 
-    if (isKey(axisSpec)) { keyAxisNames.push(axisSpec.name); }
-    else if (isGroup(axisSpec)) { groupAxisNames.push(axisSpec.name); }
-    else if (isAggregator(axisSpec)) { aggrAxisNames.push(axisSpec.name); }
+    if (isKeyAxis(axisSpec)) { keyAxisNames.push(axisSpec.name); }
+    else if (isGroupAxis(axisSpec)) { groupAxisNames.push(axisSpec.name); }
+    else if (isAggregatorAxis(axisSpec)) { aggrAxisNames.push(axisSpec.name); }
   }
 
   let keyColumns = [];

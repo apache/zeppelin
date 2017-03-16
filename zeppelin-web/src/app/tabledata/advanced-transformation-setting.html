@@ -227,7 +227,7 @@ limitations under the License.
         <td style="font-weight: 400; vertical-align: middle;">{{paramSpec.valueType}}</td>
         <td style="font-weight: 400; vertical-align: middle;">{{paramSpec.description}}</td>
         <td>
-          <div ng-if="!paramSpec.widget || paramSpec.widget === 'input'"
+          <div ng-if="isInputWidget(paramSpec)"
                class="input-group">
             <input type="text" class="form-control input-sm"
                    style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
@@ -235,7 +235,7 @@ limitations under the License.
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
           <div class="btn-group"
-               ng-if="paramSpec.widget === 'option'">
+               ng-if="isOptionWidget(paramSpec)">
             <select class="form-control input-sm"
                     ng-change="parameterChanged(paramSpec)"
                     data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
@@ -244,14 +244,14 @@ limitations under the License.
             </select>
           </div>
 
-          <div ng-if="paramSpec.widget === 'checkbox'">
+          <div ng-if="isCheckboxWidget(paramSpec)">
             <input type="checkbox"
                    ng-click="parameterChanged(paramSpec)"
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                    data-ng-checked="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
 
-          <div ng-if="paramSpec.widget === 'textarea'">
+          <div ng-if="isTextareaWidget(paramSpec)">
             <textarea class="form-control" rows="3"
                       ng-keypress="keyEventOnDynamicParameter($event)"
                       data-ng-model="config.parameter[config.chart.current][paramSpec.name]"

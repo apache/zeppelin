@@ -15,19 +15,13 @@
 import Transformation from './transformation';
 
 import {
-  isAggregator, isGroup, isKey, isSingleDimension,
+  getCurrentChart, getCurrentChartAxis, getCurrentChartAxisSpecs, getCurrentChartParam,
+  isAggregatorAxis, isGroupAxis, isKeyAxis, isSingleDimensionAxis,
   clearConfig, initializeConfig,
-  removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount,
-  getColumnsFromAxis,
+  removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount, getColumnsFromAxis,
   getTransformer,
+  isInputWidget, isOptionWidget, isCheckboxWidget, isTextareaWidget,
 } from './advanced-transformation-util';
-
-import {
-  getCurrentChart,
-  getCurrentChartAxis,
-  getCurrentChartAxisSpecs,
-  getCurrentChartParam,
-} from './advanced-transformation-api'
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
 
@@ -52,6 +46,22 @@ class AdvancedTransformation extends Transformation {
         config: configInstance,
         columns: self.columns,
 
+        clearConfig: () => {
+          clearConfig(configInstance)
+          initializeConfig(configInstance, self.spec)
+          self.emitConfig(configInstance)
+        },
+
+        toggleColumnPanel: () => {
+          configInstance.panel.columnPanelOpened = !configInstance.panel.columnPanelOpened
+          self.emitConfig(configInstance)
+        },
+
+        toggleParameterPanel: () => {
+          configInstance.panel.parameterPanelOpened = !configInstance.panel.parameterPanelOpened
+          self.emitConfig(configInstance)
+        },
+
         getAxisAnnotation: (axisSpec) => {
           let anno = `${axisSpec.name}`
           if (axisSpec.valueType) {
@@ -71,46 +81,56 @@ class AdvancedTransformation extends Transformation {
         },
 
         getAxisTypeAnnotationColor: (axisSpec) => {
-          if (isAggregator(axisSpec)) {
+          if (isAggregatorAxis(axisSpec)) {
             return { 'background-color': '#5782bd' };
-          } else if (isGroup(axisSpec)) {
+          } else if (isGroupAxis(axisSpec)) {
             return { 'background-color': '#cd5c5c' };
-          } else if (isKey(axisSpec)) {
+          } else if (isKeyAxis(axisSpec)) {
             return { 'background-color': '#906ebd' };
           } else {
             return { 'background-color': '#62bda9' };
           }
         },
 
-        getSingleDimensionAxis: (axisSpec) => {
-          return getCurrentChartAxis(configInstance)[axisSpec.name]
-        },
-
-        toggleColumnPanel: () => {
-          configInstance.panel.columnPanelOpened = !configInstance.panel.columnPanelOpened
-          self.emitConfig(configInstance)
-        },
-
-        toggleParameterPanel: () => {
-          configInstance.panel.parameterPanelOpened = !configInstance.panel.parameterPanelOpened
-          self.emitConfig(configInstance)
-        },
-
-        clearConfig: () => {
-          clearConfig(configInstance)
-          initializeConfig(configInstance, self.spec)
-          self.emitConfig(configInstance)
-        },
-
-        isGroupAxis: (axisSpec) => { return isGroup(axisSpec) },
-        isKeyAxis: (axisSpec) => { return isKey(axisSpec) },
-        isAggregatorAxis: (axisSpec) => { return isAggregator(axisSpec) },
-        isSingleDimensionAxis: (axisSpec) => { return isSingleDimension(axisSpec) },
+        isGroupAxis: (axisSpec) => { return isGroupAxis(axisSpec) },
+        isKeyAxis: (axisSpec) => { return isKeyAxis(axisSpec) },
+        isAggregatorAxis: (axisSpec) => { return isAggregatorAxis(axisSpec) },
+        isSingleDimensionAxis: (axisSpec) => { return isSingleDimensionAxis(axisSpec) },
+        getSingleDimensionAxis: (axisSpec) => { return getCurrentChartAxis(configInstance)[axisSpec.name] },
 
         chartChanged: (selected) => {
           configInstance.chart.current = selected
           self.emitConfig(configInstance)
         },
+
+        axisChanged: function(e, ui, axisSpec) {
+          removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
+          applyMaxAxisCount(configInstance, axisSpec)
+          self.emitConfig(configInstance)
+        },
+
+        aggregatorChanged: (colIndex, axisSpec, aggregator) => {
+          if (isSingleDimensionAxis(axisSpec)) {
+            getCurrentChartAxis(configInstance)[axisSpec.name].aggr = aggregator
+          } else {
+            getCurrentChartAxis(configInstance)[axisSpec.name][colIndex].aggr = aggregator
+          }
+          self.emitConfig(configInstance)
+        },
+
+        removeFromAxis: function(colIndex, axisSpec) {
+          if (isSingleDimensionAxis(axisSpec)) {
+            getCurrentChartAxis(configInstance)[axisSpec.name] = null
+          } else {
+            getCurrentChartAxis(configInstance)[axisSpec.name].splice(colIndex, 1)
+          }
+          self.emitConfig(configInstance)
+        },
+
+        isInputWidget: function(paramSpec) { return isInputWidget(paramSpec) },
+        isCheckboxWidget: function(paramSpec) { return isCheckboxWidget(paramSpec) },
+        isOptionWidget: function(paramSpec) { return isOptionWidget(paramSpec) },
+        isTextareaWidget: function(paramSpec) { return isTextareaWidget(paramSpec) },
 
         parameterChanged: (paramSpec) => {
           console.log(configInstance.parameter[configInstance.chart.current])
@@ -124,30 +144,6 @@ class AdvancedTransformation extends Transformation {
             self.emitConfig(configInstance)
           }
         },
-
-        axisChanged: function(e, ui, axisSpec) {
-          removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
-          applyMaxAxisCount(configInstance, axisSpec)
-          self.emitConfig(configInstance)
-        },
-
-        aggregatorChanged: (colIndex, axisSpec, aggregator) => {
-          if (isSingleDimension(axisSpec)) {
-            getCurrentChartAxis(configInstance)[axisSpec.name].aggr = aggregator
-          } else {
-            getCurrentChartAxis(configInstance)[axisSpec.name][colIndex].aggr = aggregator
-          }
-          self.emitConfig(configInstance)
-        },
-
-        removeFromAxis: function(colIndex, axisSpec) {
-          if (isSingleDimension(axisSpec)) {
-            getCurrentChartAxis(configInstance)[axisSpec.name] = null
-          } else {
-            getCurrentChartAxis(configInstance)[axisSpec.name].splice(colIndex, 1)
-          }
-          self.emitConfig(configInstance)
-        }
       }
     }
   }
