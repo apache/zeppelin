@@ -114,8 +114,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
     }
-    // set dynamic select form's 'Auto Run' true by default
-    $scope.isAutoRunTrue = true;
 
     noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
@@ -123,12 +121,22 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var initializeDefault = function(config) {
+    var forms = $scope.paragraph.settings.forms;
+    
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-
+  
     if (config.enabled === undefined) {
       config.enabled = true;
+    }
+
+    if (forms[Object.keys(forms)]) {
+      if (forms[Object.keys(forms)].options && forms[Object.keys(forms)].type !== 'checkbox') {
+        if (config.runOnSelectionChange === undefined) {
+          config.runOnSelectionChange = true;
+        }
+      }
     }
 
     if (!config.results) {
@@ -379,8 +387,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.runParagraph(paragraphText, false, false)
   };
 
-  $scope.turnOnAutoRun = function () {
-    $scope.isAutoRunTrue = !$scope.isAutoRunTrue;
+  $scope.turnOnAutoRun = function (paragraph) {
+    paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange;
+    commitParagraph(paragraph);
   };
 
   $scope.moveUp = function(paragraph) {

@@ -92,14 +92,14 @@ limitations under the License.
         <li style="padding-top:8px"
             ng-if="paragraph.settings.forms[$root.keys(paragraph.settings.forms)].options &&
                    paragraph.settings.forms[$root.keys(paragraph.settings.forms)].type != 'checkbox'">
-          <span ng-if="isAutoRunTrue == true" class="fa fa-toggle-on shortcut-icon" style="padding:3px 8px 8px 20px"></span>
-          <span ng-if="isAutoRunTrue == false" class="fa fa-toggle-off shortcut-icon" style="padding:3px 8px 8px 20px"></span>Run on selection change
+          <span ng-if="paragraph.config.runOnSelectionChange == true" class="fa fa-toggle-on shortcut-icon" style="padding:3px 8px 8px 20px"></span>
+          <span ng-if="paragraph.config.runOnSelectionChange == false" class="fa fa-toggle-off shortcut-icon" style="padding:3px 8px 8px 20px"></span>Run on selection change
           <form style="display:inline; float:right">
             <input type="checkbox"
                    style="width:16px; margin-right:20px"
                    tooltip-placement="top" tooltip="Even if you uncheck this, still can run the paragraph by pressing Enter"
-                   ng-model="isAutoRunTrue"
-                   ng-change="turnOnAutoRun()"/>
+                   ng-checked="{{paragraph.config.runOnSelectionChange}}"
+                   ng-click="turnOnAutoRun(paragraph)"/>
           </form>
         </li>
         <li>

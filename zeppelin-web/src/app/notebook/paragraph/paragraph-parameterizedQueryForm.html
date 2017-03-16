@@ -26,7 +26,7 @@ limitations under the License.
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}" />
     </div>
-    <div ng-if="isAutoRunTrue == true">
+    <div ng-if="paragraph.config.runOnSelectionChange == true">
       <select class="form-control input-sm"
              ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
              ng-change="runParagraphFromButton(getEditorValue())"
@@ -36,7 +36,7 @@ limitations under the License.
              ng-options="option.value as (option.displayName||option.value) for option in paragraph.settings.forms[formulaire.name].options">
       </select>
     </div>
-    <div ng-if="isAutoRunTrue == false">
+    <div ng-if="paragraph.config.runOnSelectionChange == false">
       <select class="form-control input-sm"
               ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
               ng-enter="runParagraphFromButton(getEditorValue())"

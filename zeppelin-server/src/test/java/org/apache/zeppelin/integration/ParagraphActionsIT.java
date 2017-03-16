@@ -262,7 +262,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      String xpathToCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@class, 'ng-not-empty')]";
+      String xpathToCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]";
 
       createNewNote();
 
@@ -272,12 +272,12 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("'Run on selection change' checkbox will be shown under dropdown menu ",
-        driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-model, 'isAutoRunTrue')]")).isDisplayed(),
+        driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-click, 'turnOnAutoRun(paragraph)')]")).isDisplayed(),
         CoreMatchers.equalTo(true));
 
       driver.findElement(By.xpath(xpathToCheckbox)).click();
-      collector.checkThat("If 'Run on selection change' checkbox is unchecked, 'isAutoRunTrue' will be false ",
-        driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/span[contains(@ng-if, 'isAutoRunTrue == false')]")).isDisplayed(),
+      collector.checkThat("If 'Run on selection change' checkbox is unchecked, 'paragraph.config.runOnSelectionChange' will be false ",
+        driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/span[contains(@ng-if, 'paragraph.config.runOnSelectionChange == false')]")).isDisplayed(),
         CoreMatchers.equalTo(true));
 
     } catch (Exception e) {
