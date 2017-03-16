@@ -135,9 +135,7 @@ limitations under the License.
           </a>
         </li>
       </ul>
-      <div class="heliumPackageDescription">
-        {{pkgSearchResult.pkg.description}}
-      </div>
+      <div class="heliumPackageDescription" ng-bind-html="getDescriptionText(pkgSearchResult)" />
       <div ng-if="pkgSearchResult.pkg.type === 'SPELL' && pkgSearchResult.pkg.spell"
            class="spellInfo">
         <div>
