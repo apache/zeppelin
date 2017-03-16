@@ -268,8 +268,16 @@ public class InterpreterSetting {
 
   void closeAndRemoveAllInterpreterGroups() {
     HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
+    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
     for (String key : groupsToRemove) {
-      closeAndRemoveInterpreterGroupByNoteId(key);
+      InterpreterGroup groupKey;
+      interpreterGroupWriteLock.lock();
+      groupKey = interpreterGroupRef.remove(key);
+      interpreterGroupWriteLock.unlock();
+      closeToGroupList.add(groupKey);
+    }
+    for (InterpreterGroup groupToRemove : closeToGroupList) {
+      groupToRemove.close();
     }
   }
 

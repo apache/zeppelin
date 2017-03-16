@@ -801,7 +801,7 @@ public class InterpreterSettingManager {
       String noteId) {
     InterpreterOption option = interpreterSetting.getOption();
     if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
+      interpreterSetting.closeAndRemoveAllInterpreterGroups();
     } else if (option.isSession()) {
       InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
       String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
@@ -935,15 +935,23 @@ public class InterpreterSettingManager {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
 
-    // restart interpreter setting in note page
     if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
       intpSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-      return;
+    } else if (noteIdIsExist(noteId)) {
+      intpSetting.closeAndRemoveInterpreterGroupByUser(user);
     } else {
-      // restart interpreter setting in interpreter setting page
-      restart(settingId, user);
-    }
+      if (intpSetting != null) {
+        //clean up metaInfos
+        intpSetting.setInfos(null);
+        copyDependenciesFromLocalPath(intpSetting);
 
+        stopJobAllInterpreter(intpSetting);
+        intpSetting.closeAndRemoveAllInterpreterGroups();
+
+      } else {
+        throw new InterpreterException("Interpreter setting id " + settingId + " not found");
+      }
+    }
   }
 
   private boolean noteIdIsExist(String noteId) {
