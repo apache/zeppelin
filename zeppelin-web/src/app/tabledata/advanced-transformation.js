@@ -63,7 +63,7 @@ class AdvancedTransformation extends Transformation {
 
         getAxisTypeAnnotation: (axisSpec) => {
           let anno = `${axisSpec.axisType}`
-          if (typeof axisSpec.maxAxisCount !== "undefined") {
+          if (typeof axisSpec.maxAxisCount !== 'undefined') {
             anno = `${anno} (${axisSpec.maxAxisCount})`
           }
 
@@ -113,11 +113,12 @@ class AdvancedTransformation extends Transformation {
         },
 
         parameterChanged: (paramSpec) => {
+          console.log(configInstance.parameter[configInstance.chart.current])
           self.emitConfig(configInstance)
         },
 
         keyEventOnDynamicParameter: (event) => {
-          if (event.which == 13 || event.keyCode == 13) {
+          if (event.which === 13 || event.keyCode === 13) {
             /** enter */
             configInstance.panel.parameterPanelOpened = !configInstance.panel.parameterPanelOpened
             self.emitConfig(configInstance)

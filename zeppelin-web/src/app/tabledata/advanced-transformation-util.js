@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 
-const lo = _; /** provided by bower */
-
 import {
   getCurrentChartAxis,
   getCurrentChartTransform,
@@ -67,7 +65,7 @@ export function getAvailableChartNames(charts) {
 }
 
 export function applyMaxAxisCount(config, axisSpec) {
-  if (isSingleDimension(axisSpec) || typeof axisSpec.maxAxisCount === "undefined") {
+  if (isSingleDimension(axisSpec) || typeof axisSpec.maxAxisCount === 'undefined') {
     return;
   }
 
@@ -366,7 +364,7 @@ export function getFlattenCube(cube, schema) {
   const keyColumnName = schema.keyColumns.map(c => c.name).join('.')
 
   if (!schema.key) {
-    keys = [ "root", ]
+    keys = [ 'root', ]
     cube = { root: cube, }
   }
 
