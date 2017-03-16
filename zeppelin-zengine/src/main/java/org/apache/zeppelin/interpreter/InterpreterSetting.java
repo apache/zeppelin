@@ -65,7 +65,7 @@ public class InterpreterSetting {
   @SerializedName("interpreterGroup")
   private List<InterpreterInfo> interpreterInfos;
   private final transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
-  private List<Dependency> dependencies;
+  private List<Dependency> dependencies = new LinkedList<>();
   private InterpreterOption option;
   private transient String path;
 
