@@ -26,6 +26,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   'ngInject';
 
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $rootScope.keys = Object.keys;
   $scope.parentNote = null;
   $scope.paragraph = {};
   $scope.paragraph.results = {};
@@ -121,12 +122,22 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var initializeDefault = function(config) {
+    var forms = $scope.paragraph.settings.forms;
+    
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-
+  
     if (config.enabled === undefined) {
       config.enabled = true;
+    }
+
+    if (forms[Object.keys(forms)]) {
+      if (forms[Object.keys(forms)].options && forms[Object.keys(forms)].type !== 'checkbox') {
+        if (config.runOnSelectionChange === undefined) {
+          config.runOnSelectionChange = true;
+        }
+      }
     }
 
     if (!config.results) {
@@ -375,6 +386,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphFromButton = function(paragraphText) {
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph(paragraphText, false, false)
+  };
+
+  $scope.turnOnAutoRun = function (paragraph) {
+    paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange;
+    commitParagraph(paragraph);
   };
 
   $scope.moveUp = function(paragraph) {

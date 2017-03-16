@@ -89,6 +89,19 @@ limitations under the License.
           </a>
         </li>
         <li role="separator" class="divider"></li>
+        <li style="padding-top:8px"
+            ng-if="paragraph.settings.forms[$root.keys(paragraph.settings.forms)].options &&
+                   paragraph.settings.forms[$root.keys(paragraph.settings.forms)].type != 'checkbox'">
+          <span ng-if="paragraph.config.runOnSelectionChange == true" class="fa fa-toggle-on shortcut-icon" style="padding:3px 8px 8px 20px"></span>
+          <span ng-if="paragraph.config.runOnSelectionChange == false" class="fa fa-toggle-off shortcut-icon" style="padding:3px 8px 8px 20px"></span>Run on selection change
+          <form style="display:inline; float:right">
+            <input type="checkbox"
+                   style="width:16px; margin-right:20px"
+                   tooltip-placement="top" tooltip="Even if you uncheck this, still can run the paragraph by pressing Enter"
+                   ng-checked="{{paragraph.config.runOnSelectionChange}}"
+                   ng-click="turnOnAutoRun(paragraph)"/>
+          </form>
+        </li>
         <li>
           <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-arrows-h shortcut-icon"></span>Width
             <form style="display:inline; margin-left:5px; float:right">
@@ -100,15 +113,15 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="moveUp(paragraph)" ng-hide="$first"><span class="icon-arrow-up shortcut-icon"></span>Move Up
+          <a ng-click="moveUp(paragraph)" ng-hide="$first"><span class="icon-arrow-up shortcut-icon"></span>Move up
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+k</span></a>
         </li>
         <li>
-          <a ng-click="moveDown(paragraph)" ng-hide="$last"><span class="icon-arrow-down shortcut-icon"></span>Move Down
+          <a ng-click="moveDown(paragraph)" ng-hide="$last"><span class="icon-arrow-down shortcut-icon"></span>Move down
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+j</span></a>
         </li>
         <li>
-          <a ng-click="insertNew('below')"><span class="icon-plus shortcut-icon"></span>Insert New
+          <a ng-click="insertNew('below')"><span class="icon-plus shortcut-icon"></span>Insert new
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+b</span></a>
         </li>
         <li>
