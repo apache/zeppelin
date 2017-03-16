@@ -36,6 +36,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                        $timeout, $compile, $http, $q, websocketMsgSrv,
                        baseUrlSrv, ngToast, saveAsService, noteVarShareService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $rootScope.keys = Object.keys;
   $scope.parentNote = null;
   $scope.paragraph = null;
   $scope.originalText = '';
@@ -123,12 +124,22 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var initializeDefault = function(config) {
+    var forms = $scope.paragraph.settings.forms;
+    
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-
+  
     if (config.enabled === undefined) {
       config.enabled = true;
+    }
+
+    if (forms[Object.keys(forms)]) {
+      if (forms[Object.keys(forms)].options && forms[Object.keys(forms)].type !== 'checkbox') {
+        if (config.runOnSelectionChange === undefined) {
+          config.runOnSelectionChange = true;
+        }
+      }
     }
 
     if (!config.results) {
@@ -255,6 +266,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if (editorValue && !$scope.isRunning(paragraph)) {
       $scope.runParagraph(editorValue);
     }
+  };
+
+  $scope.turnOnAutoRun = function (paragraph) {
+    paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange;
+    commitParagraph(paragraph);
   };
 
   $scope.moveUp = function(paragraph) {

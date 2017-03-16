@@ -5,7 +5,10 @@ describe('Controller: ParagraphCtrl', function() {
   var scope;
   var websocketMsgSrvMock = {};
   var paragraphMock = {
-    config: {}
+    config: {},
+    settings: {
+      forms: {}
+    }
   };
   var route = {
     current: {
