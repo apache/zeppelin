@@ -292,7 +292,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
     $scope.paragraph.status = 'RUNNING';
-    $scope.paragraph.status = ParagraphStatus.RUNNING;
     $scope.paragraph.executor = ParagraphExecutor.SPELL;
     $scope.paragraph.results = {};
     $scope.paragraph.errorMessage = '';
