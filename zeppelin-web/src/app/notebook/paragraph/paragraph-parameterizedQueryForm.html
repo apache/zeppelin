@@ -22,6 +22,7 @@ limitations under the License.
 
       <input class="form-control input-sm"
              ng-if="!paragraph.settings.forms[formulaire.name].options"
+             ng-change="showTooltip()"
              ng-enter="runParagraphFromButton(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
@@ -30,6 +31,7 @@ limitations under the License.
       <select class="form-control input-sm"
              ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
              ng-enter="runParagraphFromButton(getEditorValue())"
+             ng-change="showTooltip()"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}"
@@ -42,7 +44,7 @@ limitations under the License.
           <input type="checkbox"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                  ng-checked="paragraph.settings.params[formulaire.name].indexOf(option.value) > -1"
-                 ng-click="toggleCheckbox(formulaire, option, false)"/>{{option.displayName||option.value}}
+                 ng-click="toggleCheckbox(formulaire, option, false); showTooltip()"/>{{option.displayName||option.value}}
         </label>
       </div>
 
