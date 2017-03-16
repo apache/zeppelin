@@ -17,6 +17,12 @@ import {
   ParagraphStatus, isParagraphRunning,
 } from './paragraph.status';
 
+const ParagraphExecutor = {
+  SPELL: 'SPELL',
+  INTERPRETER: 'INTERPRETER',
+  NONE: '', /** meaning `DONE` */
+};
+
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
@@ -277,6 +283,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.cleanupSpellTransaction = function() {
     const status = ParagraphStatus.FINISHED;
+    $scope.paragraph.executor = ParagraphExecutor.NONE;
     $scope.paragraph.status = status;
     $scope.paragraph.results.code = status;
 
@@ -295,8 +302,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
+    $scope.paragraph.status = 'RUNNING';
+    $scope.paragraph.executor = ParagraphExecutor.SPELL;
     $scope.paragraph.results = {};
-    $scope.paragraph.status = ParagraphStatus.RUNNING;
     $scope.paragraph.errorMessage = '';
     if (digestRequired) { $scope.$digest(); }
 

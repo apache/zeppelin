@@ -38,7 +38,7 @@ limitations under the License.
     {{paragraph.status}}
   </span>
 
-  <span ng-if="paragraph.status=='RUNNING'">
+  <span ng-if="paragraph.status === 'RUNNING' && paragraph.executor !== 'SPELL'">
     {{getProgress()}}%
   </span>
 
