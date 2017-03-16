@@ -237,6 +237,7 @@ limitations under the License.
           <div class="btn-group"
                ng-if="paramSpec.widget === 'option'">
             <select class="form-control input-sm"
+                    ng-change="parameterChanged(paramSpec)"
                     data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                     data-ng-options="optionValue for optionValue in paramSpec.optionValues"
                     style="font-weight: 400; font-size: 12px;">
@@ -245,12 +246,15 @@ limitations under the License.
 
           <div ng-if="paramSpec.widget === 'checkbox'">
             <input type="checkbox"
+                   ng-click="parameterChanged(paramSpec)"
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                    data-ng-checked="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
 
           <div ng-if="paramSpec.widget === 'textarea'">
             <textarea class="form-control" rows="3"
+                      ng-keypress="keyEventOnDynamicParameter($event)"
+                      data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                       style="font-weight: 400; font-size: 12px;"></textarea>
           </div>
 
