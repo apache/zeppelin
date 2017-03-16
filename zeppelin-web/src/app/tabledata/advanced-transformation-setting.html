@@ -244,7 +244,9 @@ limitations under the License.
           </div>
 
           <div ng-if="paramSpec.widget === 'checkbox'">
-            <input type="checkbox" value="option1" />
+            <input type="checkbox"
+                   data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
+                   data-ng-checked="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
 
           <div ng-if="paramSpec.widget === 'textarea'">
