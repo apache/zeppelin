@@ -231,7 +231,7 @@ limitations under the License.
                class="input-group">
             <input type="text" class="form-control input-sm"
                    style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
-                   ng-keypress="keyEventOnDynamicParameter($event)"
+                   ng-keydown="saveConfigOnEnter($event)"
                    data-ng-model="config.parameter[config.chart.current][paramSpec.name]" />
           </div>
           <div class="btn-group"
@@ -253,7 +253,7 @@ limitations under the License.
 
           <div ng-if="isTextareaWidget(paramSpec)">
             <textarea class="form-control" rows="3"
-                      ng-keypress="keyEventOnDynamicParameter($event)"
+                      ng-keydown="saveConfigOnShiftEnter($event)"
                       data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
                       style="font-weight: 400; font-size: 12px;">
             </textarea>

@@ -15,12 +15,13 @@
 import Transformation from './transformation';
 
 import {
-  getCurrentChart, getCurrentChartAxis, getCurrentChartAxisSpecs, getCurrentChartParam,
+  getCurrentChart, getCurrentChartAxis, getCurrentChartParam,
+  getCurrentChartAxisSpecs, getCurrentChartParamSpecs,
   isAggregatorAxis, isGroupAxis, isKeyAxis, isSingleDimensionAxis,
   clearConfig, initializeConfig,
   removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount, getColumnsFromAxis,
   getTransformer,
-  isInputWidget, isOptionWidget, isCheckboxWidget, isTextareaWidget,
+  isInputWidget, isOptionWidget, isCheckboxWidget, isTextareaWidget, parseParameter,
 } from './advanced-transformation-util';
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
@@ -136,12 +137,23 @@ class AdvancedTransformation extends Transformation {
           self.emitConfig(configInstance)
         },
 
-        keyEventOnDynamicParameter: (event) => {
-          if (event.which === 13 || event.keyCode === 13) {
-            /** enter */
+        saveConfigOnEnter: function(event) {
+          const code = event.keyCode || event.which;
+          if (code === 13) {
             self.emitConfig(configInstance)
           }
         },
+
+        saveConfigOnShiftEnter: function(event) {
+          const code = event.keyCode || event.which;
+
+          if (code === 13 && event.shiftKey) {
+            event.stopPropagation(); /** avoid to run paragraph */
+            self.emitConfig(configInstance)
+          }
+
+        },
+
       }
     }
   }
@@ -152,8 +164,10 @@ class AdvancedTransformation extends Transformation {
     const conf = this.config
     const chart = getCurrentChart(conf)
     const axis = getCurrentChartAxis(conf)
-    const param = getCurrentChartParam(conf)
     const axisSpecs = getCurrentChartAxisSpecs(conf)
+    const param = getCurrentChartParam(conf)
+    const paramSpecs = getCurrentChartParamSpecs(conf)
+    const parsedParam = parseParameter(paramSpecs, param)
 
     const columns = getColumnsFromAxis(axisSpecs, axis);
     const keyColumns = columns.key;
@@ -161,12 +175,14 @@ class AdvancedTransformation extends Transformation {
     const aggregatorColumns = columns.aggregator;
     const customColumns = columns.custom
 
+    console.log(parsedParam)
+
     let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
 
     return {
       chart: chart, /** current chart */
       axis: axis, /** persisted axis */
-      parameter: param, /** persisted parameter */
+      parameter: parsedParam, /** persisted parameter */
       column: {
         key: keyColumns, group: groupColumns, aggregator: aggregatorColumns, custom: customColumns,
       },

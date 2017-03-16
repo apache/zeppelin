@@ -59,13 +59,56 @@ export function isTextareaWidget(paramSpec) {
   return paramSpec && paramSpec.widget === Widget.TEXTAREA;
 }
 
-export const AxisValueType = {
-  NUMBER: 'number',
+export const ParameterValueType = {
   INT: 'int',
   FLOAT: 'float',
-  JSON: 'json',
+  BOOLEAN: 'boolean',
   STRING: 'string',
+  JSON: 'JSON',
 }
+
+export function parseParameter(paramSpecs, param) {
+  /** copy original params */
+  const parsed = JSON.parse(JSON.stringify(param))
+
+  for (let i = 0 ; i < paramSpecs.length; i++) {
+    const paramSpec = paramSpecs[i]
+    const name = paramSpec.name
+
+    if (paramSpec.valueType === ParameterValueType.INT &&
+      typeof parsed[name] !== 'number') {
+
+      try { parsed[name] = parseInt(parsed[name]); }
+      catch (error) { parsed[name] = paramSpec.defaultValue; }
+    }
+    else if (paramSpec.valueType === ParameterValueType.FLOAT &&
+      typeof parsed[name] !== 'number') {
+
+      try { parsed[name] = parseFloat(parsed[name]); }
+      catch (error) { parsed[name] = paramSpec.defaultValue; }
+    }
+    else if (paramSpec.valueType === ParameterValueType.BOOLEAN) {
+      if (parsed[name] === 'false') {
+        parsed[name] = false;
+      } else if (parsed[name] === 'true') {
+        parsed[name] = false;
+      } else if (typeof parsed[name] !== 'boolean') {
+        parsed[name] = paramSpec.defaultValue;
+      }
+    }
+    else if (paramSpec.valueType === ParameterValueType.JSON) {
+      if (parsed[name] !== null && typeof parsed[name] !== 'object') {
+        try { parsed[name] = JSON.parse(parsed[name]); }
+        catch (error) { parsed[name] = paramSpec.defaultValue; }
+      } else if (parsed[name] === null) {
+        parsed[name] = paramSpec.defaultValue;
+      }
+    }
+  }
+
+  return parsed
+}
+
 
 export const Aggregator = {
   SUM: 'sum',
