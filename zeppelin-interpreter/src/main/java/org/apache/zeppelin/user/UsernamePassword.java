@@ -17,10 +17,23 @@
 
 package org.apache.zeppelin.user;
 
+import java.lang.reflect.Type;
+
+import org.apache.zeppelin.util.StringXORer;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
 /**
  * Username and Password POJO
  */
 public class UsernamePassword {
+
   private String username;
   private String password;
 
@@ -49,7 +62,48 @@ public class UsernamePassword {
   public String toString() {
     return "UsernamePassword{" +
         "username='" + username + '\'' +
-        ", password='" + password + '\'' +
         '}';
+  }
+
+  /**
+   * JSON serializer
+   */
+  public static class UsernamePasswordSerializer implements JsonSerializer<UsernamePassword> {
+
+    @Override
+    public JsonElement serialize(UsernamePassword src, Type typeOfSrc,
+        JsonSerializationContext context) {
+      JsonObject jsonObject = new JsonObject();
+      jsonObject.addProperty("username", src.getUsername());
+      jsonObject.addProperty("password", StringXORer.encode(src.getPassword(), src.getUsername()));
+      return jsonObject;
+    }
+  }
+
+  /**
+   * JSON deserializer
+   */
+  public static class UsernamePasswordDeserializer implements JsonDeserializer<UsernamePassword> {
+
+    @Override
+    public UsernamePassword deserialize(JsonElement json, Type typeOfT,
+        JsonDeserializationContext context) throws JsonParseException {
+      JsonObject jsonObject = (JsonObject) json;
+      String username = null;
+      String password = null;
+      JsonElement usernameElement = jsonObject.get("username");
+      if (usernameElement != null) {
+        username = usernameElement.getAsString();
+        JsonElement passwordElement = jsonObject.get("password");
+        if (passwordElement != null) {
+          password = StringXORer.decode(passwordElement.getAsString(), username);
+        }
+      }
+      if (username != null && password != null) {
+        return new UsernamePassword(username, password);
+      }
+
+      return null;
+    }
   }
 }

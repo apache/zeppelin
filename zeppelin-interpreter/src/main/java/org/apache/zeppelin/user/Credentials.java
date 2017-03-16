@@ -18,22 +18,30 @@
 package org.apache.zeppelin.user;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.apache.zeppelin.user.UsernamePassword.UsernamePasswordDeserializer;
+import static org.apache.zeppelin.user.UsernamePassword.UsernamePasswordSerializer;
 
 /**
  * Class defining credentials for data source authorization
@@ -55,7 +63,9 @@ public class Credentials {
 
     if (credentialsPersist) {
       GsonBuilder builder = new GsonBuilder();
-      builder.setPrettyPrinting();
+      builder.setPrettyPrinting().disableHtmlEscaping();
+      builder.registerTypeAdapter(UsernamePassword.class, new UsernamePasswordSerializer());
+      builder.registerTypeAdapter(UsernamePassword.class, new UsernamePasswordDeserializer());
       gson = builder.create();
       loadFromFile();
     }
@@ -119,7 +129,9 @@ public class Credentials {
 
       String json = sb.toString();
       CredentialsInfoSaving info = gson.fromJson(json, CredentialsInfoSaving.class);
-      this.credentialsMap = info.credentialsMap;
+      if (info != null && info.credentialsMap != null) {
+        this.credentialsMap = info.credentialsMap;
+      }
     } catch (IOException e) {
       LOG.error("Error loading credentials file", e);
       e.printStackTrace();
