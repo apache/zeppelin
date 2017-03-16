@@ -221,13 +221,13 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     }
   };
 
-  $scope.disable = function(name) {
+  $scope.disable = function(name, artifact) {
     var confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
-      title: '',
-      message: 'Do you want to disable ' + name + '?',
+      title: `<div style="font-weight: 300;">Do you want to disable Helium Package?</div>`,
+      message: artifact,
       callback: function(result) {
         if (result) {
           confirm.$modalFooter.find('button').addClass('disabled');

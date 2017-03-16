@@ -100,7 +100,7 @@ limitations under the License.
              class="btn btn-success btn-xs"
              style="float:right">Enable</div>
         <div ng-show="pkgSearchResult.enabled"
-             ng-click="disable(pkgSearchResult.pkg.name)"
+             ng-click="disable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact)"
              ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
              class="btn btn-info btn-xs"
              style="float:right">Disable</div>
