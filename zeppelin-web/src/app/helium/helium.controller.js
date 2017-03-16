@@ -154,7 +154,6 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     var mavenArtifactInfoToHTML = groupId +':'+ artifact.split('@')[0] + ':' + artifact.split('@')[1];
     var zeppelinVersion = $rootScope.zeppelinVersion;
     var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
-    
     var confirm = ''
     if (type === 'INTERPRETER') {
     confirm = BootstrapDialog.show({
@@ -307,6 +306,10 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       // close after config is saved
       pkgSearchResult.configOpened = false;
     });
+  };
+
+  $scope.getDescriptionText = function(pkgSearchResult) {
+    return $sce.trustAsHtml(pkgSearchResult.pkg.description);
   };
 
   init();
