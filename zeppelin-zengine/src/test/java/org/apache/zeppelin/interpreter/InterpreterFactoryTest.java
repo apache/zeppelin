@@ -224,7 +224,7 @@ public class InterpreterFactoryTest {
     LazyOpenInterpreter interpreter2 = (LazyOpenInterpreter)interpreterGroup.get("user2").get(0);
     interpreter2.open();
 
-    mock1Setting.closeAndRemoveInterpreterGroupByUser("user1");
+    mock1Setting.closeAndRemoveInterpreterGroup("sharedProcess", "user1");
     assertFalse(interpreter1.isOpen());
     assertTrue(interpreter2.isOpen());
   }
@@ -270,7 +270,7 @@ public class InterpreterFactoryTest {
     LazyOpenInterpreter interpreter2 = (LazyOpenInterpreter)interpreterGroup2.get("shared_session").get(0);
     interpreter2.open();
 
-    mock1Setting.closeAndRemoveInterpreterGroupByUser("user1");
+    mock1Setting.closeAndRemoveInterpreterGroup("note1", "user1");
     assertFalse(interpreter1.isOpen());
     assertTrue(interpreter2.isOpen());
   }

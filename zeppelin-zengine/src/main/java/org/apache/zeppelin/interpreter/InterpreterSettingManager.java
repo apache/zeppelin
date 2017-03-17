@@ -948,7 +948,7 @@ public class InterpreterSettingManager {
         if (user.equals("anonymous")) {
           intpSetting.closeAndRemoveAllInterpreterGroups();
         } else {
-          intpSetting.closeAndRemoveInterpreterGroupByUser(user);
+          intpSetting.closeAndRemoveInterpreterGroup(noteId, user);
         }
 
       } else {
