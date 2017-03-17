@@ -95,7 +95,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
 
   @Test
   public void testInterpret() throws InterruptedException, IOException {
-    InterpreterResult result = pythonInterpreter.interpret("print \"hi\"", context);
+    InterpreterResult result = pythonInterpreter.interpret("print (\"hi\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
