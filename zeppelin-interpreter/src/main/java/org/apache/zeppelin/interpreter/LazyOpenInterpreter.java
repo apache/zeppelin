@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
@@ -74,10 +75,12 @@ public class LazyOpenInterpreter
 
   @Override
   public void close() {
-    // To close interpreter, you should open it first.
-    open();
-    intp.close();
-    opened = false;
+    // TODO(jl): Remove this trick!!
+    // intp.close() should be called to reduce referenceCount
+    if (isOpen() || intp instanceof RemoteInterpreter) {
+      intp.close();
+      opened = false;
+    }
   }
 
   public boolean isOpen() {
