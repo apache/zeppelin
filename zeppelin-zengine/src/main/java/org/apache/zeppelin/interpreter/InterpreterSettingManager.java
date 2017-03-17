@@ -935,24 +935,8 @@ public class InterpreterSettingManager {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
 
-    // restart interpreter setting in note page
-    if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
-      intpSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-      return;
-    } else {
-      // restart interpreter setting in interpreter setting page
-      restart(settingId, user);
-    }
-
-  }
-
-  private boolean noteIdIsExist(String noteId) {
-    return noteId == null ? false : true;
-  }
-
-  public void restart(String id, String user) {
     synchronized (interpreterSettings) {
-      InterpreterSetting intpSetting = interpreterSettings.get(id);
+      intpSetting = interpreterSettings.get(settingId);
       // Check if dependency in specified path is changed
       // If it did, overwrite old dependency jar with new one
       if (intpSetting != null) {
@@ -968,13 +952,13 @@ public class InterpreterSettingManager {
         }
 
       } else {
-        throw new InterpreterException("Interpreter setting id " + id + " not found");
+        throw new InterpreterException("Interpreter setting id " + settingId + " not found");
       }
     }
   }
 
   public void restart(String id) {
-    restart(id, "anonymous");
+    restart(id, "", "anonymous");
   }
 
   private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
