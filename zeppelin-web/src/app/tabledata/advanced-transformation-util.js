@@ -188,9 +188,12 @@ export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
   return config
 }
 
-export function clearChartConfig(config) {
-  delete config.axis       /** Object: persisted axis for each chart */
-  config.axis = {}
+export function clearAxisConfig(config) {
+  delete config.axis /** Object: persisted axis for each chart */
+}
+
+export function initAxisConfig(config, remove) {
+  if (!config.axis) { config.axis = {} }
 
   const spec = config.spec
   const availableCharts = getAvailableChartNames(spec.charts)
@@ -214,9 +217,17 @@ export function clearChartConfig(config) {
   }
 }
 
+export function resetAxisConfig(config) {
+  clearAxisConfig(config)
+  initAxisConfig(config)
+}
+
 export function clearParameterConfig(config) {
   delete config.parameter  /** Object: persisted parameter for each chart */
-  config.parameter = {}
+}
+
+export function initParameterConfig(config, remove) {
+  if (!config.parameter) { config.parameter = {} }
 
   const spec = config.spec
   const availableCharts = getAvailableChartNames(spec.charts)
@@ -238,6 +249,11 @@ export function clearParameterConfig(config) {
   }
 }
 
+export function resetParameterConfig(config) {
+  clearParameterConfig(config)
+  initParameterConfig(config)
+}
+
 export function initializeConfig(config, spec) {
   const currentVersion = JSON.stringify(spec)
   if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
@@ -245,6 +261,8 @@ export function initializeConfig(config, spec) {
     delete config.chart      /** Object: contains current, available chart */
     delete config.spec       /** Object: axis, parameter spec for each chart */
     config.panel = { columnPanelOpened: true, parameterPanelOpened: false, }
+    clearAxisConfig(config)
+    clearParameterConfig(config)
 
     delete config.axisSpecs  /** Object: persisted axisSpecs for each chart */
     delete config.paramSpecs /** Object: persisted paramSpecs for each chart */
@@ -261,10 +279,10 @@ export function initializeConfig(config, spec) {
   }
 
   /** initialize config.axis, config.axisSpecs for each chart */
-  clearChartConfig(config)
+  initAxisConfig(config)
 
   /** initialize config.parameter for each chart */
-  clearParameterConfig(config)
+  initParameterConfig(config)
   return config
 }
 

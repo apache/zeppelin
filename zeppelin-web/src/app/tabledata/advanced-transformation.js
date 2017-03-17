@@ -17,7 +17,7 @@ import Transformation from './transformation';
 import {
   getCurrentChart, getCurrentChartAxis, getCurrentChartParam,
   getCurrentChartAxisSpecs, getCurrentChartParamSpecs,
-  initializeConfig, clearChartConfig, clearParameterConfig,
+  initializeConfig, resetAxisConfig, resetParameterConfig,
   isAggregatorAxis, isGroupAxis, isKeyAxis, isSingleDimensionAxis,
   removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount, getColumnsFromAxis,
   getTransformer,
@@ -47,13 +47,13 @@ class AdvancedTransformation extends Transformation {
         config: configInstance,
         columns: self.columns,
 
-        clearChartConfig: () => {
-          clearChartConfig(configInstance)
+        resetAxisConfig: () => {
+          resetAxisConfig(configInstance)
           self.emitConfig(configInstance)
         },
 
-        clearParameterConfig: () => {
-          clearParameterConfig(configInstance)
+        resetParameterConfig: () => {
+          resetParameterConfig(configInstance)
           self.emitConfig(configInstance)
         },
 
