@@ -532,7 +532,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).clear();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("Zeppelin");
 
-      collector.checkThat("After new data in text input form, output should not change",
+      collector.checkThat("After new data in text input form, output should not be changed",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Hello world"));
 
@@ -604,7 +604,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       WebElement firstCheckbox = driver.findElement(By.xpath(getParagraphXPath(1) + "//input[1]"));
       firstCheckbox.click();
-      collector.checkThat("After unchecking one of the boxes, output should  not display any change",
+      collector.checkThat("After unchecking one of the boxes, output should not display any change",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.containsString("Greetings han and leia and luke"));
 
