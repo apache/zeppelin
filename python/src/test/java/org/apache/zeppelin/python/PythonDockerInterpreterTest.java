@@ -21,6 +21,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -48,8 +49,12 @@ public class PythonDockerInterpreterTest {
     group.put("note", Arrays.asList(python, docker));
     python.setInterpreterGroup(group);
     docker.setInterpreterGroup(group);
+
     doReturn(true).when(docker).pull(any(InterpreterOutput.class), anyString());
     doReturn(python).when(docker).getPythonInterpreter();
+    doReturn("/scriptpath/zeppelin_python.py").when(python).getScriptPath();
+
+    docker.open();
   }
 
   @Test
@@ -59,7 +64,7 @@ public class PythonDockerInterpreterTest {
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(docker, times(1)).pull(any(InterpreterOutput.class), anyString());
-    verify(python).setPythonCommand("docker run -i --rm env python -iu");
+    verify(python).setPythonCommand(Mockito.matches("docker run -i --rm -v.*"));
   }
 
   @Test
