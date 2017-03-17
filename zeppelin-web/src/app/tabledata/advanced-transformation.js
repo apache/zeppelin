@@ -145,12 +145,11 @@ class AdvancedTransformation extends Transformation {
           const code = event.keyCode || event.which;
           if (code === 13 && isInputWidget(paramSpec)) {
             self.emitConfig(configInstance)
-
           } else if (code === 13 && event.shiftKey && isTextareaWidget(paramSpec)) {
             self.emitConfig(configInstance)
           }
 
-          event.stopPropagation(); /** avoid to conflict with paragraph shortcuts */
+          event.stopPropagation() /** avoid to conflict with paragraph shortcuts */
         },
 
       }

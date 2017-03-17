@@ -244,7 +244,7 @@ export function initializeConfig(config, spec) {
     spec.version = currentVersion
     delete config.chart      /** Object: contains current, available chart */
     delete config.spec       /** Object: axis, parameter spec for each chart */
-    config.panel = { columnPanelOpened: true, parameterPanelOpened: true, }
+    config.panel = { columnPanelOpened: true, parameterPanelOpened: false, }
 
     delete config.axisSpecs  /** Object: persisted axisSpecs for each chart */
     delete config.paramSpecs /** Object: persisted paramSpecs for each chart */
