@@ -18,7 +18,7 @@
 import os, sys, getopt, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
-from py4j.protocol import Py4JJavaError
+from py4j.protocol import Py4JJavaError, Py4JNetworkError
 import warnings
 import ast
 import traceback
@@ -175,11 +175,11 @@ def handler_stop_signals(sig, frame):
 
 signal.signal(signal.SIGINT, handler_stop_signals)
 
-output = Logger()
-sys.stdout = output
-sys.stderr = output
+host = "127.0.0.1"
+if len(sys.argv) >= 3:
+  host = sys.argv[2]
 
-client = GatewayClient(port=int(sys.argv[1]))
+client = GatewayClient(address=host, port=int(sys.argv[1]))
 
 #gateway = JavaGateway(client, auto_convert = True)
 gateway = JavaGateway(client)
@@ -190,11 +190,17 @@ intp.onPythonScriptInitialized(os.getpid())
 z = PyZeppelinContext()
 z._setup_matplotlib()
 
+output = Logger()
+sys.stdout = output
+#sys.stderr = output
+
 while True :
   req = intp.getStatements()
+  if req == None:
+    break
+
   try:
     stmts = req.statements().split("\n")
-    jobGroup = req.jobGroup()
     final_code = []
 
     # Get post-execute hooks
@@ -227,7 +233,6 @@ while True :
     if final_code:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
-      #sc.setJobGroup(jobGroup, "Zeppelin")
       code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
 
       to_run_hooks = []
@@ -262,6 +267,9 @@ while True :
     if innerErrorStart > -1:
        excInnerError = excInnerError[innerErrorStart:]
     intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
+  except Py4JNetworkError:
+    # lost connection from gateway server. exit
+    sys.exit(1)
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 
