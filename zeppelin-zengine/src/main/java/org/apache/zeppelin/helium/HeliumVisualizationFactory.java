@@ -33,6 +33,8 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
 /**
  * Load helium visualization
  */
@@ -40,7 +42,6 @@ public class HeliumVisualizationFactory {
   Logger logger = LoggerFactory.getLogger(HeliumVisualizationFactory.class);
   private final String NODE_VERSION = "v6.9.1";
   private final String NPM_VERSION = "3.10.8";
-  private final String DEFAULT_NPM_REGISTRY_URL = "http://registry.npmjs.org/";
   private final int FETCH_RETRY_COUNT = 2;
   private final int FETCH_RETRY_FACTOR_COUNT = 1;
   // Milliseconds
@@ -48,8 +49,10 @@ public class HeliumVisualizationFactory {
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File workingDirectory;
+  private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
+  private String defaultNpmRegistryUrl;
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
 
@@ -59,16 +62,21 @@ public class HeliumVisualizationFactory {
   ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
   public HeliumVisualizationFactory(
+      ZeppelinConfiguration conf,
       File moduleDownloadPath,
       File tabledataModulePath,
       File visualizationModulePath) throws TaskRunnerException {
-    this(moduleDownloadPath);
+    this(conf, moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
   }
 
-  public HeliumVisualizationFactory(File moduleDownloadPath) throws TaskRunnerException {
+  public HeliumVisualizationFactory(
+      ZeppelinConfiguration conf,
+      File moduleDownloadPath) throws TaskRunnerException {
     this.workingDirectory = new File(moduleDownloadPath, "vis");
+    this.conf = conf;
+    this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
     File installDirectory = workingDirectory;
 
     frontEndPluginFactory = new FrontendPluginFactory(
@@ -372,7 +380,7 @@ public class HeliumVisualizationFactory {
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
     installNodeAndNpm();
-    NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), DEFAULT_NPM_REGISTRY_URL);
+    NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), defaultNpmRegistryUrl);
     npm.execute(args, env);
   }
 

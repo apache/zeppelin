@@ -112,11 +112,13 @@ public class ZeppelinServer extends Application {
        * packaged into binary package.
        */
       heliumVisualizationFactory = new HeliumVisualizationFactory(
+          conf,
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")));
     } else {
       heliumVisualizationFactory = new HeliumVisualizationFactory(
+          conf,
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
           new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")));
@@ -400,4 +402,3 @@ public class ZeppelinServer extends Application {
     return !new File(conf.getRelativeDir("zeppelin-web")).isDirectory();
   }
 }
-

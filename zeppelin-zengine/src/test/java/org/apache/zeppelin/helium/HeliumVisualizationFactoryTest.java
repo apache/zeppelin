@@ -30,10 +30,13 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
 import static org.junit.Assert.*;
 
 public class HeliumVisualizationFactoryTest {
   private File tmpDir;
+  private ZeppelinConfiguration conf;
   private HeliumVisualizationFactory hvf;
 
   @Before
@@ -46,7 +49,10 @@ public class HeliumVisualizationFactoryTest {
     String resDir = new File(res.getFile()).getParent();
     File moduleDir = new File(resDir + "/../../../../zeppelin-web/src/app/");
 
-    hvf = new HeliumVisualizationFactory(tmpDir,
+    conf = new ZeppelinConfiguration();
+
+    hvf = new HeliumVisualizationFactory(conf,
+        tmpDir,
         new File(moduleDir, "tabledata"),
         new File(moduleDir, "visualization"));
   }
