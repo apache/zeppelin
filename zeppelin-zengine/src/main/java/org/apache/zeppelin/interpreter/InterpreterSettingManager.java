@@ -1059,6 +1059,10 @@ public class InterpreterSettingManager {
     }
   }
 
+  public void close(InterpreterSetting interpreterSetting) {
+    interpreterSetting.closeAndRemoveAllInterpreterGroups();
+  }
+
   public void close() {
     List<Thread> closeThreads = new LinkedList<>();
     synchronized (interpreterSettings) {
