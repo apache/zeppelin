@@ -44,7 +44,7 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.server.port</h6></td>
     <td>8080</td>
     <td>Zeppelin server port </br>
-      <span style="font-style:italic; color: gray"> Note: Please make sure you're not using the same port with 
+      <span style="font-style:italic; color: gray"> Note: Please make sure you're not using the same port with
       <a href="https://zeppelin.apache.org/contribution/webapplication.html#dev-mode" target="_blank">Zeppelin web application development port</a> (default: 9000).</span></td>
   </tr>
   <tr>
@@ -280,6 +280,12 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
     <td>local-repo</td>
     <td>Local repository for dependency loader.<br>ex)visualiztion modules of npm.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_HELIUM_NPM_REGISTRY</h6></td>
+    <td><h6 class="properties">zeppelin.helium.npm.registry</h6></td>
+    <td>http://registry.npmjs.org/</td>
+    <td>Remote Npm registry for Helium dependency loader</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>
