@@ -188,49 +188,14 @@ export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
   return config
 }
 
-export function clearPanelConfig(config) {
-  /** DON'T delete `config.panel` directly to avoid annoying behavior */
-  const columnPanelOpened = config.panel.columnPanelOpened
-  const parameterPanelOpened = config.panel.parameterPanelOpened
-  delete config.panel
+export function clearChartConfig(config) {
+  delete config.axis       /** Object: persisted axis for each chart */
+  config.axis = {}
 
-  /** initialize config.panel */
-  config.panel = {
-    columnPanelOpened: columnPanelOpened,
-    parameterPanelOpened: parameterPanelOpened,
-  }
-}
+  const spec = config.spec
+  const availableCharts = getAvailableChartNames(spec.charts)
+  config.chart.current = availableCharts[0];
 
-export function clearConfig(config) {
-  delete config.chart;      /** Object: contains current, available chart */
-  delete config.spec;       /** Object: axis, parameter spec for each chart */
-  clearPanelConfig(config)
-
-  delete config.axis;       /** Object: persisted axis for each chart */
-  delete config.parameter;  /** Object: persisted parameter for each chart */
-  delete config.axisSpecs;  /** Object: persisted axisSpecs for each chart */
-  delete config.paramSpecs; /** Object: persisted paramSpecs for each chart */
-}
-
-export function initializeConfig(config, spec) {
-  const currentVersion = JSON.stringify(spec)
-  if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
-    spec.version = currentVersion
-    clearConfig(config)
-  }
-
-  const availableCharts = getAvailableChartNames(spec.charts);
-
-  if (!config.spec) { config.spec = spec; }
-
-  if (!config.chart) {
-    config.chart = {};
-    config.chart.current = availableCharts[0];
-    config.chart.available = availableCharts;
-  }
-
-  /** initialize config.axis, config.axisSpecs for each chart */
-  if (!config.axis) { config.axis = {}; }
   if (!config.axisSpecs) { config.axisSpecs = {}; }
   for (let i = 0; i < availableCharts.length; i++) {
     const chartName = availableCharts[i];
@@ -247,9 +212,15 @@ export function initializeConfig(config, spec) {
       }
     }
   }
+}
 
-  /** initialize config.parameter for each chart */
-  if (!config.parameter) { config.parameter = {}; }
+export function clearParameterConfig(config) {
+  delete config.parameter  /** Object: persisted parameter for each chart */
+  config.parameter = {}
+
+  const spec = config.spec
+  const availableCharts = getAvailableChartNames(spec.charts)
+
   if (!config.paramSpecs) { config.paramSpecs = {}; }
   for (let i = 0; i < availableCharts.length; i++) {
     const chartName = availableCharts[i];
@@ -265,7 +236,35 @@ export function initializeConfig(config, spec) {
       }
     }
   }
+}
 
+export function initializeConfig(config, spec) {
+  const currentVersion = JSON.stringify(spec)
+  if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
+    spec.version = currentVersion
+    delete config.chart      /** Object: contains current, available chart */
+    delete config.spec       /** Object: axis, parameter spec for each chart */
+    config.panel = { columnPanelOpened: true, parameterPanelOpened: true, }
+
+    delete config.axisSpecs  /** Object: persisted axisSpecs for each chart */
+    delete config.paramSpecs /** Object: persisted paramSpecs for each chart */
+  }
+
+  const availableCharts = getAvailableChartNames(spec.charts)
+
+  if (!config.spec) { config.spec = spec; }
+
+  if (!config.chart) {
+    config.chart = {};
+    config.chart.current = availableCharts[0];
+    config.chart.available = availableCharts;
+  }
+
+  /** initialize config.axis, config.axisSpecs for each chart */
+  clearChartConfig(config)
+
+  /** initialize config.parameter for each chart */
+  clearParameterConfig(config)
   return config
 }
 
