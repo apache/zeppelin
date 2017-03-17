@@ -538,7 +538,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-      collector.checkThat("Only after paragraph run we should see the new updated output",
+      collector.checkThat("Only after running the paragraph, we can see the newly updated output",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Hello Zeppelin"));
 
@@ -574,14 +574,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-      collector.checkThat("Only after paragraph run we should see the new output including the selected option",
+      collector.checkThat("Only after running the paragraph, we can see the new output including the selected option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy 1"));
 
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormSelectForm  ", e);
     }
   }
 
@@ -610,14 +610,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-      collector.checkThat("Only after paragraph run we should see the new output without the box we unchecked",
+      collector.checkThat("Only after running the paragraph, we can see the newly updated output without the box we unchecked",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.containsString("Greetings leia and luke"));
 
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormCheckboxForm  ", e);
     }
   }
 
@@ -647,14 +647,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-      collector.checkThat("Only after paragraph run we should see the new output including the selected option",
+      collector.checkThat("Only after running the paragraph, we can see the new output including the selected option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy 1\nHowdy "));
 
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testSingleDynamicFormTextInput  ", e);
+      handleException("Exception in ParagraphActionsIT while testMultipleDynamicFormsSameType  ", e);
     }
   }
 }
