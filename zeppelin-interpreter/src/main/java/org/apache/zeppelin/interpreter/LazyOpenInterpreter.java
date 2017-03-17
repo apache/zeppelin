@@ -75,7 +75,8 @@ public class LazyOpenInterpreter
 
   @Override
   public void close() {
-    // To close interpreter, you should open it first.
+    // TODO(jl): Remove this trick!!
+    // intp.close() should be called to reduce referenceCount
     if (isOpen() || intp instanceof RemoteInterpreter) {
       intp.close();
       opened = false;
