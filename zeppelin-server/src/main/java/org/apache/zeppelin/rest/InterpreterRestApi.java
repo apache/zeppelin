@@ -179,18 +179,23 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response restartSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}, msg={}", settingId, message);
+
+    InterpreterSetting setting = interpreterSettingManager.get(settingId);
     try {
       RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
 
       String noteId = request == null ? null : request.getNoteId();
-      interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
+      if (null == noteId) {
+        interpreterSettingManager.close(setting);
+      } else {
+        interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
+      }
 
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
           .build();
     }
-    InterpreterSetting setting = interpreterSettingManager.get(settingId);
     if (setting == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
     }
