@@ -170,17 +170,17 @@ export function applyMaxAxisCount(config, axisSpec) {
 }
 
 export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
-  if (isSingleDimensionAxis(axisSpec)) { return config; }
+  if (isSingleDimensionAxis(axisSpec)) { return config }
 
   const columns = getCurrentChartAxis(config)[axisSpec.name]
   const uniqObject = columns.reduce((acc, col) => {
-    if (!acc[col.name]) { acc[col.name] = col; }
+    if (!acc[col.name]) { acc[col.name] = col }
     return acc
-  }, {});
+  }, {})
 
   const filtered = [] ;
   for (let name in uniqObject) {
-    const col = uniqObject[name];
+    const col = uniqObject[name]
     filtered.push(col)
   }
 
@@ -188,10 +188,23 @@ export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
   return config
 }
 
+export function clearPanelConfig(config) {
+  /** DON'T delete `config.panel` directly to avoid annoying behavior */
+  const columnPanelOpened = config.panel.columnPanelOpened
+  const parameterPanelOpened = config.panel.parameterPanelOpened
+  delete config.panel
+
+  /** initialize config.panel */
+  config.panel = {
+    columnPanelOpened: columnPanelOpened,
+    parameterPanelOpened: parameterPanelOpened,
+  }
+}
+
 export function clearConfig(config) {
   delete config.chart;      /** Object: contains current, available chart */
-  delete config.panel;      /** Object: persisted config values for panel */
   delete config.spec;       /** Object: axis, parameter spec for each chart */
+  clearPanelConfig(config)
 
   delete config.axis;       /** Object: persisted axis for each chart */
   delete config.parameter;  /** Object: persisted parameter for each chart */
@@ -251,14 +264,6 @@ export function initializeConfig(config, spec) {
         config.parameter[chartName][paramSpec.name] = paramSpec.defaultValue;
       }
     }
-  }
-
-  /** initialize config.panel */
-  if (!config.panel) {
-    config.panel = {
-      columnPanelOpened: true,
-      parameterPanelOpened: true,
-    };
   }
 
   return config
