@@ -193,7 +193,8 @@ public class NotebookServer extends WebSocketServlet
       }
 
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
-      if (ticket != null && !ticket.equals(messagereceived.ticket)) {
+      if (ticket != null &&
+          (messagereceived.ticket == null || !ticket.equals(messagereceived.ticket))) {
         /* not to pollute logs, log instead of exception */
         if (StringUtils.isEmpty(messagereceived.ticket)) {
           LOG.debug("{} message: invalid ticket {} != {}", messagereceived.op,
