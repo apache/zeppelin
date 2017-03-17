@@ -407,8 +407,7 @@ export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
         const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
           c[aggrName].count + 1 : c[aggrName].count;
 
-        c[aggrName].value = value;
-        c[aggrName].count = count;
+        c[aggrName].value = (aggrColumn.aggr === Aggregator.AVG) ? (value / count) : value;
       }
     }
   }
