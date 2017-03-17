@@ -32,9 +32,6 @@
         "params": {},
         "forms": {}
       },
-      "apps": [],
-      "jobName": "paragraph_1423836981412_-1007008116",
-      "id": "20150213-231621_168813393",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -44,6 +41,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1423836981412_-1007008116",
+      "id": "20150213-231621_168813393",
       "dateCreated": "Feb 13, 2015 11:16:21 PM",
       "dateStarted": "Dec 17, 2016 3:32:15 PM",
       "dateFinished": "Dec 17, 2016 3:32:18 PM",
@@ -78,9 +78,6 @@
         "params": {},
         "forms": {}
       },
-      "apps": [],
-      "jobName": "paragraph_1423500779206_-1502780787",
-      "id": "20150210-015259_1403135953",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -90,6 +87,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1423500779206_-1502780787",
+      "id": "20150210-015259_1403135953",
       "dateCreated": "Feb 10, 2015 1:52:59 AM",
       "dateStarted": "Dec 17, 2016 3:30:09 PM",
       "dateFinished": "Dec 17, 2016 3:30:58 PM",
@@ -99,16 +99,17 @@
     {
       "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "Dec 17, 2016 3:30:13 PM",
+      "dateUpdated": "Mar 17, 2017 12:18:02 PM",
       "config": {
         "colWidth": 4.0,
         "results": [
           {
             "graph": {
-              "mode": "table",
-              "height": 300.0,
+              "mode": "multiBarChart",
+              "height": 366.0,
               "optionOpen": false
-            }
+            },
+            "helium": {}
           }
         ],
         "enabled": true,
@@ -122,9 +123,6 @@
         "params": {},
         "forms": {}
       },
-      "apps": [],
-      "jobName": "paragraph_1423500782552_-1439281894",
-      "id": "20150210-015302_1492795503",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -134,6 +132,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1423500782552_-1439281894",
+      "id": "20150210-015302_1492795503",
       "dateCreated": "Feb 10, 2015 1:53:02 AM",
       "dateStarted": "Dec 17, 2016 3:30:13 PM",
       "dateFinished": "Dec 17, 2016 3:31:04 PM",
@@ -143,16 +144,17 @@
     {
       "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere age \u003c ${maxAge\u003d30} \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "Dec 17, 2016 3:30:16 PM",
+      "dateUpdated": "Mar 17, 2017 12:17:39 PM",
       "config": {
         "colWidth": 4.0,
         "results": [
           {
             "graph": {
-              "mode": "table",
-              "height": 300.0,
+              "mode": "multiBarChart",
+              "height": 294.0,
               "optionOpen": false
-            }
+            },
+            "helium": {}
           }
         ],
         "enabled": true,
@@ -174,9 +176,6 @@
           }
         }
       },
-      "apps": [],
-      "jobName": "paragraph_1423720444030_-1424110477",
-      "id": "20150212-145404_867439529",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -186,6 +185,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1423720444030_-1424110477",
+      "id": "20150212-145404_867439529",
       "dateCreated": "Feb 12, 2015 2:54:04 PM",
       "dateStarted": "Dec 17, 2016 3:30:58 PM",
       "dateFinished": "Dec 17, 2016 3:31:07 PM",
@@ -195,16 +197,17 @@
     {
       "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere marital\u003d\"${marital\u003dsingle,single|divorced|married}\" \ngroup by age \norder by age",
       "user": "anonymous",
-      "dateUpdated": "Dec 17, 2016 3:30:18 PM",
+      "dateUpdated": "Mar 17, 2017 12:18:18 PM",
       "config": {
         "colWidth": 4.0,
         "results": [
           {
             "graph": {
-              "mode": "table",
-              "height": 300.0,
+              "mode": "stackedAreaChart",
+              "height": 280.0,
               "optionOpen": false
-            }
+            },
+            "helium": {}
           }
         ],
         "enabled": true,
@@ -237,9 +240,6 @@
           }
         }
       },
-      "apps": [],
-      "jobName": "paragraph_1423836262027_-210588283",
-      "id": "20150213-230422_1600658137",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -249,6 +249,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1423836262027_-210588283",
+      "id": "20150213-230422_1600658137",
       "dateCreated": "Feb 13, 2015 11:04:22 PM",
       "dateStarted": "Dec 17, 2016 3:31:05 PM",
       "dateFinished": "Dec 17, 2016 3:31:09 PM",
@@ -283,9 +286,6 @@
         "params": {},
         "forms": {}
       },
-      "apps": [],
-      "jobName": "paragraph_1423836268492_216498320",
-      "id": "20150213-230428_1231780373",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -295,6 +295,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1423836268492_216498320",
+      "id": "20150213-230428_1231780373",
       "dateCreated": "Feb 13, 2015 11:04:28 PM",
       "dateStarted": "Dec 17, 2016 3:30:24 PM",
       "dateFinished": "Dec 17, 2016 3:30:29 PM",
@@ -329,9 +332,6 @@
         "params": {},
         "forms": {}
       },
-      "apps": [],
-      "jobName": "paragraph_1427420818407_872443482",
-      "id": "20150326-214658_12335843",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -341,6 +341,9 @@
           }
         ]
       },
+      "apps": [],
+      "jobName": "paragraph_1427420818407_872443482",
+      "id": "20150326-214658_12335843",
       "dateCreated": "Mar 26, 2015 9:46:58 PM",
       "dateStarted": "Dec 17, 2016 3:30:34 PM",
       "dateFinished": "Dec 17, 2016 3:30:34 PM",
@@ -364,25 +367,7 @@
   "name": "Zeppelin Tutorial/Basic Features (Spark)",
   "id": "2A94M5J1Z",
   "angularObjects": {
-    "2C6WUGPNH:shared_process": [],
-    "2C4A8RJNB:shared_process": [],
-    "2C4DTK2ZT:shared_process": [],
-    "2C6XKJWBR:shared_process": [],
-    "2C6AHZPMK:shared_process": [],
-    "2C5SU66WQ:shared_process": [],
-    "2C6AMJ98Q:shared_process": [],
-    "2C4AJZK72:shared_process": [],
-    "2C3STPSD7:shared_process": [],
-    "2C4FJN9CK:shared_process": [],
-    "2C3CW6JBY:shared_process": [],
-    "2C5UPQX6Q:shared_process": [],
-    "2C5873KN4:shared_process": [],
-    "2C5719XN4:shared_process": [],
-    "2C52DE5G3:shared_process": [],
-    "2C4G28E63:shared_process": [],
-    "2C6CU96BC:shared_process": [],
-    "2C49A6WY3:shared_process": [],
-    "2C3NE73HG:shared_process": []
+    "2C73DY9P9:shared_process": []
   },
   "config": {
     "looknfeel": "default"
