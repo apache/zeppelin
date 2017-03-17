@@ -257,22 +257,16 @@ If both are defined, then the **environment variables** will take priority.
     <td>Remote principal repository for interpreter's additional dependency loading</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</h6></td>
-    <td><h6 class="properties">zeppelin.interpreter.output.limit</h6></td>
-    <td>102400</td>
-    <td>Output message from interpreter exceeding the limit will be truncated</td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT</h6></td>
-    <td><h6 class="properties">zeppelin.interpreter.connect.timeout</h6></td>
-    <td>30000</td>
-    <td>Output message from interpreter exceeding the limit will be truncated</td>
-  </tr>
-  <tr>
     <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
     <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
     <td>local-repo</td>
     <td>Local repository for dependency loader.<br>ex)visualiztion modules of npm.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_HELIUM_NPM_REGISTRY</h6></td>
+    <td><h6 class="properties">zeppelin.helium.npm.registry</h6></td>
+    <td>http://registry.npmjs.org/</td>
+    <td>Remote Npm registry for Helium dependency loader</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>
