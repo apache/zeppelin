@@ -487,7 +487,10 @@ export function getObjectRow(schema, obj, groupNameSet) {
     const aggrColumn = aggrColumns[i]
 
     for (let groupName in obj) {
-      const selector = `${groupName}.${aggrColumn.name}`
+      /** do not add aggrColumn name if group is specified && aggrColumns.length === 1 */
+      let selector = (aggrColumns.length > 1) ?
+        `${groupName} / ${aggrColumn.name}` : groupName
+
       groupNameSet.add(selector)
       const grouped = obj[groupName]
       row[selector] = grouped[aggrColumn.name].value
