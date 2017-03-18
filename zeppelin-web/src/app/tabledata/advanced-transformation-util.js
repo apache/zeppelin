@@ -434,6 +434,7 @@ export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
 }
 
 
+/** can't replace with `Object.keys`, since `Object.keys` sort keys automatically */
 export function getNames(obj) {
   const names = []
   for (let name in obj) {
@@ -443,7 +444,29 @@ export function getNames(obj) {
   return names
 }
 
-export function getFlattenRow(schema, obj, groupNameSet) {
+export function flattenCubeToObject(cube, schema) {
+  let keys = getNames(cube)
+  const keyColumnName = schema.keyColumns.map(c => c.name).join('.')
+
+  if (!schema.key) {
+    keys = [ 'root', ]
+    cube = { root: cube, }
+  }
+
+  const groupNameSet = new Set()
+  const rows = keys.reduce((acc, key) => {
+    const keyed = cube[key]
+    const row = getObjectRow(schema, keyed, groupNameSet)
+    if (schema.key) { row[keyColumnName] = key }
+    acc.push(row)
+
+    return acc
+  }, [])
+
+  return { rows: rows, keyColumnName: keyColumnName, groupNames: Array.from(groupNameSet), }
+}
+
+export function getObjectRow(schema, obj, groupNameSet) {
   const aggrColumns = schema.aggregatorColumns
   const row = {}
 
@@ -474,38 +497,12 @@ export function getFlattenRow(schema, obj, groupNameSet) {
   return row
 }
 
-export function getFlattenCube(cube, schema) {
-  let keys = getNames(cube)
-  const keyColumnName = schema.keyColumns.map(c => c.name).join('.')
-
-  if (!schema.key) {
-    keys = [ 'root', ]
-    cube = { root: cube, }
-  }
-
-  const groupNameSet = new Set()
-  const rows = keys.reduce((acc, key) => {
-    const keyed = cube[key]
-    const row = getFlattenRow(schema, keyed, groupNameSet)
-    if (schema.key) { row[keyColumnName] = key }
-    acc.push(row)
-
-    return acc
-  }, [])
-
-  return { rows: rows, keyColumnName: keyColumnName, groupNameSet: groupNameSet, }
-}
-
 /** return function for lazy computation */
 export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorColumns) {
-  let transformer = () => {
-    /** default is flatten cube */
-    const { cube, schema, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
-    return getFlattenCube(cube, schema)
-  }
+  let transformer = () => {}
 
   const transformSpec = getCurrentChartTransform(conf)
-  if (!transformSpec) { return transformer; }
+  if (!transformSpec) { return transformer }
 
   if (transformSpec.method === 'raw') {
     transformer = () => { return rows; }
@@ -513,6 +510,16 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
     transformer = () => {
       const { cube, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
       return cube
+    }
+  } else if (transformSpec.method === 'object') {
+    transformer = () => {
+      const { cube, schema, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
+      return flattenCubeToObject(cube, schema)
+    }
+  } else if (transformSpec.method === 'array') {
+    transformer = () => {
+      const { cube, schema, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
+      return flattenCubeToArray(cube, schema)
     }
   }
 
