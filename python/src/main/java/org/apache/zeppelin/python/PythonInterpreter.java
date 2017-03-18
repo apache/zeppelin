@@ -27,9 +27,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.net.ServerSocket;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -59,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import py4j.GatewayServer;
+import py4j.commands.Command;
 
 /**
  * Python interpreter for Zeppelin.
@@ -78,7 +77,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private String py4jLibPath;
   private String pythonLibPath;
 
-  private String pythonCommand = DEFAULT_ZEPPELIN_PYTHON;
+  private String pythonCommand;
 
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
@@ -95,11 +94,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   Integer statementSetNotifier = new Integer(0);
 
-
   public PythonInterpreter(Properties property) {
     super(property);
     try {
-      File scriptFile = File.createTempFile("zeppelin_python-", ".py");
+      File scriptFile = File.createTempFile("zeppelin_python-", ".py", new File("/tmp"));
       scriptPath = scriptFile.getAbsolutePath();
     } catch (IOException e) {
       throw new InterpreterException(e);
@@ -128,6 +126,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     logger.info("File {} created", scriptPath);
   }
 
+  public String getScriptPath() {
+    return scriptPath;
+  }
+
   private void copyFile(File out, String sourceFile) {
     ClassLoader classLoader = getClass().getClassLoader();
     try {
@@ -141,7 +143,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
-  private void createGatewayServerAndStartScript() {
+  private void createGatewayServerAndStartScript() throws UnknownHostException {
     createPythonScript();
     if (System.getenv("ZEPPELIN_HOME") != null) {
       py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator + ZEPPELIN_PY4JPATH;
@@ -153,13 +155,28 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     port = findRandomOpenPortOnAllLocalInterfaces();
-    gatewayServer = new GatewayServer(this, port);
+    gatewayServer = new GatewayServer(this,
+        port,
+        GatewayServer.DEFAULT_PYTHON_PORT,
+        InetAddress.getByName("0.0.0.0"),
+        InetAddress.getByName("0.0.0.0"),
+        GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+        GatewayServer.DEFAULT_READ_TIMEOUT,
+        (List) null);
+
     gatewayServer.start();
 
     // Run python shell
-    CommandLine cmd = CommandLine.parse(getPythonCommand());
-    cmd.addArgument(scriptPath, false);
+    String pythonCmd = getPythonCommand();
+    CommandLine cmd = CommandLine.parse(pythonCmd);
+
+    if (!pythonCmd.endsWith(".py")) {
+      // PythonDockerInterpreter set pythoncmd with script
+      cmd.addArgument(getScriptPath(), false);
+    }
     cmd.addArgument(Integer.toString(port), false);
+    cmd.addArgument(getLocalIp(), false);
+
     executor = new DefaultExecutor();
     outputStream = new InterpreterOutputStream(logger);
     PipedOutputStream ps = new PipedOutputStream();
@@ -185,6 +202,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
                 py4jLibPath + File.pathSeparator + pythonLibPath);
       }
 
+      logger.info("cmd = {}", cmd.toString());
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
     } catch (IOException e) {
@@ -207,7 +225,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
     }
     // Add matplotlib display hook
-    createGatewayServerAndStartScript();
+    try {
+      createGatewayServerAndStartScript();
+    } catch (UnknownHostException e) {
+      throw new InterpreterException(e);
+    }
   }
 
   @Override
@@ -244,25 +266,18 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
    */
   public class PythonInterpretRequest {
     public String statements;
-    public String jobGroup;
 
-    public PythonInterpretRequest(String statements, String jobGroup) {
+    public PythonInterpretRequest(String statements) {
       this.statements = statements;
-      this.jobGroup = jobGroup;
     }
 
     public String statements() {
       return statements;
     }
-
-    public String jobGroup() {
-      return jobGroup;
-    }
   }
 
   public PythonInterpretRequest getStatements() {
     synchronized (statementSetNotifier) {
-
       while (pythonInterpretRequest == null && pythonscriptRunning && pythonScriptInitialized) {
         try {
           statementSetNotifier.wait(1000);
@@ -350,7 +365,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
 
-    pythonInterpretRequest = new PythonInterpretRequest(cmd, null);
+    pythonInterpretRequest = new PythonInterpretRequest(cmd);
     statementOutput = null;
 
     synchronized (statementSetNotifier) {
@@ -420,16 +435,17 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return null;
   }
 
-  public void setPythonPath(String pythonPath) {
-    this.pythonPath = pythonPath;
-  }
-
   public void setPythonCommand(String cmd) {
+    logger.info("Set Python Command : {}", cmd);
     pythonCommand = cmd;
   }
 
   public String getPythonCommand() {
-    return pythonCommand;
+    if (pythonCommand == null) {
+      return DEFAULT_ZEPPELIN_PYTHON;
+    } else {
+      return pythonCommand;
+    }
   }
 
   private Job getRunningJob(String paragraphId) {
@@ -462,8 +478,14 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return context.getGui();
   }
 
-  public Integer getPy4jPort() {
-    return port;
+  String getLocalIp() {
+    try {
+      return Inet4Address.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      logger.error("can't get local IP", e);
+    }
+    // fall back to loopback addreess
+    return "127.0.0.1";
   }
 
   private int findRandomOpenPortOnAllLocalInterfaces() {
