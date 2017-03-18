@@ -65,9 +65,6 @@ limitations under the License.
          </li>
       </ul>
     </span>
-    <span class="icon-control-end" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph and the following ones (Ctrl+Shift+Enter)"
-          ng-click="runSubsequentParagraphs(parentNote.id,paragraph.id)"
-          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
           tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+e)"
           ng-click="toggleEditor(paragraph)"></span>
@@ -134,6 +131,12 @@ limitations under the License.
           <a ng-click="showLineNumbers(paragraph)"
              ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol shortcut-icon"></span>Show line numbers
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+m</span></a>
+        </li>
+        <li>
+          <a  ng-click="runSubsequentParagraphs(parentNote,paragraph)"
+              ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled">
+            <span class="icon-control-end shortcut-icon" tooltip="Run this paragraph and the next ones"></span>Run with next ones
+            <span class="shortcut-keys">Ctrl+Shift+Enter</span></a>
         </li>
         <li>
           <a ng-click="toggleEnableDisable(paragraph)"><span class="icon-control-play shortcut-icon"></span>

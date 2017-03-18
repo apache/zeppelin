@@ -131,7 +131,9 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     post.releaseConnection();
     for (Paragraph aParagraph : paragraphs){
       assertNotEquals(aParagraph.getStatus(), Job.Status.READY); // should be running, run or about to be run
+      aParagraph.abort();
     }
+    p.abort();
     assertEquals(note1.getParagraphs().get(0).getStatus(), Job.Status.READY); // should not have changed
 
     //cleanup

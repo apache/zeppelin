@@ -319,14 +319,15 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params);
   };
 
-  $scope.runSubsequentParagraphs = function(noteId,paragraphId) {
+  $scope.runSubsequentParagraphs = function(note,paragraph) {
+    if (!(paragraph.status in ['RUNNING','PENDING']) && paragraph.config.enabled){
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Run this paragraph and the subsequent ones?',
+        message: 'Run this paragraph and all the next ones?',
         callback: function(result) {
           if (result) {
-            const paragraphs = $scope.parentNote.paragraphs.map(p => {
+            const paragraphs = note.paragraphs.map(p => {
               return {
                 id: p.id,
                 title: p.title,
@@ -335,11 +336,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                 params: p.settings.params
               };
             });
-            websocketMsgSrv.runSubsequentParagraphs(noteId, paragraphId, paragraphs);
+            websocketMsgSrv.runSubsequentParagraphs(note.id, paragraph.id, paragraphs);
           }
         }
       });
-    };
+      }
+   };
 
   $scope.saveParagraph = function(paragraph) {
     const dirtyText = paragraph.text;
@@ -1278,8 +1280,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
-      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13){
-        $scope.runSubsequentParagraphs(paragraphId);
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13){ // Ctrl + Shift + Enter
+        $scope.runSubsequentParagraphs($scope.note,$scope.paragraph);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue());
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
