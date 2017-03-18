@@ -395,6 +395,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
+  public InterpreterContext getCurrentInterpreterContext() {
+    return context;
+  }
+
   public void interrupt() throws IOException {
     if (pythonPid > -1) {
       logger.info("Sending SIGINT signal to PID : " + pythonPid);
