@@ -89,8 +89,9 @@ public class PythonDockerInterpreter extends Interpreter {
           mountPythonScript +
           mountPy4j +
           "-e PYTHONPATH=\"" + pythonPath + "\" " +
-          image +
-          " python /_zeppelin_tmp/" + pythonScript.getName());
+          image + " " +
+          getPythonInterpreter().getPythonBindPath() + " " +
+          "/_zeppelin_tmp/" + pythonScript.getName());
       restartPythonProcess();
       out.clear();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + image + "\" activated");

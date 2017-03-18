@@ -444,11 +444,20 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     pythonCommand = cmd;
   }
 
-  public String getPythonCommand() {
+  private String getPythonCommand() {
     if (pythonCommand == null) {
-      return DEFAULT_ZEPPELIN_PYTHON;
+      return getPythonBindPath();
     } else {
       return pythonCommand;
+    }
+  }
+
+  public String getPythonBindPath() {
+    String path = getProperty("zeppelin.python");
+    if (path == null) {
+      return DEFAULT_ZEPPELIN_PYTHON;
+    } else {
+      return path;
     }
   }
 
