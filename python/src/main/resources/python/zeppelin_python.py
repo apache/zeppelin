@@ -48,25 +48,41 @@ class Logger(object):
 
 
 class PyZeppelinContext(object):
-  """ If py4j is detected, these class will be override
-      with the implementation in bootstrap_input.py
+  """ A context impl that uses Py4j to communicate to JVM
   """
-  errorMsg = "You must install py4j Python module " \
-             "(pip install py4j) to use Zeppelin dynamic forms features"
 
-  def __init__(self):
+  def __init__(self, z):
+    self.z = z
+    self.paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
+    self.javaList = gateway.jvm.java.util.ArrayList
     self.max_result = 1000
     self._displayhook = lambda *args: None
     self._setup_matplotlib()
 
+  def getInterpreterContext(self):
+    return self.z.getCurrentInterpreterContext()
+
   def input(self, name, defaultValue=""):
-    print(self.errorMsg)
+    return self.z.getGui().input(name, defaultValue)
 
   def select(self, name, options, defaultValue=""):
-    print(self.errorMsg)
+    javaOptions = gateway.new_array(self.paramOption, len(options))
+    i = 0
+    for tuple in options:
+      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
+      i += 1
+    return self.z.getGui().select(name, defaultValue, javaOptions)
 
   def checkbox(self, name, options, defaultChecked=[]):
-    print(self.errorMsg)
+    javaOptions = gateway.new_array(self.paramOption, len(options))
+    i = 0
+    for tuple in options:
+      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
+      i += 1
+    javaDefaultCheck = self.javaList()
+    for check in defaultChecked:
+      javaDefaultCheck.append(check)
+    return self.z.getGui().checkbox(name, javaDefaultCheck, javaOptions)
 
   def show(self, p, **kwargs):
     if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
@@ -187,7 +203,8 @@ gateway = JavaGateway(client)
 intp = gateway.entry_point
 intp.onPythonScriptInitialized(os.getpid())
 
-z = PyZeppelinContext()
+java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
+z = PyZeppelinContext(intp)
 z._setup_matplotlib()
 
 output = Logger()
