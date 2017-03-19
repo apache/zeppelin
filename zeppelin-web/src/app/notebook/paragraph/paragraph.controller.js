@@ -140,7 +140,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   
     for (var idx in forms) {
       if (forms[idx]) {
-        if (forms[idx].options && forms[idx].type !== 'checkbox') {
+        if (forms[idx].options) {
           if (config.runOnSelectionChange === undefined) {
             config.runOnSelectionChange = true;
           }
