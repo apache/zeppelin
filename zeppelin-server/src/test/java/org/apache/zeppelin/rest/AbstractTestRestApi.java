@@ -140,7 +140,7 @@ public abstract class AbstractTestRestApi {
         isRunningWithAuth = true;
         // Set Anonymous session to false.
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
-
+        
         // Create a shiro env test.
         shiroIni = new File("../conf/shiro.ini");
         if (!shiroIni.exists()) {
@@ -189,47 +189,45 @@ public abstract class AbstractTestRestApi {
 
       // assume first one is spark
       InterpreterSetting sparkIntpSetting = null;
-      for (InterpreterSetting intpSetting :
+      for(InterpreterSetting intpSetting :
           ZeppelinServer.notebook.getInterpreterSettingManager().get()) {
         if (intpSetting.getName().equals("spark")) {
           sparkIntpSetting = intpSetting;
         }
       }
 
-      if (sparkIntpSetting != null) {
-        Properties sparkProperties = (Properties) sparkIntpSetting.getProperties();
-        // ci environment runs spark cluster for testing
-        // so configure zeppelin use spark cluster
-        if ("true".equals(System.getenv("CI"))) {
-          // set spark master and other properties
-          sparkProperties.setProperty("master", "local[2]");
-          sparkProperties.setProperty("spark.cores.max", "2");
-          sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
-          // set spark home for pyspark
-          sparkProperties.setProperty("spark.home", getSparkHome());
+      Properties sparkProperties = (Properties) sparkIntpSetting.getProperties();
+      // ci environment runs spark cluster for testing
+      // so configure zeppelin use spark cluster
+      if ("true".equals(System.getenv("CI"))) {
+        // set spark master and other properties
+        sparkProperties.setProperty("master", "local[2]");
+        sparkProperties.setProperty("spark.cores.max", "2");
+        sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
+        // set spark home for pyspark
+        sparkProperties.setProperty("spark.home", getSparkHome());
 
-          sparkIntpSetting.setProperties(sparkProperties);
+        sparkIntpSetting.setProperties(sparkProperties);
+        pySpark = true;
+        sparkR = true;
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
+      } else {
+        String sparkHome = getSparkHome();
+        if (sparkHome != null) {
+          if (System.getenv("SPARK_MASTER") != null) {
+            sparkProperties.setProperty("master", System.getenv("SPARK_MASTER"));
+          } else {
+            sparkProperties.setProperty("master", "local[2]");
+          }
+          sparkProperties.setProperty("spark.cores.max", "2");
+          // set spark home for pyspark
+          sparkProperties.setProperty("spark.home", sparkHome);
+          sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
           pySpark = true;
           sparkR = true;
-          ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
-        } else {
-          String sparkHome = getSparkHome();
-          if (sparkHome != null) {
-            if (System.getenv("SPARK_MASTER") != null) {
-              sparkProperties.setProperty("master", System.getenv("SPARK_MASTER"));
-            } else {
-              sparkProperties.setProperty("master", "local[2]");
-            }
-            sparkProperties.setProperty("spark.cores.max", "2");
-            // set spark home for pyspark
-            sparkProperties.setProperty("spark.home", sparkHome);
-            sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
-            pySpark = true;
-            sparkR = true;
-          }
-
-          ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
         }
+
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       }
     }
   }
