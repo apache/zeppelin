@@ -204,4 +204,124 @@ public class InterpreterSettingTest {
     interpreterSetting.closeAndRemoveInterpreterGroup("note2", "user1");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
+
+  @Test
+  public void perNoteScopedModeRemoveInterpreterGroupWhenNoteIsRemoved() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerNote(InterpreterOption.SCOPED);
+    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+
+    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
+      @Override
+      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
+          InterpreterOption option) {
+        return new InterpreterGroup(interpreterGroupId);
+      }
+    });
+
+    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
+    List<Interpreter> interpreterList1 = new ArrayList<>();
+    interpreterList1.add(mockInterpreter1);
+    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
+    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
+
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+
+    // This method will be called when remove note
+    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
+    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
+    assertEquals(0, interpreterSetting.getInterpreterGroup("user1","note1").size());
+  }
+
+  @Test
+  public void perNoteIsolatedModeRemoveInterpreterGroupWhenNoteIsRemoved() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerNote(InterpreterOption.ISOLATED);
+    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+
+    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
+      @Override
+      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
+          InterpreterOption option) {
+        return new InterpreterGroup(interpreterGroupId);
+      }
+    });
+
+    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
+    List<Interpreter> interpreterList1 = new ArrayList<>();
+    interpreterList1.add(mockInterpreter1);
+    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
+    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
+
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+
+    // This method will be called when remove note
+    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
+    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
+    assertEquals(0, interpreterSetting.getInterpreterGroup("user1","note1").size());
+  }
+
+  @Test
+  public void perUserScopedModeNeverRemoveInterpreterGroupWhenNoteIsRemoved() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerUser(InterpreterOption.SCOPED);
+    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+
+    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
+      @Override
+      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
+          InterpreterOption option) {
+        return new InterpreterGroup(interpreterGroupId);
+      }
+    });
+
+    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
+    List<Interpreter> interpreterList1 = new ArrayList<>();
+    interpreterList1.add(mockInterpreter1);
+    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
+    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
+
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+
+    // This method will be called when remove note
+    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note1").size());
+  }
+
+  @Test
+  public void perUserIsolatedModeNeverRemoveInterpreterGroupWhenNoteIsRemoved() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerUser(InterpreterOption.ISOLATED);
+    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+
+    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
+      @Override
+      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
+          InterpreterOption option) {
+        return new InterpreterGroup(interpreterGroupId);
+      }
+    });
+
+    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
+    List<Interpreter> interpreterList1 = new ArrayList<>();
+    interpreterList1.add(mockInterpreter1);
+    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
+    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
+
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+
+    // This method will be called when remove note
+    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note1").size());
+  }
 }
