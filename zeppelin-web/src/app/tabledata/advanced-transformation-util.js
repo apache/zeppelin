@@ -473,8 +473,8 @@ export function getObjectRowsFromCube(cube, schema, aggregatorColumns,
   const selectorSet = new Set()
 
   const rows = keyNames.reduce((acc, key) => {
-    const keyed = cube[key]
-    const row = getObjectRow(schema, aggregatorColumns, keyed, groupNameSet, selectorSet)
+    const obj = cube[key]
+    const row = getObjectRow(schema, aggregatorColumns, obj, groupNameSet, selectorSet)
 
     if (schema.key) { row[keyColumnName] = key }
     acc.push(row)
@@ -493,13 +493,20 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet, selectorSet
   if (!schema.group) {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
+      const aggrName = aggrColumn.name
 
       const selector = aggrColumn.name
       selectorSet.add(selector)
 
       let value = null
       try {
-        value = obj[selector].value;
+        if (aggrColumn.aggr === Aggregator.AVG) {
+          value = aggrColumn[aggrName].value / aggrColumn[aggrName].count
+        } else if (aggrColumn.aggr === Aggregator.COUNT) {
+          value = aggrColumn[aggrName].count
+        } else {
+          value = aggrColumn[aggrName].value
+        }
         if (typeof value === 'undefined') { value = null }
       } catch (error) { /** iognore */ }
 
