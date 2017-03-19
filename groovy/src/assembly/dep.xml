@@ -40,13 +40,13 @@
         <include>revision.txt</include>
       </includes>
     </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/src/main/groovy/</directory>
+    <!--fileSet>
+      <directory>${project.basedir}/src/main/groovy/classes/</directory>
       <outputDirectory>/classes/</outputDirectory>
       <includes>
         <include>*.groovy</include>
       </includes>
-    </fileSet>
+    </fileSet-->
     
     <!--fileSet>
       <directory>${project.build.directory}/site</directory>

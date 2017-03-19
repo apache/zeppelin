@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.groovy;
+
 
 import java.io.StringWriter;
 import org.slf4j.Logger;
@@ -145,6 +145,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void angularBind(String name, Object o, String noteId) {
 		AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 

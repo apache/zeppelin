@@ -75,7 +75,9 @@ public class GroovyInterpreter extends Interpreter {
         	}catch(Exception e){}
         }
         log.info("groovy classes classpath: "+classes);
-        if(classes!=null && classes.length()>0){
+        if(classes!=null && classes.length()>0 ){
+	        File fClasses = new File(classes);
+	        if(!fClasses.exists())fClasses.mkdirs();
 	        shell.getClassLoader().addClasspath(classes);
         }
 	}
@@ -116,7 +118,10 @@ public class GroovyInterpreter extends Interpreter {
 		return null;
 	}
 	
-	Map<String,Class<Script>> scriptCache = Collections.synchronizedMap( new WeakHashMap(1000) );
+	//cache for groovy compiled scripts
+	Map<String,Class<Script>> scriptCache = Collections.synchronizedMap( new WeakHashMap<String,Class<Script>>(1000) );
+	
+	@SuppressWarnings("unchecked")
 	Script getGroovyScript(String id, String scriptText) /*throws SQLException*/ {
 		if(shell==null){
 			throw new RuntimeException("Groovy Shell is not initialized: null");
@@ -138,12 +143,13 @@ public class GroovyInterpreter extends Interpreter {
 	
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
 		try {
 			Script script = getGroovyScript(contextInterpreter.getParagraphId(), cmd);
 			Job runningJob = getRunningJob(contextInterpreter.getParagraphId());
 			runningJob.info().put("CURRENT_THREAD", Thread.currentThread()); //to be able to terminate thread
-			Map bindings = script.getBinding().getVariables();
+			Map<String,Object> bindings = script.getBinding().getVariables();
 			bindings.clear();
 			StringWriter out = new StringWriter( (int) (cmd.length()*1.75) );
 			
@@ -152,7 +158,7 @@ public class GroovyInterpreter extends Interpreter {
 			script.run();
 			bindings.clear();
 			InterpreterResult result = new InterpreterResult(Code.SUCCESS, out.toString());
-			log.info("RESULT: "+result);
+			//log.info("RESULT: "+result);
 			return result;
 		}catch(Throwable t){
 			t = StackTraceUtils.deepSanitize(t);
@@ -173,7 +179,8 @@ public class GroovyInterpreter extends Interpreter {
 				try {
 					Thread t = (Thread) object;
 					t.dumpStack();
-					t.stop();
+					t.interrupt();
+					//t.stop();
 				}catch(Throwable t){
 					log.error("Failed to cancel script: "+t, t);
 				}
