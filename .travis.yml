@@ -34,8 +34,9 @@ addons:
     - r-base-dev
 
 env:
-  # Interpreters does not required by zeppelin-server integration tests
-  - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!python,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio'
+  global:
+    # Interpreters does not required by zeppelin-server integration tests
+    - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!python,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio'
 
 matrix:
   include:
