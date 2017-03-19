@@ -46,7 +46,7 @@ matrix:
 
     # Test core modules
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest -Dspark.test.excludes=org.apache.zeppelin.spark.*"
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest -Dspark.skipTests=true"
 
     # Test all modules with scala 2.10 except spark,livy
     #- jdk: "oraclejdk7"
