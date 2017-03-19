@@ -399,6 +399,7 @@
         </executions>
         <configuration>
           <argLine>-Xmx2048m</argLine>
+          <forkCount>1</forkCount>
         </configuration>
       </plugin>
 
