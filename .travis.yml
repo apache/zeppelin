@@ -45,7 +45,7 @@ matrix:
       env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
     # Test core modules
-      jdk: "oraclejdk7"
+    - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.6" SPARK_VER="2.1.0" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*"
 
     # Test all modules with scala 2.10 except spark,livy
@@ -57,15 +57,15 @@ matrix:
       env: PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl '.,zeppelin-interpreter' -pl $(echo ${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Test spark module for 2.1.0 with scala 2.11
-      jdk: "oraclejdk7"
+    - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.1 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,livy" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.livy.* -DfailIfNoTests=false"
 
     # Test spark module for 2.0.2 with scala 2.11
-      jdk: "oraclejdk7"
+    - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test spark module for 1.6.3 with scala 2.10, livy 0.2
-      jdk: "oraclejdk7"
+    - jdk: "oraclejdk7"
       env: SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.2.0" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.10 -Plivy-0.2" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,livy" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.spark.*,org.apache.zeppelin.livy.* -DfailIfNoTests=false"
 
     # Test spark module for 1.6.3 with scala 2.11
