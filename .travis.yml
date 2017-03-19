@@ -46,7 +46,7 @@ matrix:
 
     # Test core modules
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.6" SPARK_VER="2.1.0" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*"
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*"
 
     # Test all modules with scala 2.10 except spark,livy
     #- jdk: "oraclejdk7"
@@ -54,7 +54,7 @@ matrix:
 
     # Test interpreter modules
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl 'zeppelin-interpreter' -pl $(echo ${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Test spark module for 2.1.0 with scala 2.11
     - jdk: "oraclejdk7"
