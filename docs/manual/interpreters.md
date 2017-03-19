@@ -41,9 +41,9 @@ Zeppelin interpreter setting is the configuration of a given interpreter on Zepp
 
 <img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
-Properties are exported as environment variable when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property. 
+Properties are exported as environment variables when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property. 
 
-You may use parameters from the context of interpreter by add #{contextParameterName} (except fields of paragraph) in value, parameter can be of the following types: string, number, boolean.
+You may use parameters from the context of interpreter by add #{contextParameterName} in value, parameter can be of the following types: string, number, boolean.
 
 ###### Context parameters
 <table class="table-configuration">
@@ -71,13 +71,7 @@ You may use parameters from the context of interpreter by add #{contextParameter
 
 If context parameter is null then replaced by empty string.
 
-<img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting_with_context_parameters.png" width="500px">
-
-###### Usage
-For example in database exist user `user1` with some password and exists user with same name into Zeppelin. Configure the jdbc interpreter (postgres), set `default.user = #{user}`.
-1. Sign in (as `user1`)
-2. Open interpreter
-3. Execute `select current_user`
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting_with_context_parameters.png" width="800px">
 
 <br>
 Each notebook can be bound to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
