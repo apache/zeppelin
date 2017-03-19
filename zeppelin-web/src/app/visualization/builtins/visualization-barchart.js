@@ -41,7 +41,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       pivot.groups,
       pivot.values,
       true,
-      false,
+      true,
       true);
 
     super.render(d3Data);
