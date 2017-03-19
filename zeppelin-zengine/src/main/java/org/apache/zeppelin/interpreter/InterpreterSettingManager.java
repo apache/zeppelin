@@ -799,20 +799,7 @@ public class InterpreterSettingManager {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
       String noteId) {
-    InterpreterOption option = interpreterSetting.getOption();
-    if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-    } else if (option.isSession()) {
-      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
-      String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
-      interpreterGroup.close(key);
-      synchronized (interpreterGroup) {
-        interpreterGroup.remove(key);
-        interpreterGroup.notifyAll(); // notify createInterpreterForNote()
-      }
-      logger.info("Interpreter instance {} for note {} is removed", interpreterSetting.getName(),
-          noteId);
-    }
+    interpreterSetting.closeAndRemoveInterpreterGroup(noteId, "");
   }
 
   public String getInterpreterSessionKey(String user, String noteId, InterpreterSetting setting) {

@@ -322,6 +322,13 @@ public class Notebook implements NoteEventListener {
     }
   }
 
+  public void moveNoteToTrash(String noteId) {
+    for (InterpreterSetting interpreterSetting : interpreterSettingManager
+        .getInterpreterSettings(noteId)) {
+      interpreterSettingManager.removeInterpretersForNote(interpreterSetting, "", noteId);
+    }
+  }
+
   public void removeNote(String id, AuthenticationInfo subject) {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
 
