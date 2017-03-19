@@ -33,6 +33,10 @@ addons:
     packages:
     - r-base-dev
 
+env:
+  # Interpreters does not required by zeppelin-server integration tests
+  - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!python,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio'
+
 matrix:
   include:
     # Test License compliance using RAT tool
@@ -42,11 +46,11 @@ matrix:
     # Test all modules with scala 2.11 except spark,livy
     - sudo: required
       jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES='-pl "!spark-dependencies,!spark,!livy"' TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
+      env: SCALA_VER="2.11" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl '${INTERPRETERS}'" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
 
     # Test all modules with scala 2.10 except spark,livy
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES='-pl "!spark-dependencies,!spark,!livy"' TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
+      env: SCALA_VER="2.10" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl '${INTERPRETERS'" TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
 
     # Test spark module for 2.1.0 with scala 2.11, livy 0.3
     - sudo: required
