@@ -39,14 +39,14 @@ matrix:
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
-    # Test all modules with spark 2.1.0 and scala 2.11
+    # Test all modules with scala 2.11 except spark,livy
     - sudo: required
       jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.1 -Phadoop-2.6 -Ppyspark -Psparkr -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES='-pl "!spark-dependencies,!spark,!livy"' TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
+      env: SCALA_VER="2.11" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES='-pl "!spark-dependencies,!spark,!livy"' TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
 
-    # Test all modules with spark 2.0.2 and scala 2.11
+    # Test all modules with scala 2.10 except spark,livy
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Psparkr -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES='-pl "!spark-dependencies,!spark,!livy"' TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
+      env: SCALA_VER="2.10" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES='-pl "!spark-dependencies,!spark,!livy"' TEST_PROJECTS="-Dzeppelin-server.test.excludes=ZeppelinSparkClusterTest"
 
     # Test spark module for 2.1.0 with scala 2.11, livy 0.3
     - sudo: required
@@ -92,7 +92,7 @@ install:
   - mvn $BUILD_FLAG $MODULES $PROFILE -B
 
 before_script:
-  - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
+  - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
   - if [[ -n $LIVY_VER ]]; then ./testing/downloadLivy.sh $LIVY_VER; fi
   - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-server-$LIVY_VER; fi
   - if [[ -n $LIVY_VER ]]; then export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER; fi
