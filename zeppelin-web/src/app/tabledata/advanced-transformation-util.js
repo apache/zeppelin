@@ -364,19 +364,20 @@ var AggregatorFunctionDiv = {
   avg: true
 };
 
-export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
+export function getCube(rows, keyColumns, groupColumns, aggrColumns) {
 
   const schema = {
     key: keyColumns.length !== 0,
-    keyColumns: keyColumns,
     group: groupColumns.length !== 0,
-    groupColumns: groupColumns,
     aggregator: aggrColumns.length !== 0,
-    aggregatorColumns: aggrColumns,
   };
 
-  const cube = {};
-  const entry = {};
+  const cube = {}
+  const entry = {}
+
+  const keyColumnName = keyColumns.map(c => c.name).join('.')
+  const groupNameSet = new Set()
+  const keyNameSet = new Set()
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -384,32 +385,45 @@ export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
     let c = cube;
 
     // key: add to entry
-    if (keyColumns.length > 0) {
-      const mergedKeyName = keyColumns.map(c => row[c.index]).join('.')
-      if (!e[mergedKeyName]) { e[mergedKeyName] = { children: {}, }; }
-      e = e[mergedKeyName].children;
+    let mergedKeyName = undefined
+    if (schema.key) {
+      mergedKeyName = keyColumns.map(c => row[c.index]).join('.')
+      if (!e[mergedKeyName]) { e[mergedKeyName] = { children: {}, } }
+      e = e[mergedKeyName].children
       // key: add to row
-      if (!c[mergedKeyName]) { c[mergedKeyName] = {}; }
-      c = c[mergedKeyName];
+      if (!c[mergedKeyName]) { c[mergedKeyName] = {} }
+      c = c[mergedKeyName]
+
+      keyNameSet.add(mergedKeyName)
     }
 
-    // group: add to entry
-    if (groupColumns.length > 0) {
-      const mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
-      if (!e[mergedGroupName]) { e[mergedGroupName] = { children: {}, }; }
-      e = e[mergedGroupName].children;
-      // group: add to row
-      if (!c[mergedGroupName]) { c[mergedGroupName] = {}; }
-      c = c[mergedGroupName];
+    let mergedGroupName = undefined
+    if (schema.group) {
+      mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
+
+      // add group to entry
+      if (!e[mergedGroupName]) { e[mergedGroupName] = { children: {}, } }
+      e = e[mergedGroupName].children
+      // add group to row
+      if (!c[mergedGroupName]) { c[mergedGroupName] = {} }
+      c = c[mergedGroupName]
+      groupNameSet.add(mergedGroupName)
     }
 
     for (let a = 0; a < aggrColumns.length; a++) {
-      const aggrColumn = aggrColumns[a];
-      const aggrName = aggrColumn.name;
+      const aggrColumn = aggrColumns[a]
+      const aggrName = aggrColumn.name
+
+      // update selectors
+      let selector = undefined
+      if (!mergedGroupName) {
+        selector = aggrName
+        groupNameSet.add(selector)
+      }
 
       // add aggregator to entry
       if (!e[aggrName]) {
-        e[aggrName] = { type: 'aggregator', order: aggrColumn, index: aggrColumn.index, };
+        e[aggrName] = { type: 'aggregator', order: aggrColumn, index: aggrColumn.index, }
       }
 
       // add aggregatorName to row
@@ -418,56 +432,61 @@ export function getCubeWithSchema(rows, keyColumns, groupColumns, aggrColumns) {
           aggr: aggrColumn.aggr,
           value: (aggrColumn.aggr !== 'count') ? row[aggrColumn.index] : 1,
           count: 1,
-        };
+        }
       } else {
         const value = AggregatorFunctions[aggrColumn.aggr](
-          c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1);
+          c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1)
         const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
-          c[aggrName].count + 1 : c[aggrName].count;
+          c[aggrName].count + 1 : c[aggrName].count
 
-        c[aggrName].value = (aggrColumn.aggr === Aggregator.AVG) ? (value / count) : value;
+        c[aggrName].value = value
+        c[aggrName].count = count
       }
-    }
+
+    } /** end loop for aggrColumns */
   }
 
-  return { cube: cube, schema: schema, };
-}
-
-
-/** can't replace with `Object.keys`, since `Object.keys` sort keys automatically */
-export function getNames(obj) {
-  const names = []
-  for (let name in obj) {
-    names.push(name)
+  return {
+    cube: cube,
+    schema: schema,
+    keyColumnName: keyColumnName,
+    keyNames: Object.keys(cube), /** keys should be sorted, so we use Object.keys here */
+    groupNameSet: groupNameSet,
   }
-
-  return names
 }
 
-export function flattenCubeToObject(cube, schema) {
-  let keys = getNames(cube)
-  const keyColumnName = schema.keyColumns.map(c => c.name).join('.')
+export function getNameWidIndex(arr) {
+  return arr.reduce((acc, name, index) => {
+    acc[name] = index
+    return acc
+  }, {})
+}
+
+export function getObjectRowsFromCube(cube, schema, aggregatorColumns,
+                                      keyColumnName, keyNames, groupNameSet) {
 
   if (!schema.key) {
-    keys = [ 'root', ]
+    keyNames = [ 'root', ]
     cube = { root: cube, }
   }
 
-  const groupNameSet = new Set()
-  const rows = keys.reduce((acc, key) => {
+  const selectorSet = new Set()
+
+  const rows = keyNames.reduce((acc, key) => {
     const keyed = cube[key]
-    const row = getObjectRow(schema, keyed, groupNameSet)
+    const row = getObjectRow(schema, aggregatorColumns, keyed, groupNameSet, selectorSet)
+
     if (schema.key) { row[keyColumnName] = key }
     acc.push(row)
 
     return acc
   }, [])
 
-  return { rows: rows, keyColumnName: keyColumnName, groupNames: Array.from(groupNameSet), }
+  return { transformed: rows, selectorSet: selectorSet, }
 }
 
-export function getObjectRow(schema, obj, groupNameSet) {
-  const aggrColumns = schema.aggregatorColumns
+
+export function getObjectRow(schema, aggrColumns, obj, groupNameSet, selectorSet) {
   const row = {}
 
   /** when group is empty */
@@ -475,8 +494,16 @@ export function getObjectRow(schema, obj, groupNameSet) {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
 
-      row[aggrColumn.name] = obj[aggrColumn.name].value
-      groupNameSet.add(aggrColumn.name)
+      const selector = aggrColumn.name
+      selectorSet.add(selector)
+
+      let value = null
+      try {
+        value = obj[selector].value;
+        if (typeof value === 'undefined') { value = null }
+      } catch (error) { /** iognore */ }
+
+      row[selector] = value
     }
 
     return row
@@ -485,19 +512,41 @@ export function getObjectRow(schema, obj, groupNameSet) {
   /** when group is specified */
   for(let i = 0; i < aggrColumns.length; i++) {
     const aggrColumn = aggrColumns[i]
+    const aggrName = aggrColumn.name
 
-    for (let groupName in obj) {
-      /** do not add aggrColumn name if group is specified && aggrColumns.length === 1 */
-      let selector = (aggrColumns.length > 1) ?
-        `${groupName} / ${aggrColumn.name}` : groupName
-
-      groupNameSet.add(selector)
+    for (let groupName of groupNameSet) {
       const grouped = obj[groupName]
-      row[selector] = grouped[aggrColumn.name].value
+      /** do not add aggrColumn name if group is specified && aggrColumns.length === 1 */
+      const selector = (aggrColumns.length > 1) ?
+        `${groupName} / ${aggrName}` : groupName
+      selectorSet.add(selector)
+
+      if (grouped) {
+        let value = null
+
+        /** if AVG or COUNT, calculate it now, previously we can't because we are accumulating  */
+        if (grouped.aggr === Aggregator.AVG) {
+          value = grouped[aggrName].value / grouped[aggrName].count
+        } else if (grouped.aggr === Aggregator.COUNT) {
+          value = grouped[aggrName].count
+        } else {
+          value = grouped[aggrName].value
+        }
+
+        row[selector] = value
+      }
+
     }
   }
 
   return row
+}
+
+const TransformMethod = {
+  RAW: 'raw',
+  CUBE: 'cube',
+  OBJECT: 'object',
+  ARRAY: 'array',
 }
 
 /** return function for lazy computation */
@@ -507,22 +556,26 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
   const transformSpec = getCurrentChartTransform(conf)
   if (!transformSpec) { return transformer }
 
-  if (transformSpec.method === 'raw') {
+  const method = transformSpec.method
+
+  if (method === TransformMethod.RAW) {
     transformer = () => { return rows; }
-  } else if (transformSpec.method === 'cube') {
+  } else if (method === TransformMethod.CUBE) {
     transformer = () => {
-      const { cube, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
-      return cube
+      const { cube, schema, keyColumnName,  keyNames, groupNameSet, } =
+        getCube(rows, keyColumns, groupColumns, aggregatorColumns)
+
+      return { rows: [], cube, keyColumnName, keyNames, groupNameSet, }
     }
-  } else if (transformSpec.method === 'object') {
+  } else if (method === TransformMethod.OBJECT) {
     transformer = () => {
-      const { cube, schema, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
-      return flattenCubeToObject(cube, schema)
-    }
-  } else if (transformSpec.method === 'array') {
-    transformer = () => {
-      const { cube, schema, } = getCubeWithSchema(rows, keyColumns, groupColumns, aggregatorColumns);
-      return flattenCubeToArray(cube, schema)
+      const { cube, schema, keyColumnName,  keyNames, groupNameSet, } =
+        getCube(rows, keyColumns, groupColumns, aggregatorColumns)
+
+      const { transformed, selectorSet, } =
+        getObjectRowsFromCube(cube, schema, aggregatorColumns, keyColumnName, keyNames, groupNameSet)
+
+      return { rows: transformed, cube, keyColumnName, keyNames, selectorSet, }
     }
   }
 
