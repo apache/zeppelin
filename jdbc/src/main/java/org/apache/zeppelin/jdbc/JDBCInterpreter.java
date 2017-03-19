@@ -509,15 +509,32 @@ public class JDBCInterpreter extends Interpreter {
     Character character;
 
     Boolean antiSlash = false;
+    Boolean multiLineComment = false;
+    Boolean singleLineComment = false;
     Boolean quoteString = false;
     Boolean doubleQuoteString = false;
 
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
 
+      if ((singleLineComment && (character.equals('\n') || item == sql.length() - 1))
+          || (multiLineComment && character.equals('/') && sql.charAt(item - 1) == '*')) {
+        singleLineComment = false;
+        multiLineComment = false;
+        if (item == sql.length() - 1 && query.length() > 0) {
+          queries.add(StringUtils.trim(query.toString()));
+        }
+        continue;
+      }
+
+      if (singleLineComment || multiLineComment) {
+        continue;
+      }
+
       if (character.equals('\\')) {
         antiSlash = true;
       }
+
       if (character.equals('\'')) {
         if (antiSlash) {
           antiSlash = false;
@@ -527,6 +544,7 @@ public class JDBCInterpreter extends Interpreter {
           quoteString = true;
         }
       }
+
       if (character.equals('"')) {
         if (antiSlash) {
           antiSlash = false;
@@ -537,26 +555,42 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
+      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
+          && sql.length() > item + 1) {
+        if (character.equals('-') && sql.charAt(item + 1) == '-') {
+          singleLineComment = true;
+          continue;
+        }
+
+        if (character.equals('/') && sql.charAt(item + 1) == '*') {
+          multiLineComment = true;
+          continue;
+        }
+      }
+
       if (character.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
-        queries.add(query.toString());
+        queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
         query.append(character);
-        queries.add(query.toString());
+        queries.add(StringUtils.trim(query.toString()));
       } else {
         query.append(character);
       }
     }
+
     return queries;
   }
 
   private void executePrecode(Connection connection, String propertyKey) throws SQLException {
     String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
     if (StringUtils.isNotBlank(precode)) {
-      precode = StringUtils.trim(precode);
-      logger.info("Run SQL precode '{}'", precode);
+      List<String> precodeQueries = splitSqlQueries(precode);
       try (Statement statement = connection.createStatement()) {
-        statement.execute(precode);
+        for (String precodeQuery : precodeQueries) {
+          logger.info("Run SQL precode '{}'", precodeQuery);
+          statement.execute(precodeQuery);
+        }
         if (!connection.getAutoCommit()) {
           connection.commit();
         }

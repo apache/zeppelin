@@ -448,4 +448,30 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("@TESTVARIABLE\n2\n", interpreterResult.message().get(0).getData());
   }
+
+  @Test
+  public void testExcludingComments() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "/* ; */\n" +
+        "--select * from test_table\n" +
+        "select * from test_table; /* some comment ; */\n" +
+        "/*\n" +
+        "select * from test_table;\n" +
+        "*/\n" +
+        "select * from test_table WHERE ID = ';--';\n" +
+        "select * from test_table WHERE ID = '/*' -- test";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(3, interpreterResult.message().size());
+  }
 }
