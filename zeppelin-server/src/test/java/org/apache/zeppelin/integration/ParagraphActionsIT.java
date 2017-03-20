@@ -566,7 +566,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy "));
 
-      Select dropDownMenu = new Select(driver.findElement(By.xpath((getParagraphXPath(1) + "//select"))));
+      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[1]"))));
       dropDownMenu.selectByVisibleText("Alice");
       collector.checkThat("After selection in drop down menu, output should display the newly selected option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -575,9 +575,9 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       clickAndWait(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]"));
 
-      Select sameDropDownMenu = new Select(driver.findElement(By.xpath((getParagraphXPath(1) + "//select"))));
+      Select sameDropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[1]"))));
       sameDropDownMenu.selectByVisibleText("Bob");
-      collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run after selecting a different option",
+      collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run if selecting a different option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy 1"));
 
@@ -605,17 +605,24 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.containsString("Greetings han and leia and luke"));
 
-      WebElement firstCheckbox = driver.findElement(By.xpath(getParagraphXPath(1) + "//input[1]"));
+      WebElement firstCheckbox = driver.findElement(By.xpath("(" + getParagraphXPath(1) + "//input[@type='checkbox'])[1]"));
       firstCheckbox.click();
-      collector.checkThat("After unchecking one of the boxes, output should not display any change",
+      collector.checkThat("After unchecking one of the boxes, we can see the newly updated output without the option we unchecked",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
-              CoreMatchers.containsString("Greetings han and leia and luke"));
+              CoreMatchers.containsString("Greetings leia and luke"));
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      clickAndWait(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]"));
+
+      WebElement secondCheckbox = driver.findElement(By.xpath("(" + getParagraphXPath(1) + "//input[@type='checkbox'])[2]"));
+      secondCheckbox.click();
+      collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run if check box state is modified",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+              CoreMatchers.containsString("Greetings leia and luke"));
 
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
-      collector.checkThat("Only after running the paragraph, we can see the newly updated output without the box we unchecked",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
-              CoreMatchers.containsString("Greetings leia and luke"));
+
 
       deleteTestNotebook(driver);
 
@@ -642,7 +649,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy \nHowdy "));
 
-      Select dropDownMenu = new Select(driver.findElement(By.xpath((getParagraphXPath(1) + "//select[1]"))));
+      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[1]"))));
       dropDownMenu.selectByVisibleText("Apple");
       collector.checkThat("After selection in drop down menu, output should display the new option we selected",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -651,10 +658,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       clickAndWait(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]"));
 
-      Select sameDropDownMenu = new Select(driver.findElement(By.xpath((getParagraphXPath(1) + "//select"))));
-      sameDropDownMenu.selectByVisibleText("Orange");
+      Select sameDropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[2]"))));
+      sameDropDownMenu.selectByVisibleText("Earth");
       waitForParagraph(1, "FINISHED");
-      collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run after selecting a different option",
+      collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run if selecting a different option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy 1\nHowdy "));
 
