@@ -217,7 +217,6 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
         new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
 
-    LOG.info("broadcasted notes, starting userLoginRoutine");
     ZeppelinhubUtils.userLoginRoutine(username);
   }
   

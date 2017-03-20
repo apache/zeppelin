@@ -99,21 +99,18 @@ public class ZeppelinhubUtils {
   }
   
   public static void userLoginRoutine(String username) {
-    LOG.info("Executing user login routine");
+    LOG.debug("Executing user login routine");
     String token = UserTokenContainer.instance.getUserToken(username);
     UserTokenContainer.instance.setUserToken(username, token);
-    LOG.info("Token for {} is {} ", username, token);
     String msg = ZeppelinhubUtils.liveMessage(token);
-    LOG.info("Live message is {} with token {}", msg, token);
     ZeppelinhubClient.getInstance()
         .send(msg, token);
   }
   
   public static void userLogoutRoutine(String username) {
-    LOG.info("Executing user logout routine");
+    LOG.debug("Executing user logout routine");
     String token = UserTokenContainer.instance.removeUserToken(username);
     String msg = ZeppelinhubUtils.deadMessage(token);
-    LOG.info("Dead message is {} with token {}", msg, token);
     ZeppelinhubClient.getInstance()
         .send(msg, token);
     ZeppelinhubClient.getInstance().removeSession(token);

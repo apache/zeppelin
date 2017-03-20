@@ -51,14 +51,13 @@ public class UserTokenContainer {
   }
 
   private UserTokenContainer(ZeppelinhubRestApiHandler restClient, String defaultToken) {
-    LOG.info("Initializing ZeppelinHub token container");
     restApiClient = restClient;
     this.defaultToken = defaultToken;
   }
 
   public void setUserToken(String username, String token) {
     if (StringUtils.isBlank(username) || StringUtils.isBlank(token)) {
-      LOG.info("Can't set empty user token");
+      LOG.warn("Can't set empty user token");
       return;
     }
     userTokens.put(username, token);
