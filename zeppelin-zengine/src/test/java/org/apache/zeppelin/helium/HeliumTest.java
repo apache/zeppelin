@@ -122,7 +122,7 @@ public class HeliumTest {
         ""));
 
     // then
-    assertEquals(1, helium.getAllPackageInfo(false).size());
+    assertEquals(1, helium.getAllPackageInfoWithoutRefresh().size());
 
     // when
     registry1.add(new HeliumPackage(
@@ -136,7 +136,7 @@ public class HeliumTest {
         ""));
 
     // then
-    assertEquals(1, helium.getAllPackageInfo(false).size());
-    assertEquals(2, helium.getAllPackageInfo(true).size());
+    assertEquals(1, helium.getAllPackageInfoWithoutRefresh().size());
+    assertEquals(2, helium.getAllPackageInfo(true, null).size());
   }
 }

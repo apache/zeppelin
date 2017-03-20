@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status';
+
 angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl);
 
 function JobCtrl($scope, $http, baseUrlSrv) {
@@ -24,7 +26,7 @@ function JobCtrl($scope, $http, baseUrlSrv) {
   $scope.getProgress = function() {
     var statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
     var runningJob = _.countBy(statusList, function(status) {
-      if (status === 'FINISHED' || status === 'RUNNING') {
+      if (status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED) {
         return 'matchCount';
       } else {
         return 'none';

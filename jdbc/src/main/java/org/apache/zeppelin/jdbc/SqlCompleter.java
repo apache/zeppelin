@@ -111,6 +111,8 @@ public class SqlCompleter extends StringsCompleter {
       try {
         while (schemas.next()) {
           String schemaName = schemas.getString("TABLE_SCHEM");
+          if (schemaName == null)
+            schemaName = "";
           if (schemaFilter.equals("") || schemaFilter == null || schemaName.matches(
                   schemaFilter.replace("_", ".").replace("%", ".*?"))) {
             res.add(schemaName);

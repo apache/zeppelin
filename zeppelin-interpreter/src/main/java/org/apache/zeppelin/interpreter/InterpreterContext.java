@@ -192,4 +192,8 @@ public class InterpreterContext {
   public void setRemoteWorksController(RemoteWorksController remoteWorksController) {
     this.remoteWorksController = remoteWorksController;
   }
+
+  public InterpreterOutput out() {
+    return out;
+  }
 }

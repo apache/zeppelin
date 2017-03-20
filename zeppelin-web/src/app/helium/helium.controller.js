@@ -14,60 +14,76 @@
 
 import { HeliumType, } from '../../components/helium/helium-type';
 
-angular.module('zeppelinWebApp').controller('HeliumCtrl', HeliumCtrl);
-
-function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService) {
+export default function HeliumCtrl($scope, $rootScope, $sce,
+                                   baseUrlSrv, ngToast, heliumService) {
   'ngInject';
 
-  $scope.packageInfos = {};
-  $scope.defaultVersions = {};
+  $scope.pkgSearchResults = {};
+  $scope.defaultPackages = {};
   $scope.showVersions = {};
   $scope.bundleOrder = [];
   $scope.bundleOrderChanged = false;
+  $scope.vizTypePkg = {}
+  $scope.spellTypePkg = {}
+  $scope.intpTypePkg = {}
+  $scope.appTypePkg = {}
+  $scope.numberOfEachPackageByType = {}
+  $scope.allPackageTypes = [HeliumType][0]
+  $scope.pkgListByType = 'VISUALIZATION'
+  $scope.defaultPackageConfigs = {}; // { pkgName, [{name, type, desc, value, defaultValue}] }
+  $scope.intpDefaultIcon = $sce.trustAsHtml('<img src="../assets/images/maven_default_icon.png" style="width: 12px"/>');
 
-  var buildDefaultVersionListToDisplay = function(packageInfos) {
-    var defaultVersions = {};
-    // show enabled version if any version of package is enabled
+  function init() {
+    // get all package info and set config
+    heliumService.getAllPackageInfoAndDefaultPackages()
+      .then(({ pkgSearchResults, defaultPackages }) => {
+        $scope.pkgSearchResults = pkgSearchResults;
+        $scope.defaultPackages = defaultPackages;
+        classifyPkgType($scope.defaultPackages)
+        return heliumService.getAllPackageConfigs()
+      })
+      .then(defaultPackageConfigs => {
+        $scope.defaultPackageConfigs = defaultPackageConfigs;
+      });
+
+    // 2. get vis package order
+    heliumService.getVisualizationPackageOrder()
+      .then(visPackageOrder => {
+        $scope.bundleOrder = visPackageOrder;
+        $scope.bundleOrderChanged = false;
+      });
+  }
+
+  var classifyPkgType = function(packageInfos) {
+    var vizTypePkg = {}
+    var spellTypePkg = {}
+    var intpTypePkg = {}
+    var appTypePkg = {}
+
     for (var name in packageInfos) {
-      var pkgs = packageInfos[name];
-      for (var pkgIdx in pkgs) {
-        var pkg = pkgs[pkgIdx];
-        pkg.pkg.icon = $sce.trustAsHtml(pkg.pkg.icon);
-        if (pkg.enabled) {
-          defaultVersions[name] = pkg;
-          pkgs.splice(pkgIdx, 1);
-          break;
-        }
-      }
+      var pkgs = packageInfos[name]
+      var pkgType = pkgs.pkg.type
 
-      // show first available version if package is not enabled
-      if (!defaultVersions[name]) {
-        defaultVersions[name] = pkgs[0];
-        pkgs.splice(0, 1);
+      switch (pkgType) {
+        case HeliumType.VISUALIZATION:
+          vizTypePkg[name] = pkgs;
+          break;
+        case HeliumType.SPELL:
+          spellTypePkg[name] = pkgs;
+          break;
+        case HeliumType.INTERPRETER:
+          intpTypePkg[name] = pkgs;
+          break;
+        case HeliumType.APPLICATION:
+          appTypePkg[name] = pkgs;
+          break;
       }
     }
-    $scope.defaultVersions = defaultVersions;
-  };
 
-  var getAllPackageInfo = function() {
-    heliumService.getAllPackageInfo().
-    success(function(data, status) {
-      $scope.packageInfos = data.body;
-      buildDefaultVersionListToDisplay($scope.packageInfos);
-    }).
-    error(function(data, status) {
-      console.log('Can not load package info %o %o', status, data);
-    });
-  };
-
-  var getBundleOrder = function() {
-    heliumService.getVisualizationPackageOrder().
-    success(function(data, status) {
-      $scope.bundleOrder = data.body;
-    }).
-    error(function(data, status) {
-      console.log('Can not get bundle order %o %o', status, data);
-    });
+    $scope.vizTypePkg = vizTypePkg
+    $scope.spellTypePkg = spellTypePkg
+    $scope.appTypePkg = appTypePkg
+    $scope.intpTypePkg = intpTypePkg
   };
 
   $scope.bundleOrderListeners = {
@@ -77,14 +93,6 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
       $scope.bundleOrderChanged = true;
     }
   };
-
-  var init = function() {
-    getAllPackageInfo();
-    getBundleOrder();
-    $scope.bundleOrderChanged = false;
-  };
-
-  init();
 
   $scope.saveBundleOrder = function() {
     var confirm = BootstrapDialog.confirm({
@@ -115,24 +123,24 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
         }
       }
     });
-  }
+  };
 
   var getLicense = function(name, artifact) {
-    var pkg = _.filter($scope.defaultVersions[name], function(p) {
+    var filteredPkgSearchResults = _.filter($scope.defaultPackages[name], function(p) {
       return p.artifact === artifact;
     });
 
     var license;
-    if (pkg.length === 0) {
-      pkg = _.filter($scope.packageInfos[name], function(p) {
+    if (filteredPkgSearchResults.length === 0) {
+      filteredPkgSearchResults = _.filter($scope.pkgSearchResults[name], function(p) {
         return p.pkg.artifact === artifact;
       });
 
-      if (pkg.length > 0) {
-        license  = pkg[0].pkg.license;
+      if (filteredPkgSearchResults.length > 0) {
+        license  = filteredPkgSearchResults[0].pkg.license;
       }
     } else {
-      license = pkg[0].license;
+      license = filteredPkgSearchResults[0].license;
     }
 
     if (!license) {
@@ -141,40 +149,58 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
     return license;
   }
 
-  $scope.enable = function(name, artifact) {
+  $scope.enable = function(name, artifact, type, groupId) {
     var license = getLicense(name, artifact);
-
-    var confirm = BootstrapDialog.confirm({
-      closable: false,
-      closeByBackdrop: false,
-      closeByKeyboard: false,
+    var mavenArtifactInfoToHTML = groupId +':'+ artifact.split('@')[0] + ':' + artifact.split('@')[1];
+    var zeppelinVersion = $rootScope.zeppelinVersion;
+    var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
+    
+    var confirm = ''
+    if (type === 'INTERPRETER') {
+    confirm = BootstrapDialog.show({
       title: '',
-      message: 'Do you want to enable ' + name + '?' +
-      '<div style="color:gray">' + artifact + '</div>' +
-      '<div style="border-top: 1px solid #efefef; margin-top: 10px; padding-top: 5px;">License</div>' +
-      '<div style="color:gray">' + license + '</div>',
-      callback: function(result) {
-        if (result) {
-          confirm.$modalFooter.find('button').addClass('disabled');
-          confirm.$modalFooter.find('button:contains("OK")')
-            .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
-          heliumService.enable(name, artifact).
-          success(function(data, status) {
-            init();
-            confirm.close();
-          }).
-          error(function(data, status) {
-            confirm.close();
-            console.log('Failed to enable package %o %o. %o', name, artifact, data);
-            BootstrapDialog.show({
-              title: 'Error on enabling ' + name,
-              message: data.message
-            });
-          });
-          return false;
-        }
-      }
+      message: '<p>Below command will download maven artifact ' +
+      '<code style="font-size: 11.5px; background-color: #f5f5f5; color: #0a0a0a">' +
+        mavenArtifactInfoToHTML + '</code>' +
+      ' and all of its transitive dependencies into interpreter/interpreter-name directory.<p>' +
+      '<div class="highlight"><pre><code class="text language-text" data-lang="text" style="font-size: 11.5px">' +
+      './bin/install-interpreter.sh --name "interpreter-name" --artifact ' +
+        mavenArtifactInfoToHTML +' </code></pre>' +
+      '<p>After restart Zeppelin, create interpreter setting and bind it with your note. ' +
+      'For more detailed information, see <a target="_blank" href=' +
+        url + '>Interpreter Installation.</a></p>'
     });
+    } else {
+      confirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '',
+        message: 'Do you want to enable ' + name + '?' +
+        '<div style="color:gray">' + artifact + '</div>' +
+        '<div style="border-top: 1px solid #efefef; margin-top: 10px; padding-top: 5px;">License</div>' +
+        '<div style="color:gray">' + license + '</div>',
+        callback: function (result) {
+          if (result) {
+            confirm.$modalFooter.find('button').addClass('disabled');
+            confirm.$modalFooter.find('button:contains("OK")')
+              .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
+            heliumService.enable(name, artifact, type).success(function (data, status) {
+              init();
+              confirm.close();
+            }).error(function (data, status) {
+              confirm.close();
+              console.log('Failed to enable package %o %o. %o', name, artifact, data);
+              BootstrapDialog.show({
+                title: 'Error on enabling ' + name,
+                message: data.message
+              });
+            });
+            return false;
+          }
+        }
+      });
+    }
   };
 
   $scope.disable = function(name) {
@@ -226,4 +252,66 @@ function HeliumCtrl($scope, $rootScope, $sce, baseUrlSrv, ngToast, heliumService
     return (pkg.type === HeliumType.SPELL || pkg.type === HeliumType.VISUALIZATION) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
+
+  $scope.hasMavenLink = function(pkgSearchResult) {
+    const pkg = pkgSearchResult.pkg;
+    return (pkg.type === HeliumType.APPLICATION || pkg.type === HeliumType.INTERPRETER) &&
+      !$scope.isLocalPackage(pkgSearchResult);
+  };
+
+  $scope.getPackageSize = function(pkgSearchResult, targetPkgType) {
+    var result = []
+    _.map(pkgSearchResult, function (pkg) {
+      result.push(_.find(pkg, {type: targetPkgType}))
+    })
+    return _.compact(result).length
+  }
+
+  $scope.configExists = function(pkgSearchResult) {
+    // helium package config is persisted per version
+    return pkgSearchResult.pkg.config && pkgSearchResult.pkg.artifact;
+  };
+
+  $scope.configOpened = function(pkgSearchResult) {
+    return pkgSearchResult.configOpened && !pkgSearchResult.configFetching;
+  };
+
+  $scope.getConfigButtonClass = function(pkgSearchResult) {
+    return (pkgSearchResult.configOpened && pkgSearchResult.configFetching) ?
+      'disabled' : '';
+  }
+
+  $scope.toggleConfigButton = function(pkgSearchResult) {
+    if (pkgSearchResult.configOpened) {
+      pkgSearchResult.configOpened = false;
+      return;
+    }
+
+    const pkg = pkgSearchResult.pkg;
+    const pkgName = pkg.name;
+    pkgSearchResult.configFetching = true;
+    pkgSearchResult.configOpened = true;
+
+    heliumService.getSinglePackageConfigs(pkg)
+      .then(confs => {
+        $scope.defaultPackageConfigs[pkgName] = confs;
+        pkgSearchResult.configFetching = false;
+      });
+  };
+
+  $scope.saveConfig = function(pkgSearchResult) {
+    const pkgName = pkgSearchResult.pkg.name;
+    const currentConf = $scope.defaultPackageConfigs[pkgName];
+
+    heliumService.saveConfig(pkgSearchResult.pkg, currentConf, () => {
+      // close after config is saved
+      pkgSearchResult.configOpened = false;
+    });
+  };
+
+  $scope.getDescriptionText = function(pkgSearchResult) {
+    return $sce.trustAsHtml(pkgSearchResult.pkg.description);
+  };
+
+  init();
 }

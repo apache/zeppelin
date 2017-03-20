@@ -81,6 +81,10 @@ export default class Nvd3ChartVisualization extends Visualization {
     return s;
   };
 
+  defaultY() {
+    return 0;
+  };
+
   xAxisTickFormat(d, xLabels) {
     if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
       return xLabels[d];
@@ -98,6 +102,7 @@ export default class Nvd3ChartVisualization extends Visualization {
 
   d3DataFromPivot(
     schema, rows, keys, groups, values, allowTextXAxis, fillMissingValues, multiBarChart) {
+    var self = this;
     // construct table data
     var d3g = [];
 
@@ -181,10 +186,10 @@ export default class Nvd3ChartVisualization extends Visualization {
         }
 
         var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
-        var yVar = 0;
+        var yVar = self.defaultY();
         if (xVar === undefined) { xVar = colName; }
         if (value !== undefined) {
-          yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
+          yVar = isNaN(value.value) ? self.defaultY() : parseFloat(value.value) / parseFloat(value.count);
         }
         d3g[i].values.push({
           x: xVar,

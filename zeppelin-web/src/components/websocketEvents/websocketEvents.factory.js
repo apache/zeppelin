@@ -89,7 +89,11 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
           label: 'Cancel',
           action: function(dialog) {
             dialog.close();
-            $location.path('/');
+            // using $rootScope.apply to trigger angular digest cycle
+            // changing $location.path inside bootstrap modal wont trigger digest
+            $rootScope.$apply(function() {
+              $location.path('/');
+            });
           }
         }];
       }
@@ -168,6 +172,8 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('setNoteRevisionResult', data);
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
+    } else {
+      console.error(`unknown websocket op: ${op}`);
     }
   });
 

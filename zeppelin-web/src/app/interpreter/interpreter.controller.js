@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status';
+
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
 function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
@@ -114,7 +116,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         isDownloading = true;
       }
 
-      if (setting.status === 'ERROR' || setting.errorReason) {
+      if (setting.status === ParagraphStatus.ERROR || setting.errorReason) {
         ngToast.danger({content: 'Error setting properties for interpreter \'' +
         setting.group + '.' + setting.name + '\': ' + setting.errorReason,
           verticalPosition: 'top', dismissOnTimeout: false});

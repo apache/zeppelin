@@ -79,6 +79,10 @@
   width: 500px;
 }
 
+.spellConfigButton {
+  background-color: #FEFEFE;
+}
+
 .heliumPackageList .heliumPackageDisabledArtifact {
   color:gray;
 }
@@ -132,4 +136,50 @@
   color: #636363;
 }
 
+.heliumLearnMore {
+  margin-top:10px;
+}
 
+.heliumLearnMore a {
+  cursor:pointer;
+  margin-right:10px;
+  text-decoration:none;
+}
+
+.heliumRepoBtn {
+  margin-right: 8px;
+}
+
+.heliumRepoBtn:hover, .heliumRepoBtn:focus {
+  margin-right: 8px;
+  outline: 0;
+}
+
+.heliumRepoBtnToggled {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color:#adadad;
+}
+
+.localPkgInfo {
+  margin: 10px 12px 0 0;
+  font-size: 11px;
+  font-style: italic;
+  color: #aaaaaa;
+  text-align: right;
+}
+
+.heliumConfig {
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.heliumConfigTable {
+  margin-top: 15px;
+  vertical-align:middle;
+  margin-bottom: 15px;
+}
+
+.heliumConfigValueText {
+  vertical-align: top;
+}

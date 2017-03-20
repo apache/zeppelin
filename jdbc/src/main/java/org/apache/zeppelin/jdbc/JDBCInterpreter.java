@@ -14,14 +14,7 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
-import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -37,11 +30,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.base.Throwables;
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
@@ -49,7 +42,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
@@ -61,9 +57,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
+
+import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
@@ -101,8 +101,10 @@ public class JDBCInterpreter extends Interpreter {
   static final String URL_KEY = "url";
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
+  static final String PRECODE_KEY = "precode";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
+  static final String PRECODE_KEY_TEMPLATE = "%s.precode";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -117,6 +119,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_URL = DEFAULT_KEY + DOT + URL_KEY;
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
+  static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
@@ -340,6 +343,9 @@ public class JDBCInterpreter extends Interpreter {
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
+      try (Connection connection = DriverManager.getConnection(jdbcDriver)) {
+        executePrecode(connection, propertyKey);
+      }
     }
     return DriverManager.getConnection(jdbcDriver);
   }
@@ -374,16 +380,20 @@ public class JDBCInterpreter extends Interpreter {
                 if (lastIndexOfUrl == -1) {
                   lastIndexOfUrl = connectionUrl.length();
                 }
-                connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
+                boolean hasProxyUser = property.containsKey("hive.proxy.user");
+                if (!hasProxyUser || !property.getProperty("hive.proxy.user").equals("false")){
+                  logger.debug("Using hive proxy user");
+                  connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
+                }
                 connection = getConnectionFromPool(connectionUrl.toString(),
-                    user, propertyKey, properties);
+                        user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
                 try {
-                  ugi = UserGroupInformation.createProxyUser(user,
-                    UserGroupInformation.getCurrentUser());
+                  ugi = UserGroupInformation.createProxyUser(
+                          user, UserGroupInformation.getCurrentUser());
                 } catch (Exception e) {
-                  logger.error("Error in createProxyUser", e);
+                  logger.error("Error in getCurrentUser", e);
                   StringBuilder stringBuilder = new StringBuilder();
                   stringBuilder.append(e.getMessage()).append("\n");
                   stringBuilder.append(e.getCause());
@@ -540,6 +550,20 @@ public class JDBCInterpreter extends Interpreter {
     return queries;
   }
 
+  private void executePrecode(Connection connection, String propertyKey) throws SQLException {
+    String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
+    if (StringUtils.isNotBlank(precode)) {
+      precode = StringUtils.trim(precode);
+      logger.info("Run SQL precode '{}'", precode);
+      try (Statement statement = connection.createStatement()) {
+        statement.execute(precode);
+        if (!connection.getAutoCommit()) {
+          connection.commit();
+        }
+      }
+    }
+  }
+
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
     Connection connection;
@@ -611,7 +635,7 @@ public class JDBCInterpreter extends Interpreter {
         } catch (SQLException e) { /*ignored*/ }
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
-    } catch (Exception e) {
+    } catch (Throwable e) {
       if (e.getCause() instanceof TTransportException &&
           Throwables.getStackTraceAsString(e).contains("GSS") &&
           getJDBCConfiguration(user).isConnectionInDBDriverPoolSuccessful(propertyKey)) {
@@ -761,4 +785,3 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 }
-

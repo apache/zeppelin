@@ -83,6 +83,9 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
+  def getInterpreterContext(self):
+    return self.z.getInterpreterContext()
+
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
@@ -252,7 +255,7 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
-intp.onPythonScriptInitialized()
+intp.onPythonScriptInitialized(os.getpid())
 
 jsc = intp.getJavaSparkContext()
 

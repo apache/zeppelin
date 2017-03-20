@@ -31,9 +31,10 @@ export class SpellBase {
    * Consumes text and return `SpellResult`.
    *
    * @param paragraphText {string} which doesn't include magic
+   * @param config {Object}
    * @return {SpellResult}
    */
-  interpret(paragraphText) {
+  interpret(paragraphText, config) {
     throw new Error('SpellBase.interpret() should be overrided');
   }
 

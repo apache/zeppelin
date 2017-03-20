@@ -28,11 +28,18 @@ export default class TranslatorSpell extends SpellBase {
         super("%translator");
     }
 
-    interpret(paragraphText) {
+    /**
+     * Consumes text and return `SpellResult`.
+     *
+     * @param paragraphText {string} which doesn't include magic
+     * @param config {Object}
+     * @return {SpellResult}
+     */
+    interpret(paragraphText, config) {
         const parsed = this.parseConfig(paragraphText);
+        const auth = config['access-token'];
         const source = parsed.source;
         const target = parsed.target;
-        const auth = parsed.auth;
         const text = parsed.text;
 
         /**
@@ -49,7 +56,7 @@ export default class TranslatorSpell extends SpellBase {
     }
 
     parseConfig(text) {
-        const pattern = /^\s*(\S+)-(\S+)\s*(\S+)([\S\s]*)/g;
+        const pattern = /^\s*(\S+)-(\S+)\s*([\S\s]*)/g;
         const match = pattern.exec(text);
 
         if (!match) {
@@ -59,8 +66,7 @@ export default class TranslatorSpell extends SpellBase {
         return {
             source: match[1],
             target: match[2],
-            auth: match[3],
-            text: match[4],
+            text: match[3],
         }
     }
 

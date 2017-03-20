@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class PythonInterpreterPandasSql extends Interpreter {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
 
-  private String SQL_BOOTSTRAP_FILE_PY = "/bootstrap_sql.py";
+  private String SQL_BOOTSTRAP_FILE_PY = "/python/bootstrap_sql.py";
 
   public PythonInterpreterPandasSql(Properties property) {
     super(property);
@@ -64,23 +64,15 @@ public class PythonInterpreterPandasSql extends Interpreter {
   @Override
   public void open() {
     LOG.info("Open Python SQL interpreter instance: {}", this.toString());
+
     try {
       LOG.info("Bootstrap {} interpreter with {}", this.toString(), SQL_BOOTSTRAP_FILE_PY);
       PythonInterpreter python = getPythonInterpreter();
+
       python.bootStrapInterpreter(SQL_BOOTSTRAP_FILE_PY);
     } catch (IOException e) {
       LOG.error("Can't execute " + SQL_BOOTSTRAP_FILE_PY + " to import SQL dependencies", e);
     }
-  }
-
-  /**
-   * Checks if Python dependencies pandas and pandasql are installed
-   * @return True if they are
-   */
-  boolean isPandasAndPandasqlInstalled() {
-    PythonInterpreter python = getPythonInterpreter();
-    String output = python.sendCommandToPython("\n\nimport pandas\nimport pandasql\n");
-    return !output.contains("ImportError");
   }
 
   @Override
@@ -94,7 +86,8 @@ public class PythonInterpreterPandasSql extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     LOG.info("Running SQL query: '{}' over Pandas DataFrame", st);
     Interpreter python = getPythonInterpreter();
-    return python.interpret("z.show(pysqldf('" + st + "'))", context);
+
+    return python.interpret("z.show(pysqldf('" + st + "'))\nz._displayhook()", context);
   }
 
   @Override

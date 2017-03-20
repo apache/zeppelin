@@ -26,7 +26,6 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
@@ -64,6 +63,7 @@ public class RemoteInterpreter extends Interpreter {
   private String userName;
   private Boolean isUserImpersonate;
   private int outputLimit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
+  private String interpreterGroupName;
 
   /**
    * Remote interpreter and manage interpreter process
@@ -72,7 +72,7 @@ public class RemoteInterpreter extends Interpreter {
       String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
       int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
-      int outputLimit) {
+      int outputLimit, String interpreterGroupName) {
     super(property);
     this.sessionKey = sessionKey;
     this.className = className;
@@ -88,6 +88,7 @@ public class RemoteInterpreter extends Interpreter {
     this.userName = userName;
     this.isUserImpersonate = isUserImpersonate;
     this.outputLimit = outputLimit;
+    this.interpreterGroupName = interpreterGroupName;
   }
 
 
@@ -185,7 +186,7 @@ public class RemoteInterpreter extends Interpreter {
           // create new remote process
           remoteProcess = new RemoteInterpreterManagedProcess(
               interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener);
+              remoteInterpreterProcessListener, applicationEventListener, interpreterGroupName);
         }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
@@ -251,6 +252,14 @@ public class RemoteInterpreter extends Interpreter {
     synchronized (interpreterGroup) {
       // initialize all interpreters in this interpreter group
       List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
+      // TODO(jl): this open method is called by LazyOpenInterpreter.open(). It, however,
+      // initializes all of interpreters with same sessionKey. But LazyOpenInterpreter assumes if it
+      // doesn't call open method, it's not open. It causes problem while running intp.close()
+      // In case of Spark, this method initializes all of interpreters and init() method increases
+      // reference count of RemoteInterpreterProcess. But while closing this interpreter group, all
+      // other interpreters doesn't do anything because those LazyInterpreters aren't open.
+      // But for now, we have to initialise all of interpreters for some reasons.
+      // See Interpreter.getInterpreterInTheSameSessionByClassName(String)
       for (Interpreter intp : new ArrayList<>(interpreters)) {
         Interpreter p = intp;
         while (p instanceof WrappedInterpreter) {

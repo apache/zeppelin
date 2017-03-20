@@ -12,9 +12,16 @@
  * limitations under the License.
  */
 
+import { SpellResult, } from '../../spell';
 import {
-  SpellResult,
-} from '../../spell';
+  ParagraphStatus, isParagraphRunning,
+} from './paragraph.status';
+
+const ParagraphExecutor = {
+  SPELL: 'SPELL',
+  INTERPRETER: 'INTERPRETER',
+  NONE: '', /** meaning `DONE` */
+};
 
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
@@ -25,12 +32,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   'ngInject';
 
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $rootScope.keys = Object.keys;
   $scope.parentNote = null;
   $scope.paragraph = {};
   $scope.paragraph.results = {};
   $scope.paragraph.results.msg = [];
   $scope.originalText = '';
   $scope.editor = null;
+
+  // transactional info for spell execution
+  $scope.spellTransaction = {
+    totalResultCount: 0, renderedResultCount: 0,
+    propagated: false, resultsMsg: [], paragraphText: '',
+  };
 
   var editorSetting = {};
   // flag that is used to set editor setting on paste percent sign
@@ -114,12 +128,24 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var initializeDefault = function(config) {
+    var forms = $scope.paragraph.settings.forms;
+    
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-
+  
     if (config.enabled === undefined) {
       config.enabled = true;
+    }
+  
+    for (var idx in forms) {
+      if (forms[idx]) {
+        if (forms[idx].options) {
+          if (config.runOnSelectionChange === undefined) {
+            config.runOnSelectionChange = true;
+          }
+        }
+      }
     }
 
     if (!config.results) {
@@ -202,7 +228,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.isRunning = function(paragraph) {
-    return paragraph.status === 'RUNNING' || paragraph.status === 'PENDING';
+    return isParagraphRunning(paragraph);
   };
 
   $scope.cancelParagraph = function(paragraph) {
@@ -224,10 +250,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.handleSpellError = function(paragraphText, error,
                                      digestRequired, propagated) {
     const errorMessage = error.stack;
-    $scope.paragraph.status = 'ERROR';
+    $scope.paragraph.status = ParagraphStatus.ERROR;
     $scope.paragraph.errorMessage = errorMessage;
     console.error('Failed to execute interpret() in spell\n', error);
-    if (digestRequired) { $scope.$digest(); }
 
     if (!propagated) {
       $scope.propagateSpellResult(
@@ -237,8 +262,50 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  $scope.runParagraphUsingSpell = function(spell, paragraphText,
+  $scope.prepareSpellTransaction = function(resultsMsg, propagated, paragraphText) {
+    $scope.spellTransaction.totalResultCount = resultsMsg.length;
+    $scope.spellTransaction.renderedResultCount = 0;
+    $scope.spellTransaction.propagated = propagated;
+    $scope.spellTransaction.resultsMsg = resultsMsg;
+    $scope.spellTransaction.paragraphText = paragraphText;
+  };
+
+  /**
+   * - update spell transaction count and
+   * - check transaction is finished based on the result count
+   * @returns {boolean}
+   */
+  $scope.increaseSpellTransactionResultCount = function() {
+    $scope.spellTransaction.renderedResultCount += 1;
+
+    const total = $scope.spellTransaction.totalResultCount;
+    const current = $scope.spellTransaction.renderedResultCount;
+    return total === current;
+  };
+
+  $scope.cleanupSpellTransaction = function() {
+    const status = ParagraphStatus.FINISHED;
+    $scope.paragraph.executor = ParagraphExecutor.NONE;
+    $scope.paragraph.status = status;
+    $scope.paragraph.results.code = status;
+
+    const propagated = $scope.spellTransaction.propagated;
+    const resultsMsg = $scope.spellTransaction.resultsMsg;
+    const paragraphText = $scope.spellTransaction.paragraphText;
+
+    if (!propagated) {
+      const propagable = SpellResult.createPropagable(resultsMsg);
+      $scope.propagateSpellResult(
+        $scope.paragraph.id, $scope.paragraph.title,
+        paragraphText, propagable, status, '',
+        $scope.paragraph.config, $scope.paragraph.settings.params);
+    }
+  };
+
+  $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
+    $scope.paragraph.status = 'RUNNING';
+    $scope.paragraph.executor = ParagraphExecutor.SPELL;
     $scope.paragraph.results = {};
     $scope.paragraph.errorMessage = '';
     if (digestRequired) { $scope.$digest(); }
@@ -248,30 +315,20 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       const splited = paragraphText.split(magic);
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '');
-      const spellResult = spell.interpret(textWithoutMagic);
-      const parsed = spellResult.getAllParsedDataWithTypes(
-        heliumService.getAllSpells(), magic, textWithoutMagic);
 
       // handle actual result message in promise
-      parsed.then(resultsMsg => {
-        const status = 'FINISHED';
-        $scope.paragraph.status = status;
-        $scope.paragraph.results.code = status;
-        $scope.paragraph.results.msg = resultsMsg;
-        $scope.paragraph.config.tableHide = false;
-        if (digestRequired) { $scope.$digest(); }
+      heliumService.executeSpell(magic, textWithoutMagic)
+        .then(resultsMsg => {
+          $scope.prepareSpellTransaction(resultsMsg, propagated, paragraphText);
 
-        if (!propagated) {
-          const propagable = SpellResult.createPropagable(resultsMsg);
-          $scope.propagateSpellResult(
-            $scope.paragraph.id, $scope.paragraph.title,
-            paragraphText, propagable, status, '',
-            $scope.paragraph.config, $scope.paragraph.settings.params);
-        }
-      }).catch(error => {
-        $scope.handleSpellError(paragraphText, error,
-          digestRequired, propagated);
-      });
+          $scope.paragraph.results.msg = resultsMsg;
+          $scope.paragraph.config.tableHide = false;
+
+        })
+        .catch(error => {
+          $scope.handleSpellError(paragraphText, error,
+            digestRequired, propagated);
+        });
     } catch (error) {
       $scope.handleSpellError(paragraphText, error,
         digestRequired, propagated);
@@ -307,13 +364,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return;
     }
-
     const magic = SpellResult.extractMagic(paragraphText);
-    const spell = heliumService.getSpellByMagic(magic);
 
-    if (spell) {
-      $scope.runParagraphUsingSpell(
-        spell, paragraphText, magic, digestRequired, propagated);
+    if (heliumService.getSpellByMagic(magic)) {
+      $scope.runParagraphUsingSpell(paragraphText, magic, digestRequired, propagated);
     } else {
       $scope.runParagraphUsingBackendInterpreter(paragraphText);
     }
@@ -341,6 +395,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphFromButton = function(paragraphText) {
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph(paragraphText, false, false)
+  };
+
+  $scope.turnOnAutoRun = function (paragraph) {
+    paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange;
+    commitParagraph(paragraph);
   };
 
   $scope.moveUp = function(paragraph) {
@@ -503,7 +562,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if ($scope.asIframe) {
       return 'col-md-12';
     } else {
-      return 'col-md-' + n;
+      return 'paragraph-col col-md-' + n;
     }
   };
 
@@ -1110,7 +1169,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.title = newPara.title;
     $scope.paragraph.lineNumbers = newPara.lineNumbers;
     $scope.paragraph.status = newPara.status;
-    if (newPara.status !== 'RUNNING') {
+    if (newPara.status !== ParagraphStatus.RUNNING) {
       $scope.paragraph.results = newPara.results;
     }
     $scope.paragraph.settings = newPara.settings;
@@ -1134,7 +1193,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
      const statusChanged = (newPara.status !== oldPara.status);
      const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
        isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
-       newPara.status === 'ERROR' || (newPara.status === 'FINISHED' && statusChanged);
+       newPara.status === ParagraphStatus.ERROR ||
+       (newPara.status === ParagraphStatus.FINISHED && statusChanged);
 
      // 2. update texts managed by $scope
      $scope.updateAllScopeTexts(oldPara, newPara);
@@ -1156,6 +1216,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
        }
      }
   };
+
+  /** $scope.$on */
 
   $scope.$on('runParagraphUsingSpell', function(event, data) {
     const oldPara = $scope.paragraph;
@@ -1340,5 +1402,18 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('closeTable', function(event) {
     $scope.closeTable($scope.paragraph);
+  });
+
+  $scope.$on('resultRendered', function(event, paragraphId) {
+    if ($scope.paragraph.id !== paragraphId) {
+      return;
+    }
+
+    /** increase spell result count and return if not finished */
+    if (!$scope.increaseSpellTransactionResultCount()) {
+      return;
+    }
+
+    $scope.cleanupSpellTransaction();
   });
 }

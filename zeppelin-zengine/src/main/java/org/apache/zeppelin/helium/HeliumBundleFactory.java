@@ -34,7 +34,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * Load helium visualization
+ * Load helium visualization & spell
  */
 public class HeliumBundleFactory {
   Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
@@ -45,6 +45,10 @@ public class HeliumBundleFactory {
   public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   public static final String HELIUM_BUNDLE = "helium.bundle.js";
   public static final String HELIUM_BUNDLES_VAR = "heliumBundles";
+  private final int FETCH_RETRY_COUNT = 2;
+  private final int FETCH_RETRY_FACTOR_COUNT = 1;
+  // Milliseconds
+  private final int FETCH_RETRY_MIN_TIMEOUT = 5000;
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File workingDirectory;
@@ -52,6 +56,7 @@ public class HeliumBundleFactory {
   private File visualizationModulePath;
   private File spellModulePath;
   private Gson gson;
+  private boolean nodeAndNpmInstalled = false;
 
   String bundleCacheKey = "";
   File currentCacheBundle;
@@ -78,11 +83,12 @@ public class HeliumBundleFactory {
 
     currentCacheBundle = new File(workingDirectory, HELIUM_BUNDLE_CACHE);
     gson = new Gson();
-    installNodeAndNpm();
-    configureLogger();
   }
 
-  private void installNodeAndNpm() {
+  void installNodeAndNpm() {
+    if (nodeAndNpmInstalled) {
+      return;
+    }
     try {
       NPMInstaller npmInstaller = frontEndPluginFactory.getNPMInstaller(getProxyConfig());
       npmInstaller.setNpmVersion(NPM_VERSION);
@@ -91,6 +97,8 @@ public class HeliumBundleFactory {
       NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
       nodeInstaller.setNodeVersion(NODE_VERSION);
       nodeInstaller.install();
+      configureLogger();
+      nodeAndNpmInstalled = true;
     } catch (InstallationException e) {
       logger.error(e.getMessage(), e);
     }
@@ -107,6 +115,20 @@ public class HeliumBundleFactory {
 
   public synchronized File buildBundle(List<HeliumPackage> pkgs, boolean forceRefresh)
       throws IOException {
+
+    if (pkgs == null || pkgs.size() == 0) {
+      // when no package is selected, simply return an empty file instead of try bundle package
+      synchronized (this) {
+        currentCacheBundle.getParentFile().mkdirs();
+        currentCacheBundle.delete();
+        currentCacheBundle.createNewFile();
+        bundleCacheKey = "";
+        return currentCacheBundle;
+      }
+    }
+
+    installNodeAndNpm();
+
     // package.json
     URL pkgUrl = Resources.getResource("helium/package.json");
     String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
@@ -194,7 +216,11 @@ public class HeliumBundleFactory {
 
     try {
       out.reset();
-      npmCommand("install --loglevel=error");
+      String commandForNpmInstall =
+              String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
+                              "--fetch-retry-mintimeout=%d",
+                      FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      npmCommand(commandForNpmInstall);
     } catch (TaskRunnerException e) {
       // ignore `(empty)` warning
       String cause = new String(out.toByteArray());
@@ -372,8 +398,12 @@ public class HeliumBundleFactory {
     }
   }
 
-  public synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
-    npmCommand("install " + pkg.getArtifact() + " npm install --loglevel=error");
+  synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
+    String commandForNpmInstallArtifact =
+        String.format("install %s --fetch-retries=%d --fetch-retry-factor=%d " +
+                        "--fetch-retry-mintimeout=%d", pkg.getArtifact(),
+                FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+    npmCommand(commandForNpmInstallArtifact);
   }
 
   private void npmCommand(String args) throws TaskRunnerException {
@@ -381,8 +411,8 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
+    installNodeAndNpm();
     NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), DEFAULT_NPM_REGISTRY_URL);
-
     npm.execute(args, env);
   }
 
