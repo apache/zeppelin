@@ -34,6 +34,7 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
     websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
         getZeppelinhubWebsocketUri(conf), token, conf);
     websocketClient.start();
-
   }
 
   private String getZeppelinHubWsUri(URI api) throws URISyntaxException {
@@ -241,7 +241,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
       return EMPTY_NOTE;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint", revId);
-    
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, endpoint);
 
@@ -321,18 +320,23 @@ public class ZeppelinHubRepo implements NotebookRepo {
     LOG.info("User {} will switch instance", user);
     String ticket = UserSessionContainer.instance.getSession(user);
     List<Instance> instances;
+    String currentToken = StringUtils.EMPTY, targetToken = StringUtils.EMPTY;
     try {
       instances = tokenManager.getUserInstances(ticket);
       if (instances.isEmpty()) {
         return;
       }
-
+      currentToken = tokenManager.getExistingUserToken(user);
       for (Instance instance : instances) {
         if (instance.id == instanceId) {
-          LOG.info("User {} switched to instance {}", user, instances.get(0).name);
+          LOG.info("User {} switched to instance {}", user, instance.name);
           tokenManager.setUserToken(user, instance.token);
+          targetToken = instance.token;
           break;
         }
+      }
+      if (!StringUtils.isBlank(currentToken) && !StringUtils.isBlank(targetToken)) {
+        ZeppelinhubUtils.userSwitchTokenRoutine(user, currentToken, targetToken);
       }
     } catch (IOException e) {
       LOG.error("Cannot switch instance for user {}", user, e);

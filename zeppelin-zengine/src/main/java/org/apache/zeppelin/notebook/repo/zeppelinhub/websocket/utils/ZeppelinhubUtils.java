@@ -118,4 +118,14 @@ public class ZeppelinhubUtils {
         .send(msg, token);
     ZeppelinhubClient.getInstance().removeSession(token);
   }
+  
+  public static void userSwitchTokenRoutine(String username, String originToken,
+      String targetToken) {
+    String offMsg = ZeppelinhubUtils.deadMessage(originToken);
+    ZeppelinhubClient.getInstance().send(offMsg, originToken);
+    ZeppelinhubClient.getInstance().removeSession(originToken);
+    
+    String onMsg = ZeppelinhubUtils.liveMessage(targetToken);
+    ZeppelinhubClient.getInstance().send(onMsg, targetToken);
+  }
 }

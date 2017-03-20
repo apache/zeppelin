@@ -86,6 +86,17 @@ public class UserTokenContainer {
     return token;
   }
   
+  public String getExistingUserToken(String principal) {
+    if (StringUtils.isBlank(principal) || "anonymous".equals(principal)) {
+      return StringUtils.EMPTY;
+    }
+    String token = userTokens.get(principal);
+    if (token == null) {
+      return StringUtils.EMPTY;
+    }
+    return token;
+  }
+  
   public String removeUserToken(String username) {
     return userTokens.remove(username);
   }
