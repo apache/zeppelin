@@ -41,6 +41,11 @@ class AdvancedTransformation extends Transformation {
     const self = this; /** for closure */
     const configInstance = self.config; /** for closure */
 
+    if (self.spec.initialized) {
+      self.spec.initialized = false
+      self.emitConfig(configInstance)
+    }
+
     return {
       template: SETTING_TEMPLATE,
       scope: {

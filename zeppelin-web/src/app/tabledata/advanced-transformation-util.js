@@ -258,6 +258,7 @@ export function initializeConfig(config, spec) {
   const currentVersion = JSON.stringify(spec)
   if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
     spec.version = currentVersion
+    spec.initialized = true
     delete config.chart      /** Object: contains current, available chart */
     delete config.spec       /** Object: axis, parameter spec for each chart */
     config.panel = { columnPanelOpened: true, parameterPanelOpened: false, }
