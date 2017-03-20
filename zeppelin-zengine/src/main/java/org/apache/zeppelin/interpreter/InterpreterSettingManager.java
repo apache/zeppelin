@@ -799,19 +799,11 @@ public class InterpreterSettingManager {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
       String noteId) {
-    InterpreterOption option = interpreterSetting.getOption();
-    if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-    } else if (option.isSession()) {
-      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
-      String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
-      interpreterGroup.close(key);
-      synchronized (interpreterGroup) {
-        interpreterGroup.remove(key);
-        interpreterGroup.notifyAll(); // notify createInterpreterForNote()
-      }
-      logger.info("Interpreter instance {} for note {} is removed", interpreterSetting.getName(),
-          noteId);
+    //TODO(jl): This is only for hotfix. You should fix it as a beautiful way
+    InterpreterOption interpreterOption = interpreterSetting.getOption();
+    if (!(InterpreterOption.SHARED.equals(interpreterOption.perNote)
+        && InterpreterOption.SHARED.equals(interpreterOption.perUser))) {
+      interpreterSetting.closeAndRemoveInterpreterGroup(noteId, "");
     }
   }
 

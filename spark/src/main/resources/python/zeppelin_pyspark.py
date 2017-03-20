@@ -83,6 +83,9 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
+  def getInterpreterContext(self):
+    return self.z.getInterpreterContext()
+
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
