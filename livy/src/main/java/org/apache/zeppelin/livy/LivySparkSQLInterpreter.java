@@ -32,6 +32,8 @@ import java.util.Properties;
  */
 public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
+  private static final String MAX_RESULTS = "zeppelin.livy.spark.sql.maxResult";
+
   private LivySparkInterpreter sparkInterpreter;
 
   private boolean isSpark2 = false;
@@ -39,7 +41,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
-    this.maxResult = Integer.parseInt(property.getProperty("zeppelin.livy.spark.sql.maxResult"));
+    this.maxResult = Integer.parseInt(property.getProperty(MAX_RESULTS));
   }
 
   @Override
@@ -128,8 +130,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
             List<String> rows = parseSQLOutput(message.getData());
             result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
             if (rows.size() >= (maxResult + 1)) {
-              result2.add(InterpreterResult.Type.HTML,
-                  "<font color=red>Results are limited by " + maxResult + ".</font>");
+              result2.add(ResultMessages.getExceedsLimitRowsMessage(maxResult, MAX_RESULTS));
             }
           } else {
             result2.add(message.getType(), message.getData());
