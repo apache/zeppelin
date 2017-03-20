@@ -155,6 +155,9 @@ public class ZeppelinhubRestApiHandler {
   }
 
   public String get(String token, String argument) throws IOException {
+    if (StringUtils.isBlank(token)) {
+      return StringUtils.EMPTY;
+    }
     String url = zepelinhubUrl + argument;
     return sendToZeppelinHub(HttpMethod.GET, url, StringUtils.EMPTY, token, true);
   }
