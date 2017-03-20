@@ -37,6 +37,7 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.session.Zeppelinh
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.ticket.TicketContainer;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -236,6 +237,8 @@ public class ZeppelinhubClient {
       return;
     }
     zeppelinMsg.data = (Map<String, Object>) hubMsg.data;
+    zeppelinMsg.principal = hubMsg.meta.get("owner");
+    zeppelinMsg.ticket = TicketContainer.instance.getTicket(zeppelinMsg.principal);
     Client client = Client.getInstance();
     if (client == null) {
       LOG.warn("Base client isn't initialized, returning");
@@ -260,6 +263,7 @@ public class ZeppelinhubClient {
       Message zeppelinMsg = new Message(OP.RUN_PARAGRAPH);
 
       JSONArray paragraphs = data.getJSONArray("data");
+      String principal = data.getJSONObject("meta").getString("owner");
       for (int i = 0; i < paragraphs.length(); i++) {
         if (!(paragraphs.get(i) instanceof JSONObject)) {
           LOG.warn("Wrong \"paragraph\" format for RUN_NOTEBOOK");
@@ -267,6 +271,8 @@ public class ZeppelinhubClient {
         }
         zeppelinMsg.data = gson.fromJson(paragraphs.getString(i), 
             new TypeToken<Map<String, Object>>(){}.getType());
+        zeppelinMsg.principal = principal;
+        zeppelinMsg.ticket = TicketContainer.instance.getTicket(principal);
         client.relayToZeppelin(zeppelinMsg, noteId);
         LOG.info("\nSending RUN_PARAGRAPH message to Zeppelin ");
       }

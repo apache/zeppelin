@@ -194,7 +194,7 @@ public class ZeppelinClient {
   }
 
   public void send(Message msg, String noteId) {
-    Session noteSession = getZeppelinConnection(noteId);
+    Session noteSession = getZeppelinConnection(noteId, msg.principal, msg.ticket);
     if (!isSessionOpen(noteSession)) {
       LOG.error("Cannot open websocket connection to Zeppelin note {}", noteId);
       return;
@@ -202,12 +202,12 @@ public class ZeppelinClient {
     noteSession.getRemote().sendStringByFuture(serialize(msg));
   }
   
-  public Session getZeppelinConnection(String noteId) {
+  public Session getZeppelinConnection(String noteId, String principal, String ticket) {
     if (StringUtils.isBlank(noteId)) {
       LOG.warn("Cannot get Websocket session with blanck noteId");
       return null;
     }
-    return getNoteSession(noteId);
+    return getNoteSession(noteId, principal, ticket);
   }
   
 /*
@@ -220,18 +220,18 @@ public class ZeppelinClient {
   }
   */
 
-  private Session getNoteSession(String noteId) {
+  private Session getNoteSession(String noteId, String principal, String ticket) {
     LOG.info("Getting Note websocket connection for note {}", noteId);
     Session session = notesConnection.get(noteId);
     if (!isSessionOpen(session)) {
       LOG.info("No open connection for note {}, opening one", noteId);
       notesConnection.remove(noteId);
-      session = openNoteSession(noteId);
+      session = openNoteSession(noteId, principal, ticket);
     }
     return session;
   }
   
-  private Session openNoteSession(String noteId) {
+  private Session openNoteSession(String noteId, String principal, String ticket) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     ZeppelinWebsocket socket = new ZeppelinWebsocket(noteId);
     Future<Session> future = null;
@@ -248,7 +248,7 @@ public class ZeppelinClient {
       session.close();
       session = notesConnection.get(noteId);
     } else {
-      String getNote = serialize(zeppelinGetNoteMsg(noteId));
+      String getNote = serialize(zeppelinGetNoteMsg(noteId, principal, ticket));
       session.getRemote().sendStringByFuture(getNote);
       notesConnection.put(noteId, session);
     }
@@ -259,11 +259,13 @@ public class ZeppelinClient {
     return (session != null) && (session.isOpen());
   }
 
-  private Message zeppelinGetNoteMsg(String noteId) {
+  private Message zeppelinGetNoteMsg(String noteId, String principal, String ticket) {
     Message getNoteMsg = new Message(Message.OP.GET_NOTE);
     HashMap<String, Object> data = new HashMap<String, Object>();
     data.put("id", noteId);
     getNoteMsg.data = data;
+    getNoteMsg.principal = principal;
+    getNoteMsg.ticket = ticket;
     return getNoteMsg;
   }
 
@@ -275,24 +277,22 @@ public class ZeppelinClient {
     if (zeppelinMsg == null) {
       return;
     }
-    LOG.info("message from {}", zeppelinMsg.principal);
     String token;
     if (!isActionable(zeppelinMsg.op)) {
       return;
     }
     if (StringUtils.isEmpty(zeppelinMsg.principal) || zeppelinMsg.principal == "anonymous") {
-      token = "anonymous";
+      token = StringUtils.EMPTY;
     } else {
       token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
     }
-    meta.put("token", token);
     Client client = Client.getInstance();
     if (client == null) {
       LOG.warn("Client isn't initialized yet");
       return;
     }
     ZeppelinhubMessage hubMsg = ZeppelinhubMessage.newMessage(zeppelinMsg, meta);
-    if (token == "anonymous") {
+    if (StringUtils.isEmpty(token)) {
       relayToAllZeppelinHub(hubMsg, noteId);
     } else {
       client.relayToZeppelinHub(hubMsg.serialize(), zeppelinMsg.ticket);
