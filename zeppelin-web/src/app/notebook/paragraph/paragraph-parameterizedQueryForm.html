@@ -46,12 +46,24 @@ limitations under the License.
               ng-options="option.value as (option.displayName||option.value) for option in paragraph.settings.forms[formulaire.name].options">
       </select>
     </div>
-    <div ng-if="paragraph.settings.forms[formulaire.name].type == 'checkbox'">
+    <div ng-if="paragraph.config.runOnSelectionChange == true &&
+                paragraph.settings.forms[formulaire.name].type == 'checkbox'">
       <label ng-repeat="option in paragraph.settings.forms[formulaire.name].options"
              class="checkbox-item input-sm">
         <input type="checkbox"
                ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                ng-checked="paragraph.settings.params[formulaire.name].indexOf(option.value) > -1"
+               ng-click="toggleCheckbox(formulaire, option, false); runParagraphFromButton(getEditorValue())"/> {{option.displayName||option.value}}
+      </label>
+    </div>
+    <div ng-if="paragraph.config.runOnSelectionChange == false &&
+                paragraph.settings.forms[formulaire.name].type == 'checkbox'">
+      <label ng-repeat="option in paragraph.settings.forms[formulaire.name].options"
+             class="checkbox-item input-sm">
+        <input type="checkbox"
+               ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
+               ng-checked="paragraph.settings.params[formulaire.name].indexOf(option.value) > -1"
+               ng-enter="runParagraphFromButton(getEditorValue())"
                ng-click="toggleCheckbox(formulaire, option, false)"/> {{option.displayName||option.value}}
       </label>
     </div>
