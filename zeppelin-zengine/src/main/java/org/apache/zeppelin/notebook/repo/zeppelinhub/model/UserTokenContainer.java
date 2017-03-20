@@ -57,6 +57,10 @@ public class UserTokenContainer {
   }
 
   public void setUserToken(String username, String token) {
+    if (StringUtils.isBlank(username) || StringUtils.isBlank(token)) {
+      LOG.info("Can't set empty user token");
+      return;
+    }
     userTokens.put(username, token);
   }
   
@@ -71,7 +75,9 @@ public class UserTokenContainer {
       String ticket = UserSessionContainer.instance.getSession(principal);
       try {
         token = getDefaultZeppelinInstanceToken(ticket);
-        userTokens.putIfAbsent(principal, token);
+        if (!StringUtils.isBlank(token)) {
+          userTokens.putIfAbsent(principal, token);
+        }
       } catch (IOException e) {
         LOG.error("Cannot get user token", e);
         token = StringUtils.EMPTY;

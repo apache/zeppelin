@@ -40,9 +40,8 @@ public class ZeppelinHubHeartbeat implements Runnable {
   
   @Override
   public void run() {
-    LOG.debug("Sending PING to zeppelinhub");
     for (String token: UserTokenContainer.instance.getAllTokens()) {
-      LOG.info("Sending PING to zeppelinhub token {}", token);
+      LOG.debug("Sending PING to zeppelinhub token {}", token);
       client.send(ZeppelinhubUtils.pingMessage(token), token);
     }
   }  

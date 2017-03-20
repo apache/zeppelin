@@ -281,9 +281,9 @@ public class ZeppelinClient {
       return;
     }
     if (StringUtils.isEmpty(zeppelinMsg.principal) || zeppelinMsg.principal == "anonymous") {
-      token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
-    } else {
       token = "anonymous";
+    } else {
+      token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
     }
     meta.put("token", token);
     Client client = Client.getInstance();
