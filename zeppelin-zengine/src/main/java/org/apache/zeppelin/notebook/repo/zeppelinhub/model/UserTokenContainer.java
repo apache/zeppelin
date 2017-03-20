@@ -65,17 +65,16 @@ public class UserTokenContainer {
   }
   
   public String getUserToken(String principal) {
-    // Case of user use token instead of authentication.
-    //TODO(khalid): in case of hub realm, remote token should take precedence over default
-    if (!StringUtils.isBlank(defaultToken)) {
-      return defaultToken;
-    }
     String token = userTokens.get(principal);
     if (StringUtils.isBlank(token)) {
       String ticket = UserSessionContainer.instance.getSession(principal);
       try {
         token = getDefaultZeppelinInstanceToken(ticket);
-        if (!StringUtils.isBlank(token)) {
+        if (StringUtils.isBlank(token)) {
+          if (!StringUtils.isBlank(defaultToken)) {
+            token = defaultToken;
+          }
+        } else {
           userTokens.putIfAbsent(principal, token);
         }
       } catch (IOException e) {
