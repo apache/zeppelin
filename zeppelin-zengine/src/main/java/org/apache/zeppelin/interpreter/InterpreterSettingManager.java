@@ -799,7 +799,12 @@ public class InterpreterSettingManager {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
       String noteId) {
-    interpreterSetting.closeAndRemoveInterpreterGroup(noteId, "");
+    //TODO(jl): This is only for hotfix. You should fix it as a beautiful way
+    InterpreterOption interpreterOption = interpreterSetting.getOption();
+    if (!(InterpreterOption.SHARED.equals(interpreterOption.perNote)
+        && InterpreterOption.SHARED.equals(interpreterOption.perUser))) {
+      interpreterSetting.closeAndRemoveInterpreterGroup(noteId, "");
+    }
   }
 
   public String getInterpreterSessionKey(String user, String noteId, InterpreterSetting setting) {
