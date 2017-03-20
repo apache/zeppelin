@@ -65,6 +65,13 @@ public class UserTokenContainer {
   }
   
   public String getUserToken(String principal) {
+    if (StringUtils.isBlank(principal) || "anonymous".equals(principal)) {
+      if (StringUtils.isBlank(defaultToken)) {
+        return StringUtils.EMPTY;
+      } else {
+        return defaultToken;
+      }
+    }
     String token = userTokens.get(principal);
     if (StringUtils.isBlank(token)) {
       String ticket = UserSessionContainer.instance.getSession(principal);

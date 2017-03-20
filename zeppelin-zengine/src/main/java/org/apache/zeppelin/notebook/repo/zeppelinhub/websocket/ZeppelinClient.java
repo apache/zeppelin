@@ -281,11 +281,8 @@ public class ZeppelinClient {
     if (!isActionable(zeppelinMsg.op)) {
       return;
     }
-    if (StringUtils.isEmpty(zeppelinMsg.principal) || zeppelinMsg.principal == "anonymous") {
-      token = StringUtils.EMPTY;
-    } else {
-      token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
-    }
+    
+    token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
     Client client = Client.getInstance();
     if (client == null) {
       LOG.warn("Client isn't initialized yet");
@@ -295,7 +292,7 @@ public class ZeppelinClient {
     if (StringUtils.isEmpty(token)) {
       relayToAllZeppelinHub(hubMsg, noteId);
     } else {
-      client.relayToZeppelinHub(hubMsg.serialize(), zeppelinMsg.ticket);
+      client.relayToZeppelinHub(hubMsg.serialize(), token);
     }
 
   }
