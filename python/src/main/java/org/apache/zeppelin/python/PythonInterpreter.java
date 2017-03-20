@@ -395,6 +395,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
+  public InterpreterContext getCurrentInterpreterContext() {
+    return context;
+  }
+
   public void interrupt() throws IOException {
     if (pythonPid > -1) {
       logger.info("Sending SIGINT signal to PID : " + pythonPid);
@@ -440,11 +444,20 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     pythonCommand = cmd;
   }
 
-  public String getPythonCommand() {
+  private String getPythonCommand() {
     if (pythonCommand == null) {
-      return DEFAULT_ZEPPELIN_PYTHON;
+      return getPythonBindPath();
     } else {
       return pythonCommand;
+    }
+  }
+
+  public String getPythonBindPath() {
+    String path = getProperty("zeppelin.python");
+    if (path == null) {
+      return DEFAULT_ZEPPELIN_PYTHON;
+    } else {
+      return path;
     }
   }
 

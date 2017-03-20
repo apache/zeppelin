@@ -1082,6 +1082,7 @@ public class NotebookServer extends WebSocketServlet
     if (note != null && !note.isTrash()){
       fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
+      notebook.moveNoteToTrash(note.getId());
     }
   }
 
