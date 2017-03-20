@@ -141,6 +141,7 @@ export function getSpecs(specObject) {
   const specs = [];
   for (let name in specObject) {
     const singleSpec = specObject[name];
+    if (!singleSpec) { continue }
     singleSpec.name = name;
     specs.push(singleSpec);
   }
@@ -491,18 +492,28 @@ export function getCubeValue(obj, aggregator, aggrColumnName) {
   return value
 }
 
-export function sortSelectorNameWithIndex(sortedSelectors) {
-  const selectorNameWithIndex = {}
+export function getNameWithIndex(names) {
+  const nameWithIndex = {}
 
-  for (let i = 0; i < sortedSelectors.length; i++) {
-    const selector = sortedSelectors[i]
-    selectorNameWithIndex[selector] = i
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i]
+    nameWithIndex[name] = i
   }
 
-  return selectorNameWithIndex
+  return nameWithIndex
 }
 
-export function getArrayRowsFromCube(cube, schema, aggregatorColumns,
+export function getIndexWithName(names) {
+  const indexWithName = {}
+  for(let i = 0; i < names.length; i++) {
+    const name = names[i]
+    indexWithName[i] = name
+  }
+
+  return indexWithName
+}
+
+export function getGroupArrayRowsFromCube(cube, schema, aggregatorColumns,
                                      keyColumnName, keyNames, groupNameSet,
                                      selectorNameWithIndex) {
 
@@ -514,11 +525,11 @@ export function getArrayRowsFromCube(cube, schema, aggregatorColumns,
   }
 
   const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
-  const sortedSelectorNameWithIndex = sortSelectorNameWithIndex(sortedSelectors)
+  const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
 
   const rows = keyNames.reduce((acc, key) => {
     const obj = cube[key]
-    const { rowValue, } = getArrayRow(schema, aggregatorColumns, obj,
+    const { rowValue, } = getGroupArrayRow(schema, aggregatorColumns, obj,
       groupNameSet, sortedSelectorNameWithIndex, sortedSelectors.length)
 
     const row = { key: key, value: rowValue, }
@@ -531,7 +542,7 @@ export function getArrayRowsFromCube(cube, schema, aggregatorColumns,
   return { transformed: rows, sortedSelectors: sortedSelectors, sortedSelectorNameWithIndex: sortedSelectorNameWithIndex, }
 }
 
-export function getArrayRow(schema, aggrColumns, obj, groupNameSet, selectorNameWithIndex, selectorLength) {
+export function getGroupArrayRow(schema, aggrColumns, obj, groupNameSet, selectorNameWithIndex, selectorLength) {
   let row = new Array(selectorLength)
 
   /** when group is empty */
@@ -565,9 +576,86 @@ export function getArrayRow(schema, aggrColumns, obj, groupNameSet, selectorName
   return { rowValue: row, }
 }
 
+export function getKeyArrayRowsFromCube(cube, schema, aggregatorColumns,
+                                        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex) {
+
+  const emptyKey = 'root'
+
+  if (!schema.key) {
+    keyNames = [ emptyKey, ]
+    cube = { root: cube, }
+  }
+
+  const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
+  const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
+
+  const keyArrowRows = new Array(sortedSelectors.length)
+  const keyNameWithIndex = getNameWithIndex(keyNames)
+
+  keyNames.map(key => {
+    const obj = cube[key]
+    fillKeyArrayRow(schema, aggregatorColumns, obj,
+      groupNameSet, sortedSelectorNameWithIndex,
+      key, keyNames, keyArrowRows, keyNameWithIndex,
+    )
+  })
+
+  return {
+    transformed: keyArrowRows,
+    sortedSelectors: sortedSelectors,
+    sortedSelectorNameWithIndex: sortedSelectorNameWithIndex,
+    keyNameWithIndex: keyNameWithIndex,
+  }
+}
+
+/** truely mutable style func. will return nothing, just modify `keyArrayRows` */
+export function fillKeyArrayRow(schema, aggrColumns, obj,
+                                groupNameSet, selectorNameWithIndex,
+                                keyName, keyNames, keyArrayRows, keyNameWithIndex) {
+  /** when group is empty */
+  if (!schema.group) {
+    for(let i = 0; i < aggrColumns.length; i++) {
+      const aggrColumn = aggrColumns[i]
+      const aggrName = aggrColumn.name
+
+      const value = getCubeValue(obj, aggrColumn.aggr, aggrName)
+      const selector = getSelectorName(undefined, aggrColumns.length, aggrName)
+      const selectorIndex = selectorNameWithIndex[selector]
+      const keyIndex = keyNameWithIndex[keyName]
+
+      if (typeof keyArrayRows[selectorIndex] === 'undefined') {
+        keyArrayRows[selectorIndex] = {
+          key: keyName, selector: selector, value: new Array(keyNames.length)
+        }
+      }
+      keyArrayRows[selectorIndex].value[keyIndex] = value
+    }
+  } else {
+    for(let i = 0; i < aggrColumns.length; i++) {
+      const aggrColumn = aggrColumns[i]
+      const aggrName = aggrColumn.name
+
+      for (let groupName of groupNameSet) {
+        const grouped = obj[groupName]
+
+        const value = getCubeValue(grouped, aggrColumn.aggr, aggrName)
+        const selector = getSelectorName(groupName, aggrColumns.length, aggrName)
+        const selectorIndex = selectorNameWithIndex[selector]
+        const keyIndex = keyNameWithIndex[keyName]
+
+        if (typeof keyArrayRows[selectorIndex] === 'undefined') {
+          keyArrayRows[selectorIndex] = {
+            selector: selector, value: new Array(keyNames.length)
+          }
+        }
+        keyArrayRows[selectorIndex].value[keyIndex] = value
+      }
+    }
+  }
+}
+
 export function getObjectRowsFromCube(cube, schema, aggregatorColumns,
-                                      keyColumnName, keyNames, groupNameSet,
-                                      selectorNameWithIndex) {
+                                      keyColumnName, keyNames, groupNameSet) {
 
   if (!schema.key) {
     keyNames = [ 'root', ]
@@ -576,7 +664,7 @@ export function getObjectRowsFromCube(cube, schema, aggregatorColumns,
 
   const rows = keyNames.reduce((acc, key) => {
     const obj = cube[key]
-    const row = getObjectRow(schema, aggregatorColumns, obj, groupNameSet, selectorNameWithIndex)
+    const row = getObjectRow(schema, aggregatorColumns, obj, groupNameSet)
 
     if (schema.key) { row[keyColumnName] = key }
     acc.push(row)
@@ -587,7 +675,7 @@ export function getObjectRowsFromCube(cube, schema, aggregatorColumns,
   return { transformed: rows, }
 }
 
-export function getObjectRow(schema, aggrColumns, obj, groupNameSet, selectorNameWithIndex) {
+export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
   const row = {}
 
   /** when group is empty */
@@ -624,10 +712,38 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet, selectorNam
 }
 
 const TransformMethod = {
+  /**
+   * `raw` is designed for users who want to get raw (original) rows.
+   */
   RAW: 'raw',
+  /**
+   * `CUBE` is designed for users who want to customize cube.
+   *
+   * while building final output of `object`, `array:key` and `array:group`,
+   * AdvancedTransformation creates `cube` as an intermediate output.
+   */
   CUBE: 'cube',
+  /**
+   * `object` is * designed for serial(line, area) charts.
+   */
   OBJECT: 'object',
-  ARRAY: 'array',
+  /**
+   * `array:key` is designed for column, pie charts which have categorical `key` values.
+   * But some libraries (e.g amcharts) may require `OBJECT` transform method even if pie, column charts.
+   *
+   * `row.value` will be filled for `keyNames`.
+   * In other words, if you have `keyNames` which is length 4,
+   * every `row.value`'s length will be 4 too.
+   * (DO NOT use this transform method for serial (numerical) x axis charts which have so-oo many keys)
+   */
+  KEY_ARRAY: 'array:key',
+  /**
+   * `array:group` is similar to `ARRAY:KEY` except that
+   * `row.value` will be filled for `selectors`.
+   * In other words, if you have `selectors` which is length 5,
+   * every `row.value`'s length will be 5 too.
+   */
+  GROUP_ARRAY: 'array:group',
 }
 
 /** return function for lazy computation */
@@ -654,22 +770,45 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
         getCube(rows, keyColumns, groupColumns, aggregatorColumns)
 
       const { transformed, } = getObjectRowsFromCube(cube, schema, aggregatorColumns,
-        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
+        keyColumnName, keyNames, groupNameSet)
 
       return {
-        rows: transformed, cube, keyColumnName, keyNames,
-        selectors: Object.keys(selectorNameWithIndex).sort(), /** to sort selectors */ }
+        rows: transformed, keyColumnName, keyNames,
+        selectors: Object.keys(selectorNameWithIndex).sort(), /** selectors should be sorted */
+      }
     }
-  } else if (method === TransformMethod.ARRAY) {
+  } else if (method === TransformMethod.GROUP_ARRAY) {
     transformer = () => {
       const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
         getCube(rows, keyColumns, groupColumns, aggregatorColumns)
 
-      const { transformed, sortedSelectors, sortedSelectorNameWithIndex } = getArrayRowsFromCube(
-        cube, schema, aggregatorColumns, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
+      const {
+        transformed, sortedSelectors, sortedSelectorNameWithIndex
+      } = getGroupArrayRowsFromCube(cube, schema, aggregatorColumns,
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
-      return { rows: transformed, cube, keyColumnName, keyNames,
-        selectors: sortedSelectors, selectorNameWithIndex: sortedSelectorNameWithIndex, }
+      return {
+        rows: transformed, keyColumnName, keyNames,
+        selectors: sortedSelectors,
+        selectorNameWithIndex: sortedSelectorNameWithIndex,
+      }
+    }
+  } else if (method === TransformMethod.KEY_ARRAY) {
+    transformer = () => {
+      const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
+        getCube(rows, keyColumns, groupColumns, aggregatorColumns)
+
+      const {
+        transformed, sortedSelectors, sortedSelectorNameWithIndex, keyNameWithIndex,
+      } = getKeyArrayRowsFromCube(cube, schema, aggregatorColumns,
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
+
+      return {
+        rows: transformed, keyColumnName, keyNames,
+        selectors: sortedSelectors,
+        selectorNameWithIndex: sortedSelectorNameWithIndex,
+        keyNameWithIndex: keyNameWithIndex,
+      }
     }
   }
 
