@@ -69,6 +69,7 @@ public class UserTokenContainer {
       if (StringUtils.isBlank(defaultToken)) {
         return StringUtils.EMPTY;
       } else {
+        userTokens.putIfAbsent(principal, defaultToken);
         return defaultToken;
       }
     }
