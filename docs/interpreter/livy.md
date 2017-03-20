@@ -130,6 +130,16 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
       <td></td>
       <td>Adding extra libraries to livy interpreter</td>
     </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.trustStore</td>
+    <td></td>
+    <td>client trustStore file. Used when livy ssl is enabled</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.trustStorePassword</td>
+    <td></td>
+    <td>password for trustStore file. Used when livy ssl is enabled</td>
+  </tr>  
 </table>
 
 **We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
