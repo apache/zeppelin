@@ -458,7 +458,7 @@ export function getCube(rows, keyColumns, groupColumns, aggrColumns) {
     cube: cube,
     schema: schema,
     keyColumnName: keyColumnName,
-    keyNames: Object.keys(cube), /** keys should be sorted */
+    keyNames: Object.keys(cube).sort(), /** keys should be sorted */
     groupNameSet: groupNameSet,
     selectorNameWithIndex: selectorNameWithIndex,
   }
