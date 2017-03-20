@@ -955,38 +955,7 @@ public class NotebookRestApi {
     p.setTitle(request.getTitle());
     p.setText(request.getText());
     Map< String, Object > config = request.getConfig();
-    if ( config != null){
-      Vector< String > ignoredFields = new Vector<>();
-      if ( request.getGraph() != null)
-        ignoredFields.add("graph");
-      if ( request.getColWidth() != null)
-        ignoredFields.add("colWidth");
-      if ( request.getShowTitle() != null)
-        ignoredFields.add("showTitle");
-      if ( ignoredFields.size() > 0 )
-        LOG.warn("As config is provided, the following field(s) are ignored {}",
-                ignoredFields.toString());
-    }
-    else {
-      config = new HashMap<>();
-      Map graph = request.getGraph();
-      if (graph != null) {
-        List<Object> results = new ArrayList<>();
-        Map<String, Object> result = new HashMap<>();
-        result.put("graph", graph);
-        results.add(result);
-        config.put("results", results);
-      }
-      Double colWidth = request.getColWidth();
-      if (colWidth != null) {
-        config.put("colWidth", colWidth);
-      }
-      Boolean showTitle = request.getShowTitle();
-      if (showTitle != null) {
-        config.put("title", showTitle);
-      }
-    }
-    if ( !config.isEmpty()) {
+    if ( config != null && !config.isEmpty()) {
       configureParagraph(p, config, user);
     }
   }

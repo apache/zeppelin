@@ -134,10 +134,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
         "{\"title\": \"title1\", \"text\": \"text1\"}," +
         "{\"title\": \"title2\", \"text\": \"text2\"}," +
-        "{\"title\": \"titleConfig1\", \"text\": \"text3\", " +
-        "\"graph\": {\"mode\": \"pieChart\"}, " +
-        "\"colWidth\": 9.0, \"showTitle\": true}, " +
-        "{\"title\": \"titleConfig2\", \"text\": \"text4\", " +
+        "{\"title\": \"titleConfig\", \"text\": \"text3\", " +
         "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
         "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}] "+
         "}}]} ";
@@ -160,7 +157,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       expectedNoteName = "Note " + newNoteId;
     }
     assertEquals("compare note name", expectedNoteName, newNoteName);
-    assertEquals("initial paragraph check failed", 5, newNote.getParagraphs().size());
+    assertEquals("initial paragraph check failed", 4, newNote.getParagraphs().size());
     for (Paragraph p : newNote.getParagraphs()) {
       if (StringUtils.isEmpty(p.getText())) {
         continue;
@@ -633,12 +630,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("title2", paragraphAtIdx0.getTitle());
     assertEquals("text2", paragraphAtIdx0.getText());
 
-    //append paragraph providing config
-    String jsonRequest3 = "{\"title\": \"title3\", \"text\": \"text3\", " +
-                          "\"graph\": {\"mode\": \"pieChart\"}, " +
-                          "\"colWidth\": 9.0, \"showTitle\": true}";
+    //append paragraph providing graph
+    String jsonRequest3 = "{\"title\": \"title3\", \"text\": \"text3\", "+
+                          "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
+                          "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}]}}";
     PostMethod post3 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest3);
-    LOG.info("testInsertParagraph response3\n" + post3.getResponseBodyAsString());
+    LOG.info("testInsertParagraph response4\n" + post3.getResponseBodyAsString());
     assertThat("Test insert method:", post3, isAllowed());
     post3.releaseConnection();
 
@@ -650,24 +647,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("pieChart", mode);
     assertEquals(9.0, p.getConfig().get("colWidth"));
     assertTrue(((boolean) p.getConfig().get("title")));
-
-    //append paragraph providing graph
-    String jsonRequest4 = "{\"title\": \"title4\", \"text\": \"text4\", "+
-                          "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
-                          "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}]}}";
-    PostMethod post4 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest4);
-    LOG.info("testInsertParagraph response4\n" + post4.getResponseBodyAsString());
-    assertThat("Test insert method:", post4, isAllowed());
-    post4.releaseConnection();
-
-    Paragraph p2 = note.getLastParagraph();
-    assertEquals("title4", p2.getTitle());
-    assertEquals("text4", p2.getText());
-    Map result2 = ((List<Map>)p.getConfig().get("results")).get(0);
-    String mode2 = ((Map)result.get("graph")).get("mode").toString();
-    assertEquals("pieChart", mode2);
-    assertEquals(9.0, p2.getConfig().get("colWidth"));
-    assertTrue(((boolean) p2.getConfig().get("title")));
 
 
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);

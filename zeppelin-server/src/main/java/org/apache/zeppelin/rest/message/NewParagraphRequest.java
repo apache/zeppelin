@@ -31,9 +31,6 @@ public class NewParagraphRequest {
   String title;
   String text;
   Double index;
-  HashMap< String, Object > graph;
-  Boolean showTitle;
-  Double colWidth;
   HashMap< String, Object > config;
 
   public NewParagraphRequest() {
@@ -51,12 +48,6 @@ public class NewParagraphRequest {
   public Double getIndex() {
     return index;
   }
-
-  public HashMap< String, Object > getGraph() { return graph; }
-
-  public Boolean getShowTitle() { return showTitle; }
-
-  public Double getColWidth() { return colWidth; }
 
   public HashMap< String, Object > getConfig() { return config; }
 }
