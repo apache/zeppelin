@@ -193,12 +193,11 @@ export function clearAxisConfig(config) {
   delete config.axis /** Object: persisted axis for each chart */
 }
 
-export function initAxisConfig(config, remove) {
+export function initAxisConfig(config) {
   if (!config.axis) { config.axis = {} }
 
   const spec = config.spec
   const availableCharts = getAvailableChartNames(spec.charts)
-  config.chart.current = availableCharts[0];
 
   if (!config.axisSpecs) { config.axisSpecs = {}; }
   for (let i = 0; i < availableCharts.length; i++) {
