@@ -332,9 +332,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
+  @SuppressWarnings("unused") // reflection call from python
   public void appendOutput(String message) throws IOException {
     LOGGER.debug("Output from python process: " + message);
-    outputStream.getInterpreterOutput().write(message);
+    outputStream.getInterpreterOutput().write(message.getBytes());
   }
 
   @Override

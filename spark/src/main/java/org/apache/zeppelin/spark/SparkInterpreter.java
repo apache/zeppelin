@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.base.Joiner;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -909,6 +911,8 @@ public class SparkInterpreter extends Interpreter {
           interpret("import spark.sql");
           interpret("import org.apache.spark.sql.functions._");
         } else {
+          // see https://issues.apache.org/jira/browse/SPARK-14146
+          System.setProperty("spark.repl.fallback", "true");
           if (sparkVersion.oldSqlContextImplicits()) {
             interpret("import sqlContext._");
           } else {
@@ -1162,118 +1166,72 @@ public class SparkInterpreter extends Interpreter {
     return enableSupportedVersionCheck  && sparkVersion.isUnsupportedVersion();
   }
 
-  /**
-   * Interpret a single line.
-   */
   @Override
-  public InterpreterResult interpret(String line, InterpreterContext context) {
+  public InterpreterResult interpret(String code, InterpreterContext context) {
     if (isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
     populateSparkWebUrl(context);
     z.setInterpreterContext(context);
-    if (line == null || line.trim().length() == 0) {
+    if (StringUtils.isBlank(code)) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(line.split("\n"), context);
+    return doInterpret(code, context);
   }
 
-  public InterpreterResult interpret(String[] lines, InterpreterContext context) {
+  public InterpreterResult doInterpret(String code, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
       sc.setJobGroup(Utils.buildJobGroupId(context), "Zeppelin", false);
-      InterpreterResult r = interpretInput(lines, context);
+      InterpreterResult r = interpretInput(code, context);
       sc.clearJobGroup();
       return r;
     }
   }
 
-  public InterpreterResult interpretInput(String[] lines, InterpreterContext context) {
+  public InterpreterResult interpretInput(String code, InterpreterContext context) {
     SparkEnv.set(env);
 
-    String[] linesToRun = new String[lines.length];
-    for (int i = 0; i < lines.length; i++) {
-      linesToRun[i] = lines[i];
-    }
-
     Console.setOut(context.out);
-    out.setInterpreterOutput(context.out);
+    ByteArrayOutputStream replOutput = new ByteArrayOutputStream();
+    out.setInterpreterOutput(replOutput);
     context.out.clear();
-    Code r = null;
-    String incomplete = "";
-    boolean inComment = false;
 
-    for (int l = 0; l < linesToRun.length; l++) {
-      String s = linesToRun[l];
-      // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
-      if (l + 1 < linesToRun.length) {
-        String nextLine = linesToRun[l + 1].trim();
-        boolean continuation = false;
-        if (nextLine.isEmpty()
-           || nextLine.startsWith("//")         // skip empty line or comment
-           || nextLine.startsWith("}")
-           || nextLine.startsWith("object")) {  // include "} object" for Scala companion object
-          continuation = true;
-        } else if (!inComment && nextLine.startsWith("/*")) {
-          inComment = true;
-          continuation = true;
-        } else if (inComment && nextLine.lastIndexOf("*/") >= 0) {
-          inComment = false;
-          continuation = true;
-        } else if (nextLine.length() > 1
-                && nextLine.charAt(0) == '.'
-                && nextLine.charAt(1) != '.'     // ".."
-                && nextLine.charAt(1) != '/') {  // "./"
-          continuation = true;
-        } else if (inComment) {
-          continuation = true;
-        }
-        if (continuation) {
-          incomplete += s + "\n";
-          continue;
-        }
-      }
+    scala.tools.nsc.interpreter.Results.Result res;
+    try {
+      res = interpret(code);
 
-      scala.tools.nsc.interpreter.Results.Result res = null;
-      try {
-        res = interpret(incomplete + s);
-      } catch (Exception e) {
-        sc.clearJobGroup();
-        out.setInterpreterOutput(null);
-        logger.info("Interpreter exception", e);
-        return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
-      }
-
-      r = getResultCode(res);
+      Code r = getResultCode(res);
 
       if (r == Code.ERROR) {
-        sc.clearJobGroup();
-        out.setInterpreterOutput(null);
         return new InterpreterResult(r, "");
-      } else if (r == Code.INCOMPLETE) {
-        incomplete += s + "\n";
-      } else {
-        incomplete = "";
       }
-    }
 
-    // make sure code does not finish with comment
-    if (r == Code.INCOMPLETE) {
-      scala.tools.nsc.interpreter.Results.Result res = null;
-      res = interpret(incomplete + "\nprint(\"\")");
-      r = getResultCode(res);
-    }
+      // make sure code does not finish with comment
+      if (r == Code.INCOMPLETE) {
+        res = interpret(code + "\nprint(\"\")");
+        r = getResultCode(res);
+      }
 
-    if (r == Code.INCOMPLETE) {
-      sc.clearJobGroup();
+      if (r == Code.INCOMPLETE) {
+        return new InterpreterResult(r, "Incomplete expression");
+      } else {
+        putLatestVarInResourcePool(context);
+        return new InterpreterResult(Code.SUCCESS);
+      }
+    } catch (Exception e) {
+      logger.info("Interpreter exception", e);
+      return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
+    } finally {
+      try {
+        context.out.setType(InterpreterResult.Type.TEXT);
+        context.out.write(replOutput.toByteArray());
+      } catch (IOException e) {
+        logger.error(e.getMessage(), e);
+      }
       out.setInterpreterOutput(null);
-      return new InterpreterResult(r, "Incomplete expression");
-    } else {
-      sc.clearJobGroup();
-      putLatestVarInResourcePool(context);
-      out.setInterpreterOutput(null);
-      return new InterpreterResult(Code.SUCCESS);
+
     }
   }
 

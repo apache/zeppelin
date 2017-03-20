@@ -313,8 +313,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
+  @SuppressWarnings("unused") // reflection call from python
   public void appendOutput(String message) throws IOException {
-    outputStream.getInterpreterOutput().write(message);
+    outputStream.getInterpreterOutput().write(message.getBytes());
   }
 
   @Override

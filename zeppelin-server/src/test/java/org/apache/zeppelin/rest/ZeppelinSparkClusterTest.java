@@ -16,8 +16,15 @@
  */
 package org.apache.zeppelin.rest;
 
+import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -28,6 +35,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -91,10 +99,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         p.setAuthenticationInfo(anonymous);
         note.run(p.getId());
         waitForFinish(p);
-        assertEquals(Status.FINISHED, p.getStatus());
-        assertEquals("import java.util.Date\n" +
-            "import java.net.URL\n" +
-            "hello\n", p.getResult().message().get(0).getData());
+        assertThat(p.getStatus(), is(Status.FINISHED));
+        assertThat(p.getResult().message(), contains(
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "hello\n"),
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "import java.util.Date\nimport java.net.URL\n")
+        ));
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
 
@@ -136,23 +145,25 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             p.setAuthenticationInfo(anonymous);
             note.run(p.getId());
             waitForFinish(p);
-            assertEquals(Status.FINISHED, p.getStatus());
-            assertTrue(p.getResult().message().get(0).getData().contains(
-                    "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+            assertThat(p.getStatus(), is(Status.FINISHED));
+            assertThat(p.getResult().message(), contains(
+                hasProperty("data", containsString("Array[org.apache.spark.sql.Row] = Array([hello,20])"))
+            ));
 
             // test display DataFrame
             p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
-            p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-                    "z.show(df)");
+            p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\nz.show(df)");
             p.setAuthenticationInfo(anonymous);
             note.run(p.getId());
             waitForFinish(p);
-            assertEquals(Status.FINISHED, p.getStatus());
-            assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
-            assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
+            assertThat(p.getStatus(), is(Status.FINISHED));
+            assertThat(p.getResult().message(), contains(
+                is(new InterpreterResultMessage(InterpreterResult.Type.TABLE, "_1\t_2\nhello\t20\n")),
+                anything()
+            ));
 
             // test display DataSet
             if (sparkVersion >= 20) {
@@ -165,9 +176,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 p.setAuthenticationInfo(anonymous);
                 note.run(p.getId());
                 waitForFinish(p);
-                assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
-                assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
+                assertThat(p.getStatus(), is(Status.FINISHED));
+                assertThat(p.getResult().message(), contains(
+                    is(new InterpreterResultMessage(InterpreterResult.Type.TABLE, "_1\t_2\nhello\t20\n")),
+                    anything()
+                ));
             }
             ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
         }
@@ -522,19 +535,17 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         note.run(p.getId());
         waitForFinish(p);
 
-        assertEquals(Status.FINISHED, p.getStatus());
+        assertThat(p.getStatus(), is(Status.FINISHED));
         Iterator<String> formIter = p.settings.getForms().keySet().iterator();
         assert(formIter.next().equals("my_input"));
         assert(formIter.next().equals("my_select"));
         assert(formIter.next().equals("my_checkbox"));
 
         // check dynamic forms values
-        String[] result = p.getResult().message().get(0).getData().split("\n");
-        assertEquals(4, result.length);
-        assertEquals("default_name", result[0]);
-        assertEquals("1", result[1]);
-        assertEquals("items: Seq[Object] = Buffer(2)", result[2]);
-        assertEquals("2", result[3]);
+        assertThat(p.getResult().message(), contains(
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "default_name\n1\n2\n"),
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "items: Seq[Object] = Buffer(2)\n")
+        ));
     }
 
     @Test
