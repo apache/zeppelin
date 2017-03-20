@@ -65,6 +65,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   protected boolean displayAppInfo;
   private AtomicBoolean sessionExpired = new AtomicBoolean(false);
   protected LivyVersion livyVersion;
+  private RestTemplate restTemplate;
 
   // keep tracking the mapping between paragraphId and statementId, so that we can cancel the
   // statement after we execute it.
@@ -79,6 +80,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
+    this.restTemplate = createRestTemplate();
   }
 
   public abstract String getSessionKind();
@@ -388,11 +390,18 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   }
 
 
-  private RestTemplate getRestTemplate() throws LivyException {
+  private RestTemplate createRestTemplate() {
     HttpClient httpClient = null;
     if (livyURL.startsWith("https:")) {
       String keystoreFile = property.getProperty("zeppelin.livy.ssl.trustStore");
       String password = property.getProperty("zeppelin.livy.ssl.trustStorePassword");
+      if (StringUtils.isBlank(keystoreFile)) {
+        throw new RuntimeException("No zeppelin.livy.ssl.trustStore specified for livy ssl");
+      }
+      if (StringUtils.isBlank(password)) {
+        throw new RuntimeException("No zeppelin.livy.ssl.trustStorePassword specified " +
+            "for livy ssl");
+      }
       FileInputStream inputStream = null;
       try {
         inputStream = new FileInputStream(keystoreFile);
@@ -404,7 +413,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
         httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
       } catch (Exception e) {
-        throw new LivyException("Failed to create SSL HttpClient", e);
+        throw new RuntimeException("Failed to create SSL HttpClient", e);
       } finally {
         if (inputStream != null) {
           try {
@@ -440,7 +449,6 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       throws LivyException {
     targetURL = livyURL + targetURL;
     LOGGER.debug("Call rest api in {}, method: {}, jsonData: {}", targetURL, method, jsonData);
-    RestTemplate restTemplate = getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/json");
     headers.add("X-Requested-By", "zeppelin");
