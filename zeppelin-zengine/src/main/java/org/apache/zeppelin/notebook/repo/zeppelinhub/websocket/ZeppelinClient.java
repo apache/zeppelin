@@ -70,10 +70,16 @@ public class ZeppelinClient {
   private static final int MIN = 60;
 
   private static final Set<String> actionable = new  HashSet<String>(Arrays.asList(
+      // running events
+      "ANGULAR_OBJECT_UPDATE",
       "PROGRESS",
       "NOTE",
       "PARAGRAPH",
-      "PARAGRAPH_UPDATE_OUTPUT"));
+      "PARAGRAPH_UPDATE_OUTPUT",
+      "PARAGRAPH_APPEND_OUTPUT",
+      // run or stop events
+      "RUN_PARAGRAPH",
+      "CANCEL_PARAGRAPH"));
 
   public static ZeppelinClient initialize(String zeppelinUrl, String token, 
       ZeppelinConfiguration conf) {
