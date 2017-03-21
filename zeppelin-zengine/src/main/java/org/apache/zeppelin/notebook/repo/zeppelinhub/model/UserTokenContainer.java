@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class UserTokenContainer {
   private static final Logger LOG = LoggerFactory.getLogger(UserTokenContainer.class);
-  public static UserTokenContainer instance = null;
+  private static UserTokenContainer instance = null;
   private ConcurrentMap<String, String> userTokens = new ConcurrentHashMap<String, String>();
   private final ZeppelinhubRestApiHandler restApiClient;
   private String defaultToken;
@@ -55,6 +55,10 @@ public class UserTokenContainer {
     this.defaultToken = defaultToken;
   }
 
+  public static UserTokenContainer getInstance() {
+    return instance;
+  }
+  
   public void setUserToken(String username, String token) {
     if (StringUtils.isBlank(username) || StringUtils.isBlank(token)) {
       LOG.warn("Can't set empty user token");

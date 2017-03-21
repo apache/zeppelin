@@ -282,7 +282,7 @@ public class ZeppelinClient {
       return;
     }
     
-    token = UserTokenContainer.instance.getUserToken(zeppelinMsg.principal);
+    token = UserTokenContainer.getInstance().getUserToken(zeppelinMsg.principal);
     Client client = Client.getInstance();
     if (client == null) {
       LOG.warn("Client isn't initialized yet");
@@ -302,7 +302,7 @@ public class ZeppelinClient {
       return;
     }
     NotebookAuthorization noteAuth = NotebookAuthorization.getInstance();
-    Map<String, String> userTokens = UserTokenContainer.instance.getAllUserTokens();
+    Map<String, String> userTokens = UserTokenContainer.getInstance().getAllUserTokens();
     Client client = Client.getInstance();
     Set<String> userAndRoles;
     String token;

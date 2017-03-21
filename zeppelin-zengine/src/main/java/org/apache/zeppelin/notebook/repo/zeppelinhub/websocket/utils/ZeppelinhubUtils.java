@@ -100,8 +100,8 @@ public class ZeppelinhubUtils {
   
   public static void userLoginRoutine(String username) {
     LOG.debug("Executing user login routine");
-    String token = UserTokenContainer.instance.getUserToken(username);
-    UserTokenContainer.instance.setUserToken(username, token);
+    String token = UserTokenContainer.getInstance().getUserToken(username);
+    UserTokenContainer.getInstance().setUserToken(username, token);
     String msg = ZeppelinhubUtils.liveMessage(token);
     ZeppelinhubClient.getInstance()
         .send(msg, token);
@@ -109,7 +109,7 @@ public class ZeppelinhubUtils {
   
   public static void userLogoutRoutine(String username) {
     LOG.debug("Executing user logout routine");
-    String token = UserTokenContainer.instance.removeUserToken(username);
+    String token = UserTokenContainer.getInstance().removeUserToken(username);
     String msg = ZeppelinhubUtils.deadMessage(token);
     ZeppelinhubClient.getInstance()
         .send(msg, token);
