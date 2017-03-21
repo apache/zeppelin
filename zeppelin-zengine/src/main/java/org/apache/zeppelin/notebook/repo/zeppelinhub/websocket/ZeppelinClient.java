@@ -77,6 +77,8 @@ public class ZeppelinClient {
       "PARAGRAPH",
       "PARAGRAPH_UPDATE_OUTPUT",
       "PARAGRAPH_APPEND_OUTPUT",
+      "PARAGRAPH_CLEAR_OUTPUT",
+      "PARAGRAPH_REMOVE",
       // run or stop events
       "RUN_PARAGRAPH",
       "CANCEL_PARAGRAPH"));
