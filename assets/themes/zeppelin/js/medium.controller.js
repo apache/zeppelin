@@ -4,30 +4,44 @@ angular.module("app").controller("MediumCtrl", function($scope, $window, $sce) {
   var postInfo = $scope.mediumPost[0].items
   var postInfoArray = []
 
-  function unicodeToChar(text) {
-   return text.replace(/\&#x[\dA-F]{4}/gi, 
-    function (match) {
-      return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
-    })
+  var init = function () {
+    createPostInfoArray()
+  }
+
+  var unicodeToChar = function (text) {
+    return text.replace(/\&#x[\dA-F]{4}/gi,
+      function (match) {
+        return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+      })
+  }
+
+  var truncateString = function (string) {
+    return string.length > 150 ? string.substring(0, 150) + '...' : string
   }
   
-  for (var idx in postInfo) {
-    var eachPosts = postInfo[idx]
+  var createPostInfoArray = function () {
+    for (var idx in postInfo) {
+      var post = postInfo[idx]
 
-    // 1. remove HTML tag from description value
-    var regExString = /(<([^>]+)>)/ig
-    postInfo[idx].description = postInfo[idx].description.replace(regExString, '')
-    // 2. remove 'Continue reading on Apache Zeppelin Stories »'
-    postInfo[idx].description = postInfo[idx].description.replace(/Continue reading on Apache Zeppelin Stories »/g, '')
-    // 3. replace unicode char -> string
-    postInfo[idx].description = unicodeToChar(postInfo[idx].description)
+      // 1. remove HTML tag from description value
+      var regExString = /(<([^>]+)>)/ig
+      post.description = post.description.replace(regExString, '')
+      // 2. remove 'Continue reading on Apache Zeppelin Stories »'
+      post.description = post.description.replace(/Continue reading on Apache Zeppelin Stories »/g, '')
+      // 3. replace unicode char -> string
+      post.description = unicodeToChar(post.description)
+      // 4. truncate description string & attach '...'
+      post.description = truncateString(post.description)
 
-    // parse strigified date to 'MMMM Do, YYYY' format (e.g October 4th, 2016)
-    postInfo[idx].created = new Date(postInfo[idx].created)
-    postInfo[idx].created = moment(postInfo[idx].created).format("MMMM Do, YYYY")
-    
-    postInfoArray.push(postInfo[idx])
+      // parse strigified date to 'MMMM Do, YYYY' format (e.g October 4th, 2016)
+      post.created = new Date(post.created)
+      post.created = moment(post.created).format("MMMM Do, YYYY")
+
+      postInfoArray.push(post)
+    }
+
+    $scope.postInfoArray = postInfoArray
   }
 
-  $scope.postInfoArray = postInfoArray
-});
+  init()
+})

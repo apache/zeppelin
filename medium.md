@@ -33,9 +33,11 @@ limitations under the License.
             <div class="blogDescription">
               {% raw %}{{post.description}}{% endraw %}
             </div>
-            <div class="blogPublished">
-              <i class="fa fa-calendar" aria-hidden="true"></i> &nbsp;
-              {% raw %}{{post.created}}{% endraw %}
+            <div class="blogAuthor">
+              {% raw %}{{post.author}} {% endraw %}
+            </div>
+            <div class="blogPublishDate">
+              Published on {% raw %}{{post.created}}{% endraw %}
             </div>
           </div>
         </div>
