@@ -28,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
 public class UserSessionContainer {
   private static class Entity {
     public final String userSession;
-
+    
     Entity(String userSession) {
       this.userSession = userSession;
     }

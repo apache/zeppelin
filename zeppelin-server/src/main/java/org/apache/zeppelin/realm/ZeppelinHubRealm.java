@@ -38,6 +38,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,15 +156,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
 
-    // Add ZeppelinHub user_session token this singleton map, this will help ZeppelinHubRepo
-    // to get specific information about the current user.
-    UserSessionContainer.instance.setSession(account.login, userSession);
-
-    /* TODO(khalid): add proper roles and add listener */
-    HashSet<String> userAndRoles = new HashSet<String>();
-    userAndRoles.add(account.login);
-    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
-        new org.apache.zeppelin.user.AuthenticationInfo(account.login), userAndRoles);
+    onLoginSuccess(account.login, userSession);
+    
     return account;
   }
 
@@ -212,5 +206,22 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     public String login;
     public String email;
     public String name;
+  }
+  
+  public void onLoginSuccess(String username, String session) {
+    UserSessionContainer.instance.setSession(username, session);
+
+    /* TODO(xxx): add proper roles */
+    HashSet<String> userAndRoles = new HashSet<String>();
+    userAndRoles.add(username);
+    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
+        new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
+
+    ZeppelinhubUtils.userLoginRoutine(username);
+  }
+  
+  @Override
+  public void onLogout(PrincipalCollection principals) {
+    ZeppelinhubUtils.userLogoutRoutine((String) principals.getPrimaryPrincipal());
   }
 }
