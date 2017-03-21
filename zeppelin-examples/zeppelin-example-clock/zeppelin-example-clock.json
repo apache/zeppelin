@@ -18,7 +18,7 @@
   "type" : "APPLICATION",
   "name" : "zeppelin.clock",
   "description" : "Clock (example)",
-  "artifact" : "zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.1.jar",
+  "artifact" : "zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.2-SNAPSHOT.jar",
   "className" : "org.apache.zeppelin.example.app.clock.Clock",
   "resources" : [[":java.util.Date"]],
   "license" : "Apache-2.0",
