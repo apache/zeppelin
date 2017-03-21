@@ -62,25 +62,25 @@ public class ZeppelinClientTest {
     LOG.info("Zeppelin websocket client started");
 
     // Connection to note AAAA
-    Session connectionA = client.getZeppelinConnection("AAAA");
+    Session connectionA = client.getZeppelinConnection("AAAA", "anonymous", "anonymous");
     assertNotNull(connectionA);
     assertTrue(connectionA.isOpen());
 
     assertEquals(client.countConnectedNotes(), 1);
-    assertEquals(connectionA, client.getZeppelinConnection("AAAA"));
+    assertEquals(connectionA, client.getZeppelinConnection("AAAA", "anonymous", "anonymous"));
 
     // Connection to note BBBB
-    Session connectionB = client.getZeppelinConnection("BBBB");
+    Session connectionB = client.getZeppelinConnection("BBBB", "anonymous", "anonymous");
     assertNotNull(connectionB);
     assertTrue(connectionB.isOpen());
 
     assertEquals(client.countConnectedNotes(), 2);
-    assertEquals(connectionB, client.getZeppelinConnection("BBBB"));
+    assertEquals(connectionB, client.getZeppelinConnection("BBBB", "anonymous", "anonymous"));
 
     // Remove connection to note AAAA
     client.removeNoteConnection("AAAA");
     assertEquals(client.countConnectedNotes(), 1);
-    assertNotEquals(connectionA, client.getZeppelinConnection("AAAA"));
+    assertNotEquals(connectionA, client.getZeppelinConnection("AAAA", "anonymous", "anonymous"));
     assertEquals(client.countConnectedNotes(), 2);
     client.stop();
   }
