@@ -44,7 +44,7 @@ git tag "${RC_TAG}"
 git commit -a -m "Preparing development version ${NEXT_DEV_VERSION}"
 
 git push origin "${RC_TAG}"
-git push origin HEAD:"${BRANCH}" 
+git push origin HEAD:"${GIT_BRANCH}" 
 
 popd
 rm -rf "${WORKING_DIR}"
