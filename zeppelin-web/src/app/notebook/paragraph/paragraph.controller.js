@@ -28,7 +28,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
                        baseUrlSrv, ngToast, saveAsService, noteVarShareService,
-                       heliumService) {
+                       heliumService, paragraphTextService) {
   'ngInject';
 
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
@@ -108,6 +108,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   // Controller init
   $scope.init = function(newParagraph, note) {
+    const dirtyText = getDirtyText(note.id, newParagraph.id)
+    if (dirtyText) { newParagraph.text = dirtyText }
+
     $scope.paragraph = newParagraph;
     $scope.parentNote = note;
     $scope.originalText = angular.copy(newParagraph.text);
@@ -129,15 +132,15 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   var initializeDefault = function(config) {
     var forms = $scope.paragraph.settings.forms;
-    
+
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-  
+
     if (config.enabled === undefined) {
       config.enabled = true;
     }
-  
+
     for (var idx in forms) {
       if (forms[idx]) {
         if (forms[idx].options) {
@@ -340,6 +343,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params);
   };
 
+  const getDirtyText = function(noteId, paragraphId) {
+    return paragraphTextService.getDirtyText(
+      (noteId) ? noteId : $scope.$parent.note.id,
+      (paragraphId) ? paragraphId : $scope.paragraph.id)
+  }
+
+  const setDirtyText = function(dirtyText, paragraphId) {
+    /** set $scope.dirtytext as well, because ace editor service uses this value */
+    $scope.dirtyText = dirtyText;
+    paragraphTextService.setDirtyText(dirtyText,
+      $scope.$parent.note.id, (paragraphId) ? paragraphId : $scope.paragraph.id)
+  }
+
   $scope.saveParagraph = function(paragraph) {
     const dirtyText = paragraph.text;
     if (dirtyText === undefined || dirtyText === $scope.originalText) {
@@ -347,7 +363,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
     commitParagraph(paragraph);
     $scope.originalText = dirtyText;
-    $scope.dirtyText = undefined;
+    setDirtyText(undefined, paragraph.id)
   };
 
   $scope.toggleEnableDisable = function(paragraph) {
@@ -373,7 +389,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
 
     $scope.originalText = angular.copy(paragraphText);
-    $scope.dirtyText = undefined;
+    setDirtyText(undefined)
 
     if ($scope.paragraph.config.editorSetting.editOnDblClick) {
       closeEditorAndOpenTable($scope.paragraph);
@@ -598,7 +614,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.aceChanged = function(_, editor) {
     var session = editor.getSession();
     var dirtyText = session.getValue();
-    $scope.dirtyText = dirtyText;
+    setDirtyText(dirtyText)
     $scope.$broadcast('startSaveTimer');
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
   };
@@ -1134,11 +1150,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   }
 
   $scope.updateAllScopeTexts = function(oldPara, newPara) {
+    const dirtyText = getDirtyText()
     if (oldPara.text !== newPara.text) {
-      if ($scope.dirtyText) {         // check if editor has local update
-        if ($scope.dirtyText === newPara.text) {  // when local update is the same from remote, clear local update
+      if (dirtyText) {         // check if editor has local update
+        if (dirtyText === newPara.text) {  // when local update is the same from remote, clear local update
           $scope.paragraph.text = newPara.text;
-          $scope.dirtyText = undefined;
+          setDirtyText(undefined)
           $scope.originalText = angular.copy(newPara.text);
 
         } else { // if there're local update, keep it.
