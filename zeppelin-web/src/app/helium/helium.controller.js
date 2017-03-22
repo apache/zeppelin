@@ -151,9 +151,9 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
   const getHeliumTypeText = function(type) {
     if (type === HeliumType.VISUALIZATION) {
-      return `<a href="https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html">${type}</a>`; // eslint-disable-line max-len
+      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/writingzeppelinvisualization.html">${type}</a>`; // eslint-disable-line max-len
     } else if (type === HeliumType.SPELL) {
-      return `<a href="https://zeppelin.apache.org/docs/latest/development/writingzeppelinspell.html">${type}</a>`; // eslint-disable-line max-len
+      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/writingzeppelinspell.html">${type}</a>`; // eslint-disable-line max-len
     } else {
       return type;
     }
