@@ -21,6 +21,8 @@ package org.apache.zeppelin.file;
 import com.google.gson.Gson;
 import junit.framework.TestCase;
 import static org.junit.Assert.*;
+
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.Test;
@@ -106,9 +108,9 @@ public class HDFSFileInterpreterTest extends TestCase {
 
       // auto completion test
       List expectedResultOne = Arrays.asList(
-        new InterpreterCompletion("ls", "ls"));
+        new InterpreterCompletion("ls", "ls", CompletionType.command.name()));
       List expectedResultTwo = Arrays.asList(
-        new InterpreterCompletion("pwd", "pwd"));
+        new InterpreterCompletion("pwd", "pwd", CompletionType.command.name()));
       List<InterpreterCompletion> resultOne = t.completion("l", 0);
       List<InterpreterCompletion> resultTwo = t.completion("p", 0);
 

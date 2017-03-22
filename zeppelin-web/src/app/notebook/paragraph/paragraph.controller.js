@@ -657,6 +657,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                 completions.push({
                   name: v.name,
                   value: v.value,
+                  meta: v.meta,
                   score: 300
                 });
               }

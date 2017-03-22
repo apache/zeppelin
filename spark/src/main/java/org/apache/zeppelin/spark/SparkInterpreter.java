@@ -1079,7 +1079,7 @@ public class SparkInterpreter extends Interpreter {
     List<InterpreterCompletion> completions = new LinkedList<>();
 
     for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate));
+      completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
     }
 
     return completions;

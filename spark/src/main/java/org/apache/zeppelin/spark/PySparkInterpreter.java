@@ -42,6 +42,7 @@ import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
@@ -509,7 +510,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     List<InterpreterCompletion> results = new LinkedList<>();
     for (String name: completionList) {
-      results.add(new InterpreterCompletion(name, name));
+      results.add(new InterpreterCompletion(name, name, StringUtils.EMPTY));
     }
     return results;
   }

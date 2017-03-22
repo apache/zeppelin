@@ -56,9 +56,7 @@ import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -130,13 +128,6 @@ public class JDBCInterpreter extends Interpreter {
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
   private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
-
-  private static final Function<CharSequence, InterpreterCompletion> sequenceToStringTransformer =
-      new Function<CharSequence, InterpreterCompletion>() {
-        public InterpreterCompletion apply(CharSequence seq) {
-          return new InterpreterCompletion(seq.toString(), seq.toString());
-        }
-      };
 
   private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
   private int maxLineResults;
@@ -756,17 +747,12 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor) {
-    List<CharSequence> candidates = new ArrayList<>();
+    List<InterpreterCompletion> candidates = new ArrayList<>();
     SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
-    // It's strange but here cursor comes with additional +1 (even if buf is "" cursor = 1)
-    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor - 1, candidates) >= 0) {
-      List<InterpreterCompletion> completion;
-      completion = Lists.transform(candidates, sequenceToStringTransformer);
-
-      return completion;
-    } else {
-      return NO_COMPLETION;
+    if (sqlCompleter != null) {
+      sqlCompleter.complete(buf, cursor - 1, candidates);
     }
+    return candidates;
   }
 
   public int getMaxResult() {

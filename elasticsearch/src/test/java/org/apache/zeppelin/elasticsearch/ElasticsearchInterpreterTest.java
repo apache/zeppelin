@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -305,8 +306,8 @@ public class ElasticsearchInterpreterTest {
 
   @Theory
   public void testCompletion(ElasticsearchInterpreter interpreter) {
-    final List<InterpreterCompletion> expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count"));
-    final List<InterpreterCompletion> expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help"));
+    final List<InterpreterCompletion> expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count", CompletionType.command.name()));
+    final List<InterpreterCompletion> expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help", CompletionType.command.name()));
 
     final List<InterpreterCompletion> resultOne = interpreter.completion("co", 0);
     final List<InterpreterCompletion> resultTwo = interpreter.completion("he", 0);

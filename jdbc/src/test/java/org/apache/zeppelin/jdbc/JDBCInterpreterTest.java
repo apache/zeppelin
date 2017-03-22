@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -295,7 +296,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 1);
 
-    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ");
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ", CompletionType.keyword.name());
 
     assertEquals(1, completionList.size());
     assertEquals(true, completionList.contains(correctCompletionKeyword));

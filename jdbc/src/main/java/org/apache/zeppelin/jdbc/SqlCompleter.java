@@ -4,12 +4,12 @@ package org.apache.zeppelin.jdbc;
  * This source file is based on code taken from SQLLine 1.0.2 See SQLLine notice in LICENSE
  */
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import jline.console.completer.ArgumentCompleter.ArgumentList;
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
-import jline.console.completer.StringsCompleter;
+
+import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.completer.StringsCompleter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 /**
  * SQL auto complete functionality for the JdbcInterpreter.
  */
-public class SqlCompleter extends StringsCompleter {
+public class SqlCompleter {
 
   private static Logger logger = LoggerFactory.getLogger(SqlCompleter.class);
 
@@ -67,8 +67,7 @@ public class SqlCompleter extends StringsCompleter {
    */
   private StringsCompleter keywordCompleter = new StringsCompleter();
 
-  @Override
-  public int complete(String buffer, int cursor, List<CharSequence> candidates) {
+  public int complete(String buffer, int cursor, List<InterpreterCompletion> candidates) {
 
     logger.debug("Complete with buffer = " + buffer + ", cursor = " + cursor);
 
@@ -177,8 +176,7 @@ public class SqlCompleter extends StringsCompleter {
                                               Map<String, Set<String>> tables,
                                               Map<String, Set<String>> columns)  {
     try {
-      ResultSet cols = meta.getColumns(catalogName, schemaFilter, "%",
-              "%");
+      ResultSet cols = meta.getColumns(catalogName, schemaFilter, "%", "%");
       try {
         while (cols.next()) {
           String schema = cols.getString("TABLE_SCHEM");
@@ -438,15 +436,16 @@ public class SqlCompleter extends StringsCompleter {
    * @param isColumnAllowed if false the function will not search and complete columns
    * @return -1 in case of no candidates found, 0 otherwise
    */
-  public int completeName(String buffer, int cursor, List<CharSequence> candidates,
+  public int completeName(String buffer, int cursor, List<InterpreterCompletion> candidates,
                           Map<String, String> aliases, boolean isColumnAllowed) {
 
     if (buffer == null) buffer = "";
 
     // no need to process after first point after cursor
     int nextPointPos = buffer.indexOf('.', cursor);
-    if (nextPointPos != -1) buffer = buffer.substring(0, nextPointPos);
-
+    if (nextPointPos != -1) {
+      buffer = buffer.substring(0, nextPointPos);
+    }
     // points divide the name to the schema, table and column - find them
     int pointPos1 = buffer.indexOf('.');
     int pointPos2 = buffer.indexOf('.', pointPos1 + 1);
@@ -457,13 +456,14 @@ public class SqlCompleter extends StringsCompleter {
     String column;
     if (pointPos1 == -1) {             // process only schema or keyword case
       schema = buffer;
-      int keywordsRes = completeKeyword(buffer, cursor, candidates);
+      List<CharSequence> keywordsCandidates = new ArrayList();
+      int keywordsRes = completeKeyword(buffer, cursor, keywordsCandidates);
       List<CharSequence> schemaCandidates = new ArrayList<>();
       int schemaRes = completeSchema(schema, cursor, schemaCandidates);
-      candidates.addAll(schemaCandidates);
+      addCompletions(candidates, keywordsCandidates, CompletionType.keyword.name());
+      addCompletions(candidates, schemaCandidates, CompletionType.schema.name());
       return Math.max(keywordsRes, schemaRes);
-    }
-    else {
+    } else {
       schema = buffer.substring(0, pointPos1);
       if (aliases.containsKey(schema)) {  // process alias case
         String alias = aliases.get(schema);
@@ -471,26 +471,40 @@ public class SqlCompleter extends StringsCompleter {
         schema = alias.substring(0, pointPos);
         table = alias.substring(pointPos + 1);
         column = buffer.substring(pointPos1 + 1);
-      }
-      else if (pointPos2 == -1) {        // process schema.table case
+      } else if (pointPos2 == -1) {        // process schema.table case
         table = buffer.substring(pointPos1 + 1);
-        return completeTable(schema, table, cursor - pointPos1 - 1, candidates);
-      }
-      else {
+        List<CharSequence> tableCandidates = new ArrayList();
+        int tableRes = completeTable(schema, table, cursor - pointPos1 - 1, tableCandidates);
+        addCompletions(candidates, tableCandidates, CompletionType.table.name());
+        return tableRes;
+      } else {
         table = buffer.substring(pointPos1 + 1, pointPos2);
         column = buffer.substring(pointPos2 + 1);
       }
     }
 
     // here in case of column
-    if (isColumnAllowed)
-      return completeColumn(schema, table, column, cursor - pointPos2 - 1, candidates);
-    else
+    if (isColumnAllowed) {
+      List<CharSequence> columnCandidates = new ArrayList();
+      int columnRes = completeColumn(schema, table, column, cursor - pointPos2 - 1,
+          columnCandidates);
+      addCompletions(candidates, columnCandidates, CompletionType.column.name());
+      return columnRes;
+    } else {
       return -1;
+    }
   }
 
   // test purpose only
   WhitespaceArgumentDelimiter getSqlDelimiter() {
     return this.sqlDelimiter;
+  }
+
+  private void addCompletions(List<InterpreterCompletion> interpreterCompletions,
+      List<CharSequence> candidates, String meta) {
+    for (CharSequence candidate : candidates) {
+      interpreterCompletions.add(new InterpreterCompletion(candidate.toString(),
+          candidate.toString(), meta));
+    }
   }
 }
