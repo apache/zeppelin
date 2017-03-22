@@ -662,12 +662,12 @@ export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
     const obj = cube[key]
     fillArrayRow(schema, aggregatorColumns, obj,
       groupNameSet, sortedSelectorNameWithIndex,
-      key, keyNames, keyArrowRows, keyNameWithIndex,
-    )
+      key, keyNames, keyArrowRows, keyNameWithIndex)
   }
 
   return {
     transformed: keyArrowRows,
+    groupNames: Array.from(groupNameSet).sort(),
     sortedSelectors: sortedSelectors,
     sortedSelectorNameWithIndex: sortedSelectorNameWithIndex,
     keyNameWithIndex: keyNameWithIndex,
@@ -721,7 +721,8 @@ export function fillArrayRow(schema, aggrColumns, obj,
 }
 
 export function getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
-                                      keyColumnName, keyNames, groupNameSet) {
+                                         keyColumnName, keyNames, groupNameSet,
+                                         selectorNameWithIndex) {
 
   const rows = keyNames.reduce((acc, key) => {
     const obj = cube[key]
@@ -733,7 +734,11 @@ export function getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
     return acc
   }, [])
 
-  return { transformed: rows, }
+  return {
+    transformed: rows,
+    sortedSelectors: Object.keys(selectorNameWithIndex).sort(),
+    groupNames: Array.from(groupNameSet).sort(),
+  }
 }
 
 export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
@@ -773,12 +778,14 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
 }
 
 export function getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
-                                            keyColumnName, keyNames, groupNames, selectorNameWithIndex) {
+                                            keyColumnName, keyNames, groupNameSet, selectorNameWithIndex) {
 
   const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
 
   const rows = new Array(sortedSelectors.length)
+
+  const groupNames = Array.from(groupNameSet).sort()
 
   keyNames.map(key => {
     const obj = cube[key]
@@ -788,6 +795,7 @@ export function getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
 
   return {
     transformed: rows,
+    groupNames: groupNames,
     sortedSelectors: sortedSelectors,
     sortedSelectorNameWithIndex: sortedSelectorNameWithIndex,
   }
@@ -862,12 +870,15 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
       const { cube, schema, keyColumnName,  keyNames, groupNameSet, selectorNameWithIndex, } =
         getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
 
-      const { transformed, } = getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
-        keyColumnName, keyNames, groupNameSet)
+      const {
+        transformed, groupNames, sortedSelectors
+      } = getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
         rows: transformed, keyColumnName, keyNames,
-        selectors: Object.keys(selectorNameWithIndex).sort(), /** selectors should be sorted */
+        groupNames: groupNames,
+        selectors: sortedSelectors,
       }
     }
   } else if (method === TransformMethod.ARRAY) {
@@ -876,12 +887,13 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
         getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
 
       const {
-        transformed, sortedSelectors, sortedSelectorNameWithIndex, keyNameWithIndex,
+        transformed, groupNames, sortedSelectors,
       } = getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
         keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
         rows: transformed, keyColumnName, keyNames,
+        groupNames: groupNames,
         selectors: sortedSelectors,
       }
     }
@@ -890,15 +902,14 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
       const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
         getKAGCube(rows, keyColumns, groupColumns, aggregatorColumns)
 
-      const sortedGroupNames = Array.from(groupNameSet).sort()
-
       const {
-        transformed, sortedSelectors, sortedSelectorNameWithIndex,
+        transformed, groupNames, sortedSelectors,
       } = getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
-        keyColumnName, keyNames, sortedGroupNames, selectorNameWithIndex)
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
         rows: transformed, keyColumnName, keyNames,
+        groupNames: groupNames,
         selectors: sortedSelectors,
       }
     }
