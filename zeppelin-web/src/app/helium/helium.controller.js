@@ -149,37 +149,55 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     return license;
   }
 
-  $scope.enable = function(name, artifact, type, groupId) {
+  const getHeliumTypeText = function(type) {
+    if (type === HeliumType.VISUALIZATION) {
+      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/writingzeppelinvisualization.html">${type}</a>`; // eslint-disable-line max-len
+    } else if (type === HeliumType.SPELL) {
+      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/writingzeppelinspell.html">${type}</a>`; // eslint-disable-line max-len
+    } else {
+      return type;
+    }
+  }
+
+  $scope.enable = function(name, artifact, type, groupId, description) {
     var license = getLicense(name, artifact);
     var mavenArtifactInfoToHTML = groupId +':'+ artifact.split('@')[0] + ':' + artifact.split('@')[1];
     var zeppelinVersion = $rootScope.zeppelinVersion;
     var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
-    
+
     var confirm = ''
-    if (type === 'INTERPRETER') {
-    confirm = BootstrapDialog.show({
-      title: '',
-      message: '<p>Below command will download maven artifact ' +
-      '<code style="font-size: 11.5px; background-color: #f5f5f5; color: #0a0a0a">' +
+    if (type === HeliumType.INTERPRETER) {
+      confirm = BootstrapDialog.show({
+        title: '',
+        message: '<p>Below command will download maven artifact ' +
+        '<code style="font-size: 11.5px; background-color: #f5f5f5; color: #0a0a0a">' +
         mavenArtifactInfoToHTML + '</code>' +
-      ' and all of its transitive dependencies into interpreter/interpreter-name directory.<p>' +
-      '<div class="highlight"><pre><code class="text language-text" data-lang="text" style="font-size: 11.5px">' +
-      './bin/install-interpreter.sh --name "interpreter-name" --artifact ' +
+        ' and all of its transitive dependencies into interpreter/interpreter-name directory.<p>' +
+        '<div class="highlight"><pre><code class="text language-text" data-lang="text" style="font-size: 11.5px">' +
+        './bin/install-interpreter.sh --name "interpreter-name" --artifact ' +
         mavenArtifactInfoToHTML +' </code></pre>' +
-      '<p>After restart Zeppelin, create interpreter setting and bind it with your note. ' +
-      'For more detailed information, see <a target="_blank" href=' +
+        '<p>After restart Zeppelin, create interpreter setting and bind it with your note. ' +
+        'For more detailed information, see <a target="_blank" href=' +
         url + '>Interpreter Installation.</a></p>'
-    });
+      });
     } else {
       confirm = BootstrapDialog.confirm({
         closable: false,
         closeByBackdrop: false,
         closeByKeyboard: false,
-        title: '',
-        message: 'Do you want to enable ' + name + '?' +
-        '<div style="color:gray">' + artifact + '</div>' +
-        '<div style="border-top: 1px solid #efefef; margin-top: 10px; padding-top: 5px;">License</div>' +
-        '<div style="color:gray">' + license + '</div>',
+        title: '<div style="font-weight: 300;">Do you want to enable Helium Package?</div>',
+        message:
+          '<div style="font-size: 14px; margin-top: 5px;">Artifact</div>' +
+          `<div style="color:gray">${artifact}</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px; margin-bottom: 2px;">Type</div>' +
+          `<div style="color:gray">${getHeliumTypeText(type)}</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px;">Description</div>' +
+          `<div style="color:gray">${description}</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px;">License</div>' +
+          `<div style="color:gray">${license}</div>`,
         callback: function (result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');
@@ -203,13 +221,13 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     }
   };
 
-  $scope.disable = function(name) {
+  $scope.disable = function(name, artifact) {
     var confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
-      title: '',
-      message: 'Do you want to disable ' + name + '?',
+      title: '<div style="font-weight: 300;">Do you want to disable Helium Package?</div>',
+      message: artifact,
       callback: function(result) {
         if (result) {
           confirm.$modalFooter.find('button').addClass('disabled');
