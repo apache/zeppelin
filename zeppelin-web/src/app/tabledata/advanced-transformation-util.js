@@ -36,6 +36,21 @@ export function getCurrentChartParamSpecs(config) {
   return config.paramSpecs[getCurrentChart(config)]
 }
 
+export function useSharedAxis(config, chart) {
+  return config.spec.charts[chart].sharedAxis
+}
+
+export function serializeSharedAxes(config) {
+  const availableCharts = getAvailableChartNames(config.spec.charts)
+  for (let i = 0; i < availableCharts.length; i++) {
+    const chartName = availableCharts[i];
+    if (useSharedAxis(config, chartName)) {
+      /** use reference :) in case of sharedAxis */
+      config.axis[chartName] = config.sharedAxis
+    }
+  }
+}
+
 export const Widget = {
   INPUT: 'input', /** default */
   OPTION: 'option',
@@ -183,10 +198,12 @@ export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
 
 export function clearAxisConfig(config) {
   delete config.axis /** Object: persisted axis for each chart */
+  delete config.sharedAxis
 }
 
 export function initAxisConfig(config) {
   if (!config.axis) { config.axis = {} }
+  if (!config.sharedAxis) { config.sharedAxis = {} }
 
   const spec = config.spec
   const availableCharts = getAvailableChartNames(spec.charts)
@@ -195,18 +212,40 @@ export function initAxisConfig(config) {
   for (let i = 0; i < availableCharts.length; i++) {
     const chartName = availableCharts[i];
 
-    if (!config.axis[chartName]) { config.axis[chartName] = {}; }
+    if (!config.axis[chartName]) {
+      config.axis[chartName] = {};
+    }
     const axisSpecs = getSpecs(spec.charts[chartName].axis)
-    if (!config.axisSpecs[chartName]) { config.axisSpecs[chartName] = axisSpecs; }
+    if (!config.axisSpecs[chartName]) {
+      config.axisSpecs[chartName] = axisSpecs;
+    }
 
+    /** initialize multi-dimension axes */
     for (let i = 0; i < axisSpecs.length; i++) {
       const axisSpec = axisSpecs[i]
-      if (!isSingleDimensionAxis(axisSpec) &&
-        !Array.isArray(config.axis[chartName][axisSpec.name])) {
-        config.axis[chartName][axisSpec.name] = []
+      if (isSingleDimensionAxis(axisSpec)) {
+        continue;
+      }
+
+      /** intentionally nested if-stmt is used because order of conditions matter here */
+      if (!useSharedAxis(config, chartName)) {
+        if (!Array.isArray(config.axis[chartName][axisSpec.name])) {
+          config.axis[chartName][axisSpec.name] = []
+        }
+      } else if (useSharedAxis(config, chartName)) {
+        /**
+         * initialize multiple times even if shared axis because it's not that expensive, assuming that
+         * all charts using shared axis have the same axis specs
+         */
+        if (!Array.isArray(config.sharedAxis[axisSpec.name])) {
+          config.sharedAxis[axisSpec.name] = []
+        }
       }
     }
   }
+
+  /** this function should be called after initializing */
+  serializeSharedAxes(config)
 }
 
 export function resetAxisConfig(config) {

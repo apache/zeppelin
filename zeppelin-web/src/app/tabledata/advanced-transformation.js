@@ -16,6 +16,7 @@ import Transformation from './transformation';
 
 import {
   getCurrentChart, getCurrentChartAxis, getCurrentChartParam,
+  serializeSharedAxes, useSharedAxis,
   getCurrentChartAxisSpecs, getCurrentChartParamSpecs,
   initializeConfig, resetAxisConfig, resetParameterConfig,
   isAggregatorAxis, isGroupAxis, isKeyAxis, isSingleDimensionAxis,
@@ -51,7 +52,6 @@ class AdvancedTransformation extends Transformation {
       scope: {
         config: configInstance,
         columns: self.columns,
-
         resetAxisConfig: () => {
           resetAxisConfig(configInstance)
           self.emitConfig(configInstance)
@@ -102,6 +102,7 @@ class AdvancedTransformation extends Transformation {
           }
         },
 
+        useSharedAxis: (chartName) => { return useSharedAxis(configInstance, chartName) },
         isGroupAxis: (axisSpec) => { return isGroupAxis(axisSpec) },
         isKeyAxis: (axisSpec) => { return isKeyAxis(axisSpec) },
         isAggregatorAxis: (axisSpec) => { return isAggregatorAxis(axisSpec) },
@@ -163,6 +164,8 @@ class AdvancedTransformation extends Transformation {
 
   transform(tableData) {
     this.columns = tableData.columns; /** used in `getSetting` */
+    /** initialize in `transform` instead of `getSetting` because this method is called before */
+    serializeSharedAxes(this.config)
 
     const conf = this.config
     const chart = getCurrentChart(conf)

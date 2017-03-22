@@ -46,7 +46,9 @@ limitations under the License.
           <input type="radio" style="margin-top: 1px; margin-left: -17px;"
                  ng-checked="config.chart.current === chart"
                  ng-click="chartChanged(chart)" value="{{chart}}" />
-          <span style="vertical-align: middle;">{{chart}}</span>
+          <span style="vertical-align: middle;">
+            {{chart}} {{useSharedAxis(chart) ? '(shared)' : ''}}
+          </span>
         </label>
       </li>
     </ul>
