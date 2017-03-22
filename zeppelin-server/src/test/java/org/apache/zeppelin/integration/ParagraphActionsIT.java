@@ -300,6 +300,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       // run paragraph manually by pressing ENTER
       driver.findElement(By.xpath(xpathToDropdownMenu)).sendKeys(Keys.ENTER);
+      driver.navigate().refresh();
       waitForParagraph(1, "FINISHED");
       collector.checkThat("Even if 'RunOnSelectionChange' is set as false, still can run the paragraph by pressing ENTER ",
         driver.findElement(By.xpath(xpathToResultText)).getText(),
