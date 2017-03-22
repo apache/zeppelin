@@ -110,14 +110,6 @@ export function parseParameter(paramSpecs, param) {
 }
 
 
-export const Aggregator = {
-  SUM: 'sum',
-  COUNT: 'count',
-  AVG: 'avg',
-  MIN: 'min',
-  MAX: 'max',
-}
-
 export function isAggregatorAxis(axisSpec) {
   return axisSpec && axisSpec.axisType === 'aggregator';
 }
@@ -329,6 +321,99 @@ export function getColumnsFromAxis(axisSpecs, axis) {
   }
 }
 
+export const Aggregator = {
+  SUM: 'sum',
+  COUNT: 'count',
+  AVG: 'avg',
+  MIN: 'min',
+  MAX: 'max',
+}
+
+const TransformMethod = {
+  /**
+   * `raw` is designed for users who want to get raw (original) rows.
+   */
+  RAW: 'raw',
+  /**
+   * `object` is * designed for serial(line, area) charts.
+   */
+  OBJECT: 'object',
+  /**
+   * `array` is designed for column, pie charts which have categorical `key` values.
+   * But some libraries (e.g amcharts) may require `OBJECT` transform method even if pie, column charts.
+   *
+   * `row.value` will be filled for `keyNames`.
+   * In other words, if you have `keyNames` which is length 4,
+   * every `row.value`'s length will be 4 too.
+   * (DO NOT use this transform method for serial (numerical) x axis charts which have so-oo many keys)
+   */
+  ARRAY: 'array',
+  DRILL_DOWN: 'drill-down',
+}
+
+/** return function for lazy computation */
+export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorColumns) {
+  let transformer = () => {}
+
+  const transformSpec = getCurrentChartTransform(conf)
+  if (!transformSpec) { return transformer }
+
+  const method = transformSpec.method
+
+  if (method === TransformMethod.RAW) {
+    transformer = () => { return rows; }
+  } else if (method === TransformMethod.OBJECT) {
+    transformer = () => {
+      const { cube, schema, keyColumnName,  keyNames, groupNameSet, selectorNameWithIndex, } =
+        getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
+
+      const {
+        transformed, groupNames, sortedSelectors
+      } = getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
+
+      return {
+        rows: transformed, keyColumnName, keyNames,
+        groupNames: groupNames,
+        selectors: sortedSelectors,
+      }
+    }
+  } else if (method === TransformMethod.ARRAY) {
+    transformer = () => {
+      const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
+        getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
+
+      const {
+        transformed, groupNames, sortedSelectors,
+      } = getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
+
+      return {
+        rows: transformed, keyColumnName, keyNames,
+        groupNames: groupNames,
+        selectors: sortedSelectors,
+      }
+    }
+  } else if (method === TransformMethod.DRILL_DOWN) {
+    transformer = () => {
+      const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
+        getKAGCube(rows, keyColumns, groupColumns, aggregatorColumns)
+
+      const {
+        transformed, groupNames, sortedSelectors,
+      } = getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
+        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
+
+      return {
+        rows: transformed, keyColumnName, keyNames,
+        groupNames: groupNames,
+        selectors: sortedSelectors,
+      }
+    }
+  }
+
+  return transformer
+}
 const AggregatorFunctions = {
   sum: function(a, b) {
     const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
@@ -364,12 +449,6 @@ const AggregatorFunctionDiv = {
   count: false,
   avg: true
 };
-
-export function createKeyNames(schema, cube, groupColumns) {
-  let keyNames = []
-
-  return keyNames
-}
 
 /** nested cube `(key) -> (group) -> aggregator` */
 export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
@@ -618,24 +697,6 @@ export function getCubeValue(obj, aggregator, aggrColumnName) {
   return value
 }
 
-export function getDrillDownCubeValue(obj, aggregator) {
-  let value = null /** default is null */
-  try {
-    /** if AVG or COUNT, calculate it now, previously we can't because we were doing accumulation */
-    if (aggregator === Aggregator.AVG) {
-      value = obj.children.value / obj.children.count
-    } else if (aggregator === Aggregator.COUNT) {
-      value = obj.children.value
-    } else {
-      value = obj.children.value
-    }
-
-    if (typeof value === 'undefined') { value = null }
-  } catch (error) { /** iognore */ }
-
-  return value
-}
-
 export function getNameWithIndex(names) {
   const nameWithIndex = {}
 
@@ -829,91 +890,4 @@ export function fillDrillDownRow(schema, obj, rows, key,
 
     rows[selectorIndex] = row
   }
-}
-
-
-const TransformMethod = {
-  /**
-   * `raw` is designed for users who want to get raw (original) rows.
-   */
-  RAW: 'raw',
-  /**
-   * `object` is * designed for serial(line, area) charts.
-   */
-  OBJECT: 'object',
-  /**
-   * `array` is designed for column, pie charts which have categorical `key` values.
-   * But some libraries (e.g amcharts) may require `OBJECT` transform method even if pie, column charts.
-   *
-   * `row.value` will be filled for `keyNames`.
-   * In other words, if you have `keyNames` which is length 4,
-   * every `row.value`'s length will be 4 too.
-   * (DO NOT use this transform method for serial (numerical) x axis charts which have so-oo many keys)
-   */
-  ARRAY: 'array',
-  DRILL_DOWN: 'drill-down',
-}
-
-/** return function for lazy computation */
-export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorColumns) {
-  let transformer = () => {}
-
-  const transformSpec = getCurrentChartTransform(conf)
-  if (!transformSpec) { return transformer }
-
-  const method = transformSpec.method
-
-  if (method === TransformMethod.RAW) {
-    transformer = () => { return rows; }
-  } else if (method === TransformMethod.OBJECT) {
-    transformer = () => {
-      const { cube, schema, keyColumnName,  keyNames, groupNameSet, selectorNameWithIndex, } =
-        getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
-
-      const {
-        transformed, groupNames, sortedSelectors
-      } = getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
-        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
-
-      return {
-        rows: transformed, keyColumnName, keyNames,
-        groupNames: groupNames,
-        selectors: sortedSelectors,
-      }
-    }
-  } else if (method === TransformMethod.ARRAY) {
-    transformer = () => {
-      const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
-        getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
-
-      const {
-        transformed, groupNames, sortedSelectors,
-      } = getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
-        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
-
-      return {
-        rows: transformed, keyColumnName, keyNames,
-        groupNames: groupNames,
-        selectors: sortedSelectors,
-      }
-    }
-  } else if (method === TransformMethod.DRILL_DOWN) {
-    transformer = () => {
-      const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
-        getKAGCube(rows, keyColumns, groupColumns, aggregatorColumns)
-
-      const {
-        transformed, groupNames, sortedSelectors,
-      } = getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
-        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
-
-      return {
-        rows: transformed, keyColumnName, keyNames,
-        groupNames: groupNames,
-        selectors: sortedSelectors,
-      }
-    }
-  }
-
-  return transformer
 }

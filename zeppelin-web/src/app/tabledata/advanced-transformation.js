@@ -20,8 +20,8 @@ import {
   initializeConfig, resetAxisConfig, resetParameterConfig,
   isAggregatorAxis, isGroupAxis, isKeyAxis, isSingleDimensionAxis,
   removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount, getColumnsFromAxis,
-  getTransformer,
   isInputWidget, isOptionWidget, isCheckboxWidget, isTextareaWidget, parseParameter,
+  getTransformer,
 } from './advanced-transformation-util';
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
