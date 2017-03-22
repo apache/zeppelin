@@ -320,13 +320,14 @@ public abstract class Interpreter {
             Class clazz = field.getType();
             if (!skipFields.contains(field.getName()) && (typesToProcess.contains(clazz)
                 || clazz.isPrimitive())) {
+              Object value = null;
               try {
-                Object value = FieldUtils.readField(field, interpreterContext, true);
-                p = p.replaceAll(String.format(markerTemplate, field.getName()),
-                    value != null ? value.toString() : StringUtils.EMPTY);
+                value = FieldUtils.readField(field, interpreterContext, true);
               } catch (Exception e) {
-                logger.error("Cannot replace context parameter", e);
+                logger.error("Cannot read value of field {0}", field.getName());
               }
+              p = p.replaceAll(String.format(markerTemplate, field.getName()),
+                  value != null ? value.toString() : StringUtils.EMPTY);
             }
           }
           p = p.replaceAll(String.format(markerTemplate, "user"),
