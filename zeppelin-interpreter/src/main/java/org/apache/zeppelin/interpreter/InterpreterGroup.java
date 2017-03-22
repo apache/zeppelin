@@ -182,6 +182,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
 
   public void close(final Map<String, InterpreterGroup> interpreterGroupRef,
       final String processKey, final String sessionKey) {
+    LOGGER.info("Close interpreter group " + getId() + " for session: " + sessionKey);
     close(interpreterGroupRef, processKey, sessionKey, this.get(sessionKey));
   }
 
