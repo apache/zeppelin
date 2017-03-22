@@ -226,24 +226,6 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
-    String processKey = getInterpreterProcessKey("", noteId);
-    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
-    InterpreterGroup groupKey;
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
-        interpreterGroupWriteLock.lock();
-        groupKey = interpreterGroupRef.remove(intpKey);
-        interpreterGroupWriteLock.unlock();
-        closeToGroupList.add(groupKey);
-      }
-    }
-
-    for (InterpreterGroup groupToRemove : closeToGroupList) {
-      groupToRemove.close();
-    }
-  }
-
   void closeAndRemoveInterpreterGroup(String noteId, String user) {
     if (user.equals("anonymous")) {
       user = "";

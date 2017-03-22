@@ -926,7 +926,6 @@ public class InterpreterSettingManager {
   public void restart(String settingId, String noteId, String user) {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
-
     synchronized (interpreterSettings) {
       intpSetting = interpreterSettings.get(settingId);
       // Check if dependency in specified path is changed
