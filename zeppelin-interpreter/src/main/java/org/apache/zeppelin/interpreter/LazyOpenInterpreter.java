@@ -75,11 +75,11 @@ public class LazyOpenInterpreter
 
   @Override
   public void close() {
-    // TODO(jl): Remove this trick!!
-    // intp.close() should be called to reduce referenceCount
-    if (isOpen() || intp instanceof RemoteInterpreter) {
-      intp.close();
-      opened = false;
+    synchronized (intp) {
+      if (opened == true) {
+        intp.close();
+        opened = false;
+      }
     }
   }
 
@@ -103,9 +103,6 @@ public class LazyOpenInterpreter
 
   @Override
   public FormType getFormType() {
-    // RemoteInterpreter's this method calls init() internally, and which cause to increase the
-    // number of referenceCount and it affects incorrectly
-    open();
     return intp.getFormType();
   }
 
