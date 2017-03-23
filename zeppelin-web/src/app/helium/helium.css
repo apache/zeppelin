@@ -140,6 +140,12 @@
   display: inline-block;
 }
 
+.heliumVisIconButton > img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .heliumLocalPackage {
   color: #636363;
 }
