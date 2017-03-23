@@ -58,17 +58,29 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
         $scope.bundleOrder = visPackageOrder;
         $scope.bundleOrderChanged = false;
       });
-  }
+  };
 
-  var classifyPkgType = function(packageInfos) {
+  var orderPackageByPubDate = function(a, b) {
+    if (!a.pkg.published) {
+      // Because local registry pkgs don't have 'published' field, put current time instead to show them first
+      a.pkg.published = new Date().getTime()
+    }
+
+    return new Date(a.pkg.published).getTime() - new Date(b.pkg.published).getTime();
+  };
+
+  var classifyPkgType = function(packageInfo) {
     var allTypesOfPkg = {};
     var vizTypePkg = [];
     var spellTypePkg = [];
     var intpTypePkg = [];
     var appTypePkg = [];
 
-    for (var name in packageInfos) {
-      var pkgs = packageInfos[name];
+    var packageInfoArr = Object.keys(packageInfo).map(key => packageInfo[key])
+    packageInfoArr = packageInfoArr.sort(orderPackageByPubDate).reverse();
+
+    for (var name in packageInfoArr) {
+      var pkgs = packageInfoArr[name];
       var pkgType = pkgs.pkg.type;
 
       switch (pkgType) {
@@ -86,7 +98,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
           break;
       }
     }
-  
+
     var pkgsArr = [
       vizTypePkg,
       spellTypePkg,

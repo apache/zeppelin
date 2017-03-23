@@ -78,7 +78,7 @@ limitations under the License.
   </div>
   <div ng-repeat="(types, defaultPackages) in allTypesOfPkg">
     <div class="row heliumPackageList"
-         ng-repeat="pkgSearchResult in defaultPackages.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | toArray:false | orderBy: 'pkg.published':true"
+         ng-repeat="pkgSearchResult in defaultPackages.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))"
          ng-show="$parent.pkgListByType === types">
       <div class="col-md-12">
         <div class="heliumPackageHead">
