@@ -228,7 +228,9 @@ public class HeliumBundleFactory {
               String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
                               "--fetch-retry-mintimeout=%d",
                       FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      logger.info("Installing required node modules");
       npmCommand(commandForNpmInstall);
+      logger.info("Installed required node modules");
     } catch (TaskRunnerException e) {
       // ignore `(empty)` warning
       String cause = new String(out.toByteArray());
@@ -239,7 +241,9 @@ public class HeliumBundleFactory {
 
     try {
       out.reset();
+      logger.info("Bundling helium packages");
       npmCommand("run bundle");
+      logger.info("Bundled helium packages");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
     }
