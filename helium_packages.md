@@ -34,7 +34,7 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
         <div>
           <input class="helium-radio" id="'ALL'" type="radio" 
                ng-model="pkgListByType" ng-value="'ALL'" ng-click="pkgListByType = 'ALL'">
-          <label for="'ALL'">Lately published</label>
+          <label for="'ALL'">Recently published</label>
         </div>
         <div ng-repeat="pkgTypes in allPackageTypes">
           <input class="helium-radio" id="{% raw %}{{pkgTypes}}{% endraw %}" type="radio" 
@@ -60,7 +60,7 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
       </div>
       <div ng-if="pkgListByType === 'ALL'">
         <div class="row heliumPackageList"
-           ng-repeat="pkg in latestPkgInfo.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | orderBy: ['published']:true">
+             ng-repeat="pkg in latestPkgInfo.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))">
         <div class="col-md-12">
           <div class="heliumPackageHead">
             <div class="heliumPackageIcon"
@@ -90,14 +90,14 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
         </div>
       </div>
       <div class="text-center" style="margin-top: 24px;">
-        <ul uib-pagination boundary-links="true" total-items="numberOfAllPkgs" 
+        <ul uib-pagination boundary-links="true" total-items="latestPkgInfo.length" 
             ng-model="currentPage" class="pagination-sm"
             previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
       </div>
     </div>
     <div ng-if="pkgListByType !== 'ALL'" ng-repeat="(types, pkgs) in allTypePkgs">
         <div class="row heliumPackageList"
-           ng-repeat="pkg in pkgs.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage)) | orderBy: ['published']:true"
+           ng-repeat="pkg in pkgs.slice(((currentPage-1)*itemsPerPage), ((currentPage)*itemsPerPage))"
            ng-show="$parent.pkgListByType === types">
         <div class="col-md-12">
           <div class="heliumPackageHead">
@@ -129,7 +129,7 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
       </div>
       <div class="text-center" style="margin-top: 24px;">
         <ul uib-pagination boundary-links="true" total-items="pkgs.length" 
-            ng-model="currentPage" class="pagination-sm"
+            ng-model="$parent.currentPage" class="pagination-sm"
             ng-show="$parent.pkgListByType === types"
             previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
       </div>
