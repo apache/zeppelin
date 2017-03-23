@@ -47,10 +47,10 @@ limitations under the License.
              data-ng-model="bundleOrder">
           <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
                as-sortable-item>
-            <div class="btn btn-default btn-sm"
+            <button class="btn btn-default btn-sm heliumVisIconButton"
                  ng-bind-html='defaultPackages[pkgName].pkg.icon'
                  as-sortable-item-handle>
-            </div>
+            </button>
           </div>
         </div>
         <div class="saveLink"
