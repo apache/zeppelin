@@ -46,14 +46,19 @@ angular.module("app", ['ui.bootstrap'])
     }
 
     $scope.latestPkgInfo = latestPkgInfo
-    $scope.numberOfAllPkgs = latestPkgInfo.length
   }
+
+  var orderPackageByPubDate = function(a, b) {
+    return new Date(a.published).getTime() - new Date(b.published).getTime();
+  };
 
   var classifyPkgByType = function(latestPkgInfo) {
     var vizTypePkgs = []
     var spellTypePkgs = []
     var interpreterTypePkgs = []
     var allTypePkgs = {}
+
+    latestPkgInfo = latestPkgInfo.sort(orderPackageByPubDate).reverse();
 
     for (var idx in latestPkgInfo) {
       switch (latestPkgInfo[idx].type) {
