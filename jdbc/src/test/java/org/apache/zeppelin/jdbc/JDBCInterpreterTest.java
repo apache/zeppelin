@@ -467,6 +467,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
         "/*\n" +
         "select * from test_table;\n" +
         "*/\n" +
+        "-- a ; b\n" +
         "select * from test_table WHERE ID = ';--';\n" +
         "select * from test_table WHERE ID = '/*' -- test";
 

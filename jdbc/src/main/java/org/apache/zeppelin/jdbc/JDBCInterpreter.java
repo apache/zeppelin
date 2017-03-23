@@ -585,12 +585,10 @@ public class JDBCInterpreter extends Interpreter {
   private void executePrecode(Connection connection, String propertyKey) throws SQLException {
     String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
     if (StringUtils.isNotBlank(precode)) {
-      List<String> precodeQueries = splitSqlQueries(precode);
+      precode = StringUtils.trim(precode);
+      logger.info("Run SQL precode '{}'", precode);
       try (Statement statement = connection.createStatement()) {
-        for (String precodeQuery : precodeQueries) {
-          logger.info("Run SQL precode '{}'", precodeQuery);
-          statement.execute(precodeQuery);
-        }
+        statement.execute(precode);
         if (!connection.getAutoCommit()) {
           connection.commit();
         }
