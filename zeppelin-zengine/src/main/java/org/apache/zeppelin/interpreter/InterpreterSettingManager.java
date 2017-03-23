@@ -514,7 +514,8 @@ public class InterpreterSettingManager {
         }
       }
     } catch (NullPointerException e) {
-      logger.warn("Couldn't get interpreter editor setting");
+      // Use `debug` level because this log occurs frequently
+      logger.debug("Couldn't get interpreter editor setting");
     }
     return editor;
   }
