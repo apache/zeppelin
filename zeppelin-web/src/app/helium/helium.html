@@ -11,7 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="interpreterHead">
+<div class="interpreterHead"
+     ng-class="(bundleOrder.length > 1) ? '' : 'heliumHead'">
   <div class="header">
     <div class="row">
       <div class="col-md-12">
@@ -34,7 +35,6 @@ limitations under the License.
             <i class="fa fa-cube"></i>
             {{pkgTypes}}
           </button>
-          <p class="localPkgInfo">* Local registry package's name is gray colored.</p>
         </div>
       </div>
     </div>
@@ -56,6 +56,11 @@ limitations under the License.
               ng-click="saveBundleOrder()">
           save
         </span>
+      </div>
+    </div>
+    <div class="pull-right row localPkgInfo">
+      <div class="col-md-12">
+        <p>* Local registry package's name is gray colored.</p>
       </div>
     </div>
   </div>

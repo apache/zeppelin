@@ -12,6 +12,10 @@
  * limitations under the License.
  */
 
+.heliumHead {
+  padding-bottom: 34px !important;
+}
+
 .heliumPackageContainer {
   padding-bottom: 0px;
   margin-bottom: 0px;
@@ -162,6 +166,10 @@
 }
 
 .localPkgInfo {
+  margin-right: 0;
+}
+
+.localPkgInfo p {
   margin: 10px 12px 0 0;
   font-size: 11px;
   font-style: italic;
