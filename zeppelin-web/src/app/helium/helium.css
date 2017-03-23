@@ -113,6 +113,10 @@
   float: left;
 }
 
+.heliumBundleOrder p {
+  margin:0 0 5px 15px
+}
+
 .sortable-row .as-sortable-item-handle {
   width: 35px;
   height: 30px;
