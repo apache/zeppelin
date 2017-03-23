@@ -40,22 +40,24 @@ limitations under the License.
     </div>
     <div ng-show="bundleOrder.length > 1"
          class="row heliumBundleOrder">
-      <div style="margin:0 0 5px 15px">Bundle package display order (drag and drop to reorder)</div>
-      <div class="col-md-12 sortable-row btn-group"
-           as-sortable="bundleOrderListeners"
-           data-ng-model="bundleOrder">
-        <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
-             as-sortable-item>
-          <div class="btn btn-default btn-sm"
-               ng-bind-html='defaultPackages[pkgName].pkg.icon'
-               as-sortable-item-handle>
+      <p>Bundle package display order (drag and drop to reorder)</p>
+      <div class="col-md-12">
+        <div class="sortable-row btn-group"
+             as-sortable="bundleOrderListeners"
+             data-ng-model="bundleOrder">
+          <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
+               as-sortable-item>
+            <div class="btn btn-default btn-sm"
+                 ng-bind-html='defaultPackages[pkgName].pkg.icon'
+                 as-sortable-item-handle>
+            </div>
           </div>
         </div>
-        <span class="saveLink"
-              ng-show="bundleOrderChanged"
-              ng-click="saveBundleOrder()">
+        <div class="saveLink"
+             ng-show="bundleOrderChanged"
+             ng-click="saveBundleOrder()">
           save
-        </span>
+        </div>
       </div>
     </div>
   </div>
