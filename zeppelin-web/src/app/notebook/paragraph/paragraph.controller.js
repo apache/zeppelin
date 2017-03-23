@@ -108,8 +108,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   // Controller init
   $scope.init = function(newParagraph, note) {
-    const dirtyText = getDirtyText(note.id, newParagraph.id)
-    if (dirtyText) { newParagraph.text = dirtyText }
+    if (note && note.id && newParagraph && newParagraph.id) {
+      const dirtyText = getDirtyText(note.id, newParagraph.id)
+      if (dirtyText) { newParagraph.text = dirtyText }
+    }
 
     $scope.paragraph = newParagraph;
     $scope.parentNote = note;
