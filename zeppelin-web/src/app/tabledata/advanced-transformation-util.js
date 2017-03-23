@@ -890,7 +890,7 @@ export function getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
   keyNames.map(key => {
     const obj = cube[key]
     fillDrillDownRow(schema, obj, rows, key,
-      selectorNameWithIndex, aggregatorColumns, groupNames)
+      sortedSelectorNameWithIndex, aggregatorColumns, groupNames)
   })
 
   return {
