@@ -650,6 +650,17 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
+            var computeCaption = function(value, meta) {
+              var metaLength = meta !== undefined ? meta.length : 0;
+              var length = 43;
+              var whitespaceLength = 3;
+              var ellipses = '...';
+              var maxLengthCaption = length - metaLength - whitespaceLength - ellipses.length;
+              if (value !== undefined && value.length > maxLengthCaption) {
+                  return value.substr(0, maxLengthCaption) + ellipses;
+              }
+              return value;
+            }
             if (data.completions) {
               var completions = [];
               for (var c in data.completions) {
@@ -658,6 +669,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                   name: v.name,
                   value: v.value,
                   meta: v.meta,
+                  caption: computeCaption(v.value, v.meta),
                   score: 300
                 });
               }
