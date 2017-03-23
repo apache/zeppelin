@@ -34,7 +34,7 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
         <div>
           <input class="helium-radio" id="'ALL'" type="radio" 
                ng-model="pkgListByType" ng-value="'ALL'" ng-click="pkgListByType = 'ALL'">
-          <label for="'ALL'">Lately published</label>
+          <label for="'ALL'">Recently published</label>
         </div>
         <div ng-repeat="pkgTypes in allPackageTypes">
           <input class="helium-radio" id="{% raw %}{{pkgTypes}}{% endraw %}" type="radio" 
