@@ -88,16 +88,8 @@ module.exports = function makeWebpackConfig () {
     app: './src/index.js'
   };
 
-  var serverPort = 8080;
-  var webPort = 9000;
-
-  if (process.env.SERVER_PORT) {
-     serverPort = process.env.SERVER_PORT;
-  }
-
-  if (process.env.WEB_PORT) {
-    webPort = process.env.WEB_PORT;
-  }
+  var serverPort = process.env.SERVER_PORT || 8080;
+  var webPort = process.env.WEB_PORT || 9000;
 
   /**
    * Output
@@ -194,9 +186,9 @@ module.exports = function makeWebpackConfig () {
           pattern: /WEB_PORT/ig,
           replacement: function (match, p1, offset, string) {
             return webPort;
-            }
           }
-        ]})
+        }
+      ]})
     }]
   };
 
@@ -280,12 +272,11 @@ module.exports = function makeWebpackConfig () {
       new CopyWebpackPlugin([])
     )
   } else {
-      config.plugins.push(
-        new InsertLiveReloadPlugin(),
-        // string replace plugin instance
-        // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
-        new stringReplacePlugin()
-      )
+    config.plugins.push(
+      new InsertLiveReloadPlugin(),
+      // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
+      new stringReplacePlugin()
+    )
   }
 
   /**
