@@ -76,8 +76,9 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
 
   configureChart(chart) {
     chart.x(function(d) { return d.label;})
-	 .y(function(d) { return d.value;})
-	 .showLabels(false)
-	 .showTooltipPercent(true);
+	 .y(function(d) { return d.value;});
+	 // if upgrade ndv3 to 1.8.5 or over, the following code is available
+	 /*.showLabels(false)
+	 .showTooltipPercent(true);*/
   };
 }
