@@ -286,6 +286,9 @@ export function resetParameterConfig(config) {
 }
 
 export function initializeConfig(config, spec) {
+  config.chartChanged = true
+  config.parameterChanged = false
+
   const currentVersion = JSON.stringify(spec)
   if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
     spec.version = currentVersion

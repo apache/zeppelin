@@ -38,6 +38,24 @@ class AdvancedTransformation extends Transformation {
     initializeConfig(config, spec);
   }
 
+  emitConfigChange(conf) {
+    conf.chartChanged = false
+    conf.parameterChanged = false
+    this.emitConfig(conf)
+  }
+
+  emitChartChange(conf) {
+    conf.chartChanged = true
+    conf.parameterChanged = false
+    this.emitConfig(conf)
+  }
+
+  emitParameterChange(conf) {
+    conf.chartChanged = false
+    conf.parameterChanged = true
+    this.emitConfig(conf)
+  }
+
   getSetting() {
     const self = this; /** for closure */
     const configInstance = self.config; /** for closure */
@@ -54,22 +72,22 @@ class AdvancedTransformation extends Transformation {
         columns: self.columns,
         resetAxisConfig: () => {
           resetAxisConfig(configInstance)
-          self.emitConfig(configInstance)
+          self.emitChartChange(configInstance)
         },
 
         resetParameterConfig: () => {
           resetParameterConfig(configInstance)
-          self.emitConfig(configInstance)
+          self.emitParameterChange(configInstance)
         },
 
         toggleColumnPanel: () => {
           configInstance.panel.columnPanelOpened = !configInstance.panel.columnPanelOpened
-          self.emitConfig(configInstance)
+          self.emitConfigChange(configInstance)
         },
 
         toggleParameterPanel: () => {
           configInstance.panel.parameterPanelOpened = !configInstance.panel.parameterPanelOpened
-          self.emitConfig(configInstance)
+          self.emitConfigChange(configInstance)
         },
 
         getAxisAnnotation: (axisSpec) => {
@@ -111,13 +129,14 @@ class AdvancedTransformation extends Transformation {
 
         chartChanged: (selected) => {
           configInstance.chart.current = selected
-          self.emitConfig(configInstance)
+          self.emitChartChange(configInstance)
         },
 
         axisChanged: function(e, ui, axisSpec) {
           removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
           applyMaxAxisCount(configInstance, axisSpec)
-          self.emitConfig(configInstance)
+
+          self.emitChartChange(configInstance)
         },
 
         aggregatorChanged: (colIndex, axisSpec, aggregator) => {
@@ -126,7 +145,8 @@ class AdvancedTransformation extends Transformation {
           } else {
             getCurrentChartAxis(configInstance)[axisSpec.name][colIndex].aggr = aggregator
           }
-          self.emitConfig(configInstance)
+
+          self.emitChartChange(configInstance)
         },
 
         removeFromAxis: function(colIndex, axisSpec) {
@@ -135,7 +155,8 @@ class AdvancedTransformation extends Transformation {
           } else {
             getCurrentChartAxis(configInstance)[axisSpec.name].splice(colIndex, 1)
           }
-          self.emitConfig(configInstance)
+
+          self.emitChartChange(configInstance)
         },
 
         isInputWidget: function(paramSpec) { return isInputWidget(paramSpec) },
@@ -144,15 +165,18 @@ class AdvancedTransformation extends Transformation {
         isTextareaWidget: function(paramSpec) { return isTextareaWidget(paramSpec) },
 
         parameterChanged: (paramSpec) => {
-          self.emitConfig(configInstance)
+
+          configInstance.chartChanged = false
+          configInstance.parameterChanged = true
+          self.emitParameterChange(configInstance)
         },
 
         parameterOnKeyDown: function(event, paramSpec) {
           const code = event.keyCode || event.which;
           if (code === 13 && isInputWidget(paramSpec)) {
-            self.emitConfig(configInstance)
+            self.emitParameterChange(configInstance)
           } else if (code === 13 && event.shiftKey && isTextareaWidget(paramSpec)) {
-            self.emitConfig(configInstance)
+            self.emitParameterChange(configInstance)
           }
 
           event.stopPropagation() /** avoid to conflict with paragraph shortcuts */
@@ -184,6 +208,9 @@ class AdvancedTransformation extends Transformation {
    let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
 
     return {
+      chartChanged: conf.chartChanged,
+      parameterChanged: conf.parameterChanged,
+
       chart: chart, /** current chart */
       axis: axis, /** persisted axis */
       parameter: parsedParam, /** persisted parameter */
