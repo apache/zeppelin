@@ -294,7 +294,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 1);
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3);
 
     InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ", CompletionType.keyword.name());
 

@@ -15,7 +15,9 @@
 package org.apache.zeppelin.completer;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -26,8 +28,12 @@ import jline.internal.Preconditions;
  * Case-insensitive completer for a set of strings.
  */
 public class StringsCompleter implements Completer {
-  private final SortedSet<String> strings = new TreeSet<String>();
-
+  private final SortedSet<String> strings = new TreeSet<String>(new Comparator<String>() {
+    @Override
+    public int compare(String o1, String o2) {
+      return o1.compareToIgnoreCase(o2);
+    }
+  });
 
   public StringsCompleter() {
   }
@@ -42,12 +48,19 @@ public class StringsCompleter implements Completer {
   }
 
   public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
-    Preconditions.checkNotNull(candidates);
+    return completeCollection(buffer, cursor, candidates);
+  }
 
+  public int complete(final String buffer, final int cursor, final Set<CharSequence> candidates) {
+    return completeCollection(buffer, cursor, candidates);
+  }
+
+  private int completeCollection(final String buffer, final int cursor,
+      final Collection<CharSequence> candidates) {
+    Preconditions.checkNotNull(candidates);
     if (buffer == null) {
       candidates.addAll(strings);
-    }
-    else {
+    } else {
       String bufferTmp = buffer.toUpperCase();
       for (String match : strings.tailSet(buffer)) {
         String matchTmp = match.toUpperCase();
@@ -57,10 +70,6 @@ public class StringsCompleter implements Completer {
 
         candidates.add(match);
       }
-    }
-
-    if (candidates.size() == 1) {
-      candidates.set(0, candidates.get(0) + " ");
     }
 
     return candidates.isEmpty() ? -1 : 0;
