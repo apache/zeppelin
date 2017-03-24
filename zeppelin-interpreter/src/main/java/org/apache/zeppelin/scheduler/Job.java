@@ -173,8 +173,8 @@ public abstract class Job {
   }
 
   public void run() {
+    specifyStartParameters();
     JobProgressPoller progressUpdator = null;
-    dateStarted = new Date();
     try {
       progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
       progressUpdator.start();
@@ -188,6 +188,11 @@ public abstract class Job {
       }
       //aborted = false;
     }
+  }
+
+  private synchronized void specifyStartParameters() {
+    dateStarted = new Date();
+    dateFinished = null;
   }
 
   private synchronized void completeWithSuccess(Object result) {
@@ -271,5 +276,9 @@ public abstract class Job {
 
   public synchronized void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
+  }
+
+  public synchronized boolean isDone() {
+    return dateFinished != null;
   }
 }

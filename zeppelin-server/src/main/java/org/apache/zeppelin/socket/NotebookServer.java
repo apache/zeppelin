@@ -1913,9 +1913,13 @@ public class NotebookServer extends WebSocketServlet
   public void onOutputClear(String noteId, String paragraphId) {
     Notebook notebook = notebook();
     final Note note = notebook.getNote(noteId);
-    note.clearParagraphOutput(paragraphId);
     Paragraph paragraph = note.getParagraph(paragraphId);
-    broadcastParagraph(note, paragraph);
+    synchronized (paragraph) {
+      if (!paragraph.isDone()) {
+        note.clearParagraphOutput(paragraphId);
+        broadcastParagraph(note, paragraph);
+      }
+    }
   }
 
   /**
