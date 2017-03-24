@@ -24,7 +24,7 @@ function baseUrlSrv() {
       }
     }
     //Exception for when running locally via grunt
-    if (port === 9000) {
+    if (port === process.env.WEB_PORT) {
       port = process.env.SERVER_PORT;
     }
     return port;
