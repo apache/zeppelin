@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').directive('dropdownInput', function() {
+angular.module('zeppelinWebApp').directive('dropdownInput', dropdownInput);
+
+function dropdownInput() {
   return {
     restrict: 'A',
     link: function(scope, element) {
@@ -22,4 +23,5 @@ angular.module('zeppelinWebApp').directive('dropdownInput', function() {
       });
     }
   };
-});
+}
+

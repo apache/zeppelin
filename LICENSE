@@ -221,7 +221,8 @@ The following components are provided under the Open Font License. See project l
 The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
 
     (OFT 1.1) Font Awesome v4.2.0 (http://fortawesome.github.io/Font-Awesome/) - http://scripts.sil.org/OFL
-
+    (OFL 1.1) Patua One Font (see licenses/LICENSE-patuaOne-font)
+    (OFL 1.1) Source Code Pro Font (see licenses/LICENSE-source_code_pro-font)
 
 ========================================================================
 MIT licenses
@@ -253,6 +254,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 
     (Apache 2.0) Bootstrap v3.0.2 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.0.2/LICENSE
     (Apache 2.0) Software under ./bigquery/*  was developed at Google (http://www.google.com/). Licensed under the Apache v2.0 License.
+    (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
 
 ========================================================================
 BSD 3-Clause licenses
@@ -269,7 +271,7 @@ The following components are provided under the BSD 3-Clause license.  See file 
 ========================================================================
 BSD 2-Clause licenses
 ========================================================================
-The following components are provided under the BSD 3-Clause license.  See file headers and project links for details.
+The following components are provided under the BSD 2-Clause license.  See file headers and project links for details.
 
   (BSD 2 Clause) portions of SQLLine (http://sqlline.sourceforge.net/) - http://sqlline.sourceforge.net/#license
    jdbc/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java

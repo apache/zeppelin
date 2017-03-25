@@ -19,11 +19,20 @@ package org.apache.zeppelin.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -35,13 +44,19 @@ import org.elasticsearch.node.NodeBuilder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
+@RunWith(Theories.class)
 public class ElasticsearchInterpreterTest {
+
+  @DataPoint public static ElasticsearchInterpreter transportInterpreter;
+  @DataPoint public static ElasticsearchInterpreter httpInterpreter;
 
   private static Client elsClient;
   private static Node elsNode;
-  private static ElasticsearchInterpreter interpreter;
 
   private static final String[] METHODS = { "GET", "PUT", "DELETE", "POST" };
   private static final int[] STATUS = { 200, 404, 500, 403 };
@@ -51,6 +66,8 @@ public class ElasticsearchInterpreterTest {
   private static final String ELS_TRANSPORT_PORT = "10300";
   private static final String ELS_HTTP_PORT = "10200";
   private static final String ELS_PATH = "/tmp/els";
+
+  private static final AtomicInteger deleteId = new AtomicInteger(2);
 
 
   @BeforeClass
@@ -75,7 +92,7 @@ public class ElasticsearchInterpreterTest {
           .endObject()
         .endObject().endObject().endObject()).get();
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 48; i++) {
       elsClient.prepareIndex("logs", "http", "" + i)
         .setRefresh(true)
         .setSource(jsonBuilder()
@@ -92,22 +109,50 @@ public class ElasticsearchInterpreterTest {
         .get();
     }
 
+    for (int i = 1; i < 3; i++) {
+      elsClient.prepareIndex("logs", "http", "very/strange/id#" + i)
+        .setRefresh(true)
+        .setSource(jsonBuilder()
+            .startObject()
+              .field("date", new Date())
+              .startObject("request")
+                .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
+                .field("url", "/zeppelin/" + UUID.randomUUID().toString())
+                .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
+              .endObject()
+              .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
+              .field("content_length", RandomUtils.nextInt(2000))
+            )
+        .get();
+    }
+
     final Properties props = new Properties();
     props.put(ElasticsearchInterpreter.ELASTICSEARCH_HOST, ELS_HOST);
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
     props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
-    interpreter = new ElasticsearchInterpreter(props);
-    interpreter.open();
+
+    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
+    props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLIENT_TYPE, "transport");
+    transportInterpreter = new ElasticsearchInterpreter(props);
+    transportInterpreter.open();
+
+    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_HTTP_PORT);
+    props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLIENT_TYPE, "http");
+    httpInterpreter = new ElasticsearchInterpreter(props);
+    httpInterpreter.open();
   }
 
   @AfterClass
   public static void clean() {
-    if (interpreter != null) {
-      interpreter.close();
+    if (transportInterpreter != null) {
+      transportInterpreter.close();
+    }
+
+    if (httpInterpreter != null) {
+      httpInterpreter.close();
     }
 
     if (elsClient != null) {
-      elsClient.admin().indices().delete(new DeleteIndexRequest("logs")).actionGet();
+      elsClient.admin().indices().delete(new DeleteIndexRequest("*")).actionGet();
       elsClient.close();
     }
 
@@ -116,92 +161,140 @@ public class ElasticsearchInterpreterTest {
     }
   }
 
-  @Test
-  public void testCount() {
-
-    InterpreterResult res = interpreter.interpret("count /unknown", null);
-    assertEquals(Code.ERROR, res.code());
-
-    res = interpreter.interpret("count /logs", null);
-    assertEquals("50", res.message());
+  private InterpreterContext buildContext(String noteAndParagraphId) {
+    final AngularObjectRegistry angularObjReg = new AngularObjectRegistry("elasticsearch", null);
+    return new InterpreterContext(noteAndParagraphId, noteAndParagraphId, null, null, null, null, null,
+        null, angularObjReg , null, null, null);
   }
 
-  @Test
-  public void testGet() {
+  @Theory
+  public void testCount(ElasticsearchInterpreter interpreter) {
 
-    InterpreterResult res = interpreter.interpret("get /logs/http/unknown", null);
+    final InterpreterContext ctx = buildContext("testCount");
+
+    InterpreterResult res = interpreter.interpret("count /unknown", ctx);
     assertEquals(Code.ERROR, res.code());
 
-    res = interpreter.interpret("get /logs/http/10", null);
+    res = interpreter.interpret("count /logs", ctx);
     assertEquals(Code.SUCCESS, res.code());
-  }
+    assertEquals("50", res.message().get(0).getData());
+    assertNotNull(ctx.getAngularObjectRegistry().get("count_testCount", null, null));
+    assertEquals(50l, ctx.getAngularObjectRegistry().get("count_testCount", null, null).get());
 
-  @Test
-  public void testSearch() {
-
-    InterpreterResult res = interpreter.interpret("size 10\nsearch /logs *", null);
-    assertEquals(Code.SUCCESS, res.code());
-
-    res = interpreter.interpret("search /logs {{{hello}}}", null);
-    assertEquals(Code.ERROR, res.code());
-
-    res = interpreter.interpret("search /logs { \"query\": { \"match\": { \"status\": 500 } } }", null);
-    assertEquals(Code.SUCCESS, res.code());
-
-    res = interpreter.interpret("search /logs status:404", null);
-    assertEquals(Code.SUCCESS, res.code());
-
-    res = interpreter.interpret("search /logs { \"fields\": [ \"date\", \"request.headers\" ], \"query\": { \"match\": { \"status\": 500 } } }", null);
+    res = interpreter.interpret("count /logs { \"query\": { \"match\": { \"status\": 500 } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
   }
 
-  @Test
-  public void testAgg() {
+  @Theory
+  public void testGet(ElasticsearchInterpreter interpreter) {
+
+    final InterpreterContext ctx = buildContext("get");
+
+    InterpreterResult res = interpreter.interpret("get /logs/http/unknown", ctx);
+    assertEquals(Code.ERROR, res.code());
+
+    res = interpreter.interpret("get /logs/http/unknown/unknown", ctx);
+    assertEquals(Code.ERROR, res.code());
+
+    res = interpreter.interpret("get /unknown/unknown/unknown", ctx);
+    assertEquals(Code.ERROR, res.code());
+
+    res = interpreter.interpret("get /logs/http/very/strange/id#1", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("get /logs/http/4", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("get /logs/_all/4", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+  }
+
+  @Theory
+  public void testSearch(ElasticsearchInterpreter interpreter) {
+
+    final InterpreterContext ctx = buildContext("search");
+
+    InterpreterResult res = interpreter.interpret("size 10\nsearch /logs *", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("search /logs {{{hello}}}", ctx);
+    assertEquals(Code.ERROR, res.code());
+
+    res = interpreter.interpret("search /logs { \"query\": { \"match\": { \"status\": 500 } } }", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("search /logs status:404", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("search /logs { \"fields\": [ \"date\", \"request.headers\" ], \"query\": { \"match\": { \"status\": 500 } } }", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+  }
+
+  @Theory
+  public void testAgg(ElasticsearchInterpreter interpreter) {
+
+    final InterpreterContext ctx = buildContext("agg");
 
     // Single-value metric
     InterpreterResult res = interpreter.interpret("search /logs { \"aggs\" : { \"distinct_status_count\" : " +
-            " { \"cardinality\" : { \"field\" : \"status\" } } } }", null);
+            " { \"cardinality\" : { \"field\" : \"status\" } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
 
     // Multi-value metric
     res = interpreter.interpret("search /logs { \"aggs\" : { \"content_length_stats\" : " +
-            " { \"extended_stats\" : { \"field\" : \"content_length\" } } } }", null);
+            " { \"extended_stats\" : { \"field\" : \"content_length\" } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
 
     // Single bucket
     res = interpreter.interpret("search /logs { \"aggs\" : { " +
             " \"200_OK\" : { \"filter\" : { \"term\": { \"status\": \"200\" } }, " +
-            "   \"aggs\" : { \"avg_length\" : { \"avg\" : { \"field\" : \"content_length\" } } } } } }", null);
+            "   \"aggs\" : { \"avg_length\" : { \"avg\" : { \"field\" : \"content_length\" } } } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
 
     // Multi-buckets
     res = interpreter.interpret("search /logs { \"aggs\" : { \"status_count\" : " +
-            " { \"terms\" : { \"field\" : \"status\" } } } }", null);
+            " { \"terms\" : { \"field\" : \"status\" } } } }", ctx);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("search /logs { \"aggs\" : { " +
+            " \"length\" : { \"terms\": { \"field\": \"status\" }, " +
+            "   \"aggs\" : { \"sum_length\" : { \"sum\" : { \"field\" : \"content_length\" } }, \"sum_status\" : { \"sum\" : { \"field\" : \"status\" } } } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
   }
 
-  @Test
-  public void testIndex() {
+  @Theory
+  public void testIndex(ElasticsearchInterpreter interpreter) {
 
     InterpreterResult res = interpreter.interpret("index /logs { \"date\": \"" + new Date() + "\", \"method\": \"PUT\", \"status\": \"500\" }", null);
     assertEquals(Code.ERROR, res.code());
 
+    res = interpreter.interpret("index /logs/http { bad ", null);
+    assertEquals(Code.ERROR, res.code());
+
     res = interpreter.interpret("index /logs/http { \"date\": \"2015-12-06T14:54:23.368Z\", \"method\": \"PUT\", \"status\": \"500\" }", null);
+    assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("index /logs/http/1000 { \"date\": \"2015-12-06T14:54:23.368Z\", \"method\": \"PUT\", \"status\": \"500\" }", null);
     assertEquals(Code.SUCCESS, res.code());
   }
 
-  @Test
-  public void testDelete() {
+  @Theory
+  public void testDelete(ElasticsearchInterpreter interpreter) {
 
     InterpreterResult res = interpreter.interpret("delete /logs/http/unknown", null);
     assertEquals(Code.ERROR, res.code());
 
-    res = interpreter.interpret("delete /logs/http/11", null);
-    assertEquals("11", res.message());
+    res = interpreter.interpret("delete /unknown/unknown/unknown", null);
+    assertEquals(Code.ERROR, res.code());
+
+    final int testDeleteId = deleteId.decrementAndGet();
+    res = interpreter.interpret("delete /logs/http/" + testDeleteId, null);
+    assertEquals(Code.SUCCESS, res.code());
+    assertEquals("" + testDeleteId, res.message().get(0).getData());
   }
 
-  @Test
-  public void testMisc() {
+  @Theory
+  public void testMisc(ElasticsearchInterpreter interpreter) {
 
     InterpreterResult res = interpreter.interpret(null, null);
     assertEquals(Code.SUCCESS, res.code());
@@ -210,23 +303,23 @@ public class ElasticsearchInterpreterTest {
     assertEquals(Code.SUCCESS, res.code());
   }
 
-  @Test
-  public void testCompletion() {
-    List expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count"));
-    List expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help"));
+  @Theory
+  public void testCompletion(ElasticsearchInterpreter interpreter) {
+    final List<InterpreterCompletion> expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count"));
+    final List<InterpreterCompletion> expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help"));
 
-    List<InterpreterCompletion> resultOne = interpreter.completion("co", 0);
-    List<InterpreterCompletion> resultTwo = interpreter.completion("he", 0);
-    List<InterpreterCompletion> resultAll = interpreter.completion("", 0);
+    final List<InterpreterCompletion> resultOne = interpreter.completion("co", 0);
+    final List<InterpreterCompletion> resultTwo = interpreter.completion("he", 0);
+    final List<InterpreterCompletion> resultAll = interpreter.completion("", 0);
 
     Assert.assertEquals(expectedResultOne, resultOne);
     Assert.assertEquals(expectedResultTwo, resultTwo);
 
-    List allCompletionList = new ArrayList<>();
-    for (InterpreterCompletion ic : resultAll) {
+    final List<String> allCompletionList = new ArrayList<>();
+    for (final InterpreterCompletion ic : resultAll) {
       allCompletionList.add(ic.getName());
     }
-    Assert.assertEquals(interpreter.COMMANDS, allCompletionList);
+    Assert.assertEquals(ElasticsearchInterpreter.COMMANDS, allCompletionList);
   }
 
 }

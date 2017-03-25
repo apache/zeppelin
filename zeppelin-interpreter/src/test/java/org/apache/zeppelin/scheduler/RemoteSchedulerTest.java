@@ -29,12 +29,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
@@ -68,7 +65,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   public void test() throws Exception {
     Properties p = new Properties();
     final InterpreterGroup intpGroup = new InterpreterGroup();
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
@@ -81,7 +78,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intpA);
@@ -94,6 +93,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         10);
 
     Job job = new Job("jobId", "jobName", null, 200) {
+      Object results;
+      @Override
+      public Object getReturn() {
+        return results;
+      }
 
       @Override
       public int progress() {
@@ -110,6 +114,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         intpA.interpret("1000", new InterpreterContext(
             "note",
             "jobId",
+            null,
             "title",
             "text",
             new AuthenticationInfo(),
@@ -124,6 +129,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       protected boolean jobAbort() {
         return false;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
       }
     };
     scheduler.submit(job);
@@ -157,7 +167,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   public void testAbortOnPending() throws Exception {
     Properties p = new Properties();
     final InterpreterGroup intpGroup = new InterpreterGroup();
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
@@ -170,7 +180,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         env,
         10 * 1000,
         this,
-        null);
+        null,
+        "anonymous",
+        false);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(intpA);
@@ -183,9 +195,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         10);
 
     Job job1 = new Job("jobId1", "jobName1", null, 200) {
+      Object results;
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId1",
+          null,
           "title",
           "text",
           new AuthenticationInfo(),
@@ -194,6 +208,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new AngularObjectRegistry(intpGroup.getId(), null),
           new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
 
       @Override
       public int progress() {
@@ -217,13 +236,20 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           intpA.cancel(context);
         }
         return true;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
       }
     };
 
     Job job2 = new Job("jobId2", "jobName2", null, 200) {
+      public Object results;
       InterpreterContext context = new InterpreterContext(
           "note",
           "jobId2",
+          null,
           "title",
           "text",
           new AuthenticationInfo(),
@@ -232,6 +258,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new AngularObjectRegistry(intpGroup.getId(), null),
           new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
 
       @Override
       public int progress() {
@@ -255,6 +286,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           intpA.cancel(context);
         }
         return true;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
       }
     };
 
@@ -291,12 +327,38 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   }
 
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, String output) {
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
 
   }
 
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+  public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
 
+  }
+
+  @Override
+  public void onOutputClear(String noteId, String paragraphId) {
+
+  }
+
+  @Override
+  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
+
+  }
+
+  @Override
+  public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
+    if (callback != null) {
+      callback.onFinished(new LinkedList<>());
+    }
+  }
+
+  @Override
+  public void onRemoteRunParagraph(String noteId, String PsaragraphID) throws Exception {
+  }
+
+  @Override
+  public void onParaInfosReceived(String noteId, String paragraphId, 
+      String interpreterSettingId, Map<String, String> metaInfos) {
   }
 }

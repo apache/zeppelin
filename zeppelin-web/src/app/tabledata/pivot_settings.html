@@ -1,0 +1,88 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+All fields:
+<div class="allFields row">
+  <ul class="noDot">
+    <li class="liVertical" ng-repeat="col in tableDataColumns">
+      <div class="btn btn-default btn-xs"
+           data-drag="true"
+           data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+           ng-model="tableDataColumns"
+           jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+         {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="row" ng-if="graphMode!='scatterChart'">
+  <div class="col-md-4">
+    <span class="columns lightBold">
+      Keys
+      <ul data-drop="true"
+          ng-model="config.keys"
+          jqyoui-droppable="{multiple:true, onDrop:'save()'}"
+          class="list-unstyled">
+        <li ng-repeat="item in config.keys">
+          <div class="btn btn-primary btn-xs">
+            {{item.name}} <span class="fa fa-close" ng-click="removeKey($index)"></span>
+          </div>
+        </li>
+      </ul>
+    </span>
+  </div>
+  <div class="col-md-4">
+    <span class="columns lightBold">
+      Groups
+      <ul data-drop="true"
+          ng-model="config.groups"
+          jqyoui-droppable="{multiple:true, onDrop:'save()'}"
+          class="list-unstyled">
+        <li ng-repeat="item in config.groups">
+          <div class="btn btn-success btn-xs">
+            {{item.name}} <span class="fa fa-close" ng-click="removeGroup($index)"></span>
+          </div>
+        </li>
+      </ul>
+    </span>
+  </div>
+  <div class="col-md-4">
+    <span class="columns lightBold">
+      Values
+      <ul data-drop="true"
+          ng-model="config.values"
+          jqyoui-droppable="{multiple:true, onDrop:'save()'}"
+          class="list-unstyled">
+        <li ng-repeat="item in config.values">
+          <div class="btn-group">
+            <div class="btn btn-info btn-xs dropdown-toggle"
+                 type="button"
+                 data-toggle="dropdown">
+              {{item.name | limitTo: 30}}{{item.name.length > 30 ? '...' : ''}}
+              <font style="color:#EEEEEE;"><span class="lightBold" style="text-transform: uppercase;">{{item.aggr}}</span></font>
+              <span class="fa fa-close" ng-click="removeValue($index)"></span>
+            </div>
+            <ul class="dropdown-menu" role="menu">
+              <li ng-click="setValueAggr($index, 'sum')"><a>sum</a></li>
+              <li ng-click="setValueAggr($index, 'count')"><a>count</a></li>
+              <li ng-click="setValueAggr($index, 'avg')"><a>avg</a></li>
+              <li ng-click="setValueAggr($index, 'min')"><a>min</a></li>
+              <li ng-click="setValueAggr($index, 'max')"><a>max</a></li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </span>
+  </div>
+</div>

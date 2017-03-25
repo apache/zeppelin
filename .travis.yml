@@ -18,10 +18,14 @@ language: java
 sudo: false
 
 cache:
+  apt: true
   directories:
     - .spark-dist
-    - ${HOME}/.m2/repository/.cache/maven-download-plugin
-    - .node_modules
+    - ${HOME}/.m2
+    - ${HOME}/R
+    -  zeppelin-web/node
+    -  zeppelin-web/node_modules
+    -  zeppelin-web/bower_components
 
 addons:
   apt:
@@ -29,82 +33,101 @@ addons:
     - r-packages-precise
     packages:
     - r-base-dev
-    - r-cran-evaluate
-    - r-cran-base64enc
+
+env:
+  global:
+    # Interpreters does not required by zeppelin-server integration tests
+    - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!python,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy'
 
 matrix:
   include:
-    # Test all modules with spark 2.0.0 and scala 2.11
+    # Test License compliance using RAT tool
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.3" PROFILE="-Pspark-2.0 -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
-    # Test all modules with scala 2.10
+    # Test core modules
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.10" BUILD_FLAG="package -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtest='!ZeppelinSparkClusterTest,!org.apache.zeppelin.spark.*' -DfailIfNoTests=false"
 
-    # Test all modules with scala 2.11
+    # Test selenium with spark module for 1.6.3
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Pr -Phadoop-2.3 -Ppyspark -Psparkr -Pscalding -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr" TEST_PROJECTS=""
+      env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Ppyspark -Phelium-dev -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
 
-    # Test spark module for 1.5.2
+    # Test interpreter modules
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.5.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.5 -Pr -Phadoop-2.3 -Ppyspark -Psparkr" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark* -DfailIfNoTests=false"
+      env: SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
-    # Test spark module for 1.4.1
+    # Test spark module for 2.1.0 with scala 2.11, livy
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.4.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.4 -Pr -Phadoop-2.3 -Ppyspark -Psparkr" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,r -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark* -DfailIfNoTests=false"
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.1 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,livy" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.livy.* -DfailIfNoTests=false"
 
-    # Test spark module for 1.3.1
+    # Test spark module for 2.0.2 with scala 2.11
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.3.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.3 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark* -DfailIfNoTests=false"
+      env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test spark module for 1.2.2
+    # Test spark module for 1.6.3 with scala 2.10
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.2.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.2 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark* -DfailIfNoTests=false"
+      env: SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.10" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test spark module for 1.1.1
+    # Test spark module for 1.6.3 with scala 2.11
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" SPARK_VER="1.1.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.1 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.rest.*Test,org.apache.zeppelin.spark* -DfailIfNoTests=false"
+      env: SCALA_VER="2.11" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Ppyspark -Psparkr -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test selenium with spark module for 1.6.1
+    # Test python/pyspark with python 2
     - jdk: "oraclejdk7"
-      env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pexamples" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify" TEST_PROJECTS="-pl zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Ppyspark" BUILD_FLAG="package -am -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+
+    # Test python/pyspark with python 3
+    - jdk: "oraclejdk7"
+      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Pscala-2.11" BUILD_FLAG="package -am -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
 before_install:
-  - "ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin"
+  # check files included in commit range, clear bower_components if a bower.json file has changed.
+  # bower cache clearing can also be forced by putting "bower clear" or "clear bower" in a commit message
+  - changedfiles=$(git diff --name-only $TRAVIS_COMMIT_RANGE 2>/dev/null) || changedfiles=""
+  - echo $changedfiles
+  - hasbowerchanged=$(echo $changedfiles | grep -c "bower.json" || true);
+  - gitlog=$(git log $TRAVIS_COMMIT_RANGE 2>/dev/null) || gitlog="" 
+  - clearcache=$(echo $gitlog | grep -c -E "clear bower|bower clear" || true)
+  - if [ "$hasbowerchanged" -gt 0 ] || [ "$clearcache" -gt 0 ]; then echo "Clearing bower_components cache"; rm -r zeppelin-web/bower_components; npm cache clear; else echo "Using cached bower_components."; fi
+  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
+  - ./testing/install_external_dependencies.sh
+  - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true
   - ls .node_modules && cp -r .node_modules zeppelin-web/node_modules || echo "node_modules are not cached"
-  - mkdir -p ~/R
-  - echo 'R_LIBS=~/R' > ~/.Renviron
-  - R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"
-  - export R_LIBS='~/R'
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
   - ./dev/change_scala_version.sh $SCALA_VER
+  - source ~/.environ
 
 install:
-  - mvn $BUILD_FLAG $PROFILE -B
+  - mvn $BUILD_FLAG $MODULES $PROFILE -B
 
 before_script:
-  - travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER
-  - ./testing/startSparkCluster.sh $SPARK_VER $HADOOP_VER
+  - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
+  - if [[ -n $LIVY_VER ]]; then ./testing/downloadLivy.sh $LIVY_VER; fi
+  - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-server-$LIVY_VER; fi
+  - if [[ -n $LIVY_VER ]]; then export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER; fi
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
+  - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
-  - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
+  - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
 
 after_success:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
 
 after_failure:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
-  - cat target/rat.txt
-  - cat zeppelin-server/target/rat.txt
+  - find . -name rat.txt | xargs cat
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
   - cat zeppelin-web/npm-debug.log
   - cat spark-*/logs/*
-
-after_script:
-  - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
-
+  - cat livy/target/tmp/*/output.log
+  - ls -R livy/target/tmp/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*
+  - cat livy/target/tmp/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stdout
+  - cat livy/target/tmp/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stderr
+  - cat livy/target/tmp/livy-int-test/*/output.log
+  - ls -R livy/target/tmp/livy-int-test/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*
+  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stdout
+  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stderr

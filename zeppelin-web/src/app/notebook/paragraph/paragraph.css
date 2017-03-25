@@ -67,6 +67,19 @@ table.dataTable.table-condensed .sorting_desc:after {
   right: 12px;
 }
 
+.plainTextContainer {
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
+}
+
+.plainTextContent{
+  white-space:pre-wrap; /** to preserve white-space and newlines of result */
+}
+
+.plainTextContent div {
+  min-height:17px;
+}
+
 .graphContainer {
   position: relative;
   margin-bottom: 5px;
@@ -105,7 +118,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 .paragraphAsIframe {
   padding: 0;
   margin-top: -79px;
-  margin-left: -10px;
+  margin-left: 0px;
   margin-right: -10px;
 }
 
@@ -137,12 +150,20 @@ table.dataTable.table-condensed .sorting_desc:after {
   display: block;
   unicode-bidi: embed;
   display: block !important;
-  margin: 0 0 10px!important;
+  margin: 0 10px 5px!important;
   font-size: 12px!important;
   line-height: 1.42857143!important;
   word-break: break-all!important;
   word-wrap: break-word!important;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+.paragraphAsIframe .title {
+  width: 80%;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+  margin: 0 10px !important;
 }
 
 /*
@@ -165,7 +186,7 @@ table.dataTable.table-condensed .sorting_desc:after {
 }
 
 .paragraph .control span {
-    margin-left: 4px;
+  margin-left: 4px;
 }
 
 .paragraph .control {
@@ -199,6 +220,16 @@ table.dataTable.table-condensed .sorting_desc:after {
 
 .dropdown-menu > li > a {
   cursor: pointer;
+}
+
+.dropdown-menu .shortcut-icon{
+  padding-right: 7px;
+  float: left;
+}
+
+.dropdown-menu .shortcut-keys{
+  float: right;
+  color: #999;
 }
 
 /*
@@ -331,39 +362,10 @@ table.dataTable.table-condensed .sorting_desc:after {
 .tableDisplay div {
 }
 
-.tableDisplay img:not(.esri-bitmap) {
+.tableDisplay img {
   display: block;
   max-width: 100%;
   height: auto;
-}
-
-.esri-display-object > svg {
-  overflow: visible;
-}
-
-.esri-popup > .esri-docked.esri-dock-to-bottom {
-  padding: 8px;
-  margin-top: 0px;
-}
-
-.esri-popup-main {
-  max-height: 100%;
-}
-
-span.map-offline-text {
-  display: table;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-}
-
-span.map-offline-text > span {
-  display: table-cell;
-  vertical-align: middle;
-  font-size: 18px;
-  font-weight: 700;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #212121;
 }
 
 .tableDisplay .btn-group span {
@@ -383,8 +385,7 @@ span.map-offline-text > span {
 
 }
 
-.tableDisplay .option .columns,
-div.esri-view {
+.tableDisplay .option .columns {
   height: 100%;
 }
 
@@ -493,7 +494,7 @@ div.esri-view {
 }
 
 /*
-  Paragaph Font CSS
+  Paragraph Font CSS
 */
 
 .lightBold {
@@ -502,7 +503,6 @@ div.esri-view {
 
 table.table-striped {
   border-top: 1px solid #ddd;
-  margin-top: 20px;
 }
 
 .scroll-paragraph-down {
@@ -528,4 +528,82 @@ table.table-striped {
   padding-right: 4px !important;
   padding-left: 4px !important;
   width: 20px;
+}
+
+
+.changeType {
+  border: 1px solid #bbb;
+  color: #bbb;
+  background: #eee;
+  border-radius: 2px;
+  padding: 2px;
+  font-size: 9px;
+  float: right;
+  line-height: 9px;
+  margin: 3px 3px 0 0;
+}
+.changeType:hover {
+  border: 1px solid #777;
+  color: #777;
+  cursor: pointer;
+}
+.changeType.pressed {
+  background-color: #999;
+}
+.changeTypeMenu {
+  position: absolute;
+  border: 1px solid #ccc;
+  margin-top: 22px;
+  box-shadow: 0 1px 3px -1px #323232;
+  background: white;
+  padding: 0;
+  font-size: 13px;
+  display: none;
+  z-index: 10;
+}
+.changeTypeMenu li {
+  text-align: left;
+  list-style: none;
+  padding: 2px 20px;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+.changeTypeMenu li.active:before {
+  font-size: 12px;
+  content: "\2714";
+  margin-left: -15px;
+  margin-right: 3px;
+}
+.changeTypeMenu li:hover {
+  background: #eee;
+}
+
+/*
+  Overwrite github-markdown-css for Markdown interpreter
+*/
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.markdown-body {
+  font-size: 14px;
+}
+
+.markdown-body h2 {
+  font-size: 26px;
+}
+
+.markdown-body h3 {
+  font-size: 20px;
+}
+
+.markdown-body h4 {
+  font-size: 16px;
 }

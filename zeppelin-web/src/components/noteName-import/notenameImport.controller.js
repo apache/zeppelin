@@ -12,13 +12,23 @@
  * limitations under the License.
  */
 
-'use strict';
+angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 
-angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $timeout, websocketMsgSrv) {
+function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
+  'ngInject';
+  
   var vm = this;
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
+  $scope.maxLimit = '';
+  var limit = 0;
+
+  websocketMsgSrv.listConfigurations();
+  $scope.$on('configurationsInfo', function(scope, event) {
+    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
+    $scope.maxLimit = Math.round(limit / 1048576);
+  });
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -36,6 +46,12 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
     $scope.note.importFile = element.files[0];
     var file = $scope.note.importFile;
     var reader = new FileReader();
+
+    if (file.size > limit) {
+      $scope.note.errorText = 'File size limit Exceeded!';
+      $scope.$apply();
+      return;
+    }
 
     reader.onloadend = function() {
       vm.processImportJson(reader.result);
@@ -65,11 +81,19 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   vm.importNote = function() {
     $scope.note.errorText = '';
     if ($scope.note.importUrl) {
-      jQuery.getJSON($scope.note.importUrl, function(result) {
-        vm.processImportJson(result);
-      }).fail(function() {
-        $scope.note.errorText = 'Unable to Fetch URL';
-        $scope.$apply();
+      jQuery.ajax({
+        url: $scope.note.importUrl,
+        type: 'GET',
+        dataType: 'json',
+        jsonp: false,
+        xhrFields: {
+          withCredentials: false
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          $scope.note.errorText = 'Unable to Fetch URL';
+          $scope.$apply();
+        }}).done(function(data) {
+        vm.processImportJson(data);
       });
     } else {
       $scope.note.errorText = 'Enter URL';
@@ -94,7 +118,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
       } else {
         result.name = $scope.note.noteImportName;
       }
-      websocketMsgSrv.importNotebook(result);
+      websocketMsgSrv.importNote(result);
       //angular.element('#noteImportModal').modal('hide');
     } else {
       $scope.note.errorText = 'Invalid JSON';
@@ -103,11 +127,12 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', function($scope, $
   };
 
   /*
-  ** $scope.$on functions below
-  */
+   ** $scope.$on functions below
+   */
 
   $scope.$on('setNoteMenu', function(event, notes) {
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });
-});
+}
+

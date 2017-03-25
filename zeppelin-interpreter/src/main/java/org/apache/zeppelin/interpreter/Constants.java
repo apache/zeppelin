@@ -28,4 +28,8 @@ public class Constants {
 
   public static final String EXISTING_PROCESS = "existing_process";
 
+  public static final int ZEPPELIN_INTERPRETER_DEFAUlT_PORT = 29914;
+
+  public static final int ZEPPELIN_INTERPRETER_OUTPUT_LIMIT = 1024 * 100;
+
 }

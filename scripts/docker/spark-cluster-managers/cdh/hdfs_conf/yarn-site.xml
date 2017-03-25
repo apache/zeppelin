@@ -1,0 +1,26 @@
+<configuration>
+  <property>
+    <name>yarn.resourcemanager.scheduler.address</name>
+    <value>0.0.0.0:8030</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.address</name>
+    <value>0.0.0.0:8032</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.webapp.address</name>
+    <value>0.0.0.0:8088</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.resource-tracker.address</name>
+    <value>0.0.0.0:8031</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.admin.address</name>
+    <value>0.0.0.0:8033</value>
+  </property>
+  <property>
+      <name>yarn.application.classpath</name>
+      <value>/usr/local/hadoop/etc/hadoop, /usr/local/hadoop/share/hadoop/common/*, /usr/local/hadoop/share/hadoop/common/lib/*, /usr/local/hadoop/share/hadoop/hdfs/*, /usr/local/hadoop/share/hadoop/hdfs/lib/*, /usr/local/hadoop/share/hadoop/mapreduce/*, /usr/local/hadoop/share/hadoop/mapreduce/lib/*, /usr/local/hadoop/share/hadoop/yarn/*, /usr/local/hadoop/share/hadoop/yarn/lib/*, /usr/local/hadoop/share/spark/*</value>
+   </property>
+</configuration>

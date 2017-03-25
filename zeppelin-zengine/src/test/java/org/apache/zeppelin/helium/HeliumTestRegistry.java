@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class HeliumTestRegistry extends HeliumRegistry {
-  List<HeliumPackage> infos = new LinkedList<HeliumPackage>();
+  List<HeliumPackage> infos = new LinkedList<>();
 
   public HeliumTestRegistry(String name, String uri) {
     super(name, uri);

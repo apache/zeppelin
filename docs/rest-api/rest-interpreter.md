@@ -178,6 +178,65 @@ The role of registered interpreters, settings and interpreters group are describ
       </td>
     </tr>
   </table>
+  
+<br/>
+### Get a registered interpreter setting by the setting id 
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns a registered interpreter setting on the server.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[setting ID]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>
+          400 if such interpreter setting id does not exist <br/>
+          500 for any other errors
+      </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "id": "2AYW25ANY",
+    "name": "Markdown setting name",
+    "group": "md",
+    "properties": {
+      "propname": "propvalue"
+    },
+    "interpreterGroup": [
+      {
+        "class": "org.apache.zeppelin.markdown.Markdown",
+        "name": "md"
+      }
+    ],
+    "dependencies": [
+      {
+        "groupArtifactVersion": "groupId:artifactId:version",
+        "exclusions": [
+          "groupId:artifactId"
+        ]
+      }
+    ]
+  }
+}
+        </pre>
+      </td>
+    </tr>
+  </table>
 
 <br/>
 ### Create a new interpreter setting  
@@ -194,7 +253,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td>Fail code</td>
@@ -401,6 +460,16 @@ The role of registered interpreters, settings and interpreters group are describ
       <td> 500 </td>
     </tr>
     <tr>
+      <td>Sample JSON input (Optional)</td>
+      <td>
+        <pre>
+{
+  "noteId": "2AVQJVC8N"
+}
+        </pre>
+      </td>
+    </tr>
+    <tr>
       <td>Sample JSON response</td>
       <td>
         <code>{"status":"OK"}</code>
@@ -423,7 +492,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td>Fail code</td>

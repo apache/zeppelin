@@ -1,0 +1,19 @@
+[
+  {
+    "group": "dev",
+    "name": "dev",
+    "className": "org.apache.zeppelin.helium.DevInterpreter",
+    "properties": {
+      "port": {
+        "envName": "PORT",
+        "propertyName": "port",
+        "defaultValue": "jdbc:postgresql://localhost:5432/",
+        "description": "The URL for JDBC."
+      }
+    },
+    "editor": {
+      "language": "helium",
+      "editOnDblClick": false
+    }
+  }
+]

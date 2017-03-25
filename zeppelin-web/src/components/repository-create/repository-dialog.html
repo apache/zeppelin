@@ -62,6 +62,44 @@ limitations under the License.
                 <input type="password" class="form-control" id="repoPassword" ng-model="newRepoSetting.password" />
               </div>
             </div>
+            <hr/>
+            <div class="center-block"><h4>Proxy Settings (optional)</h4></div>
+            <br/>
+            <div class="form-group">
+              <div class="col-sm-10">
+                <label class="control-label col-sm-2" for="proxyProtocol1">Protocol</label>
+                <label class="radio-inline">
+                    <input type="radio" name="proxyProtocol" id="proxyProtocol1" value="HTTP" ng-model="newRepoSetting.proxyProtocol"/> HTTP
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="proxyProtocol" id="proxyProtocol2" value="HTTPS" ng-model="newRepoSetting.proxyProtocol"/> HTTPS
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="proxyHost">Host</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="proxyHost" ng-model="newRepoSetting.proxyHost" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="proxyPort">Port</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="proxyPort" ng-model="newRepoSetting.proxyPort" />
+              </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="proxyLogin">Login</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="proxyLogin" ng-model="newRepoSetting.proxyLogin" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="proxyPassword">Password</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="proxyPassword" ng-model="newRepoSetting.proxyPassword" />
+                </div>
+            </div>
         </div>
         <div class="modal-footer">
           <button type="submit"

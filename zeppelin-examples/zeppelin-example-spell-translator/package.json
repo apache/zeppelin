@@ -1,0 +1,16 @@
+{
+  "name": "translator-spell",
+  "description" : "Translate langauges using Google API (examaple)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "whatwg-fetch": "^2.0.1",
+    "zeppelin-spell": "*"
+  },
+  "spell": {
+    "magic": "%translator",
+    "usage": "%translator <source>-<target> <access-key> <TEXT>"
+  }
+}

@@ -1,11 +1,20 @@
 {
+  "preset": "google",
   "env": {
     "browser": true,
     "jasmine": true,
-    "node": true
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    },
+    "sourceType": "module"
   },
   "globals": {
     "angular": false,
+    "inject": false,
     "_": false,
     "jQuery": false,
     "hljs": false,
@@ -14,9 +23,12 @@
     "nv": false,
     "ace": false,
     "d3": false,
+    "MathJax": false,
     "BootstrapDialog": false,
     "Handsontable": false,
-    "moment": false
+    "moment": false,
+    "zeppelin" : false,
+    "process": false
   },
   "rules": {
     "no-bitwise": 2,
@@ -31,6 +43,7 @@
     "no-shadow": 0,
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
-    "strict": [2, "global"]
+    "strict": [2, "global"],
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
   }
 }

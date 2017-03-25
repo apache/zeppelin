@@ -37,7 +37,7 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 public class ClientFactory extends BasePooledObjectFactory<Client>{
   private String host;
   private int port;
-  Map<Client, TSocket> clientSocketMap = new HashMap<Client, TSocket>();
+  Map<Client, TSocket> clientSocketMap = new HashMap<>();
 
   public ClientFactory(String host, int port) {
     this.host = host;
@@ -64,15 +64,15 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
 
   @Override
   public PooledObject<Client> wrap(Client client) {
-    return new DefaultPooledObject<Client>(client);
+    return new DefaultPooledObject<>(client);
   }
 
   @Override
   public void destroyObject(PooledObject<Client> p) {
     synchronized (clientSocketMap) {
-      if (clientSocketMap.containsKey(p)) {
-        clientSocketMap.get(p).close();
-        clientSocketMap.remove(p);
+      if (clientSocketMap.containsKey(p.getObject())) {
+        clientSocketMap.get(p.getObject()).close();
+        clientSocketMap.remove(p.getObject());
       }
     }
   }

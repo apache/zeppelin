@@ -41,8 +41,11 @@ limitations under the License.
           </div>
 
         </div>
-        <div class="modal-footer">
-          <div>
+        <div class="modal-footer" ng-switch on="SigningIn">
+          <div ng-switch-when="true">
+            <button type="button" class="btn btn-default btn-primary" disabled><i class="fa fa-circle-o-notch fa-spin"></i> Signing In</button>
+          </div>
+          <div ng-switch-default>
             <button type="button" class="btn btn-default btn-primary" ng-click="login()">Login</button>
           </div>
         </div>

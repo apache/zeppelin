@@ -22,35 +22,43 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-spark_2.10</artifactId>
+  <artifactId>zeppelin-spark_2.11</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Spark</name>
   <description>Zeppelin spark support</description>
 
   <properties>
+    <!--library versions-->
     <jsoup.version>1.8.2</jsoup.version>
-    <mockito.version>1.10.19</mockito.version>
-    <powermock.version>1.6.4</powermock.version>
-    <spark.version>2.0.0</spark.version>
+    <spark.version>2.0.2</spark.version>
+    <guava.version>14.0.1</guava.version>
+    <commons.exec.version>1.3</commons.exec.version>
+    <commons.compress.version>1.9</commons.compress.version>
+    <maven.plugin.api.version>3.0</maven.plugin.api.version>
+    <aether.version>1.12</aether.version>
+    <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
+    <wagon.version>1.0</wagon.version>
+
+    <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
+    <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
+    <datanucleus.core.version>3.2.10</datanucleus.core.version>
+
+    <!--plugin versions-->
+    <plugin.shade.version>2.3</plugin.shade.version>
+    <plugin.scala.version>2.15.2</plugin.scala.version>
+
+    <!-- settings -->
+    <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
+    <pyspark.test.include>**/*Test.*</pyspark.test.include>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-display_${scala.binary.version}</artifactId>
@@ -61,6 +69,16 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
     <dependency>
@@ -80,14 +98,14 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>14.0.1</version>
+      <version>${guava.version}</version>
     </dependency>
 
     <!-- Aether :: maven dependency resolution -->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>3.0</version>
+      <version>${maven.plugin.api.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -103,26 +121,29 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-api</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-util</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-impl</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-aether-provider</artifactId>
-      <version>3.0.3</version>
+      <version>${maven.aeither.provider.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.sonatype.aether</groupId>
@@ -150,13 +171,13 @@
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-connector-file</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-connector-wagon</artifactId>
-      <version>1.12</version>
+      <version>${aether.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.maven.wagon</groupId>
@@ -168,7 +189,7 @@
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-provider-api</artifactId>
-      <version>1.0</version>
+      <version>${wagon.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -180,7 +201,7 @@
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
-      <version>1.0</version>
+      <version>${wagon.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.maven.wagon</groupId>
@@ -192,7 +213,7 @@
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http</artifactId>
-      <version>1.0</version>
+      <version>${wagon.version}</version>
       <exclusions>
       </exclusions>
     </dependency>
@@ -200,7 +221,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
+      <version>${commons.exec.version}</version>
     </dependency>
 
     <dependency>
@@ -233,7 +254,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
-      <version>1.9</version>
+      <version>${commons.compress.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -243,7 +264,7 @@
       <version>${jsoup.version}</version>
     </dependency>
 
-    <!--TEST-->
+    <!--test libraries-->
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
@@ -260,40 +281,39 @@
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-core</artifactId>
-      <version>3.2.10</version>
+      <version>${datanucleus.core.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-api-jdo</artifactId>
-      <version>3.2.6</version>
+      <version>${datanucleus.apijdo.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-rdbms</artifactId>
-      <version>3.2.9</version>
+      <version>${datanucleus.rdbms.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-api-mockito</artifactId>
-      <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.powermock</groupId>
       <artifactId>powermock-module-junit4</artifactId>
-      <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -302,29 +322,7 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/derby.log</exclude>
-            <exclude>**/metastore_db/</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/dependency-reduced-pom.xml</exclude>
-            <exclude>**/interpreter-setting.json</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
         <executions>
           <execution>
             <id>enforce</id>
@@ -336,18 +334,21 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.17</version>
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <excludes>
+            <exclude>**/SparkRInterpreterTest.java</exclude>
+            <exclude>${pyspark.test.exclude}</exclude>
+          </excludes>
         </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
+        <version>${plugin.shade.version}</version>
         <configuration>
           <filters>
             <filter>
@@ -379,7 +380,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -409,7 +409,13 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
+        <version>${plugin.scala.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>**/ZeppelinR.scala</exclude>
+            <exclude>**/SparkRBackend.scala</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>compile</id>
@@ -443,6 +449,7 @@
             <exclude>**/SparkRInterpreter.java</exclude>
           </excludes>
           <testExcludes>
+            <testExclude>${pyspark.test.exclude}</testExclude>
             <testExclude>**/SparkRInterpreterTest.java</testExclude>
             <testExclude>**/ZeppelinRTest.java</testExclude>
           </testExcludes>
@@ -462,7 +469,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <includes>
+            <include>${pyspark.test.include}</include>
+          </includes>
           <excludes>
+            <exclude>${pyspark.test.exclude}</exclude>
             <exclude>**/SparkRInterpreterTest.java</exclude>
           </excludes>
         </configuration>
@@ -471,38 +482,6 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>spark-1.1</id>
-      <dependencies>
-
-      </dependencies>
-      <properties>
-        <spark.version>1.1.1</spark.version>
-        <akka.version>2.2.3-shaded-protobuf</akka.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-1.2</id>
-      <dependencies>
-      </dependencies>
-      <properties>
-        <spark.version>1.2.1</spark.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-1.3</id>
-
-      <properties>
-        <spark.version>1.3.1</spark.version>
-      </properties>
-
-      <dependencies>
-      </dependencies>
-
-    </profile>
-
     <profile>
       <id>spark-1.4</id>
       <properties>
@@ -526,7 +505,7 @@
     <profile>
       <id>spark-1.6</id>
       <properties>
-        <spark.version>1.6.1</spark.version>
+        <spark.version>1.6.3</spark.version>
         <py4j.version>0.9</py4j.version>
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
@@ -536,13 +515,23 @@
 
     <profile>
       <id>spark-2.0</id>
+      <properties>
+        <spark.version>2.0.2</spark.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <py4j.version>0.10.3</py4j.version>
+        <scala.version>2.11.8</scala.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-2.1</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <spark.version>2.0.0</spark.version>
+        <spark.version>2.1.0</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.1</py4j.version>
+        <py4j.version>0.10.4</py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
@@ -643,7 +632,9 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <excludes combine.self="override"></excludes>
-              <testExcludes combine.self="override"></testExcludes>
+              <testExcludes combine.self="override">
+                <testExclude>${pyspark.test.exclude}</testExclude>
+              </testExcludes>
             </configuration>
           </plugin>
           <plugin>
@@ -659,6 +650,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <excludes combine.self="override">
+                <exclude>${pyspark.test.exclude}</exclude>
               </excludes>
             </configuration>
           </plugin>

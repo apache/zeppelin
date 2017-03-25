@@ -16,7 +16,6 @@
  */
 
 // Generated on 2014-08-29 using generator-angular 0.9.5
-'use strict';
 
 // # Globbing
 // for performance reasons we're only matching one level down:
@@ -32,17 +31,37 @@ module.exports = function(grunt) {
   // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
+  require('grunt-replace')(grunt);
+
   // Configurable paths for the application
   var appConfig = {
     app: require('./bower.json').appPath || 'src',
     dist: 'dist'
   };
 
+  var buildtime = Date.now();
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
     // Project settings
     yeoman: appConfig,
+
+    babel: {
+      options: {
+        sourceMap: true,
+        presets: ['es2015'],
+        plugins: ['transform-object-rest-spread']
+      },
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '.tmp/concat/scripts',
+          src: ['scripts.js'],
+          dest: '.tmp/concat/scripts',
+        }]
+      }
+    },
 
     // use ngAnnotate instead og ngMin
     ngAnnotate: {
@@ -79,54 +98,6 @@ module.exports = function(grunt) {
       }
     },
 
-    'goog-webfont-dl': {
-      patuaOne: {
-        options: {
-          ttf: true,
-          eot: true,
-          woff: true,
-          woff2: true,
-          svg: true,
-          fontname: 'Patua One',
-          fontstyles: '400',
-          fontdest: '<%= yeoman.app %>/fonts/',
-          cssdest: '<%= yeoman.app %>/fonts/Patua-One.css',
-          cssprefix: '',
-          subset: ''
-        }
-      },
-      sourceCodePro: {
-        options: {
-          ttf: true,
-          eot: true,
-          woff: true,
-          woff2: true,
-          svg: true,
-          fontname: 'Source Code Pro',
-          fontstyles: '300, 400, 500',
-          fontdest: '<%= yeoman.app %>/fonts/',
-          cssdest: '<%= yeoman.app %>/fonts/Source-Code-Pro.css',
-          cssprefix: '',
-          subset: ''
-        }
-      },
-      roboto: {
-        options: {
-          ttf: true,
-          eot: true,
-          woff: true,
-          woff2: true,
-          svg: true,
-          fontname: 'Roboto',
-          fontstyles: '300, 400, 500',
-          fontdest: '<%= yeoman.app %>/fonts/',
-          cssdest: '<%= yeoman.app %>/fonts/Roboto.css',
-          cssprefix: '',
-          subset: ''
-        }
-      }
-    },
-
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
@@ -138,10 +109,7 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/app/**/*.js',
           '<%= yeoman.app %>/components/**/*.js'
         ],
-        tasks: ['newer:eslint:all', 'newer:jscs:all'],
-        options: {
-          livereload: '<%= connect.options.livereload %>'
-        }
+        tasks: ['newer:eslint:all'],
       },
       html: {
         files: [
@@ -151,7 +119,10 @@ module.exports = function(grunt) {
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
-        tasks: ['newer:eslint:test', 'newer:jscs:test', 'karma']
+        tasks: [
+          'newer:eslint:test',
+          'karma'
+        ]
       },
       styles: {
         files: [
@@ -166,82 +137,14 @@ module.exports = function(grunt) {
         files: ['Gruntfile.js']
       },
       livereload: {
-        options: {
-          livereload: '<%= connect.options.livereload %>'
-        },
+        options: {livereload: 35729,},
         files: [
           '<%= yeoman.app %>/app/**/*.html',
           '<%= yeoman.app %>/*.html',
           '<%= yeoman.app %>/components/**/*.html',
-          '.tmp/styles/{,*/}*.css',
+          '<%= yeoman.app %>/**/*.css',
           '<%= yeoman.app %>/assets/images/**/*.{png,jpg,jpeg,gif,webp,svg}'
         ]
-      }
-    },
-
-    // The actual grunt server settings
-    connect: {
-      options: {
-        port: 9000,
-        // Change this to '0.0.0.0' to access the server from outside.
-        hostname: 'localhost',
-        livereload: 35729
-      },
-      livereload: {
-        options: {
-          open: true,
-          middleware: function(connect) {
-            return [
-              connect.static('.tmp'),
-              connect().use(
-                '/bower_components',
-                connect.static('./bower_components')
-              ),
-              connect.static(appConfig.app)
-            ];
-          }
-        }
-      },
-      test: {
-        options: {
-          port: 9001,
-          middleware: function(connect) {
-            return [
-              connect.static('.tmp'),
-              connect.static('test'),
-              connect().use(
-                '/bower_components',
-                connect.static('./bower_components')
-              ),
-              connect.static(appConfig.app)
-            ];
-          }
-        }
-      },
-      dist: {
-        options: {
-          open: true,
-          base: '<%= yeoman.dist %>'
-        }
-      }
-    },
-
-    jscs: {
-      options: {
-        config: '.jscsrc',
-        esnext: true, // If you use ES6 http://jscs.info/overview.html#esnext
-        verbose: true, // If you need output with rule names http://jscs.info/overview.html#verbose
-        requireCurlyBraces: ['if']
-      },
-      all: {
-        src: [
-          'Gruntfile.js',
-          '<%= yeoman.app %>/app/**/*.js',
-          '<%= yeoman.app %>/components/**/*.js'
-        ]
-      },
-      test: {
-        src: ['test/spec/{,*/}*.js']
       }
     },
 
@@ -261,21 +164,6 @@ module.exports = function(grunt) {
         },
         src: ['test/spec/{,*/}*.js']
       }
-    },
-
-    // Empties folders to start fresh
-    clean: {
-      dist: {
-        files: [{
-          dot: true,
-          src: [
-            '.tmp',
-            '<%= yeoman.dist %>/{,*/}*',
-            '!<%= yeoman.dist %>/.git*'
-          ]
-        }]
-      },
-      server: '.tmp'
     },
 
     // Add vendor prefixed styles
@@ -325,7 +213,7 @@ module.exports = function(grunt) {
     // concat, minify and revision files. Creates configurations in memory so
     // additional tasks can operate on them
     useminPrepare: {
-      html: '<%= yeoman.app %>/index.html',
+      html: '<%= yeoman.dist %>/index.html',
       options: {
         dest: '<%= yeoman.dist %>',
         flow: {
@@ -382,9 +270,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    // concat: {
-    //   dist: {}
-    // },
 
     svgmin: {
       dist: {
@@ -430,7 +315,6 @@ module.exports = function(grunt) {
           src: [
             '*.{ico,png,txt}',
             '.htaccess',
-            '*.html',
             'assets/styles/**/*',
             'assets/images/**/*',
             'WEB-INF/*'
@@ -466,6 +350,17 @@ module.exports = function(grunt) {
           cwd: 'bower_components/jquery-ui/themes/base/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/styles/images'
+        }, {
+          expand: true,
+          cwd: 'bower_components/ngclipboard',
+          src: 'dist/**',
+          dest: '<%= yeoman.dist %>'
+        }, {
+          expand: true,
+          cwd: 'bower_components/MathJax',
+          src: [
+            'extensions/**', 'jax/**', 'fonts/**'],
+          dest: '<%= yeoman.dist %>'
         }]
       },
       styles: {
@@ -474,21 +369,45 @@ module.exports = function(grunt) {
         cwd: '<%= yeoman.app %>',
         dest: '.tmp/styles/',
         src: '{fonts,components,app}/**/*.css'
-      }
+      },
+      html: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['*.html']
+        }]
+      },
     },
 
     // Run some tasks in parallel to speed up the build process
     concurrent: {
-      server: [
-        'copy:styles'
-      ],
-      test: [
-        'copy:styles'
-      ],
       dist: [
         'copy:styles',
         'svgmin'
-      ]
+      ],
+    },
+
+    replace: {
+      dist: {
+        options: {
+          patterns: [
+            {
+              match: /(templateUrl:"[^\.\s]+\.html)/g,
+              replacement: '$1' + '?v=' + buildtime
+            },
+            {
+              match: /(ng-include src="'[^\.\s]+\.html)/g,
+              replacement: '$1' + '?v=' + buildtime
+            }
+          ]
+        },
+        files: [
+          {src: ['dist/**/*.html'], dest: './'},
+          {src: ['dist/*.js'], dest: './'}
+        ]
+      }
     },
 
     // Test settings
@@ -500,42 +419,23 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('serve', 'Compile then start a connect web server', function(target) {
-    if (target === 'dist') {
-      return grunt.task.run(['build', 'connect:dist:keepalive']);
-    }
-
+  grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
-      'clean:server',
       'wiredep',
-      'concurrent:server',
-      'postcss',
-      'connect:livereload',
-      'watch'
     ]);
   });
 
-  grunt.registerTask('server', 'DEPRECATED TASK. Use the "serve" task instead', function(target) {
-    grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
-    grunt.task.run(['serve:' + target]);
-  });
-
-  grunt.registerTask('test', [
-    'clean:server',
-    'wiredep',
-    'concurrent:test',
-    'postcss',
-    'connect:test',
-    'karma'
+  grunt.registerTask('watch-webpack-dev', [
+    'watch',
   ]);
 
-  grunt.registerTask('build', [
-    'jscs',
+  grunt.registerTask('pre-webpack-dist', [
     'eslint',
     'htmlhint',
-    'clean:dist',
     'wiredep',
-    'goog-webfont-dl',
+  ]);
+
+  grunt.registerTask('post-webpack-dist', [
     'useminPrepare',
     'concurrent:dist',
     'postcss',
@@ -546,11 +446,11 @@ module.exports = function(grunt) {
     'uglify',
     'usemin',
     'htmlmin',
-    'cacheBust'
+    'replace',
+    'cacheBust',
   ]);
 
   grunt.registerTask('default', [
-    'build',
-    'test'
+    'build'
   ]);
 };

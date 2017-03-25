@@ -46,27 +46,29 @@ limitations under the License.
     <link rel="stylesheet" href="bower_components/bootstrap3-dialog/dist/css/bootstrap-dialog.min.css" />
     <link rel="stylesheet" href="bower_components/pikaday/css/pikaday.css" />
     <link rel="stylesheet" href="bower_components/handsontable/dist/handsontable.css" />
+    <link rel="stylesheet" href="bower_components/github-markdown-css/github-markdown.css" />
     <!-- endbower -->
     <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.css" />
     <link rel="stylesheet" href="bower_components/select2/dist/css/select2.css" />
     <!-- endbuild -->
     <!-- build:css(.tmp) styles/main.css -->
+    <link rel="stylesheet" href="components/navbar/navbar.css" />
     <link rel="stylesheet" href="app/home/home.css" />
     <link rel="stylesheet" href="app/search/search.css" />
     <link rel="stylesheet" href="app/notebook/notebook.css" />
     <link rel="stylesheet" href="app/notebook/paragraph/paragraph.css" />
+    <link rel="stylesheet" href="app/notebook/paragraph/result/result.css" />
     <link rel="stylesheet" href="app/jobmanager/jobmanager.css" />
     <link rel="stylesheet" href="app/jobmanager/jobs/job.css" />
     <link rel="stylesheet" href="app/interpreter/interpreter.css" />
+    <link rel="stylesheet" href="app/helium/helium.css" />
     <link rel="stylesheet" href="app/credential/credential.css" />
     <link rel="stylesheet" href="app/configuration/configuration.css" />
     <link rel="stylesheet" href="components/expandCollapse/expandCollapse.css" />
     <link rel="stylesheet" href="fonts/font-awesome.min.css" />
     <link rel="stylesheet" href="fonts/simple-line-icons.css" />
     <link rel="stylesheet" href="fonts/custom-font.css" />
-    <link rel="stylesheet" href="fonts/Patua-One.css" />
-    <link rel="stylesheet" href="fonts/Source-Code-Pro.css" />
-    <link rel="stylesheet" href="fonts/Roboto.css" />
+    <link rel="stylesheet" href="fonts/google-fonts.css" />
     <!-- endbuild -->
     <link rel="stylesheet" ng-href="assets/styles/looknfeel/{{looknfeel}}.css" />
     <link rel="stylesheet" href="assets/styles/printMode.css" />
@@ -92,12 +94,34 @@ limitations under the License.
     <div ng-controller="LoginCtrl as noteimportctrl">
       <div id="login-container" ng-include src="'components/login/login.html'"></div>
     </div>
+    <div ng-controller="RenameCtrl">
+      <div ng-include src="'components/rename/rename.html'"></div>
+    </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
     <script src="bower_components/json3/lib/json3.min.js"></script>
     <![endif]-->
     <!-- endbuild -->
+
+    <script type="text/x-mathjax-config">
+      var config = {
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+          inlineMath: [ ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] },
+        messageStyle: "none"
+      }
+      // add root only if it's not dev mode
+      if (Number(location.port) !== 9000) {
+        config.root = '.';
+      }
+      MathJax.Hub.Config(config);
+    </script>
 
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
@@ -146,43 +170,10 @@ limitations under the License.
     <script src="bower_components/handsontable/dist/handsontable.js"></script>
     <script src="bower_components/moment-duration-format/lib/moment-duration-format.js"></script>
     <script src="bower_components/select2/dist/js/select2.js"></script>
-    <script src="bower_components/angular-esri-map/dist/angular-esri-map.js"></script>
+    <script src="bower_components/MathJax/MathJax.js"></script>
+    <script src="bower_components/clipboard/dist/clipboard.js"></script>
+    <script src="bower_components/ngclipboard/dist/ngclipboard.js"></script>
     <!-- endbower -->
-    <!-- endbuild -->
-    <!-- build:js({.tmp,src}) scripts/scripts.js -->
-    <script src="app/app.js"></script>
-    <script src="app/app.controller.js"></script>
-    <script src="app/home/home.controller.js"></script>
-    <script src="app/notebook/notebook.controller.js"></script>
-    <script src="app/jobmanager/jobmanager.controller.js"></script>
-    <script src="app/jobmanager/jobs/job.controller.js"></script>
-    <script src="app/interpreter/interpreter.controller.js"></script>
-    <script src="app/interpreter/interpreter.filter.js"></script>
-    <script src="app/credential/credential.controller.js"></script>
-    <script src="app/configuration/configuration.controller.js"></script>
-    <script src="app/notebook/paragraph/paragraph.controller.js"></script>
-    <script src="app/search/result-list.controller.js"></script>
-    <script src="components/arrayOrderingSrv/arrayOrdering.service.js"></script>
-    <script src="components/navbar/navbar.controller.js"></script>
-    <script src="components/ngescape/ngescape.directive.js"></script>
-    <script src="components/interpreter/interpreter.directive.js"></script>
-    <script src="components/expandCollapse/expandCollapse.directive.js"></script>
-    <script src="components/noteName-create/notename.controller.js"></script>
-    <script src="components/noteName-import/notenameImport.controller.js"></script>
-    <script src="components/popover-html-unsafe/popover-html-unsafe.directive.js"></script>
-    <script src="components/ngenter/ngenter.directive.js"></script>
-    <script src="components/dropdowninput/dropdowninput.directive.js"></script>
-    <script src="components/resizable/resizable.directive.js"></script>
-    <script src="components/noteName-create/visible.directive.js"></script>
-    <script src="components/websocketEvents/websocketMsg.service.js"></script>
-    <script src="components/websocketEvents/websocketEvents.factory.js"></script>
-    <script src="components/notebookListDataFactory/notebookList.datafactory.js"></script>
-    <script src="components/baseUrl/baseUrl.service.js"></script>
-    <script src="components/browser-detect/browserDetect.service.js"></script>
-    <script src="components/saveAs/saveAs.service.js"></script>
-    <script src="components/searchService/search.service.js"></script>
-    <script src="components/login/login.controller.js"></script>
-    <script src="components/elasticInputCtrl/elasticInput.controller.js"></script>
     <!-- endbuild -->
   </body>
 </html>

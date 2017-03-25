@@ -58,9 +58,9 @@ public class GeodeOqlInterpreterTest {
   public void testOpenCommandIndempotency() {
 
     Properties properties = new Properties();
-    properties.put(LOCATOR_HOST, DEFAULT_HOST);
-    properties.put(LOCATOR_PORT, DEFAULT_PORT);
-    properties.put(MAX_RESULT, DEFAULT_MAX_RESULT);
+    properties.put("geode.locator.host", "localhost");
+    properties.put("geode.locator.port", "10334");
+    properties.put("geode.max.result", "1000");
 
     GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(properties));
 
@@ -143,7 +143,7 @@ public class GeodeOqlInterpreterTest {
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.SUCCESS, interpreterResult.code());
-    assertEquals(expectedOutput, interpreterResult.message());
+    assertEquals(expectedOutput, interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -157,7 +157,7 @@ public class GeodeOqlInterpreterTest {
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.ERROR, interpreterResult.code());
-    assertEquals("Test Exception On Connect", interpreterResult.message());
+    assertEquals("Test Exception On Connect", interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -171,7 +171,7 @@ public class GeodeOqlInterpreterTest {
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.ERROR, interpreterResult.code());
-    assertEquals("Expected Test Exception!", interpreterResult.message());
+    assertEquals("Expected Test Exception!", interpreterResult.message().get(0).getData());
   }
 
   @Test

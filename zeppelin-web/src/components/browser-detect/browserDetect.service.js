@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').service('browserDetectService', function() {
+angular.module('zeppelinWebApp').service('browserDetectService', browserDetectService);
 
+function browserDetectService() {
   this.detectIE = function() {
     var ua = window.navigator.userAgent;
     var msie = ua.indexOf('MSIE ');
@@ -36,5 +36,5 @@ angular.module('zeppelinWebApp').service('browserDetectService', function() {
     // other browser
     return false;
   };
+}
 
-});

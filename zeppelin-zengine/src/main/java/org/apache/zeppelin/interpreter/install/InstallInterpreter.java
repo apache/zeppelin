@@ -56,7 +56,7 @@ public class InstallInterpreter {
     this.interpreterListFile = interpreterListFile;
     this.interpreterBaseDir = interpreterBaseDir;
     this.localRepoDir = localRepoDir;
-    availableInterpreters = new LinkedList<AvailableInterpreterInfo>();
+    availableInterpreters = new LinkedList<>();
     readAvailableInterpreters();
   }
 
@@ -159,7 +159,9 @@ public class InstallInterpreter {
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {
-      System.err.println("Directory " + installDir.getAbsolutePath() + " already exists. Skipping");
+      System.err.println("Directory " + installDir.getAbsolutePath()
+        + " already exists"
+        + "\n\nSkipped");
       return;
     }
 
@@ -170,6 +172,7 @@ public class InstallInterpreter {
       depResolver.load(artifact, installDir);
       System.out.println("Interpreter " + name + " installed under " +
           installDir.getAbsolutePath() + ".");
+      startTip();
     } catch (RepositoryException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -273,29 +276,15 @@ public class InstallInterpreter {
     if (names != null) {
       if (artifacts != null) {
         installer.install(names.split(","), artifacts.split(","));
-        startTip();
-        configurationTip();
-        interpreterSettingTip();
       } else {
         installer.install(names.split(","));
-        startTip();
-        interpreterSettingTip();
       }
     }
   }
 
   private static void startTip() {
-    System.out.println("");
-  }
-
-  private static void configurationTip() {
-    System.out.println("Add interpreter class name to '"
-        + ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName() + "' property "
-        + "in your conf/zeppelin-site.xml file");
-  }
-
-  private static void interpreterSettingTip() {
-    System.out.println("Create interpreter setting in 'Interpreter' menu on GUI."
-        + " And then you can bind interpreter on your notebook");
+    System.out.println("\n1. Restart Zeppelin"
+      + "\n2. Create interpreter setting in 'Interpreter' menu on Zeppelin GUI"
+      + "\n3. Then you can bind the interpreter on your note");
   }
 }

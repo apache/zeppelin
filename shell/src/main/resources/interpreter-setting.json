@@ -28,6 +28,10 @@
         "defaultValue": "",
         "description": "Kerberos principal"
       }
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false
     }
   }
 ]

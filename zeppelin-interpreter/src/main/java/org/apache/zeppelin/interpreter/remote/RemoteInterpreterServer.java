@@ -17,10 +17,10 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -33,8 +33,9 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.helium.*;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
+import org.apache.zeppelin.interpreter.InterpreterHookListener;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.dev.ZeppelinDevServer;
 import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
@@ -60,13 +61,13 @@ public class RemoteInterpreterServer
 
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
+  InterpreterHookRegistry hookRegistry;
   DistributedResourcePool resourcePool;
   private ApplicationLoader appLoader;
 
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
-  RemoteInterpreterServer handler;
   private int port;
   private TThreadPoolServer server;
 
@@ -76,13 +77,18 @@ public class RemoteInterpreterServer
   private final Map<String, RunningApplication> runningApplications =
       Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
+  private Map<String, Object> remoteWorksResponsePool;
+  private ZeppelinRemoteWorksController remoteWorksController;
+
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
 
-    processor = new RemoteInterpreterService.Processor<RemoteInterpreterServer>(this);
+    processor = new RemoteInterpreterService.Processor<>(this);
     TServerSocket serverTransport = new TServerSocket(port);
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
+    remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
+    remoteWorksController = new ZeppelinRemoteWorksController(this, remoteWorksResponsePool);
   }
 
   @Override
@@ -96,7 +102,6 @@ public class RemoteInterpreterServer
     eventClient.waitForEventQueueBecomesEmpty();
     if (interpreterGroup != null) {
       interpreterGroup.close();
-      interpreterGroup.destroy();
     }
 
     server.stop();
@@ -135,7 +140,7 @@ public class RemoteInterpreterServer
   public static void main(String[] args)
       throws TTransportException, InterruptedException {
 
-    int port = ZeppelinDevServer.DEFAULT_TEST_INTERPRETER_PORT;
+    int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     if (args.length > 0) {
       port = Integer.parseInt(args[0]);
     }
@@ -145,18 +150,24 @@ public class RemoteInterpreterServer
     System.exit(0);
   }
 
-
   @Override
-  public void createInterpreter(String interpreterGroupId, String noteId, String
-      className, Map<String, String> properties) throws TException {
+  public void createInterpreter(String interpreterGroupId, String sessionKey, String
+      className, Map<String, String> properties, String userName) throws TException {
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
+      hookRegistry = new InterpreterHookRegistry(interpreterGroup.getId());
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
+      interpreterGroup.setInterpreterHookRegistry(hookRegistry);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
       interpreterGroup.setResourcePool(resourcePool);
 
       String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
+      if (properties.containsKey("zeppelin.interpreter.output.limit")) {
+        InterpreterOutput.limit = Integer.parseInt(
+            properties.get("zeppelin.interpreter.output.limit"));
+      }
+
       depLoader = new DependencyResolver(localRepoPath);
       appLoader = new ApplicationLoader(resourcePool, depLoader);
     }
@@ -170,14 +181,13 @@ public class RemoteInterpreterServer
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
-
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        List<Interpreter> interpreters = interpreterGroup.get(noteId);
+        List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
         if (interpreters == null) {
-          interpreters = new LinkedList<Interpreter>();
-          interpreterGroup.put(noteId, interpreters);
+          interpreters = new LinkedList<>();
+          interpreterGroup.put(sessionKey, interpreters);
         }
 
         interpreters.add(new LazyOpenInterpreter(repl));
@@ -185,6 +195,7 @@ public class RemoteInterpreterServer
 
       logger.info("Instantiate interpreter {}", className);
       repl.setInterpreterGroup(interpreterGroup);
+      repl.setUserName(userName);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -218,13 +229,13 @@ public class RemoteInterpreterServer
     }
   }
 
-  protected Interpreter getInterpreter(String noteId, String className) throws TException {
+  protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
     if (interpreterGroup == null) {
       throw new TException(
           new InterpreterException("Interpreter instance " + className + " not created"));
     }
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(noteId);
+      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
       if (interpreters == null) {
         throw new TException(
             new InterpreterException("Interpreter " + className + " not initialized"));
@@ -246,13 +257,13 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void close(String noteId, String className) throws TException {
+  public void close(String sessionKey, String className) throws TException {
     // unload all applications
     for (String appId : runningApplications.keySet()) {
       RunningApplication appInfo = runningApplications.get(appId);
 
       // see NoteInterpreterLoader.SHARED_SESSION
-      if (appInfo.noteId.equals(noteId) || noteId.equals("shared_session")) {
+      if (appInfo.noteId.equals(sessionKey) || sessionKey.equals("shared_session")) {
         try {
           logger.info("Unload App {} ", appInfo.pkg.getName());
           appInfo.app.unload();
@@ -265,17 +276,18 @@ public class RemoteInterpreterServer
     }
 
     // close interpreters
+    List<Interpreter> interpreters;
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(noteId);
-      if (interpreters != null) {
-        Iterator<Interpreter> it = interpreters.iterator();
-        while (it.hasNext()) {
-          Interpreter inp = it.next();
-          if (inp.getClassName().equals(className)) {
-            inp.close();
-            it.remove();
-            break;
-          }
+      interpreters = interpreterGroup.get(sessionKey);
+    }
+    if (interpreters != null) {
+      Iterator<Interpreter> it = interpreters.iterator();
+      while (it.hasNext()) {
+        Interpreter inp = it.next();
+        if (inp.getClassName().equals(className)) {
+          inp.close();
+          it.remove();
+          break;
         }
       }
     }
@@ -290,6 +302,7 @@ public class RemoteInterpreterServer
     }
     Interpreter intp = getInterpreter(noteId, className);
     InterpreterContext context = convert(interpreterContext);
+    context.setClassName(intp.getClassName());
 
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
@@ -330,6 +343,42 @@ public class RemoteInterpreterServer
         context.getGui());
   }
 
+  @Override
+  public void onReceivedZeppelinResource(String responseJson) throws TException {
+    RemoteZeppelinServerResource response = gson.fromJson(
+        responseJson, RemoteZeppelinServerResource.class);
+
+    if (response == null) {
+      throw new TException("Bad response for remote resource");
+    }
+
+    try {
+      if (response.getResourceType() == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
+        List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
+        List<Map<String, Object>> remoteRunnersMap =
+            (List<Map<String, Object>>) response.getData();
+
+        String noteId = null;
+        String paragraphId = null;
+
+        for (Map<String, Object> runnerItem : remoteRunnersMap) {
+          noteId = (String) runnerItem.get("noteId");
+          paragraphId = (String) runnerItem.get("paragraphId");
+          intpContextRunners.add(
+              new ParagraphRunner(this, noteId, paragraphId)
+          );
+        }
+
+        synchronized (this.remoteWorksResponsePool) {
+          this.remoteWorksResponsePool.put(
+              response.getOwnerKey(),
+              intpContextRunners);
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    }
+  }
 
   class InterpretJobListener implements JobListener {
 
@@ -355,6 +404,7 @@ public class RemoteInterpreterServer
     private String script;
     private InterpreterContext context;
     private Map<String, Object> infos;
+    private Object results;
 
     public InterpretJob(
         String jobId,
@@ -371,6 +421,11 @@ public class RemoteInterpreterServer
     }
 
     @Override
+    public Object getReturn() {
+      return results;
+    }
+
+    @Override
     public int progress() {
       return 0;
     }
@@ -383,42 +438,81 @@ public class RemoteInterpreterServer
       return infos;
     }
 
+    private void processInterpreterHooks(final String noteId) {
+      InterpreterHookListener hookListener = new InterpreterHookListener() {
+        @Override
+        public void onPreExecute(String script) {
+          String cmdDev = interpreter.getHook(noteId, HookType.PRE_EXEC_DEV);
+          String cmdUser = interpreter.getHook(noteId, HookType.PRE_EXEC);
+
+          // User defined hook should be executed before dev hook
+          List<String> cmds = Arrays.asList(cmdDev, cmdUser);
+          for (String cmd : cmds) {
+            if (cmd != null) {
+              script = cmd + '\n' + script;
+            }
+          }
+
+          InterpretJob.this.script = script;
+        }
+
+        @Override
+        public void onPostExecute(String script) {
+          String cmdDev = interpreter.getHook(noteId, HookType.POST_EXEC_DEV);
+          String cmdUser = interpreter.getHook(noteId, HookType.POST_EXEC);
+
+          // User defined hook should be executed after dev hook
+          List<String> cmds = Arrays.asList(cmdUser, cmdDev);
+          for (String cmd : cmds) {
+            if (cmd != null) {
+              script += '\n' + cmd;
+            }
+          }
+
+          InterpretJob.this.script = script;
+        }
+      };
+      hookListener.onPreExecute(script);
+      hookListener.onPostExecute(script);
+    }
+
     @Override
     protected Object jobRun() throws Throwable {
       try {
         InterpreterContext.set(context);
+
+        // Open the interpreter instance prior to calling interpret().
+        // This is necessary because the earliest we can register a hook
+        // is from within the open() method.
+        LazyOpenInterpreter lazy = (LazyOpenInterpreter) interpreter;
+        if (!lazy.isOpen()) {
+          lazy.open();
+        }
+
+        // Add hooks to script from registry.
+        // Global scope first, followed by notebook scope
+        processInterpreterHooks(null);
+        processInterpreterHooks(context.getNoteId());
         InterpreterResult result = interpreter.interpret(script, context);
 
         // data from context.out is prepended to InterpreterResult if both defined
-        String message = "";
-
         context.out.flush();
-        InterpreterResult.Type outputType = context.out.getType();
-        byte[] interpreterOutput = context.out.toByteArray();
-
-        if (interpreterOutput != null && interpreterOutput.length > 0) {
-          message = new String(interpreterOutput);
-        }
-
-        String interpreterResultMessage = result.message();
-
-        InterpreterResult combinedResult;
-        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
-          message += interpreterResultMessage;
-          combinedResult = new InterpreterResult(result.code(), result.type(), message);
-        } else {
-          combinedResult = new InterpreterResult(result.code(), outputType, message);
-        }
+        List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+        resultMessages.addAll(result.message());
 
         // put result into resource pool
-        if (combinedResult.type() == InterpreterResult.Type.TABLE) {
-          context.getResourcePool().put(
-              context.getNoteId(),
-              context.getParagraphId(),
-              WellKnownResourceName.ZeppelinTableResult.toString(),
-              combinedResult);
+        if (resultMessages.size() > 0) {
+          int lastMessageIndex = resultMessages.size() - 1;
+          if (resultMessages.get(lastMessageIndex).getType() ==
+              InterpreterResult.Type.TABLE) {
+            context.getResourcePool().put(
+                context.getNoteId(),
+                context.getParagraphId(),
+                WellKnownResourceName.ZeppelinTableResult.toString(),
+                resultMessages.get(lastMessageIndex));
+          }
         }
-        return combinedResult;
+        return new InterpreterResult(result.code(), resultMessages);
       } finally {
         InterpreterContext.remove();
       }
@@ -427,6 +521,11 @@ public class RemoteInterpreterServer
     @Override
     protected boolean jobAbort() {
       return false;
+    }
+
+    @Override
+    public void setResult(Object results) {
+      this.results = results;
     }
   }
 
@@ -475,7 +574,7 @@ public class RemoteInterpreterServer
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
-    List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
+    List<InterpreterContextRunner> contextRunners = new LinkedList<>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
             new TypeToken<List<RemoteInterpreterContextRunner>>() {
         }.getType());
@@ -487,6 +586,7 @@ public class RemoteInterpreterServer
     return new InterpreterContext(
         ric.getNoteId(),
         ric.getParagraphId(),
+        ric.getReplName(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
         gson.fromJson(ric.getAuthenticationInfo(), AuthenticationInfo.class),
@@ -495,7 +595,7 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output);
+        contextRunners, output, remoteWorksController, eventClient);
   }
 
 
@@ -503,20 +603,41 @@ public class RemoteInterpreterServer
       paragraphId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-        eventClient.onInterpreterOutputAppend(noteId, paragraphId, new String(line));
+      public void onUpdateAll(InterpreterOutput out) {
+        try {
+          eventClient.onInterpreterOutputUpdateAll(
+              noteId, paragraphId, out.toInterpreterResultMessage());
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
       }
 
       @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-        eventClient.onInterpreterOutputUpdate(noteId, paragraphId, new String(output));
+      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+        String output = new String(line);
+        logger.debug("Output Append: {}", output);
+        eventClient.onInterpreterOutputAppend(
+            noteId, paragraphId, index, output);
+      }
+
+      @Override
+      public void onUpdate(int index, InterpreterResultMessageOutput out) {
+        String output;
+        try {
+          output = new String(out.toByteArray());
+          logger.debug("Output Update: {}", output);
+          eventClient.onInterpreterOutputUpdate(
+              noteId, paragraphId, index, out.getType(), output);
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
       }
     });
   }
 
 
   static class ParagraphRunner extends InterpreterContextRunner {
-
+    Logger logger = LoggerFactory.getLogger(ParagraphRunner.class);
     private transient RemoteInterpreterServer server;
 
     public ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
@@ -530,25 +651,104 @@ public class RemoteInterpreterServer
     }
   }
 
+  static class ZeppelinRemoteWorksController implements RemoteWorksController{
+    Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
+
+    private final long DEFAULT_TIMEOUT_VALUE = 300000;
+    private final Map<String, Object> remoteWorksResponsePool;
+    private RemoteInterpreterServer server;
+    public ZeppelinRemoteWorksController(
+        RemoteInterpreterServer server, Map<String, Object> remoteWorksResponsePool) {
+      this.remoteWorksResponsePool = remoteWorksResponsePool;
+      this.server = server;
+    }
+
+    public String generateOwnerKey() {
+      String hashKeyText = new String("ownerKey" + System.currentTimeMillis());
+      String hashKey = String.valueOf(hashKeyText.hashCode());
+      return hashKey;
+    }
+
+    public boolean waitForEvent(String eventOwnerKey) throws InterruptedException {
+      return waitForEvent(eventOwnerKey, DEFAULT_TIMEOUT_VALUE);
+    }
+
+    public boolean waitForEvent(String eventOwnerKey, long timeout) throws InterruptedException {
+      boolean wasGetData = false;
+      long now = System.currentTimeMillis();
+      long endTime = System.currentTimeMillis() + timeout;
+
+      while (endTime >= now) {
+        synchronized (this.remoteWorksResponsePool) {
+          wasGetData = this.remoteWorksResponsePool.containsKey(eventOwnerKey);
+        }
+        if (wasGetData == true) {
+          break;
+        }
+        now = System.currentTimeMillis();
+        sleep(500);
+      }
+
+      return wasGetData;
+    }
+
+    @Override
+    public List<InterpreterContextRunner> getRemoteContextRunner(String noteId) {
+      return getRemoteContextRunner(noteId, null);
+    }
+
+    public List<InterpreterContextRunner> getRemoteContextRunner(
+        String noteId, String paragraphID) {
+
+      List<InterpreterContextRunner> runners = null;
+      String ownerKey = generateOwnerKey();
+
+      ZeppelinServerResourceParagraphRunner resource = new ZeppelinServerResourceParagraphRunner();
+      resource.setNoteId(noteId);
+      resource.setParagraphId(paragraphID);
+      server.eventClient.getZeppelinServerNoteRunner(ownerKey, resource);
+
+      try {
+        this.waitForEvent(ownerKey);
+      } catch (Exception e) {
+        return new LinkedList<>();
+      }
+      synchronized (this.remoteWorksResponsePool) {
+        runners = (List<InterpreterContextRunner>) this.remoteWorksResponsePool.get(ownerKey);
+        this.remoteWorksResponsePool.remove(ownerKey);
+      }
+      return runners;
+    }
+
+
+  }
+
   private RemoteInterpreterResult convert(InterpreterResult result,
       Map<String, Object> config, GUI gui) {
+
+    List<RemoteInterpreterResultMessage> msg = new LinkedList<>();
+    for (InterpreterResultMessage m : result.message()) {
+      msg.add(new RemoteInterpreterResultMessage(
+          m.getType().name(),
+          m.getData()));
+    }
+
     return new RemoteInterpreterResult(
         result.code().name(),
-        result.type().name(),
-        result.message(),
+        msg,
         gson.toJson(config),
         gson.toJson(gui));
   }
 
   @Override
-  public String getStatus(String noteId, String jobId)
+  public String getStatus(String sessionKey, String jobId)
       throws TException {
     if (interpreterGroup == null) {
       return "Unknown";
     }
 
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(noteId);
+      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
       if (interpreters == null) {
         return "Unknown";
       }
@@ -715,7 +915,7 @@ public class RemoteInterpreterServer
   @Override
   public List<String> resourcePoolGetAll() throws TException {
     logger.debug("Request getAll from ZeppelinServer");
-    List<String> result = new LinkedList<String>();
+    List<String> result = new LinkedList<>();
 
     if (resourcePool == null) {
       return result;
@@ -758,6 +958,73 @@ public class RemoteInterpreterServer
   }
 
   @Override
+  public ByteBuffer resourceInvokeMethod(
+      String noteId, String paragraphId, String resourceName, String invokeMessage) {
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeMessage, InvokeResourceMethodEventMessage.class);
+
+    Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
+    if (resource == null || resource.get() == null) {
+      return ByteBuffer.allocate(0);
+    } else {
+      try {
+        Object o = resource.get();
+        Method method = o.getClass().getMethod(
+            message.methodName,
+            message.getParamTypes());
+        Object ret = method.invoke(o, message.params);
+        if (message.shouldPutResultIntoResourcePool()) {
+          // if return resource name is specified,
+          // then put result into resource pool
+          // and return empty byte buffer
+          resourcePool.put(
+              noteId,
+              paragraphId,
+              message.returnResourceName,
+              ret);
+          return ByteBuffer.allocate(0);
+        } else {
+          // if return resource name is not specified,
+          // then return serialized result
+          ByteBuffer serialized = Resource.serializeObject(ret);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
+        }
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+        return ByteBuffer.allocate(0);
+      }
+    }
+  }
+
+  /**
+   * Get payload of resource from remote
+   * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
+   * @param object java serialized of the object
+   * @throws TException
+   */
+  @Override
+  public void resourceResponseInvokeMethod(
+      String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
+    InvokeResourceMethodEventMessage message =
+        gson.fromJson(invokeResourceMethodEventMessage, InvokeResourceMethodEventMessage.class);
+
+    if (message.shouldPutResultIntoResourcePool()) {
+      Resource resource = resourcePool.get(
+          message.resourceId.getNoteId(),
+          message.resourceId.getParagraphId(),
+          message.returnResourceName,
+          true);
+      eventClient.putResponseInvokeMethod(message, resource);
+    } else {
+      eventClient.putResponseInvokeMethod(message, object);
+    }
+  }
+
+  @Override
   public void angularRegistryPush(String registryAsString) throws TException {
     try {
       Map<String, Map<String, AngularObject>> deserializedRegistry = gson
@@ -774,15 +1041,26 @@ public class RemoteInterpreterServer
                                             final String appId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-        eventClient.onAppOutputAppend(noteId, paragraphId, appId, new String(line));
+      public void onUpdateAll(InterpreterOutput out) {
+
       }
 
       @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-        eventClient.onAppOutputUpdate(noteId, paragraphId, appId, new String(output));
+      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+        eventClient.onAppOutputAppend(noteId, paragraphId, index, appId, new String(line));
+      }
+
+      @Override
+      public void onUpdate(int index, InterpreterResultMessageOutput out) {
+        try {
+          eventClient.onAppOutputUpdate(noteId, paragraphId, index, appId,
+              out.getType(), new String(out.toByteArray()));
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
       }
     });
+
   }
 
   private ApplicationContext getApplicationContext(
@@ -866,20 +1144,20 @@ public class RemoteInterpreterServer
           System.err.println("Resource " + res.get());
         }
         runningApp.app.run(resource);
-        String output = new String(context.out.toByteArray());
+        context.out.flush();
+        InterpreterResultMessageOutput out = context.out.getOutputAt(0);
         eventClient.onAppOutputUpdate(
             context.getNoteId(),
             context.getParagraphId(),
+            0,
             applicationInstanceId,
-            output);
+            out.getType(),
+            new String(out.toByteArray()));
         return new RemoteApplicationResult(true, "");
       } catch (ApplicationException | IOException e) {
         return new RemoteApplicationResult(false, e.getMessage());
       }
     }
-
-
-
   }
 
   private static class RunningApplication {

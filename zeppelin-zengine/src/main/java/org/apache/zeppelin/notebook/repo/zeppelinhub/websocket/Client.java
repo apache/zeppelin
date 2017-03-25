@@ -72,8 +72,8 @@ public class Client {
     }
   }
 
-  public void relayToZeppelinHub(String message) {
-    zeppelinhubClient.send(message);
+  public void relayToZeppelinHub(String message, String token) {
+    zeppelinhubClient.send(message, token);
   }
 
   public void relayToZeppelin(Message message, String noteId) {

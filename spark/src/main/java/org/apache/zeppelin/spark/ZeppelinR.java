@@ -22,6 +22,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,7 @@ public class ZeppelinR implements ExecuteResultHandler {
   private final String rCmdPath;
   private final SparkVersion sparkVersion;
   private DefaultExecutor executor;
-  private SparkOutputStream outputStream;
+  private InterpreterOutputStream outputStream;
   private PipedOutputStream input;
   private final String scriptPath;
   private final String libPath;
@@ -54,7 +56,6 @@ public class ZeppelinR implements ExecuteResultHandler {
    */
   boolean rScriptInitialized = false;
   Integer rScriptInitializeNotifier = new Integer(0);
-
 
   /**
    * Request to R repl
@@ -101,8 +102,6 @@ public class ZeppelinR implements ExecuteResultHandler {
   boolean rResponseError = false;
   Integer rResponseNotifier = new Integer(0);
 
-
-
   /**
    * Create ZeppelinR instance
    * @param rCmdPath R repl commandline path
@@ -141,9 +140,12 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(Integer.toString(port));
     cmd.addArgument(libPath);
     cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
+    
+    // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
+    logger.debug(cmd.toString());
 
     executor = new DefaultExecutor();
-    outputStream = new SparkOutputStream(logger);
+    outputStream = new InterpreterOutputStream(logger);
 
     input = new PipedOutputStream();
     PipedInputStream in = new PipedInputStream(input);
@@ -154,16 +156,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     Map env = EnvironmentUtils.getProcEnvironment();
 
 
-    initialOutput = new InterpreterOutput(new InterpreterOutputListener() {
-      @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-        logger.debug(new String(line));
-      }
-
-      @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-      }
-    });
+    initialOutput = new InterpreterOutput(null);
     outputStream.setInterpreterOutput(initialOutput);
     executor.execute(cmd, env, this);
     rScriptRunning = true;
@@ -220,7 +213,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-
   /**
    * Send request to r repl and return response
    * @return responseValue
@@ -261,7 +253,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-
   /**
    * Wait until src/main/resources/R/zeppelin_sparkr.R is initialized
    * and call onScriptInitialized()
@@ -290,13 +281,10 @@ public class ZeppelinR implements ExecuteResultHandler {
       e.printStackTrace();
     }
 
-
     if (rScriptInitialized == false) {
       throw new InterpreterException("sparkr is not responding " + errorMessage);
     }
   }
-
-
 
   /**
    * invoked by src/main/resources/R/zeppelin_sparkr.R
@@ -341,7 +329,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-
   /**
    * Create R script in tmp dir
    */
@@ -385,7 +372,6 @@ public class ZeppelinR implements ExecuteResultHandler {
     return zeppelinR.get(hashcode);
   }
 
-
   /**
    * Pass InterpreterOutput to capture the repl output
    * @param out
@@ -393,8 +379,6 @@ public class ZeppelinR implements ExecuteResultHandler {
   public void setInterpreterOutput(InterpreterOutput out) {
     outputStream.setInterpreterOutput(out);
   }
-
-
 
   @Override
   public void onProcessComplete(int i) {
@@ -407,6 +391,4 @@ public class ZeppelinR implements ExecuteResultHandler {
     logger.error(e.getMessage(), e);
     rScriptRunning = false;
   }
-
-
 }

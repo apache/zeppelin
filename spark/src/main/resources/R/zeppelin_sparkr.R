@@ -31,7 +31,7 @@ print(paste("LibPath ", libPath))
 library(SparkR)
 
 
-SparkR:::connectBackend("localhost", port)
+SparkR:::connectBackend("localhost", port, 6000)
 
 # scStartTime is needed by R/pkg/R/sparkR.R
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)
@@ -42,9 +42,10 @@ assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)
 # setup spark env
 assign(".sc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkContext"), envir = SparkR:::.sparkREnv)
 assign("sc", get(".sc", envir = SparkR:::.sparkREnv), envir=.GlobalEnv)
-if (version >= 200) {
+if (version >= 20000) {
   assign(".sparkRsession", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkSession"), envir = SparkR:::.sparkREnv)
   assign("spark", get(".sparkRsession", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
+  assign(".sparkRjsc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getJavaSparkContext"), envir = SparkR:::.sparkREnv)
 }
 assign(".sqlc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSqlContext"), envir = SparkR:::.sparkREnv)
 assign("sqlContext", get(".sqlc", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)

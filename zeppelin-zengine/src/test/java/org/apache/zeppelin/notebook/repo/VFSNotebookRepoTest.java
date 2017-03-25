@@ -22,23 +22,40 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
-import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.JobListenerFactory;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 public class VFSNotebookRepoTest implements JobListenerFactory {
   private static final Logger LOG = LoggerFactory.getLogger(VFSNotebookRepoTest.class);
@@ -46,8 +63,10 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   private SchedulerFactory schedulerFactory;
   private Notebook notebook;
   private NotebookRepo notebookRepo;
+  private InterpreterSettingManager interpreterSettingManager;
   private InterpreterFactory factory;
   private DependencyResolver depResolver;
+  private NotebookAuthorization notebookAuthorization;
 
   private File mainZepDir;
   private File mainNotebookDir;
@@ -64,21 +83,27 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), mainZepDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo");
     conf = ZeppelinConfiguration.create();
 
     this.schedulerFactory = new SchedulerFactory();
 
-    MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-
     this.schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null, depResolver);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
+    interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
+        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, null, null);
+    notebookAuthorization = NotebookAuthorization.init(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, interpreterSettingManager, this, search,
+        notebookAuthorization, null);
   }
 
   @After
@@ -104,14 +129,16 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
   @Test
   public void testSaveNotebook() throws IOException, InterruptedException {
-    Note note = notebook.createNote(null);
-    factory.setInterpreters(note.getId(), factory.getDefaultInterpreterSettingList());
+    AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
+    Note note = notebook.createNote(anonymous);
+    interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note.addParagraph();
+    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("%mock1 hello world");
+    p1.setAuthenticationInfo(anonymous);
 
     note.run(p1.getId());
     int timeout = 1;
@@ -133,6 +160,25 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     note.setName("SaveTest");
     notebookRepo.save(note, null);
     assertEquals(note.getName(), "SaveTest");
+    notebookRepo.remove(note.getId(), null);
+  }
+  
+  @Test
+  public void testUpdateSettings() throws IOException {
+    AuthenticationInfo subject = new AuthenticationInfo("anonymous");
+    File tmpDir = File.createTempFile("temp", Long.toString(System.nanoTime()));
+    Map<String, String> settings = ImmutableMap.of("Notebook Path", tmpDir.getAbsolutePath());
+    
+    List<NotebookRepoSettingsInfo> repoSettings = notebookRepo.getSettings(subject);
+    String originalDir = repoSettings.get(0).selected;
+    
+    notebookRepo.updateSettings(settings, subject);
+    repoSettings = notebookRepo.getSettings(subject);
+    assertEquals(repoSettings.get(0).selected, tmpDir.getAbsolutePath());
+    
+    // restaure
+    notebookRepo.updateSettings(ImmutableMap.of("Notebook Path", originalDir), subject);
+    FileUtils.deleteQuietly(tmpDir);
   }
 
   class NotebookWriter implements Runnable {

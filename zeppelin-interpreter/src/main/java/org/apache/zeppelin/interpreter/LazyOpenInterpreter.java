@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
@@ -31,7 +32,7 @@ public class LazyOpenInterpreter
     extends Interpreter
     implements WrappedInterpreter {
   private Interpreter intp;
-  boolean opened = false;
+  volatile boolean opened = false;
 
   public LazyOpenInterpreter(Interpreter intp) {
     super(new Properties());
@@ -59,7 +60,7 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public void open() {
+  public synchronized void open() {
     if (opened == true) {
       return;
     }
@@ -107,8 +108,11 @@ public class LazyOpenInterpreter
 
   @Override
   public int getProgress(InterpreterContext context) {
-    open();
-    return intp.getProgress(context);
+    if (opened) {
+      return intp.getProgress(context);
+    } else {
+      return 0;
+    }
   }
 
   @Override
@@ -146,5 +150,35 @@ public class LazyOpenInterpreter
   @Override
   public void setClassloaderUrls(URL [] urls) {
     intp.setClassloaderUrls(urls);
+  }
+  
+  @Override
+  public void registerHook(String noteId, String event, String cmd) {
+    intp.registerHook(noteId, event, cmd);
+  }
+
+  @Override
+  public void registerHook(String event, String cmd) {
+    intp.registerHook(event, cmd);
+  }
+
+  @Override
+  public String getHook(String noteId, String event) {
+    return intp.getHook(noteId, event);
+  }
+
+  @Override
+  public String getHook(String event) {
+    return intp.getHook(event);
+  }
+
+  @Override
+  public void unregisterHook(String noteId, String event) {
+    intp.unregisterHook(noteId, event);
+  }
+
+  @Override
+  public void unregisterHook(String event) {
+    intp.unregisterHook(event);
   }
 }

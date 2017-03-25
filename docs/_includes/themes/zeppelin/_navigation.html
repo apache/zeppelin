@@ -7,11 +7,15 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{{BASE_PATH}}">
-            <img src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin">
-            <span style="vertical-align:middle">Zeppelin</span>
-            <span style="vertical-align:baseline"><small>{{site.ZEPPELIN_VERSION}}</small></span>
-          </a>
+          <div class="navbar-brand">
+            <a class="navbar-brand-main" href="{{site.production_url}}">
+              <img src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin">
+              <span style="vertical-align:middle">Zeppelin</span>
+            </a>
+            <a class="navbar-brand-version" href="{{BASE_PATH}}">
+              <span><small>{{site.ZEPPELIN_VERSION}}</small></span>
+            </a>
+          </div>
         </div>
         <nav class="navbar-collapse collapse" role="navigation">
           <ul class="nav navbar-nav">
@@ -22,7 +26,7 @@
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>Getting Started</b><span></li>
                 <li><a href="{{BASE_PATH}}/install/install.html">Install</a></li>
-                <li><a href="{{BASE_PATH}}/install/install.html#apache-zeppelin-configuration">Configuration</a></li>
+                <li><a href="{{BASE_PATH}}/install/configuration.html">Configuration</a></li>
                 <li><a href="{{BASE_PATH}}/quickstart/explorezeppelinui.html">Explore Zeppelin UI</a></li>
                 <li><a href="{{BASE_PATH}}/quickstart/tutorial.html">Tutorial</a></li>
                 <li role="separator" class="divider"></li>
@@ -33,6 +37,8 @@
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>More</b><span></li>
                 <li><a href="{{BASE_PATH}}/install/upgrade.html">Upgrade Zeppelin Version</a></li>
+                <li><a href="{{BASE_PATH}}/install/build.html">Build from source</a></li>
+                <li><a href="{{BASE_PATH}}/quickstart/install_with_flink_and_spark_cluster.html">Install Zeppelin with Flink and Spark Clusters Tutorial</a></li>
               </ul>
             </li>
             <li>
@@ -44,9 +50,12 @@
                 <li><a href="{{BASE_PATH}}/manual/interpreterinstallation.html">Interpreter Installation</a></li>
                 <!--<li><a href="{{BASE_PATH}}/manual/dynamicinterpreterload.html">Dynamic Interpreter Loading</a></li>-->
                 <li><a href="{{BASE_PATH}}/manual/dependencymanagement.html">Interpreter Dependency Management</a></li>
+                <li><a href="{{BASE_PATH}}/manual/userimpersonation.html">Interpreter User Impersonation</a></li>
+                <li><a href="{{BASE_PATH}}/manual/interpreterexechooks.html">Interpreter Execution Hooks (Experimental)</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>Available Interpreters</b><span></li>
                 <li><a href="{{BASE_PATH}}/interpreter/alluxio.html">Alluxio</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/beam.html">Beam</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/bigquery.html">BigQuery</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/cassandra.html">Cassandra</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/elasticsearch.html">Elasticsearch</a></li>
@@ -57,13 +66,16 @@
                 <li><a href="{{BASE_PATH}}/interpreter/hive.html">Hive</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/ignite.html">Ignite</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/jdbc.html">JDBC</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/kylin.html">Kylin</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/lens.html">Lens</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/livy.html">Livy</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/markdown.html">Markdown</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/pig.html">Pig</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/python.html">Python</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/postgresql.html">Postgresql, HAWQ</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/r.html">R</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/scalding.html">Scalding</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/scio.html">Scio</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/shell.html">Shell</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/spark.html">Spark</a></li>
               </ul>
@@ -89,15 +101,17 @@
                 <li><a href="{{BASE_PATH}}/storage/storage.html#notebook-storage-in-s3">S3 Storage</a></li>
                 <li><a href="{{BASE_PATH}}/storage/storage.html#notebook-storage-in-azure">Azure Storage</a></li>
                 <li><a href="{{BASE_PATH}}/storage/storage.html#storage-in-zeppelinhub">ZeppelinHub Storage</a></li>
+                <li><a href="{{BASE_PATH}}/storage/storage.html#notebook-storage-in-mongodb">MongoDB Storage</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>REST API</b><span></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-interpreter.html">Interpreter API</a></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-notebook.html">Notebook API</a></li>
+                <li><a href="{{BASE_PATH}}/rest-api/rest-notebookRepo.html">Notebook Repository API</a></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-configuration.html">Configuration API</a></li>
                 <li><a href="{{BASE_PATH}}/rest-api/rest-credential.html">Credential API</a></li>
+                <li><a href="{{BASE_PATH}}/rest-api/rest-helium.html">Helium API</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>Security</b><span></li>
-                <li><a href="{{BASE_PATH}}/security/authentication.html">Authentication for NGINX</a></li>
                 <li><a href="{{BASE_PATH}}/security/shiroauthentication.html">Shiro Authentication</a></li>
                 <li><a href="{{BASE_PATH}}/security/notebook_authorization.html">Notebook Authorization</a></li>
                 <li><a href="{{BASE_PATH}}/security/datasource_authorization.html">Data Source Authorization</a></li>
@@ -105,17 +119,19 @@
                 <li class="title"><span><b>Advanced</b><span></li>
                 <li><a href="{{BASE_PATH}}/install/virtual_machine.html">Zeppelin on Vagrant VM</a></li>
                 <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-standalone-mode">Zeppelin on Spark Cluster Mode (Standalone)</a></li>
-                <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-standalone-mode">Zeppelin on Spark Cluster Mode (YARN)</a></li>
+                <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-on-yarn-mode">Zeppelin on Spark Cluster Mode (YARN)</a></li>
+                <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-on-mesos-mode">Zeppelin on Spark Cluster Mode (Mesos)</a></li>
+                <li><a href="{{BASE_PATH}}/install/cdh.html">Zeppelin on CDH</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="title"><span><b>Contibute</b><span></li>
                 <li><a href="{{BASE_PATH}}/development/writingzeppelininterpreter.html">Writing Zeppelin Interpreter</a></li>
-                <li><a href="{{BASE_PATH}}/development/writingzeppelinapplication.html">Writing Zeppelin Application (Experimental)</a></li>                
+                <li><a href="{{BASE_PATH}}/development/writingzeppelinspell.html">Writing Zeppelin Spell (Experimental)</a></li>
+                <li><a href="{{BASE_PATH}}/development/writingzeppelinvisualization.html">Writing Zeppelin Visualization (Experimental)</a></li>
+                <li><a href="{{BASE_PATH}}/development/writingzeppelinapplication.html">Writing Zeppelin Application (Experimental)</a></li>
                 <li><a href="{{BASE_PATH}}/development/howtocontribute.html">How to contribute (code)</a></li>
                 <li><a href="{{BASE_PATH}}/development/howtocontributewebsite.html">How to contribute (website)</a></li>
               </ul>
             </li>
-          </ul>
-          <ul class="nav navbar-nav">
             <li>
               <a href="{{BASE_PATH}}/search.html" class="nav-search-link">
                 <span class="fa fa-search nav-search-icon"></span>
@@ -125,4 +141,3 @@
         </nav><!--/.navbar-collapse -->
       </div>
     </div>
-

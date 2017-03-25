@@ -38,7 +38,7 @@ public class ZeppelinHeartbeat implements Runnable {
 
   @Override
   public void run() {
-    LOG.debug("Sending PING to all connected Zeppelin notes");
-    client.pingAllNotes();
+    LOG.debug("Sending PING to Zeppelin Websocket Server");
+    client.ping();
   }
 }

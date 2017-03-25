@@ -24,6 +24,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
+  private final String interpreterGroupName;
 
   private Map<String, String> env;
 
@@ -53,14 +55,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       Map<String, String> env,
       int connectTimeout,
       RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener) {
+      ApplicationEventListener appListener,
+      String interpreterGroupName) {
     super(new RemoteInterpreterEventPoller(listener, appListener),
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-
+    this.interpreterGroupName = interpreterGroupName;
   }
 
   RemoteInterpreterManagedProcess(String intpRunner,
@@ -68,13 +71,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
                                   String localRepoDir,
                                   Map<String, String> env,
                                   RemoteInterpreterEventPoller remoteInterpreterEventPoller,
-                                  int connectTimeout) {
+                                  int connectTimeout,
+                                  String interpreterGroupName) {
     super(remoteInterpreterEventPoller,
         connectTimeout);
     this.interpreterRunner = intpRunner;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
+    this.interpreterGroupName = interpreterGroupName;
   }
 
   @Override
@@ -88,7 +93,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @Override
-  public void start() {
+  public void start(String userName, Boolean isUserImpersonate) {
     // start server process
     try {
       port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
@@ -101,11 +106,22 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(interpreterDir, false);
     cmdLine.addArgument("-p", false);
     cmdLine.addArgument(Integer.toString(port), false);
+    if (isUserImpersonate && !userName.equals("anonymous")) {
+      cmdLine.addArgument("-u", false);
+      cmdLine.addArgument(userName, false);
+    }
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
+    cmdLine.addArgument("-g", false);
+    cmdLine.addArgument(interpreterGroupName, false);
 
     executor = new DefaultExecutor();
-    executor.setStreamHandler(new PumpStreamHandler(new ProcessLogOutputStream(logger)));
+
+    ByteArrayOutputStream cmdOut = new ByteArrayOutputStream();
+    ProcessLogOutputStream processOutput = new ProcessLogOutputStream(logger);
+    processOutput.setOutputStream(cmdOut);
+
+    executor.setStreamHandler(new PumpStreamHandler(processOutput));
     watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     executor.setWatchdog(watchdog);
 
@@ -124,17 +140,33 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
     long startTime = System.currentTimeMillis();
     while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-        break;
-      } else {
+      if (!running) {
         try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-              "Thread.sleep", e);
+          cmdOut.flush();
+        } catch (IOException e) {
+          // nothing to do
+        }
+        throw new InterpreterException(new String(cmdOut.toByteArray()));
+      }
+
+      try {
+        if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
+          break;
+        } else {
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
+                    "Thread.sleep", e);
+          }
+        }
+      } catch (Exception e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Remote interpreter not yet accessible at localhost:" + port);
         }
       }
     }
+    processOutput.setOutputStream(null);
   }
 
   public void stop() {
@@ -169,6 +201,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private static class ProcessLogOutputStream extends LogOutputStream {
 
     private Logger logger;
+    OutputStream out;
 
     public ProcessLogOutputStream(Logger logger) {
       this.logger = logger;
@@ -177,6 +210,38 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     @Override
     protected void processLine(String s, int i) {
       this.logger.debug(s);
+    }
+
+    @Override
+    public void write(byte [] b) throws IOException {
+      super.write(b);
+
+      if (out != null) {
+        synchronized (this) {
+          if (out != null) {
+            out.write(b);
+          }
+        }
+      }
+    }
+
+    @Override
+    public void write(byte [] b, int offset, int len) throws IOException {
+      super.write(b, offset, len);
+
+      if (out != null) {
+        synchronized (this) {
+          if (out != null) {
+            out.write(b, offset, len);
+          }
+        }
+      }
+    }
+
+    public void setOutputStream(OutputStream out) {
+      synchronized (this) {
+        this.out = out;
+      }
     }
   }
 }

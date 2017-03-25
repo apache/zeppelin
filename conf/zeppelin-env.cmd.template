@@ -19,8 +19,8 @@ REM
 REM set JAVA_HOME=
 REM set MASTER=                 		REM Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
 REM set ZEPPELIN_JAVA_OPTS      		REM Additional jvm options. for example, set ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
-REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xmx1024m -XX:MaxPermSize=512m
-REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options.
+REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
+REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxPermSize=512m
 REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options.
 
 REM set ZEPPELIN_LOG_DIR        		REM Where log files are stored.  PWD by default.
@@ -31,9 +31,15 @@ REM set ZEPPELIN_NOTEBOOK_HOMESCREEN		REM Id of notebook to be displayed in home
 REM set ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	REM hide homescreen notebook from list when this value set to "true". default "false"
 REM set ZEPPELIN_NOTEBOOK_S3_BUCKET            REM Bucket where notebook saved
 REM set ZEPPELIN_NOTEBOOK_S3_USER              REM User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
+REM set ZEPPELIN_NOTEBOOK_S3_ENDPOINT          REM Endpoint of the bucket
+REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID        REM AWS KMS key ID
+REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION    REM AWS KMS key region
+REM set ZEPPELIN_NOTEBOOK_S3_SSE               REM Server-side encryption enabled for notebooks
 REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zeppelin. $USER by default.
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
+REM set ZEPPELIN_INTERPRETER_DEP_MVNREPO       REM Maven principal repository for interpreter's additional dependency loading
+REM set ZEPPELIN_HELIUM_NPM_REGISTRY           REM Remote Npm registry for Helium dependency loader
 REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC		REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
 

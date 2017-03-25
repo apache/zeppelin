@@ -21,14 +21,22 @@ package org.apache.zeppelin.interpreter;
  */
 public interface InterpreterOutputListener {
   /**
+   * update all message outputs
+   */
+  public void onUpdateAll(InterpreterOutput out);
+
+  /**
    * called when newline is detected
+   * @param index
+   * @param out
    * @param line
    */
-  public void onAppend(InterpreterOutput out, byte[] line);
+  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line);
 
   /**
    * when entire output is updated. eg) after detecting new display system
-   * @param output
+   * @param index
+   * @param out
    */
-  public void onUpdate(InterpreterOutput out, byte[] output);
+  public void onUpdate(int index, InterpreterResultMessageOutput out);
 }

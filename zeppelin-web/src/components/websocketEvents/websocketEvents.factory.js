@@ -11,11 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').factory('websocketEvents',
-  function($rootScope, $websocket, $location, baseUrlSrv) {
+angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents);
+
+function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
+  'ngInject';
+
   var websocketCalls = {};
+  var pingIntervalId;
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
   websocketCalls.ws.reconnectIfNotNormalClose = true;
@@ -23,7 +26,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
     $rootScope.$broadcast('setConnectedStatus', true);
-    setInterval(function() {
+    pingIntervalId = setInterval(function() {
       websocketCalls.sendNewEvent({op: 'PING'});
     }, 10000);
   });
@@ -60,35 +63,54 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $location.path('/notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
-    } else if (op === 'LIST_NOTEBOOK_JOBS') {
-      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
-    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
-      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
+    } else if (op === 'LIST_NOTE_JOBS') {
+      $rootScope.$broadcast('setNoteJobs', data.noteJobs);
+    } else if (op === 'LIST_UPDATE_NOTE_JOBS') {
+      $rootScope.$broadcast('setUpdateNoteJobs', data.noteRunningJobs);
     } else if (op === 'AUTH_INFO') {
+      var btn = [];
+      if ($rootScope.ticket.roles === '[]') {
+        btn = [{
+          label: 'Close',
+          action: function(dialog) {
+            dialog.close();
+          }
+        }];
+      } else {
+        btn = [{
+          label: 'Login',
+          action: function(dialog) {
+            dialog.close();
+            angular.element('#loginModal').modal({
+              show: 'true'
+            });
+          }
+        }, {
+          label: 'Cancel',
+          action: function(dialog) {
+            dialog.close();
+            // using $rootScope.apply to trigger angular digest cycle
+            // changing $location.path inside bootstrap modal wont trigger digest
+            $rootScope.$apply(function() {
+              $location.path('/');
+            });
+          }
+        }];
+      }
+
       BootstrapDialog.show({
         closable: false,
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: 'Insufficient privileges',
         message: data.info.toString(),
-        buttons: [{
-          label: 'Login',
-          action: function(dialog) {
-            dialog.close();
-            angular.element('#loginModal').modal({
-                    show: 'true'
-                  });
-          }
-        }, {
-          label: 'Cancel',
-          action: function(dialog) {
-            dialog.close();
-            $location.path('/');
-          }
-        }]
+        buttons: btn
       });
+
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
+    } else if (op === 'RUN_PARAGRAPH_USING_SPELL') {
+      $rootScope.$broadcast('runParagraphUsingSpell', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
       $rootScope.$broadcast('appendParagraphOutput', data);
     } else if (op === 'PARAGRAPH_UPDATE_OUTPUT') {
@@ -97,6 +119,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {
       $rootScope.$broadcast('completionList', data);
+    } else if (op === 'EDITOR_SETTING') {
+      $rootScope.$broadcast('editorSetting', data);
     } else if (op === 'ANGULAR_OBJECT_UPDATE') {
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
@@ -115,6 +139,41 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
       $rootScope.$broadcast('noteRevision', data);
     } else if (op === 'INTERPRETER_BINDINGS') {
       $rootScope.$broadcast('interpreterBindings', data);
+    } else if (op === 'ERROR_INFO') {
+      BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Details',
+        message: data.info.toString(),
+        buttons: [{
+          // close all the dialogs when there are error on running all paragraphs
+          label: 'Close',
+          action: function() {
+            BootstrapDialog.closeAll();
+          }
+        }]
+      });
+    } else if (op === 'SESSION_LOGOUT') {
+      $rootScope.$broadcast('session_logout', data);
+    } else if (op === 'CONFIGURATIONS_INFO') {
+      $rootScope.$broadcast('configurationsInfo', data);
+    } else if (op === 'INTERPRETER_SETTINGS') {
+      $rootScope.$broadcast('interpreterSettings', data);
+    } else if (op === 'PARAGRAPH_ADDED') {
+      $rootScope.$broadcast('addParagraph', data.paragraph, data.index);
+    } else if (op === 'PARAGRAPH_REMOVED') {
+      $rootScope.$broadcast('removeParagraph', data.id);
+    } else if (op === 'PARAGRAPH_MOVED') {
+      $rootScope.$broadcast('moveParagraph', data.id, data.index);
+    } else if (op === 'NOTE_UPDATED') {
+      $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
+    } else if (op === 'SET_NOTE_REVISION') {
+      $rootScope.$broadcast('setNoteRevisionResult', data);
+    } else if (op === 'PARAS_INFO') {
+      $rootScope.$broadcast('updateParaInfos', data);
+    } else {
+      console.error(`unknown websocket op: ${op}`);
     }
   });
 
@@ -125,8 +184,13 @@ angular.module('zeppelinWebApp').factory('websocketEvents',
 
   websocketCalls.ws.onClose(function(event) {
     console.log('close message: ', event);
+    if (pingIntervalId !== undefined) {
+      clearInterval(pingIntervalId);
+      pingIntervalId = undefined;
+    }
     $rootScope.$broadcast('setConnectedStatus', false);
   });
 
   return websocketCalls;
-});
+}
+

@@ -54,6 +54,10 @@
         "defaultValue": "local[*]",
         "description": "Spark master uri. ex) spark://masterhost:7077"
       }
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
     }
   },
   {
@@ -85,6 +89,10 @@
         "defaultValue": "true",
         "description": "Import implicits, UDF collection, and sql if set true. true by default."
       }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
     }
   },
   {
@@ -104,6 +112,10 @@
         "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
         "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository."
       }
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
     }
   },
   {
@@ -117,6 +129,10 @@
         "defaultValue": "python",
         "description": "Python command to run pyspark with"
       }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
     }
   }
 ]

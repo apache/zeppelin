@@ -292,7 +292,7 @@ public class Input implements Serializable {
   }
 
   public static Map<String, Input> extractSimpleQueryParam(String script) {
-    Map<String, Input> params = new HashMap<String, Input>();
+    Map<String, Input> params = new HashMap<>();
     if (script == null) {
       return params;
     }
@@ -331,7 +331,7 @@ public class Input implements Serializable {
         }
         Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
                 : Arrays.asList((Object[]) value);
-        List<Object> validChecked = new LinkedList<Object>();
+        List<Object> validChecked = new LinkedList<>();
         for (Object o : checked) {  // filter out obsolete checked values
           for (ParamOption option : input.getOptions()) {
             if (option.getValue().equals(o)) {
@@ -387,14 +387,14 @@ public class Input implements Serializable {
   public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
       String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
-    List<String> splits = new ArrayList<String>();
+    List<String> splits = new ArrayList<>();
 
-    String curString = "";
+    StringBuilder curString = new StringBuilder();
 
     boolean escape = false; // true when escape char is found
     int lastEscapeOffset = -1;
     int blockStartPos = -1;
-    List<Integer> blockStack = new LinkedList<Integer>();
+    List<Integer> blockStack = new LinkedList<>();
 
     for (int i = 0; i < str.length(); i++) {
       char c = str.charAt(i);
@@ -408,16 +408,16 @@ public class Input implements Serializable {
       // escaped char comes
       if (escape == true) {
         if (escapeSeq.indexOf(c) < 0) {
-          curString += escapeChar;
+          curString.append(escapeChar);
         }
-        curString += c;
+        curString.append(c);
         escape = false;
         lastEscapeOffset = curString.length();
         continue;
       }
 
       if (blockStack.size() > 0) { // inside of block
-        curString += c;
+        curString.append(c);
         // check multichar block
         boolean multicharBlockDetected = false;
         for (int b = 0; b < blockStart.length; b++) {
@@ -453,11 +453,11 @@ public class Input implements Serializable {
           if (isNestedBlock(blockEnd[blockStack.get(0)]) == false) {
             for (String splitter : splitters) {
               if (splitter.compareTo(getBlockStr(blockEnd[blockStack.get(0)])) == 0) {
-                splits.add(curString);
+                splits.add(curString.toString());
                 if (includeSplitter == true) {
                   splits.add(splitter);
                 }
-                curString = "";
+                curString.setLength(0);
                 lastEscapeOffset = -1;
 
                 break;
@@ -475,11 +475,11 @@ public class Input implements Serializable {
           // forward check for splitter
           int curentLenght = i + splitter.length();
           if (splitter.compareTo(str.substring(i, Math.min(curentLenght, str.length()))) == 0) {
-            splits.add(curString);
+            splits.add(curString.toString());
             if (includeSplitter == true) {
               splits.add(splitter);
             }
-            curString = "";
+            curString.setLength(0);
             lastEscapeOffset = -1;
             i += splitter.length() - 1;
             splitted = true;
@@ -491,7 +491,7 @@ public class Input implements Serializable {
         }
 
         // add char to current string
-        curString += c;
+        curString.append(c);
 
         // check if block is started
         for (int b = 0; b < blockStart.length; b++) {
@@ -505,7 +505,7 @@ public class Input implements Serializable {
       }
     }
     if (curString.length() > 0) {
-      splits.add(curString.trim());
+      splits.add(curString.toString().trim());
     }
     return splits.toArray(new String[] {});
 

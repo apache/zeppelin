@@ -1,0 +1,35 @@
+[
+  {
+    "group": "beam",
+    "name": "beam",
+    "className": "org.apache.zeppelin.beam.BeamInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "beam",
+    "name": "scio",
+    "className": "org.apache.zeppelin.scio.ScioInterpreter",
+    "properties": {
+      "zeppelin.scio.argz": {
+        "envName": "ZEPPELIN_SCIO_ARGZ",
+        "propertyName": "zeppelin.scio.argz",
+        "defaultValue": "--runner=InProcessPipelineRunner",
+        "description": "Scio interpreter wide arguments"
+      },
+      "zeppelin.scio.maxResult": {
+        "envName": "ZEPPELIN_SCIO_MAXRESULT",
+        "propertyName": "zeppelin.scio.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of SCollection results to display."
+      }
+    },
+    "editor": {
+      "language": "scala"
+    }
+  }
+]

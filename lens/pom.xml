@@ -22,20 +22,25 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-lens</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Lens interpreter</name>
   
   <properties>
+    <!--library versions-->
     <lens.version>2.5.0-beta</lens.version>
     <spring-shell.version>1.1.0.RELEASE</spring-shell.version>
     <hadoop-common.version>2.4.0</hadoop-common.version>
+    <checkerframework.jdk7.version>1.9.1</checkerframework.jdk7.version>
+    <jackson.asl.version>1.9.13</jackson.asl.version>
+    <jackson.version>1.9.11</jackson.version>
+    <jersey.core.version>2.3.1</jersey.core.version>
   </properties>
 
   <dependencies>
@@ -59,7 +64,7 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk7</artifactId>
-      <version>1.9.1</version>
+      <version>${checkerframework.jdk7.version}</version>
     </dependency>
 
     <dependency>
@@ -72,42 +77,52 @@
       <groupId>org.apache.lens</groupId>
       <artifactId>lens-client</artifactId>
       <version>${lens.version}</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>ch.qos.logback</groupId>
+      		<artifactId>logback-classic</artifactId>
+      	</exclusion>
+      	<exclusion>
+      		<groupId>ch.qos.logback</groupId>
+      		<artifactId>logback-core</artifactId>
+      	</exclusion>
+    </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-core-asl</artifactId>
-      <version>1.9.13</version>
+     <version>${jackson.asl.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-mapper-asl</artifactId>
-      <version>1.9.13</version>
+      <version>${jackson.asl.version}</version>
     </dependency>
       
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-xc</artifactId>
-      <version>1.9.11</version>
+      <version>${jackson.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-jaxrs</artifactId>
-      <version>1.9.11</version>
+      <version>${jackson.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
-      <version>2.3.1</version>
+      <version>${jersey.core.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
-      <version>2.3.1</version>
+      <version>${jersey.core.version}</version>
     </dependency>
 
     <dependency>
@@ -141,14 +156,14 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>            
-        <executions> 
+        <executions>
           <execution> 
             <id>enforce</id> 
             <phase>none</phase> 
@@ -158,7 +173,6 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
@@ -202,7 +216,6 @@
 	<plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>2.4.1</version>
           <configuration>
             <filesets>
               <fileset>

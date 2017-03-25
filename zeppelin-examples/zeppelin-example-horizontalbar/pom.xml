@@ -22,20 +22,26 @@
   <parent>
     <artifactId>zeppelin-examples</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-example-horizontalbar</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Example application - Horizontal Bar chart</name>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>helium-dev</artifactId>
       <version>${project.version}</version>
     </dependency>
     
@@ -104,16 +110,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/horizontalbar_mockdata.txt</exclude>
-          </excludes>
-        </configuration>
       </plugin>
     </plugins>
   </build>

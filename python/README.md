@@ -47,6 +47,6 @@ mvn -Dpython.test.exclude='' test -pl python -am
 
  * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter directly  send a `kill SIGINT PID` to python process to interrupt execution. Python process catch SIGINT signal with some code defined in bootstrap.py
 
- * Matplotlib display feature is made with SVG export (in string) and then displays it with html code.
+ * Matplotlib figures are displayed inline with the notebook automatically using a built-in backend for zeppelin in conjunction with a post-execute hook.
 
  * `%python.sql` support for Pandas DataFrames is optional and provided using https://github.com/yhat/pandasql if user have one installed

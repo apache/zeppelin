@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,12 +42,16 @@ public class LuceneSearchTest {
 
   private static NotebookRepo notebookRepoMock;
   private static InterpreterFactory interpreterFactory;
-  private SearchService notebookIndex;
+  private static InterpreterSettingManager interpreterSettingManager;
+  
+  private SearchService noteSearchService;
+  private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void beforeStartUp() {
     notebookRepoMock = mock(NotebookRepo.class);
     interpreterFactory = mock(InterpreterFactory.class);
+    interpreterSettingManager = mock(InterpreterSettingManager.class);
 
 //    when(replLoaderMock.getInterpreterSettings())
 //      .thenReturn(ImmutableList.<InterpreterSetting>of());
@@ -53,12 +59,13 @@ public class LuceneSearchTest {
 
   @Before
   public void startUp() {
-    notebookIndex = new LuceneSearch();
+    noteSearchService = new LuceneSearch();
+    anonymous = new AuthenticationInfo("anonymous");
   }
 
   @After
   public void shutDown() {
-    notebookIndex.close();
+    noteSearchService.close();
   }
 
   @Test public void canIndexNotebook() {
@@ -68,17 +75,17 @@ public class LuceneSearchTest {
     List<Note> notebook = Arrays.asList(note1, note2);
 
     //when
-    notebookIndex.addIndexDocs(notebook);
+    noteSearchService.addIndexDocs(notebook);
   }
 
   @Test public void canIndexAndQuery() {
     //given
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.query("all");
+    List<Map<String, String>> results = noteSearchService.query("all");
 
     //then
     assertThat(results).isNotEmpty();
@@ -91,10 +98,10 @@ public class LuceneSearchTest {
     //given
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.query("Notebook1");
+    List<Map<String, String>> results = noteSearchService.query("Notebook1");
 
     //then
     assertThat(results).isNotEmpty();
@@ -107,10 +114,10 @@ public class LuceneSearchTest {
     //given
     Note note1 = newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
     Note note2 = newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.query("testingTitleSearch");
+    List<Map<String, String>> results = noteSearchService.query("testingTitleSearch");
 
     //then
     assertThat(results).isNotEmpty();
@@ -128,7 +135,7 @@ public class LuceneSearchTest {
     //give
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     //when
-    notebookIndex.addIndexDoc(note1);
+    noteSearchService.addIndexDoc(note1);
     //then
     String id = resultForQuery("test").get(0).get(LuceneSearch.ID_FIELD);
 
@@ -138,9 +145,9 @@ public class LuceneSearchTest {
 
   @Test //(expected=IllegalStateException.class)
   public void canNotSearchBeforeIndexing() {
-    //given NO notebookIndex.index() was called
+    //given NO noteSearchService.index() was called
     //when
-    List<Map<String, String>> result = notebookIndex.query("anything");
+    List<Map<String, String>> result = noteSearchService.query("anything");
     //then
     assertThat(result).isEmpty();
     //assert logs were printed
@@ -151,18 +158,18 @@ public class LuceneSearchTest {
     //given
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
     Paragraph p2 = note2.getLastParagraph();
     p2.setText("test indeed");
-    notebookIndex.updateIndexDoc(note2);
+    noteSearchService.updateIndexDoc(note2);
 
     //then
-    List<Map<String, String>> results = notebookIndex.query("all");
+    List<Map<String, String>> results = noteSearchService.query("all");
     assertThat(results).isEmpty();
 
-    results = notebookIndex.query("indeed");
+    results = noteSearchService.query("indeed");
     assertThat(results).isNotEmpty();
   }
 
@@ -170,21 +177,21 @@ public class LuceneSearchTest {
     //give
     // looks like a bug in web UI: it tries to delete a note twice (after it has just been deleted)
     //when
-    notebookIndex.deleteIndexDocs(null);
+    noteSearchService.deleteIndexDocs(null);
   }
 
   @Test public void canDeleteFromIndex() throws IOException {
     //given
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
     assertThat(resultForQuery("Notebook2")).isNotEmpty();
 
     //when
-    notebookIndex.deleteIndexDocs(note2);
+    noteSearchService.deleteIndexDocs(note2);
 
     //then
-    assertThat(notebookIndex.query("all")).isEmpty();
+    assertThat(noteSearchService.query("all")).isEmpty();
     assertThat(resultForQuery("Notebook2")).isEmpty();
 
     List<Map<String, String>> results = resultForQuery("test");
@@ -196,13 +203,13 @@ public class LuceneSearchTest {
     //given: total 2 notebooks, 3 paragraphs
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
     assertThat(resultForQuery("test").size()).isEqualTo(3);
 
     //when
     Paragraph p1 = note1.getLastParagraph();
     p1.setText("no no no");
-    note1.persist(null);
+    note1.persist(anonymous);
 
     //then
     assertThat(resultForQuery("Notebook1").size()).isEqualTo(1);
@@ -221,12 +228,12 @@ public class LuceneSearchTest {
     //given: total 2 notebooks, 3 paragraphs
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
     assertThat(resultForQuery("test").size()).isEqualTo(3);
 
     //when
     note1.setName("NotebookN");
-    note1.persist(null);
+    note1.persist(anonymous);
 
     //then
     assertThat(resultForQuery("Notebook1")).isEmpty();
@@ -235,7 +242,7 @@ public class LuceneSearchTest {
   }
 
   private List<Map<String, String>> resultForQuery(String q) {
-    return notebookIndex.query(q);
+    return noteSearchService.query(q);
   }
 
   /**
@@ -271,20 +278,20 @@ public class LuceneSearchTest {
   }
 
   private Paragraph addParagraphWithText(Note note, String text) {
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(text);
     return p;
   }
 
   private Paragraph addParagraphWithTextAndTitle(Note note, String text, String title) {
-    Paragraph p = note.addParagraph();
+    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(text);
     p.setTitle(title);
     return p;
   }
 
   private Note newNote(String name) {
-    Note note = new Note(notebookRepoMock, interpreterFactory, null, notebookIndex, null, null);
+    Note note = new Note(notebookRepoMock, interpreterFactory, interpreterSettingManager, null, noteSearchService, null, null);
     note.setName(name);
     return note;
   }
