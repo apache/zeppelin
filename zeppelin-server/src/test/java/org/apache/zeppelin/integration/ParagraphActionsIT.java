@@ -281,6 +281,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       Select dropDownMenu = new Select(driver.findElement(By.xpath((xpathToDropdownMenu))));
       dropDownMenu.selectByVisibleText("2");
+      waitForParagraph(1, "FINISHED");
       collector.checkThat("If 'RunOnSelectionChange' is true, the paragraph result will be updated right after click any options in the dropdown menu ",
         driver.findElement(By.xpath(xpathToResultText)).getText(),
         CoreMatchers.equalTo("My selection is 2"));
@@ -294,13 +295,13 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       Select sameDropDownMenu = new Select(driver.findElement(By.xpath((xpathToDropdownMenu))));
       sameDropDownMenu.selectByVisibleText("1");
+      waitForParagraph(1, "FINISHED");
       collector.checkThat("If 'RunOnSelectionChange' is false, the paragraph result won't be updated even if we select any options in the dropdown menu ",
         driver.findElement(By.xpath(xpathToResultText)).getText(),
         CoreMatchers.equalTo("My selection is 2"));
 
       // run paragraph manually by pressing ENTER
       driver.findElement(By.xpath(xpathToDropdownMenu)).sendKeys(Keys.ENTER);
-      driver.navigate().refresh();
       waitForParagraph(1, "FINISHED");
       collector.checkThat("Even if 'RunOnSelectionChange' is set as false, still can run the paragraph by pressing ENTER ",
         driver.findElement(By.xpath(xpathToResultText)).getText(),
