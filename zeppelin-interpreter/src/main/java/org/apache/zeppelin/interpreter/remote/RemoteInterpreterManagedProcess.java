@@ -112,7 +112,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     }
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
-    cmdLine.addArgument("-n", false);
+    cmdLine.addArgument("-g", false);
     cmdLine.addArgument(interpreterGroupName, false);
 
     executor = new DefaultExecutor();

@@ -276,17 +276,18 @@ public class RemoteInterpreterServer
     }
 
     // close interpreters
+    List<Interpreter> interpreters;
     synchronized (interpreterGroup) {
-      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
-      if (interpreters != null) {
-        Iterator<Interpreter> it = interpreters.iterator();
-        while (it.hasNext()) {
-          Interpreter inp = it.next();
-          if (inp.getClassName().equals(className)) {
-            inp.close();
-            it.remove();
-            break;
-          }
+      interpreters = interpreterGroup.get(sessionKey);
+    }
+    if (interpreters != null) {
+      Iterator<Interpreter> it = interpreters.iterator();
+      while (it.hasNext()) {
+        Interpreter inp = it.next();
+        if (inp.getClassName().equals(className)) {
+          inp.close();
+          it.remove();
+          break;
         }
       }
     }

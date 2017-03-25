@@ -39,6 +39,7 @@ REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zep
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
 REM set ZEPPELIN_INTERPRETER_DEP_MVNREPO       REM Maven principal repository for interpreter's additional dependency loading
+REM set ZEPPELIN_HELIUM_NPM_REGISTRY           REM Remote Npm registry for Helium dependency loader
 REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC		REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
 

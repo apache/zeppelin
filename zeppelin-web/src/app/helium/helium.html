@@ -11,7 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="interpreterHead">
+<div class="interpreterHead"
+     ng-class="(bundleOrder.length > 1) ? '' : 'heliumHead'">
   <div class="header">
     <div class="row">
       <div class="col-md-12">
@@ -34,28 +35,34 @@ limitations under the License.
             <i class="fa fa-cube"></i>
             {{pkgTypes}}
           </button>
-          <p class="localPkgInfo">* Local registry package's name is gray colored.</p>
         </div>
       </div>
     </div>
     <div ng-show="bundleOrder.length > 1"
          class="row heliumBundleOrder">
-      <div style="margin:0 0 5px 15px">Bundle package display order (drag and drop to reorder)</div>
-      <div class="col-md-12 sortable-row btn-group"
-           as-sortable="bundleOrderListeners"
-           data-ng-model="bundleOrder">
-        <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
-             as-sortable-item>
-          <div class="btn btn-default btn-sm"
-               ng-bind-html='defaultPackages[pkgName].pkg.icon'
-               as-sortable-item-handle>
+      <p>Bundle package display order (drag and drop to reorder)</p>
+      <div class="col-md-12">
+        <div class="sortable-row btn-group"
+             as-sortable="bundleOrderListeners"
+             data-ng-model="bundleOrder">
+          <div class="btn-group" data-ng-repeat="pkgName in bundleOrder"
+               as-sortable-item>
+            <div class="btn btn-default btn-sm"
+                 ng-bind-html='defaultPackages[pkgName].pkg.icon'
+                 as-sortable-item-handle>
+            </div>
           </div>
         </div>
-        <span class="saveLink"
-              ng-show="bundleOrderChanged"
-              ng-click="saveBundleOrder()">
+        <div class="saveLink"
+             ng-show="bundleOrderChanged"
+             ng-click="saveBundleOrder()">
           save
-        </span>
+        </div>
+      </div>
+    </div>
+    <div class="pull-right row localPkgInfo">
+      <div class="col-md-12">
+        <p>* Local registry package's name is gray colored.</p>
       </div>
     </div>
   </div>
@@ -96,11 +103,11 @@ limitations under the License.
           <span class="heliumType">{{pkgSearchResult.pkg.type}}</span>
         </div>
         <div ng-show="!pkgSearchResult.enabled"
-             ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact, pkgSearchResult.pkg.type, pkgSearchResult.pkg.groupId)"
+             ng-click="enable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact, pkgSearchResult.pkg.type, pkgSearchResult.pkg.groupId, pkgSearchResult.pkg.description)"
              class="btn btn-success btn-xs"
              style="float:right">Enable</div>
         <div ng-show="pkgSearchResult.enabled"
-             ng-click="disable(pkgSearchResult.pkg.name)"
+             ng-click="disable(pkgSearchResult.pkg.name, pkgSearchResult.pkg.artifact)"
              ng-if="pkgSearchResult.pkg.type !== 'INTERPRETER'"
              class="btn btn-info btn-xs"
              style="float:right">Disable</div>
@@ -135,9 +142,7 @@ limitations under the License.
           </a>
         </li>
       </ul>
-      <div class="heliumPackageDescription">
-        {{pkgSearchResult.pkg.description}}
-      </div>
+      <div class="heliumPackageDescription" ng-bind-html="getDescriptionText(pkgSearchResult)" />
       <div ng-if="pkgSearchResult.pkg.type === 'SPELL' && pkgSearchResult.pkg.spell"
            class="spellInfo">
         <div>
