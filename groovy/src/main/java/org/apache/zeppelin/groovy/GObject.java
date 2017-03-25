@@ -21,14 +21,23 @@ import java.io.StringWriter;
 import org.slf4j.Logger;
 import java.util.Properties;
 import java.util.Collection;
+import java.util.Map;
+import java.util.List;
+import java.util.LinkedList;
 
 import groovy.xml.MarkupBuilder;
 import groovy.lang.Closure;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
+import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  * Groovy interpreter for Zeppelin.
@@ -38,12 +47,15 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 	StringWriter out;
 	Properties props;
 	InterpreterContext interpreterContext;
+	Map<String,Object> bindings;
 	
-	public GObject(Logger log, StringWriter out, Properties p, InterpreterContext ctx){
+	
+	public GObject(Logger log, StringWriter out, Properties p, InterpreterContext ctx, Map<String,Object> bindings){
 		this.log=log;
 		this.out=out;
 		this.interpreterContext=ctx;
 		this.props=p;
+		this.bindings=bindings;
 	}
 	
 	public Object getProperty(String key){
@@ -67,6 +79,82 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 			out.append(type);
 			out.append('\n');
 		}
+	}
+
+	/**
+	 * returns gui object 
+	 */	
+	public GUI getGui(){
+		return interpreterContext.getGui();
+	}
+	
+	@ZeppelinApi
+	public Object input(String name) {
+		return input(name, "");
+	}
+
+	@ZeppelinApi
+	public Object input(String name, Object defaultValue) {
+		return getGui().input(name, defaultValue);
+	}
+	
+	private ParamOption[] toParamOptions(Map<Object, String> options){
+		ParamOption[] paramOptions = new ParamOption[options.size()];
+		int i = 0;
+		for(Map.Entry<Object,String> e : options.entrySet()){
+			paramOptions[i++] = new ParamOption(e.getKey(), e.getValue());
+		}
+		return paramOptions;
+	}
+	
+	@ZeppelinApi
+	public Object select(String name, Map<Object, String> options) {
+		return select( name, "", options );
+	}
+
+	@ZeppelinApi
+	public Object select(String name, Object defaultValue, Map<Object, String> options) {
+		return getGui().select( name, defaultValue, toParamOptions(options) );
+	}
+
+	@ZeppelinApi
+	public Collection<Object> checkbox(String name, Map<Object, String> options) {
+		return checkbox(name, options.keySet(), options);
+	}
+
+	@ZeppelinApi
+	public Collection<Object> checkbox(String name, Collection<Object> defaultChecked, Map<Object, String> options) {
+		return getGui().checkbox(name, defaultChecked, toParamOptions(options));
+	}
+	
+	
+	/**
+	 * Returns shared variable if it was previously set.
+	 * The same as getting groovy script variables but this method will return null if script variable not assigned. 
+	 * To understand groovy script variables see groovy.transform.Field annotation for more information.
+	 * @see #put
+	 */
+	public Object get(String varName){
+		return bindings.get(varName);
+	}
+	
+	/**
+	 * Returns script (shared) variable value but if value was not set returns default value.
+	 * The same as getting groovy script variables but this method will return default value if script variable not assigned. 
+	 * To understand groovy script variables see groovy.transform.Field annotation for more information.
+	 * @see #put
+	 */
+	public Object get(String varName, Object defValue){
+		return bindings.containsKey(varName) ? bindings.get(varName) : defValue;
+	}
+	
+	/**
+	 * Sets a ne value to interpreter's shared variables.
+	 * Could be set by <code>put('varName', newValue )</code>
+	 * or by just assigning <code>varName = value</code> without declaring a variable.
+	 */
+	public Object put(String varName, Object newValue){
+		return bindings.put(varName, newValue);
 	}
 	
 	/**
@@ -165,5 +253,96 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 	public void angularBind(String name, Object o) {
 		angularBind(name, o, interpreterContext.getNoteId());
 	}
+
+	/*------------------------------------------RUN----------------------------------------*/
+	@ZeppelinApi
+	public List<InterpreterContextRunner> getInterpreterContextRunner(String noteId, String paragraphId, InterpreterContext interpreterContext) {
+		RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
+		if (remoteWorksController != null) {
+			return remoteWorksController.getRemoteContextRunner(noteId, paragraphId);
+		}
+		return new LinkedList<InterpreterContextRunner>();
+	}
+	@ZeppelinApi
+	public List<InterpreterContextRunner> getInterpreterContextRunner(String noteId, InterpreterContext interpreterContext) {
+		RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
+		if (remoteWorksController != null) {
+			return remoteWorksController.getRemoteContextRunner(noteId);
+		}
+		return new LinkedList<InterpreterContextRunner>();
+	}
+	/**
+	 * Run paragraph by id
+	 * @param noteId
+	 * @param paragraphId
+	 */
+	@ZeppelinApi
+	public void run(String noteId, String paragraphId) {
+		run(noteId, paragraphId, interpreterContext);
+	}
+
+	/**
+	 * Run paragraph by id
+	 * @param paragraphId
+	 */
+	@ZeppelinApi
+	public void run(String paragraphId) {
+		String noteId = interpreterContext.getNoteId();
+		run(noteId, paragraphId, interpreterContext);
+	}
+	/**
+	 * Run paragraph by id
+	 * @param noteId
+	 * @param context
+	 */
+	@ZeppelinApi
+	public void run(String noteId, String paragraphId, InterpreterContext context) {
+		if (paragraphId.equals(context.getParagraphId())) {
+			throw new InterpreterException("Can not run current Paragraph");
+		}
+		List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, paragraphId, context);
+		if (runners.size() <= 0) {
+			throw new InterpreterException("Paragraph " + paragraphId + " not found " + runners.size());
+		}
+		for (InterpreterContextRunner r : runners) {
+			r.run();
+		}
+	}
+	public void runNote(String noteId) {
+		runNote(noteId, interpreterContext);
+	}
+
+	public void runNote(String noteId, InterpreterContext context) {
+		String runningNoteId = context.getNoteId();
+		String runningParagraphId = context.getParagraphId();
+		List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
+
+		if (runners.size() <= 0) {
+			throw new InterpreterException("Note " + noteId + " not found " + runners.size());
+		}
+		
+		for (InterpreterContextRunner r : runners) {
+			if (r.getNoteId().equals(runningNoteId) && r.getParagraphId().equals(runningParagraphId)) {
+				continue;
+			}
+			r.run();
+		}
+	}
+	/**
+	 * Run all paragraphs. except this.
+	 */
+	@ZeppelinApi
+	public void runAll() {
+		runAll(interpreterContext);
+	}
+
+	/**
+	 * Run all paragraphs. except this.
+	 */
+	@ZeppelinApi
+	public void runAll(InterpreterContext context) {
+		runNote(context.getNoteId());
+	}
+
 
 }

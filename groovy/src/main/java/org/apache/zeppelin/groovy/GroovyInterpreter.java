@@ -51,12 +51,19 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Groovy interpreter for Zeppelin.
  */
 public class GroovyInterpreter extends Interpreter {
 	Logger log = LoggerFactory.getLogger(GroovyInterpreter.class);
     GroovyShell shell = null; //new GroovyShell();
+    //here we will store shared variables. concurrent just in case.
+	Map<String,Object> sharedBindings = new ConcurrentHashMap<String,Object>();
+	//cache for groovy compiled scripts
+	Map<String,Class<Script>> scriptCache = Collections.synchronizedMap( new WeakHashMap<String,Class<Script>>(1000) );
+	
     
 	public GroovyInterpreter(Properties property) {
 		super(property);
@@ -89,7 +96,8 @@ public class GroovyInterpreter extends Interpreter {
 	
 	@Override
 	public FormType getFormType() {
-		return FormType.NONE;
+		return FormType.NATIVE;
+		//return FormType.NONE;
 	}
 
 	@Override
@@ -118,9 +126,6 @@ public class GroovyInterpreter extends Interpreter {
 		return null;
 	}
 	
-	//cache for groovy compiled scripts
-	Map<String,Class<Script>> scriptCache = Collections.synchronizedMap( new WeakHashMap<String,Class<Script>>(1000) );
-	
 	@SuppressWarnings("unchecked")
 	Script getGroovyScript(String id, String scriptText) /*throws SQLException*/ {
 		if(shell==null){
@@ -141,6 +146,11 @@ public class GroovyInterpreter extends Interpreter {
 		}
 	}
 	
+	private static Set<String> predefinedBindings = new HashSet<String>();
+	static{
+		predefinedBindings.add("g");
+		predefinedBindings.add("out");
+	}
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -152,10 +162,21 @@ public class GroovyInterpreter extends Interpreter {
 			Map<String,Object> bindings = script.getBinding().getVariables();
 			bindings.clear();
 			StringWriter out = new StringWriter( (int) (cmd.length()*1.75) );
-			
-			bindings.put("g", new GObject(log, out, this.getProperty(), contextInterpreter) );
+			//put shared bindings evaluated in this interpreter
+			bindings.putAll(sharedBindings);
+			//put predefined bindings
+			bindings.put("g", new GObject(log, out, this.getProperty(), contextInterpreter, bindings) );
 			bindings.put("out", new PrintWriter(out, true));
+			
 			script.run();
+			//let's get shared variables defined in current script and store them in shared map
+			for(Map.Entry<String,Object> e : bindings.entrySet()){
+				if( !predefinedBindings.contains(e.getKey()) ){
+					if(log.isTraceEnabled())log.trace("groovy script variable "+e);  //let's see what we have...
+					sharedBindings.put( e.getKey(), e.getValue() );
+				}
+			}
+			
 			bindings.clear();
 			InterpreterResult result = new InterpreterResult(Code.SUCCESS, out.toString());
 			//log.info("RESULT: "+result);
@@ -187,5 +208,6 @@ public class GroovyInterpreter extends Interpreter {
 			}
 		}
 	}
+	
 
 }
