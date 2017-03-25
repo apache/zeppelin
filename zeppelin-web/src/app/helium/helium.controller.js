@@ -47,6 +47,7 @@
         }
       }
       $scope.defaultVersions = defaultVersions;
+      console.log(_.size(defaultVersions));
     };
 
     var getAllPackageInfo = function() {
@@ -214,6 +215,10 @@
       } else {
         $scope.showVersions[pkgName] = true;
       }
+    };
+  
+    $scope.getPackageSize = function(pkgSearchResult) {
+      return _.size(pkgSearchResult)
     };
   }
 })();

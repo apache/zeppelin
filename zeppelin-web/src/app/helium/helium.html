@@ -18,32 +18,50 @@ limitations under the License.
         <h3 class="new_h3">
           Helium
         </h3>
+        <div class="pull-right heliumLearnMore">
+          <a target="_blank"
+             class="helium-repo-btn"
+             ng-href="https://zeppelin.apache.org/helium_packages.html"
+             tooltip-placement="bottom"
+             tooltip="Learn more">
+            <i class="icon-question" ng-style="{color: 'black'}"></i>
+          </a>
+        </div>
       </div>
     </div>
     <div ng-show="visualizationOrder.length > 1"
          class="row heliumVisualizationOrder">
-      <div style="margin:0 0 5px 15px">Visualization package display order (drag and drop to reorder)</div>
-      <div class="col-md-12 sortable-row btn-group"
-           as-sortable="visualizationOrderListeners"
-           data-ng-model="visualizationOrder">
-        <div class="btn-group" data-ng-repeat="pkgName in visualizationOrder"
-             as-sortable-item>
-          <div class="btn btn-default btn-sm"
-               ng-bind-html='defaultVersions[pkgName].pkg.icon'
-               as-sortable-item-handle>
+      <p>Visualization package display order (drag and drop to reorder)</p>
+      <div class="col-md-12">
+        <div class="sortable-row btn-group"
+             as-sortable="visualizationOrderListeners"
+             data-ng-model="visualizationOrder">
+          <div class="btn-group" data-ng-repeat="pkgName in visualizationOrder"
+               as-sortable-item>
+            <div class="btn btn-default btn-sm"
+                 ng-bind-html='defaultVersions[pkgName].pkg.icon'
+                 as-sortable-item-handle>
+            </div>
           </div>
         </div>
-        <span class="saveLink"
-           ng-show="visualizationOrderChanged"
-           ng-click="saveVisualizationOrder()">
-          save
-        </span>
+        <div class="saveLink"
+              ng-show="visualizationOrderChanged"
+              ng-click="saveVisualizationOrder()">
+            save
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <div class="box width-full heliumPackageContainer">
+  <div class="row"
+       style="padding-bottom: 15px"
+       ng-if="getPackageSize(defaultVersions) === 0">
+    <div class="col-md-12 gray40-message">
+      <em>Currently there is no available package to be listed</em>
+    </div>
+  </div>
   <div class="row heliumPackageList"
        ng-repeat="(pkgName, pkgInfo) in defaultVersions">
     <div class="col-md-12">

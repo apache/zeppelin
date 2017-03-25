@@ -17,6 +17,16 @@
   margin-bottom: 0px;
 }
 
+.heliumLearnMore {
+  margin-top:10px;
+}
+
+.heliumLearnMore a {
+  cursor:pointer;
+  margin-right:20px;
+  text-decoration:none;
+}
+
 .heliumPackageList {
   min-height: 25px;
   margin-bottom: 15px;
@@ -104,4 +114,8 @@
   text-decoration:
   underline;color:#3071a9;
   display: inline-block;
+}
+
+.heliumVisualizationOrder p {
+  margin:0 0 5px 15px;
 }
