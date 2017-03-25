@@ -34,15 +34,6 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 
 public class MockInterpreterResourcePool extends Interpreter {
-  static {
-    Interpreter.register(
-        "resourcePoolTest",
-        "resourcePool",
-        MockInterpreterA.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("p1", "v1", "property1").build());
-
-  }
 
   AtomicInteger numWatch = new AtomicInteger(0);
 
@@ -68,7 +59,7 @@ public class MockInterpreterResourcePool extends Interpreter {
     String name = null;
     if (stmt.length >= 2) {
       String[] npn = stmt[1].split(":");
-      if (npn.length == 3) {
+      if (npn.length >= 3) {
         noteId = npn[0];
         paragraphId = npn[1];
         name = npn[2];
@@ -77,7 +68,7 @@ public class MockInterpreterResourcePool extends Interpreter {
       }
     }
     String value = null;
-    if (stmt.length == 3) {
+    if (stmt.length >= 3) {
       value = stmt[2];
     }
 
@@ -96,6 +87,14 @@ public class MockInterpreterResourcePool extends Interpreter {
       ret = resourcePool.remove(noteId, paragraphId, name);
     } else if (cmd.equals("getAll")) {
       ret = resourcePool.getAll();
+    } else if (cmd.equals("invoke")) {
+      Resource resource = resourcePool.get(noteId, paragraphId, name);
+      if (stmt.length >=4) {
+        Resource res = resource.invokeMethod(value, null, null, stmt[3]);
+        ret = res.get();
+      } else {
+        ret = resource.invokeMethod(value, null, null);
+      }
     }
 
     try {

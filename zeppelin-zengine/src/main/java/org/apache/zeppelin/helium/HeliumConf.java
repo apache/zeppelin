@@ -16,20 +16,78 @@
  */
 package org.apache.zeppelin.helium;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Helium config. This object will be persisted to conf/heliumc.conf
+ * Helium config. This object will be persisted to conf/helium.conf
  */
 public class HeliumConf {
-  List<HeliumRegistry> registry = new LinkedList<HeliumRegistry>();
+  // enabled packages {name, version}
+  private Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
 
-  public List<HeliumRegistry> getRegistry() {
-    return registry;
+  // {artifact, {configKey, configValue}}
+  private Map<String, Map<String, Object>> packageConfig =
+      Collections.synchronizedMap(
+          new HashMap<String, Map<String, Object>>());
+
+  // enabled visualization package display order
+  private List<String> bundleDisplayOrder = new LinkedList<>();
+
+  public Map<String, String> getEnabledPackages() {
+    return new HashMap<>(enabled);
   }
 
-  public void setRegistry(List<HeliumRegistry> registry) {
-    this.registry = registry;
+  public void enablePackage(HeliumPackage pkg) {
+    enablePackage(pkg.getName(), pkg.getArtifact());
+  }
+
+  public void enablePackage(String name, String artifact) {
+    enabled.put(name, artifact);
+  }
+
+  public void updatePackageConfig(String artifact,
+                                  Map<String, Object> newConfig) {
+    if (!packageConfig.containsKey(artifact)) {
+      packageConfig.put(artifact,
+          Collections.synchronizedMap(new HashMap<String, Object>()));
+    }
+
+    packageConfig.put(artifact, newConfig);
+  }
+
+  /**
+   * @return versioned package config `{artifact, {configKey, configVal}}`
+   */
+  public Map<String, Map<String, Object>> getAllPackageConfigs () {
+    return packageConfig;
+  }
+
+  public Map<String, Object> getPackagePersistedConfig(String artifact) {
+    if (!packageConfig.containsKey(artifact)) {
+      packageConfig.put(artifact,
+          Collections.synchronizedMap(new HashMap<String, Object>()));
+    }
+
+    return packageConfig.get(artifact);
+  }
+
+  public void disablePackage(HeliumPackage pkg) {
+    disablePackage(pkg.getName());
+  }
+
+  public void disablePackage(String name) {
+    enabled.remove(name);
+  }
+
+  public List<String> getBundleDisplayOrder() {
+    if (bundleDisplayOrder == null) {
+      return new LinkedList<String>();
+    } else {
+      return bundleDisplayOrder;
+    }
+  }
+
+  public void setBundleDisplayOrder(List<String> orderedPackageList) {
+    bundleDisplayOrder = orderedPackageList;
   }
 }

@@ -44,8 +44,8 @@ public class InterpreterOutputChangeWatcher extends Thread {
   Logger logger = LoggerFactory.getLogger(InterpreterOutputChangeWatcher.class);
 
   private WatchService watcher;
-  private final List<File> watchFiles = new LinkedList<File>();
-  private final Map<WatchKey, File> watchKeys = new HashMap<WatchKey, File>();
+  private final List<File> watchFiles = new LinkedList<>();
+  private final Map<WatchKey, File> watchKeys = new HashMap<>();
   private InterpreterOutputChangeListener listener;
   private boolean stop;
 

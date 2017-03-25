@@ -40,9 +40,9 @@ Additional requirements for the Livy interpreter are:
 
 ## Configuration
 We added some common configurations for spark, and you can set any configuration you want.
-This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
+You can find all Spark configurations in [here](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
-Example: `spark.master` to `livy.spark.master`
+Example: `spark.driver.memory` to `livy.spark.driver.memory`
   
 <table class="table-configuration">
   <tr>
@@ -50,11 +50,6 @@ Example: `spark.master` to `livy.spark.master`
     <th>Default</th>
     <th>Description</th>
   </tr>
-  <tr>
-      <td>livy.spark.master</td>
-      <td>local[*]</td>
-      <td>Spark master uri. ex) spark://masterhost:7077</td>
-    </tr>
   <tr>
     <td>zeppelin.livy.url</td>
     <td>http://localhost:8998</td>
@@ -65,7 +60,22 @@ Example: `spark.master` to `livy.spark.master`
     <td>1000</td>
     <td>Max number of Spark SQL result to display.</td>
   </tr>
-    <tr>
+  <tr>
+    <td>zeppelin.livy.session.create_timeout</td>
+    <td>120</td>
+    <td>Timeout in seconds for session creation</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.displayAppInfo</td>
+    <td>false</td>
+    <td>Whether to display app info</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.pull_status.interval.millis</td>
+    <td>1000</td>
+    <td>The interval for checking paragraph execution status</td>
+  </tr>
+  <tr>
     <td>livy.spark.driver.cores</td>
     <td></td>
     <td>Driver cores. ex) 1, 2.</td>
@@ -120,7 +130,19 @@ Example: `spark.master` to `livy.spark.master`
       <td></td>
       <td>Adding extra libraries to livy interpreter</td>
     </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.trustStore</td>
+    <td></td>
+    <td>client trustStore file. Used when livy ssl is enabled</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.trustStorePassword</td>
+    <td></td>
+    <td>password for trustStore file. Used when livy ssl is enabled</td>
+  </tr>  
 </table>
+
+**We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
 
 ## Adding External libraries
 You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version. 
@@ -174,7 +196,7 @@ When Zeppelin server is running with authentication enabled, then this interpret
 
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
 
 ```
 %livy.pyspark

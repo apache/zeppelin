@@ -28,6 +28,7 @@ body {
 }
 
 .bodyAsIframe {
+  padding-top: 20px;
   background: white;
 }
 
@@ -49,6 +50,13 @@ body .navbar {
   margin-right: auto;
   margin-left: auto;
   width: auto;
+}
+
+.notebook-list-btn {
+  font-size: 13px;
+  margin-left: 2px;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .navbar-inverse {
@@ -171,7 +179,8 @@ a.navbar-brand:hover {
   color: #000;
   height: 28px;
   width: 200px;
-  font: normal normal normal 14px/1 FontAwesome;
+  font-size: 14px;
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .dropdown-submenu {
@@ -289,8 +298,19 @@ a.navbar-brand:hover {
 }
 
 @media (min-width: 768px) {
-  .dropdown-menu.navbar-dropdown-maxHeight {
+  .navbar-fixed-top .dropdown-menu {
     max-height: calc(100vh - 60px);
+    overflow: auto;
+  }
+  #actionbar .dropdown-menu {
+    max-height: calc(100vh - 110px);
+    overflow: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  #actionbar .dropdown-menu {
+    max-height: calc(100vh - 160px);
     overflow: auto;
   }
 }
@@ -373,13 +393,13 @@ a.navbar-brand:hover {
 }
 
 .zeppelin {
-  background: url('/assets/images/zepLogo.png') no-repeat right;
+  background: url('../assets/images/zepLogo.png') no-repeat right;
   height: 380px;
   opacity: 0.2;
 }
 
 .zeppelin2 {
-  background: url('/assets/images/zepLogo.png') no-repeat right;
+  background: url('../assets/images/zepLogo.png') no-repeat right;
   background-position-y: 12px;
   height: 380px;
   opacity: 0.2;
@@ -804,24 +824,27 @@ This part should be removed when new version of bootstrap handles this issue.
   background: #3071a9;
 }
 
-.about{
+/* About Zeppelin */
+.about {
   height: 200px;
-  padding-top: 20px;
-  padding-left: 20px;
+  padding: 25px;
 }
 
 .about .logo {
-  width: 20%;
-  float: left;
+  padding-top: 30px;
 }
 
-.about .content{
-  float: left;
-  padding-left: 10px;
-  top: -30px;
-  position: relative;
+.about .logo img {
+  width: 95%;
 }
 
-.about .logo img{
-  width: 100%;
+.about .content {
+  text-align: center;
+}
+
+.about .content h3 {
+  font-family: 'Patua One';
+  color: #3071A9;
+  font-size: 30px;
+  margin: 0 auto;
 }

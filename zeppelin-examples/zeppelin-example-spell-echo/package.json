@@ -1,0 +1,15 @@
+{
+  "name": "echo-spell",
+  "description" : "Return just what receive (example)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "zeppelin-spell": "*"
+  },
+  "spell": {
+    "magic": "%echo",
+    "usage": "%echo <TEXT>"
+  }
+}

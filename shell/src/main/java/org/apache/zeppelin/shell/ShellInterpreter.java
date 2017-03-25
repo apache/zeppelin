@@ -20,9 +20,7 @@ package org.apache.zeppelin.shell;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,7 +58,7 @@ public class ShellInterpreter extends Interpreter {
   @Override
   public void open() {
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
-    executors = new ConcurrentHashMap<String, DefaultExecutor>();
+    executors = new ConcurrentHashMap<>();
     if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
       ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
     }
@@ -86,7 +84,8 @@ public class ShellInterpreter extends Interpreter {
 
     try {
       DefaultExecutor executor = new DefaultExecutor();
-      executor.setStreamHandler(new PumpStreamHandler(outStream, outStream));
+      executor.setStreamHandler(new PumpStreamHandler(
+        contextInterpreter.out, contextInterpreter.out));
       executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
       int exitVal = executor.execute(cmdLine);
@@ -100,7 +99,7 @@ public class ShellInterpreter extends Interpreter {
       String message = outStream.toString();
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
-        message += "Paragraph received a SIGTERM.\n";
+        message += "Paragraph received a SIGTERM\n";
         LOGGER.info("The paragraph " + contextInterpreter.getParagraphId() 
           + " stopped executing: " + message);
       }

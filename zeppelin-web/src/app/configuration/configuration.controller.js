@@ -11,12 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').controller('ConfigurationCtrl', function($scope, $rootScope, $http,
-                                                                          baseUrlSrv, ngToast) {
+angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl);
+
+function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+  'ngInject';
+
   $scope.configrations = [];
   $scope._ = _;
+  ngToast.dismiss();
 
   var getConfigurations = function() {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').
@@ -43,4 +46,4 @@ angular.module('zeppelinWebApp').controller('ConfigurationCtrl', function($scope
   };
 
   init();
-});
+}

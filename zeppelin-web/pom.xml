@@ -22,20 +22,30 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
   <prerequisites>
     <maven>3.1.0</maven>
   </prerequisites>
+
+  <properties>
+    <node.version>v6.9.1</node.version>
+    <yarn.version>v0.18.1</yarn.version>
+    <npm.version>4.2.0</npm.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!--plugin versions-->
+    <plugin.frontned.version>1.3</plugin.frontned.version>
+  </properties>
 
   <build>
     <plugins>
@@ -49,96 +59,52 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>**/.idea/</exclude>
-            <exclude>**/*.iml</exclude>
-            <exclude>.git/</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>.bowerrc</exclude>
-            <exclude>.editorconfig</exclude>
-            <exclude>.jscsrc</exclude>
-            <exclude>.eslintrc</exclude>
-            <exclude>.tmp/**</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>node/**</exclude>
-            <exclude>node_modules/**</exclude>
-            <exclude>bower_components/**</exclude>
-            <exclude>test/**</exclude>
-            <exclude>dist/**</exclude>
-            <exclude>src/.buildignore</exclude>
-            <exclude>src/fonts/fontawesome*</exclude>
-            <exclude>src/fonts/font-awesome*</exclude>
-            <exclude>src/styles/font-awesome*</exclude>
-            <exclude>src/fonts/Simple-Line*</exclude>
-            <exclude>src/fonts/simple-line*</exclude>
-            <exclude>src/fonts/Patua-One*</exclude>
-            <exclude>src/fonts/Roboto*</exclude>
-            <exclude>src/fonts/Source-Code-Pro*</exclude>
-            <exclude>bower.json</exclude>
-            <exclude>package.json</exclude>
-            <exclude>*.md</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.25</version>
+        <version>${plugin.frontned.version}</version>
         <executions>
 
           <execution>
-            <id>install node and npm</id>
+            <id>install node and yarn</id>
             <goals>
+              <goal>install-node-and-yarn</goal>
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v0.12.13</nodeVersion>
-              <npmVersion>2.15.0</npmVersion>
+              <nodeVersion>${node.version}</nodeVersion>
+              <yarnVersion>${yarn.version}</yarnVersion>
+              <npmVersion>${npm.version}</npmVersion>
             </configuration>
           </execution>
 
           <execution>
-            <id>npm install</id>
+            <id>yarn install</id>
             <goals>
-              <goal>npm</goal>
-            </goals>
-          </execution>
-
-          <execution>
-            <id>bower install</id>
-            <goals>
-              <goal>bower</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
-              <arguments>--allow-root install</arguments>
+              <arguments>install --no-lockfile</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt build</id>
+            <id>yarn build</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>yarn</goal>
             </goals>
             <configuration>
-              <arguments>build</arguments>
+              <arguments>run build</arguments>
             </configuration>
           </execution>
 
           <execution>
-            <id>grunt test</id>
+            <id>yarn test</id>
             <goals>
-              <goal>grunt</goal>
+              <goal>yarn</goal>
             </goals>
             <phase>test</phase>
             <configuration>
-              <arguments>test</arguments>
+              <arguments>run test</arguments>
             </configuration>
           </execution>
 
@@ -166,15 +132,21 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.7</version>
       </plugin>
 
       <plugin>
+        <!-- clean task will be executed by front-end-maven plugin -->
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
           <filesets>
             <fileset>
               <directory>bower_components</directory>
+            </fileset>
+            <fileset>
+              <directory>node</directory>
+            </fileset>
+            <fileset>
+              <directory>node_modules</directory>
             </fileset>
           </filesets>
         </configuration>
@@ -182,8 +154,5 @@
     </plugins>
   </build>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
 </project>

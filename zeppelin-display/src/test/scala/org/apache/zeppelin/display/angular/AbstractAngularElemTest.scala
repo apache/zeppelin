@@ -23,6 +23,7 @@ import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
 import org.apache.zeppelin.user.AuthenticationInfo
 import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 
 /**
@@ -33,20 +34,12 @@ trait AbstractAngularElemTest
 
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
-    val context = new InterpreterContext("note", "paragraph", "title", "text",
+    val context = new InterpreterContext("note", "paragraph", null, "title", "text",
       new AuthenticationInfo(), new util.HashMap[String, Object](), new GUI(),
       new AngularObjectRegistry(intpGroup.getId(), null),
       null,
       new util.LinkedList[InterpreterContextRunner](),
-      new InterpreterOutput(new InterpreterOutputListener() {
-        override def onAppend(out: InterpreterOutput, line: Array[Byte]): Unit = {
-          // nothing to do
-        }
-
-        override def onUpdate(out: InterpreterOutput, output: Array[Byte]): Unit = {
-          // nothing to do
-        }
-      }))
+      new InterpreterOutput(null));
 
     InterpreterContext.set(context)
     super.beforeEach() // To be stackable, must call super.beforeEach
@@ -69,12 +62,12 @@ trait AbstractAngularElemTest
     // click create thread for callback function to run. So it'll may not immediately invoked
     // after click. therefore eventually should be
     click(elem)
-    eventually {
+    eventually (timeout(Span(5, Seconds))) {
       a should be(1)
     }
 
     click(elem)
-    eventually {
+    eventually (timeout(Span(5, Seconds))) {
       a should be(2)
     }
 
@@ -128,7 +121,7 @@ trait AbstractAngularElemTest
 
     click(elem)
 
-    eventually { modelValue should be("value")}
+    eventually (timeout(Span(5, Seconds))) { modelValue should be("value")}
   }
 
 

@@ -38,7 +38,7 @@ public class IdHashes {
    */
   private static String encode(Long value) {
 
-    List<Character> result = new ArrayList<Character>();
+    List<Character> result = new ArrayList<>();
     BigInteger base = new BigInteger("" + DICTIONARY.length);
     int exponent = 1;
     BigInteger remaining = new BigInteger(value.toString());

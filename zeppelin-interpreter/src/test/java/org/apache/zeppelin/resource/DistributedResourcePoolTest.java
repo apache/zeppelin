@@ -55,7 +55,7 @@ public class DistributedResourcePoolTest {
 
   @Before
   public void setUp() throws Exception {
-    env = new HashMap<String, String>();
+    env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     Properties p = new Properties();
@@ -70,7 +70,9 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
-        null
+        null,
+        "anonymous",
+        false
     );
 
     intpGroup1 = new InterpreterGroup("intpGroup1");
@@ -88,7 +90,9 @@ public class DistributedResourcePoolTest {
         env,
         10 * 1000,
         null,
-        null
+        null,
+        "anonymous",
+        false
     );
 
     intpGroup2 = new InterpreterGroup("intpGroup2");
@@ -99,6 +103,7 @@ public class DistributedResourcePoolTest {
     context = new InterpreterContext(
         "note",
         "id",
+        null,
         "title",
         "text",
         new AuthenticationInfo(),
@@ -129,11 +134,9 @@ public class DistributedResourcePoolTest {
     eventPoller1.shutdown();
     intp1.close();
     intpGroup1.close();
-    intpGroup1.destroy();
     eventPoller2.shutdown();
     intp2.close();
     intpGroup2.close();
-    intpGroup2.destroy();
   }
 
   @Test
@@ -144,16 +147,16 @@ public class DistributedResourcePoolTest {
     intp2.interpret("put key2 value2", context);
 
     ret = intp1.interpret("getAll", context);
-    assertEquals(2, gson.fromJson(ret.message(), ResourceSet.class).size());
+    assertEquals(2, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
 
     ret = intp2.interpret("getAll", context);
-    assertEquals(2, gson.fromJson(ret.message(), ResourceSet.class).size());
+    assertEquals(2, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
 
     ret = intp1.interpret("get key1", context);
-    assertEquals("value1", gson.fromJson(ret.message(), String.class));
+    assertEquals("value1", gson.fromJson(ret.message().get(0).getData(), String.class));
 
     ret = intp1.interpret("get key2", context);
-    assertEquals("value2", gson.fromJson(ret.message(), String.class));
+    assertEquals("value2", gson.fromJson(ret.message().get(0).getData(), String.class));
   }
 
   @Test
@@ -185,6 +188,17 @@ public class DistributedResourcePoolTest {
         if (id.getResourcePoolId().equals(pool3.id())) {
           return pool3.get(id.getName()).get();
         }
+        return null;
+      }
+
+      @Override
+      public Object invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[] params) {
+        return null;
+      }
+
+      @Override
+      public Resource invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[]
+          params, String returnResourceName) {
         return null;
       }
     });
@@ -229,10 +243,10 @@ public class DistributedResourcePoolTest {
     // then resources should be removed.
     assertEquals(2, ResourcePoolUtils.getAllResources().size());
     assertEquals("", gson.fromJson(
-        intp1.interpret("get note1:paragraph1:key1", context).message(),
+        intp1.interpret("get note1:paragraph1:key1", context).message().get(0).getData(),
         String.class));
     assertEquals("", gson.fromJson(
-        intp1.interpret("get note1:paragraph2:key1", context).message(),
+        intp1.interpret("get note1:paragraph2:key1", context).message().get(0).getData(),
         String.class));
 
 
@@ -242,8 +256,48 @@ public class DistributedResourcePoolTest {
     // then 1
     assertEquals(1, ResourcePoolUtils.getAllResources().size());
     assertEquals("value2", gson.fromJson(
-        intp1.interpret("get note2:paragraph2:key2", context).message(),
+        intp1.interpret("get note2:paragraph2:key2", context).message().get(0).getData(),
         String.class));
 
+  }
+
+  @Test
+  public void testResourceInvokeMethod() {
+    Gson gson = new Gson();
+    InterpreterResult ret;
+    intp1.interpret("put key1 hey", context);
+    intp2.interpret("put key2 world", context);
+
+    // invoke method in local resource pool
+    ret = intp1.interpret("invoke key1 length", context);
+    assertEquals("3", ret.message().get(0).getData());
+
+    // invoke method in remote resource pool
+    ret = intp1.interpret("invoke key2 length", context);
+    assertEquals("5", ret.message().get(0).getData());
+
+    // make sure no resources are automatically created
+    ret = intp1.interpret("getAll", context);
+    assertEquals(2, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+
+    // invoke method in local resource pool and save result
+    ret = intp1.interpret("invoke key1 length ret1", context);
+    assertEquals("3", ret.message().get(0).getData());
+
+    ret = intp1.interpret("getAll", context);
+    assertEquals(3, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+
+    ret = intp1.interpret("get ret1", context);
+    assertEquals("3", gson.fromJson(ret.message().get(0).getData(), String.class));
+
+    // invoke method in remote resource pool and save result
+    ret = intp1.interpret("invoke key2 length ret2", context);
+    assertEquals("5", ret.message().get(0).getData());
+
+    ret = intp1.interpret("getAll", context);
+    assertEquals(4, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+
+    ret = intp1.interpret("get ret2", context);
+    assertEquals("5", gson.fromJson(ret.message().get(0).getData(), String.class));
   }
 }

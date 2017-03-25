@@ -23,7 +23,7 @@ limitations under the License.
     </div>
     <div class="row">
       <div class="col-md-12">
-        You can monitor the written notebook. Check the status of the Notebook and can control the action.
+        You can monitor the status of notebook and navigate to note or paragraph.
       </div>
     </div>
   </div>
@@ -32,8 +32,51 @@ limitations under the License.
   </div>
 
   <div class="row">
+    <div class="col-md-6 text-left">
+      <div class="form-inline">
+        <span class="labelBtn btn-group">
+          <button type="button"
+                  class="btn btn-default"
+                  style="width: 25px; height: 25px; margin-right: 0px; padding: 1px 0px 3px 3px"
+                  ng-click="onChangeSortAsc()"
+                  tooltip-placement="right" tooltip="{{sortTooltipMsg}}">
+            <i class="fa" ng-class="{true: 'fa-sort-amount-asc', false : 'fa-sort-amount-desc'}[filterConfig.isSortByAsc]"></i>
+          </button>
+        </span>
+        <span class="labelBtn btn-group" style="margin-left: 0px; padding-left: 3px;">
+          <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                 data-toggle="dropdown"
+                 style="min-width: 100px; text-align: right !important;">
+           <span class="text-right job-note-name-font-family">
+             {{filterValueToName(filterConfig.filterValueInterpreter)}}<span class="caret" style="margin-left: 10px"></span>
+           </span>
+          </button>
+          <ul class="dropdown-menu pull-left" role="menu">
+           <li ng-repeat="interpreterOption in activeInterpreters">
+             <a class="job-note-name-font-family" style="cursor:pointer"
+                ng-click="setFilterValue(interpreterOption.value)">
+               {{filterValueToName(interpreterOption.value)}}
+             </a>
+           </li>
+          </ul>
+          <div class="input-group">
+            <input
+             class="job-note-name-query job-note-name-font-family form-control btn-xs"
+             style="margin-left: 5px;"
+             placeholder="Search for Job"
+             type="text" ng-model="filterConfig.filterValueNotebookName"
+             ng-keyup="doFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)"/>
+            <span
+                class="input-group-addon text-right" ng-class="{true : 'btn-primary active', false: ''}[isActiveSearchTimer]"
+                style="height: 5px; padding: 0px 6px 0px 9px !important;"
+                ng-click="doForceFilterInputTyping($event, jobInfomations, filterConfig, isLoadingFilter)">
+              <i class="fa fa-search fa-sm"></i></span>
+            </div>
+        </span>
+      </div>
+    </div>
     <div
-      class="col-md-12 text-right"
+      class="col-md-6 text-right"
       style="padding-top: 6px;">
       <span
         ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']"
@@ -41,8 +84,7 @@ limitations under the License.
         <span
           ng-switch-when="FINISHED">
           <i style="color: green; margin-right: 3px;" class="fa fa-circle"
-             ng-click=""
-             tooltip="FINISHED">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -50,8 +92,7 @@ limitations under the License.
           ng-switch-when="RUNNING"
           style="margin-right: 3px;">
           <i style="color: blue" class="fa fa-spinner"
-             ng-click=""
-             tooltip="RUNNING">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -59,8 +100,7 @@ limitations under the License.
           ng-switch-when="READY"
           style="margin-right: 3px;">
           <i style="color: green" class="fa fa-circle-o"
-             ng-click=""
-             tooltip="READY">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -68,9 +108,7 @@ limitations under the License.
           ng-switch-when="PENDING"
           style="margin-right: 3px;">
           <i style="color: gray" class="fa fa-circle"
-             ng-click=""
-             tooltip="PENDING"
-          >
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -78,8 +116,7 @@ limitations under the License.
           ng-switch-when="ABORT"
           style="margin-right: 3px;">
           <i style="color: orange" class="fa fa-circle"
-             ng-click=""
-             tooltip="ABORT">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -87,8 +124,7 @@ limitations under the License.
           ng-switch-when="ERROR"
           style="margin-right: 3px;">
           <i style="color: red" class="fa fa-circle"
-             ng-click=""
-             tooltip="ERROR">
+             ng-click="">
           </i>
           {{jobStatus}}
         </span>
@@ -99,8 +135,17 @@ limitations under the License.
 <div>
   <div class="note-jump"></div>
   <div
-    ng-if="jobInfomations.length > 0"
-    ng-repeat="notebookJob in jobInfomations"
+    ng-if="isLoadingFilter === true"
+    class="paragraph-col">
+    <div
+      class="job-space box job-margin text-center">
+      <i style="color: blue" class="fa fa-spinner spinAnimation">
+      </i>&nbsp;Loading...
+    </div>
+  </div>
+  <div
+    ng-if="JobInfomationsByFilter.length > 0"
+    ng-repeat="notebookJob in JobInfomationsByFilter track by $index"
     class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
@@ -108,11 +153,11 @@ limitations under the License.
     </div>
   </div>
   <div
-    ng-if="jobInfomations.length <= 0"
+    ng-if="isLoadingFilter === false && JobInfomationsByFilter.length <= 0"
     class="paragraph-col">
     <div
       class="job-space box job-margin text-center">
-      Data does not exist
+      No Job found
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

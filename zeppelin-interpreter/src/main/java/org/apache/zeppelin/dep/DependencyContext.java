@@ -42,11 +42,11 @@ import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
  *
  */
 public class DependencyContext {
-  List<Dependency> dependencies = new LinkedList<Dependency>();
-  List<Repository> repositories = new LinkedList<Repository>();
+  List<Dependency> dependencies = new LinkedList<>();
+  List<Repository> repositories = new LinkedList<>();
 
-  List<File> files = new LinkedList<File>();
-  List<File> filesDist = new LinkedList<File>();
+  List<File> files = new LinkedList<>();
+  List<File> filesDist = new LinkedList<>();
   private RepositorySystem system = Booter.newRepositorySystem();
   private RepositorySystemSession session;
   private RemoteRepository mavenCentral = Booter.newCentralRepository();
@@ -73,11 +73,11 @@ public class DependencyContext {
   }
 
   public void reset() {
-    dependencies = new LinkedList<Dependency>();
-    repositories = new LinkedList<Repository>();
+    dependencies = new LinkedList<>();
+    repositories = new LinkedList<>();
 
-    files = new LinkedList<File>();
-    filesDist = new LinkedList<File>();
+    files = new LinkedList<>();
+    filesDist = new LinkedList<>();
   }
 
 

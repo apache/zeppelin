@@ -1,0 +1,8 @@
+@font-face {
+  font-family: 'Patua One';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/Patua-One.eot);
+  src: local('Patua One'), local('PatuaOne-Regular'), url(../fonts/Patua-One.woff) format('woff'), url(../fonts/Patua-One.svg#PatuaOne) format('svg'), url(../fonts/Patua-One.eot?#iefix) format('embedded-opentype'), url(../fonts/Patua-One.ttf) format('truetype');
+}
+

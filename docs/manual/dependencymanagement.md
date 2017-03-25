@@ -33,8 +33,8 @@ When your code requires external library, instead of doing download/copy/restart
 <hr>
 <div class="row">
   <div class="col-md-6">
-    <a data-lightbox="compiler" href="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png">
-      <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png" />
+    <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png">
+      <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png" />
     </a>
   </div>
   <div class="col-md-6" style="padding-top:30px">
@@ -52,11 +52,11 @@ When your code requires external library, instead of doing download/copy/restart
 <hr>
 <div class="row">
   <div class="col-md-6">
-    <a data-lightbox="compiler" href="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png">
-      <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png" />
+    <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png">
+      <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png" />
     </a>
-    <a data-lightbox="compiler" href="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png">
-      <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png" />
+    <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png">
+      <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png" />
     </a>
   </div>
   <div class="col-md-6" style="padding-top:30px">
@@ -68,6 +68,7 @@ When your code requires external library, instead of doing download/copy/restart
       <li> If you need to resolve dependencies from other than central maven repository or
   	   local ~/.m2 repository, hit <i class="fa fa-plus"></i> icon next to repository lists. </li>
       <li> Fill out the form and click 'Add' button, then you will be able to see that new repository is added. </li>
+      <li> Optionally, if you are behind a corporate firewall, you can specify also all proxy settings so that Zeppelin can download the dependencies using the given credentials</li>
     </ol>
   </div>
 </div>

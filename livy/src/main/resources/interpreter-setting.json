@@ -11,16 +11,11 @@
         "defaultValue": "http://localhost:8998",
         "description": "The URL for Livy Server."
       },
-      "zeppelin.livy.create.session.retries": {
-        "envName": "ZEPPELIN_LIVY_CREATE_SESSION_RETRIES",
-        "propertyName": "zeppelin.livy.create.session.retries",
+      "zeppelin.livy.session.create_timeout": {
+        "envName": "ZEPPELIN_LIVY_SESSION_CREATE_TIMEOUT",
+        "propertyName": "zeppelin.livy.session.create_timeout",
         "defaultValue": "120",
-        "description": "Livy Server create session retry count."
-      },
-      "livy.spark.master": {
-        "propertyName": "livy.spark.master",
-        "defaultValue": "local[*]",
-        "description": "Spark master uri. ex) spark://masterhost:7077"
+        "description": "Livy Server create session timeout (seconds)."
       },
       "livy.spark.driver.cores": {
         "propertyName": "livy.spark.driver.cores",
@@ -82,11 +77,34 @@
         "defaultValue": "",
         "description": "Kerberos keytab to authenticate livy"
       },
+      "zeppelin.livy.pull_status.interval.millis": {
+        "propertyName": "zeppelin.livy.pull_status.interval.millis",
+        "defaultValue": "1000",
+        "description": "The interval for checking paragraph execution status"
+      },
       "livy.spark.jars.packages": {
         "propertyName": "livy.spark.jars.packages",
         "defaultValue": "",
         "description": "Adding extra libraries to livy interpreter"
+      },
+      "zeppelin.livy.displayAppInfo": {
+        "propertyName": "zeppelin.livy.displayAppInfo",
+        "defaultValue": "false",
+        "description": "Whether display app info"
       }
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false
     }
   },
   {
@@ -105,6 +123,19 @@
         "defaultValue": "false",
         "description": "Execute multiple SQL concurrently if set true."
       }
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
     }
   },
   {
@@ -112,13 +143,59 @@
     "name": "pyspark",
     "className": "org.apache.zeppelin.livy.LivyPySparkInterpreter",
     "properties": {
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
     }
   },
+  {
+    "group": "livy",
+    "name": "pyspark3",
+    "className": "org.apache.zeppelin.livy.LivyPySpark3Interpreter",
+    "properties": {
+    },    
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  },  
   {
     "group": "livy",
     "name": "sparkr",
     "className": "org.apache.zeppelin.livy.LivySparkRInterpreter",
     "properties": {
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false
     }
   }
 ]

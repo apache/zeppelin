@@ -11,79 +11,174 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
 angular.module('zeppelinWebApp')
-  .controller('JobmanagerCtrl',
-    function($scope, websocketMsgSrv, $interval) {
+  .controller('JobmanagerCtrl', JobmanagerCtrl);
 
-      $scope.filterValueToName = function(filterValue) {
-        var index = _.findIndex($scope.ACTIVE_INTERPRETERS, {value: filterValue});
+function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
+  'ngInject';
 
-        if ($scope.ACTIVE_INTERPRETERS[index].name !== undefined) {
-          return $scope.ACTIVE_INTERPRETERS[index].name;
-        } else {
-          return 'undefined';
-        }
-      };
-
-      $scope.init = function() {
-        $scope.jobInfomations = [];
-        $scope.JobInfomationsByFilter = $scope.jobInfomations;
-
-        websocketMsgSrv.getNotebookJobsList();
-
-        $scope.$on('$destroy', function() {
-          websocketMsgSrv.unsubscribeJobManager();
-        });
-      };
-
-      /*
-      ** $scope.$on functions below
-      */
-
-      $scope.$on('setNotebookJobs', function(event, responseData) {
-        $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
-        $scope.jobInfomations = responseData.jobs;
-        $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'notebookId') : {};
-      });
-
-      $scope.$on('setUpdateNotebookJobs', function(event, responseData) {
-        var jobInfomations = $scope.jobInfomations;
-        var indexStore = $scope.jobInfomationsIndexs;
-        $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
-        var notes = responseData.jobs;
-        notes.map(function(changedItem) {
-          if (indexStore[changedItem.notebookId] === undefined) {
-            var newItem = angular.copy(changedItem);
-            jobInfomations.push(newItem);
-            indexStore[changedItem.notebookId] = newItem;
-          } else {
-            var changeOriginTarget = indexStore[changedItem.notebookId];
-
-            if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
-
-              // remove Item.
-              var removeIndex = _.findIndex(indexStore, changedItem.notebookId);
-              if (removeIndex > -1) {
-                indexStore.splice(removeIndex, 1);
-              }
-
-              removeIndex = _.findIndex(jobInfomations, {'notebookId': changedItem.notebookId});
-              if (removeIndex) {
-                jobInfomations.splice(removeIndex, 1);
-              }
-
-            } else {
-              // change value for item.
-              changeOriginTarget.isRunningJob = changedItem.isRunningJob;
-              changeOriginTarget.notebookName = changedItem.notebookName;
-              changeOriginTarget.notebookType = changedItem.notebookType;
-              changeOriginTarget.interpreter = changedItem.interpreter;
-              changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
-              changeOriginTarget.paragraphs = changedItem.paragraphs;
-            }
-          }
-        });
-      });
+  ngToast.dismiss();
+  var asyncNotebookJobFilter = function(jobInfomations, filterConfig) {
+    return $q(function(resolve, reject) {
+      $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig);
+      resolve($scope.JobInfomationsByFilter);
     });
+  };
+
+  $scope.doFiltering = function(jobInfomations, filterConfig) {
+    asyncNotebookJobFilter(jobInfomations, filterConfig).then(
+      function() {
+        // success
+        $scope.isLoadingFilter = false;
+      },
+      function() {
+        // failed
+      });
+  };
+
+  $scope.filterValueToName = function(filterValue, maxStringLength) {
+    if ($scope.activeInterpreters === undefined) {
+      return;
+    }
+    var index = _.findIndex($scope.activeInterpreters, {value: filterValue});
+    if ($scope.activeInterpreters[index].name !== undefined) {
+      if (maxStringLength !== undefined && maxStringLength > $scope.activeInterpreters[index].name) {
+        return $scope.activeInterpreters[index].name.substr(0, maxStringLength - 3) + '...';
+      }
+      return $scope.activeInterpreters[index].name;
+    } else {
+      return 'Interpreter is not set';
+    }
+  };
+
+  $scope.setFilterValue = function(filterValue) {
+    $scope.filterConfig.filterValueInterpreter = filterValue;
+    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+  };
+
+  $scope.onChangeRunJobToAlwaysTopToggle = function() {
+    $scope.filterConfig.isRunningAlwaysTop = !$scope.filterConfig.isRunningAlwaysTop;
+    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+  };
+
+  $scope.onChangeSortAsc = function() {
+    $scope.filterConfig.isSortByAsc = !$scope.filterConfig.isSortByAsc;
+    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+  };
+
+  $scope.doFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
+    var RETURN_KEY_CODE = 13;
+    $timeout.cancel($scope.dofilterTimeoutObject);
+    $scope.isActiveSearchTimer = true;
+    $scope.dofilterTimeoutObject = $timeout(function() {
+      $scope.doFiltering(jobInfomations, filterConfig);
+      $scope.isActiveSearchTimer = false;
+    }, 10000);
+    if (keyEvent.which === RETURN_KEY_CODE) {
+      $timeout.cancel($scope.dofilterTimeoutObject);
+      $scope.doFiltering(jobInfomations, filterConfig);
+      $scope.isActiveSearchTimer = false;
+    }
+  };
+
+  $scope.doForceFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
+    $timeout.cancel($scope.dofilterTimeoutObject);
+    $scope.doFiltering(jobInfomations, filterConfig);
+    $scope.isActiveSearchTimer = false;
+  };
+
+  $scope.init = function() {
+    $scope.isLoadingFilter = true;
+    $scope.jobInfomations = [];
+    $scope.JobInfomationsByFilter = $scope.jobInfomations;
+    $scope.filterConfig = {
+      isRunningAlwaysTop: true,
+      filterValueNotebookName: '',
+      filterValueInterpreter: '*',
+      isSortByAsc: true
+    };
+    $scope.sortTooltipMsg = 'Switch to sort by desc';
+    $scope.jobTypeFilter = jobManagerFilter;
+
+    websocketMsgSrv.getNoteJobsList();
+
+    $scope.$watch('filterConfig.isSortByAsc', function (value) {
+      if (value) {
+        $scope.sortTooltipMsg = 'Switch to sort by desc';
+      } else {
+        $scope.sortTooltipMsg = 'Switch to sort by asc';
+      }
+    });
+
+    $scope.$on('$destroy', function() {
+      websocketMsgSrv.unsubscribeJobManager();
+    });
+  };
+
+  /*
+   ** $scope.$on functions below
+   */
+
+  $scope.$on('setNoteJobs', function(event, responseData) {
+    $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+    $scope.jobInfomations = responseData.jobs;
+    $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'noteId') : {};
+    $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig);
+    $scope.activeInterpreters = [
+      {
+        name: 'ALL',
+        value: '*'
+      }
+    ];
+    var interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), false);
+    for (var index = 0, length = interpreterLists.length; index < length; index++) {
+      $scope.activeInterpreters.push({
+        name: interpreterLists[index],
+        value: interpreterLists[index]
+      });
+    }
+    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
+  });
+
+  $scope.$on('setUpdateNoteJobs', function(event, responseData) {
+    var jobInfomations = $scope.jobInfomations;
+    var indexStore = $scope.jobInfomationsIndexs;
+    $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
+    var notes = responseData.jobs;
+    notes.map(function(changedItem) {
+      if (indexStore[changedItem.noteId] === undefined) {
+        var newItem = angular.copy(changedItem);
+        jobInfomations.push(newItem);
+        indexStore[changedItem.noteId] = newItem;
+      } else {
+        var changeOriginTarget = indexStore[changedItem.noteId];
+
+        if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
+
+          // remove Item.
+          var removeIndex = _.findIndex(indexStore, changedItem.noteId);
+          if (removeIndex > -1) {
+            indexStore.splice(removeIndex, 1);
+          }
+
+          removeIndex = _.findIndex(jobInfomations, {'noteId': changedItem.noteId});
+          if (removeIndex) {
+            jobInfomations.splice(removeIndex, 1);
+          }
+
+        } else {
+          // change value for item.
+          changeOriginTarget.isRunningJob = changedItem.isRunningJob;
+          changeOriginTarget.noteName = changedItem.noteName;
+          changeOriginTarget.noteType = changedItem.noteType;
+          changeOriginTarget.interpreter = changedItem.interpreter;
+          changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun;
+          changeOriginTarget.paragraphs = changedItem.paragraphs;
+        }
+      }
+    });
+    $scope.doFiltering(jobInfomations, $scope.filterConfig);
+  });
+}
+

@@ -23,16 +23,17 @@ limitations under the License.
 
 <div id="toc"></div>
 
-## Overview 
+## Overview
 [Apache Spark](http://spark.apache.org/) has supported three cluster manager types([Standalone](http://spark.apache.org/docs/latest/spark-standalone.html), [Apache Mesos](http://spark.apache.org/docs/latest/running-on-mesos.html) and [Hadoop YARN](http://spark.apache.org/docs/latest/running-on-yarn.html)) so far.
 This document will guide you how you can build and configure the environment on 3 types of Spark cluster manager with Apache Zeppelin using [Docker](https://www.docker.com/) scripts.
 So [install docker](https://docs.docker.com/engine/installation/) on the machine first.
 
 ## Spark standalone mode
 [Spark standalone](http://spark.apache.org/docs/latest/spark-standalone.html) is a simple cluster manager included with Spark that makes it easy to set up a cluster.
-You can simply set up Spark standalone environment with below steps. 
+You can simply set up Spark standalone environment with below steps.
 
 > **Note :** Since Apache Zeppelin and Spark use same `8080` port for their web UI, you might need to change `zeppelin.server.port` in `conf/zeppelin-site.xml`.
+
 
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
@@ -52,8 +53,10 @@ docker run -it \
 -p 8081:8081 \
 -h sparkmaster \
 --name spark_standalone \
-spark_standalone bash; 
+spark_standalone bash;
 ```
+
+Note that `sparkmaster` hostname used here to run docker container should be defined in your `/etc/hosts`.
 
 ### 3. Configure Spark interpreter in Zeppelin
 Set Spark master as `spark://<hostname>:7077` in Zeppelin **Interpreters** setting page.
@@ -81,7 +84,7 @@ You can simply set up [Spark on YARN](http://spark.apache.org/docs/latest/runnin
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
 
 ```
-cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_yarn
+cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_yarn_cluster
 docker build -t "spark_yarn" .
 ```
 
@@ -110,6 +113,8 @@ docker run -it \
  -h sparkmaster \
  spark_yarn bash;
 ```
+
+Note that `sparkmaster` hostname used here to run docker container should be defined in your `/etc/hosts`.
 
 ### 3. Verify running Spark on YARN.
 
@@ -172,6 +177,8 @@ docker run --net=host -it \
 spark_mesos bash;
 ```
 
+Note that `sparkmaster` hostname used here to run docker container should be defined in your `/etc/hosts`.
+
 ### 3. Verify running Spark on Mesos.
 
 You can simply verify the processes of Spark and Mesos are running well in Docker with below command.
@@ -202,3 +209,29 @@ After running a single paragraph with Spark interpreter in Zeppelin, browse `htt
 
 <img src="../assets/themes/zeppelin/img/docs-img/mesos_frameworks.png" />
 
+### Troubleshooting for Spark on Mesos
+
+- If you have problem with hostname, use `--add-host` option when executing `dockerrun`
+
+```
+## use `--add-host=moby:127.0.0.1` option to resolve
+## since docker container couldn't resolve `moby`
+
+: java.net.UnknownHostException: moby: moby: Name or service not known
+        at java.net.InetAddress.getLocalHost(InetAddress.java:1496)
+        at org.apache.spark.util.Utils$.findLocalInetAddress(Utils.scala:789)
+        at org.apache.spark.util.Utils$.org$apache$spark$util$Utils$$localIpAddress$lzycompute(Utils.scala:782)
+        at org.apache.spark.util.Utils$.org$apache$spark$util$Utils$$localIpAddress(Utils.scala:782)
+```
+
+- If you have problem with mesos master, try `mesos://127.0.0.1` instead of `mesos://127.0.1.1`
+
+```
+I0103 20:17:22.329269   340 sched.cpp:330] New master detected at master@127.0.1.1:5050
+I0103 20:17:22.330749   340 sched.cpp:341] No credentials provided. Attempting to register without authentication
+W0103 20:17:22.333531   340 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:24.040252   339 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:26.150250   339 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:26.737604   339 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+W0103 20:17:35.241714   336 sched.cpp:736] Ignoring framework registered message because it was sentfrom 'master@127.0.0.1:5050' instead of the leading master 'master@127.0.1.1:5050'
+```

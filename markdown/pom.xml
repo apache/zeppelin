@@ -22,15 +22,21 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-markdown</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Markdown interpreter</name>
+
+  <properties>
+    <commons.lang3.version>3.4</commons.lang3.version>
+    <markdown4j.version>2.2-cj-1.0</markdown4j.version>
+    <pegdown.version>1.6.0</pegdown.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -41,12 +47,6 @@
     </dependency> 
 
     <dependency>
-      <groupId>org.commonjava.googlecode.markdown4j</groupId>
-      <artifactId>markdown4j</artifactId>
-      <version>2.2-cj-1.0</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -55,7 +55,25 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
-    
+
+    <dependency>
+      <groupId>org.commonjava.googlecode.markdown4j</groupId>
+      <artifactId>markdown4j</artifactId>
+      <version>${markdown4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.pegdown</groupId>
+      <artifactId>pegdown</artifactId>
+      <version>${pegdown.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons.lang3.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -67,8 +85,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>            
-        <executions> 
+        <executions>
           <execution> 
             <id>enforce</id> 
             <phase>none</phase> 
@@ -78,7 +95,6 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

@@ -33,6 +33,7 @@ public class SleepingJob extends Job{
 	private int count;
 
 	static Logger LOGGER = LoggerFactory.getLogger(SleepingJob.class);
+	private Object results;
 
 
 	public SleepingJob(String jobName, JobListener listener, int time){
@@ -62,6 +63,16 @@ public class SleepingJob extends Job{
 	}
 
 	@Override
+	public void setResult(Object results) {
+		this.results = results;
+	}
+
+	@Override
+	public Object getReturn() {
+		return results;
+	}
+
+	@Override
   public int progress() {
 		long p = (System.currentTimeMillis() - start)*100 / time;
 		if(p<0) p = 0;
@@ -71,7 +82,7 @@ public class SleepingJob extends Job{
 
 	@Override
   public Map<String, Object> info() {
-		Map<String, Object> i = new HashMap<String, Object>();
+		Map<String, Object> i = new HashMap<>();
 		i.put("LoopCount", Integer.toString(count));
 		return i;
 	}

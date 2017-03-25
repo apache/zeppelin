@@ -1,0 +1,17 @@
+{
+  "name": "flowchart-spell",
+  "description" : "Draw flowchart using http://flowchart.js.org (example)",
+  "version": "1.0.0",
+  "main": "index",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "raphael": "2.2.0",
+    "flowchart.js": "^1.6.5",
+    "zeppelin-spell": "*"
+  },
+  "spell": {
+    "magic": "%flowchart",
+    "usage": "%flowchart <TEXT>"
+  }
+}

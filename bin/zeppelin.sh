@@ -65,6 +65,7 @@ fi
 
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
+addJarInDir "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
@@ -80,11 +81,6 @@ fi
 if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
   echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
   $(mkdir -p "${ZEPPELIN_PID_DIR}")
-fi
-
-if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-  echo "Pid dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
-  $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"

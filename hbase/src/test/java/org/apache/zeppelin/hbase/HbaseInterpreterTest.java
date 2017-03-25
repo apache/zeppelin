@@ -55,21 +55,21 @@ public class HbaseInterpreterTest {
   public void putsTest() {
     InterpreterResult result = hbaseInterpreter.interpret("puts \"Hello World\"", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(result.type(), InterpreterResult.Type.TEXT);
-    assertEquals("Hello World\n", result.message());
+    assertEquals(result.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals("Hello World\n", result.message().get(0).getData());
   }
   
   public void putsLoadPath() {
     InterpreterResult result = hbaseInterpreter.interpret("require 'two_power'; puts twoToThePowerOf(4)", null);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(result.type(), InterpreterResult.Type.TEXT);
-    assertEquals("16\n", result.message());
+    assertEquals(result.message().get(0).getType(), InterpreterResult.Type.TEXT);
+    assertEquals("16\n", result.message().get(0).getData());
   }
 
   @Test
   public void testException() {
     InterpreterResult result = hbaseInterpreter.interpret("plot practical joke", null);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertEquals("(NameError) undefined local variable or method `joke' for main:Object", result.message());
+    assertEquals("(NameError) undefined local variable or method `joke' for main:Object", result.message().get(0).getData());
   }
 }

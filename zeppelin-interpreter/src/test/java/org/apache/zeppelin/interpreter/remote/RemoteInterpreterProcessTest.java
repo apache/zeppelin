@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.Constants;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.junit.Test;
@@ -43,11 +44,11 @@ public class RemoteInterpreterProcessTest {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null, null);
+        10 * 1000, null, null,"fakeName");
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
-    assertEquals(2, rip.reference(intpGroup));
+    assertEquals(1, rip.reference(intpGroup, "anonymous", false));
+    assertEquals(2, rip.reference(intpGroup, "anonymous", false));
     assertEquals(true, rip.isRunning());
     assertEquals(1, rip.dereference());
     assertEquals(true, rip.isRunning());
@@ -60,8 +61,8 @@ public class RemoteInterpreterProcessTest {
     InterpreterGroup intpGroup = new InterpreterGroup();
     RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        mock(RemoteInterpreterEventPoller.class), 10 * 1000);
-    rip.reference(intpGroup);
+        mock(RemoteInterpreterEventPoller.class), 10 * 1000, "fakeName");
+    rip.reference(intpGroup, "anonymous", false);
     assertEquals(0, rip.getNumActiveClient());
     assertEquals(0, rip.getNumIdleClient());
 
@@ -103,10 +104,28 @@ public class RemoteInterpreterProcessTest {
         "fakeRepo",
         new HashMap<String, String>(),
         mock(RemoteInterpreterEventPoller.class)
-        , 10 * 1000);
+        , 10 * 1000,
+        "fakeName");
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
+    assertEquals(1, rip.reference(intpGroup, "anonymous", false));
     assertEquals(true, rip.isRunning());
+  }
+
+
+  @Test
+  public void testPropagateError() throws TException, InterruptedException {
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
+        "echo hello_world", "nonexists", "fakeRepo", new HashMap<String, String>(),
+        10 * 1000, null, null, "fakeName");
+    assertFalse(rip.isRunning());
+    assertEquals(0, rip.referenceCount());
+    try {
+      assertEquals(1, rip.reference(intpGroup, "anonymous", false));
+    } catch (InterpreterException e) {
+      e.getMessage().contains("hello_world");
+    }
+    assertEquals(0, rip.referenceCount());
   }
 }

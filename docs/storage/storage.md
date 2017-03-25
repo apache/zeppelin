@@ -28,10 +28,11 @@ limitations under the License.
 Apache Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
 There are few notebook storage systems available for a use out of the box:
 
-  * (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
-  * use local file system and version it using local Git repository - `GitNotebookRepo`
+  * (default) use local file system and version it using local Git repository - `GitNotebookRepo`
+  * all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
+  * storage using MongoDB - `MongoNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -100,13 +101,13 @@ Uncomment the next property for use S3NotebookRepo class:
 </property>
 ```
 
-Comment out the next property to disable local notebook storage (the default):
+Comment out the next property to disable local git notebook storage (the default):
 
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 ```
 
@@ -130,6 +131,23 @@ Or using the following setting in **zeppelin-site.xml**:
 </property>
 ```
 
+In order to set custom KMS key region, set the following environment variable in the file **zeppelin-env.sh**:
+
+```
+export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION = kms-key-region
+```
+
+Or using the following setting in **zeppelin-site.xml**:
+
+```
+<property>
+  <name>zeppelin.notebook.s3.kmsKeyRegion</name>
+  <value>target-region</value>
+  <description>AWS KMS key region in your AWS account</description>
+</property>
+```
+Format of `target-region` is described in more details [here](http://docs.aws.amazon.com/general/latest/gr/rande.html#kms_region) in second `Region` column (e.g. `us-east-1`).
+
 #### Custom Encryption Materials Provider class
 
 You may use a custom [``EncryptionMaterialsProvider``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html) class as long as it is available in the classpath and able to initialize itself from system properties or another mechanism.  To use this, set the following environment variable in the file **zeppelin-env.sh**:
@@ -148,8 +166,26 @@ Or using the following setting in **zeppelin-site.xml**:
   <description>Custom encryption materials provider used to encrypt notebook data in S3</description>
 ```   
 
+#### Enable server-side encryption
+
+To request server-side encryption of notebooks, set the following environment variable in the file **zeppelin-env.sh**:
+
+```
+export ZEPPELIN_NOTEBOOK_S3_SSE = true
+```
+
+Or using the following setting in **zeppelin-site.xml**:
+
+```
+<property>
+  <name>zeppelin.notebook.s3.sse</name>
+  <value>true</value>
+  <description>Server-side encryption enabled for notebooks</description>
+</property>
+```
+
 </br>
-## Notebook Storage  in Azure <a name="Azure"></a>
+## Notebook Storage in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
 
@@ -174,8 +210,8 @@ Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-si
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
 </property>
 ```
 
@@ -189,12 +225,12 @@ and commenting out:
 </property>
 ```
 
-In case you want to use simultaneously your local storage with Azure storage use the following property instead:
+In case you want to use simultaneously your local git storage with Azure storage use the following property instead:
 
  ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
 ```
@@ -219,7 +255,7 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 <!--
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
   <description>two notebook persistence layers (local + ZeppelinHub)</description>
 </property>
 -->
@@ -228,7 +264,7 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 or set the environment variable in the file **zeppelin-env.sh**:
 
 ```
-export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.VFSNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
+export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
 ```
 
 Secondly, you need to set the environment variables in the file **zeppelin-env.sh**:
@@ -239,3 +275,72 @@ export ZEPPELINHUB_API_ADDRESS = address of ZeppelinHub service (e.g. https://ww
 ```
 
 You can get more information on generating `token` and using authentication on the corresponding [help page](http://help.zeppelinhub.com/zeppelin_integration/#add-a-new-zeppelin-instance-and-generate-a-token).
+
+
+## Notebook Storage in MongoDB <a name="MongoDB"></a>
+Using `MongoNotebookRepo`, you can store your notebook in [MongoDB](https://www.mongodb.com/).
+
+### Why MongoDB?
+* **[High Availability (HA)](https://en.wikipedia.org/wiki/High_availability)** by a [replica set](https://docs.mongodb.com/manual/reference/glossary/#term-replica-set)
+* Seperation of storage from server
+
+### How to use
+You can use MongoDB as notebook storage by editting `zeppelin-env.sh` or `zeppelin-site.xml`.
+
+#### (Method 1) by editting `zeppelin-env.sh`
+Add a line below to `$ZEPPELIN_HOME/conf/zeppelin-env.sh`:
+
+```sh
+export ZEPPELIN_NOTEBOOK_STORAGE=org.apache.zeppelin.notebook.repo.MongoNotebookRepo
+```
+
+> *NOTE:* The default MongoDB connection URI is `mongodb://localhost`
+
+#### (Method 2) by editting `zeppelin-site.xml`
+Or, **uncomment** lines below at `$ZEPPELIN_HOME/conf/zeppelin-site.xml`:
+
+```xml
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.MongoNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+And **comment** lines below:
+
+```xml
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
+</property>
+```
+
+### Configurable Options
+
+You can configure options below in `zeppelin-env.sh`.
+
+* `ZEPPELIN_NOTEBOOK_MONGO_URI` [MongoDB connection URI](https://docs.mongodb.com/manual/reference/connection-string/) used to connect to a MongoDB database server
+* `ZEPPELIN_NOTEBOOK_MONGO_DATABASE` Database name
+* `ZEPPELIN_NOTEBOOK_MONGO_COLLECTION` Collection name
+* `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` If `true`, import local notes (refer to description below for details)
+
+Or, you can configure them in `zeppelin-site.xml`. Corresponding option names as follows:
+
+* `zeppelin.notebook.mongo.uri`
+* `zeppelin.notebook.mongo.database`
+* `zeppelin.notebook.mongo.collection`
+* `zeppelin.notebook.mongo.autoimport`
+
+#### Example configurations in `zeppelin-env.sh`
+
+```sh
+export ZEPPELIN_NOTEBOOK_MONGO_URI=mongodb://db1.example.com:27017
+export ZEPPELIN_NOTEBOOK_MONGO_DATABASE=myfancy
+export ZEPPELIN_NOTEBOOK_MONGO_COLLECTION=notebook
+export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT=true
+```
+
+#### Import your local notes automatically
+By setting `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` as `true` (default `false`), you can import your local notes automatically when Zeppelin daemon starts up. This feature is for easy migration from local file system storage to MongoDB storage. A note with ID already existing in the collection will not be imported.

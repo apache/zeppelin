@@ -23,18 +23,12 @@ Apache Zeppelin is distributed as a single gzip archive with the following struc
 Zeppelin
  ├── bin
  │   ├── zeppelin.sh
- │   └── seppelin-deamon.sh
+ │   └── zeppelin-daemon.sh
  ├── conf
  ├── interpreter
  ├── lib
  ├── licenses
- ├── zan-repo
- │    ├── txt.wordcount
- │    ├── vis.bubble
- │    ├── vis.gchart
- │    ├── ml.something
- │    └── ...
- ├── zeppelin-server-<verion>.jar
+ ├── notebook
  └── zeppelin-web-<verion>.war
  
 ```
@@ -42,4 +36,4 @@ Zeppelin
 We use `maven-assembly-plugin` to build it, see `zeppelin-distribution/src/assemble/distribution.xml ` for details.
 
 >**IMPORTANT:** `_/lib_` subdirectory contains all transitive dependencies of the `zeppelin-distribution` module,
-automatically resolved by maven, except for explicitly excluded `_server_` and `_web_`  Zeppelin sub-modules.
+automatically resolved by maven, except for explicitly excluded `_web_` Zeppelin sub-modules.

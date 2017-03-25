@@ -102,7 +102,7 @@ public class ApplicationLoader {
    */
   public Application load(HeliumPackage packageInfo, ApplicationContext context)
       throws Exception {
-    if (packageInfo.getType() != HeliumPackage.Type.APPLICATION) {
+    if (packageInfo.getType() != HeliumType.APPLICATION) {
       throw new ApplicationException(
           "Can't instantiate " + packageInfo.getType() + " package using ApplicationLoader");
     }
@@ -200,7 +200,7 @@ public class ApplicationLoader {
     }
 
     // Create Application classloader
-    List<URL> urlList = new LinkedList<URL>();
+    List<URL> urlList = new LinkedList<>();
 
     // load artifact
     if (packageInfo.getArtifact() != null) {

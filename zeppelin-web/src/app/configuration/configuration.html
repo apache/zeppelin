@@ -40,11 +40,11 @@ limitations under the License.
             <th>value</th>
           </tr>
           </thead>
-          <tr ng-repeat="(key, value) in configurations" >
+          <tr ng-repeat="key in configurations | sortByKey" >
             <td>{{key}}</td>
             <td>
               <div class="hiding_overflow">
-                {{value}}
+                {{configurations[key]}}
               </div>
             </td>
           </tr>

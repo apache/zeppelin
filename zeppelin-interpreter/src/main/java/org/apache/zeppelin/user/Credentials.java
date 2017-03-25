@@ -24,9 +24,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * Class defining credentials for data source authorization
@@ -131,6 +138,9 @@ public class Credentials {
     try {
       if (!credentialsFile.exists()) {
         credentialsFile.createNewFile();
+
+        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+        Files.setPosixFilePermissions(credentialsFile.toPath(), permissions);
       }
 
       FileOutputStream fos = new FileOutputStream(credentialsFile, false);

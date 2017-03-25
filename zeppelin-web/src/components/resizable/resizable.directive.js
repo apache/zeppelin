@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').directive('resizable', function() {
+angular.module('zeppelinWebApp').directive('resizable', resizable);
 
+function resizable() {
   var resizableConfig = {
     autoHide: true,
     handles: 'se',
@@ -66,4 +66,5 @@ angular.module('zeppelinWebApp').directive('resizable', function() {
       });
     }
   };
-});
+}
+

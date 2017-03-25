@@ -12,21 +12,24 @@
  * limitations under the License.
  */
 
-'use strict';
+angular.module('zeppelinWebApp').controller('NavCtrl', NavCtrl);
 
-angular.module('zeppelinWebApp')
-.controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
-    $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv, searchService) {
+function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
+                 noteListDataFactory, baseUrlSrv, websocketMsgSrv,
+                 arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
+  'ngInject';
 
   var vm = this;
   vm.arrayOrderingSrv = arrayOrderingSrv;
   vm.connected = websocketMsgSrv.isConnected();
   vm.isActive = isActive;
   vm.logout = logout;
-  vm.notes = notebookListDataFactory;
+  vm.notes = noteListDataFactory;
   vm.search = search;
   vm.searchForm = searchService;
   vm.showLoginWindow = showLoginWindow;
+  vm.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
+  vm.isFilterNote = isFilterNote;
 
   $scope.query = {q: ''};
 
@@ -43,6 +46,7 @@ angular.module('zeppelinWebApp')
   }
 
   function initController() {
+    $scope.isDrawNavbarNoteList = false;
     angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
     angular.element(document).click(function() {
@@ -53,12 +57,32 @@ angular.module('zeppelinWebApp')
     loadNotes();
   }
 
+  function isFilterNote(note) {
+    if (!$scope.query.q) {
+      return true;
+    }
+
+    var noteName = note.name;
+    if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
+      return true;
+    }
+    return false;
+  }
+
   function isActive(noteId) {
     return ($routeParams.noteId === noteId);
   }
 
+  function listConfigurations() {
+    websocketMsgSrv.listConfigurations();
+  }
+
   function loadNotes() {
-    websocketMsgSrv.getNotebookList();
+    websocketMsgSrv.getNoteList();
+  }
+
+  function getHomeNote(){
+    websocketMsgSrv.getHomeNote();
   }
 
   function logout() {
@@ -94,11 +118,12 @@ angular.module('zeppelinWebApp')
   }
 
   /*
-  ** $scope.$on functions below
-  */
+   ** $scope.$on functions below
+   */
 
   $scope.$on('setNoteMenu', function(event, notes) {
-    notebookListDataFactory.setNotes(notes);
+    noteListDataFactory.setNotes(notes);
+    initNotebookListEventListener();
   });
 
   $scope.$on('setConnectedStatus', function(event, param) {
@@ -106,7 +131,23 @@ angular.module('zeppelinWebApp')
   });
 
   $scope.$on('loginSuccess', function(event, param) {
+    listConfigurations();
     loadNotes();
+    getHomeNote();
   });
 
-});
+  /*
+   ** Performance optimization for Browser Render.
+   */
+  function initNotebookListEventListener() {
+    angular.element(document).ready(function() {
+      angular.element('.notebook-list-dropdown').on('show.bs.dropdown', function() {
+        $scope.isDrawNavbarNoteList = true;
+      });
+
+      angular.element('.notebook-list-dropdown').on('hide.bs.dropdown', function() {
+        $scope.isDrawNavbarNoteList = false;
+      });
+    });
+  }
+}

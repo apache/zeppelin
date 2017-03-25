@@ -34,7 +34,7 @@ Interpreters in the same InterpreterGroup can reference each other. For example,
 [InterpreterSetting](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/interpreter/InterpreterSetting.java) is configuration of a given [InterpreterGroup](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/InterpreterGroup.java) and a unit of start/stop interpreter.
 All Interpreters in the same InterpreterSetting are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via **[Thrift](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/thrift/RemoteInterpreterService.thrift)**.
 
-In 'Separate Interpreter(scoped / isolated) for each note' mode which you can see at the **Interpreter Setting** menu when you create a new interpreter, new interpreter instance will be created per notebook. But it still runs on the same JVM while they're in the same InterpreterSettings.
+In 'Separate Interpreter(scoped / isolated) for each note' mode which you can see at the **Interpreter Setting** menu when you create a new interpreter, new interpreter instance will be created per note. But it still runs on the same JVM while they're in the same InterpreterSettings.
 
 
 ## Make your own Interpreter
@@ -69,6 +69,10 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
         "defaultValue": "property2DefaultValue",
         "description": "Property 2 description"
       }, ...
+    },
+    "editor": {
+      "language": "your-syntax-highlight-language",
+      "editOnDblClick": false
     }
   },
   {
@@ -81,8 +85,8 @@ Finally, Zeppelin uses static initialization with the following:
 
 ```
 static {
-    Interpreter.register("MyInterpreterName", MyClassName.class.getName());
-  }
+  Interpreter.register("MyInterpreterName", MyClassName.class.getName());
+}
 ```
 
 **Static initialization is deprecated and will be supported until 0.6.0.**
@@ -95,17 +99,33 @@ The name of the interpreter is what you later write to identify a paragraph whic
 some interpreter specific code...
 ```
 
-## Programming Languages for Interpreter
-If the interpreter uses a specific programming language ( like Scala, Python, SQL ), it is generally recommended to add a syntax highlighting supported for that to the notebook paragraph editor.  
+## Editor setting for Interpreter
+You can add `editor` object to `interpreter-setting.json` file to specify paragraph editor settings.
 
-To check out the list of languages supported, see the `mode-*.js` files under `zeppelin-web/bower_components/ace-builds/src-noconflict` or from [github.com/ajaxorg/ace-builds](https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict).  
+### Language
+If the interpreter uses a specific programming language (like Scala, Python, SQL), it is generally recommended to add a syntax highlighting supported for that to the note paragraph editor.
+
+To check out the list of languages supported, see the `mode-*.js` files under `zeppelin-web/bower_components/ace-builds/src-noconflict` or from [github.com/ajaxorg/ace-builds](https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict).
 
 If you want to add a new set of syntax highlighting,  
 
-1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> ( when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically. ).  
-2. Add to the list of `editorMode` in <code>[zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js)</code> - it follows the pattern 'ace/mode/x' where x is the name.  
-3. Add to the code that checks for `%` prefix and calls `session.setMode(editorMode.x)` in `setParagraphMode` located in <code>[zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js)</code>.  
+1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> (when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically).
+2. Add `language` field to `editor` object. Note that if you don't specify language field, your interpreter will use plain text mode for syntax highlighting. Let's say you want to set your language to `java`, then add:
 
+  ```
+  "editor": {
+      "language": "java"
+  }
+  ```
+
+### Edit on double click
+If your interpreter uses mark-up language such as markdown or HTML, set `editOnDblClick` to `true` so that text editor opens on pargraph double click and closes on paragraph run. Otherwise set it to `false`.
+
+```
+"editor": {
+  "editOnDblClick": false
+}
+```
 ## Install your interpreter binary
 
 Once you have built your interpreter, you can place it under the interpreter directory with all its dependencies.
@@ -142,7 +162,7 @@ Now you are done and ready to use your interpreter.
 ## Use your interpreter
 
 ### 0.5.0
-Inside of a notebook, `%[INTERPRETER_NAME]` directive will call your interpreter.
+Inside of a note, `%[INTERPRETER_NAME]` directive will call your interpreter.
 Note that the first interpreter configuration in zeppelin.interpreters will be the default one.
 
 For example,
@@ -155,7 +175,7 @@ println(a)
 ```
 
 ### 0.6.0 and later
-Inside of a notebook, `%[INTERPRETER_GROUP].[INTERPRETER_NAME]` directive will call your interpreter.
+Inside of a note, `%[INTERPRETER_GROUP].[INTERPRETER_NAME]` directive will call your interpreter.
 
 You can omit either [INTERPRETER\_GROUP] or [INTERPRETER\_NAME]. If you omit [INTERPRETER\_NAME], then first available interpreter will be selected in the [INTERPRETER\_GROUP].
 Likewise, if you skip [INTERPRETER\_GROUP], then [INTERPRETER\_NAME] will be chosen from default interpreter group.
@@ -208,7 +228,7 @@ Checkout some interpreters released with Zeppelin by default.
 We welcome contribution to a new interpreter. Please follow these few steps:
 
  - First, check out the general contribution guide [here](https://zeppelin.apache.org/contribution/contributions.html).
- - Follow the steps in [Make your own Interpreter](#make-your-own-interpreter) section above.
+ - Follow the steps in [Make your own Interpreter](#make-your-own-interpreter) section and [Editor setting for Interpreter](#editor-setting-for-interpreter) above.
  - Add your interpreter as in the [Configure your interpreter](#configure-your-interpreter) section above; also add it to the example template [zeppelin-site.xml.template](https://github.com/apache/zeppelin/blob/master/conf/zeppelin-site.xml.template).
  - Add tests! They are run by [Travis](https://travis-ci.org/apache/zeppelin) for all changes and it is important that they are self-contained.
  - Include your interpreter as a module in [`pom.xml`](https://github.com/apache/zeppelin/blob/master/pom.xml).

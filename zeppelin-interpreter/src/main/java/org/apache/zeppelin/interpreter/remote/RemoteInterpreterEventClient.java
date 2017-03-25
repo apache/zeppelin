@@ -19,8 +19,12 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.gson.Gson;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
+import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
 import org.apache.zeppelin.resource.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +47,27 @@ import java.util.Map;
  */
 public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEvent.class);
-  private final List<RemoteInterpreterEvent> eventQueue = new LinkedList<RemoteInterpreterEvent>();
-  private final List<ResourceSet> getAllResourceResponse = new LinkedList<ResourceSet>();
-  private final Map<ResourceId, Object> getResourceResponse = new HashMap<ResourceId, Object>();
+  private final List<RemoteInterpreterEvent> eventQueue = new LinkedList<>();
+  private final List<ResourceSet> getAllResourceResponse = new LinkedList<>();
+  private final Map<ResourceId, Object> getResourceResponse = new HashMap<>();
+  private final Map<InvokeResourceMethodEventMessage, Object> getInvokeResponse = new HashMap<>();
   private final Gson gson = new Gson();
+
+  /**
+   * Run paragraph
+   * @param runner
+   */
+  public void getZeppelinServerNoteRunner(
+      String eventOwnerKey, ZeppelinServerResourceParagraphRunner runner) {
+    RemoteZeppelinServerResource eventBody = new RemoteZeppelinServerResource();
+    eventBody.setResourceType(RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS);
+    eventBody.setOwnerKey(eventOwnerKey);
+    eventBody.setData(runner);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.REMOTE_ZEPPELIN_SERVER_RESOURCE,
+        gson.toJson(eventBody)));
+  }
 
   /**
    * Run paragraph
@@ -79,7 +100,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    * notify angularObject removal
    */
   public void angularObjectRemove(String name, String noteId, String paragraphId) {
-    Map<String, String> removeObject = new HashMap<String, String>();
+    Map<String, String> removeObject = new HashMap<>();
     removeObject.put("name", name);
     removeObject.put("noteId", noteId);
     removeObject.put("paragraphId", paragraphId);
@@ -145,6 +166,112 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   /**
+   * Invoke method and save result in resourcePool as another resource
+   * @param resourceId
+   * @param methodName
+   * @param paramTypes
+   * @param params
+   * @return
+   */
+  @Override
+  public Object invokeMethod(
+      ResourceId resourceId,
+      String methodName,
+      Class[] paramTypes,
+      Object[] params) {
+    logger.debug("Request Invoke method {} of Resource {}", methodName, resourceId.getName());
+
+    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
+        resourceId,
+        methodName,
+        paramTypes,
+        params,
+        null);
+
+    synchronized (getInvokeResponse) {
+      // wait for previous response consumed
+      while (getInvokeResponse.containsKey(invokeMethod)) {
+        try {
+          getInvokeResponse.wait();
+        } catch (InterruptedException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      // send request
+      Gson gson = new Gson();
+
+      sendEvent(new RemoteInterpreterEvent(
+          RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
+          gson.toJson(invokeMethod)));
+      // wait for response
+      while (!getInvokeResponse.containsKey(invokeMethod)) {
+        try {
+          getInvokeResponse.wait();
+        } catch (InterruptedException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      Object o = getInvokeResponse.remove(invokeMethod);
+      getInvokeResponse.notifyAll();
+      return o;
+    }
+  }
+
+  /**
+   * Invoke method and save result in resourcePool as another resource
+   * @param resourceId
+   * @param methodName
+   * @param paramTypes
+   * @param params
+   * @param returnResourceName
+   * @return
+   */
+  @Override
+  public Resource invokeMethod(
+      ResourceId resourceId,
+      String methodName,
+      Class[] paramTypes,
+      Object[] params,
+      String returnResourceName) {
+    logger.debug("Request Invoke method {} of Resource {}", methodName, resourceId.getName());
+
+    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
+        resourceId,
+        methodName,
+        paramTypes,
+        params,
+        returnResourceName);
+
+    synchronized (getInvokeResponse) {
+      // wait for previous response consumed
+      while (getInvokeResponse.containsKey(invokeMethod)) {
+        try {
+          getInvokeResponse.wait();
+        } catch (InterruptedException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      // send request
+      Gson gson = new Gson();
+
+      sendEvent(new RemoteInterpreterEvent(
+          RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
+          gson.toJson(invokeMethod)));
+      // wait for response
+      while (!getInvokeResponse.containsKey(invokeMethod)) {
+        try {
+          getInvokeResponse.wait();
+        } catch (InterruptedException e) {
+          logger.warn(e.getMessage(), e);
+        }
+      }
+      Resource o = (Resource) getInvokeResponse.remove(invokeMethod);
+      getInvokeResponse.notifyAll();
+      return o;
+    }
+  }
+
+  /**
    * Supposed to call from RemoteInterpreterEventPoller
    */
   public void putResponseGetAllResources(List<String> resources) {
@@ -191,6 +318,41 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
 
   /**
    * Supposed to call from RemoteInterpreterEventPoller
+   * @param invokeMessage json serialized InvokeMessage
+   * @param object java serialized of the object
+   */
+  public void putResponseInvokeMethod(
+      InvokeResourceMethodEventMessage invokeMessage, ByteBuffer object) {
+    Object o = null;
+    try {
+      o = Resource.deserializeObject(object);
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+    } catch (ClassNotFoundException e) {
+      logger.error(e.getMessage(), e);
+    }
+
+    synchronized (getInvokeResponse) {
+      getInvokeResponse.put(invokeMessage, o);
+      getInvokeResponse.notifyAll();
+    }
+  }
+
+  /**
+   * Supposed to call from RemoteInterpreterEventPoller
+   * @param invokeMessage invoke message
+   * @param resource remote resource
+   */
+  public void putResponseInvokeMethod(
+      InvokeResourceMethodEventMessage invokeMessage, Resource resource) {
+    synchronized (getInvokeResponse) {
+      getInvokeResponse.put(invokeMessage, resource);
+      getInvokeResponse.notifyAll();
+    }
+  }
+
+  /**
+   * Supposed to call from RemoteInterpreterEventPoller
    * @return next available event
    */
   public RemoteInterpreterEvent pollEvent() {
@@ -212,10 +374,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
-  public void onInterpreterOutputAppend(String noteId, String paragraphId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+  public void onInterpreterOutputAppend(
+      String noteId, String paragraphId, int outputIndex, String output) {
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", Integer.toString(outputIndex));
     appendOutput.put("data", output);
 
     sendEvent(new RemoteInterpreterEvent(
@@ -223,10 +387,14 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         gson.toJson(appendOutput)));
   }
 
-  public void onInterpreterOutputUpdate(String noteId, String paragraphId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+  public void onInterpreterOutputUpdate(
+      String noteId, String paragraphId, int outputIndex,
+      InterpreterResult.Type type, String output) {
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", Integer.toString(outputIndex));
+    appendOutput.put("type", type.name());
     appendOutput.put("data", output);
 
     sendEvent(new RemoteInterpreterEvent(
@@ -234,6 +402,17 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         gson.toJson(appendOutput)));
   }
 
+  public void onInterpreterOutputUpdateAll(
+      String noteId, String paragraphId, List<InterpreterResultMessage> messages) {
+    Map<String, Object> appendOutput = new HashMap<>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("messages", messages);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_UPDATE_ALL,
+        gson.toJson(appendOutput)));
+  }
 
   private void sendEvent(RemoteInterpreterEvent event) {
     synchronized (eventQueue) {
@@ -242,10 +421,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     }
   }
 
-  public void onAppOutputAppend(String noteId, String paragraphId, String appId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+  public void onAppOutputAppend(
+      String noteId, String paragraphId, int index, String appId, String output) {
+    Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", Integer.toString(index));
     appendOutput.put("appId", appId);
     appendOutput.put("data", output);
 
@@ -255,20 +436,24 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
 
-  public void onAppOutputUpdate(String noteId, String paragraphId, String appId, String output) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+  public void onAppOutputUpdate(
+      String noteId, String paragraphId, int index, String appId,
+      InterpreterResult.Type type, String output) {
+    Map<String, Object> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("index", Integer.toString(index));
     appendOutput.put("appId", appId);
+    appendOutput.put("type", type);
     appendOutput.put("data", output);
-
+    logger.info("onAppoutputUpdate = {}", output);
     sendEvent(new RemoteInterpreterEvent(
         RemoteInterpreterEventType.OUTPUT_UPDATE,
         gson.toJson(appendOutput)));
   }
 
   public void onAppStatusUpdate(String noteId, String paragraphId, String appId, String status) {
-    Map<String, String> appendOutput = new HashMap<String, String>();
+    Map<String, String> appendOutput = new HashMap<>();
     appendOutput.put("noteId", noteId);
     appendOutput.put("paragraphId", paragraphId);
     appendOutput.put("appId", appId);
@@ -279,6 +464,15 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         gson.toJson(appendOutput)));
   }
 
+  public void onMetaInfosReceived(Map<String, String> infos) {
+    sendEvent(new RemoteInterpreterEvent(RemoteInterpreterEventType.META_INFOS,
+        gson.toJson(infos)));
+  }
+
+  public void onParaInfosReceived(Map<String, String> infos) {
+    sendEvent(new RemoteInterpreterEvent(RemoteInterpreterEventType.PARA_INFOS,
+        gson.toJson(infos)));
+  }
   /**
    * Wait for eventQueue becomes empty
    */

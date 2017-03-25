@@ -23,7 +23,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -95,6 +95,7 @@
           <finalName>${project.parent.artifactId}-${project.version}</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <attach>false</attach>
+          <tarLongFileMode>posix</tarLongFileMode>
           <descriptors>
             <descriptor>src/assemble/distribution.xml</descriptor>
           </descriptors>
@@ -114,9 +115,6 @@
   <profiles>
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <property><name>scala-2.11</name></property>
-      </activation>
       <dependencyManagement>
         <dependencies>
           <dependency>
@@ -160,6 +158,9 @@
           </plugin>
           <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+              <tarLongFileMode>posix</tarLongFileMode>
+            </configuration>
             <executions>
               <execution>
                 <id>make-assembly</id>

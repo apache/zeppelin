@@ -45,10 +45,6 @@ public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
   AtomicInteger num = new AtomicInteger(0);
 
-  private String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + context.getParagraphId();
-  }
-
   private int maxResult;
 
   public SparkSqlInterpreter(Properties property) {
@@ -96,6 +92,7 @@ public class SparkSqlInterpreter extends Interpreter {
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
 
+    sparkInterpreter.populateSparkWebUrl(context);
     sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
@@ -104,7 +101,7 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
-    sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
+    sc.setJobGroup(Utils.buildJobGroupId(context), "Zeppelin", false);
     Object rdd = null;
     try {
       // method signature of sqlc.sql() is changed
@@ -133,10 +130,11 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    SQLContext sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
 
-    sc.cancelJobGroup(getJobGroup(context));
+    sc.cancelJobGroup(Utils.buildJobGroupId(context));
   }
 
   @Override

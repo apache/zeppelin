@@ -11,9 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').service('saveAsService', function(browserDetectService) {
+angular.module('zeppelinWebApp').service('saveAsService', saveAsService);
+
+function saveAsService(browserDetectService) {
+  'ngInject';
 
   this.saveAs = function(content, filename, extension) {
     var BOM = '\uFEFF';
@@ -46,4 +48,5 @@ angular.module('zeppelinWebApp').service('saveAsService', function(browserDetect
       saveAsElement.remove();
     }
   };
-});
+}
+
