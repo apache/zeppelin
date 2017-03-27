@@ -125,15 +125,15 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   var initializeDefault = function(config) {
     var forms = $scope.paragraph.settings.forms;
-    
+
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-  
+
     if (config.enabled === undefined) {
       config.enabled = true;
     }
-  
+
     for (var idx in forms) {
       if (forms[idx]) {
         if (forms[idx].options) {
@@ -472,7 +472,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     var session = editor.getSession();
     var dirtyText = session.getValue();
     $scope.dirtyText = dirtyText;
-    $scope.$broadcast('startSaveTimer');
+    //$scope.$broadcast('startSaveTimer');
+    $scope.startSaveTimer();
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
   };
 
