@@ -151,7 +151,10 @@ public class InterpreterSettingManager {
     init();
   }
 
-  private void loadFromFile() {
+  /**
+   * Remember this method doesn't keep current connections after being called
+   */
+  private void  loadFromFile() {
     if (!Files.exists(interpreterBindingPath)) {
       // nothing to read
       return;
@@ -913,9 +916,8 @@ public class InterpreterSettingManager {
 
           saveToFile();
         } catch (Exception e) {
-          throw e;
-        } finally {
           loadFromFile();
+          throw e;
         }
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
