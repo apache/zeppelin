@@ -47,7 +47,6 @@
         }
       }
       $scope.defaultVersions = defaultVersions;
-      console.log(_.size(defaultVersions));
     };
 
     var getAllPackageInfo = function() {
