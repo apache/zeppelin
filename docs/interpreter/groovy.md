@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Groovy Interpreter for Apache Zeppelin
+# Groovy Interpreter for Apache Zeppelin
 
 
 ### Samples
