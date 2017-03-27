@@ -164,7 +164,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       }
       assertTrue("paragraph title check failed", p.getTitle().startsWith("title"));
       assertTrue("paragraph text check failed", p.getText().startsWith("text"));
-      if ( p.getTitle() == "titleConfig"){
+      if ( p.getTitle().equals("titleConfig")){
         assertEquals("paragraph col width check failed", 9.0, p.getConfig().get("colWidth"));
         assertTrue("paragraph show title check failed", ((boolean) p.getConfig().get("title")));
         Map graph = ((List<Map>)p.getConfig().get("results")).get(0);
