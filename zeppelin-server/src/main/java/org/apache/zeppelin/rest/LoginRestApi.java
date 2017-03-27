@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.rest;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response.Status;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
@@ -51,6 +54,18 @@ public class LoginRestApi {
     super();
   }
 
+  @GET
+  @ZeppelinApi
+  public Response getLogin() {
+    if (SecurityUtils.isAuthenticated()) {
+      return new JsonResponse<>(Status.METHOD_NOT_ALLOWED, "", "").build();
+    }
+    Map<String, String> data = new HashMap<>();
+    data.put("principal", SecurityUtils.ANONYMOUS);
+    data.put("roles", "");
+    data.put("ticket", "anonymous");
+    return new JsonResponse<>(Response.Status.OK, "", data).build();
+  }
 
   /**
    * Post Login
