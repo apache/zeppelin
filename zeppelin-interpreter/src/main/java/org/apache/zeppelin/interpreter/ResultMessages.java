@@ -26,7 +26,7 @@ public class ResultMessages {
   public static final String EXCEEDS_LIMIT_SIZE =
       "<strong>Output is truncated</strong> to %s bytes. Learn more about <strong>%s</strong>";
   public static final String EXCEEDS_LIMIT =
-      "<div class=\"alert alert-warning\" role=\"alert\">" +
+      "<div class=\"result-alert alert-warning\" role=\"alert\">" +
           "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
           "<span aria-hidden=\"true\">&times;</span></button>" +
           "%s" +
