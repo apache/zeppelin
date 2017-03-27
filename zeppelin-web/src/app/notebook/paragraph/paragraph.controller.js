@@ -17,6 +17,12 @@ import {
   ParagraphStatus, isParagraphRunning,
 } from './paragraph.status';
 
+const ParagraphExecutor = {
+  SPELL: 'SPELL',
+  INTERPRETER: 'INTERPRETER',
+  NONE: '', /** meaning `DONE` */
+};
+
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
@@ -26,6 +32,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   'ngInject';
 
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  $rootScope.keys = Object.keys;
   $scope.parentNote = null;
   $scope.paragraph = {};
   $scope.paragraph.results = {};
@@ -121,12 +128,24 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var initializeDefault = function(config) {
+    var forms = $scope.paragraph.settings.forms;
+    
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-
+  
     if (config.enabled === undefined) {
       config.enabled = true;
+    }
+  
+    for (var idx in forms) {
+      if (forms[idx]) {
+        if (forms[idx].options) {
+          if (config.runOnSelectionChange === undefined) {
+            config.runOnSelectionChange = true;
+          }
+        }
+      }
     }
 
     if (!config.results) {
@@ -266,6 +285,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.cleanupSpellTransaction = function() {
     const status = ParagraphStatus.FINISHED;
+    $scope.paragraph.executor = ParagraphExecutor.NONE;
     $scope.paragraph.status = status;
     $scope.paragraph.results.code = status;
 
@@ -284,8 +304,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.runParagraphUsingSpell = function(paragraphText,
                                            magic, digestRequired, propagated) {
+    $scope.paragraph.status = 'RUNNING';
+    $scope.paragraph.executor = ParagraphExecutor.SPELL;
     $scope.paragraph.results = {};
-    $scope.paragraph.status = ParagraphStatus.RUNNING;
     $scope.paragraph.errorMessage = '';
     if (digestRequired) { $scope.$digest(); }
 
@@ -343,7 +364,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return;
     }
-
     const magic = SpellResult.extractMagic(paragraphText);
 
     if (heliumService.getSpellByMagic(magic)) {
@@ -375,6 +395,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.runParagraphFromButton = function(paragraphText) {
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph(paragraphText, false, false)
+  };
+
+  $scope.turnOnAutoRun = function (paragraph) {
+    paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange;
+    commitParagraph(paragraph);
   };
 
   $scope.moveUp = function(paragraph) {
@@ -537,7 +562,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     if ($scope.asIframe) {
       return 'col-md-12';
     } else {
-      return 'col-md-' + n;
+      return 'paragraph-col col-md-' + n;
     }
   };
 

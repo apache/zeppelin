@@ -41,8 +41,39 @@ Zeppelin interpreter setting is the configuration of a given interpreter on Zepp
 
 <img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
-Properties are exported as environment variable when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property.
+Properties are exported as environment variables when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property. 
 
+You may use parameters from the context of interpreter by add #{contextParameterName} in value, parameter can be of the following types: string, number, boolean.
+
+###### Context parameters
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+  </tr>
+  <tr>
+    <td>user</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>noteId</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>replName</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>className</td>
+    <td>string</td>
+  </tr>
+</table>
+
+If context parameter is null then replaced by empty string.
+
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting_with_context_parameters.png" width="800px">
+
+<br>
 Each notebook can be bound to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
 
 <img src="../assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">

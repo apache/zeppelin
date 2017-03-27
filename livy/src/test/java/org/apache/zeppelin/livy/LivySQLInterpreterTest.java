@@ -36,6 +36,7 @@ public class LivySQLInterpreterTest {
   @Before
   public void setUp() {
     Properties properties = new Properties();
+    properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "3");
     sqlInterpreter = new LivySparkSQLInterpreter(properties);

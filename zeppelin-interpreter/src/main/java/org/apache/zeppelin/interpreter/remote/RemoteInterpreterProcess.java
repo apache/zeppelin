@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
+
+  // number of sessions that are attached to this process
   private final AtomicInteger referenceCount;
 
   private GenericObjectPool<Client> clientPool;

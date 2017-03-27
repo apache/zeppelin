@@ -514,7 +514,8 @@ public class InterpreterSettingManager {
         }
       }
     } catch (NullPointerException e) {
-      logger.warn("Couldn't get interpreter editor setting");
+      // Use `debug` level because this log occurs frequently
+      logger.debug("Couldn't get interpreter editor setting");
     }
     return editor;
   }
@@ -799,19 +800,11 @@ public class InterpreterSettingManager {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
       String noteId) {
-    InterpreterOption option = interpreterSetting.getOption();
-    if (option.isProcess()) {
-      interpreterSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-    } else if (option.isSession()) {
-      InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
-      String key = getInterpreterSessionKey(user, noteId, interpreterSetting);
-      interpreterGroup.close(key);
-      synchronized (interpreterGroup) {
-        interpreterGroup.remove(key);
-        interpreterGroup.notifyAll(); // notify createInterpreterForNote()
-      }
-      logger.info("Interpreter instance {} for note {} is removed", interpreterSetting.getName(),
-          noteId);
+    //TODO(jl): This is only for hotfix. You should fix it as a beautiful way
+    InterpreterOption interpreterOption = interpreterSetting.getOption();
+    if (!(InterpreterOption.SHARED.equals(interpreterOption.perNote)
+        && InterpreterOption.SHARED.equals(interpreterOption.perUser))) {
+      interpreterSetting.closeAndRemoveInterpreterGroup(noteId, "");
     }
   }
 
@@ -934,25 +927,8 @@ public class InterpreterSettingManager {
   public void restart(String settingId, String noteId, String user) {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
-
-    // restart interpreter setting in note page
-    if (noteIdIsExist(noteId) && intpSetting.getOption().isProcess()) {
-      intpSetting.closeAndRemoveInterpreterGroupByNoteId(noteId);
-      return;
-    } else {
-      // restart interpreter setting in interpreter setting page
-      restart(settingId, user);
-    }
-
-  }
-
-  private boolean noteIdIsExist(String noteId) {
-    return noteId == null ? false : true;
-  }
-
-  public void restart(String id, String user) {
     synchronized (interpreterSettings) {
-      InterpreterSetting intpSetting = interpreterSettings.get(id);
+      intpSetting = interpreterSettings.get(settingId);
       // Check if dependency in specified path is changed
       // If it did, overwrite old dependency jar with new one
       if (intpSetting != null) {
@@ -964,17 +940,17 @@ public class InterpreterSettingManager {
         if (user.equals("anonymous")) {
           intpSetting.closeAndRemoveAllInterpreterGroups();
         } else {
-          intpSetting.closeAndRemoveInterpreterGroupByUser(user);
+          intpSetting.closeAndRemoveInterpreterGroup(noteId, user);
         }
 
       } else {
-        throw new InterpreterException("Interpreter setting id " + id + " not found");
+        throw new InterpreterException("Interpreter setting id " + settingId + " not found");
       }
     }
   }
 
   public void restart(String id) {
-    restart(id, "anonymous");
+    restart(id, "", "anonymous");
   }
 
   private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
@@ -1073,6 +1049,10 @@ public class InterpreterSettingManager {
 
       return orderedSettings;
     }
+  }
+
+  public void close(InterpreterSetting interpreterSetting) {
+    interpreterSetting.closeAndRemoveAllInterpreterGroups();
   }
 
   public void close() {

@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 

@@ -193,7 +193,8 @@ public class NotebookServer extends WebSocketServlet
       }
 
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
-      if (ticket != null && !ticket.equals(messagereceived.ticket)) {
+      if (ticket != null &&
+          (messagereceived.ticket == null || !ticket.equals(messagereceived.ticket))) {
         /* not to pollute logs, log instead of exception */
         if (StringUtils.isEmpty(messagereceived.ticket)) {
           LOG.debug("{} message: invalid ticket {} != {}", messagereceived.op,
@@ -1081,6 +1082,7 @@ public class NotebookServer extends WebSocketServlet
     if (note != null && !note.isTrash()){
       fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
+      notebook.moveNoteToTrash(note.getId());
     }
   }
 
@@ -2138,7 +2140,7 @@ public class NotebookServer extends WebSocketServlet
     @Override
     public void onProgressUpdate(Job job, int progress) {
       notebookServer.broadcast(note.getId(),
-          new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
+          new Message(OP.PROGRESS).put("id", job.getId()).put("progress", progress));
     }
 
     @Override
