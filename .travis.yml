@@ -37,7 +37,7 @@ addons:
 env:
   global:
     # Interpreters does not required by zeppelin-server integration tests
-    - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!python,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy'
+    - INTERPRETERS='!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!python,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy'
 
 matrix:
   include:
