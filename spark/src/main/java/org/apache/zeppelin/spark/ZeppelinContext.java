@@ -413,6 +413,15 @@ public class ZeppelinContext {
     String noteId = interpreterContext.getNoteId();
     run(noteId, idx, interpreterContext);
   }
+  
+  @ZeppelinApi
+  public void run(int... paragraphIndexes) {
+    ArrayList<Object> listIDs = new ArrayList<Object>();
+    for (int i = 0; i < paragraphIndexes.length; i++) {
+      listIDs.add(paragraphIndexes[i]);
+    }
+    run(listIDs);
+  }
 
   /**
    * Run paragraph at index
@@ -457,7 +466,16 @@ public class ZeppelinContext {
       }
     }
   }
-
+  
+  @ZeppelinApi
+  public void run(String... paragraphIDs) {
+    ArrayList<Object> listIDs = new ArrayList<Object>();
+    for (int i = 0; i < paragraphIDs.length; i++) {
+      listIDs.add(paragraphIDs[i]);
+    }
+    run(listIDs);
+  }
+  
   @ZeppelinApi
   public void runAll() {
     runAll(interpreterContext);
@@ -469,6 +487,88 @@ public class ZeppelinContext {
   @ZeppelinApi
   public void runAll(InterpreterContext context) {
     runNote(context.getNoteId());
+  }
+
+  @ZeppelinApi
+  public void runAllAfter() {
+    runAllAfter(interpreterContext);
+  }
+
+  /**
+   * Run all following paragraphs after the current one (excluded)
+   */
+  @ZeppelinApi
+  public void runAllAfter(InterpreterContext context) {
+    List<Object> paragraphs = listParagraphsIDAsObjects();
+    for (Iterator<Object> iterator = paragraphs.iterator(); iterator.hasNext();) {
+      if (((String) iterator.next()).equals(context.getParagraphId())) {
+        iterator.remove();
+        break;
+      }
+      iterator.remove();
+    }
+    run(paragraphs, context);
+  }
+  
+  @ZeppelinApi
+  public void runNext(int N) {
+    runNext(interpreterContext, N);
+  }
+
+  /**
+   * Run following N paragraphs after the current one (excluded)
+   */
+  @ZeppelinApi
+  public void runNext(InterpreterContext context, int N){
+    List<Object> paragraphs = listParagraphsIDAsObjects();
+    boolean found = false;
+    int counter = N;
+    for (Iterator<Object> iterator = paragraphs.iterator(); iterator.hasNext();) {
+      if (((String) iterator.next()).equals(context.getParagraphId())) {
+        iterator.remove();
+        found = true;
+      } else {
+        if (!found || !(--counter >= 0)) {
+          iterator.remove(); 
+        }
+      }
+    }
+    run(paragraphs, context);
+  }
+  
+  /**
+   * Run all paragraphs preceding the current one (excluded)
+   */
+  @ZeppelinApi
+  public void runAllBefore() {
+    runAllBefore(interpreterContext);
+  }
+  
+  @ZeppelinApi
+  public void runAllBefore(InterpreterContext context) {
+    List<Object> paragraphs = listParagraphsIDAsObjects();
+    boolean isCurrentFound = false;
+    for (Iterator<Object> iterator = paragraphs.iterator(); iterator.hasNext();) {
+      if (isCurrentFound) {
+        iterator.next();
+        iterator.remove();
+      } else if (((String) iterator.next()).equals(context.getParagraphId())) {
+        isCurrentFound = true;
+        iterator.remove();
+      }
+    }
+    run(paragraphs, context);
+  }
+
+  /**
+   * Return paragraphs String IDs as list of Objects
+   */
+  private List<Object> listParagraphsIDAsObjects() {
+    List<Object> paragraphs = new LinkedList<Object>();
+    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
+      paragraphs.add(r.getParagraphId());
+    }
+    return paragraphs;
   }
 
   @ZeppelinApi
