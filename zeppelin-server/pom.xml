@@ -280,11 +280,6 @@
       <version>${quartz.scheduler.version}</version>
     </dependency>
 
-    <!--<dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
-      <version>${jersey.servlet.version}</version>
-    </dependency>-->
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-servlet</artifactId>
