@@ -23,7 +23,7 @@ limitations under the License.
              class="helium-repo-btn"
              ng-href="https://zeppelin.apache.org/helium_packages.html"
              tooltip-placement="bottom"
-             tooltip="Learn more">
+             tooltip="What is Helium?">
             <i class="icon-question" ng-style="{color: 'black'}"></i>
           </a>
         </div>
@@ -59,7 +59,14 @@ limitations under the License.
        style="padding-bottom: 15px"
        ng-if="getPackageSize(defaultVersions) === 0">
     <div class="col-md-12 gray40-message">
-      <em>Currently there is no available package to be listed</em>
+      <em>No package installed</em>
+      <a target="_blank"
+         class="helium-repo-btn"
+         ng-href="https://zeppelin.apache.org/docs/{{zeppelinVersion}}/development/writingzeppelinvisualization.html#how-it-works"
+         tooltip-placement="top"
+         tooltip="How to use?">
+        <i class="icon-question" ng-style="{color: 'black'}"></i>
+      </a>
     </div>
   </div>
   <div class="row heliumPackageList"

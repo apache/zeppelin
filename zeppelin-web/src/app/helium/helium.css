@@ -119,3 +119,11 @@
 .heliumVisualizationOrder p {
   margin:0 0 5px 15px;
 }
+
+.gray40-message a:before {
+  content: "\00a0";
+}
+
+.gray40-message a:hover {
+  text-decoration: none;
+}
