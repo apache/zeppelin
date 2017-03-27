@@ -215,5 +215,9 @@
         $scope.showVersions[pkgName] = true;
       }
     };
+  
+    $scope.getPackageSize = function(pkgSearchResult) {
+      return _.size(pkgSearchResult)
+    };
   }
 })();
