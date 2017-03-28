@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
@@ -34,12 +36,20 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
+import org.apache.http.nio.conn.NoopIOSessionStrategy;
+import org.apache.http.nio.conn.SchemeIOSessionStrategy;
+import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.slf4j.Logger;
@@ -97,7 +107,17 @@ public class HttpProxyClient {
     PoolingNHttpClientConnectionManager cm = null;
     try {
       ioReactor = new DefaultConnectingIOReactor();
-      cm = new PoolingNHttpClientConnectionManager(ioReactor);
+      // ssl setup
+      SSLContext sslcontext = SSLContexts.createSystemDefault();
+      X509HostnameVerifier hostnameVerifier = new BrowserCompatHostnameVerifier();
+      @SuppressWarnings("deprecation")
+      Registry<SchemeIOSessionStrategy> sessionStrategyRegistry = RegistryBuilder
+          .<SchemeIOSessionStrategy>create()
+          .register("http", NoopIOSessionStrategy.INSTANCE)
+          .register("https", new SSLIOSessionStrategy(sslcontext, hostnameVerifier))
+          .build();
+
+      cm = new PoolingNHttpClientConnectionManager(ioReactor, sessionStrategyRegistry);
     } catch (IOReactorException e) {
       LOG.error("Couldn't initialize multi-threaded async client ", e);
       return null;
