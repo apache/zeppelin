@@ -28,6 +28,12 @@
         "defaultValue": "org.postgresql.Driver",
         "description": "JDBC Driver Name"
       },
+      "default.completer.schemaFilters": {
+        "envName": null,
+        "propertyName": "default.completer.schemaFilters",
+        "defaultValue": "",
+        "description": "Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)"
+      },
       "default.precode": {
         "envName": null,
         "propertyName": "zeppelin.jdbc.precode",

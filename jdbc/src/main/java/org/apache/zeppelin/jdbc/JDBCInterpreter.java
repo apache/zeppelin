@@ -100,6 +100,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
+  static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
@@ -191,10 +192,11 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
-
+  private SqlCompleter createSqlCompleter(Connection jdbcConnection, String propertyKey) {
+    String schemaFiltersKey = String.format("%s.%s", propertyKey, COMPLETER_SCHEMA_FILTERS_KEY);
+    String filters = getProperty(schemaFiltersKey);
     SqlCompleter completer = new SqlCompleter();
-    completer.initFromConnection(jdbcConnection, "");
+    completer.initFromConnection(jdbcConnection, filters);
     return completer;
   }
 
@@ -754,7 +756,7 @@ public class JDBCInterpreter extends Interpreter {
       logger.warn("SQLCompleter will created without use connection");
     }
 
-    SqlCompleter sqlCompleter = createSqlCompleter(connection);
+    SqlCompleter sqlCompleter = createSqlCompleter(connection, propertyKey);
 
     if (sqlCompleter != null) {
       sqlCompleter.complete(buf, cursor - 1, candidates);

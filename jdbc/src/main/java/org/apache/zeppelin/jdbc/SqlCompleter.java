@@ -12,6 +12,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +87,7 @@ public class SqlCompleter {
 
     Pattern whitespaceEndPatter = Pattern.compile("\\s$");
     String cursorArgument = null;
-    int argumentPosition = 0;
+    int argumentPosition;
     if (buffer.length() == 0 || whitespaceEndPatter.matcher(buffer).find()) {
       argumentPosition = buffer.length() - 1;
     } else {
@@ -114,7 +115,6 @@ public class SqlCompleter {
       candidates.set(0, interpreterCompletion);
     }
     logger.debug("complete:" + complete + ", size:" + candidates.size());
-
     return complete;
   }
 
@@ -122,24 +122,26 @@ public class SqlCompleter {
    * Return list of schema names within the database
    *
    * @param meta metadata from connection to database
-   * @param schemaFilter a schema name pattern; must match the schema name
+   * @param schemaFilters a schema name patterns; must match the schema name
    *        as it is stored in the database; "" retrieves those without a schema;
    *        <code>null</code> means that the schema name should not be used to narrow
-   *        the search; supports '%' and '_' symbols; for example "prod_v_%"
+   *        the search; supports '%'; for example "prod_v_%"
    * @return set of all schema names in the database
    */
-  private static Set<String> getSchemaNames(DatabaseMetaData meta, String schemaFilter) {
+  private static Set<String> getSchemaNames(DatabaseMetaData meta, List<String> schemaFilters) {
     Set<String> res = new HashSet<>();
     try {
       ResultSet schemas = meta.getSchemas();
       try {
         while (schemas.next()) {
           String schemaName = schemas.getString("TABLE_SCHEM");
-          if (schemaName == null)
+          if (schemaName == null) {
             schemaName = "";
-          if (schemaFilter.equals("") || schemaFilter == null || schemaName.matches(
-                  schemaFilter.replace("_", ".").replace("%", ".*?"))) {
-            res.add(schemaName);
+          }
+          for (String schemaFilter : schemaFilters) {
+            if (schemaFilter.equals("") || schemaName.matches(schemaFilter.replace("%", ".*?"))) {
+              res.add(schemaName);
+            }
           }
         }
       } finally {
@@ -155,22 +157,23 @@ public class SqlCompleter {
    * Return list of catalog names within the database
    *
    * @param meta metadata from connection to database
-   * @param schemaFilter a catalog name pattern; must match the catalog name
+   * @param schemaFilters a catalog name patterns; must match the catalog name
    *        as it is stored in the database; "" retrieves those without a catalog;
    *        <code>null</code> means that the schema name should not be used to narrow
-   *        the search; supports '%' and '_' symbols; for example "prod_v_%"
+   *        the search; supports '%'; for example "prod_v_%"
    * @return set of all catalog names in the database
    */
-  private static Set<String> getCatalogNames(DatabaseMetaData meta, String schemaFilter) {
+  private static Set<String> getCatalogNames(DatabaseMetaData meta, List<String> schemaFilters) {
     Set<String> res = new HashSet<>();
     try {
       ResultSet schemas = meta.getCatalogs();
       try {
         while (schemas.next()) {
           String schemaName = schemas.getString("TABLE_CAT");
-          if (schemaFilter.equals("") || schemaFilter == null || schemaName.matches(
-                  schemaFilter.replace("_", ".").replace("%", ".*?"))) {
-            res.add(schemaName);
+          for (String schemaFilter : schemaFilters) {
+            if (schemaFilter.equals("") || schemaName.matches(schemaFilter.replace("%", ".*?"))) {
+              res.add(schemaName);
+            }
           }
         }
       } finally {
@@ -190,7 +193,7 @@ public class SqlCompleter {
    * @param schemaFilter a schema name pattern; must match the schema name
    *        as it is stored in the database; "" retrieves those without a schema;
    *        <code>null</code> means that the schema name should not be used to narrow
-   *        the search; supports '%' and '_' symbols; for example "prod_v_%"
+   *        the search; supports '%'; for example "prod_v_%"
    * @param tables function fills this map, for every schema name adds
    *        set of table names within the schema
    * @param columns function fills this map, for every table name adds set
@@ -201,18 +204,27 @@ public class SqlCompleter {
                                               Map<String, Set<String>> tables,
                                               Map<String, Set<String>> columns)  {
     try {
-      ResultSet cols = meta.getColumns(catalogName, schemaFilter, "%", "%");
+      ResultSet cols = meta.getColumns(catalogName, StringUtils.EMPTY, "%", "%");
       try {
         while (cols.next()) {
           String schema = cols.getString("TABLE_SCHEM");
-          if (schema == null) schema = cols.getString("TABLE_CAT");
+          if (schema == null) {
+            schema = cols.getString("TABLE_CAT");
+          }
+          if (!schemaFilter.equals("") && !schema.matches(schemaFilter.replace("%", ".*?"))) {
+            continue;
+          }
           String table = cols.getString("TABLE_NAME");
           String column = cols.getString("COLUMN_NAME");
           if (!isBlank(table)) {
             String schemaTable = schema + "." + table;
-            if (!columns.containsKey(schemaTable)) columns.put(schemaTable, new HashSet<String>());
+            if (!columns.containsKey(schemaTable)) {
+              columns.put(schemaTable, new HashSet<String>());
+            }
             columns.get(schemaTable).add(column);
-            if (!tables.containsKey(schema)) tables.put(schema, new HashSet<String>());
+            if (!tables.containsKey(schema)) {
+              tables.put(schema, new HashSet<String>());
+            }
             tables.get(schema).add(table);
           }
         }
@@ -350,12 +362,14 @@ public class SqlCompleter {
    * Initializes all local completers from database connection
    *
    * @param connection database connection
-   * @param schemaFilter a schema name pattern; must match the schema name
-   *        as it is stored in the database; "" retrieves those without a schema;
-   *        <code>null</code> means that the schema name should not be used to narrow
-   *        the search; supports '%' and '_' symbols; for example "prod_v_%"
+   * @param schemaFiltersString a comma separated schema name patterns; supports '%'  symbol;
+   * for example "prod_v_%,prod_t_%"
    */
-  public void initFromConnection(Connection connection, String schemaFilter) {
+  public void initFromConnection(Connection connection, String schemaFiltersString) {
+    if (schemaFiltersString == null) {
+      schemaFiltersString = StringUtils.EMPTY;
+    }
+    List<String> schemaFilters = Arrays.asList(schemaFiltersString.split(","));
 
     try (Connection c = connection) {
       Map<String, Set<String>> tables = new HashMap<>();
@@ -364,19 +378,15 @@ public class SqlCompleter {
       Set<String> catalogs = new HashSet<>();
       Set<String> keywords = getSqlKeywordsCompletions(connection);
       if (connection != null) {
-        schemas = getSchemaNames(connection.getMetaData(), schemaFilter);
-        catalogs = getCatalogNames(connection.getMetaData(), schemaFilter);
-
-        if (!"".equals(connection.getCatalog())) {
-          if (schemas.size() == 0 )
-            schemas.add(connection.getCatalog());
-          fillTableAndColumnNames(connection.getCatalog(), connection.getMetaData(), schemaFilter,
-                  tables, columns);
-        } else {
-          if (schemas.size() == 0) schemas.addAll(catalogs);
-          for (String catalog : catalogs) {
-            fillTableAndColumnNames(catalog, connection.getMetaData(), schemaFilter, tables,
-                    columns);
+        schemas = getSchemaNames(connection.getMetaData(), schemaFilters);
+        catalogs = getCatalogNames(connection.getMetaData(), schemaFilters);
+        if (schemas.size() == 0) {
+          schemas.addAll(catalogs);
+        }
+        for (String schema : schemas) {
+          for (String schemaFilter : schemaFilters) {
+            fillTableAndColumnNames(schema, connection.getMetaData(), schemaFilter, tables,
+                columns);
           }
         }
       }

@@ -129,15 +129,15 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   var initializeDefault = function(config) {
     var forms = $scope.paragraph.settings.forms;
-    
+
     if (!config.colWidth) {
       config.colWidth = 12;
     }
-  
+
     if (config.enabled === undefined) {
       config.enabled = true;
     }
-  
+
     for (var idx in forms) {
       if (forms[idx]) {
         if (forms[idx].options) {
@@ -862,7 +862,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var getInterpreterName = function(paragraphText) {
-    var intpNameRegexp = /^\s*%(.+?)\s/g;
+    var intpNameRegexp = /^\s*%(.+?)(\s|\()/g;
     var match = intpNameRegexp.exec(paragraphText);
     if (match) {
       return match[1].trim();
