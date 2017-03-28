@@ -185,19 +185,19 @@ public class HttpProxyClient {
 
       public void completed(final HttpResponse response) {
         request.releaseConnection();
-        LOG.info("Note {} completed with {} status", request,
+        LOG.info("Note {} completed with {} status", request.getMethod(),
             response.getStatusLine());
       }
 
       public void failed(final Exception ex) {
         request.releaseConnection();
-        LOG.error("Note {} failed with {} message", request,
+        LOG.error("Note {} failed with {} message", request.getMethod(),
             ex.getMessage());
       }
 
       public void cancelled() {
         request.releaseConnection();
-        LOG.info("Note {} was canceled", request);
+        LOG.info("Note {} was canceled", request.getMethod());
       }
     };
   }
