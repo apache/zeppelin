@@ -128,7 +128,7 @@ public class SparkInterpreter extends Interpreter {
   private static File outputDir;          // class outputdir for scala 2.11
   private Object classServer;      // classserver for scala 2.11
   private JavaSparkContext jsc;
-
+  boolean isUnsupportedVersionCheck;
 
   public SparkInterpreter(Properties property) {
     super(property);
@@ -609,6 +609,9 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    this.isUnsupportedVersionCheck = java.lang.Boolean.parseBoolean(
+            property.getProperty("zeppelin.spark.unSupportedVersionCheck", "true"));
+
     // set properties and do login before creating any spark stuff for secured cluster
     if (isYarnMode()) {
       System.setProperty("SPARK_YARN_MODE", "true");
@@ -1158,7 +1161,7 @@ public class SparkInterpreter extends Interpreter {
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
-    if (sparkVersion.isUnsupportedVersion()) {
+    if (isUnsupportedVersionCheck && sparkVersion.isUnsupportedVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }

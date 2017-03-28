@@ -53,6 +53,12 @@
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
         "description": "Spark master uri. ex) spark://masterhost:7077"
+      },
+      "zeppelin.spark.unSupportedVersionCheck": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.unSupportedVersionCheck",
+        "defaultValue": "true",
+        "description": "Don't change it, It is only for zeppelin developer use, not safe to use in production"
       }
     },
     "editor": {

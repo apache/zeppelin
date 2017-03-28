@@ -140,6 +140,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>true</td>
     <td>Import implicits, UDF collection, and sql if set true.</td>
   </tr>
+  <tr>
+    <td>zeppelin.spark.unSupportedVersionCheck</td>
+    <td>true</td>
+    <td>Don't change it, It is only for zeppelin developer use, not safe or use in production</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
