@@ -599,8 +599,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     var session = editor.getSession();
     var dirtyText = session.getValue();
     $scope.dirtyText = dirtyText;
-    //the saveTimer is not be invoked with this statement correctly
-    //$scope.$broadcast('startSaveTimer');
     $scope.startSaveTimer();
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
   };
