@@ -286,7 +286,8 @@ public class DepInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     if (Utils.isScala2_10()) {
       ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
       Candidates ret = c.complete(buf, cursor);

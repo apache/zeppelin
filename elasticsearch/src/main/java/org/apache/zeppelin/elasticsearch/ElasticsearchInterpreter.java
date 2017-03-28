@@ -240,7 +240,8 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
+  public List<InterpreterCompletion> completion(String s, int i,
+      InterpreterContext interpreterContext) {
     final List suggestions = new ArrayList<>();
 
     for (final String cmd : COMMANDS) {

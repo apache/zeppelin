@@ -77,8 +77,9 @@ public class RRepl extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
-    List completion = intp.completion(s, i);
+  public List<InterpreterCompletion> completion(String s, int i,
+      InterpreterContext interpreterContext) {
+    List completion = intp.completion(s, i, interpreterContext);
     return completion;
   }
 

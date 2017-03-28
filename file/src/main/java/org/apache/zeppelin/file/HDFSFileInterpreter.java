@@ -24,6 +24,7 @@ import java.util.*;
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
@@ -248,7 +249,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {

@@ -357,7 +357,7 @@ public class SqlCompleter {
    */
   public void initFromConnection(Connection connection, String schemaFilter) {
 
-    try {
+    try (Connection c = connection) {
       Map<String, Set<String>> tables = new HashMap<>();
       Map<String, Set<String>> columns = new HashMap<>();
       Set<String> schemas = new HashSet<>();

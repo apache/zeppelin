@@ -441,7 +441,8 @@ public class RemoteInterpreter extends Interpreter {
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
     try {
@@ -452,7 +453,8 @@ public class RemoteInterpreter extends Interpreter {
 
     boolean broken = false;
     try {
-      List completion = client.completion(sessionKey, className, buf, cursor);
+      List completion = client.completion(sessionKey, className, buf, cursor,
+          convert(interpreterContext));
       return completion;
     } catch (TException e) {
       broken = true;

@@ -458,7 +458,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }

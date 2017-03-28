@@ -127,15 +127,12 @@ public class JDBCInterpreter extends Interpreter {
 
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
-  private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
 
-  private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
   private int maxLineResults;
 
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
-    propertyKeySqlCompleterMap = new HashMap<>();
     basePropretiesMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
   }
@@ -183,9 +180,7 @@ public class JDBCInterpreter extends Interpreter {
     if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       JDBCSecurityImpl.createSecureConfiguration(property);
     }
-    for (String propertyKey : basePropretiesMap.keySet()) {
-      propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(null));
-    }
+
     setMaxLineResults();
   }
 
@@ -414,7 +409,7 @@ public class JDBCInterpreter extends Interpreter {
             connection = getConnectionFromPool(url, user, propertyKey, properties);
       }
     }
-    propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
+
     return connection;
   }
 
@@ -746,12 +741,25 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     List<InterpreterCompletion> candidates = new ArrayList<>();
-    SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
+    String propertyKey = getPropertyKey(buf);
+    Connection connection = null;
+    try {
+      if (interpreterContext != null) {
+        connection = getConnection(propertyKey, interpreterContext);
+      }
+    } catch (ClassNotFoundException | SQLException | IOException e) {
+      logger.warn("SQLCompleter will created without use connection");
+    }
+
+    SqlCompleter sqlCompleter = createSqlCompleter(connection);
+
     if (sqlCompleter != null) {
       sqlCompleter.complete(buf, cursor - 1, candidates);
     }
+
     return candidates;
   }
 

@@ -166,7 +166,8 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     String[] words = splitAndRemoveEmpty(splitAndRemoveEmpty(buf, "\n"), " ");
     String lastWord = "";
     if (words.length > 0) {

@@ -98,10 +98,12 @@ public abstract class Interpreter {
    *
    * @param buf statements
    * @param cursor cursor position in statements
+   * @param interpreterContext
    * @return list of possible completion. Return empty list if there're nothing to return.
    */
   @ZeppelinApi
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext)  {
     return null;
   }
 

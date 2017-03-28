@@ -111,8 +111,8 @@ public class HDFSFileInterpreterTest extends TestCase {
         new InterpreterCompletion("ls", "ls", CompletionType.command.name()));
       List expectedResultTwo = Arrays.asList(
         new InterpreterCompletion("pwd", "pwd", CompletionType.command.name()));
-      List<InterpreterCompletion> resultOne = t.completion("l", 0);
-      List<InterpreterCompletion> resultTwo = t.completion("p", 0);
+      List<InterpreterCompletion> resultOne = t.completion("l", 0, null);
+      List<InterpreterCompletion> resultTwo = t.completion("p", 0, null);
 
       assertEquals(expectedResultOne, resultOne);
       assertEquals(expectedResultTwo, resultTwo);

@@ -97,11 +97,11 @@ public class AlluxioInterpreterTest {
       new InterpreterCompletion("copyToLocal", "copyToLocal", CompletionType.command.name()));
     List expectedResultNone = new ArrayList<>();
 
-    List<InterpreterCompletion> resultOne = alluxioInterpreter.completion("c", 0);
-    List<InterpreterCompletion> resultTwo = alluxioInterpreter.completion("co", 0);
-    List<InterpreterCompletion> resultThree = alluxioInterpreter.completion("copy", 0);
-    List<InterpreterCompletion> resultNotMatch = alluxioInterpreter.completion("notMatch", 0);
-    List<InterpreterCompletion> resultAll = alluxioInterpreter.completion("", 0);
+    List<InterpreterCompletion> resultOne = alluxioInterpreter.completion("c", 0, null);
+    List<InterpreterCompletion> resultTwo = alluxioInterpreter.completion("co", 0, null);
+    List<InterpreterCompletion> resultThree = alluxioInterpreter.completion("copy", 0, null);
+    List<InterpreterCompletion> resultNotMatch = alluxioInterpreter.completion("notMatch", 0, null);
+    List<InterpreterCompletion> resultAll = alluxioInterpreter.completion("", 0, null);
 
     Assert.assertEquals(expectedResultOne, resultOne);
     Assert.assertEquals(expectedResultTwo, resultTwo);

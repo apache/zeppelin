@@ -299,7 +299,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    List completion = repl.completion(body, cursor);
+    InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
+
+    List completion = repl.completion(body, cursor, interpreterContext);
     return completion;
   }
 
@@ -535,7 +537,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
-    if (authenticationInfo != null) {
+    setAuthenticationInfo(new AuthenticationInfo(getUser()));
+
+    if (authenticationInfo.getUser() != null) {
       UserCredentials userCredentials =
           credentials.getUserCredentials(authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
