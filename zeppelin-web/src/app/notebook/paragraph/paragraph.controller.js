@@ -640,6 +640,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       var remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
+          var langTools = ace.require('ace/ext/language_tools');
+          var defaultKeywords = new Set();
+          var getDefaultKeywords = function(err, completions) {
+              if (completions !== undefined) {
+                  completions.forEach(function(c) {
+                      defaultKeywords.add(c.value);
+                  });
+              }
+          }
+          if (langTools.keyWordCompleter !== undefined) {
+              langTools.keyWordCompleter.getCompletions(editor, session, pos, prefix, getDefaultKeywords);
+          }
+
           if (!editor.isFocused()) {
             return;
           }
@@ -665,6 +678,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
               var completions = [];
               for (var c in data.completions) {
                 var v = data.completions[c];
+                if (v.meta !== undefined && v.meta === 'keyword' && defaultKeywords.has(v.value.trim())) {
+                    continue;
+                }
                 completions.push({
                   name: v.name,
                   value: v.value,
