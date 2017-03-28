@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.7.1</version>
+    <version>0.7.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-python</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.1</version>
+  <version>0.7.2-SNAPSHOT</version>
   <name>Zeppelin: Python interpreter</name>
 
   <properties>
