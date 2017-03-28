@@ -398,6 +398,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       $scope.note.config.cronExecutingUser = '';
     }
+    $scope.saveNote();
     $scope.note.config.cron = cronExpr;
     $scope.setConfig();
   };
