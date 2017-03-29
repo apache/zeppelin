@@ -97,7 +97,7 @@ public class ZeppelinhubRestApiHandler {
       try {
         uri = new URI(proxyHostString);
       } catch (URISyntaxException e) {
-        LOG.error("Proxy uri doesn't follow correct syntax", e);
+        LOG.warn("Proxy uri doesn't follow correct syntax", e);
       }
       if (uri != null) {
         PROXY_ON = true;
@@ -222,7 +222,7 @@ public class ZeppelinhubRestApiHandler {
     if (proxyClient != null) {
       body = proxyClient.sendToZeppelinHub(request, withResponse);
     } else {
-      LOG.error("Proxy client request was submitted while not correctly initialized");
+      LOG.warn("Proxy client request was submitted while not correctly initialized");
     }
     return body; 
   }
