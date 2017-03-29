@@ -103,7 +103,7 @@ In this case with name `PROPERTY_NAME`
 
 * `groovy.xml.MarkupBuilder g.html()`
 
-Starts or continues rendering of `%angular` to output and returns [groovy.xml.MarkupBuilder](https://www.google.com/search?q=groovy.xml.MarkupBuilder)
+Starts or continues rendering of `%angular` to output and returns [groovy.xml.MarkupBuilder](http://groovy-lang.org/processing-xml.html#_markupbuilder)
 MarkupBuilder is usefull to generate html (xml)
 
 * `void g.table(obj)`
