@@ -61,6 +61,11 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>Max number of Spark SQL result to display.</td>
   </tr>
   <tr>
+    <td>zeppelin.livy.spark.sql.truncate</td>
+    <td>true</td>
+    <td>Whether to truncate strings or not</td>
+  </tr>
+  <tr>
     <td>zeppelin.livy.session.create_timeout</td>
     <td>120</td>
     <td>Timeout in seconds for session creation</td>
