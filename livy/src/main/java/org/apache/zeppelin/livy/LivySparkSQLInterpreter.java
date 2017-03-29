@@ -36,10 +36,12 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
   private boolean isSpark2 = false;
   private int maxResult = 1000;
+  private boolean truncate = true;
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
     this.maxResult = Integer.parseInt(property.getProperty("zeppelin.livy.spark.sql.maxResult"));
+    this.truncate = Boolean.parseBoolean(property.getProperty("zeppelin.livy.spark.sql.truncate"));
   }
 
   @Override
@@ -111,9 +113,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       // use triple quote so that we don't need to do string escape.
       String sqlQuery = null;
       if (isSpark2) {
-        sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
+        sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
+            truncate + ")";
       } else {
-        sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
+        sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
+            truncate + ")";
       }
       InterpreterResult result = sparkInterpreter.interpret(sqlQuery, context.getParagraphId(),
           this.displayAppInfo, true);
