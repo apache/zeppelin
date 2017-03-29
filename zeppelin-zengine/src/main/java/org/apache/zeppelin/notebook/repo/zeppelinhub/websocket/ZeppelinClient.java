@@ -137,9 +137,22 @@ public class ZeppelinClient {
     new Timer().schedule(new java.util.TimerTask() {
       @Override
       public void run() {
-        watcherSession = openWatcherSession();
+        int time = 0;
+        while (time < 5 * MIN) {
+          watcherSession = openWatcherSession();
+          if (watcherSession == null) {
+            try {
+              Thread.sleep(5000);
+              time += 5;
+            } catch (InterruptedException e) {
+              //continue
+            }
+          } else {
+            break;
+          }
+        }
       }
-    }, 10000);
+    }, 5000);
   }
 
   public void stop() {
