@@ -138,7 +138,7 @@ public class ZeppelinServer extends Application {
 
     // create bundle
     try {
-      heliumBundleFactory.buildBundle(helium.getBundlePackagesToBundle());
+      heliumBundleFactory.buildAllPackages(helium.getBundlePackagesToBundle());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }

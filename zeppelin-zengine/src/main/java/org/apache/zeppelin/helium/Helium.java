@@ -282,7 +282,7 @@ public class Helium {
   }
 
   public File recreateBundle() throws IOException {
-    return bundleFactory.buildBundle(getBundlePackagesToBundle(), true);
+    return bundleFactory.buildAllPackages(getBundlePackagesToBundle(), true);
   }
 
   public void enable(String name, String artifact) throws IOException {
@@ -298,7 +298,7 @@ public class Helium {
 
     // if package is visualization, rebuild bundle
     if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildBundle(getBundlePackagesToBundle());
+      bundleFactory.buildAllPackages(getBundlePackagesToBundle());
     }
 
     save();
@@ -315,7 +315,7 @@ public class Helium {
 
     HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
     if (pkgInfo == null || HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildBundle(getBundlePackagesToBundle());
+      bundleFactory.buildAllPackages(getBundlePackagesToBundle());
     }
 
     save();
@@ -445,7 +445,7 @@ public class Helium {
     heliumConf.setBundleDisplayOrder(orderedPackageList);
 
     // if package is visualization, rebuild buildBundle
-    bundleFactory.buildBundle(getBundlePackagesToBundle());
+    bundleFactory.buildAllPackages(getBundlePackagesToBundle());
 
     save();
   }

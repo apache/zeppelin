@@ -109,12 +109,12 @@ public class HeliumBundleFactoryTest {
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
     pkgs.add(pkg);
-    File bundle = hbf.buildBundle(pkgs);
+    File bundle = hbf.buildAllPackages(pkgs);
     assertTrue(bundle.isFile());
     long lastModified = bundle.lastModified();
 
     // buildBundle again and check if it served from cache
-    bundle = hbf.buildBundle(pkgs);
+    bundle = hbf.buildAllPackages(pkgs);
     assertEquals(lastModified, bundle.lastModified());
   }
 
@@ -137,7 +137,7 @@ public class HeliumBundleFactoryTest {
     );
     List<HeliumPackage> pkgs = new LinkedList<>();
     pkgs.add(pkg);
-    File bundle = hbf.buildBundle(pkgs);
+    File bundle = hbf.buildAllPackages(pkgs);
     assertTrue(bundle.isFile());
   }
 
@@ -161,7 +161,7 @@ public class HeliumBundleFactoryTest {
     pkgs.add(pkg);
     File bundle = null;
     try {
-      bundle = hbf.buildBundle(pkgs);
+      bundle = hbf.buildAllPackages(pkgs);
       // should throw exception
       assertTrue(false);
     } catch (IOException e) {
@@ -202,8 +202,8 @@ public class HeliumBundleFactoryTest {
     List<HeliumPackage> pkgsV2 = new LinkedList<>();
     pkgsV2.add(pkgV2);
 
-    File bundle1 = hbf.buildBundle(pkgsV1);
-    File bundle2 = hbf.buildBundle(pkgsV2);
+    File bundle1 = hbf.buildAllPackages(pkgsV1);
+    File bundle2 = hbf.buildAllPackages(pkgsV2);
 
     assertNotSame(bundle1.lastModified(), bundle2.lastModified());
   }

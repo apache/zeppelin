@@ -17,9 +17,13 @@
 package org.apache.zeppelin.helium;
 
 import com.github.eirslett.maven.plugins.frontend.lib.*;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
@@ -42,17 +46,24 @@ public class HeliumBundleFactory {
   Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
   private final String NODE_VERSION = "v6.9.1";
   private final String NPM_VERSION = "3.10.8";
+  private final String YARN_VERSION = "v0.21.3";
   public static final String HELIUM_LOCAL_REPO = "helium-bundle";
+  public static final String HELIUM_BUNDLES_DIR = "bundles";
+  public static final String HELIUM_LOCAL_MODULE_DIR = "local_modules";
+  public static final String HELIUM_BUNDLES_SRC_DIR = "src";
+  public static final String HELIUM_BUNDLES_SRC = "load.js";
+  public static final String PACKAGE_JSON = "package.json";
   public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   public static final String HELIUM_BUNDLE = "helium.bundle.js";
   public static final String HELIUM_BUNDLES_VAR = "heliumBundles";
   private final int FETCH_RETRY_COUNT = 2;
   private final int FETCH_RETRY_FACTOR_COUNT = 1;
-  // Milliseconds
-  private final int FETCH_RETRY_MIN_TIMEOUT = 5000;
+  private final int FETCH_RETRY_MIN_TIMEOUT = 5000; // Milliseconds
 
   private final FrontendPluginFactory frontEndPluginFactory;
-  private final File workingDirectory;
+  private final File heliumLocalRepoDirectory;
+  private final File heliumBundleDirectory;
+  private final File heliumLocalModuleDirectory;
   private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
@@ -81,16 +92,19 @@ public class HeliumBundleFactory {
   public HeliumBundleFactory(
       ZeppelinConfiguration conf,
       File moduleDownloadPath) throws TaskRunnerException {
-    this.workingDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
+    this.heliumLocalRepoDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
+    this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
+    this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
     this.conf = conf;
     this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
-    File installDirectory = workingDirectory;
+    File installDirectory = heliumLocalRepoDirectory;
 
     frontEndPluginFactory = new FrontendPluginFactory(
-        workingDirectory, installDirectory);
+            heliumLocalRepoDirectory, installDirectory);
 
-    currentCacheBundle = new File(workingDirectory, HELIUM_BUNDLE_CACHE);
     gson = new Gson();
+    // TODO(1ambda): remove
+    currentCacheBundle = new File(heliumLocalRepoDirectory, HELIUM_BUNDLE_CACHE);
   }
 
   void installNodeAndNpm() {
@@ -98,14 +112,19 @@ public class HeliumBundleFactory {
       return;
     }
     try {
+      NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
+      nodeInstaller.setNodeVersion(NODE_VERSION);
+      nodeInstaller.install();
+
       NPMInstaller npmInstaller = frontEndPluginFactory.getNPMInstaller(getProxyConfig());
       npmInstaller.setNpmVersion(NPM_VERSION);
       npmInstaller.install();
 
-      NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
-      nodeInstaller.setNodeVersion(NODE_VERSION);
-      nodeInstaller.install();
-      configureLogger();
+      YarnInstaller yarnInstaller = frontEndPluginFactory.getYarnInstaller(getProxyConfig());
+      yarnInstaller.setYarnVersion(YARN_VERSION);
+      yarnInstaller.install();
+
+//      configureLogger();
       nodeAndNpmInstalled = true;
     } catch (InstallationException e) {
       logger.error(e.getMessage(), e);
@@ -117,31 +136,207 @@ public class HeliumBundleFactory {
     return new ProxyConfig(proxy);
   }
 
-  public File buildBundle(List<HeliumPackage> pkgs) throws IOException {
-    return buildBundle(pkgs, false);
+  public File buildAllPackages(List<HeliumPackage> pkgs) throws IOException {
+    return buildAllPackages(pkgs, false);
   }
 
-  public synchronized File buildBundle(List<HeliumPackage> pkgs, boolean forceRefresh)
+  public File getHeliumPackageDirectory(String artifact) {
+    return new File(heliumBundleDirectory, artifact);
+  }
+
+  public File getHeliumPackageSourceDirectory(String artifact) {
+    return new File(heliumBundleDirectory, artifact + "/" + HELIUM_BUNDLES_SRC_DIR);
+  }
+
+  public File getHeliumPackageBundleCache(String artifact) {
+    return new File(heliumBundleDirectory, artifact + "/" + HELIUM_BUNDLE_CACHE);
+  }
+
+  public void downloadPackage(HeliumPackage pkg, File bundleDir,
+                              String templateWebpackConfig, String templatePackageJson,
+                              FileFilter npmPackageCopyFilter) throws IOException {
+    if (bundleDir.exists()) {
+      FileUtils.deleteDirectory(bundleDir);
+    }
+    FileUtils.forceMkdir(bundleDir);
+
+    if (isLocalPackage(pkg)) {
+      FileUtils.copyDirectory(
+              new File(pkg.getArtifact()),
+              bundleDir,
+              npmPackageCopyFilter);
+    }
+
+    // setup dependencies
+    File existingPackageJson = new File(bundleDir, "package.json");
+    JsonReader reader = new JsonReader(new FileReader(existingPackageJson));
+    Map<String, Object> packageJson = gson.fromJson(reader,
+            new TypeToken<Map<String, Object>>(){}.getType());
+    Map<String, String> existingDeps = (Map<String, String>) packageJson.get("dependencies");
+    String mainFileName = (String) packageJson.get("main");
+
+    // package.json doesn't require postfix `.js`, but webpack needs it.
+    if (!mainFileName.endsWith(".js") &&
+        !(new File(bundleDir, mainFileName).exists()) &&
+        (new File(bundleDir, mainFileName + ".js").exists())) {
+      mainFileName = mainFileName + ".js";
+    }
+
+    StringBuilder dependencies = new StringBuilder();
+    int index = 0;
+    for (Map.Entry<String, String> e: existingDeps.entrySet()) {
+      dependencies.append("    \"").append(e.getKey()).append("\": ");
+      if (e.getKey().equals("zeppelin-vis") ||
+          e.getKey().equals("zeppelin-tabledata") ||
+          e.getKey().equals("zeppelin-spell")) {
+        dependencies.append("\"file:../../" + HELIUM_LOCAL_MODULE_DIR + "/")
+                .append(e.getKey()).append("\"");
+      } else {
+        dependencies.append("\"").append(e.getValue()).append("\"");
+      }
+      index = index + 1;
+
+      if (index < existingDeps.size() - 1) {
+        dependencies.append(",\n");
+      }
+    }
+
+    FileUtils.forceDelete(new File(bundleDir, PACKAGE_JSON));
+    templatePackageJson = templatePackageJson.replaceFirst("PACKAGE_NAME", pkg.getName());
+    templatePackageJson = templatePackageJson.replaceFirst("MAIN_FILE", mainFileName);
+    templatePackageJson = templatePackageJson.replaceFirst("DEPENDENCIES", dependencies.toString());
+    FileUtils.write(new File(bundleDir, PACKAGE_JSON), templatePackageJson);
+
+    // 2. setup webpack.config
+    templateWebpackConfig = templateWebpackConfig.replaceFirst("MAIN_FILE", "./" + mainFileName);
+    FileUtils.write(new File(bundleDir, "webpack.config.js"), templateWebpackConfig);
+
+    // if remote package
+    // TODO
+    // npm pack pkg.getArtifact()
+    // tar -zxvf pkg.getArtifact().tgz
+    // rename directoryt `package` to ~~~
+  }
+
+  public void prepareSource(HeliumPackage pkg, String[] moduleNameVersion,
+                            long index) throws IOException {
+    StringBuilder loadJsImport = new StringBuilder();
+    StringBuilder loadJsRegister = new StringBuilder();
+    String className = "bundles" + index++;
+    loadJsImport.append(
+            "import " + className + " from \"" + moduleNameVersion[0] + "\"\n");
+
+    loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
+    loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
+    loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
+    loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
+    loadJsRegister.append("type: \"" + pkg.getType() + "\",\n");
+    loadJsRegister.append("class: " + className + "\n");
+    loadJsRegister.append("})\n");
+
+    File srcDir = getHeliumPackageSourceDirectory(pkg.getName());
+    FileUtils.forceMkdir(srcDir);
+    FileUtils.write(new File(srcDir, HELIUM_BUNDLES_SRC),
+            loadJsImport.append(loadJsRegister).toString());
+  }
+
+  public synchronized void installNodeModules(FrontendPluginFactory fpf) throws IOException {
+    try {
+      out.reset();
+      String commandForNpmInstall =
+              String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
+                              "--fetch-retry-mintimeout=%d",
+                      FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      npmCommand(fpf, commandForNpmInstall);
+    } catch (TaskRunnerException e) {
+      // ignore `(empty)` warning
+      String cause = new String(out.toByteArray());
+      if (!cause.contains("(empty)")) {
+        throw new IOException(cause);
+      }
+    }
+  }
+
+  public synchronized File bundleHeliumPackage(FrontendPluginFactory fpf,
+                                               File bundleDir) throws IOException {
+    try {
+      out.reset();
+      npmCommand(fpf, "run bundle");
+    } catch (TaskRunnerException e) {
+      throw new IOException(new String(out.toByteArray()));
+    }
+
+    String bundleStdoutResult = new String(out.toByteArray());
+    File heliumBundle = new File(bundleDir, HELIUM_BUNDLE);
+    if (!heliumBundle.isFile()) {
+      throw new IOException(
+              "Can't create bundle: \n" + bundleStdoutResult);
+    }
+
+    WebpackResult result = getWebpackResultFromOutput(bundleStdoutResult);
+    if (result.errors.length > 0) {
+      heliumBundle.delete();
+      throw new IOException(result.errors[0]);
+    }
+
+    return heliumBundle;
+  }
+
+  public synchronized void buildPackage(HeliumPackage pkg,
+                                        String templateWebpackConfig,
+                                        String templatePackageJson,
+                                        FileFilter npmPackageCopyFilter,
+                                        long index) throws IOException {
+
+    if (pkg == null) {
+      return;
+    }
+
+    String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
+    if (moduleNameVersion == null) {
+      return;
+    }
+
+    if (moduleNameVersion == null) {
+      logger.error("Can't get module name and version of package " + pkg.getName());
+      return;
+    }
+    String pkgName = pkg.getName();
+    File bundleDir = getHeliumPackageDirectory(pkgName);
+
+    // 1. download project
+    downloadPackage(pkg, bundleDir, templateWebpackConfig,
+            templatePackageJson, npmPackageCopyFilter);
+
+    // 2. prepare bundle source
+    prepareSource(pkg, moduleNameVersion, index);
+
+    // 3. install npm modules for a bundle
+    FrontendPluginFactory fpf = new FrontendPluginFactory(
+            bundleDir, heliumLocalRepoDirectory);
+    installNodeModules(fpf);
+
+    // 4. let's bundle and update cache
+    File heliumBundle = bundleHeliumPackage(fpf, bundleDir);
+
+    File cache = getHeliumPackageBundleCache(pkgName);
+    cache.delete();
+    FileUtils.moveFile(heliumBundle, cache);
+  }
+
+  public synchronized File buildAllPackages(List<HeliumPackage> pkgs, boolean forceRefresh)
       throws IOException {
 
     if (pkgs == null || pkgs.size() == 0) {
       // when no package is selected, simply return an empty file instead of try bundle package
-      synchronized (this) {
-        currentCacheBundle.getParentFile().mkdirs();
-        currentCacheBundle.delete();
-        currentCacheBundle.createNewFile();
-        bundleCacheKey = "";
-        return currentCacheBundle;
-      }
+      currentCacheBundle.getParentFile().mkdirs();
+      currentCacheBundle.delete();
+      currentCacheBundle.createNewFile();
+      bundleCacheKey = "";
+      return currentCacheBundle;
     }
 
     installNodeAndNpm();
-
-    // package.json
-    URL pkgUrl = Resources.getResource("helium/package.json");
-    String pkgJson = Resources.toString(pkgUrl, Charsets.UTF_8);
-    StringBuilder dependencies = new StringBuilder();
-    StringBuilder cacheKeyBuilder = new StringBuilder();
 
     FileFilter npmPackageCopyFilter = new FileFilter() {
       @Override
@@ -155,126 +350,31 @@ public class HeliumBundleFactory {
       }
     };
 
-    for (HeliumPackage pkg : pkgs) {
-      String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
-      if (moduleNameVersion == null) {
-        logger.error("Can't get module name and version of package " + pkg.getName());
-        continue;
-      }
-      if (dependencies.length() > 0) {
-        dependencies.append(",\n");
-      }
-      dependencies.append("\"" + moduleNameVersion[0] + "\": \"" + moduleNameVersion[1] + "\"");
-      cacheKeyBuilder.append(pkg.getName() + pkg.getArtifact());
-
-      File pkgInstallDir = new File(workingDirectory, "node_modules/" + pkg.getName());
-      if (pkgInstallDir.exists()) {
-        FileUtils.deleteDirectory(pkgInstallDir);
-      }
-
-      if (isLocalPackage(pkg)) {
-        FileUtils.copyDirectory(
-            new File(pkg.getArtifact()),
-            pkgInstallDir,
-            npmPackageCopyFilter);
-      }
-    }
-    pkgJson = pkgJson.replaceFirst("DEPENDENCIES", dependencies.toString());
-
-    // check if we can use previous buildBundle or not
-    if (cacheKeyBuilder.toString().equals(bundleCacheKey) &&
-        currentCacheBundle.isFile() && !forceRefresh) {
-      return currentCacheBundle;
-    }
-
-    // webpack.config.js
-    URL webpackConfigUrl = Resources.getResource("helium/webpack.config.js");
-    String webpackConfig = Resources.toString(webpackConfigUrl, Charsets.UTF_8);
-
-    // generate load.js
-    StringBuilder loadJsImport = new StringBuilder();
-    StringBuilder loadJsRegister = new StringBuilder();
-
-    long idx = 0;
-    for (HeliumPackage pkg : pkgs) {
-      String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
-      if (moduleNameVersion == null) {
-        continue;
-      }
-
-      String className = "bundles" + idx++;
-      loadJsImport.append(
-          "import " + className + " from \"" + moduleNameVersion[0] + "\"\n");
-
-      loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
-      loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
-      loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
-      loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
-      loadJsRegister.append("type: \"" + pkg.getType() + "\",\n");
-      loadJsRegister.append("class: " + className + "\n");
-      loadJsRegister.append("})\n");
-    }
-
-    FileUtils.write(new File(workingDirectory, "package.json"), pkgJson);
-    FileUtils.write(new File(workingDirectory, "webpack.config.js"), webpackConfig);
-    FileUtils.write(new File(workingDirectory, "load.js"),
-        loadJsImport.append(loadJsRegister).toString());
-
+    // copy zeppelin framework modules
     copyFrameworkModuleToInstallPath(npmPackageCopyFilter);
 
-    try {
-      out.reset();
-      String commandForNpmInstall =
-              String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
-                              "--fetch-retry-mintimeout=%d",
-                      FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
-      logger.info("Installing required node modules");
-      npmCommand(commandForNpmInstall);
-      logger.info("Installed required node modules");
-    } catch (TaskRunnerException e) {
-      // ignore `(empty)` warning
-      String cause = new String(out.toByteArray());
-      if (!cause.contains("(empty)")) {
-        throw new IOException(cause);
-      }
+    // resources: webpack.js, package.json
+    String templateWebpackConfig = Resources.toString(
+            Resources.getResource("helium/webpack.config.js"), Charsets.UTF_8);
+    String templatePackageJson = Resources.toString(
+            Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
+
+    long index = 0;
+    for (HeliumPackage pkg : pkgs) {
+      index = index + 1;
+      buildPackage(pkg, templateWebpackConfig, templatePackageJson, npmPackageCopyFilter, index);
     }
 
-    try {
-      out.reset();
-      logger.info("Bundling helium packages");
-      npmCommand("run bundle");
-      logger.info("Bundled helium packages");
-    } catch (TaskRunnerException e) {
-      throw new IOException(new String(out.toByteArray()));
-    }
-
-    String bundleStdoutResult = new String(out.toByteArray());
-
-    File heliumBundle = new File(workingDirectory, HELIUM_BUNDLE);
-    if (!heliumBundle.isFile()) {
-      throw new IOException(
-          "Can't create bundle: \n" + bundleStdoutResult);
-    }
-
-    WebpackResult result = getWebpackResultFromOutput(bundleStdoutResult);
-    if (result.errors.length > 0) {
-      heliumBundle.delete();
-      throw new IOException(result.errors[0]);
-    }
-
-    synchronized (this) {
-      currentCacheBundle.delete();
-      FileUtils.moveFile(heliumBundle, currentCacheBundle);
-      bundleCacheKey = cacheKeyBuilder.toString();
-    }
     return currentCacheBundle;
   }
 
   private void copyFrameworkModuleToInstallPath(FileFilter npmPackageCopyFilter)
       throws IOException {
     // install tabledata module
-    File tabledataModuleInstallPath = new File(workingDirectory,
-        "node_modules/zeppelin-tabledata");
+    FileUtils.forceMkdir(heliumLocalModuleDirectory);
+
+    File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory,
+        "zeppelin-tabledata");
     if (tabledataModulePath != null) {
       if (tabledataModuleInstallPath.exists()) {
         FileUtils.deleteDirectory(tabledataModuleInstallPath);
@@ -286,8 +386,8 @@ public class HeliumBundleFactory {
     }
 
     // install visualization module
-    File visModuleInstallPath = new File(workingDirectory,
-        "node_modules/zeppelin-vis");
+    File visModuleInstallPath = new File(heliumLocalModuleDirectory,
+        "zeppelin-vis");
     if (visualizationModulePath != null) {
       if (visModuleInstallPath.exists()) {
         // when zeppelin-vis and zeppelin-table package is published to npm repository
@@ -303,8 +403,8 @@ public class HeliumBundleFactory {
     }
 
     // install spell module
-    File spellModuleInstallPath = new File(workingDirectory,
-        "node_modules/zeppelin-spell");
+    File spellModuleInstallPath = new File(heliumLocalModuleDirectory,
+        "zeppelin-spell");
     if (spellModulePath != null) {
       if (spellModuleInstallPath.exists()) {
         FileUtils.deleteDirectory(spellModuleInstallPath);
@@ -428,7 +528,18 @@ public class HeliumBundleFactory {
     npm.execute(args, env);
   }
 
-  private void configureLogger() {
+  private void npmCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
+    npmCommand(fpf, args, new HashMap<String, String>());
+  }
+
+  private void npmCommand(FrontendPluginFactory fpf,
+                          String args, Map<String, String> env) throws TaskRunnerException {
+    installNodeAndNpm();
+    YarnRunner yarn = fpf.getYarnRunner(getProxyConfig(), defaultNpmRegistryUrl);
+    yarn.execute(args, env);
+  }
+
+  private synchronized void configureLogger() {
     org.apache.log4j.Logger npmLogger = org.apache.log4j.Logger.getLogger(
         "com.github.eirslett.maven.plugins.frontend.lib.DefaultNpmRunner");
     Enumeration appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
