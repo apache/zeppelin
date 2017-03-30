@@ -389,8 +389,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       settings.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
-      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(scriptBody); // inputs will be built
-      // from script body
+      // inputs will be built from script body
+      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(scriptBody);
 
       final AngularObjectRegistry angularRegistry =
           repl.getInterpreterGroup().getAngularObjectRegistry();
