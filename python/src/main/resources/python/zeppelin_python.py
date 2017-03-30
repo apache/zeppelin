@@ -204,8 +204,8 @@ intp = gateway.entry_point
 intp.onPythonScriptInitialized(os.getpid())
 
 java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-z = PyZeppelinContext(intp)
-z._setup_matplotlib()
+z = _zc = PyZeppelinContext(intp)
+_zc._setup_matplotlib()
 
 output = Logger()
 sys.stdout = output
@@ -227,7 +227,7 @@ while True :
       global_hook = None
 
     try:
-      user_hook = z.getHook('post_exec')
+      user_hook = _zc.getHook('post_exec')
     except:
       user_hook = None
       
