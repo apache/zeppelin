@@ -43,7 +43,6 @@ import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
-import org.apache.spark.scheduler.SparkListenerApplicationEnd;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
@@ -128,7 +127,7 @@ public class SparkInterpreter extends Interpreter {
   private static File outputDir;          // class outputdir for scala 2.11
   private Object classServer;      // classserver for scala 2.11
   private JavaSparkContext jsc;
-
+  private boolean enableSupportedVersionCheck;
 
   public SparkInterpreter(Properties property) {
     super(property);
@@ -609,6 +608,9 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
+            property.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+
     // set properties and do login before creating any spark stuff for secured cluster
     if (isYarnMode()) {
       System.setProperty("SPARK_YARN_MODE", "true");
@@ -1153,12 +1155,16 @@ public class SparkInterpreter extends Interpreter {
     return obj;
   }
 
+  boolean isUnsupportedSparkVersion() {
+    return enableSupportedVersionCheck  && sparkVersion.isUnsupportedVersion();
+  }
+
   /**
    * Interpret a single line.
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
-    if (sparkVersion.isUnsupportedVersion()) {
+    if (isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
