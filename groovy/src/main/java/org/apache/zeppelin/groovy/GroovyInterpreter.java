@@ -23,15 +23,7 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.io.File;
 import java.util.*;
-/*
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.lang3.StringUtils;
-*/
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -55,7 +47,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Groovy interpreter for Zeppelin.
- * @author dlukyanov@ukr.net / dmitry lukyanov
  */
 public class GroovyInterpreter extends Interpreter {
 
@@ -105,7 +96,6 @@ public class GroovyInterpreter extends Interpreter {
   @Override
   public FormType getFormType() {
     return FormType.NATIVE;
-    //return FormType.NONE;
   }
 
   @Override
@@ -192,7 +182,6 @@ public class GroovyInterpreter extends Interpreter {
 
       bindings.clear();
       InterpreterResult result = new InterpreterResult(Code.SUCCESS, out.toString());
-      //log.info("RESULT: "+result);
       return result;
     } catch (Throwable t) {
       t = StackTraceUtils.deepSanitize(t);
@@ -214,7 +203,7 @@ public class GroovyInterpreter extends Interpreter {
           Thread t = (Thread) object;
           t.dumpStack();
           t.interrupt();
-          //t.stop();
+          //t.stop(); //TODO: need some way to terminate maybe through GObject..
         } catch (Throwable t) {
           log.error("Failed to cancel script: " + t, t);
         }

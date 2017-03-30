@@ -43,7 +43,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  * Groovy interpreter for Zeppelin.
- * @author dlukyanov@ukr.net / dmitry lukyanov
  */
 public class GObject extends groovy.lang.GroovyObjectSupport {
 
