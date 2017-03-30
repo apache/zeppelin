@@ -123,6 +123,20 @@ public class PySparkInterpreterTest {
     }
   }
 
+  @Test
+  public void testRedefinitionZeppelinContext() {
+    if (getSparkVersionNumber() > 11) {
+      String redefinitionCode = "z = 1\n";
+      String restoreCode = "z = _zc\n";
+      String validCode = "print(z)\n";
+
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
+      assertEquals(InterpreterResult.Code.ERROR, pySparkInterpreter.interpret(redefinitionCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(restoreCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
+    }
+  }
+
   private class infinityPythonJob implements Runnable {
     @Override
     public void run() {
