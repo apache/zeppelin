@@ -41,7 +41,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
     this.maxResult = Integer.parseInt(property.getProperty("zeppelin.livy.spark.sql.maxResult"));
-    this.truncate = Boolean.parseBoolean(property.getProperty("zeppelin.livy.spark.sql.truncate"));
+    if (property.getProperty("zeppelin.livy.spark.sql.truncate") != null) {
+      this.truncate =
+          Boolean.parseBoolean(property.getProperty("zeppelin.livy.spark.sql.truncate"));
+    }
   }
 
   @Override
