@@ -128,10 +128,11 @@ public class PySparkInterpreterTest {
     if (getSparkVersionNumber() > 11) {
       String redefinitionCode = "z = 1\n";
       String restoreCode = "z = _zc\n";
-      String validCode = "print(z)\n";
+      String validCode = "z.input(\"test\")\n";
 
       assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
-      assertEquals(InterpreterResult.Code.ERROR, pySparkInterpreter.interpret(redefinitionCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(redefinitionCode, context).code());
+      assertEquals(InterpreterResult.Code.ERROR, pySparkInterpreter.interpret(validCode, context).code());
       assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(restoreCode, context).code());
       assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
     }
