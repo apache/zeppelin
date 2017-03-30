@@ -141,9 +141,9 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Import implicits, UDF collection, and sql if set true.</td>
   </tr>
   <tr>
-    <td>zeppelin.spark.unSupportedVersionCheck</td>
+    <td>zeppelin.spark.enableSupportedVersionCheck</td>
     <td>true</td>
-    <td>Don't change it, It is only for zeppelin developer use, not safe or use in production</td>
+    <td>Do not change - developer only setting, not for production use</td>
   </tr>
 </table>
 

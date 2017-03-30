@@ -108,8 +108,7 @@ public class SparkRInterpreter extends Interpreter {
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.populateSparkWebUrl(interpreterContext);
-    if (sparkInterpreter.isUnsupportedVersionCheck
-      && sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+    if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }

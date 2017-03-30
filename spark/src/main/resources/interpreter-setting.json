@@ -56,9 +56,9 @@
       },
       "zeppelin.spark.unSupportedVersionCheck": {
         "envName": null,
-        "propertyName": "zeppelin.spark.unSupportedVersionCheck",
+        "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
         "defaultValue": "true",
-        "description": "Don't change it, It is only for zeppelin developer use, not safe to use in production"
+        "description": "Do not change - developer only setting, not for production use"
       }
     },
     "editor": {
