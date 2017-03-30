@@ -24,7 +24,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
@@ -34,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -152,11 +155,38 @@ public class HeliumBundleFactory {
     return new File(heliumBundleDirectory, artifact + "/" + HELIUM_BUNDLE_CACHE);
   }
 
-  public void downloadPackage(HeliumPackage pkg, File bundleDir,
+  public static List<String> unTgz(File tarFile, File directory) throws IOException {
+    List<String> result = new ArrayList<String>();
+    InputStream is = new FileInputStream(tarFile);
+    GzipCompressorInputStream gcis = new GzipCompressorInputStream(is);
+    TarArchiveInputStream in = new TarArchiveInputStream(gcis);
+    TarArchiveEntry entry = in.getNextTarEntry();
+    while (entry != null) {
+      if (entry.isDirectory()) {
+        entry = in.getNextTarEntry();
+        continue;
+      }
+      File curfile = new File(directory, entry.getName());
+      File parent = curfile.getParentFile();
+      if (!parent.exists()) {
+        parent.mkdirs();
+      }
+      OutputStream out = new FileOutputStream(curfile);
+      IOUtils.copy(in, out);
+      out.close();
+      result.add(entry.getName());
+      entry = in.getNextTarEntry();
+    }
+    in.close();
+    return result;
+  }
+
+  public void downloadPackage(HeliumPackage pkg, String[] nameAndVersion, File bundleDir,
                               String templateWebpackConfig, String templatePackageJson,
-                              FileFilter npmPackageCopyFilter) throws IOException {
+                              FileFilter npmPackageCopyFilter,
+                              FrontendPluginFactory fpf) throws IOException, TaskRunnerException {
     if (bundleDir.exists()) {
-      FileUtils.deleteDirectory(bundleDir);
+      FileUtils.deleteQuietly(bundleDir);
     }
     FileUtils.forceMkdir(bundleDir);
 
@@ -165,9 +195,24 @@ public class HeliumBundleFactory {
               new File(pkg.getArtifact()),
               bundleDir,
               npmPackageCopyFilter);
+
+    } else {
+      // if online package
+      String version = nameAndVersion[1];
+      File tgz = new File(heliumLocalRepoDirectory, pkg.getName() + "-" + version + ".tgz");
+      tgz.delete();
+
+      // wget, extract and move dir to `bundles/${pkg.getName()}`, and remove tgz
+      npmCommand(fpf, "pack " + pkg.getArtifact());
+      File extracted = new File(heliumBundleDirectory, "package");
+      FileUtils.deleteDirectory(extracted);
+      unTgz(tgz, heliumBundleDirectory);
+      tgz.delete();
+      FileUtils.copyDirectory(extracted, bundleDir);
+      FileUtils.deleteDirectory(extracted);
     }
 
-    // setup dependencies
+    // 1. setup package.json
     File existingPackageJson = new File(bundleDir, "package.json");
     JsonReader reader = new JsonReader(new FileReader(existingPackageJson));
     Map<String, Object> packageJson = gson.fromJson(reader,
@@ -201,7 +246,7 @@ public class HeliumBundleFactory {
       }
     }
 
-    FileUtils.forceDelete(new File(bundleDir, PACKAGE_JSON));
+    FileUtils.deleteQuietly(new File(bundleDir, PACKAGE_JSON));
     templatePackageJson = templatePackageJson.replaceFirst("PACKAGE_NAME", pkg.getName());
     templatePackageJson = templatePackageJson.replaceFirst("MAIN_FILE", mainFileName);
     templatePackageJson = templatePackageJson.replaceFirst("DEPENDENCIES", dependencies.toString());
@@ -210,12 +255,6 @@ public class HeliumBundleFactory {
     // 2. setup webpack.config
     templateWebpackConfig = templateWebpackConfig.replaceFirst("MAIN_FILE", "./" + mainFileName);
     FileUtils.write(new File(bundleDir, "webpack.config.js"), templateWebpackConfig);
-
-    // if remote package
-    // TODO
-    // npm pack pkg.getArtifact()
-    // tar -zxvf pkg.getArtifact().tgz
-    // rename directoryt `package` to ~~~
   }
 
   public void prepareSource(HeliumPackage pkg, String[] moduleNameVersion,
@@ -247,13 +286,9 @@ public class HeliumBundleFactory {
               String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
                               "--fetch-retry-mintimeout=%d",
                       FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
-      npmCommand(fpf, commandForNpmInstall);
+      yarnCommand(fpf, commandForNpmInstall);
     } catch (TaskRunnerException e) {
-      // ignore `(empty)` warning
-      String cause = new String(out.toByteArray());
-      if (!cause.contains("(empty)")) {
-        throw new IOException(cause);
-      }
+      throw new IOException(e);
     }
   }
 
@@ -261,7 +296,7 @@ public class HeliumBundleFactory {
                                                File bundleDir) throws IOException {
     try {
       out.reset();
-      npmCommand(fpf, "run bundle");
+      yarnCommand(fpf, "run bundle");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
     }
@@ -302,18 +337,24 @@ public class HeliumBundleFactory {
       return;
     }
     String pkgName = pkg.getName();
+
+    // 0. prepare directory
     File bundleDir = getHeliumPackageDirectory(pkgName);
+    FrontendPluginFactory fpf = new FrontendPluginFactory(
+            bundleDir, heliumLocalRepoDirectory);
 
     // 1. download project
-    downloadPackage(pkg, bundleDir, templateWebpackConfig,
-            templatePackageJson, npmPackageCopyFilter);
+    try {
+      downloadPackage(pkg, moduleNameVersion, bundleDir, templateWebpackConfig,
+              templatePackageJson, npmPackageCopyFilter, fpf);
+    } catch (TaskRunnerException e) {
+      throw new IOException(e);
+    }
 
     // 2. prepare bundle source
     prepareSource(pkg, moduleNameVersion, index);
 
     // 3. install npm modules for a bundle
-    FrontendPluginFactory fpf = new FrontendPluginFactory(
-            bundleDir, heliumLocalRepoDirectory);
     installNodeModules(fpf);
 
     // 4. let's bundle and update cache
@@ -529,11 +570,22 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
-    npmCommand(fpf, args, new HashMap<String, String>());
+    npmCommand(args, new HashMap<String, String>());
   }
 
   private void npmCommand(FrontendPluginFactory fpf,
                           String args, Map<String, String> env) throws TaskRunnerException {
+    installNodeAndNpm();
+    NpmRunner npm = fpf.getNpmRunner(getProxyConfig(), defaultNpmRegistryUrl);
+    npm.execute(args, env);
+  }
+
+  private void yarnCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
+    yarnCommand(fpf, args, new HashMap<String, String>());
+  }
+
+  private void yarnCommand(FrontendPluginFactory fpf,
+                           String args, Map<String, String> env) throws TaskRunnerException {
     installNodeAndNpm();
     YarnRunner yarn = fpf.getYarnRunner(getProxyConfig(), defaultNpmRegistryUrl);
     yarn.execute(args, env);
