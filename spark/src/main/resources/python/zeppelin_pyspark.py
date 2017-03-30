@@ -282,8 +282,8 @@ else:
 sqlContext = sqlc
 
 completion = PySparkCompletion(intp)
-z = PyZeppelinContext(intp.getZeppelinContext())
-z._setup_matplotlib()
+z = _zc = PyZeppelinContext(intp.getZeppelinContext())
+_zc._setup_matplotlib()
 
 while True :
   req = intp.getStatements()
@@ -299,7 +299,7 @@ while True :
       global_hook = None
       
     try:
-      user_hook = z.getHook('post_exec')
+      user_hook = _zc.getHook('post_exec')
     except:
       user_hook = None
       
