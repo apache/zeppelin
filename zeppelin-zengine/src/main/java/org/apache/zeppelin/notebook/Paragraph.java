@@ -138,7 +138,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public Paragraph cloneParagraphForUser(String user) {
     Paragraph p = new Paragraph();
     p.settings.setParams(Maps.newHashMap(settings.getParams()));
-    p.settings.setForms(Maps.newHashMap(settings.getForms()));
+    p.settings.setForms(Maps.newLinkedHashMap(settings.getForms()));
     p.setConfig(Maps.newHashMap(config));
     p.setTitle(getTitle());
     p.setText(getText());
@@ -388,8 +388,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       settings.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
-      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
-      // from script body
+      // inputs will be built from script body
+      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(scriptBody);
 
       final AngularObjectRegistry angularRegistry =
           repl.getInterpreterGroup().getAngularObjectRegistry();

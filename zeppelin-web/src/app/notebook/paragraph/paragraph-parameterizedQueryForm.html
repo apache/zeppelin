@@ -15,7 +15,7 @@ limitations under the License.
       ng-show="!paragraph.config.tableHide"
       class=" paragraphForm form-horizontal row">
   <div class="form-group col-sm-6 col-md-6 col-lg-4"
-       ng-repeat="formulaire in paragraph.settings.forms | toArray | orderBy:'name.toString()'"
+       ng-repeat="formulaire in paragraph.settings.forms | toArray"
        ng-init="loadForm(formulaire, paragraph.settings.params)">
     <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
     <div>

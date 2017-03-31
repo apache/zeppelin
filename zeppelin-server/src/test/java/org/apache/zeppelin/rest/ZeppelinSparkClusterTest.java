@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -455,5 +456,30 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         String[] split = sparkVersion.split("\\.");
         int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
         return version;
+    }
+
+    @Test
+    public void testZeppelinContextDynamicForms() throws IOException {
+        Note note = ZeppelinServer.notebook.createNote(anonymous);
+        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        note.setName("note");
+        Map config = p.getConfig();
+        config.put("enabled", true);
+        p.setConfig(config);
+        String code = "%spark.spark z.input(\"my_input\", \"default_name\")\n" +
+            "z.select(\"my_select\", \"select_2\"," +
+            "Seq((\"1\", \"select_1\"), (\"2\", \"select_2\")))\n" +
+            "z.checkbox(\"my_checkbox\", Seq(\"check_1\"), " +
+            "Seq((\"1\", \"check_1\"), (\"2\", \"check_2\")))";
+        p.setText(code);
+        p.setAuthenticationInfo(anonymous);
+        note.run(p.getId());
+        waitForFinish(p);
+
+        assertEquals(Status.FINISHED, p.getStatus());
+        Iterator<String> formIter = p.settings.getForms().keySet().iterator();
+        assert(formIter.next().equals("my_input"));
+        assert(formIter.next().equals("my_select"));
+        assert(formIter.next().equals("my_checkbox"));
     }
 }
