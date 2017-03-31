@@ -139,8 +139,8 @@ public class HeliumBundleFactory {
     return new ProxyConfig(proxy);
   }
 
-  public File buildAllPackages(List<HeliumPackage> pkgs) throws IOException {
-    return buildAllPackages(pkgs, false);
+  public void buildAllPackages(List<HeliumPackage> pkgs) throws IOException {
+    buildAllPackages(pkgs, false);
   }
 
   public File getHeliumPackageDirectory(String pkgName) {
@@ -388,16 +388,11 @@ public class HeliumBundleFactory {
     return bundleCache;
   }
 
-  public synchronized File buildAllPackages(List<HeliumPackage> pkgs, boolean forceRefresh)
+  public synchronized void buildAllPackages(List<HeliumPackage> pkgs, boolean rebuild)
       throws IOException {
 
     if (pkgs == null || pkgs.size() == 0) {
-      // when no package is selected, simply return an empty file instead of try bundle package
-      currentCacheBundle.getParentFile().mkdirs();
-      currentCacheBundle.delete();
-      currentCacheBundle.createNewFile();
-      bundleCacheKey = "";
-      return currentCacheBundle;
+      return;
     }
 
     installNodeAndNpm();
@@ -406,10 +401,8 @@ public class HeliumBundleFactory {
     copyFrameworkModuleToInstallPath();
 
     for (HeliumPackage pkg : pkgs) {
-      buildPackage(pkg, forceRefresh);
+      buildPackage(pkg, rebuild);
     }
-
-    return currentCacheBundle;
   }
 
   private void copyFrameworkModuleToInstallPath()

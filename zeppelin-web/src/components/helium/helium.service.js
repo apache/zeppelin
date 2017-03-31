@@ -264,7 +264,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     //   console.error(response);
     //   return
     // }
-    
+
     // evaluate bundles
     availableBundles.map(b => {
       eval(b)
