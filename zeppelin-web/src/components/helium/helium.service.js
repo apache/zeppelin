@@ -151,7 +151,13 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
     return $http.get(url)
       .then(function(response, status) {
-        return response.data;
+        const bundle = response.data
+        if (bundle.substring(0, 'ERROR:'.length) === 'ERROR:') {
+          console.error(`Failed to get bundle: ${pkgName}`, bundle);
+          return '' // empty bundle will be filtered later
+        }
+
+        return bundle
       })
       .catch(function(error) {
         console.error(`Failed to get single bundle: ${pkgName}`, error);
@@ -260,10 +266,6 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
   // load should be promise
   this.load = p.then(availableBundles => {
-    // if (response.substring(0, 'ERROR:'.length) === 'ERROR:') {
-    //   console.error(response);
-    //   return
-    // }
 
     // evaluate bundles
     availableBundles.map(b => {

@@ -272,7 +272,7 @@ public class HeliumBundleFactory {
 
     // remove postfix `.js` for ES6 import
     if (mainFileName.endsWith(".js")) {
-      mainFileName = mainFileName.substring(0, mainFileName.length() - 2);
+      mainFileName = mainFileName.substring(0, mainFileName.length() - 3);
     }
 
     loadJsImport
