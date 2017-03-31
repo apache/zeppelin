@@ -403,7 +403,11 @@ public class HeliumBundleFactory {
     copyFrameworkModuleToInstallPath();
 
     for (HeliumPackage pkg : pkgs) {
-      buildPackage(pkg, rebuild);
+      try {
+        buildPackage(pkg, rebuild);
+      } catch (IOException e) {
+        logger.error("Failed to build helium package: " + pkg.getArtifact(), e);
+      }
     }
   }
 
