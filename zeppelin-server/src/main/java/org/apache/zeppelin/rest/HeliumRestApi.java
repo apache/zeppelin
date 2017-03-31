@@ -172,7 +172,7 @@ public class HeliumRestApi {
 
   @POST
   @Path("disable/{packageName}")
-  public Response enablePackage(@PathParam("packageName") String packageName) {
+  public Response disablePackage(@PathParam("packageName") String packageName) {
     try {
       helium.disable(packageName);
       return new JsonResponse(Response.Status.OK).build();

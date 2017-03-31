@@ -293,14 +293,13 @@ public class Helium {
       return;
     }
 
-    // enable package
-    heliumConf.enablePackage(name, artifact);
-
     // if package is visualization, rebuild bundle
     if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildAllPackages(getBundlePackagesToBundle());
+      bundleFactory.buildPackage(pkgInfo.getPkg());
     }
 
+    // update conf and save
+    heliumConf.enablePackage(name, artifact);
     save();
   }
 
@@ -311,13 +310,8 @@ public class Helium {
       return;
     }
 
+    // update conf and save
     heliumConf.disablePackage(name);
-
-    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
-    if (pkgInfo == null || HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildAllPackages(getBundlePackagesToBundle());
-    }
-
     save();
   }
 
