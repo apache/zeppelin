@@ -2,7 +2,6 @@ angular.module("app", ['ui.bootstrap'])
   .controller("HeliumPkgCtrl", function($rootScope, $scope, $window, $sce) {
   $rootScope.keys = Object.keys
   $scope.HeliumPkgs = zeppelinHeliumPackages
-  $scope.npmWebLink = 'https://www.npmjs.com/package'
   $scope.intpDefaultIcon = $sce.trustAsHtml('<img src="assets/themes/zeppelin/img/maven_default_icon.png" style="width: 12px"/>');
   $scope.latestPkgInfo = {}
   $scope.allTypePkgs = {}
