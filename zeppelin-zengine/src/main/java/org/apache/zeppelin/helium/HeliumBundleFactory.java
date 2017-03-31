@@ -396,8 +396,6 @@ public class HeliumBundleFactory {
     }
 
     installNodeAndNpm();
-
-    // copy zeppelin framework modules
     copyFrameworkModuleToInstallPath();
 
     for (HeliumPackage pkg : pkgs) {
@@ -405,7 +403,7 @@ public class HeliumBundleFactory {
     }
   }
 
-  private void copyFrameworkModuleToInstallPath()
+  void copyFrameworkModuleToInstallPath()
       throws IOException {
 
     FileFilter npmPackageCopyFilter = new FileFilter() {

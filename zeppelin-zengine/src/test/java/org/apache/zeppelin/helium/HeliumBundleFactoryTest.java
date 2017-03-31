@@ -40,7 +40,7 @@ public class HeliumBundleFactoryTest {
   private HeliumBundleFactory hbf;
 
   @Before
-  public void setUp() throws InstallationException, TaskRunnerException {
+  public void setUp() throws InstallationException, TaskRunnerException, IOException {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
 
@@ -56,6 +56,8 @@ public class HeliumBundleFactoryTest {
         new File(moduleDir, "tabledata"),
         new File(moduleDir, "visualization"),
         new File(moduleDir, "spell"));
+
+    hbf.copyFrameworkModuleToInstallPath();
   }
 
   @After
