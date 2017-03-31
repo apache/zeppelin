@@ -31,7 +31,7 @@ We encourage to [download](../../download.html) the latest release. Feedback thr
 
 ### Improvements
    * Rewrite python interpreter for streaming output and seamless matplotlib support
-   * Make dynamic select form turn on or off using checkbox
+   * Add user configurable option in UI which enable/disable dynamic form(select, checkbox) run on change
 
 ### Fixes
    * z.show() doesn't show dataframe
@@ -56,4 +56,4 @@ Lee moon soo, Jongyoul Lee, 1ambda, Prabhjyot Singh, AhyoungRyu, Jeff Zhang, Min
 
 The following people helped verifying this release:
 
-Jeff Zhang, Ahyoung Ryu, CloverHeartsDev, Sora Lee, Jongyoul Lee, DuyHai Doan, Hyung Sung Shim, Mina Lee, Windy Qin
+Jeff Zhang, Ahyoung Ryu, CloverHeartsDev, Sora Lee, Jongyoul Lee, DuyHai Doan, Hyung Sung Shim, Mina Lee, Windy Qin, Jun Kim, Anthony Corbacho, Khalid Huseynov, Felix Cheung, moon soo Lee, Prabhjyot Singh
