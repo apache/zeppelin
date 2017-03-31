@@ -301,7 +301,9 @@ public class HeliumBundleFactory {
               String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
                               "--fetch-retry-mintimeout=%d",
                       FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      logger.info("Installing required node modules");
       yarnCommand(fpf, commandForNpmInstall);
+      logger.info("Installed required node modules");
     } catch (TaskRunnerException e) {
       throw new IOException(e);
     }
@@ -311,7 +313,9 @@ public class HeliumBundleFactory {
                                                File bundleDir) throws IOException {
     try {
       out.reset();
+      logger.info("Bundling helium packages");
       yarnCommand(fpf, "run bundle");
+      logger.info("Bundled helium packages");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
     }
@@ -573,13 +577,6 @@ public class HeliumBundleFactory {
 
   private void npmCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
     npmCommand(args, new HashMap<String, String>());
-  }
-
-  private void npmCommand(FrontendPluginFactory fpf,
-                          String args, Map<String, String> env) throws TaskRunnerException {
-    installNodeAndNpm();
-    NpmRunner npm = fpf.getNpmRunner(getProxyConfig(), defaultNpmRegistryUrl);
-    npm.execute(args, env);
   }
 
   private void yarnCommand(FrontendPluginFactory fpf, String args) throws TaskRunnerException {
