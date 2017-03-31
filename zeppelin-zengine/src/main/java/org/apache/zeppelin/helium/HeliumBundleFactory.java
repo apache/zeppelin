@@ -143,16 +143,16 @@ public class HeliumBundleFactory {
     return buildAllPackages(pkgs, false);
   }
 
-  public File getHeliumPackageDirectory(String artifact) {
-    return new File(heliumBundleDirectory, artifact);
+  public File getHeliumPackageDirectory(String pkgName) {
+    return new File(heliumBundleDirectory, pkgName);
   }
 
-  public File getHeliumPackageSourceDirectory(String artifact) {
-    return new File(heliumBundleDirectory, artifact + "/" + HELIUM_BUNDLES_SRC_DIR);
+  public File getHeliumPackageSourceDirectory(String pkgName) {
+    return new File(heliumBundleDirectory, pkgName + "/" + HELIUM_BUNDLES_SRC_DIR);
   }
 
-  public File getHeliumPackageBundleCache(String artifact) {
-    return new File(heliumBundleDirectory, artifact + "/" + HELIUM_BUNDLE_CACHE);
+  public File getHeliumPackageBundleCache(String pkgName) {
+    return new File(heliumBundleDirectory, pkgName + "/" + HELIUM_BUNDLE_CACHE);
   }
 
   public static List<String> unTgz(File tarFile, File directory) throws IOException {
@@ -181,9 +181,12 @@ public class HeliumBundleFactory {
     return result;
   }
 
-  public void downloadPackage(HeliumPackage pkg, String[] nameAndVersion, File bundleDir,
-                              String templateWebpackConfig, String templatePackageJson,
-                              FrontendPluginFactory fpf) throws IOException, TaskRunnerException {
+  /**
+   * @return main file name of this helium package (relative path)
+   */
+  public String downloadPackage(HeliumPackage pkg, String[] nameAndVersion, File bundleDir,
+                                String templateWebpackConfig, String templatePackageJson,
+                                FrontendPluginFactory fpf) throws IOException, TaskRunnerException {
     if (bundleDir.exists()) {
       FileUtils.deleteQuietly(bundleDir);
     }
@@ -230,13 +233,6 @@ public class HeliumBundleFactory {
     Map<String, String> existingDeps = (Map<String, String>) packageJson.get("dependencies");
     String mainFileName = (String) packageJson.get("main");
 
-    // package.json doesn't require postfix `.js`, but webpack needs it.
-    if (!mainFileName.endsWith(".js") &&
-        !(new File(bundleDir, mainFileName).exists()) &&
-        (new File(bundleDir, mainFileName + ".js").exists())) {
-      mainFileName = mainFileName + ".js";
-    }
-
     StringBuilder dependencies = new StringBuilder();
     int index = 0;
     for (Map.Entry<String, String> e: existingDeps.entrySet()) {
@@ -263,16 +259,26 @@ public class HeliumBundleFactory {
     FileUtils.write(new File(bundleDir, PACKAGE_JSON), templatePackageJson);
 
     // 2. setup webpack.config
-    templateWebpackConfig = templateWebpackConfig.replaceFirst("MAIN_FILE", "./" + mainFileName);
     FileUtils.write(new File(bundleDir, "webpack.config.js"), templateWebpackConfig);
+
+    return mainFileName;
   }
 
-  public void prepareSource(HeliumPackage pkg, String[] moduleNameVersion) throws IOException {
+  public void prepareSource(HeliumPackage pkg, String[] moduleNameVersion,
+                            String mainFileName) throws IOException {
     StringBuilder loadJsImport = new StringBuilder();
     StringBuilder loadJsRegister = new StringBuilder();
     String className = "bundles" + pkg.getName().replaceAll("[-_]", "");
-    loadJsImport.append(
-            "import " + className + " from \"" + moduleNameVersion[0] + "\"\n");
+
+    // remove postfix `.js` for ES6 import
+    if (mainFileName.endsWith(".js")) {
+      mainFileName = mainFileName.substring(0, mainFileName.length() - 2);
+    }
+
+    loadJsImport
+        .append("import ")
+        .append(className)
+        .append(" from \"../" + mainFileName + "\"\n");
 
     loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
     loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
@@ -326,53 +332,60 @@ public class HeliumBundleFactory {
     return heliumBundle;
   }
 
-  public synchronized void buildPackage(HeliumPackage pkg) throws IOException {
-    // resources: webpack.js, package.json
-    String templateWebpackConfig = Resources.toString(
-            Resources.getResource("helium/webpack.config.js"), Charsets.UTF_8);
-    String templatePackageJson = Resources.toString(
-            Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
-
+  public synchronized File buildPackage(HeliumPackage pkg, boolean rebuild) throws IOException {
     if (pkg == null) {
-      return;
+      return null;
     }
 
     String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
     if (moduleNameVersion == null) {
-      return;
+      return null;
     }
 
     if (moduleNameVersion == null) {
       logger.error("Can't get module name and version of package " + pkg.getName());
-      return;
+      return null;
     }
+
     String pkgName = pkg.getName();
+    File bundleDir = getHeliumPackageDirectory(pkgName);
+    File bundleCache = getHeliumPackageBundleCache(pkgName);
+
+    if (!rebuild && bundleCache.exists() && !bundleCache.isDirectory()) {
+      return bundleCache;
+    }
 
     // 0. prepare directory
-    File bundleDir = getHeliumPackageDirectory(pkgName);
     FrontendPluginFactory fpf = new FrontendPluginFactory(
             bundleDir, heliumLocalRepoDirectory);
 
+    // resources: webpack.js, package.json
+    String templateWebpackConfig = Resources.toString(
+        Resources.getResource("helium/webpack.config.js"), Charsets.UTF_8);
+    String templatePackageJson = Resources.toString(
+        Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
+
     // 1. download project
+    String mainFileName = null;
     try {
-      downloadPackage(pkg, moduleNameVersion, bundleDir,
+      mainFileName = downloadPackage(pkg, moduleNameVersion, bundleDir,
               templateWebpackConfig, templatePackageJson, fpf);
     } catch (TaskRunnerException e) {
       throw new IOException(e);
     }
 
     // 2. prepare bundle source
-    prepareSource(pkg, moduleNameVersion);
+    prepareSource(pkg, moduleNameVersion, mainFileName);
 
     // 3. install npm modules for a bundle
     installNodeModules(fpf);
 
     // 4. let's bundle and update cache
     File heliumBundle = bundleHeliumPackage(fpf, bundleDir);
+    bundleCache.delete();
+    FileUtils.moveFile(heliumBundle, bundleCache);
 
-    File cache = getHeliumPackageBundleCache(pkgName);
-    cache.delete();
-    FileUtils.moveFile(heliumBundle, cache);
+    return bundleCache;
   }
 
   public synchronized File buildAllPackages(List<HeliumPackage> pkgs, boolean forceRefresh)
@@ -393,7 +406,7 @@ public class HeliumBundleFactory {
     copyFrameworkModuleToInstallPath();
 
     for (HeliumPackage pkg : pkgs) {
-      buildPackage(pkg);
+      buildPackage(pkg, forceRefresh);
     }
 
     return currentCacheBundle;

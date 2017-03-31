@@ -242,6 +242,22 @@ public class Helium {
     }
   }
 
+  public List<HeliumPackageSearchResult> getAllEnabledPackages() {
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
+    List<HeliumPackageSearchResult> enabledPackages = new ArrayList<>();
+
+    for (List<HeliumPackageSearchResult> versionedPackages : allPackages.values()) {
+      for (HeliumPackageSearchResult psr : versionedPackages) {
+        if (psr.isEnabled()) {
+          enabledPackages.add(psr);
+          break;
+        }
+      }
+    }
+
+    return enabledPackages;
+  }
+
   public List<HeliumPackageSearchResult> getSinglePackageInfo(String packageName) {
     Map<String, List<HeliumPackageSearchResult>> result = getAllPackageInfo(false, packageName);
 
@@ -281,8 +297,8 @@ public class Helium {
     return null;
   }
 
-  public File recreateBundle() throws IOException {
-    return bundleFactory.buildAllPackages(getBundlePackagesToBundle(), true);
+  public File getBundle(HeliumPackage pkg, boolean rebuild) throws IOException {
+    return bundleFactory.buildPackage(pkg, rebuild);
   }
 
   public void enable(String name, String artifact) throws IOException {
@@ -295,7 +311,7 @@ public class Helium {
 
     // if package is visualization, rebuild bundle
     if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildPackage(pkgInfo.getPkg());
+      bundleFactory.buildPackage(pkgInfo.getPkg(), true);
     }
 
     // update conf and save

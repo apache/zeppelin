@@ -16,7 +16,7 @@
  */
 
 module.exports = {
-    entry: 'MAIN_FILE',
+    entry: './src/load.js',
     output: { path: './', filename: 'helium.bundle.js', },
   module: {
     loaders: [
