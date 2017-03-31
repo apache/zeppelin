@@ -56,14 +56,14 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>URL where livy server is running</td>
   </tr>
   <tr>
-    <td>zeppelin.livy.spark.maxResult</td>
+    <td>zeppelin.livy.spark.sql.maxResult</td>
     <td>1000</td>
     <td>Max number of Spark SQL result to display.</td>
   </tr>
   <tr>
-    <td>zeppelin.livy.spark.sql.truncate</td>
+    <td>zeppelin.livy.spark.sql.field.truncate</td>
     <td>true</td>
-    <td>Whether to truncate strings or not</td>
+    <td>Whether to truncate field values longer than 20 characters or not</td>
   </tr>
   <tr>
     <td>zeppelin.livy.session.create_timeout</td>

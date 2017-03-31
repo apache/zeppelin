@@ -32,6 +32,12 @@ import java.util.Properties;
  */
 public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
+  public static final String ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE =
+      "zeppelin.livy.spark.sql.field.truncate";
+
+  public static final String ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT =
+      "zeppelin.livy.spark.sql.maxResult";
+
   private LivySparkInterpreter sparkInterpreter;
 
   private boolean isSpark2 = false;
@@ -40,10 +46,10 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
-    this.maxResult = Integer.parseInt(property.getProperty("zeppelin.livy.spark.sql.maxResult"));
-    if (property.getProperty("zeppelin.livy.spark.sql.truncate") != null) {
+    this.maxResult = Integer.parseInt(property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT));
+    if (property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE) != null) {
       this.truncate =
-          Boolean.parseBoolean(property.getProperty("zeppelin.livy.spark.sql.truncate"));
+          Boolean.parseBoolean(property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE));
     }
   }
 

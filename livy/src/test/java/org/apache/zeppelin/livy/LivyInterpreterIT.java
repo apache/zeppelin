@@ -377,7 +377,7 @@ public class LivyInterpreterIT {
     for (Object name: properties.keySet()) {
       newProps.put(name, properties.get(name));
     }
-    newProps.put("zeppelin.livy.spark.sql.truncate", "false");
+    newProps.put(LivySparkSQLInterpreter.ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE, "false");
     LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(newProps);
     sparkInterpreter.setInterpreterGroup(interpreterGroup);
     interpreterGroup.get("session_1").add(sparkInterpreter);
