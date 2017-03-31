@@ -64,6 +64,7 @@ public class HeliumBundleFactory {
   private final int FETCH_RETRY_MIN_TIMEOUT = 5000; // Milliseconds
 
   private final FrontendPluginFactory frontEndPluginFactory;
+  private final File nodeInstallationDirectory;
   private final File heliumLocalRepoDirectory;
   private final File heliumBundleDirectory;
   private final File heliumLocalModuleDirectory;
@@ -75,18 +76,16 @@ public class HeliumBundleFactory {
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
 
-  String bundleCacheKey = "";
-  File currentCacheBundle;
-
   ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
   public HeliumBundleFactory(
       ZeppelinConfiguration conf,
+      File nodeInstallationDir,
       File moduleDownloadPath,
       File tabledataModulePath,
       File visualizationModulePath,
       File spellModulePath) throws TaskRunnerException {
-    this(conf, moduleDownloadPath);
+    this(conf, nodeInstallationDir, moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
     this.spellModulePath = spellModulePath;
@@ -94,20 +93,21 @@ public class HeliumBundleFactory {
 
   public HeliumBundleFactory(
       ZeppelinConfiguration conf,
+      File nodeInstallationDir,
       File moduleDownloadPath) throws TaskRunnerException {
     this.heliumLocalRepoDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
     this.conf = conf;
     this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
-    File installDirectory = heliumLocalRepoDirectory;
+
+    nodeInstallationDirectory = (nodeInstallationDir == null) ?
+        heliumLocalRepoDirectory : nodeInstallationDir;
 
     frontEndPluginFactory = new FrontendPluginFactory(
-            heliumLocalRepoDirectory, installDirectory);
+            heliumLocalRepoDirectory, nodeInstallationDirectory);
 
     gson = new Gson();
-    // TODO(1ambda): remove
-    currentCacheBundle = new File(heliumLocalRepoDirectory, HELIUM_BUNDLE_CACHE);
   }
 
   void installNodeAndNpm() {
@@ -357,7 +357,7 @@ public class HeliumBundleFactory {
 
     // 0. prepare directory
     FrontendPluginFactory fpf = new FrontendPluginFactory(
-            bundleDir, heliumLocalRepoDirectory);
+            bundleDir, nodeInstallationDirectory);
 
     // resources: webpack.js, package.json
     String templateWebpackConfig = Resources.toString(
@@ -504,16 +504,6 @@ public class HeliumBundleFactory {
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new WebpackResult();
-    }
-  }
-
-  public File getCurrentCacheBundle() {
-    synchronized (this) {
-      if (currentCacheBundle.isFile()) {
-        return currentCacheBundle;
-      } else {
-        return null;
-      }
     }
   }
 

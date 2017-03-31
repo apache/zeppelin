@@ -22,6 +22,7 @@ import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -38,6 +39,13 @@ public class HeliumBundleFactoryTest {
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private HeliumBundleFactory hbf;
+  static File nodeInstallationDir = new File(
+      System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_nodeCache");
+
+  @BeforeClass
+  static public void beforeAll() throws IOException {
+    FileUtils.deleteDirectory(nodeInstallationDir);
+  }
 
   @Before
   public void setUp() throws InstallationException, TaskRunnerException, IOException {
@@ -52,6 +60,7 @@ public class HeliumBundleFactoryTest {
     conf = new ZeppelinConfiguration();
 
     hbf = new HeliumBundleFactory(conf,
+        nodeInstallationDir,
         tmpDir,
         new File(moduleDir, "tabledata"),
         new File(moduleDir, "visualization"),
@@ -67,17 +76,9 @@ public class HeliumBundleFactoryTest {
 
   @Test
   public void testInstallNpm() throws InstallationException {
-    assertFalse(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/npm").isFile());
-    assertFalse(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/node").isFile());
-
-    hbf.installNodeAndNpm();
-
-    assertTrue(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/npm").isFile());
-    assertTrue(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/node").isFile());
+    assertTrue(new File(nodeInstallationDir, "/node/npm").isFile());
+    assertTrue(new File(nodeInstallationDir, "/node/node").isFile());
+    assertTrue(new File(nodeInstallationDir, "/node/yarn/dist/bin/yarn").isFile());
   }
 
   @Test
