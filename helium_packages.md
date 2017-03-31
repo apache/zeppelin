@@ -70,7 +70,13 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
                  ng-if="pkg.type === 'INTERPRETER'"
                  ng-bind-html="intpDefaultIcon"></div>
             <div class="heliumPackageName">
-              <a ng-href="{% raw %}{{npmWebLink}}/{{pkg.name}}{% endraw %}"
+              <a ng-if="pkg.type !== 'INTERPRETER'"
+                 ng-href="https://www.npmjs.com/package/{% raw %}{{pkg.name}}{% endraw %}"
+                 target="_blank">
+                 {% raw %}{{pkg.name}}{% endraw %}
+              </a>
+              <a ng-if="pkg.type === 'INTERPRETER'"
+                 ng-href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{% raw %}{{pkg.artifactId}}{% endraw %}%22%20AND%20v%3A%22{% raw %}{{pkg.version}}{% endraw %}%22"
                  target="_blank">
                  {% raw %}{{pkg.name}}{% endraw %}
               </a>
@@ -108,7 +114,13 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
                  ng-if="pkg.type === 'INTERPRETER'"
                  ng-bind-html="intpDefaultIcon"></div>
             <div class="heliumPackageName">
-              <a ng-href="{% raw %}{{npmWebLink}}/{{pkg.name}}{% endraw %}"
+              <a ng-if="pkg.type !== 'INTERPRETER'"
+                 ng-href="https://www.npmjs.com/package/{% raw %}{{pkg.name}}{% endraw %}"
+                 target="_blank">
+                 {% raw %}{{pkg.name}}{% endraw %}
+              </a>
+              <a ng-if="pkg.type === 'INTERPRETER'"
+                 ng-href="http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22{% raw %}{{pkg.artifactId}}{% endraw %}%22%20AND%20v%3A%22{% raw %}{{pkg.version}}{% endraw %}%22"
                  target="_blank">
                  {% raw %}{{pkg.name}}{% endraw %}
               </a>
