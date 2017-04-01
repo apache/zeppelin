@@ -670,6 +670,29 @@ a.anchorjs-link:hover { text-decoration: none; }
   background: #c9e2f9; 
 }
 
+/* hide arrows when current page is on first & last */
+.hide-first-boundaries.pagination > .disabled > a,
+.hide-first-boundaries.pagination > li:first-child > a,
+.hide-first-boundaries.pagination > li:first-child > span {
+  display: none;
+}
+
+.hide-first-boundaries.pagination > .active > a {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.hide-last-boundaries.pagination > .disabled > a,
+.hide-last-boundaries.pagination > li:last-child > a,
+.hide-last-boundaries.pagination > li:last-child > span {
+  display: none;
+}
+
+.hide-last-boundaries.pagination > .active > a {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
 /* For what's new section */
 .new {
   background: rgba(226, 233, 239, 0.4);
