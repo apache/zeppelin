@@ -98,6 +98,7 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
       <div class="text-center" style="margin-top: 24px;">
         <ul uib-pagination boundary-links="true" total-items="latestPkgInfo.length" 
             ng-model="currentPage" class="pagination-sm"
+            ng-class="{'hide-first-boundaries': currentPage == 1, 'hide-last-boundaries': currentPage &gt;= latestPkgInfo.length/itemsPerPage}"
             max-size="maxSize"
             items-per-page="itemsPerPage"
             previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
@@ -145,6 +146,7 @@ and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/de
         <ul uib-pagination boundary-links="true" total-items="pkgs.length" 
             ng-model="$parent.currentPage" class="pagination-sm"
             ng-show="$parent.pkgListByType === types"
+            ng-class="{'hide-first-boundaries': $parent.currentPage == 1, 'hide-last-boundaries': $parent.currentPage &gt;= pkgs.length/itemsPerPage}"
             max-size="maxSize"
             items-per-page="itemsPerPage"
             previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
