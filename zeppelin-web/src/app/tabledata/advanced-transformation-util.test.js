@@ -463,7 +463,6 @@ describe('advanced-transformation-util', () => {
       let balanceColumn = null
       let educationColumn = null
       let martialColumn = null
-      let jobColumn = null
       let tableDataRows = []
 
       beforeEach(() => {
@@ -476,7 +475,6 @@ describe('advanced-transformation-util', () => {
         balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
         educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
         martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
-        jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
@@ -711,7 +709,6 @@ describe('advanced-transformation-util', () => {
       let balanceColumn = null
       let educationColumn = null
       let martialColumn = null
-      let jobColumn = null
       const tableDataRows = JSON.parse(JSON.stringify(MockTableDataRows1))
 
       beforeEach(() => {
@@ -723,7 +720,6 @@ describe('advanced-transformation-util', () => {
         balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
         educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
         martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
-        jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
@@ -946,7 +942,6 @@ describe('advanced-transformation-util', () => {
       let balanceColumn = null
       let educationColumn = null
       let martialColumn = null
-      let jobColumn = null
       const tableDataRows = JSON.parse(JSON.stringify(MockTableDataRows1))
 
       beforeEach(() => {
@@ -958,7 +953,6 @@ describe('advanced-transformation-util', () => {
         balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
         educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
         martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
-        jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
