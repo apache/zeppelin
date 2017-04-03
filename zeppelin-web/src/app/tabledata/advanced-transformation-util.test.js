@@ -41,6 +41,7 @@ const MockAxis3 = {
   'customAxis2': { dimension: 'multiple', axisType: 'value', },
 }
 
+// test spec for axis, param, widget
 const MockSpec = {
   charts: {
     'object-chart': {
@@ -69,6 +70,45 @@ const MockSpec = {
 
     'raw-chart': {
       transform: { method: 'raw', },
+      axis: MockAxis3,
+      parameter: {
+        'rawChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
+      },
+    },
+  },
+}
+
+// test spec for transformation
+const MockSpec2 = {
+  charts: {
+    'object-chart': {
+      transform: { method: 'object', },
+      sharedAxis: false,
+      axis: MockAxis1,
+      parameter: MockParameter,
+    },
+
+    'array-chart': {
+      transform: { method: 'array', },
+      sharedAxis: false,
+      axis: MockAxis1,
+      parameter: {
+        'arrayChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
+      },
+    },
+
+    'drillDown-chart': {
+      transform: { method: 'drill-down', },
+      sharedAxis: false,
+      axis: MockAxis1,
+      parameter: {
+        'drillDownChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
+      },
+    },
+
+    'raw-chart': {
+      transform: { method: 'raw', },
+      sharedAxis: false,
       axis: MockAxis3,
       parameter: {
         'rawChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
@@ -302,8 +342,6 @@ describe('advanced-transformation-util', () => {
 
     it('should remove duplicated axis names in config', () => {
       config.chart.current = 'drillDown-chart' // set non-sharedAxis chart
-      const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
-      const axisSpec = Util.getCurrentChartAxisSpecs(config)[1] // limitedAggrAxis
 
       addColumn(config, 'columnA')
       addColumn(config, 'columnB')
@@ -313,6 +351,47 @@ describe('advanced-transformation-util', () => {
       expect(Util.getCurrentChartAxis(config)['limitedAggrAxis']).toEqual([
         'columnC', 'columnD',
       ])
+    })
+  })
+
+  describe('getColumnsFromAxis', () => {
+    it('should return proper value for regular axis spec (key, aggr, group)', () => {
+      const config = {}
+      Util.initializeConfig(config, MockSpec)
+      const chart = 'object-chart'
+      config.chart.current = chart
+
+      const axisSpecs = config.axisSpecs[chart]
+      const axis = config.axis[chart]
+      axis['keyAxis'].push('columnA')
+      axis['keyAxis'].push('columnB')
+      axis['aggrAxis'].push('columnC')
+      axis['groupAxis'].push('columnD')
+      axis['groupAxis'].push('columnE')
+      axis['groupAxis'].push('columnF')
+
+      const column = Util.getColumnsFromAxis(axisSpecs, axis)
+      expect(column.key).toEqual([ 'columnA', 'columnB', ])
+      expect(column.aggregator).toEqual([ 'columnC', ])
+      expect(column.group).toEqual([ 'columnD', 'columnE', 'columnF', ])
+    })
+
+    it('should return proper value for custom axis spec', () => {
+      const config = {}
+      Util.initializeConfig(config, MockSpec)
+      const chart = 'raw-chart' // for test custom columns
+      config.chart.current = chart
+
+      const axisSpecs = config.axisSpecs[chart]
+      const axis = config.axis[chart]
+      axis['customAxis1'] = ['columnA']
+      axis['customAxis2'].push('columnB')
+      axis['customAxis2'].push('columnC')
+      axis['customAxis2'].push('columnD')
+
+      const column = Util.getColumnsFromAxis(axisSpecs, axis)
+      expect(column.custom.unique).toEqual([ 'columnA', ])
+      expect(column.custom.value).toEqual([ 'columnB', 'columnC', 'columnD', ])
     })
   })
 
