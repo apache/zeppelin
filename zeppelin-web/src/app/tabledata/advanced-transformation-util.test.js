@@ -266,5 +266,55 @@ describe('advanced-transformation-util', () => {
 
   })
 
+  describe('removeDuplicatedColumnsInMultiDimensionAxis', () => {
+    const config = {}
+    Util.initializeConfig(config, MockSpec)
+
+    const addColumn = function(config, value) {
+      const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
+      axis.push(value)
+      const axisSpecs = Util.getCurrentChartAxisSpecs(config)
+      Util.removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpecs[1])
+    }
+
+    it('should remove duplicated axis names in config', () => {
+      config.chart.current = 'drillDown-chart' // set non-sharedAxis chart
+      addColumn(config, 'columnA')
+      addColumn(config, 'columnA')
+      addColumn(config, 'columnA')
+
+      expect(Util.getCurrentChartAxis(config)['limitedAggrAxis']).toEqual([
+        'columnA',
+      ])
+    })
+  })
+
+  describe('applyMaxAxisCount', () => {
+    const config = {}
+    Util.initializeConfig(config, MockSpec)
+
+    const addColumn = function(config, value) {
+      const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
+      axis.push(value)
+      const axisSpecs = Util.getCurrentChartAxisSpecs(config)
+      Util.applyMaxAxisCount(config, axisSpecs[1])
+    }
+
+    it('should remove duplicated axis names in config', () => {
+      config.chart.current = 'drillDown-chart' // set non-sharedAxis chart
+      const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
+      const axisSpec = Util.getCurrentChartAxisSpecs(config)[1] // limitedAggrAxis
+
+      addColumn(config, 'columnA')
+      addColumn(config, 'columnB')
+      addColumn(config, 'columnC')
+      addColumn(config, 'columnD')
+
+      expect(Util.getCurrentChartAxis(config)['limitedAggrAxis']).toEqual([
+        'columnC', 'columnD',
+      ])
+    })
+  })
+
 })
 
