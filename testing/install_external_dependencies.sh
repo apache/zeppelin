@@ -20,15 +20,17 @@
 set -ev
 touch ~/.environ
 
-# Install R dependencies
-echo "R_LIBS=~/R" > ~/.Renviron
-echo "export R_LIBS=~/R" >> ~/.environ
-source ~/.environ
-if [[ ! -d "$HOME/R/knitr" ]] ; then
-  mkdir -p ~/R
-  R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-  R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-  R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+# Install R dependencies if SPARKR is true
+if [[ "${SPARKR}" = "true" ]] ; then
+  echo "R_LIBS=~/R" > ~/.Renviron
+  echo "export R_LIBS=~/R" >> ~/.environ
+  source ~/.environ
+  if [[ ! -d "$HOME/R/knitr" ]] ; then
+    mkdir -p ~/R
+    R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  fi
 fi
 
 # Install Python dependencies for Python specific tests
