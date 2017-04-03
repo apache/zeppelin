@@ -33,6 +33,8 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
 /**
  * Load helium visualization & spell
  */
@@ -40,7 +42,6 @@ public class HeliumBundleFactory {
   Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
   private final String NODE_VERSION = "v6.9.1";
   private final String NPM_VERSION = "3.10.8";
-  private final String DEFAULT_NPM_REGISTRY_URL = "http://registry.npmjs.org/";
   public static final String HELIUM_LOCAL_REPO = "helium-bundle";
   public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   public static final String HELIUM_BUNDLE = "helium.bundle.js";
@@ -52,9 +53,11 @@ public class HeliumBundleFactory {
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File workingDirectory;
+  private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
   private File spellModulePath;
+  private String defaultNpmRegistryUrl;
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
 
@@ -64,18 +67,23 @@ public class HeliumBundleFactory {
   ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
   public HeliumBundleFactory(
+      ZeppelinConfiguration conf,
       File moduleDownloadPath,
       File tabledataModulePath,
       File visualizationModulePath,
       File spellModulePath) throws TaskRunnerException {
-    this(moduleDownloadPath);
+    this(conf, moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
     this.spellModulePath = spellModulePath;
   }
 
-  public HeliumBundleFactory(File moduleDownloadPath) throws TaskRunnerException {
+  public HeliumBundleFactory(
+      ZeppelinConfiguration conf,
+      File moduleDownloadPath) throws TaskRunnerException {
     this.workingDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
+    this.conf = conf;
+    this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
     File installDirectory = workingDirectory;
 
     frontEndPluginFactory = new FrontendPluginFactory(
@@ -220,7 +228,9 @@ public class HeliumBundleFactory {
               String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
                               "--fetch-retry-mintimeout=%d",
                       FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+      logger.info("Installing required node modules");
       npmCommand(commandForNpmInstall);
+      logger.info("Installed required node modules");
     } catch (TaskRunnerException e) {
       // ignore `(empty)` warning
       String cause = new String(out.toByteArray());
@@ -231,7 +241,9 @@ public class HeliumBundleFactory {
 
     try {
       out.reset();
+      logger.info("Bundling helium packages");
       npmCommand("run bundle");
+      logger.info("Bundled helium packages");
     } catch (TaskRunnerException e) {
       throw new IOException(new String(out.toByteArray()));
     }
@@ -412,7 +424,7 @@ public class HeliumBundleFactory {
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
     installNodeAndNpm();
-    NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), DEFAULT_NPM_REGISTRY_URL);
+    NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), defaultNpmRegistryUrl);
     npm.execute(args, env);
   }
 

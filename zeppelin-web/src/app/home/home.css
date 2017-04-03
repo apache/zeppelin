@@ -298,8 +298,19 @@ a.navbar-brand:hover {
 }
 
 @media (min-width: 768px) {
-  .dropdown-menu.navbar-dropdown-maxHeight {
+  .navbar-fixed-top .dropdown-menu {
     max-height: calc(100vh - 60px);
+    overflow: auto;
+  }
+  #actionbar .dropdown-menu {
+    max-height: calc(100vh - 110px);
+    overflow: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  #actionbar .dropdown-menu {
+    max-height: calc(100vh - 160px);
     overflow: auto;
   }
 }

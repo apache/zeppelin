@@ -675,7 +675,7 @@
     },
     {
       "title": "Create a R Dataframe",
-      "text": "%r \n\nlocalNames \u003c- data.frame(name\u003dc(\"John\", \"Smith\", \"Sarah\"), budget\u003dc(19, 53, 18))kjkjkj\nnames \u003c- createDataFrame(sqlContext, localNames)\nprintSchema(names)\nregisterTempTable(names, \"names\")\n\n# SparkR::head(names)",
+      "text": "%r \n\nlocalNames \u003c- data.frame(name\u003dc(\"John\", \"Smith\", \"Sarah\"), budget\u003dc(19, 53, 18))\nnames \u003c- createDataFrame(sqlContext, localNames)\nprintSchema(names)\nregisterTempTable(names, \"names\")\n\n# SparkR::head(names)",
       "user": "anonymous",
       "dateUpdated": "Jan 29, 2017 3:19:59 AM",
       "config": {

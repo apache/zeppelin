@@ -151,7 +151,10 @@ public class InterpreterSettingManager {
     init();
   }
 
-  private void loadFromFile() {
+  /**
+   * Remember this method doesn't keep current connections after being called
+   */
+  private void  loadFromFile() {
     if (!Files.exists(interpreterBindingPath)) {
       // nothing to read
       return;
@@ -514,7 +517,8 @@ public class InterpreterSettingManager {
         }
       }
     } catch (NullPointerException e) {
-      logger.warn("Couldn't get interpreter editor setting");
+      // Use `debug` level because this log occurs frequently
+      logger.debug("Couldn't get interpreter editor setting");
     }
     return editor;
   }
@@ -913,9 +917,8 @@ public class InterpreterSettingManager {
 
           saveToFile();
         } catch (Exception e) {
-          throw e;
-        } finally {
           loadFromFile();
+          throw e;
         }
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
@@ -926,7 +929,6 @@ public class InterpreterSettingManager {
   public void restart(String settingId, String noteId, String user) {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
-
     synchronized (interpreterSettings) {
       intpSetting = interpreterSettings.get(settingId);
       // Check if dependency in specified path is changed

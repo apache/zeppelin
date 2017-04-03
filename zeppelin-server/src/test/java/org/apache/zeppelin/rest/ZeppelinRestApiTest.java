@@ -133,8 +133,11 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteName = "test";
     String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
         "{\"title\": \"title1\", \"text\": \"text1\"}," +
-        "{\"title\": \"title2\", \"text\": \"text2\"}" +
-        "]}";
+        "{\"title\": \"title2\", \"text\": \"text2\"}," +
+        "{\"title\": \"titleConfig\", \"text\": \"text3\", " +
+        "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
+        "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}] "+
+        "}}]} ";
     PostMethod post = httpPost("/notebook/", jsonRequest);
     LOG.info("testNoteCreate \n" + post.getResponseBodyAsString());
     assertThat("test note create method:", post, isAllowed());
@@ -154,13 +157,20 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       expectedNoteName = "Note " + newNoteId;
     }
     assertEquals("compare note name", expectedNoteName, newNoteName);
-    assertEquals("initial paragraph check failed", 3, newNote.getParagraphs().size());
+    assertEquals("initial paragraph check failed", 4, newNote.getParagraphs().size());
     for (Paragraph p : newNote.getParagraphs()) {
       if (StringUtils.isEmpty(p.getText())) {
         continue;
       }
       assertTrue("paragraph title check failed", p.getTitle().startsWith("title"));
       assertTrue("paragraph text check failed", p.getText().startsWith("text"));
+      if ( p.getTitle() == "titleConfig"){
+        assertEquals("paragraph col width check failed", 9.0, p.getConfig().get("colWidth"));
+        assertTrue("paragraph show title check failed", ((boolean) p.getConfig().get("title")));
+        Map graph = ((List<Map>)p.getConfig().get("results")).get(0);
+        String mode = graph.get("mode").toString();
+        assertEquals("paragraph graph mode check failed", "pieChart", mode);
+      }
     }
     // cleanup
     ZeppelinServer.notebook.removeNote(newNoteId, anonymous);
@@ -213,8 +223,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
 
   @Test
-  public void testexportNote() throws IOException {
-    LOG.info("testexportNote");
+  public void testExportNote() throws IOException {
+    LOG.info("testExportNote");
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for export");
@@ -246,7 +256,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testImportNotebook() throws IOException {
     Map<String, Object> resp;
     String noteName = "source note for import";
-    LOG.info("testImortNote");
+    LOG.info("testImportNote");
     // create test note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
@@ -619,6 +629,25 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Paragraph paragraphAtIdx0 = note.getParagraphs().get(0);
     assertEquals("title2", paragraphAtIdx0.getTitle());
     assertEquals("text2", paragraphAtIdx0.getText());
+
+    //append paragraph providing graph
+    String jsonRequest3 = "{\"title\": \"title3\", \"text\": \"text3\", "+
+                          "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
+                          "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}]}}";
+    PostMethod post3 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest3);
+    LOG.info("testInsertParagraph response4\n" + post3.getResponseBodyAsString());
+    assertThat("Test insert method:", post3, isAllowed());
+    post3.releaseConnection();
+
+    Paragraph p = note.getLastParagraph();
+    assertEquals("title3", p.getTitle());
+    assertEquals("text3", p.getText());
+    Map result = ((List<Map>)p.getConfig().get("results")).get(0);
+    String mode = ((Map)result.get("graph")).get("mode").toString();
+    assertEquals("pieChart", mode);
+    assertEquals(9.0, p.getConfig().get("colWidth"));
+    assertTrue(((boolean) p.getConfig().get("title")));
+
 
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }

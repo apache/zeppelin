@@ -23,7 +23,7 @@ function usage() {
     echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
-while getopts "hp:d:l:v:u:n:" o; do
+while getopts "hp:d:l:v:u:g:" o; do
     case ${o} in
         h)
             usage

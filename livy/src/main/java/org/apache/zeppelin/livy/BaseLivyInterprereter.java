@@ -21,6 +21,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +32,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLContext;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,10 +65,13 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   protected boolean displayAppInfo;
   private AtomicBoolean sessionExpired = new AtomicBoolean(false);
   protected LivyVersion livyVersion;
+  private RestTemplate restTemplate;
 
   // keep tracking the mapping between paragraphId and statementId, so that we can cancel the
   // statement after we execute it.
-  private ConcurrentHashMap<String, Integer> paragraphId2StmtIdMapping = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, Integer> paragraphId2StmtIdMap = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, Integer> paragraphId2StmtProgressMap =
+      new ConcurrentHashMap<>();
 
   public BaseLivyInterprereter(Properties property) {
     super(property);
@@ -70,6 +82,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
+    this.restTemplate = createRestTemplate();
   }
 
   public abstract String getSessionKind();
@@ -146,12 +159,12 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           InterpreterUtils.getMostRelevantMessage(e));
     }
   }
-  
+
   @Override
   public void cancel(InterpreterContext context) {
     if (livyVersion.isCancelSupported()) {
       String paraId = context.getParagraphId();
-      Integer stmtId = paragraphId2StmtIdMapping.get(paraId);
+      Integer stmtId = paragraphId2StmtIdMap.get(paraId);
       try {
         if (stmtId != null) {
           cancelStatement(stmtId);
@@ -159,7 +172,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       } catch (LivyException e) {
         LOGGER.error("Fail to cancel statement " + stmtId + " for paragraph " + paraId, e);
       } finally {
-        paragraphId2StmtIdMapping.remove(paraId);
+        paragraphId2StmtIdMap.remove(paraId);
       }
     } else {
       LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
@@ -173,6 +186,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (livyVersion.isGetProgressSupported()) {
+      String paraId = context.getParagraphId();
+      Integer progress = paragraphId2StmtProgressMap.get(paraId);
+      return progress == null ? 0 : progress;
+    }
     return 0;
   }
 
@@ -243,7 +261,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         stmtInfo = executeStatement(new ExecuteRequest(code));
       }
       if (paragraphId != null) {
-        paragraphId2StmtIdMapping.put(paragraphId, stmtInfo.id);
+        paragraphId2StmtIdMap.put(paragraphId, stmtInfo.id);
       }
       // pull the statement status
       while (!stmtInfo.isAvailable()) {
@@ -254,6 +272,9 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           throw new LivyException(e);
         }
         stmtInfo = getStatementInfo(stmtInfo.id);
+        if (paragraphId != null) {
+          paragraphId2StmtProgressMap.put(paragraphId, (int) (stmtInfo.progress * 100));
+        }
       }
       if (appendSessionExpired) {
         return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
@@ -263,7 +284,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
     } finally {
       if (paragraphId != null) {
-        paragraphId2StmtIdMapping.remove(paragraphId);
+        paragraphId2StmtIdMap.remove(paragraphId);
+        paragraphId2StmtProgressMap.remove(paragraphId);
       }
     }
   }
@@ -312,12 +334,12 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     } else {
       //TODO(zjffdu) support other types of data (like json, image and etc)
       String result = stmtInfo.output.data.plain_text;
-      
+
       // check table magic result first
       if (stmtInfo.output.data.application_livy_table_json != null) {
         StringBuilder outputBuilder = new StringBuilder();
         boolean notFirstColumn = false;
-        
+
         for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
           if (notFirstColumn) {
             outputBuilder.append("\t");
@@ -325,17 +347,17 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           outputBuilder.append(header.get("name"));
           notFirstColumn = true;
         }
-        
+
         outputBuilder.append("\n");
         for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
           outputBuilder.append(StringUtils.join(row, "\t"));
-          outputBuilder.append("\n");          
-        }        
+          outputBuilder.append("\n");
+        }
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.TABLE, outputBuilder.toString());
-      } else if (stmtInfo.output.data.image_png != null) {        
+            InterpreterResult.Type.TABLE, outputBuilder.toString());
+      } else if (stmtInfo.output.data.image_png != null) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.IMG, (String) stmtInfo.output.data.image_png);
+            InterpreterResult.Type.IMG, (String) stmtInfo.output.data.image_png);
       } else if (result != null) {
         result = result.trim();
         if (result.startsWith("<link")
@@ -378,13 +400,56 @@ public abstract class BaseLivyInterprereter extends Interpreter {
     callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId + "/cancel", "POST");
   }
 
-  private RestTemplate getRestTemplate() {
+
+  private RestTemplate createRestTemplate() {
+    HttpClient httpClient = null;
+    if (livyURL.startsWith("https:")) {
+      String keystoreFile = property.getProperty("zeppelin.livy.ssl.trustStore");
+      String password = property.getProperty("zeppelin.livy.ssl.trustStorePassword");
+      if (StringUtils.isBlank(keystoreFile)) {
+        throw new RuntimeException("No zeppelin.livy.ssl.trustStore specified for livy ssl");
+      }
+      if (StringUtils.isBlank(password)) {
+        throw new RuntimeException("No zeppelin.livy.ssl.trustStorePassword specified " +
+            "for livy ssl");
+      }
+      FileInputStream inputStream = null;
+      try {
+        inputStream = new FileInputStream(keystoreFile);
+        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        trustStore.load(new FileInputStream(keystoreFile), password.toCharArray());
+        SSLContext sslContext = SSLContexts.custom()
+            .loadTrustMaterial(trustStore)
+            .build();
+        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+        httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to create SSL HttpClient", e);
+      } finally {
+        if (inputStream != null) {
+          try {
+            inputStream.close();
+          } catch (IOException e) {
+            LOGGER.error("Failed to close keystore file", e);
+          }
+        }
+      }
+    }
+
     String keytabLocation = property.getProperty("zeppelin.livy.keytab");
     String principal = property.getProperty("zeppelin.livy.principal");
     if (StringUtils.isNotEmpty(keytabLocation) && StringUtils.isNotEmpty(principal)) {
-      return new KerberosRestTemplate(keytabLocation, principal);
+      if (httpClient == null) {
+        return new KerberosRestTemplate(keytabLocation, principal);
+      } else {
+        return new KerberosRestTemplate(keytabLocation, principal, httpClient);
+      }
     }
-    return new RestTemplate();
+    if (httpClient == null) {
+      return new RestTemplate();
+    } else {
+      return new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
+    }
   }
 
   private String callRestAPI(String targetURL, String method) throws LivyException {
@@ -395,7 +460,6 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       throws LivyException {
     targetURL = livyURL + targetURL;
     LOGGER.debug("Call rest api in {}, method: {}, jsonData: {}", targetURL, method, jsonData);
-    RestTemplate restTemplate = getRestTemplate();
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/json");
     headers.add("X-Requested-By", "zeppelin");
@@ -537,6 +601,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private static class StatementInfo {
     public Integer id;
     public String state;
+    public double progress;
     public StatementOutput output;
 
     public StatementInfo() {
@@ -581,11 +646,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         @SerializedName("application/vnd.livy.table.v1+json")
         public TableMagic application_livy_table_json;
       }
-      
+
       private static class TableMagic {
         @SerializedName("headers")
         List<Map> headers;
-        
+
         @SerializedName("data")
         List<List> records;
       }

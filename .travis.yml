@@ -25,6 +25,7 @@ cache:
     - ${HOME}/R
     -  zeppelin-web/node
     -  zeppelin-web/node_modules
+    -  zeppelin-web/bower_components
 
 addons:
   apt:
@@ -81,6 +82,14 @@ matrix:
       env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Ppyspark -Pscala-2.11" BUILD_FLAG="package -am -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
 before_install:
+  # check files included in commit range, clear bower_components if a bower.json file has changed.
+  # bower cache clearing can also be forced by putting "bower clear" or "clear bower" in a commit message
+  - changedfiles=$(git diff --name-only $TRAVIS_COMMIT_RANGE 2>/dev/null) || changedfiles=""
+  - echo $changedfiles
+  - hasbowerchanged=$(echo $changedfiles | grep -c "bower.json" || true);
+  - gitlog=$(git log $TRAVIS_COMMIT_RANGE 2>/dev/null) || gitlog="" 
+  - clearcache=$(echo $gitlog | grep -c -E "clear bower|bower clear" || true)
+  - if [ "$hasbowerchanged" -gt 0 ] || [ "$clearcache" -gt 0 ]; then echo "Clearing bower_components cache"; rm -r zeppelin-web/bower_components; npm cache clear; else echo "Using cached bower_components."; fi
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
   - ./testing/install_external_dependencies.sh
   - ls -la .spark-dist ${HOME}/.m2/repository/.cache/maven-download-plugin || true

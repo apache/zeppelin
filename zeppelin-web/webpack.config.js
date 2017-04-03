@@ -29,6 +29,7 @@ var InsertLiveReloadPlugin = function InsertLiveReloadPlugin(options) {
   this.hostname = this.options.hostname || 'localhost';
 }
 var express = require('express');
+var stringReplacePlugin = require('string-replace-webpack-plugin');
 
 InsertLiveReloadPlugin.prototype.autoloadJs = function autoloadJs() {
   return
@@ -87,11 +88,8 @@ module.exports = function makeWebpackConfig () {
     app: './src/index.js'
   };
 
-  var serverPort = 8080;
-
-  if(process.env.SERVER_PORT) {
-     serverPort = process.env.SERVER_PORT;
-  }
+  var serverPort = process.env.SERVER_PORT || 8080;
+  var webPort = process.env.WEB_PORT || 9000;
 
   /**
    * Output
@@ -105,7 +103,7 @@ module.exports = function makeWebpackConfig () {
 
     // Output path from the view of the page
     // Uses webpack-dev-server in development
-    publicPath: isProd ? '' : 'http://localhost:9000/',
+    publicPath: isProd ? '' : 'http://localhost:' + webPort + '/',
 
     // Filename for entry points
     // Only adds hash in build mode
@@ -177,6 +175,20 @@ module.exports = function makeWebpackConfig () {
       // Allow loading html through js
       test: /\.html$/,
       loader: 'raw'
+    }, {
+      // STRING REPLACE PLUGIN
+      // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
+      // Allow for arbitrary strings to be replaced as part of the module build process
+      // Configure replacements for file patterns
+      test: /index.html$/,
+      loader: stringReplacePlugin.replace({
+        replacements: [{
+          pattern: /WEB_PORT/ig,
+          replacement: function (match, p1, offset, string) {
+            return webPort;
+          }
+        }
+      ]})
     }]
   };
 
@@ -218,7 +230,8 @@ module.exports = function makeWebpackConfig () {
       new webpack.DefinePlugin({
         'process.env': {
           HELIUM_BUNDLE_DEV: process.env.HELIUM_BUNDLE_DEV,
-          SERVER_PORT: serverPort
+          SERVER_PORT: serverPort,
+          WEB_PORT: webPort
         }
       })
     )
@@ -259,7 +272,11 @@ module.exports = function makeWebpackConfig () {
       new CopyWebpackPlugin([])
     )
   } else {
-      config.plugins.push(new InsertLiveReloadPlugin())
+    config.plugins.push(
+      new InsertLiveReloadPlugin(),
+      // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
+      new stringReplacePlugin()
+    )
   }
 
   /**
@@ -269,7 +286,7 @@ module.exports = function makeWebpackConfig () {
    */
   config.devServer = {
     historyApiFallback: true,
-    port: 9000,
+    port: webPort,
     inline: true,
     hot: true,
     progress: true,

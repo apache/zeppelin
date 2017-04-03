@@ -22,8 +22,6 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -32,8 +30,11 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,27 +56,27 @@ public class ZeppelinHubRepo implements NotebookRepo {
   public static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final Gson GSON = new Gson();
   private static final Note EMPTY_NOTE = new Note();
-  //private final Client websocketClient;
+  private final Client websocketClient;
+  private final UserTokenContainer tokenManager;
 
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
   
   private final ZeppelinConfiguration conf;
-
-  // In order to avoid too many call to ZeppelinHub backend, we save a map of user -> session.
-  private ConcurrentMap<String, String> usersToken = new ConcurrentHashMap<String, String>();
   
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing ZeppelinHub integration module");
-    token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
-    restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl, token);
 
-    // TODO(xxx): refactor this in the next itaration
-    //websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
-    //    getZeppelinhubWebsocketUri(conf), token, conf);
-    //websocketClient.start();
+    token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
+    restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl);
+    //TODO(khalid): check which realm for authentication, pass to token manager
+    tokenManager = UserTokenContainer.init(restApiClient, token);
+
+    websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
+        getZeppelinhubWebsocketUri(conf), token, conf);
+    websocketClient.start();
   }
 
   private String getZeppelinHubWsUri(URI api) throws URISyntaxException {
@@ -154,58 +155,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
       }
     }
     return zeppelinhubUrl;
-  }
-  
-  /**
-   * Get list of user instances from Zeppelinhub.
-   * This will avoid and remove the needs of setting up token in zeppelin-env.sh.
-   */
-  private List<Instance> getUserInstances(String ticket) throws IOException {
-    if (StringUtils.isBlank(ticket)) {
-      return Collections.emptyList();
-    }
-    return restApiClient.getInstances(ticket);
-  }
-
-  /**
-   * Get user default instance.
-   * From now, it will be from the first instance from the list,
-   * But later we can think about marking a default one and return it instead :)
-   */
-  private String getDefaultZeppelinInstanceToken(String ticket) throws IOException {
-    List<Instance> instances = getUserInstances(ticket);
-    if (instances.isEmpty()) {
-      return StringUtils.EMPTY;
-    }
-
-    String token = instances.get(0).token;
-    LOG.debug("The following instance has been assigned {} with token {}", instances.get(0).name,
-        token);
-    return token;
-  }
-
-  /**
-   * For a given user logged in is zeppelin (via zeppelinhub notebook repo), get default token.
-   *
-   */
-  private String getUserToken(String principal) {
-    // Case of user use token instead of authentication.
-    if (!StringUtils.isBlank(token)) {
-      return token;
-    }
-
-    String token = usersToken.get(principal);
-    if (StringUtils.isBlank(token)) {
-      String ticket = UserSessionContainer.instance.getSession(principal);
-      try {
-        token = getDefaultZeppelinInstanceToken(ticket);
-        usersToken.putIfAbsent(principal, token);
-      } catch (IOException e) {
-        LOG.error("Cannot get user token", e);
-        token = StringUtils.EMPTY;
-      }
-    }
-    return token;
   }
 
   private boolean isSubjectValid(AuthenticationInfo subject) {
@@ -292,7 +241,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
       return EMPTY_NOTE;
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint", revId);
-    
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, endpoint);
 
@@ -320,6 +268,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     return history;
   }
+  
+  private String getUserToken(String user) {
+    return tokenManager.getUserToken(user);
+  }
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
@@ -335,7 +287,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     List<Map<String, String>> values = Lists.newLinkedList();
 
     try {
-      instances = getUserInstances(zeppelinHubUserSession);
+      instances = tokenManager.getUserInstances(zeppelinHubUserSession);
     } catch (IOException e) {
       LOG.warn("Couldnt find instances for the session {}, returning empty collection",
           zeppelinHubUserSession);
@@ -368,18 +320,23 @@ public class ZeppelinHubRepo implements NotebookRepo {
     LOG.info("User {} will switch instance", user);
     String ticket = UserSessionContainer.instance.getSession(user);
     List<Instance> instances;
+    String currentToken = StringUtils.EMPTY, targetToken = StringUtils.EMPTY;
     try {
-      instances = getUserInstances(ticket);
+      instances = tokenManager.getUserInstances(ticket);
       if (instances.isEmpty()) {
         return;
       }
-
+      currentToken = tokenManager.getExistingUserToken(user);
       for (Instance instance : instances) {
         if (instance.id == instanceId) {
-          LOG.info("User {} switched to instance {}", user, instances.get(0).name);
-          usersToken.put(user, instance.token);
+          LOG.info("User {} switched to instance {}", user, instance.name);
+          tokenManager.setUserToken(user, instance.token);
+          targetToken = instance.token;
           break;
         }
+      }
+      if (!StringUtils.isBlank(currentToken) && !StringUtils.isBlank(targetToken)) {
+        ZeppelinhubUtils.userSwitchTokenRoutine(user, currentToken, targetToken);
       }
     } catch (IOException e) {
       LOG.error("Cannot switch instance for user {}", user, e);

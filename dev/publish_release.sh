@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -43,6 +42,9 @@ NC='\033[0m' # No Color
 
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
+if [[ $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
+  DO_SNAPSHOT="yes"
+fi
 
 PUBLISH_PROFILES="-Ppublish-distr -Pspark-2.1 -Phadoop-2.6 -Pyarn -Ppyspark -Psparkr -Pr"
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
@@ -65,6 +67,40 @@ function curl_error() {
     cleanup
     exit 1
   fi
+}
+
+
+#
+# Publishing Apache Zeppelin artifact to Apache snapshot repository.
+#
+function publish_snapshot_to_maven() {
+  cd "${WORKING_DIR}/zeppelin"
+  echo "Deploying Apache Zeppelin $RELEASE_VERSION version to snapshot repository."
+
+  if [[ ! $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
+    echo "ERROR: Snapshots must have a version containing 'SNAPSHOT'"
+    echo "ERROR: You gave version '$RELEASE_VERSION'"
+    exit 1
+  fi
+
+  tmp_repo="$(mktemp -d /tmp/zeppelin-repo-XXXXX)"
+
+  mvn versions:set -DnewVersion=$RELEASE_VERSION
+  tmp_settings="tmp-settings.xml"
+  echo "<settings><servers><server>" > $tmp_settings
+  echo "<id>apache.snapshots.https</id><username>$ASF_USERID</username>" >> $tmp_settings
+  echo "<password>$ASF_PASSWORD</password>" >> $tmp_settings
+  echo "</server></servers></settings>" >> $tmp_settings
+
+  mvn --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -Pbeam -DskipTests \
+    $PUBLISH_PROFILES -Drat.skip=true deploy
+
+  "${BASEDIR}/change_scala_version.sh" 2.11
+  mvn -Pscala-2.11 --settings $tmp_settings -Dmaven.repo.local="${tmp_repo}" -Pbeam -DskipTests \
+    $PUBLISH_PROFILES -Drat.skip=true clean deploy
+
+  rm $tmp_settings
+  rm -rf $tmp_repo
 }
 
 function publish_to_maven() {
@@ -153,5 +189,9 @@ function publish_to_maven() {
 }
 
 git_clone
-publish_to_maven
+if [[ "${DO_SNAPSHOT}" == 'yes' ]]; then
+  publish_snapshot_to_maven
+else
+  publish_to_maven
+fi
 cleanup
