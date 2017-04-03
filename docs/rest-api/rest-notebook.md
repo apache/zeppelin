@@ -894,11 +894,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> 500 </td>
     </tr>
     <tr>
-      <td> subsequent parameter (optionnal) </td>
-      <td> If set to true, all the paragraphs following the paragraph will be run as well.```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]?subsequent=true```</td>
-    </tr>
-    <tr>
-      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
+      <td> sample JSON input (optional, only needed to update dynamic form's value) </td>
       <td><pre>
 {
   "name": "name of new note",
@@ -913,7 +909,6 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td><pre>{"status": "OK"}</pre></td>
     </tr>
   </table>
-
 <br/>
 ### Run a paragraph synchronously
   <table class="table-configuration">
@@ -936,11 +931,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> 500 </td>
     </tr>
     <tr>
-      <td> subsequent parameter (optionnal) </td>
-      <td> If set to true, all the paragraphs following the paragraph will be run as well. Warning: if one of the paragraphs fails the API will return ERROR ```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]?subsequent=true```</td>
-    </tr>
-    <tr>
-      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
+      <td> sample JSON input (optional, only needed to update dynamic form's value) </td>
       <td><pre>
 {
   "name": "name of new note",
@@ -967,7 +958,20 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
 }</pre></td>
     </tr>
   </table>
-
+<br/>
+### Run a paragraph and all the following ones
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>Both previous ```POST``` methods (run sync and run async) can be provided a boolean parameter <em>subsequent</em>. If set to true, all the paragraphs following the given paragraph will be run as well.The asynchronous API will always return SUCCESS while the synchronous API can return ERROR if one or many paragraphs executions fails. 
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]?subsequent=true```<br/>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/run/[noteId]/[paragraphId]?subsequent=true```</td>
+    </tr>
+  </table>
 <br/>
 ### Stop a paragraph
   <table class="table-configuration">
