@@ -120,54 +120,58 @@ const MockSpec2 = {
 }
 
 /* eslint-disable max-len */
-const MockTableData = {
-  'columns': [
-    { 'name': 'age', 'index': 0, 'aggr': 'sum', },
-    { 'name': 'job', 'index': 1, 'aggr': 'sum', },
-    { 'name': 'marital', 'index': 2, 'aggr': 'sum', },
-    { 'name': 'education', 'index': 3, 'aggr': 'sum', },
-    { 'name': 'default', 'index': 4, 'aggr': 'sum', },
-    { 'name': 'balance', 'index': 5, 'aggr': 'sum', },
-    { 'name': 'housing', 'index': 6, 'aggr': 'sum', },
-    { 'name': 'loan', 'index': 7, 'aggr': 'sum', },
-    { 'name': 'contact', 'index': 8, 'aggr': 'sum', },
-    { 'name': 'day', 'index': 9, 'aggr': 'sum', },
-    { 'name': 'month', 'index': 10, 'aggr': 'sum', },
-    { 'name': 'duration', 'index': 11, 'aggr': 'sum', },
-    { 'name': 'campaign', 'index': 12, 'aggr': 'sum', },
-    { 'name': 'pdays', 'index': 13, 'aggr': 'sum', },
-    { 'name': 'previous', 'index': 14, 'aggr': 'sum', },
-    { 'name': 'poutcome', 'index': 15, 'aggr': 'sum', },
-    { 'name': 'y', 'index': 16, 'aggr': 'sum', }
-  ],
-  'rows': [
-    [ '30', 'unemployed', 'married', 'primary', 'no', '1787', 'no', 'no', 'cellular', '19', 'oct', '79', '1', '-1', '0', 'unknown', 'no' ],
-    [ '33', 'services', 'married', 'secondary', 'no', '4789', 'yes', 'yes', 'cellular', '11', 'may', '220', '1', '339', '4', 'failure', 'no' ],
-    [ '35', 'management', 'single', 'tertiary', 'no', '1350', 'yes', 'no', 'cellular', '16', 'apr', '185', '1', '330', '1', 'failure', 'no' ],
-    [ '30', 'management', 'married', 'tertiary', 'no', '1476', 'yes', 'yes', 'unknown', '3', 'jun', '199', '4', '-1', '0', 'unknown', 'no' ],
-    [ '59', 'blue-collar', 'married', 'secondary', 'no', '0', 'yes', 'no', 'unknown', '5', 'may', '226', '1', '-1', '0', 'unknown', 'no' ],
-    [ '35', 'management', 'single', 'tertiary', 'no', '747', 'no', 'no', 'cellular', '23', 'feb', '141', '2', '176', '3', 'failure', 'no' ],
-    [ '36', 'self-employed', 'married', 'tertiary', 'no', '307', 'yes', 'no', 'cellular', '14', 'may', '341', '1', '330', '2', 'other', 'no' ],
-    [ '39', 'technician', 'married', 'secondary', 'no', '147', 'yes', 'no', 'cellular', '6', 'may', '151', '2', '-1', '0', 'unknown', 'no' ],
-    [ '41', 'entrepreneur', 'married', 'tertiary', 'no', '221', 'yes', 'no', 'unknown', '14', 'may', '57', '2', '-1', '0', 'unknown', 'no' ],
-    [ '43', 'services', 'married', 'primary', 'no', '-88', 'yes', 'yes', 'cellular', '17', 'apr', '313', '1', '147', '2', 'failure', 'no' ],
-    [ '39', 'services', 'married', 'secondary', 'no', '9374', 'yes', 'no', 'unknown', '20', 'may', '273', '1', '-1', '0', 'unknown', 'no' ],
-    [ '43', 'admin.', 'married', 'secondary', 'no', '264', 'yes', 'no', 'cellular', '17', 'apr', '113', '2', '-1', '0', 'unknown', 'no' ],
-    [ '36', 'technician', 'married', 'tertiary', 'no', '1109', 'no', 'no', 'cellular', '13', 'aug', '328', '2', '-1', '0', 'unknown', 'no' ],
-    [ '20', 'student', 'single', 'secondary', 'no', '502', 'no', 'no', 'cellular', '30', 'apr', '261', '1', '-1', '0', 'unknown', 'yes' ],
-    [ '31', 'blue-collar', 'married', 'secondary', 'no', '360', 'yes', 'yes', 'cellular', '29', 'jan', '89', '1', '241', '1', 'failure', 'no' ],
-    [ '40', 'management', 'married', 'tertiary', 'no', '194', 'no', 'yes', 'cellular', '29', 'aug', '189', '2', '-1', '0', 'unknown', 'no' ],
-    [ '56', 'technician', 'married', 'secondary', 'no', '4073', 'no', 'no', 'cellular', '27', 'aug', '239', '5', '-1', '0', 'unknown', 'no' ],
-    [ '37', 'admin.', 'single', 'tertiary', 'no', '2317', 'yes', 'no', 'cellular', '20', 'apr', '114', '1', '152', '2', 'failure', 'no' ],
-    [ '25', 'blue-collar', 'single', 'primary', 'no', '-221', 'yes', 'no', 'unknown', '23', 'may', '250', '1', '-1', '0', 'unknown', 'no' ],
-    [ '31', 'services', 'married', 'secondary', 'no', '132', 'no', 'no', 'cellular', '7', 'jul', '148', '1', '152', '1', 'other', 'no' ],
-    [ '38', 'management', 'divorced', 'unknown', 'no', '0', 'yes', 'no', 'cellular', '18', 'nov', '96', '2', '-1', '0', 'unknown', 'no' ],
-    [ '42', 'management', 'divorced', 'tertiary', 'no', '16', 'no', 'no', 'cellular', '19', 'nov', '140', '3', '-1', '0', 'unknown', 'no' ],
-    [ '44', 'services', 'single', 'secondary', 'no', '106', 'no', 'no', 'unknown', '12', 'jun', '109', '2', '-1', '0', 'unknown', 'no' ],
-    [ '44', 'entrepreneur', 'married', 'secondary', 'no', '93', 'no', 'no', 'cellular', '7', 'jul', '125', '2', '-1', '0', 'unknown', 'no' ],
-  ],
-  'comment': '',
-}
+const MockTableDataColumn = [
+  {'name': 'age', 'index': 0, 'aggr': 'sum',},
+  {'name': 'job', 'index': 1, 'aggr': 'sum',},
+  {'name': 'marital', 'index': 2, 'aggr': 'sum',},
+  {'name': 'education', 'index': 3, 'aggr': 'sum',},
+  {'name': 'default', 'index': 4, 'aggr': 'sum',},
+  {'name': 'balance', 'index': 5, 'aggr': 'sum',},
+  {'name': 'housing', 'index': 6, 'aggr': 'sum',},
+  {'name': 'loan', 'index': 7, 'aggr': 'sum',},
+  {'name': 'contact', 'index': 8, 'aggr': 'sum',},
+  {'name': 'day', 'index': 9, 'aggr': 'sum',},
+  {'name': 'month', 'index': 10, 'aggr': 'sum',},
+  {'name': 'duration', 'index': 11, 'aggr': 'sum',},
+  {'name': 'campaign', 'index': 12, 'aggr': 'sum',},
+  {'name': 'pdays', 'index': 13, 'aggr': 'sum',},
+  {'name': 'previous', 'index': 14, 'aggr': 'sum',},
+  {'name': 'poutcome', 'index': 15, 'aggr': 'sum',},
+  {'name': 'y', 'index': 16, 'aggr': 'sum',}
+]
+
+const MockTableDataRows1 = [
+  [ '44', 'services', 'single', 'tertiary', 'no', '106', 'no', 'no', 'unknown', '12', 'jun', '109', '2', '-1', '0', 'unknown', 'no' ],
+  [ '43', 'services', 'married', 'primary', 'no', '-88', 'yes', 'yes', 'cellular', '17', 'apr', '313', '1', '147', '2', 'failure', 'no' ],
+  [ '39', 'services', 'married', 'secondary', 'no', '9374', 'yes', 'no', 'unknown', '20', 'may', '273', '1', '-1', '0', 'unknown', 'no' ],
+  [ '33', 'services', 'single', 'tertiary', 'no', '4789', 'yes', 'yes', 'cellular', '11', 'may', '220', '1', '339', '4', 'failure', 'no' ],
+]
+
+const MockTableDataRows99 = [
+  [ 43, 'services', 'married', 'primary', 'no', '-88', 'yes', 'yes', 'cellular', '17', 'apr', '313', '1', '147', '2', 'failure', 'no' ],
+  [ 39, 'services', 'married', 'secondary', 'no', '9374', 'yes', 'no', 'unknown', '20', 'may', '273', '1', '-1', '0', 'unknown', 'no' ],
+  [ 33, 'services', 'single', 'tertiary', 'no', '4789', 'yes', 'yes', 'cellular', '11', 'may', '220', '1', '339', '4', 'failure', 'no' ],
+  [ 59, 'blue-collar', 'married', 'secondary', 'no', '0', 'yes', 'no', 'unknown', '5', 'may', '226', '1', '-1', '0', 'unknown', 'no' ],
+  [ 31, 'blue-collar', 'married', 'secondary', 'no', '360', 'yes', 'yes', 'cellular', '29', 'jan', '89', '1', '241', '1', 'failure', 'no' ],
+  [ 25, 'blue-collar', 'single', 'primary', 'no', '-221', 'yes', 'no', 'unknown', '23', 'may', '250', '1', '-1', '0', 'unknown', 'no' ],
+  [ 39, 'technician', 'married', 'tertiary', 'no', '147', 'yes', 'no', 'cellular', '6', 'may', '151', '2', '-1', '0', 'unknown', 'no' ],
+  [ 56, 'technician', 'married', 'secondary', 'no', '4073', 'no', 'no', 'cellular', '27', 'aug', '239', '5', '-1', '0', 'unknown', 'no' ],
+  [ 37, 'admin.', 'single', 'tertiary', 'no', '2317', 'yes', 'no', 'cellular', '20', 'apr', '114', '1', '152', '2', 'failure', 'no' ],
+  [ 36, 'self-employed', 'married', 'tertiary', 'no', '307', 'yes', 'no', 'cellular', '14', 'may', '341', '1', '330', '2', 'other', 'no' ],
+  [ 65, 'unemployed', 'single', 'primary', 'no', '1787', 'no', 'no', 'cellular', '19', 'oct', '79', '1', '-1', '0', 'unknown', 'no' ],
+  [ 41, 'management', 'married', 'tertiary', 'no', '1476', 'yes', 'yes', 'unknown', '3', 'jun', '199', '4', '-1', '0', 'unknown', 'no' ],
+  [ 35, 'management', 'single', 'tertiary', 'no', '1350', 'yes', 'no', 'cellular', '16', 'apr', '185', '1', '330', '1', 'failure', 'no' ],
+  [ 35, 'management', 'single', 'tertiary', 'no', '747', 'no', 'no', 'cellular', '23', 'feb', '141', '2', '176', '3', 'failure', 'no' ],
+  [ 41, 'entrepreneur', 'married', 'tertiary', 'no', '221', 'yes', 'no', 'unknown', '14', 'may', '57', '2', '-1', '0', 'unknown', 'no' ],
+  [ 44, 'entrepreneur', 'married', 'secondary', 'no', '93', 'no', 'no', 'cellular', '7', 'jul', '125', '2', '-1', '0', 'unknown', 'no' ],
+  [ 43, 'admin.', 'married', 'secondary', 'no', '264', 'yes', 'no', 'cellular', '17', 'apr', '113', '2', '-1', '0', 'unknown', 'no' ],
+  [ 36, 'technician', 'married', 'tertiary', 'no', '1109', 'no', 'no', 'cellular', '13', 'aug', '328', '2', '-1', '0', 'unknown', 'no' ],
+  [ 20, 'student', 'single', 'secondary', 'no', '502', 'no', 'no', 'cellular', '30', 'apr', '261', '1', '-1', '0', 'unknown', 'yes' ],
+  [ 40, 'management', 'married', 'tertiary', 'no', '194', 'no', 'yes', 'cellular', '29', 'aug', '189', '2', '-1', '0', 'unknown', 'no' ],
+  [ 31, 'services', 'married', 'secondary', 'no', '132', 'no', 'no', 'cellular', '7', 'jul', '148', '1', '152', '1', 'other', 'no' ],
+  [ 38, 'management', 'divorced', 'unknown', 'no', '0', 'yes', 'no', 'cellular', '18', 'nov', '96', '2', '-1', '0', 'unknown', 'no' ],
+  [ 42, 'management', 'divorced', 'tertiary', 'no', '16', 'no', 'no', 'cellular', '19', 'nov', '140', '3', '-1', '0', 'unknown', 'no' ],
+]
 /* eslint-enable max-len */
 
 describe('advanced-transformation-util', () => {
@@ -450,30 +454,267 @@ describe('advanced-transformation-util', () => {
   // it's hard to test all methods for transformation.
   // so let's do behavioral (black-box) test instead of
   describe('getTransformer', () => {
-    let config = {}
-    // const tabledata = MockTableData
 
-    beforeEach(() => {
-      // initialize config using spec for transformer testing
+    describe('method: raw', () => {
+      let config = {}
       Util.initializeConfig(config, MockSpec2)
+
+      it('should return original rows when transform.method is `raw`', () => {
+        const chart = 'raw-chart'
+        config.chart.current = chart
+
+        const rows = [ { 'r1': 1, }, ]
+        const transformer = Util.getTransformer(config, rows)
+        const transformed = transformer()
+
+        expect(transformed).toBe(rows)
+      })
     })
 
-    it('should return original rows when transform.method is `raw`', () => {
-      const chart = 'raw-chart'
-      config.chart.current = chart
+    describe('method: array', () => {
+      let config = {}
+      const chart = 'array-chart'
+      let ageColumn = null
+      let balanceColumn = null
+      let educationColumn = null
+      let martialColumn = null
+      let jobColumn = null
+      const tableDataRows = MockTableDataRows1
 
-      const rows = [ { 'r1': 1, }, ]
-      const transformer = Util.getTransformer(config, rows)
-      const transformed = transformer()
-
-      expect(transformed).toBe(rows)
+      beforeEach(() => {
+        Util.initializeConfig(config, MockSpec2)
+        config.chart.current = chart
+        ageColumn = JSON.parse(JSON.stringify(MockTableDataColumn[0]))
+        balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
+        educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
+        martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
+        jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
+      })
     })
 
-    it('should return original rows when transform.method is `raw`', () => {
+    describe('method: object', () => {
+      let config = {}
       const chart = 'object-chart'
-      config.chart.current = chart
-    })
-  })
+      let ageColumn = null
+      let balanceColumn = null
+      let educationColumn = null
+      let martialColumn = null
+      let jobColumn = null
+      const tableDataRows = MockTableDataRows1
 
+      beforeEach(() => {
+        Util.initializeConfig(config, MockSpec2)
+        config.chart.current = chart
+        ageColumn = JSON.parse(JSON.stringify(MockTableDataColumn[0]))
+        balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
+        educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
+        martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
+        jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ '', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([{ age: 44 + 43 + 39 + 33, }])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(count)', () => {
+        ageColumn.aggr = 'count'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([{ age: 4, }])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(avg)', () => {
+        ageColumn.aggr = 'avg'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([{ age: (44 + 43 + 39 + 33) / 4.0, }])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(max)', () => {
+        ageColumn.aggr = 'max'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([{ age: 44, }])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(min)', () => {
+        ageColumn.aggr = 'min'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([{ age: 33, }])
+      })
+
+      it('should transform properly: 0 key, 0 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ '', ])
+        expect(groupNames).toEqual([ 'age', 'balance', ])
+        expect(selectors).toEqual([ 'age', 'balance', ])
+        expect(rows).toEqual([{ age: 159, balance: 14181, }])
+      })
+
+      it('should transform properly: 0 key, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ 'marital', ])
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([ 'married', 'single', ])
+        expect(rows).toEqual([
+          { single: 77, married: 82, }
+        ])
+      })
+
+      it('should transform properly: 0 key, 1 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ 'marital', ])
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([
+          'married / age', 'married / balance', 'single / age', 'single / balance',
+        ])
+        expect(rows).toEqual([{
+          'married / age': 82,
+          'single / age': 77,
+          'married / balance': 9286,
+          'single / balance': 4895,
+        }])
+      })
+
+      it('should transform properly: 0 key, 2 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ 'marital.education', ])
+        expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(rows).toEqual([{
+          'married.primary': '43', 'married.secondary': '39', 'single.tertiary': 77,
+        }])
+      })
+
+      it('should transform properly: 1 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ 'married', 'single', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          { age: 82, marital: 'married', },
+          { age: 77, marital: 'single', },
+        ])
+      })
+
+      it('should transform properly: 2 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        config.axis[chart].keyAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          { age: '43', 'marital.education': 'married.primary' },
+          { age: '39', 'marital.education': 'married.secondary' },
+          { age: 77, 'marital.education': 'single.tertiary' },
+        ])
+      })
+
+      it('should transform properly: 1 key, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyNames).toEqual([ 'married', 'single', ])
+        expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(rows).toEqual([
+          { primary: '43', secondary: '39', marital: 'married' },
+          { tertiary: 44 + 33, marital: 'single' },
+        ])
+      })
+    }) // end: describe('method: object')
+
+  }) // end: describe('getTransformer')
 })
 
