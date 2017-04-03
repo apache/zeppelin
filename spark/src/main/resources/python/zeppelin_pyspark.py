@@ -35,7 +35,7 @@ import warnings
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
-class Logger(object):
+class __ZeppelinLogger__(object):
   def __init__(self):
     pass
 
@@ -230,7 +230,7 @@ class PySparkCompletion:
       self.interpreterObject.setStatementsFinished(result, False)
 
 
-output = Logger()
+output = __ZeppelinLogger__()
 sys.stdout = output
 sys.stderr = output
 

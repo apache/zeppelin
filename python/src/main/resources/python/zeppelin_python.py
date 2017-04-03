@@ -33,7 +33,7 @@ except ImportError:
 
 # for back compatibility
 
-class Logger(object):
+class __ZeppelinLogger__(object):
   def __init__(self):
     pass
 
@@ -207,7 +207,7 @@ java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
 z = _zc = PyZeppelinContext(intp)
 _zc._setup_matplotlib()
 
-output = Logger()
+output = __ZeppelinLogger__()
 sys.stdout = output
 #sys.stderr = output
 
