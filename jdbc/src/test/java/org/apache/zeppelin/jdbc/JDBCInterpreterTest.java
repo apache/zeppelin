@@ -254,6 +254,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResult.message().get(1).getType());
+    assertTrue(interpreterResult.message().get(1).getData().contains("alert-warning"));
   }
 
   @Test

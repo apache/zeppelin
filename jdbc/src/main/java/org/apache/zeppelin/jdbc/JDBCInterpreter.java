@@ -47,6 +47,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -474,7 +475,7 @@ public class JDBCInterpreter extends Interpreter {
     msg.append(NEWLINE);
 
     int displayRowCount = 0;
-    while (resultSet.next() && displayRowCount < getMaxResult()) {
+    while (displayRowCount < getMaxResult() && resultSet.next()) {
       for (int i = 1; i < md.getColumnCount() + 1; i++) {
         Object resultObject;
         String resultValue;
@@ -602,8 +603,13 @@ public class JDBCInterpreter extends Interpreter {
               interpreterResult.add(InterpreterResult.Type.TEXT,
                   "Query executed successfully.");
             } else {
-              interpreterResult.add(
-                  getResults(resultSet, !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE)));
+              String results = getResults(resultSet,
+                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
+              interpreterResult.add(results);
+              if (resultSet.next()) {
+                interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
+                    String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
+              }
             }
           } else {
             // Response contains either an update count or there are no results.

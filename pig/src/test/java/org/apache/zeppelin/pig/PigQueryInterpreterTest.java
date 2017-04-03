@@ -153,6 +153,6 @@ public class PigQueryInterpreterTest {
     assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("id\n0\n1\n2"));
-    assertTrue(result.message().get(0).getData().contains("Results are limited by 20"));
+    assertTrue(result.message().get(1).getData().contains("alert-warning"));
   }
 }
