@@ -640,6 +640,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       var remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
+          var langTools = ace.require('ace/ext/language_tools');
+          var defaultKeywords = new Set();
+          var getDefaultKeywords = function(err, completions) {
+              if (completions !== undefined) {
+                  completions.forEach(function(c) {
+                      defaultKeywords.add(c.value);
+                  });
+              }
+          }
+          if (langTools.keyWordCompleter !== undefined) {
+              langTools.keyWordCompleter.getCompletions(editor, session, pos, prefix, getDefaultKeywords);
+          }
+
           if (!editor.isFocused()) {
             return;
           }
@@ -650,13 +663,29 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
+            var computeCaption = function(value, meta) {
+              var metaLength = meta !== undefined ? meta.length : 0;
+              var length = 42;
+              var whitespaceLength = 3;
+              var ellipses = '...';
+              var maxLengthCaption = length - metaLength - whitespaceLength - ellipses.length;
+              if (value !== undefined && value.length > maxLengthCaption) {
+                  return value.substr(0, maxLengthCaption) + ellipses;
+              }
+              return value;
+            }
             if (data.completions) {
               var completions = [];
               for (var c in data.completions) {
                 var v = data.completions[c];
+                if (v.meta !== undefined && v.meta === 'keyword' && defaultKeywords.has(v.value.trim())) {
+                    continue;
+                }
                 completions.push({
                   name: v.name,
                   value: v.value,
+                  meta: v.meta,
+                  caption: computeCaption(v.value, v.meta),
                   score: 300
                 });
               }
@@ -842,7 +871,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   var getInterpreterName = function(paragraphText) {
-    var intpNameRegexp = /^\s*%(.+?)\s/g;
+    var intpNameRegexp = /^\s*%(.+?)(\s|\()/g;
     var match = intpNameRegexp.exec(paragraphText);
     if (match) {
       return match[1].trim();
