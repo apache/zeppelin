@@ -21,6 +21,7 @@ limitations under the License.
     <span style="float: right;">
        <div class="btn-group" role="group" aria-label="...">
          <div type="button" ng-click="resetAxisConfig()"
+              ng-if="config.panel.columnPanelOpened"
               class="btn btn-default" style="padding: 2px 5px 2px 5px;">
            <i class="fa fa-trash-o" aria-hidden="true"></i>
          </div>
@@ -194,10 +195,12 @@ limitations under the License.
     <span style="float: right;">
       <div class="btn-group" role="group" aria-label="...">
         <div type="button" ng-click="parameterChanged()"
+             ng-if="config.panel.parameterPanelOpened"
              class="btn btn-default" style="padding: 2px 5px 2px 5px;">
           <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </div>
         <div type="button" ng-click="resetParameterConfig()"
+             ng-if="config.panel.parameterPanelOpened"
              class="btn btn-default" style="padding: 2px 5px 2px 5px;">
           <i class="fa fa-trash-o" aria-hidden="true"></i>
         </div>
