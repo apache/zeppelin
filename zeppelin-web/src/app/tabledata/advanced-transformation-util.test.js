@@ -79,6 +79,30 @@ const MockSpec = {
 
 
 describe('advanced-transformation-util', () => {
+  describe('getCurrent* funcs', () => {
+    it('should set return proper value of the current chart', () => {
+      const config  = {}
+      Util.initializeConfig(config, MockSpec)
+      expect(Util.getCurrentChart(config)).toEqual('object-chart')
+      expect(Util.getCurrentChartTransform(config)).toEqual({method: 'object'})
+      // use `toBe` to compare reference
+      expect(Util.getCurrentChartAxis(config)).toBe(config.axis['object-chart'])
+      // use `toBe` to compare reference
+      expect(Util.getCurrentChartParam(config)).toBe(config.parameter['object-chart'])
+    })
+  })
+
+  describe('useSharedAxis', () => {
+    it('should set chartChanged for initial drawing', () => {
+      const config  = {}
+      Util.initializeConfig(config, MockSpec)
+      expect(Util.useSharedAxis(config, 'object-chart')).toEqual(true)
+      expect(Util.useSharedAxis(config, 'array-chart')).toEqual(true)
+      expect(Util.useSharedAxis(config, 'drillDown-chart')).toBeUndefined()
+      expect(Util.useSharedAxis(config, 'raw-chart')).toBeUndefined()
+    })
+  })
+
   describe('initializeConfig', () => {
     const config  = {}
     Util.initializeConfig(config, MockSpec)
