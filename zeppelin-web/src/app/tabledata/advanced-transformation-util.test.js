@@ -77,16 +77,86 @@ const MockSpec = {
   },
 }
 
-const mockConfig = {
-  chart: {
-
-  },
-
-  spec: MockSpec,
-}
-
 
 describe('advanced-transformation-util', () => {
+  describe('initializeConfig', () => {
+    const config  = {}
+    Util.initializeConfig(config, MockSpec)
+
+    it('should set chartChanged for initial drawing', () => {
+      expect(config.chartChanged).toBe(true)
+      expect(config.parameterChanged).toBe(false)
+    })
+
+    it('should set panel toggles ', () => {
+      expect(config.panel.columnPanelOpened).toBe(true)
+      expect(config.panel.parameterPanelOpened).toBe(false)
+    })
+
+    it('should set version and initialized', () => {
+      expect(config.spec.version).toBeDefined()
+      expect(config.spec.initialized).toBe(true)
+    })
+
+    it('should set chart', () => {
+      expect(config.chart.current).toBe('object-chart')
+      expect(config.chart.available).toEqual([
+        'object-chart',
+        'array-chart',
+        'drillDown-chart',
+        'raw-chart',
+      ])
+    })
+
+    it('should set sharedAxis', () => {
+      expect(config.sharedAxis).toEqual({
+        keyAxis: [], aggrAxis: [], groupAxis: [],
+      })
+      // should use `toBe` to compare object reference
+      expect(config.sharedAxis).toBe(config.axis['object-chart'])
+      // should use `toBe` to compare object reference
+      expect(config.sharedAxis).toBe(config.axis['array-chart'])
+    })
+
+    it('should set paramSpecs', () => {
+      const expected = Util.getSpecs(MockParameter)
+      expect(config.paramSpecs['object-chart']).toEqual(expected)
+      expect(config.paramSpecs['array-chart'].length).toEqual(1)
+      expect(config.paramSpecs['drillDown-chart'].length).toEqual(1)
+      expect(config.paramSpecs['raw-chart'].length).toEqual(1)
+    })
+
+    it('should set parameter with default value', () => {
+      expect(Object.keys(MockParameter).length).toBeGreaterThan(0) // length > 0
+      for (let paramName in MockParameter) {
+        expect(config.parameter['object-chart'][paramName])
+          .toEqual(MockParameter[paramName].defaultValue)
+      }
+    })
+
+    it('should set axisSpecs', () => {
+      const expected = Util.getSpecs(MockAxis1)
+      expect(config.axisSpecs['object-chart']).toEqual(expected)
+      expect(config.axisSpecs['array-chart'].length).toEqual(3)
+      expect(config.axisSpecs['drillDown-chart'].length).toEqual(3)
+      expect(config.axisSpecs['raw-chart'].length).toEqual(2)
+    })
+
+    it('should prepare axis depending on dimension', () => {
+      expect(config.axis['object-chart']).toEqual({
+        keyAxis: [], aggrAxis: [], groupAxis: [],
+      })
+      expect(config.axis['array-chart']).toEqual({
+        keyAxis: [], aggrAxis: [], groupAxis: [],
+      })
+      // it's ok not to set single dimension axis
+      expect(config.axis['drillDown-chart']).toEqual({ limitedAggrAxis: [], })
+      // it's ok not to set single dimension axis
+      expect(config.axis['raw-chart']).toEqual({ customAxis2: [], })
+    })
+
+  })
+
   describe('axis', () => {
 
   })

@@ -257,7 +257,7 @@ export function clearParameterConfig(config) {
   delete config.parameter  /** Object: persisted parameter for each chart */
 }
 
-export function initParameterConfig(config, remove) {
+export function initParameterConfig(config) {
   if (!config.parameter) { config.parameter = {} }
 
   const spec = config.spec
