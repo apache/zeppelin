@@ -257,31 +257,58 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testRunOnSelectionCheckbox() throws Exception {
+  public void testRunOnSelectionChange() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
     try {
-      String xpathToCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]";
+      String xpathToRunOnSelectionChangeCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]";
+      String xpathToDropdownMenu = getParagraphXPath(1) + "//select";
+      String xpathToResultText = getParagraphXPath(1) + "//div[contains(@id,\"_html\")]";
 
       createNewNote();
 
       waitForParagraph(1, "READY");
       setTextOfParagraph(1, "%md My selection is ${my selection=1,1|2|3}");
       runParagraph(1);
+      waitForParagraph(1, "FINISHED");
 
+      // 1. 'RunOnSelectionChange' is true by default
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("'Run on selection change' checkbox will be shown under dropdown menu ",
         driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-click, 'turnOnAutoRun(paragraph)')]")).isDisplayed(),
         CoreMatchers.equalTo(true));
 
-      driver.findElement(By.xpath(xpathToCheckbox)).click();
+      Select dropDownMenu = new Select(driver.findElement(By.xpath((xpathToDropdownMenu))));
+      dropDownMenu.selectByVisibleText("2");
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("If 'RunOnSelectionChange' is true, the paragraph result will be updated right after click any options in the dropdown menu ",
+        driver.findElement(By.xpath(xpathToResultText)).getText(),
+        CoreMatchers.equalTo("My selection is 2"));
+
+      // 2. set 'RunOnSelectionChange' to false
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(xpathToRunOnSelectionChangeCheckbox)).click();
       collector.checkThat("If 'Run on selection change' checkbox is unchecked, 'paragraph.config.runOnSelectionChange' will be false ",
         driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/span[contains(@ng-if, 'paragraph.config.runOnSelectionChange == false')]")).isDisplayed(),
         CoreMatchers.equalTo(true));
 
+      Select sameDropDownMenu = new Select(driver.findElement(By.xpath((xpathToDropdownMenu))));
+      sameDropDownMenu.selectByVisibleText("1");
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("If 'RunOnSelectionChange' is false, the paragraph result won't be updated even if we select any options in the dropdown menu ",
+        driver.findElement(By.xpath(xpathToResultText)).getText(),
+        CoreMatchers.equalTo("My selection is 2"));
+
+      // run paragraph manually by pressing ENTER
+      driver.findElement(By.xpath(xpathToDropdownMenu)).sendKeys(Keys.ENTER);
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("Even if 'RunOnSelectionChange' is set as false, still can run the paragraph by pressing ENTER ",
+        driver.findElement(By.xpath(xpathToResultText)).getText(),
+        CoreMatchers.equalTo("My selection is 1"));
+
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testRunOnSelectionButton ", e);
+      handleException("Exception in ParagraphActionsIT while testRunOnSelectionChange ", e);
     }
   }
 
