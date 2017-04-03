@@ -338,7 +338,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         BootstrapDialog.confirm({
           closable: true,
           title: '',
-          message: 'Run this paragraph and all the next ones?',
+          message: 'Run this paragraph and all the following ones?',
           callback: function(result) {
             if (result) {
               runParagraphs(note,paragraph);
