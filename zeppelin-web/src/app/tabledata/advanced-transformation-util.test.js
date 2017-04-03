@@ -939,6 +939,293 @@ describe('advanced-transformation-util', () => {
       })
     }) // end: describe('method: object')
 
+    describe('method: drill-down', () => {
+      let config = {}
+      const chart = 'drillDown-chart'
+      let ageColumn = null
+      let balanceColumn = null
+      let educationColumn = null
+      let martialColumn = null
+      let jobColumn = null
+      const tableDataRows = JSON.parse(JSON.stringify(MockTableDataRows1))
+
+      beforeEach(() => {
+        const spec = JSON.parse(JSON.stringify(MockSpec2))
+        config = {}
+        Util.initializeConfig(config, spec)
+        config.chart.current = chart
+        ageColumn = JSON.parse(JSON.stringify(MockTableDataColumn[0]))
+        balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
+        educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
+        martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
+        jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ '', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          { selector: 'age', value: 44 + 43 + 39 + 33, drillDown: [  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(count)', () => {
+        ageColumn.aggr = 'count'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { selector: 'age', value: 4, drillDown: [  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(avg)', () => {
+        ageColumn.aggr = 'avg'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { selector: 'age', value: (44 + 43 + 39 + 33) / 4.0, drillDown: [  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(max)', () => {
+        ageColumn.aggr = 'max'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { selector: 'age', value: 44, drillDown: [  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(min)', () => {
+        ageColumn.aggr = 'min'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { selector: 'age', value: 33, drillDown: [  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ '', ])
+        expect(groupNames).toEqual([ 'age', 'balance', ])
+        expect(selectors).toEqual([ 'age', 'balance', ])
+        expect(rows).toEqual([
+          { selector: 'age', value: 159, drillDown: [  ], },
+          { selector: 'balance', value: 14181, drillDown: [  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ 'marital', ])
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          {
+            selector: 'age',
+            value: 159,
+            drillDown: [
+              { group: 'married', value: 82 },
+              { group: 'single', value: 77 },
+            ],
+          },
+        ])
+      })
+
+      it('should transform properly: 0 key, 1 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ 'marital', ])
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([ 'age', 'balance' ])
+        expect(rows).toEqual([
+          {
+            selector: 'age',
+            value: 159,
+            drillDown: [
+              { group: 'married', value: 82 },
+              { group: 'single', value: 77 },
+            ],
+          },
+          {
+            selector: 'balance',
+            value: 14181,
+            drillDown: [
+              { group: 'married', value: 9286 },
+              { group: 'single', value: 4895 },
+            ],
+          },
+        ])
+      })
+
+      it('should transform properly: 0 key, 2 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ 'marital.education', ])
+        expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          {
+            selector: 'age',
+            value: 159,
+            drillDown: [
+              { group: 'married.primary', value: '43' },
+              { group: 'married.secondary', value: '39' },
+              { group: 'single.tertiary', value: 77 },
+            ],
+          },
+        ])
+      })
+
+      it('should transform properly: 1 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('marital')
+        expect(keyNames).toEqual([ 'married', 'single', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'married', 'single', ])
+        expect(rows).toEqual([
+          { value: 82, drillDown: [  ], selector: 'married' },
+          { value: 77, drillDown: [  ], selector: 'single' },
+        ])
+      })
+
+      it('should transform properly: 2 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        config.axis[chart].keyAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('marital.education')
+        expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(rows).toEqual([
+          { value: '43', drillDown: [  ], selector: 'married.primary' },
+          { value: '39', drillDown: [  ], selector: 'married.secondary' },
+          { value: 77, drillDown: [  ], selector: 'single.tertiary' },
+        ])
+      })
+
+      it('should transform properly: 1 key, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('marital')
+        expect(keyNames).toEqual([ 'married', 'single', ])
+        expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(selectors).toEqual([ 'married', 'single', ])
+        expect(rows).toEqual([
+          {
+            selector: 'married',
+            value: 82,
+            drillDown: [
+              { group: 'primary', value: '43' },
+              { group: 'secondary', value: '39' },
+              { group: 'tertiary', value: null },
+            ],
+          },
+          {
+            selector: 'single',
+            value: 77,
+            drillDown: [
+              { group: 'primary', value: null },
+              { group: 'secondary', value: null },
+              { group: 'tertiary', value: 77 },
+            ],
+          },
+        ])
+      })
+    }) // end: describe('method: drill-down')
+
   }) // end: describe('getTransformer')
 })
 
