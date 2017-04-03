@@ -665,7 +665,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           $scope.$on('completionList', function(event, data) {
             var computeCaption = function(value, meta) {
               var metaLength = meta !== undefined ? meta.length : 0;
-              var length = 43;
+              var length = 42;
               var whitespaceLength = 3;
               var ellipses = '...';
               var maxLengthCaption = length - metaLength - whitespaceLength - ellipses.length;
