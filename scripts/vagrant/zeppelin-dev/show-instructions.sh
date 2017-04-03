@@ -34,7 +34,7 @@ echo 'mvn clean package -DskipTests'
 echo
 echo '# or for a specific Spark/Hadoop build with additional options such as python and R support'
 echo
-echo 'mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests'
+echo 'mvn clean package -Pspark-1.6 -Phadoop-2.4 -Psparkr -DskipTests'
 echo './bin/zeppelin-daemon.sh start'
 echo
 echo 'On your host machine browse to http://localhost:8080/'
