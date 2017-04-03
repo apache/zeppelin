@@ -49,14 +49,14 @@ const MockSpec = {
     'object-chart': {
       transform: { method: 'object', },
       sharedAxis: true,
-      axis: MockAxis1,
+      axis: JSON.parse(JSON.stringify(MockAxis1)),
       parameter: MockParameter,
     },
 
     'array-chart': {
       transform: { method: 'array', },
       sharedAxis: true,
-      axis: MockAxis1,
+      axis: JSON.parse(JSON.stringify(MockAxis1)),
       parameter: {
         'arrayChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -64,7 +64,7 @@ const MockSpec = {
 
     'drillDown-chart': {
       transform: { method: 'drill-down', },
-      axis: MockAxis2,
+      axis: JSON.parse(JSON.stringify(MockAxis2)),
       parameter: {
         'drillDownChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -72,7 +72,7 @@ const MockSpec = {
 
     'raw-chart': {
       transform: { method: 'raw', },
-      axis: MockAxis3,
+      axis: JSON.parse(JSON.stringify(MockAxis3)),
       parameter: {
         'rawChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -86,14 +86,14 @@ const MockSpec2 = {
     'object-chart': {
       transform: { method: 'object', },
       sharedAxis: false,
-      axis: MockAxis1,
+      axis: JSON.parse(JSON.stringify(MockAxis1)),
       parameter: MockParameter,
     },
 
     'array-chart': {
       transform: { method: 'array', },
       sharedAxis: false,
-      axis: MockAxis1,
+      axis: JSON.parse(JSON.stringify(MockAxis1)),
       parameter: {
         'arrayChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -102,7 +102,7 @@ const MockSpec2 = {
     'drillDown-chart': {
       transform: { method: 'drill-down', },
       sharedAxis: false,
-      axis: MockAxis1,
+      axis: JSON.parse(JSON.stringify(MockAxis1)),
       parameter: {
         'drillDownChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -111,7 +111,7 @@ const MockSpec2 = {
     'raw-chart': {
       transform: { method: 'raw', },
       sharedAxis: false,
-      axis: MockAxis3,
+      axis: JSON.parse(JSON.stringify(MockAxis3)),
       parameter: {
         'rawChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -147,38 +147,14 @@ const MockTableDataRows1 = [
   [ '33', 'services', 'single', 'tertiary', 'no', '4789', 'yes', 'yes', 'cellular', '11', 'may', '220', '1', '339', '4', 'failure', 'no' ],
 ]
 
-const MockTableDataRows99 = [
-  [ 43, 'services', 'married', 'primary', 'no', '-88', 'yes', 'yes', 'cellular', '17', 'apr', '313', '1', '147', '2', 'failure', 'no' ],
-  [ 39, 'services', 'married', 'secondary', 'no', '9374', 'yes', 'no', 'unknown', '20', 'may', '273', '1', '-1', '0', 'unknown', 'no' ],
-  [ 33, 'services', 'single', 'tertiary', 'no', '4789', 'yes', 'yes', 'cellular', '11', 'may', '220', '1', '339', '4', 'failure', 'no' ],
-  [ 59, 'blue-collar', 'married', 'secondary', 'no', '0', 'yes', 'no', 'unknown', '5', 'may', '226', '1', '-1', '0', 'unknown', 'no' ],
-  [ 31, 'blue-collar', 'married', 'secondary', 'no', '360', 'yes', 'yes', 'cellular', '29', 'jan', '89', '1', '241', '1', 'failure', 'no' ],
-  [ 25, 'blue-collar', 'single', 'primary', 'no', '-221', 'yes', 'no', 'unknown', '23', 'may', '250', '1', '-1', '0', 'unknown', 'no' ],
-  [ 39, 'technician', 'married', 'tertiary', 'no', '147', 'yes', 'no', 'cellular', '6', 'may', '151', '2', '-1', '0', 'unknown', 'no' ],
-  [ 56, 'technician', 'married', 'secondary', 'no', '4073', 'no', 'no', 'cellular', '27', 'aug', '239', '5', '-1', '0', 'unknown', 'no' ],
-  [ 37, 'admin.', 'single', 'tertiary', 'no', '2317', 'yes', 'no', 'cellular', '20', 'apr', '114', '1', '152', '2', 'failure', 'no' ],
-  [ 36, 'self-employed', 'married', 'tertiary', 'no', '307', 'yes', 'no', 'cellular', '14', 'may', '341', '1', '330', '2', 'other', 'no' ],
-  [ 65, 'unemployed', 'single', 'primary', 'no', '1787', 'no', 'no', 'cellular', '19', 'oct', '79', '1', '-1', '0', 'unknown', 'no' ],
-  [ 41, 'management', 'married', 'tertiary', 'no', '1476', 'yes', 'yes', 'unknown', '3', 'jun', '199', '4', '-1', '0', 'unknown', 'no' ],
-  [ 35, 'management', 'single', 'tertiary', 'no', '1350', 'yes', 'no', 'cellular', '16', 'apr', '185', '1', '330', '1', 'failure', 'no' ],
-  [ 35, 'management', 'single', 'tertiary', 'no', '747', 'no', 'no', 'cellular', '23', 'feb', '141', '2', '176', '3', 'failure', 'no' ],
-  [ 41, 'entrepreneur', 'married', 'tertiary', 'no', '221', 'yes', 'no', 'unknown', '14', 'may', '57', '2', '-1', '0', 'unknown', 'no' ],
-  [ 44, 'entrepreneur', 'married', 'secondary', 'no', '93', 'no', 'no', 'cellular', '7', 'jul', '125', '2', '-1', '0', 'unknown', 'no' ],
-  [ 43, 'admin.', 'married', 'secondary', 'no', '264', 'yes', 'no', 'cellular', '17', 'apr', '113', '2', '-1', '0', 'unknown', 'no' ],
-  [ 36, 'technician', 'married', 'tertiary', 'no', '1109', 'no', 'no', 'cellular', '13', 'aug', '328', '2', '-1', '0', 'unknown', 'no' ],
-  [ 20, 'student', 'single', 'secondary', 'no', '502', 'no', 'no', 'cellular', '30', 'apr', '261', '1', '-1', '0', 'unknown', 'yes' ],
-  [ 40, 'management', 'married', 'tertiary', 'no', '194', 'no', 'yes', 'cellular', '29', 'aug', '189', '2', '-1', '0', 'unknown', 'no' ],
-  [ 31, 'services', 'married', 'secondary', 'no', '132', 'no', 'no', 'cellular', '7', 'jul', '148', '1', '152', '1', 'other', 'no' ],
-  [ 38, 'management', 'divorced', 'unknown', 'no', '0', 'yes', 'no', 'cellular', '18', 'nov', '96', '2', '-1', '0', 'unknown', 'no' ],
-  [ 42, 'management', 'divorced', 'tertiary', 'no', '16', 'no', 'no', 'cellular', '19', 'nov', '140', '3', '-1', '0', 'unknown', 'no' ],
-]
 /* eslint-enable max-len */
 
 describe('advanced-transformation-util', () => {
   describe('getCurrent* funcs', () => {
     it('should set return proper value of the current chart', () => {
       const config  = {}
-      Util.initializeConfig(config, MockSpec)
+      const spec = JSON.parse(JSON.stringify(MockSpec))
+      Util.initializeConfig(config, spec)
       expect(Util.getCurrentChart(config)).toEqual('object-chart')
       expect(Util.getCurrentChartTransform(config)).toEqual({method: 'object'})
       // use `toBe` to compare reference
@@ -191,7 +167,8 @@ describe('advanced-transformation-util', () => {
   describe('useSharedAxis', () => {
     it('should set chartChanged for initial drawing', () => {
       const config  = {}
-      Util.initializeConfig(config, MockSpec)
+      const spec = JSON.parse(JSON.stringify(MockSpec))
+      Util.initializeConfig(config, spec)
       expect(Util.useSharedAxis(config, 'object-chart')).toEqual(true)
       expect(Util.useSharedAxis(config, 'array-chart')).toEqual(true)
       expect(Util.useSharedAxis(config, 'drillDown-chart')).toBeUndefined()
@@ -201,7 +178,8 @@ describe('advanced-transformation-util', () => {
 
   describe('initializeConfig', () => {
     const config  = {}
-    Util.initializeConfig(config, MockSpec)
+    const spec = JSON.parse(JSON.stringify(MockSpec))
+    Util.initializeConfig(config, spec)
 
     it('should set chartChanged for initial drawing', () => {
       expect(config.chartChanged).toBe(true)
@@ -364,7 +342,9 @@ describe('advanced-transformation-util', () => {
 
   describe('removeDuplicatedColumnsInMultiDimensionAxis', () => {
     const config = {}
-    Util.initializeConfig(config, MockSpec)
+
+    const spec = JSON.parse(JSON.stringify(MockSpec))
+    Util.initializeConfig(config, spec)
 
     const addColumn = function(config, value) {
       const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
@@ -387,7 +367,8 @@ describe('advanced-transformation-util', () => {
 
   describe('applyMaxAxisCount', () => {
     const config = {}
-    Util.initializeConfig(config, MockSpec)
+    const spec = JSON.parse(JSON.stringify(MockSpec))
+    Util.initializeConfig(config, spec)
 
     const addColumn = function(config, value) {
       const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
@@ -413,7 +394,9 @@ describe('advanced-transformation-util', () => {
   describe('getColumnsFromAxis', () => {
     it('should return proper value for regular axis spec (key, aggr, group)', () => {
       const config = {}
-      Util.initializeConfig(config, MockSpec)
+
+      const spec = JSON.parse(JSON.stringify(MockSpec))
+      Util.initializeConfig(config, spec)
       const chart = 'object-chart'
       config.chart.current = chart
 
@@ -434,7 +417,8 @@ describe('advanced-transformation-util', () => {
 
     it('should return proper value for custom axis spec', () => {
       const config = {}
-      Util.initializeConfig(config, MockSpec)
+      const spec = JSON.parse(JSON.stringify(MockSpec))
+      Util.initializeConfig(config, spec)
       const chart = 'raw-chart' // for test custom columns
       config.chart.current = chart
 
@@ -457,7 +441,8 @@ describe('advanced-transformation-util', () => {
 
     describe('method: raw', () => {
       let config = {}
-      Util.initializeConfig(config, MockSpec2)
+      const spec = JSON.parse(JSON.stringify(MockSpec2))
+      Util.initializeConfig(config, spec)
 
       it('should return original rows when transform.method is `raw`', () => {
         const chart = 'raw-chart'
@@ -471,7 +456,7 @@ describe('advanced-transformation-util', () => {
       })
     })
 
-    describe('method: array', () => {
+    describe('array method', () => {
       let config = {}
       const chart = 'array-chart'
       let ageColumn = null
@@ -479,18 +464,245 @@ describe('advanced-transformation-util', () => {
       let educationColumn = null
       let martialColumn = null
       let jobColumn = null
-      const tableDataRows = MockTableDataRows1
+      let tableDataRows = []
 
       beforeEach(() => {
-        Util.initializeConfig(config, MockSpec2)
+        const spec = JSON.parse(JSON.stringify(MockSpec2))
+        config = {}
+        Util.initializeConfig(config, spec)
         config.chart.current = chart
+        tableDataRows = JSON.parse(JSON.stringify(MockTableDataRows1))
         ageColumn = JSON.parse(JSON.stringify(MockTableDataColumn[0]))
         balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
         educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
         martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
         jobColumn = JSON.parse(JSON.stringify(MockTableDataColumn[1]))
       })
-    })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ '', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          { key: '', selector: 'age', value: [ 159, ], }
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(count)', () => {
+        ageColumn.aggr = 'count'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        let { rows, } = transformer()
+        expect(rows).toEqual([
+          { key: '', selector: 'age', value: [ 4, ], }
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(avg)', () => {
+        ageColumn.aggr = 'avg'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { key: '', selector: 'age', value: [ (44 + 43 + 39 + 33) / 4.0, ], }
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(max)', () => {
+        ageColumn.aggr = 'max'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { key: '', selector: 'age', value: [ 44, ], }
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 1 aggr(min)', () => {
+        ageColumn.aggr = 'min'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, } = transformer()
+        expect(rows).toEqual([
+          { key: '', selector: 'age', value: [ 33, ], }
+        ])
+      })
+
+      it('should transform properly: 0 key, 0 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ '', ])
+        expect(groupNames).toEqual([ 'age', 'balance', ])
+        expect(selectors).toEqual([ 'age', 'balance', ])
+        expect(rows).toEqual([
+          { key: '', selector: 'age', value: [ 159, ], },
+          { key: '', selector: 'balance', value: [ 14181, ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ 'marital', ])
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([ 'married', 'single', ])
+        expect(rows).toEqual([
+          { selector: 'married', value: [ 82, ], },
+          { selector: 'single', value: [ 77, ], },
+        ])
+      })
+
+      it('should transform properly: 0 key, 1 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ 'marital', ])
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([
+          'married / age', 'married / balance', 'single / age', 'single / balance',
+        ])
+        expect(rows).toEqual([
+          { selector: 'married / age', value: [ 82 ] },
+          { selector: 'married / balance', value: [ 9286 ] },
+          { selector: 'single / age', value: [ 77 ] },
+          { selector: 'single / balance', value: [ 4895 ] },
+        ])
+      })
+
+      it('should transform properly: 0 key, 2 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('')
+        expect(keyNames).toEqual([ 'marital.education', ])
+        expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(rows).toEqual([
+          { selector: 'married.primary', value: [ '43' ] },
+          { selector: 'married.secondary', value: [ '39' ] },
+          { selector: 'single.tertiary', value: [ 77 ] },
+        ])
+      })
+
+      it('should transform properly: 1 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('marital')
+        expect(keyNames).toEqual([ 'married', 'single', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          { key: 'married', selector: 'age', value: [ 82, 77, ] },
+        ])
+      })
+
+      it('should transform properly: 2 key, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        config.axis[chart].keyAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('marital.education')
+        expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(groupNames).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age', ])
+        expect(rows).toEqual([
+          { key: 'married.primary', selector: 'age', value: [ '43', '39', 77, ] },
+        ])
+      })
+
+      it('should transform properly: 1 key, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].keyAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
+        const transformer = Util.getTransformer(config, tableDataRows,
+          column.key, column.group, column.aggregator)
+
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
+
+        expect(keyColumnName).toEqual('marital')
+        expect(keyNames).toEqual([ 'married', 'single', ])
+        expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(rows).toEqual([
+          { selector: 'primary', value: [ '43', null, ] },
+          { selector: 'secondary', value: [ '39', null, ] },
+          { selector: 'tertiary', value: [ null, 77, ] },
+        ])
+      })
+    }) // end: describe('method: array')
 
     describe('method: object', () => {
       let config = {}
@@ -500,10 +712,12 @@ describe('advanced-transformation-util', () => {
       let educationColumn = null
       let martialColumn = null
       let jobColumn = null
-      const tableDataRows = MockTableDataRows1
+      const tableDataRows = JSON.parse(JSON.stringify(MockTableDataRows1))
 
       beforeEach(() => {
-        Util.initializeConfig(config, MockSpec2)
+        const spec = JSON.parse(JSON.stringify(MockSpec2))
+        config = {}
+        Util.initializeConfig(config, spec)
         config.chart.current = chart
         ageColumn = JSON.parse(JSON.stringify(MockTableDataColumn[0]))
         balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
@@ -519,8 +733,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
         expect(groupNames).toEqual([ 'age', ])
         expect(selectors).toEqual([ 'age', ])
@@ -548,7 +763,9 @@ describe('advanced-transformation-util', () => {
           column.key, column.group, column.aggregator)
 
         const { rows, } = transformer()
-        expect(rows).toEqual([{ age: (44 + 43 + 39 + 33) / 4.0, }])
+        expect(rows).toEqual([
+          { age: (44 + 43 + 39 + 33) / 4.0, }
+        ])
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(max)', () => {
@@ -584,8 +801,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
         expect(groupNames).toEqual([ 'age', 'balance', ])
         expect(selectors).toEqual([ 'age', 'balance', ])
@@ -600,8 +818,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ 'marital', ])
         expect(groupNames).toEqual([ 'married', 'single', ])
         expect(selectors).toEqual([ 'married', 'single', ])
@@ -620,8 +839,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ 'marital', ])
         expect(groupNames).toEqual([ 'married', 'single', ])
         expect(selectors).toEqual([
@@ -644,8 +864,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ 'marital.education', ])
         expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
         expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
@@ -662,8 +883,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('marital')
         expect(keyNames).toEqual([ 'married', 'single', ])
         expect(groupNames).toEqual([ 'age', ])
         expect(selectors).toEqual([ 'age', ])
@@ -682,8 +904,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('marital.education')
         expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
         expect(groupNames).toEqual([ 'age', ])
         expect(selectors).toEqual([ 'age', ])
@@ -703,8 +926,9 @@ describe('advanced-transformation-util', () => {
         const transformer = Util.getTransformer(config, tableDataRows,
           column.key, column.group, column.aggregator)
 
-        const { rows, keyNames, groupNames, selectors, } = transformer()
+        const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
+        expect(keyColumnName).toEqual('marital')
         expect(keyNames).toEqual([ 'married', 'single', ])
         expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
         expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
