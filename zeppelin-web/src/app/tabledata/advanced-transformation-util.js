@@ -106,7 +106,7 @@ export function parseParameter(paramSpecs, param) {
       if (parsed[name] === 'false') {
         parsed[name] = false;
       } else if (parsed[name] === 'true') {
-        parsed[name] = false;
+        parsed[name] = true;
       } else if (typeof parsed[name] !== 'boolean') {
         parsed[name] = paramSpec.defaultValue;
       }
