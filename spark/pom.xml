@@ -506,7 +506,7 @@
       <id>spark-1.6</id>
       <properties>
         <spark.version>1.6.3</spark.version>
-        <py4j.version>0.9</py4j.version>
+        <spark.py4j.version>0.9</spark.py4j.version>
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
@@ -518,7 +518,7 @@
       <properties>
         <spark.version>2.0.2</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.3</py4j.version>
+        <spark.py4j.version>0.10.3</spark.py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
@@ -531,7 +531,7 @@
       <properties>
         <spark.version>2.1.0</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.4</py4j.version>
+        <spark.py4j.version>0.10.4</spark.py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
