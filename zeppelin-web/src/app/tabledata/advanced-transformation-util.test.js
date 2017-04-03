@@ -14,6 +14,7 @@
 
 import * as Util from './advanced-transformation-util.js'
 
+/* eslint-disable max-len */
 const MockParameter = {
   'floatParam': { valueType: 'float', defaultValue: 10, description: '', },
   'intParam': { valueType: 'int', defaultValue: 50, description: '', },
@@ -23,6 +24,7 @@ const MockParameter = {
   'boolParam': { valueType: 'boolean', defaultValue: false, description: '', widget: 'checkbox', },
   'optionParam': { valueType: 'string', defaultValue: 'line', description: '', widget: 'option', optionValues: [ 'line', 'smoothedLine', ], },
 }
+/* eslint-enable max-len */
 
 const MockAxis1 = {
   'keyAxis': { dimension: 'multiple', axisType: 'key', },
@@ -117,6 +119,56 @@ const MockSpec2 = {
   },
 }
 
+/* eslint-disable max-len */
+const MockTableData = {
+  'columns': [
+    { 'name': 'age', 'index': 0, 'aggr': 'sum', },
+    { 'name': 'job', 'index': 1, 'aggr': 'sum', },
+    { 'name': 'marital', 'index': 2, 'aggr': 'sum', },
+    { 'name': 'education', 'index': 3, 'aggr': 'sum', },
+    { 'name': 'default', 'index': 4, 'aggr': 'sum', },
+    { 'name': 'balance', 'index': 5, 'aggr': 'sum', },
+    { 'name': 'housing', 'index': 6, 'aggr': 'sum', },
+    { 'name': 'loan', 'index': 7, 'aggr': 'sum', },
+    { 'name': 'contact', 'index': 8, 'aggr': 'sum', },
+    { 'name': 'day', 'index': 9, 'aggr': 'sum', },
+    { 'name': 'month', 'index': 10, 'aggr': 'sum', },
+    { 'name': 'duration', 'index': 11, 'aggr': 'sum', },
+    { 'name': 'campaign', 'index': 12, 'aggr': 'sum', },
+    { 'name': 'pdays', 'index': 13, 'aggr': 'sum', },
+    { 'name': 'previous', 'index': 14, 'aggr': 'sum', },
+    { 'name': 'poutcome', 'index': 15, 'aggr': 'sum', },
+    { 'name': 'y', 'index': 16, 'aggr': 'sum', }
+  ],
+  'rows': [
+    [ '30', 'unemployed', 'married', 'primary', 'no', '1787', 'no', 'no', 'cellular', '19', 'oct', '79', '1', '-1', '0', 'unknown', 'no' ],
+    [ '33', 'services', 'married', 'secondary', 'no', '4789', 'yes', 'yes', 'cellular', '11', 'may', '220', '1', '339', '4', 'failure', 'no' ],
+    [ '35', 'management', 'single', 'tertiary', 'no', '1350', 'yes', 'no', 'cellular', '16', 'apr', '185', '1', '330', '1', 'failure', 'no' ],
+    [ '30', 'management', 'married', 'tertiary', 'no', '1476', 'yes', 'yes', 'unknown', '3', 'jun', '199', '4', '-1', '0', 'unknown', 'no' ],
+    [ '59', 'blue-collar', 'married', 'secondary', 'no', '0', 'yes', 'no', 'unknown', '5', 'may', '226', '1', '-1', '0', 'unknown', 'no' ],
+    [ '35', 'management', 'single', 'tertiary', 'no', '747', 'no', 'no', 'cellular', '23', 'feb', '141', '2', '176', '3', 'failure', 'no' ],
+    [ '36', 'self-employed', 'married', 'tertiary', 'no', '307', 'yes', 'no', 'cellular', '14', 'may', '341', '1', '330', '2', 'other', 'no' ],
+    [ '39', 'technician', 'married', 'secondary', 'no', '147', 'yes', 'no', 'cellular', '6', 'may', '151', '2', '-1', '0', 'unknown', 'no' ],
+    [ '41', 'entrepreneur', 'married', 'tertiary', 'no', '221', 'yes', 'no', 'unknown', '14', 'may', '57', '2', '-1', '0', 'unknown', 'no' ],
+    [ '43', 'services', 'married', 'primary', 'no', '-88', 'yes', 'yes', 'cellular', '17', 'apr', '313', '1', '147', '2', 'failure', 'no' ],
+    [ '39', 'services', 'married', 'secondary', 'no', '9374', 'yes', 'no', 'unknown', '20', 'may', '273', '1', '-1', '0', 'unknown', 'no' ],
+    [ '43', 'admin.', 'married', 'secondary', 'no', '264', 'yes', 'no', 'cellular', '17', 'apr', '113', '2', '-1', '0', 'unknown', 'no' ],
+    [ '36', 'technician', 'married', 'tertiary', 'no', '1109', 'no', 'no', 'cellular', '13', 'aug', '328', '2', '-1', '0', 'unknown', 'no' ],
+    [ '20', 'student', 'single', 'secondary', 'no', '502', 'no', 'no', 'cellular', '30', 'apr', '261', '1', '-1', '0', 'unknown', 'yes' ],
+    [ '31', 'blue-collar', 'married', 'secondary', 'no', '360', 'yes', 'yes', 'cellular', '29', 'jan', '89', '1', '241', '1', 'failure', 'no' ],
+    [ '40', 'management', 'married', 'tertiary', 'no', '194', 'no', 'yes', 'cellular', '29', 'aug', '189', '2', '-1', '0', 'unknown', 'no' ],
+    [ '56', 'technician', 'married', 'secondary', 'no', '4073', 'no', 'no', 'cellular', '27', 'aug', '239', '5', '-1', '0', 'unknown', 'no' ],
+    [ '37', 'admin.', 'single', 'tertiary', 'no', '2317', 'yes', 'no', 'cellular', '20', 'apr', '114', '1', '152', '2', 'failure', 'no' ],
+    [ '25', 'blue-collar', 'single', 'primary', 'no', '-221', 'yes', 'no', 'unknown', '23', 'may', '250', '1', '-1', '0', 'unknown', 'no' ],
+    [ '31', 'services', 'married', 'secondary', 'no', '132', 'no', 'no', 'cellular', '7', 'jul', '148', '1', '152', '1', 'other', 'no' ],
+    [ '38', 'management', 'divorced', 'unknown', 'no', '0', 'yes', 'no', 'cellular', '18', 'nov', '96', '2', '-1', '0', 'unknown', 'no' ],
+    [ '42', 'management', 'divorced', 'tertiary', 'no', '16', 'no', 'no', 'cellular', '19', 'nov', '140', '3', '-1', '0', 'unknown', 'no' ],
+    [ '44', 'services', 'single', 'secondary', 'no', '106', 'no', 'no', 'unknown', '12', 'jun', '109', '2', '-1', '0', 'unknown', 'no' ],
+    [ '44', 'entrepreneur', 'married', 'secondary', 'no', '93', 'no', 'no', 'cellular', '7', 'jul', '125', '2', '-1', '0', 'unknown', 'no' ],
+  ],
+  'comment': '',
+}
+/* eslint-enable max-len */
 
 describe('advanced-transformation-util', () => {
   describe('getCurrent* funcs', () => {
@@ -392,6 +444,34 @@ describe('advanced-transformation-util', () => {
       const column = Util.getColumnsFromAxis(axisSpecs, axis)
       expect(column.custom.unique).toEqual([ 'columnA', ])
       expect(column.custom.value).toEqual([ 'columnB', 'columnC', 'columnD', ])
+    })
+  })
+
+  // it's hard to test all methods for transformation.
+  // so let's do behavioral (black-box) test instead of
+  describe('getTransformer', () => {
+    let config = {}
+    // const tabledata = MockTableData
+
+    beforeEach(() => {
+      // initialize config using spec for transformer testing
+      Util.initializeConfig(config, MockSpec2)
+    })
+
+    it('should return original rows when transform.method is `raw`', () => {
+      const chart = 'raw-chart'
+      config.chart.current = chart
+
+      const rows = [ { 'r1': 1, }, ]
+      const transformer = Util.getTransformer(config, rows)
+      const transformed = transformer()
+
+      expect(transformed).toBe(rows)
+    })
+
+    it('should return original rows when transform.method is `raw`', () => {
+      const chart = 'object-chart'
+      config.chart.current = chart
     })
   })
 
