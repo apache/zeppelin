@@ -35,7 +35,7 @@ const MockAxis1 = {
 const MockAxis2 = {
   'singleKeyAxis': { dimension: 'single', axisType: 'key', },
   'limitedAggrAxis': { dimension: 'multiple', axisType: 'aggregator', maxAxisCount: 2, },
-  'singleGroupAxis': { dimension: 'single', axisType: 'group', },
+  'groupAxis': { dimension: 'multiple', axisType: 'group', },
 }
 
 const MockAxis3 = {
@@ -248,7 +248,7 @@ describe('advanced-transformation-util', () => {
         keyAxis: [], aggrAxis: [], groupAxis: [],
       })
       // it's ok not to set single dimension axis
-      expect(config.axis['drillDown-chart']).toEqual({ limitedAggrAxis: [], })
+      expect(config.axis['drillDown-chart']).toEqual({ limitedAggrAxis: [], groupAxis: [], })
       // it's ok not to set single dimension axis
       expect(config.axis['raw-chart']).toEqual({ customAxis2: [], })
     })
@@ -341,27 +341,44 @@ describe('advanced-transformation-util', () => {
   })
 
   describe('removeDuplicatedColumnsInMultiDimensionAxis', () => {
-    const config = {}
+    let config = {}
 
-    const spec = JSON.parse(JSON.stringify(MockSpec))
-    Util.initializeConfig(config, spec)
-
-    const addColumn = function(config, value) {
-      const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
-      axis.push(value)
-      const axisSpecs = Util.getCurrentChartAxisSpecs(config)
-      Util.removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpecs[1])
-    }
-
-    it('should remove duplicated axis names in config', () => {
+    beforeEach(() => {
+      config = {}
+      const spec = JSON.parse(JSON.stringify(MockSpec))
+      Util.initializeConfig(config, spec)
       config.chart.current = 'drillDown-chart' // set non-sharedAxis chart
-      addColumn(config, 'columnA')
-      addColumn(config, 'columnA')
-      addColumn(config, 'columnA')
+    })
 
-      expect(Util.getCurrentChartAxis(config)['limitedAggrAxis']).toEqual([
-        'columnA',
-      ])
+    it('should remove duplicated axis names in config when axis is not aggregator', () => {
+      const addColumn = function(config, col) {
+        const axis = Util.getCurrentChartAxis(config)['groupAxis']
+        axis.push(col)
+        const axisSpecs = Util.getCurrentChartAxisSpecs(config)
+        Util.removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpecs[2])
+      }
+
+      addColumn(config, { name: 'columnA', aggr: 'sum', index: 0, })
+      addColumn(config, { name: 'columnA', aggr: 'sum', index: 0, })
+      addColumn(config, { name: 'columnA', aggr: 'sum', index: 0, })
+
+      expect(Util.getCurrentChartAxis(config)['groupAxis'].length).toEqual(1)
+    })
+
+    it('should remove duplicated axis names in config when axis is aggregator', () => {
+      const addColumn = function(config, value) {
+        const axis = Util.getCurrentChartAxis(config)['limitedAggrAxis']
+        axis.push(value)
+        const axisSpecs = Util.getCurrentChartAxisSpecs(config)
+        Util.removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpecs[1])
+      }
+
+      config.chart.current = 'drillDown-chart' // set non-sharedAxis chart
+      addColumn(config, { name: 'columnA', aggr: 'sum', index: 0, })
+      addColumn(config, { name: 'columnA', aggr: 'aggr', index: 0, })
+      addColumn(config, { name: 'columnA', aggr: 'sum', index: 0, })
+
+      expect(Util.getCurrentChartAxis(config)['limitedAggrAxis'].length).toEqual(2)
     })
   })
 
@@ -488,10 +505,10 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { key: '', selector: 'age', value: [ 159, ], }
+          { key: '', selector: 'age(sum)', value: [ 159, ], }
         ])
       })
 
@@ -505,7 +522,7 @@ describe('advanced-transformation-util', () => {
 
         let { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age', value: [ 4, ], }
+          { key: '', selector: 'age(count)', value: [ 4, ], }
         ])
       })
 
@@ -519,7 +536,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age', value: [ (44 + 43 + 39 + 33) / 4.0, ], }
+          { key: '', selector: 'age(avg)', value: [ (44 + 43 + 39 + 33) / 4.0, ], }
         ])
       })
 
@@ -533,7 +550,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age', value: [ 44, ], }
+          { key: '', selector: 'age(max)', value: [ 44, ], }
         ])
       })
 
@@ -547,7 +564,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age', value: [ 33, ], }
+          { key: '', selector: 'age(min)', value: [ 33, ], }
         ])
       })
 
@@ -564,11 +581,11 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
-        expect(groupNames).toEqual([ 'age', 'balance', ])
-        expect(selectors).toEqual([ 'age', 'balance', ])
+        expect(groupNames).toEqual([ 'age(sum)', 'balance(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', 'balance(sum)', ])
         expect(rows).toEqual([
-          { key: '', selector: 'age', value: [ 159, ], },
-          { key: '', selector: 'balance', value: [ 14181, ], },
+          { key: '', selector: 'age(sum)', value: [ 159, ], },
+          { key: '', selector: 'balance(sum)', value: [ 14181, ], },
         ])
       })
 
@@ -608,13 +625,13 @@ describe('advanced-transformation-util', () => {
         expect(keyNames).toEqual([ 'marital', ])
         expect(groupNames).toEqual([ 'married', 'single', ])
         expect(selectors).toEqual([
-          'married / age', 'married / balance', 'single / age', 'single / balance',
+          'married / age(sum)', 'married / balance(sum)', 'single / age(sum)', 'single / balance(sum)',
         ])
         expect(rows).toEqual([
-          { selector: 'married / age', value: [ 82 ] },
-          { selector: 'married / balance', value: [ 9286 ] },
-          { selector: 'single / age', value: [ 77 ] },
-          { selector: 'single / balance', value: [ 4895 ] },
+          { selector: 'married / age(sum)', value: [ 82 ] },
+          { selector: 'married / balance(sum)', value: [ 9286 ] },
+          { selector: 'single / age(sum)', value: [ 77 ] },
+          { selector: 'single / balance(sum)', value: [ 4895 ] },
         ])
       })
 
@@ -652,10 +669,10 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('marital')
         expect(keyNames).toEqual([ 'married', 'single', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { key: 'married', selector: 'age', value: [ 82, 77, ] },
+          { key: 'married', selector: 'age(sum)', value: [ 82, 77, ] },
         ])
       })
 
@@ -672,10 +689,10 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('marital.education')
         expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { key: 'married.primary', selector: 'age', value: [ '43', '39', 77, ] },
+          { key: 'married.primary', selector: 'age(sum)', value: [ '43', '39', 77, ] },
         ])
       })
 
@@ -733,9 +750,9 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
-        expect(rows).toEqual([{ age: 44 + 43 + 39 + 33, }])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
+        expect(rows).toEqual([{ 'age(sum)': 44 + 43 + 39 + 33, }])
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(count)', () => {
@@ -747,7 +764,7 @@ describe('advanced-transformation-util', () => {
           column.key, column.group, column.aggregator)
 
         const { rows, } = transformer()
-        expect(rows).toEqual([{ age: 4, }])
+        expect(rows).toEqual([{ 'age(count)': 4, }])
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(avg)', () => {
@@ -760,7 +777,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { age: (44 + 43 + 39 + 33) / 4.0, }
+          { 'age(avg)': (44 + 43 + 39 + 33) / 4.0, }
         ])
       })
 
@@ -773,7 +790,7 @@ describe('advanced-transformation-util', () => {
           column.key, column.group, column.aggregator)
 
         const { rows, } = transformer()
-        expect(rows).toEqual([{ age: 44, }])
+        expect(rows).toEqual([{ 'age(max)': 44, }])
       })
 
       it('should transform properly: 0 key, 0 group, 1 aggr(min)', () => {
@@ -785,7 +802,7 @@ describe('advanced-transformation-util', () => {
           column.key, column.group, column.aggregator)
 
         const { rows, } = transformer()
-        expect(rows).toEqual([{ age: 33, }])
+        expect(rows).toEqual([{ 'age(min)': 33, }])
       })
 
       it('should transform properly: 0 key, 0 group, 2 aggr(sum)', () => {
@@ -801,9 +818,9 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
-        expect(groupNames).toEqual([ 'age', 'balance', ])
-        expect(selectors).toEqual([ 'age', 'balance', ])
-        expect(rows).toEqual([{ age: 159, balance: 14181, }])
+        expect(groupNames).toEqual([ 'age(sum)', 'balance(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', 'balance(sum)', ])
+        expect(rows).toEqual([{ 'age(sum)': 159, 'balance(sum)': 14181, }])
       })
 
       it('should transform properly: 0 key, 1 group, 1 aggr(sum)', () => {
@@ -841,13 +858,13 @@ describe('advanced-transformation-util', () => {
         expect(keyNames).toEqual([ 'marital', ])
         expect(groupNames).toEqual([ 'married', 'single', ])
         expect(selectors).toEqual([
-          'married / age', 'married / balance', 'single / age', 'single / balance',
+          'married / age(sum)', 'married / balance(sum)', 'single / age(sum)', 'single / balance(sum)',
         ])
         expect(rows).toEqual([{
-          'married / age': 82,
-          'single / age': 77,
-          'married / balance': 9286,
-          'single / balance': 4895,
+          'married / age(sum)': 82,
+          'single / age(sum)': 77,
+          'married / balance(sum)': 9286,
+          'single / balance(sum)': 4895,
         }])
       })
 
@@ -883,11 +900,11 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('marital')
         expect(keyNames).toEqual([ 'married', 'single', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { age: 82, marital: 'married', },
-          { age: 77, marital: 'single', },
+          { 'age(sum)': 82, marital: 'married', },
+          { 'age(sum)': 77, marital: 'single', },
         ])
       })
 
@@ -904,12 +921,12 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('marital.education')
         expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { age: '43', 'marital.education': 'married.primary' },
-          { age: '39', 'marital.education': 'married.secondary' },
-          { age: 77, 'marital.education': 'single.tertiary' },
+          { 'age(sum)': '43', 'marital.education': 'married.primary' },
+          { 'age(sum)': '39', 'marital.education': 'married.secondary' },
+          { 'age(sum)': 77, 'marital.education': 'single.tertiary' },
         ])
       })
 
@@ -966,10 +983,10 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
-        expect(groupNames).toEqual([ 'age', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { selector: 'age', value: 44 + 43 + 39 + 33, drillDown: [  ], },
+          { selector: 'age(sum)', value: 44 + 43 + 39 + 33, drillDown: [  ], },
         ])
       })
 
@@ -983,7 +1000,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { selector: 'age', value: 4, drillDown: [  ], },
+          { selector: 'age(count)', value: 4, drillDown: [  ], },
         ])
       })
 
@@ -997,7 +1014,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { selector: 'age', value: (44 + 43 + 39 + 33) / 4.0, drillDown: [  ], },
+          { selector: 'age(avg)', value: (44 + 43 + 39 + 33) / 4.0, drillDown: [  ], },
         ])
       })
 
@@ -1011,7 +1028,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { selector: 'age', value: 44, drillDown: [  ], },
+          { selector: 'age(max)', value: 44, drillDown: [  ], },
         ])
       })
 
@@ -1025,7 +1042,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { selector: 'age', value: 33, drillDown: [  ], },
+          { selector: 'age(min)', value: 33, drillDown: [  ], },
         ])
       })
 
@@ -1042,11 +1059,11 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ '', ])
-        expect(groupNames).toEqual([ 'age', 'balance', ])
-        expect(selectors).toEqual([ 'age', 'balance', ])
+        expect(groupNames).toEqual([ 'age(sum)', 'balance(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', 'balance(sum)', ])
         expect(rows).toEqual([
-          { selector: 'age', value: 159, drillDown: [  ], },
-          { selector: 'balance', value: 14181, drillDown: [  ], },
+          { selector: 'age(sum)', value: 159, drillDown: [  ], },
+          { selector: 'balance(sum)', value: 14181, drillDown: [  ], },
         ])
       })
 
@@ -1063,10 +1080,10 @@ describe('advanced-transformation-util', () => {
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ 'marital', ])
         expect(groupNames).toEqual([ 'married', 'single', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
           {
-            selector: 'age',
+            selector: 'age(sum)',
             value: 159,
             drillDown: [
               { group: 'married', value: 82 },
@@ -1091,10 +1108,10 @@ describe('advanced-transformation-util', () => {
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ 'marital', ])
         expect(groupNames).toEqual([ 'married', 'single', ])
-        expect(selectors).toEqual([ 'age', 'balance' ])
+        expect(selectors).toEqual([ 'age(sum)', 'balance(sum)' ])
         expect(rows).toEqual([
           {
-            selector: 'age',
+            selector: 'age(sum)',
             value: 159,
             drillDown: [
               { group: 'married', value: 82 },
@@ -1102,7 +1119,7 @@ describe('advanced-transformation-util', () => {
             ],
           },
           {
-            selector: 'balance',
+            selector: 'balance(sum)',
             value: 14181,
             drillDown: [
               { group: 'married', value: 9286 },
@@ -1126,10 +1143,10 @@ describe('advanced-transformation-util', () => {
         expect(keyColumnName).toEqual('')
         expect(keyNames).toEqual([ 'marital.education', ])
         expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
-        expect(selectors).toEqual([ 'age', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
           {
-            selector: 'age',
+            selector: 'age(sum)',
             value: 159,
             drillDown: [
               { group: 'married.primary', value: '43' },
@@ -1152,11 +1169,11 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('marital')
         expect(keyNames).toEqual([ 'married', 'single', ])
-        expect(groupNames).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'married', 'single', ])
         expect(rows).toEqual([
-          { value: 82, drillDown: [  ], selector: 'married' },
-          { value: 77, drillDown: [  ], selector: 'single' },
+          { selector: 'married', value: 82, drillDown: [  ], },
+          { selector: 'single', value: 77, drillDown: [  ], },
         ])
       })
 
@@ -1173,12 +1190,12 @@ describe('advanced-transformation-util', () => {
 
         expect(keyColumnName).toEqual('marital.education')
         expect(keyNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
-        expect(groupNames).toEqual([ 'age', ])
+        expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
         expect(rows).toEqual([
-          { value: '43', drillDown: [  ], selector: 'married.primary' },
-          { value: '39', drillDown: [  ], selector: 'married.secondary' },
-          { value: 77, drillDown: [  ], selector: 'single.tertiary' },
+          { selector: 'married.primary', value: '43', drillDown: [  ], },
+          { selector: 'married.secondary', value: '39', drillDown: [  ], },
+          { selector: 'single.tertiary', value: 77, drillDown: [  ], },
         ])
       })
 

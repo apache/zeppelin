@@ -182,11 +182,11 @@ export function removeDuplicatedColumnsInMultiDimensionAxis(config, axisSpec) {
 
   const columns = getCurrentChartAxis(config)[axisSpec.name]
   const uniqObject = columns.reduce((acc, col) => {
-    if (!acc[col.name]) { acc[col.name] = col }
+    if (!acc[`${col.name}(${col.aggr})`]) { acc[`${col.name}(${col.aggr})`] = col }
     return acc
   }, {})
 
-  const filtered = [] ;
+  const filtered = []
   for (let name in uniqObject) {
     const col = uniqObject[name]
     filtered.push(col)
@@ -542,7 +542,7 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
 
     for (let a = 0; a < aggrColumns.length; a++) {
       const aggrColumn = aggrColumns[a]
-      const aggrName = aggrColumn.name
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
       // update groupNameSet
       if (!mergedGroupName) {
@@ -639,7 +639,7 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
 
     for (let a = 0; a < aggrColumns.length; a++) {
       const aggrColumn = aggrColumns[a]
-      const aggrName = aggrColumn.name
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
       // update groupNameSet
       if (!mergedGroupName) {
@@ -785,7 +785,7 @@ export function fillArrayRow(schema, aggrColumns, obj,
   if (!schema.group) {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
-      const aggrName = aggrColumn.name
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
       const value = getCubeValue(obj, aggrColumn.aggr, aggrName)
       const selector = getSelectorName(undefined, aggrColumns.length, aggrName)
@@ -802,7 +802,7 @@ export function fillArrayRow(schema, aggrColumns, obj,
   } else {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
-      const aggrName = aggrColumn.name
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
       for (let groupName of groupNameSet) {
         const grouped = obj[groupName]
@@ -851,7 +851,7 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
   if (!schema.group) {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
-      const aggrName = aggrColumn.name
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
       const value = getCubeValue(obj, aggrColumn.aggr, aggrName)
       const selector = getSelectorName(undefined, aggrColumns.length, aggrName)
@@ -864,7 +864,7 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
   /** when group is specified */
   for(let i = 0; i < aggrColumns.length; i++) {
     const aggrColumn = aggrColumns[i]
-    const aggrName = aggrColumn.name
+    const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
     for (let groupName of groupNameSet) {
       const grouped = obj[groupName]
@@ -911,7 +911,7 @@ export function fillDrillDownRow(schema, obj, rows, key,
   for(let i = 0; i < aggrColumns.length; i++) {
     const row = {}
     const aggrColumn = aggrColumns[i]
-    const aggrName = aggrColumn.name
+    const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
     const value = getCubeValue(obj, aggrColumn.aggr, aggrName)
     const selector = getSelectorName((schema.key) ? key : undefined, aggrColumns.length, aggrName)

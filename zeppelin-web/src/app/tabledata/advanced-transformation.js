@@ -144,6 +144,7 @@ class AdvancedTransformation extends Transformation {
             getCurrentChartAxis(configInstance)[axisSpec.name].aggr = aggregator
           } else {
             getCurrentChartAxis(configInstance)[axisSpec.name][colIndex].aggr = aggregator
+            removeDuplicatedColumnsInMultiDimensionAxis(configInstance, axisSpec)
           }
 
           self.emitChartChange(configInstance)
