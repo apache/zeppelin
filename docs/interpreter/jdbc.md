@@ -166,7 +166,7 @@ There are more JDBC interpreter properties you can specify like below.
   </tr>
   <tr>
       <td>zeppelin.jdbc.auth.kerberos.proxy.enable</td>
-      <td>when auth type is kerberos auth type,whether do the kerberos proxy behavior with the login user (if not anonymous) to get the connection, default value is true</td>
+      <td>when auth type is kerberos,whether do the kerberos proxy behavior with the login user (if not anonymous) to get the connection, default value is true</td>
   </tr>
   <tr>
     <td>default.jceks.file</td>
