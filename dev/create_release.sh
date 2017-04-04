@@ -106,8 +106,8 @@ function make_binary_release() {
 
 git_clone
 make_source_package
-make_binary_release all "-Pspark-2.1 -Phadoop-2.6 -Pyarn -Ppyspark -Psparkr -Pscala-${SCALA_VERSION}"
-make_binary_release netinst "-Pspark-2.1 -Phadoop-2.6 -Pyarn -Ppyspark -Psparkr -Pscala-${SCALA_VERSION} -pl zeppelin-interpreter,zeppelin-zengine,:zeppelin-display_${SCALA_VERSION},:zeppelin-spark-dependencies_${SCALA_VERSION},:zeppelin-spark_${SCALA_VERSION},zeppelin-web,zeppelin-server,zeppelin-distribution -am"
+make_binary_release all "-Pspark-2.1 -Phadoop-2.6 -Pyarn -Psparkr -Pscala-${SCALA_VERSION}"
+make_binary_release netinst "-Pspark-2.1 -Phadoop-2.6 -Pyarn -Psparkr -Pscala-${SCALA_VERSION} -pl zeppelin-interpreter,zeppelin-zengine,:zeppelin-display_${SCALA_VERSION},:zeppelin-spark-dependencies_${SCALA_VERSION},:zeppelin-spark_${SCALA_VERSION},zeppelin-web,zeppelin-server,zeppelin-distribution -am"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

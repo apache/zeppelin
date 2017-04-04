@@ -110,7 +110,7 @@ This assumes you've already cloned the project either on the host machine in the
 
 ```
 cd /zeppelin
-mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Psparkr -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 
