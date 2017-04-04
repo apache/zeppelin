@@ -22,6 +22,7 @@ import com.google.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -38,9 +39,16 @@ public class HeliumBundleFactoryTest {
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private HeliumBundleFactory hbf;
+  static File nodeInstallationDir = new File(
+      System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_nodeCache");
+
+  @BeforeClass
+  static public void beforeAll() throws IOException {
+    FileUtils.deleteDirectory(nodeInstallationDir);
+  }
 
   @Before
-  public void setUp() throws InstallationException, TaskRunnerException {
+  public void setUp() throws InstallationException, TaskRunnerException, IOException {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
 
@@ -52,10 +60,13 @@ public class HeliumBundleFactoryTest {
     conf = new ZeppelinConfiguration();
 
     hbf = new HeliumBundleFactory(conf,
+        nodeInstallationDir,
         tmpDir,
         new File(moduleDir, "tabledata"),
         new File(moduleDir, "visualization"),
         new File(moduleDir, "spell"));
+    hbf.installNodeAndNpm();
+    hbf.copyFrameworkModuleToInstallPath(true);
   }
 
   @After
@@ -65,17 +76,9 @@ public class HeliumBundleFactoryTest {
 
   @Test
   public void testInstallNpm() throws InstallationException {
-    assertFalse(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/npm").isFile());
-    assertFalse(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/node").isFile());
-
-    hbf.installNodeAndNpm();
-
-    assertTrue(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/npm").isFile());
-    assertTrue(new File(tmpDir,
-        HeliumBundleFactory.HELIUM_LOCAL_REPO + "/node/node").isFile());
+    assertTrue(new File(nodeInstallationDir, "/node/npm").isFile());
+    assertTrue(new File(nodeInstallationDir, "/node/node").isFile());
+    assertTrue(new File(nodeInstallationDir, "/node/yarn/dist/bin/yarn").isFile());
   }
 
   @Test
@@ -107,14 +110,12 @@ public class HeliumBundleFactoryTest {
         "license",
         "icon"
     );
-    List<HeliumPackage> pkgs = new LinkedList<>();
-    pkgs.add(pkg);
-    File bundle = hbf.buildBundle(pkgs);
+    File bundle = hbf.buildPackage(pkg, true, true);
     assertTrue(bundle.isFile());
     long lastModified = bundle.lastModified();
 
     // buildBundle again and check if it served from cache
-    bundle = hbf.buildBundle(pkgs);
+    bundle = hbf.buildPackage(pkg, false, true);
     assertEquals(lastModified, bundle.lastModified());
   }
 
@@ -135,9 +136,7 @@ public class HeliumBundleFactoryTest {
         "license",
         "fa fa-coffee"
     );
-    List<HeliumPackage> pkgs = new LinkedList<>();
-    pkgs.add(pkg);
-    File bundle = hbf.buildBundle(pkgs);
+    File bundle = hbf.buildPackage(pkg, true, true);
     assertTrue(bundle.isFile());
   }
 
@@ -157,11 +156,9 @@ public class HeliumBundleFactoryTest {
         "license",
         "fa fa-coffee"
     );
-    List<HeliumPackage> pkgs = new LinkedList<>();
-    pkgs.add(pkg);
     File bundle = null;
     try {
-      bundle = hbf.buildBundle(pkgs);
+      bundle = hbf.buildPackage(pkg, true, true);
       // should throw exception
       assertTrue(false);
     } catch (IOException e) {
@@ -202,8 +199,8 @@ public class HeliumBundleFactoryTest {
     List<HeliumPackage> pkgsV2 = new LinkedList<>();
     pkgsV2.add(pkgV2);
 
-    File bundle1 = hbf.buildBundle(pkgsV1);
-    File bundle2 = hbf.buildBundle(pkgsV2);
+    File bundle1 = hbf.buildPackage(pkgV1, true, true);
+    File bundle2 = hbf.buildPackage(pkgV2, true, true);
 
     assertNotSame(bundle1.lastModified(), bundle2.lastModified());
   }
