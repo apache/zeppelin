@@ -20,8 +20,8 @@
 set -ev
 touch ~/.environ
 
-# Install R dependencies if R profiles are used
-if [[ ${PROFILE/"-Pr "} != $PROFILE ]] || [[ ${PROFILE/"-Psparkr "} != $PROFILE ]] ; then
+# Install R dependencies if SPARKR is true
+if [[ "${SPARKR}" = "true" ]] ; then
   echo "R_LIBS=~/R" > ~/.Renviron
   echo "export R_LIBS=~/R" >> ~/.environ
   source ~/.environ
