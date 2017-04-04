@@ -343,9 +343,6 @@ public class JDBCInterpreter extends Interpreter {
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
-      try (Connection connection = DriverManager.getConnection(jdbcDriver)) {
-        executePrecode(connection, propertyKey);
-      }
     }
     return DriverManager.getConnection(jdbcDriver);
   }
@@ -550,18 +547,19 @@ public class JDBCInterpreter extends Interpreter {
     return queries;
   }
 
-  private void executePrecode(Connection connection, String propertyKey) throws SQLException {
-    String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
-    if (StringUtils.isNotBlank(precode)) {
-      precode = StringUtils.trim(precode);
-      logger.info("Run SQL precode '{}'", precode);
-      try (Statement statement = connection.createStatement()) {
-        statement.execute(precode);
-        if (!connection.getAutoCommit()) {
-          connection.commit();
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+    InterpreterResult interpreterResult = null;
+    for (String propertyKey : basePropretiesMap.keySet()) {
+      String precode = getProperty(String.format("%s.precode", propertyKey));
+      if (StringUtils.isNotBlank(precode)) {
+        interpreterResult = executeSql(propertyKey, precode, interpreterContext);
+        if (interpreterResult.code() != Code.SUCCESS) {
+          break;
         }
       }
     }
+
+    return interpreterResult;
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,

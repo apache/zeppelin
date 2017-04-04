@@ -65,6 +65,19 @@ public abstract class Interpreter {
   public abstract void close();
 
   /**
+   * Run precode if exists.
+   */
+  @ZeppelinApi
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+    String simpleName = this.getClass().getSimpleName();
+    String precode = getProperty(String.format("zeppelin.%s.precode", simpleName));
+    if (StringUtils.isNotBlank(precode)) {
+      return interpret(precode, interpreterContext);
+    }
+    return null;
+  }
+
+  /**
    * Run code and return result, in synchronous way.
    *
    * @param st statements to run

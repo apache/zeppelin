@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
@@ -71,6 +70,11 @@ public class LazyOpenInterpreter
         opened = true;
       }
     }
+  }
+
+  @Override
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+    return intp.executePrecode(interpreterContext);
   }
 
   @Override
@@ -151,7 +155,7 @@ public class LazyOpenInterpreter
   public void setClassloaderUrls(URL [] urls) {
     intp.setClassloaderUrls(urls);
   }
-  
+
   @Override
   public void registerHook(String noteId, String event, String cmd) {
     intp.registerHook(noteId, event, cmd);

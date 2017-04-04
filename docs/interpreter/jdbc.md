@@ -121,7 +121,7 @@ The JDBC interpreter properties are defined by default like below.
   <tr>
     <td>default.precode</td>
     <td></td>
-    <td>Some SQL which executes while opening connection</td>
+    <td>Some SQL which executes every time after initialization of the interpreter (see [Binding mode](../manual/interpreters.md#interpreter-binding-mode))</td>
   </tr>
 </table>
 

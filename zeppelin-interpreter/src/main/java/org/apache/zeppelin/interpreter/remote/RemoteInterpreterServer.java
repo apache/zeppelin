@@ -481,19 +481,24 @@ public class RemoteInterpreterServer
       try {
         InterpreterContext.set(context);
 
+        InterpreterResult result = null;
+
         // Open the interpreter instance prior to calling interpret().
         // This is necessary because the earliest we can register a hook
         // is from within the open() method.
         LazyOpenInterpreter lazy = (LazyOpenInterpreter) interpreter;
         if (!lazy.isOpen()) {
           lazy.open();
+          result = lazy.executePrecode(context);
         }
 
-        // Add hooks to script from registry.
-        // Global scope first, followed by notebook scope
-        processInterpreterHooks(null);
-        processInterpreterHooks(context.getNoteId());
-        InterpreterResult result = interpreter.interpret(script, context);
+        if (result == null || result.code() == Code.SUCCESS) {
+          // Add hooks to script from registry.
+          // Global scope first, followed by notebook scope
+          processInterpreterHooks(null);
+          processInterpreterHooks(context.getNoteId());
+          result = interpreter.interpret(script, context);
+        }
 
         // data from context.out is prepended to InterpreterResult if both defined
         context.out.flush();
