@@ -165,6 +165,10 @@ There are more JDBC interpreter properties you can specify like below.
     <td>The path to the keytab file</td>
   </tr>
   <tr>
+      <td>zeppelin.jdbc.auth.kerberos.proxy.enable</td>
+      <td>when used the kerberos auth type, do the kerberos proxy behavior with login user (if not anonymous) to get the connection, default value is true</td>
+  </tr>
+  <tr>
     <td>default.jceks.file</td>
     <td>jceks store path (e.g: jceks://file/tmp/zeppelin.jceks)</td>
   </tr>
