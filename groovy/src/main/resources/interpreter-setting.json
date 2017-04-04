@@ -1,0 +1,9 @@
+[
+  {
+    "group": "groovy",
+    "name":  "groovy",
+    "className": "org.apache.zeppelin.groovy.GroovyInterpreter",
+    "properties": {
+    }
+  }
+]
