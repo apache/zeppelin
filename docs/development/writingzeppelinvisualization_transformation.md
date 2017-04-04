@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Transformations for Zeppelin Visualization (Experimental)"
+title: "Transformations for Zeppelin Visualization"
 description: "Description for Transformations"
 group: development
 ---
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Transformations for Zeppelin Visualization (Experimental)
+# Transformations for Zeppelin Visualization
 
 <div id="toc"></div>
 
