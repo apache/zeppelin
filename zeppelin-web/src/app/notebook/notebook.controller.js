@@ -128,11 +128,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   initNotebook();
 
-  // force notebook reload on user change
-  $scope.$on('setNoteMenu', function(event, note) {
-    initNotebook();
-  });
-
   $scope.focusParagraphOnClick = function(clickEvent) {
     if (!$scope.note) {
       return;
