@@ -34,13 +34,19 @@ Zeppelin provides 4 types of transformations.
 
 ## 1. PassthroughTransformation
 
+`PassthroughTransformation` is the simple transformation which does not convert original tabledata at all.
+
 See [passthrough.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/tabledata/passthrough.js)
 
 ## 2. ColumnselectorTransformation
 
+`ColumnselectorTransformation` is uses when you need `N` axes but do not need aggregation. 
+
 See [columnselector.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/tabledata/columnselector.js)
 
 ## 3. PivotTransformation
+
+`PivotTransformation` provides group by and aggregation. Every chart using `PivotTransformation` has 3 axes. `Keys`, `Groups` and `Values`.
 
 See [pivot.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/tabledata/pivot.js)
 
@@ -50,7 +56,7 @@ See [pivot.js](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/a
 
 - multiple sub charts
 - configurable chart axes
-- parameter widgets: `input`, checkbox`, `option`, `textarea`
+- parameter widgets: `input`, `checkbox`, `option`, `textarea`
 - parsing parameters automatically based on their types
 - expand / fold axis and parameter panels
 - multiple transformation methods while supporting lazy converting 
@@ -105,7 +111,7 @@ class AwesomeVisualization extends Visualization {
   
   ...
   
-  // `render` will be called whenever `axis` or `parameter` are changed
+  // `render` will be called whenever `axis` or `parameter` is changed 
   render(data) {
     const { chart, parameter, column, transformer, } = data
    
@@ -149,7 +155,7 @@ axis: {
 
 <br/>
 
-#### Spec: `sharedAxis` 
+### Spec: `sharedAxis` 
 
 If you set `sharedAxis: false` for sub charts, then their axes are persisted in global space (shared). It's useful for when you creating multiple sub charts sharing their axes but have different parameters. For example, 
 
