@@ -108,6 +108,10 @@ public class SparkRInterpreter extends Interpreter {
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.populateSparkWebUrl(interpreterContext);
+    if (sparkInterpreter.isUnsupportedSparkVersion()) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Spark "
+          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+    }
 
     String jobGroup = Utils.buildJobGroupId(interpreterContext);
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, "Zeppelin", false);

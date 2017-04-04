@@ -87,7 +87,7 @@ public class SparkSqlInterpreter extends Interpreter {
     SQLContext sqlc = null;
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
 
-    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+    if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }

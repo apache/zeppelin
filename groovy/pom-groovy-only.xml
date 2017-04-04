@@ -22,24 +22,16 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
+    <!--version>0.6.2</version-->
     <version>0.8.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-python</artifactId>
+  <artifactId>zeppelin-groovy</artifactId>
   <packaging>jar</packaging>
   <version>0.8.0-SNAPSHOT</version>
-  <name>Zeppelin: Python interpreter</name>
-
-  <properties>
-    <python.py4j.version>0.9.2</python.py4j.version>
-    <python.test.exclude>
-        **/PythonInterpreterWithPythonInstalledTest.java,
-        **/PythonInterpreterPandasSqlTest.java,
-        **/PythonInterpreterMatplotlibTest.java
-    </python.test.exclude>
-  </properties>
+  <name>Zeppelin: Groovy interpreter</name>
 
   <dependencies>
     <dependency>
@@ -48,19 +40,7 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sf.py4j</groupId>
-      <artifactId>py4j</artifactId>
-      <version>${python.py4j.version}</version>
-    </dependency>
-
+    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -70,17 +50,17 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
-
-    <!-- test libraries -->
+    
+    <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all -->
+    <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>2.4.7</version>
+    </dependency>
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -88,61 +68,37 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>
-        <executions>
-          <execution>
-            <id>enforce</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <showDeprecation>true</showDeprecation>
+          <compilerArgs>
+            <!--arg>-verbose</arg-->
+            <arg>-Xlint:unchecked</arg>
+          </compilerArgs>
+        </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>wagon-maven-plugin</artifactId>
-        <version>1.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals><goal>download-single</goal></goals>
-            <configuration>
-              <url>https://pypi.python.org/packages/64/5c/01e13b68e8caafece40d549f232c9b5677ad1016071a48d04cc3895acaa3</url>
-              <fromFile>py4j-${python.py4j.version}.zip</fromFile>
-              <toFile>${project.build.directory}/../../interpreter/python/py4j-${python.py4j.version}.zip</toFile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <configuration>
-              <target>
-                <unzip src="${project.build.directory}/../../interpreter/python/py4j-${python.py4j.version}.zip"
-                       dest="${project.build.directory}/../../interpreter/python"/>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-
+ 
+      <!--TODO: comment local `maven-checkstyle-plugin` and use zeppelin common check style-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <excludes>
-            <exclude>${python.test.exclude}</exclude>
-          </excludes>
+          <skip>true</skip>
         </configuration>
+        <executions>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.3.1</version>            
+        <executions> 
+          <execution> 
+            <id>enforce</id> 
+            <phase>none</phase> 
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -156,7 +112,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/python</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/groovy</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -170,7 +126,7 @@
               <goal>copy</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/python</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/groovy</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -182,12 +138,28 @@
                   <version>${project.version}</version>
                   <type>${project.packaging}</type>
                 </artifactItem>
-              </artifactItems>
+              </artifactItems>              
             </configuration>
           </execution>
         </executions>
       </plugin>
-
+      <!--this one only for independent groovy interpreter assembly-->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <descriptor>src/assembly/dep.xml</descriptor>
+        </configuration>
+        <executions>
+          <execution>
+            <id>create-archive</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
