@@ -336,7 +336,9 @@ public class HeliumBundleFactory {
     return heliumBundle;
   }
 
-  public synchronized File buildPackage(HeliumPackage pkg, boolean rebuild) throws IOException {
+  public synchronized File buildPackage(HeliumPackage pkg,
+                                        boolean rebuild,
+                                        boolean recopyLocalModule) throws IOException {
     if (pkg == null) {
       return null;
     }
@@ -359,7 +361,14 @@ public class HeliumBundleFactory {
       return bundleCache;
     }
 
-    // 0. prepare directory
+    // 0. install node, npm (should be called before `downloadPackage`
+    installNodeAndNpm();
+
+    // 1. prepare directories
+    if (!heliumLocalRepoDirectory.exists() || !heliumLocalRepoDirectory.isDirectory()) {
+      FileUtils.deleteQuietly(heliumLocalRepoDirectory);
+      FileUtils.forceMkdir(heliumLocalRepoDirectory);
+    }
     FrontendPluginFactory fpf = new FrontendPluginFactory(
             bundleDir, nodeInstallationDirectory);
 
@@ -369,7 +378,7 @@ public class HeliumBundleFactory {
     String templatePackageJson = Resources.toString(
         Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
 
-    // 1. download project
+    // 2. download helium package using `npm pack`
     String mainFileName = null;
     try {
       mainFileName = downloadPackage(pkg, moduleNameVersion, bundleDir,
@@ -378,13 +387,14 @@ public class HeliumBundleFactory {
       throw new IOException(e);
     }
 
-    // 2. prepare bundle source
+    // 3. prepare bundle source
     prepareSource(pkg, moduleNameVersion, mainFileName);
 
-    // 3. install npm modules for a bundle
+    // 4. install node and local modules for a bundle
+    copyFrameworkModuleToInstallPath(recopyLocalModule); // should copy local modules first
     installNodeModules(fpf);
 
-    // 4. let's bundle and update cache
+    // 5. let's bundle and update cache
     File heliumBundle = bundleHeliumPackage(fpf, bundleDir);
     bundleCache.delete();
     FileUtils.moveFile(heliumBundle, bundleCache);
@@ -399,19 +409,19 @@ public class HeliumBundleFactory {
       return;
     }
 
-    installNodeAndNpm();
-    copyFrameworkModuleToInstallPath();
+    // DON't recopy local modules when build all packages to avoid duplicated copies.
+    boolean recopyLocalModules = false;
 
     for (HeliumPackage pkg : pkgs) {
       try {
-        buildPackage(pkg, rebuild);
+        buildPackage(pkg, rebuild, recopyLocalModules);
       } catch (IOException e) {
         logger.error("Failed to build helium package: " + pkg.getArtifact(), e);
       }
     }
   }
 
-  void copyFrameworkModuleToInstallPath()
+  void copyFrameworkModuleToInstallPath(boolean recopy)
       throws IOException {
 
     FileFilter npmPackageCopyFilter = new FileFilter() {
@@ -432,44 +442,49 @@ public class HeliumBundleFactory {
     File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-tabledata");
     if (tabledataModulePath != null) {
-      if (tabledataModuleInstallPath.exists()) {
+      if (recopy && tabledataModuleInstallPath.exists()) {
         FileUtils.deleteDirectory(tabledataModuleInstallPath);
+
       }
-      FileUtils.copyDirectory(
-          tabledataModulePath,
-          tabledataModuleInstallPath,
-          npmPackageCopyFilter);
+
+      if (!tabledataModuleInstallPath.exists()) {
+        FileUtils.copyDirectory(
+            tabledataModulePath,
+            tabledataModuleInstallPath,
+            npmPackageCopyFilter);
+      }
     }
 
     // install visualization module
     File visModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-vis");
     if (visualizationModulePath != null) {
-      if (visModuleInstallPath.exists()) {
-        // when zeppelin-vis and zeppelin-table package is published to npm repository
-        // we don't need to remove module because npm install command will take care
-        // dependency version change. However, when two dependencies are copied manually
-        // into node_modules directory, changing vis package version results inconsistent npm
-        // install behavior.
-        //
-        // Remote vis package everytime and let npm download every time bundle as a workaround
+      if (recopy && visModuleInstallPath.exists()) {
         FileUtils.deleteDirectory(visModuleInstallPath);
       }
-      FileUtils.copyDirectory(visualizationModulePath, visModuleInstallPath, npmPackageCopyFilter);
+
+      if (!visModuleInstallPath.exists()) {
+        FileUtils.copyDirectory(
+            visualizationModulePath,
+            visModuleInstallPath,
+            npmPackageCopyFilter);
+      }
     }
 
     // install spell module
     File spellModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-spell");
     if (spellModulePath != null) {
-      if (spellModuleInstallPath.exists()) {
+      if (recopy && spellModuleInstallPath.exists()) {
         FileUtils.deleteDirectory(spellModuleInstallPath);
       }
 
-      FileUtils.copyDirectory(
-          spellModulePath,
-          spellModuleInstallPath,
-          npmPackageCopyFilter);
+      if (!spellModuleInstallPath.exists()) {
+        FileUtils.copyDirectory(
+            spellModulePath,
+            spellModuleInstallPath,
+            npmPackageCopyFilter);
+      }
     }
   }
 
@@ -574,7 +589,6 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
-    installNodeAndNpm();
     NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), defaultNpmRegistryUrl);
     npm.execute(args, env);
   }
@@ -589,7 +603,6 @@ public class HeliumBundleFactory {
 
   private void yarnCommand(FrontendPluginFactory fpf,
                            String args, Map<String, String> env) throws TaskRunnerException {
-    installNodeAndNpm();
     YarnRunner yarn = fpf.getYarnRunner(getProxyConfig(), defaultNpmRegistryUrl);
     yarn.execute(args, env);
   }

@@ -298,7 +298,7 @@ public class Helium {
   }
 
   public File getBundle(HeliumPackage pkg, boolean rebuild) throws IOException {
-    return bundleFactory.buildPackage(pkg, rebuild);
+    return bundleFactory.buildPackage(pkg, rebuild, true);
   }
 
   public void enable(String name, String artifact) throws IOException {
@@ -311,7 +311,7 @@ public class Helium {
 
     // if package is visualization, rebuild bundle
     if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildPackage(pkgInfo.getPkg(), true);
+      bundleFactory.buildPackage(pkgInfo.getPkg(), true, true);
     }
 
     // update conf and save

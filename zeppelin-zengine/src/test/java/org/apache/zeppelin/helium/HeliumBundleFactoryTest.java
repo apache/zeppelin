@@ -65,8 +65,8 @@ public class HeliumBundleFactoryTest {
         new File(moduleDir, "tabledata"),
         new File(moduleDir, "visualization"),
         new File(moduleDir, "spell"));
-
-    hbf.copyFrameworkModuleToInstallPath();
+    hbf.installNodeAndNpm();
+    hbf.copyFrameworkModuleToInstallPath(true);
   }
 
   @After
@@ -110,12 +110,12 @@ public class HeliumBundleFactoryTest {
         "license",
         "icon"
     );
-    File bundle = hbf.buildPackage(pkg, true);
+    File bundle = hbf.buildPackage(pkg, true, true);
     assertTrue(bundle.isFile());
     long lastModified = bundle.lastModified();
 
     // buildBundle again and check if it served from cache
-    bundle = hbf.buildPackage(pkg, false);
+    bundle = hbf.buildPackage(pkg, false, true);
     assertEquals(lastModified, bundle.lastModified());
   }
 
@@ -136,7 +136,7 @@ public class HeliumBundleFactoryTest {
         "license",
         "fa fa-coffee"
     );
-    File bundle = hbf.buildPackage(pkg, true);
+    File bundle = hbf.buildPackage(pkg, true, true);
     assertTrue(bundle.isFile());
   }
 
@@ -158,7 +158,7 @@ public class HeliumBundleFactoryTest {
     );
     File bundle = null;
     try {
-      bundle = hbf.buildPackage(pkg, true);
+      bundle = hbf.buildPackage(pkg, true, true);
       // should throw exception
       assertTrue(false);
     } catch (IOException e) {
@@ -199,8 +199,8 @@ public class HeliumBundleFactoryTest {
     List<HeliumPackage> pkgsV2 = new LinkedList<>();
     pkgsV2.add(pkgV2);
 
-    File bundle1 = hbf.buildPackage(pkgV1, true);
-    File bundle2 = hbf.buildPackage(pkgV2, true);
+    File bundle1 = hbf.buildPackage(pkgV1, true, true);
+    File bundle2 = hbf.buildPackage(pkgV2, true, true);
 
     assertNotSame(bundle1.lastModified(), bundle2.lastModified());
   }
