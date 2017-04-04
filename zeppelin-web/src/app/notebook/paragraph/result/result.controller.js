@@ -456,7 +456,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         var retryRenderer = function() {
           var targetEl = angular.element('#p' + $scope.id + '_' + type);
           var transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
-          var visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + type);
+          var visualizationSettingTargetEl = angular.element('#vizsetting' + $scope.id + '_' + type);
           if (targetEl.length) {
             var config = getVizConfig(type);
             targetEl.height(height);
