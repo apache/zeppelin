@@ -126,14 +126,14 @@ describe('Controller: NotebookCtrl', function() {
     spyOn(websocketMsgSrvMock, 'listRevisionHistory');
 
     scope.$broadcast('setNoteMenu');
-    expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(1);
-    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(1);
+    expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(0);
+    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(0);
 
     websocketMsgSrvMock.getNote.calls.reset();
     websocketMsgSrvMock.listRevisionHistory.calls.reset();
 
     scope.$broadcast('setNoteMenu');
-    expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(1);
-    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(1);
+    expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(0);
+    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(0);
   });
 });
