@@ -162,9 +162,9 @@ public class LivyInterpreterIT {
         Thread cancelThread = new Thread() {
           @Override
           public void run() {
-            // invoke cancel after 3 seconds to wait job starting
+            // invoke cancel after 1 millisecond to wait job starting
             try {
-              Thread.sleep(3000);
+              Thread.sleep(1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
@@ -495,9 +495,9 @@ public class LivyInterpreterIT {
         Thread cancelThread = new Thread() {
           @Override
           public void run() {
-            // invoke cancel after 3 seconds to wait job starting
+            // invoke cancel after 1 millisecond to wait job starting
             try {
-              Thread.sleep(3000);
+              Thread.sleep(1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
@@ -586,9 +586,9 @@ public class LivyInterpreterIT {
         Thread cancelThread = new Thread() {
           @Override
           public void run() {
-            // invoke cancel after 3 seconds to wait job starting
+            // invoke cancel after 1 millisecond to wait job starting
             try {
-              Thread.sleep(3000);
+              Thread.sleep(1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
