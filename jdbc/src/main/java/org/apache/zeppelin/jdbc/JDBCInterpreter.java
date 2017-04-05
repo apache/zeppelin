@@ -371,8 +371,8 @@ public class JDBCInterpreter extends Interpreter {
 
       switch (authType) {
           case KERBEROS:
-            if (user == null || 
-                "false".equalsIgnoreCase(property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
+            if (user == null || "false".equalsIgnoreCase(
+              property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
               connection = getConnectionFromPool(url, user, propertyKey, properties);
             } else {
               if (url.trim().startsWith("jdbc:hive")) {
