@@ -15,20 +15,22 @@
  * limitations under the License.
  */
 
+var path = require('path');
+
 module.exports = {
-    entry: './load.js',
-    output: { path: './', filename: 'helium.bundle.js', },
+    entry: './src/load.js',
+    output: { path: path.join(__dirname, './'), filename: 'helium.bundle.js', },
     module: {
         loaders: [
           {
-            test: /\.js$/,
+            test: path.join(__dirname, 'src'),
             // DON'T exclude. since zeppelin will bundle all necessary packages: `exclude: /node_modules/,`
             loader: 'babel-loader',
-            query: { presets: ['es2015', 'stage-0'] },
+            query: { presets: ['env', 'es2015', 'stage-0', 'node6'] },
           },
           {
             test: /(\.css)$/,
-            loaders: ['style', 'css?sourceMap&importLoaders=1'],
+            loader: 'style-loader!css-loader?sourceMap&importLoaders=1',
           },
           {
             test: /\.woff(\?\S*)?$/,
@@ -52,7 +54,7 @@ module.exports = {
           {
             test: /\.json$/,
             loader: 'json-loader'
-          },
+          }
         ],
     }
 }

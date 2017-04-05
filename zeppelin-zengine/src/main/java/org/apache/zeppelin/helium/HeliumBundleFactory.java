@@ -217,7 +217,9 @@ public class HeliumBundleFactory {
 
     FileUtils.write(new File(workingDirectory, "package.json"), pkgJson);
     FileUtils.write(new File(workingDirectory, "webpack.config.js"), webpackConfig);
-    FileUtils.write(new File(workingDirectory, "load.js"),
+    File loadJsDirectory = new File(workingDirectory, File.separator + "src");
+    loadJsDirectory.mkdirs();
+    FileUtils.write(new File(loadJsDirectory, "load.js"),
         loadJsImport.append(loadJsRegister).toString());
 
     copyFrameworkModuleToInstallPath(npmPackageCopyFilter);
