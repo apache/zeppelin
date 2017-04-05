@@ -462,6 +462,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     t.open();
 
     String sqlQuery = "/* ; */\n" +
+        "-- /* comment\n" +
         "--select * from test_table\n" +
         "select * from test_table; /* some comment ; */\n" +
         "/*\n" +

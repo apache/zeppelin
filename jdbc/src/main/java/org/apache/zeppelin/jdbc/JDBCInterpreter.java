@@ -506,7 +506,7 @@ public class JDBCInterpreter extends Interpreter {
   protected ArrayList<String> splitSqlQueries(String sql) {
     ArrayList<String> queries = new ArrayList<>();
     StringBuilder query = new StringBuilder();
-    Character character;
+    char character;
 
     Boolean antiSlash = false;
     Boolean multiLineComment = false;
@@ -517,8 +517,8 @@ public class JDBCInterpreter extends Interpreter {
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
 
-      if ((singleLineComment && (character.equals('\n') || item == sql.length() - 1))
-          || (multiLineComment && character.equals('/') && sql.charAt(item - 1) == '*')) {
+      if ((singleLineComment && (character == '\n' || item == sql.length() - 1))
+          || (multiLineComment && character == '/' && sql.charAt(item - 1) == '*')) {
         singleLineComment = false;
         multiLineComment = false;
         if (item == sql.length() - 1 && query.length() > 0) {
@@ -531,11 +531,11 @@ public class JDBCInterpreter extends Interpreter {
         continue;
       }
 
-      if (character.equals('\\')) {
+      if (character == '\\') {
         antiSlash = true;
       }
 
-      if (character.equals('\'')) {
+      if (character == '\'') {
         if (antiSlash) {
           antiSlash = false;
         } else if (quoteString) {
@@ -545,7 +545,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
-      if (character.equals('"')) {
+      if (character == '"') {
         if (antiSlash) {
           antiSlash = false;
         } else if (doubleQuoteString) {
@@ -557,18 +557,18 @@ public class JDBCInterpreter extends Interpreter {
 
       if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
           && sql.length() > item + 1) {
-        if (character.equals('-') && sql.charAt(item + 1) == '-') {
+        if (character == '-' && sql.charAt(item + 1) == '-') {
           singleLineComment = true;
           continue;
         }
 
-        if (character.equals('/') && sql.charAt(item + 1) == '*') {
+        if (character == '/' && sql.charAt(item + 1) == '*') {
           multiLineComment = true;
           continue;
         }
       }
 
-      if (character.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
+      if (character == ';' && !antiSlash && !quoteString && !doubleQuoteString) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
