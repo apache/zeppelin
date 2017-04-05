@@ -38,10 +38,10 @@ limitations under the License.
              data-ng-model="visualizationOrder">
           <div class="btn-group" data-ng-repeat="pkgName in visualizationOrder"
                as-sortable-item>
-            <div class="btn btn-default btn-sm"
+            <button class="btn btn-default btn-sm heliumVisIconButton"
                  ng-bind-html='defaultVersions[pkgName].pkg.icon'
                  as-sortable-item-handle>
-            </div>
+            </button>
           </div>
         </div>
         <div class="saveLink"

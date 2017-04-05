@@ -131,3 +131,9 @@
 .gray40-message a:focus {
   text-decoration: none;
 }
+
+.heliumVisIconButton > img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
