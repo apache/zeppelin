@@ -20,13 +20,7 @@ package org.apache.zeppelin.display;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -291,21 +285,21 @@ public class Input implements Serializable {
     return new Input(varName, displayName, type, arg, defaultValue, paramOptions, hidden);
   }
 
-  public static Map<String, Input> extractSimpleQueryParam(String script) {
-    Map<String, Input> params = new HashMap<>();
+  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script) {
+    LinkedHashMap<String, Input> forms = new LinkedHashMap<>();
     if (script == null) {
-      return params;
+      return forms;
     }
     String replaced = script;
 
     Matcher match = VAR_PTN.matcher(replaced);
     while (match.find()) {
-      Input param = getInputForm(match);
-      params.put(param.name, param);
+      Input form = getInputForm(match);
+      forms.put(form.name, form);
     }
 
-    params.remove("pql");
-    return params;
+    forms.remove("pql");
+    return forms;
   }
 
   private static final String DEFAULT_DELIMITER = ",";

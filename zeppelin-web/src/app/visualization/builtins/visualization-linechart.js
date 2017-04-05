@@ -23,7 +23,6 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
-    this.xLables = [];
   };
 
   type() {

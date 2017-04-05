@@ -37,9 +37,15 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     // get all package info and set config
     heliumService.getAllPackageInfoAndDefaultPackages()
       .then(({ pkgSearchResults, defaultPackages }) => {
+        // pagination
+        $scope.itemsPerPage = 10;
+        $scope.currentPage = 1;
+        $scope.maxSize = 5;
+        
         $scope.pkgSearchResults = pkgSearchResults;
         $scope.defaultPackages = defaultPackages;
-        classifyPkgType($scope.defaultPackages)
+        classifyPkgType($scope.defaultPackages);
+        
         return heliumService.getAllPackageConfigs()
       })
       .then(defaultPackageConfigs => {
@@ -52,38 +58,58 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
         $scope.bundleOrder = visPackageOrder;
         $scope.bundleOrderChanged = false;
       });
-  }
+  };
 
-  var classifyPkgType = function(packageInfos) {
-    var vizTypePkg = {}
-    var spellTypePkg = {}
-    var intpTypePkg = {}
-    var appTypePkg = {}
+  var orderPackageByPubDate = function(a, b) {
+    if (!a.pkg.published) {
+      // Because local registry pkgs don't have 'published' field, put current time instead to show them first
+      a.pkg.published = new Date().getTime()
+    }
 
-    for (var name in packageInfos) {
-      var pkgs = packageInfos[name]
-      var pkgType = pkgs.pkg.type
+    return new Date(a.pkg.published).getTime() - new Date(b.pkg.published).getTime();
+  };
+
+  var classifyPkgType = function(packageInfo) {
+    var allTypesOfPkg = {};
+    var vizTypePkg = [];
+    var spellTypePkg = [];
+    var intpTypePkg = [];
+    var appTypePkg = [];
+
+    var packageInfoArr = Object.keys(packageInfo).map(key => packageInfo[key])
+    packageInfoArr = packageInfoArr.sort(orderPackageByPubDate).reverse();
+
+    for (var name in packageInfoArr) {
+      var pkgs = packageInfoArr[name];
+      var pkgType = pkgs.pkg.type;
 
       switch (pkgType) {
         case HeliumType.VISUALIZATION:
-          vizTypePkg[name] = pkgs;
+          vizTypePkg.push(pkgs);
           break;
         case HeliumType.SPELL:
-          spellTypePkg[name] = pkgs;
+          spellTypePkg.push(pkgs);
           break;
         case HeliumType.INTERPRETER:
-          intpTypePkg[name] = pkgs;
+          intpTypePkg.push(pkgs);
           break;
         case HeliumType.APPLICATION:
-          appTypePkg[name] = pkgs;
+          appTypePkg.push(pkgs);
           break;
       }
     }
 
-    $scope.vizTypePkg = vizTypePkg
-    $scope.spellTypePkg = spellTypePkg
-    $scope.appTypePkg = appTypePkg
-    $scope.intpTypePkg = intpTypePkg
+    var pkgsArr = [
+      vizTypePkg,
+      spellTypePkg,
+      intpTypePkg,
+      appTypePkg
+    ]
+    for (var idx in _.keys(HeliumType)) {
+      allTypesOfPkg[_.keys(HeliumType)[idx]] = pkgsArr[idx];
+    }
+  
+    $scope.allTypesOfPkg = allTypesOfPkg;
   };
 
   $scope.bundleOrderListeners = {

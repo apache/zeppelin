@@ -468,6 +468,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   }
 
+  const getTrSettingElem = function(scopeId, graphMode) {
+    return angular.element('#trsetting' + scopeId + '_' + graphMode)
+  }
+
+  const getVizSettingElem = function(scopeId, graphMode) {
+    return angular.element('#vizsetting' + scopeId + '_' + graphMode)
+  }
+
   const renderGraph = function(graphElemId, graphMode, refresh) {
     // set graph height
     const height = $scope.config.graph.height;
@@ -495,8 +503,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       // render when targetEl is available
       afterLoaded = function(loadedElem) {
         try {
-          const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
-          const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+          const transformationSettingTargetEl = getTrSettingElem($scope.id, graphMode)
+          const visualizationSettingTargetEl = getVizSettingElem($scope.id, graphMode)
           // set height
           loadedElem.height(height);
 
@@ -537,8 +545,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       console.log('Refresh data %o', tableData);
 
       afterLoaded = function(loadedElem) {
-        const transformationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
-        const visualizationSettingTargetEl = angular.element('#trsetting' + $scope.id + '_' + graphMode);
+        const transformationSettingTargetEl = getTrSettingElem($scope.id, graphMode)
+        const visualizationSettingTargetEl = getVizSettingElem($scope.id, graphMode)
         const config = getVizConfig(graphMode);
         loadedElem.height(height);
         const transformation = builtInViz.instance.getTransformation();

@@ -21,11 +21,7 @@ import static java.lang.String.format;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -320,8 +316,8 @@ public class Note implements Serializable, ParagraphJobListener {
         interpreterSettingManager);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
-    Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
-    Map<String, Input> form = new HashMap<>(srcParagraph.settings.getForms());
+    Map<String, Object> param = srcParagraph.settings.getParams();
+    LinkedHashMap<String, Input> form = srcParagraph.settings.getForms();
 
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);

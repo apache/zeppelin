@@ -117,7 +117,7 @@ limitations under the License.
         messageStyle: "none"
       }
       // add root only if it's not dev mode
-      if (Number(location.port) !== 9000) {
+      if (Number(location.port) !== WEB_PORT) {
         config.root = '.';
       }
       MathJax.Hub.Config(config);
