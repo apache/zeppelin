@@ -185,13 +185,13 @@ limitations under the License.
       </div>
     </div>
     <div class="text-center" style="margin-top: 20px;" ng-if="getPackageSize(defaultPackages, pkgListByType) !== 0">
-      <pagination boundary-links="true" total-items="defaultPackages.length"
+      <ul uib-pagination boundary-links="true" total-items="defaultPackages.length"
                   ng-model="$parent.currentPage" class="pagination-sm"
                   ng-show="$parent.pkgListByType === types"
                   max-size="maxSize"
                   items-per-page="itemsPerPage"
                   ng-class="{'hide-first-boundaries': $parent.currentPage == 1, 'hide-last-boundaries': $parent.currentPage >= defaultPackages.length/itemsPerPage}"
-                  previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination>
+                  previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></ul>
     </div>
   </div>
 </div>
