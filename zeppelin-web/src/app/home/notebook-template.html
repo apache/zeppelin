@@ -59,8 +59,16 @@ limitations under the License.
         <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'"></i> {{getNoteName(node)}}
       </a>
       <a ng-if="!node.isTrash" style="text-decoration: none;">
-        <i style="margin-left: 10px;"
-           class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
+        <a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;"
+           ng-controller="NotenameCtrl as notenamectrl" ng-click="notenamectrl.getInterpreterSettings()" data-path="{{node.id}}">
+          <i style="margin-left: 10px;"
+             class="fa fa-plus notebook-list-btn" ng-show="showFolderButton"
+             tooltip-placement="bottom" tooltip="Create new note">
+          </i>
+        </a>
+      </a>
+      <a ng-if="!node.isTrash" style="text-decoration: none;">
+        <i class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
            tooltip-placement="bottom" tooltip="Rename folder">
         </i>
       </a>
