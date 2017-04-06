@@ -348,13 +348,9 @@ The following components are provided under the CDDL License.
     (CDDL 1.0) javax.activation (javax.activation:activation:jar:1.1.1 - http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
     (CDDL 1.0) java.annotation (javax.annotation:javax.annotation-api:jar:1.2:compile - http://jcp.org/en/jsr/detail?id=250)
     (CDDL 1.1) jersey-core (org.glassfish.jersey.core:jersey-core:2.22.2 - https://jersey.java.net/)
-<<<<<<< HEAD
     (CDDL 1.0) javax.ws.rs-api (javax.ws.rs - https://jax-rs-spec.java.net/)
     (CDDL 1.1) jersey-client (org.glassfish.jersey.client:jersey-core:2.22.2 - https://jersey.java.net/)
     (CDDL 1.1) jersey-media (org.glassfish.jersey.media:jersey-core:2.22.2 - https://jersey.java.net/)
-    (CDDL 1.1) hk2 (org.glassfish.hk2 - https://hk2.java.net/2.4.0-b34/)
-=======
-    (CDDL 1.1) hk2 (org.glassfish.hk2 - https://hk2.java.net/2.5.0-b03/)
     (CDDL 1.1) jersey-core (com.sun.jersey:jersey-core:1.9 - https://jersey.java.net/jersey-core/)
     (CDDL 1.1) jersey-json (com.sun.jersey:jersey-json:1.9 - https://jersey.java.net/jersey-json/)
     (CDDL 1.1) jersey-server (com.sun.jersey:jersey-server:1.9 - https://jersey.java.net/jersey-server/)
@@ -363,7 +359,6 @@ The following components are provided under the CDDL License.
     (CDDL 1.0) Java Servlet API (javax.servlet:javax.servlet-api:3.1.0 - http://servlet-spec.java.net)
     (CDDL 1.1) (GPL2 w/ CPE) JAXB API bundle for GlassFish V3 (javax.xml.bind:jaxb-api:2.2.2 - https://jaxb.dev.java.net/)
     (CDDL 1.0) (GNU General Public Library) Streaming API for XML (javax.xml.stream:stax-api:1.0-2 - no url defined)
->>>>>>> master
 
 
 ========================================================================
