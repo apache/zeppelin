@@ -190,9 +190,6 @@ public class JDBCInterpreter extends Interpreter {
     }
     logger.debug("JDBC PropretiesMap: {}", basePropretiesMap);
 
-    if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
-      JDBCSecurityImpl.createSecureConfiguration(property);
-    }
     for (String propertyKey : basePropretiesMap.keySet()) {
       propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(null));
     }
@@ -370,6 +367,7 @@ public class JDBCInterpreter extends Interpreter {
     } else {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
 
+      JDBCSecurityImpl.createSecureConfiguration(property, authType);
       switch (authType) {
           case KERBEROS:
             if (user == null) {
@@ -377,15 +375,7 @@ public class JDBCInterpreter extends Interpreter {
             } else {
               if (url.trim().startsWith("jdbc:hive")) {
                 StringBuilder connectionUrl = new StringBuilder(url);
-                Integer lastIndexOfUrl = connectionUrl.indexOf("?");
-                if (lastIndexOfUrl == -1) {
-                  lastIndexOfUrl = connectionUrl.length();
-                }
-                boolean hasProxyUser = property.containsKey("hive.proxy.user");
-                if (!hasProxyUser || !property.getProperty("hive.proxy.user").equals("false")){
-                  logger.debug("Using hive proxy user");
-                  connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
-                }
+                checkAndAppendHiveProxyUser(connectionUrl, user);
                 connection = getConnectionFromPool(connectionUrl.toString(),
                         user, propertyKey, properties);
               } else {
@@ -421,11 +411,29 @@ public class JDBCInterpreter extends Interpreter {
             break;
 
           default:
-            connection = getConnectionFromPool(url, user, propertyKey, properties);
+            StringBuilder connectionUrl = new StringBuilder(url);
+            checkAndAppendHiveProxyUser(connectionUrl, user);
+            connection = getConnectionFromPool(connectionUrl.toString(),
+                user, propertyKey, properties);
       }
     }
     propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
     return connection;
+  }
+
+  private void checkAndAppendHiveProxyUser(StringBuilder connectionUrl, String user) {
+    if (connectionUrl.toString().trim().startsWith("jdbc:hive")) {
+      Integer lastIndexOfUrl = connectionUrl.indexOf("?");
+      if (lastIndexOfUrl == -1) {
+        lastIndexOfUrl = connectionUrl.length();
+      }
+
+      if (user != null && !user.equals("anonymous") &&
+          !"false".equalsIgnoreCase(property.getProperty("hive.proxy.user"))) {
+        logger.debug("Using hive proxy user");
+        connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
+      }
+    }
   }
 
   private String getPassword(Properties properties) throws IOException {
