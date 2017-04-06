@@ -124,6 +124,16 @@ Hive Interpreter will be deprecated and merged into JDBC Interpreter. You can us
     <td></td>
     <td><b>( Optional ) </b>Other properties used by the driver of <code>%hive(${prefix})</code> </td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td></td>
+    <td><b>( Optional ) </b>If auth type is needed, Example: KERBEROS/SIMPLE</td>
+  </tr>
+  <tr>
+    <td>hive.proxy.user</td>
+    <td>true</td>
+    <td><b>( Optional ) </b>If want to use `hive.server2.proxy.user`</td>
+  </tr>
 </table>
 
 This interpreter provides multiple configuration with `${prefix}`. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
@@ -161,3 +171,9 @@ GROUP BY ${group_by=product_id,product_id|product_name|customer_id|store_id}
 ORDER BY count ${order=DESC,DESC|ASC}
 LIMIT ${limit=10};
 ```
+
+### Impersonation
+When Zeppelin server is running with authentication enabled, then this interpreter utilizes Hive's user proxy feature i.e. sends extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multi users are sharing a Notebook server.
+
+To enable this set `zeppelin.jdbc.auth.type` as `SIMPLE` in the interpreter setting.
+
