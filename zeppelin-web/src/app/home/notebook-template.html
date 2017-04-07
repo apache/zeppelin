@@ -84,7 +84,7 @@ limitations under the License.
     </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
+        <li ng-repeat="node in node.children | orderBy:node:false:noteComparator" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
       </ul>
     </div>
   </div>
@@ -108,7 +108,7 @@ limitations under the License.
     </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
+        <li ng-repeat="node in node.children | orderBy:node:false:noteComparator" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
       </ul>
     </div>
   </div>

@@ -19,7 +19,7 @@ function arrayOrderingSrv(TRASH_FOLDER_ID) {
 
   var arrayOrderingSrv = this;
 
-  this.noteListOrdering = function(note) {
+  this.noteFlatListOrdering = function(note) {
     if (note.id === TRASH_FOLDER_ID) {
       return '\uFFFF';
     }
@@ -32,6 +32,32 @@ function arrayOrderingSrv(TRASH_FOLDER_ID) {
     } else {
       return note.name;
     }
+  };
+
+  this.noteComparator = function(v1, v2) {
+    var note1 = v1.value;
+    var note2 = v2.value;
+
+    if (note1.id === TRASH_FOLDER_ID) {
+      return 1;
+    }
+
+    if (note2.id === TRASH_FOLDER_ID) {
+      return -1;
+    }
+
+    if (note1.children === undefined && note2.children !== undefined) {
+      return 1;
+    }
+
+    if (note1.children !== undefined && note2.children === undefined) {
+      return -1;
+    }
+
+    var noteName1 = arrayOrderingSrv.getNoteName(note1);
+    var noteName2 = arrayOrderingSrv.getNoteName(note2);
+
+    return noteName1.localeCompare(noteName2);
   };
 }
 

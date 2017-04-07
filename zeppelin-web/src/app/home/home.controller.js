@@ -143,4 +143,8 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   $scope.getNoteName = function(note) {
     return arrayOrderingSrv.getNoteName(note);
   };
+
+  $scope.noteComparator = function(note1, note2) {
+    return arrayOrderingSrv.noteComparator(note1, note2);
+  }
 }
