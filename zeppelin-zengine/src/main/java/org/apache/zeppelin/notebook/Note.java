@@ -289,9 +289,9 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   /**
-   * Add paragraph last.
+   * Create a new paragraph and add it to the end of the note.
    */
-  public Paragraph addParagraph(AuthenticationInfo authenticationInfo) {
+  public Paragraph addNewParagraph(AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, paragraphs.size());
@@ -345,11 +345,11 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   /**
-   * Insert paragraph in given index.
+   * Create a new paragraph and insert it to the note in given index.
    *
    * @param index index of paragraphs
    */
-  public Paragraph insertParagraph(int index, AuthenticationInfo authenticationInfo) {
+  public Paragraph insertNewParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, index);

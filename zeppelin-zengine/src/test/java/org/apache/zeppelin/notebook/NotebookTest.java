@@ -128,7 +128,7 @@ public class NotebookTest implements JobListenerFactory{
     interpreterSettingManager.setInterpreters(anonymous.getUser(), note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     // run with default repl
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -139,7 +139,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals("repl1: hello world", p1.getResult().message().get(0).getData());
 
     // run with specific repl
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setConfig(config);
     p2.setText("%mock2 hello world");
     p2.setAuthenticationInfo(anonymous);
@@ -219,7 +219,7 @@ public class NotebookTest implements JobListenerFactory{
     try {
       assertEquals(0, notebook.getAllNotes().size());
       note = notebook.createNote(anonymous);
-      Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       Map config = p1.getConfig();
       config.put("enabled", true);
       p1.setConfig(config);
@@ -242,7 +242,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
 
     // run with default repl
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -274,7 +274,7 @@ public class NotebookTest implements JobListenerFactory{
   @Test
   public void testClearParagraphOutput() throws IOException, SchedulerException{
     Note note = notebook.createNote(anonymous);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -294,7 +294,7 @@ public class NotebookTest implements JobListenerFactory{
   @Test
   public void testRunBlankParagraph() throws IOException, SchedulerException, InterruptedException {
     Note note = notebook.createNote(anonymous);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("");
     p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
@@ -311,21 +311,21 @@ public class NotebookTest implements JobListenerFactory{
     interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     // p1
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config1 = p1.getConfig();
     config1.put("enabled", true);
     p1.setConfig(config1);
     p1.setText("p1");
 
     // p2
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config2 = p2.getConfig();
     config2.put("enabled", false);
     p2.setConfig(config2);
     p2.setText("p2");
 
     // p3
-    Paragraph p3 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p3 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p3.setText("p3");
 
     // when
@@ -349,7 +349,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = new HashMap<>();
     p.setConfig(config);
     p.setText("p1");
@@ -400,7 +400,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   private void executeNewParagraphByCron(Note note, String cron) {
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("p");
     Map<String, Object> config = note.getConfig();
     config.put("enabled", true);
@@ -422,12 +422,12 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters(anonymous.getUser(), note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
     
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = new HashMap<>();
     p.setConfig(config);
     p.setText("sleep 1000");
 
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setConfig(config);
     p2.setText("%mock2 sleep 500");
 
@@ -475,7 +475,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    final Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     String simpleText = "hello world";
     p.setText(simpleText);
 
@@ -514,7 +514,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    final Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
     note.runAll();
     while(p.isTerminated()==false || p.getResult()==null) Thread.yield();
@@ -560,7 +560,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters(anonymous.getUser(), note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    final Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
     note.runAll();
     while (p.isTerminated() == false || p.getResult() == null) {
@@ -587,9 +587,9 @@ public class NotebookTest implements JobListenerFactory{
     for (InterpreterGroup intpGroup : InterpreterGroup.getAll()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("hello");
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setText("%mock2 world");
 
     note.runAll();
@@ -618,7 +618,7 @@ public class NotebookTest implements JobListenerFactory{
         .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // add paragraph scope object
     registry.add("o1", "object1", note.getId(), p1.getId());
@@ -651,7 +651,7 @@ public class NotebookTest implements JobListenerFactory{
         .getInterpreterSettings(note.getId()).get(0).getInterpreterGroup(anonymous.getUser(), "sharedProcess")
         .getAngularObjectRegistry();
 
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // add paragraph scope object
     registry.add("o1", "object1", note.getId(), p1.getId());
@@ -797,11 +797,11 @@ public class NotebookTest implements JobListenerFactory{
     interpreterSettingManager.setInterpreters(anonymous.getUser(), note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
     // create three paragraphs
-    Paragraph p1 = note.addParagraph(anonymous);
+    Paragraph p1 = note.addNewParagraph(anonymous);
     p1.setText("sleep 1000");
-    Paragraph p2 = note.addParagraph(anonymous);
+    Paragraph p2 = note.addNewParagraph(anonymous);
     p2.setText("sleep 1000");
-    Paragraph p3 = note.addParagraph(anonymous);
+    Paragraph p3 = note.addNewParagraph(anonymous);
     p3.setText("sleep 1000");
 
 
@@ -829,7 +829,7 @@ public class NotebookTest implements JobListenerFactory{
   public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException {
     // create a notes
     Note note1  = notebook.createNote(anonymous);
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
 
@@ -846,7 +846,7 @@ public class NotebookTest implements JobListenerFactory{
     // remove note and recreate
     notebook.removeNote(note1.getId(), anonymous);
     note1 = notebook.createNote(anonymous);
-    p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
 
@@ -861,10 +861,10 @@ public class NotebookTest implements JobListenerFactory{
   public void testPerSessionInterpreter() throws IOException {
     // create two notes
     Note note1  = notebook.createNote(anonymous);
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Note note2  = notebook.createNote(anonymous);
-    Paragraph p2 = note2.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
@@ -905,10 +905,10 @@ public class NotebookTest implements JobListenerFactory{
   public void testPerNoteSessionInterpreter() throws IOException {
     // create two notes
     Note note1  = notebook.createNote(anonymous);
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Note note2  = notebook.createNote(anonymous);
-    Paragraph p2 = note2.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     p1.setText("getId");
     p1.setAuthenticationInfo(anonymous);
@@ -964,7 +964,7 @@ public class NotebookTest implements JobListenerFactory{
   public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException {
     // create a notes
     Note note1  = notebook.createNote(anonymous);
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setAuthenticationInfo(anonymous);
     p1.setText("getId");
 
@@ -1034,7 +1034,7 @@ public class NotebookTest implements JobListenerFactory{
     Note note1 = notebook.createNote(anonymous);
     assertEquals(1, onNoteCreate.get());
 
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, onParagraphCreate.get());
 
     note1.addCloneParagraph(p1);

@@ -74,7 +74,7 @@ public class NoteTest {
     String pText = "%spark sc.version";
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(pText);
     p.setAuthenticationInfo(anonymous);
     note.run(p.getId());
@@ -90,7 +90,7 @@ public class NoteTest {
   public void addParagraphWithEmptyReplNameTest() {
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertNull(p.getText());
   }
 
@@ -99,9 +99,9 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     assertEquals("%spark\n", p2.getText());
   }
@@ -111,9 +111,9 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
-    Paragraph p2 = note.insertParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
 
     assertEquals("%spark\n", p2.getText());
   }
@@ -123,9 +123,9 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"))).thenReturn(null);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%invalid ");
-    Paragraph p2 = note.insertParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
 
     assertNull(p2.getText());
   }
@@ -133,7 +133,7 @@ public class NoteTest {
   @Test
   public void insertParagraphwithUser() {
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p = note.insertParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
     assertEquals("anonymous", p.getUser());
   }
 
@@ -143,11 +143,11 @@ public class NoteTest {
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
 
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setReturn(result, new Throwable());
 
     note.clearAllParagraphOutput();

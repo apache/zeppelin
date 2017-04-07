@@ -80,7 +80,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     public void scalaOutputTest() throws IOException {
         // create new note
         Note note = ZeppelinServer.notebook.createNote(anonymous);
-        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
@@ -106,7 +106,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         Note note = ZeppelinServer.notebook.createNote(anonymous);
 
         // run markdown paragraph, again
-        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
@@ -127,7 +127,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         // DataFrame API is available from spark 1.3
         if (sparkVersion >= 13) {
             // test basic dataframe api
-            Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             Map config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
@@ -141,7 +141,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                     "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
 
             // test display DataFrame
-            p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
@@ -156,7 +156,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
             // test display DataSet
             if (sparkVersion >= 20) {
-                p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
                 config = p.getConfig();
                 config.put("enabled", true);
                 p.setConfig(config);
@@ -195,7 +195,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         if (sparkVersion >= 20) {
           sqlContextName = "spark";
         }
-        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
@@ -222,7 +222,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
         if (isPyspark() && sparkVersion >= 12) {   // pyspark supported from 1.2.1
             // run markdown paragraph, again
-            Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             Map config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
@@ -234,7 +234,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             assertEquals("55\n", p.getResult().message().get(0).getData());
             if (sparkVersion >= 13) {
                 // run sqlContext test
-                p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
                 config = p.getConfig();
                 config.put("enabled", true);
                 p.setConfig(config);
@@ -248,7 +248,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals("[Row(age=20, id=1)]\n", p.getResult().message().get(0).getData());
 
                 // test display Dataframe
-                p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
                 config = p.getConfig();
                 config.put("enabled", true);
                 p.setConfig(config);
@@ -264,7 +264,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals("age\tid\n20\t1\n", p.getResult().message().get(0).getData());
 
                 // test udf
-                p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
                 config = p.getConfig();
                 config.put("enabled", true);
                 p.setConfig(config);
@@ -278,7 +278,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             }
             if (sparkVersion >= 20) {
                 // run SparkSession test
-                p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
                 config = p.getConfig();
                 config.put("enabled", true);
                 p.setConfig(config);
@@ -292,7 +292,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals("[Row(age=20, id=1)]\n", p.getResult().message().get(0).getData());
 
                 // test udf
-                p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
                 config = p.getConfig();
                 config.put("enabled", true);
                 p.setConfig(config);
@@ -319,7 +319,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
         if (isPyspark() && sparkVersionNumber >= 14) {   // auto_convert enabled from spark 1.4
             // run markdown paragraph, again
-            Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             Map config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
@@ -344,19 +344,19 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     public void zRunTest() throws IOException {
         // create new note
         Note note = ZeppelinServer.notebook.createNote(anonymous);
-        Paragraph p0 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p0 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config0 = p0.getConfig();
         config0.put("enabled", true);
         p0.setConfig(config0);
         p0.setText("%spark z.run(1)");
         p0.setAuthenticationInfo(anonymous);
-        Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config1 = p1.getConfig();
         config1.put("enabled", true);
         p1.setConfig(config1);
         p1.setText("%spark val a=10");
         p1.setAuthenticationInfo(anonymous);
-        Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config2 = p2.getConfig();
         config2.put("enabled", true);
         p2.setConfig(config2);
@@ -374,7 +374,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals(Status.FINISHED, p2.getStatus());
         assertEquals("10", p2.getResult().message().get(0).getData());
 
-        Paragraph p3 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p3 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config3 = p3.getConfig();
         config3.put("enabled", true);
         p3.setConfig(config3);
@@ -424,7 +424,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             }
 
             // load dep
-            Paragraph p0 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            Paragraph p0 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             Map config = p0.getConfig();
             config.put("enabled", true);
             p0.setConfig(config);
@@ -439,7 +439,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             FileUtils.write(tmpFile, "a,b\n1,2");
 
             // load data using libraries from dep loader
-            Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+            Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             p1.setConfig(config);
 
             String sqlContextName = "sqlContext";
@@ -465,7 +465,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
      * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
      */
     private int getSparkVersionNumber(Note note) {
-        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         note.setName("note");
         Map config = p.getConfig();
         config.put("enabled", true);
@@ -485,7 +485,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void testZeppelinContextDynamicForms() throws IOException {
         Note note = ZeppelinServer.notebook.createNote(anonymous);
-        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         note.setName("note");
         Map config = p.getConfig();
         config.put("enabled", true);
