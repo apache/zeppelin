@@ -292,16 +292,7 @@ public class Note implements Serializable, ParagraphJobListener {
    * Create a new paragraph and add it to the end of the note.
    */
   public Paragraph addNewParagraph(AuthenticationInfo authenticationInfo) {
-    Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
-    p.setAuthenticationInfo(authenticationInfo);
-    setParagraphMagic(p, paragraphs.size());
-    synchronized (paragraphs) {
-      paragraphs.add(p);
-    }
-    if (noteEventListener != null) {
-      noteEventListener.onParagraphCreate(p);
-    }
-    return p;
+    return insertNewParagraph(paragraphs.size(), authenticationInfo);
   }
 
   /**
