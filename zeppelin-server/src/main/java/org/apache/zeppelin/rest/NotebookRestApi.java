@@ -341,11 +341,11 @@ public class NotebookRestApi {
     List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
     if (initialParagraphs != null) {
       for (NewParagraphRequest paragraphRequest : initialParagraphs) {
-        Paragraph p = note.addParagraph(subject);
+        Paragraph p = note.addNewParagraph(subject);
         initParagraph(p, paragraphRequest, user);
       }
     }
-    note.addParagraph(subject); // add one paragraph to the last
+    note.addNewParagraph(subject); // add one paragraph to the last
     String noteName = request.getName();
     if (noteName.isEmpty()) {
       noteName = "Note " + note.getId();
@@ -433,9 +433,9 @@ public class NotebookRestApi {
     Paragraph p;
     Double indexDouble = request.getIndex();
     if (indexDouble == null) {
-      p = note.addParagraph(subject);
+      p = note.addNewParagraph(subject);
     } else {
-      p = note.insertParagraph(indexDouble.intValue(), subject);
+      p = note.insertNewParagraph(indexDouble.intValue(), subject);
     }
     initParagraph(p, request, user);
     note.persist(subject);

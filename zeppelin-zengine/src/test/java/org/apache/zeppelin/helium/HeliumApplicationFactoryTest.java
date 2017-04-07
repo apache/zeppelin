@@ -152,7 +152,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters("user", note1.getId(),interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -198,7 +198,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreters("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -238,7 +238,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
     notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
@@ -269,7 +269,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     Note note1 = notebook.createNote(anonymous);
 
     // add paragraph with invalid magic
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
@@ -306,7 +306,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
       }
     }
 
-    Paragraph p1 = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");

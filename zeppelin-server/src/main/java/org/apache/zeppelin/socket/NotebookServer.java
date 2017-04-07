@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-import com.google.gson.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -1024,7 +1023,7 @@ public class NotebookServer extends WebSocketServlet
         note = notebook.createNote(subject);
       }
 
-      note.addParagraph(subject); // it's an empty note. so add one paragraph
+      note.addNewParagraph(subject); // it's an empty note. so add one paragraph
       if (message != null) {
         String noteName = (String) message.get("name");
         if (StringUtils.isEmpty(noteName)) {
@@ -1594,7 +1593,7 @@ public class NotebookServer extends WebSocketServlet
       return null;
     }
 
-    Paragraph newPara = note.insertParagraph(index, subject);
+    Paragraph newPara = note.insertNewParagraph(index, subject);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
 
@@ -1748,7 +1747,7 @@ public class NotebookServer extends WebSocketServlet
     if (!(p.getText().trim().equals(p.getMagic()) ||
         Strings.isNullOrEmpty(p.getText())) &&
         isTheLastParagraph) {
-      Paragraph newPara = note.addParagraph(p.getAuthenticationInfo());
+      Paragraph newPara = note.addNewParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);
     }
   }
