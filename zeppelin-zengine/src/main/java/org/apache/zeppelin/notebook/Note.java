@@ -341,17 +341,30 @@ public class Note implements Serializable, ParagraphJobListener {
    * @param index index of paragraphs
    */
   public Paragraph insertNewParagraph(int index, AuthenticationInfo authenticationInfo) {
+    Paragraph paragraph = createParagraph(index, authenticationInfo);
+    insertParagraph(paragraph, index);
+    return paragraph;
+  }
+
+  private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
-    setParagraphMagic(p, index);
-    synchronized (paragraphs) {
-      paragraphs.add(index, p);
-    }
     p.addUser(p, p.getUser());
-    if (noteEventListener != null) {
-      noteEventListener.onParagraphCreate(p);
-    }
+    setParagraphMagic(p, index);
     return p;
+  }
+
+  public void addParagraph(Paragraph paragraph) {
+    insertParagraph(paragraph, paragraphs.size());
+  }
+
+  public void insertParagraph(Paragraph paragraph, int index) {
+    synchronized (paragraphs) {
+      paragraphs.add(index, paragraph);
+    }
+    if (noteEventListener != null) {
+      noteEventListener.onParagraphCreate(paragraph);
+    }
   }
 
   /**
