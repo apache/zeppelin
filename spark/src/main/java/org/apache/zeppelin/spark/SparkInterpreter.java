@@ -1011,7 +1011,7 @@ public class SparkInterpreter extends Interpreter {
         return (String) Utils.invokeMethod(sparkUIOption.get(), "appUIAddress");
       }
     }
-    return "";
+    return null;
   }
 
   private Results.Result interpret(String line) {
