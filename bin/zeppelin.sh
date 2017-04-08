@@ -71,7 +71,7 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
-CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+ZEPPELIN_CLASSPATH="$CLASSPATH:$ZEPPELIN_CLASSPATH"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
@@ -83,4 +83,4 @@ if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_PID_DIR}")
 fi
 
-exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@"
+exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:${ZEPPELIN_CLASSPATH} $ZEPPELIN_SERVER "$@"
