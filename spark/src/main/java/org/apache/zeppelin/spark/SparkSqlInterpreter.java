@@ -42,7 +42,10 @@ import org.slf4j.LoggerFactory;
  * Spark SQL interpreter for Zeppelin.
  */
 public class SparkSqlInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
+  private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
+
+  public static final String MAX_RESULTS = "zeppelin.spark.maxResult";
+
   AtomicInteger num = new AtomicInteger(0);
 
   private int maxResult;
@@ -53,7 +56,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    this.maxResult = Integer.parseInt(getProperty(MAX_RESULTS));
   }
 
   private SparkInterpreter getSparkInterpreter() {

@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.helium.HeliumPackageSearchResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -66,6 +67,16 @@ public class HeliumRestApi {
   public Response getAllPackageInfo() {
     return new JsonResponse(
         Response.Status.OK, "", helium.getAllPackageInfo()).build();
+  }
+
+  /**
+   * Get all enabled package infos
+   */
+  @GET
+  @Path("enabledPackage")
+  public Response getAllEnabledPackageInfo() {
+    return new JsonResponse(
+            Response.Status.OK, "", helium.getAllEnabledPackages()).build();
   }
 
   /**
@@ -130,26 +141,43 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("bundle/load")
+  @Path("bundle/load/{packageName}")
   @Produces("text/javascript")
-  public Response bundleLoad(@QueryParam("refresh") String refresh) {
+  public Response bundleLoad(@QueryParam("refresh") String refresh,
+                             @PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(
+          Response.Status.BAD_REQUEST,
+          "Can't get bundle due to empty package name").build();
+    }
+
+    HeliumPackageSearchResult psr = null;
+    List<HeliumPackageSearchResult> enabledPackages = helium.getAllEnabledPackages();
+    for (HeliumPackageSearchResult e : enabledPackages) {
+      if (e.getPkg().getName().equals(packageName)) {
+        psr = e;
+        break;
+      }
+    }
+
+    if (psr == null) {
+      // return empty to specify
+      return Response.ok().build();
+    }
+
     try {
       File bundle;
-      if (refresh != null && refresh.equals("true")) {
-        bundle = helium.recreateBundle();
-      } else {
-        bundle = helium.getBundleFactory().getCurrentCacheBundle();
-      }
+      boolean rebuild = (refresh != null && refresh.equals("true"));
+      bundle = helium.getBundle(psr.getPkg(), rebuild);
 
       if (bundle == null) {
         return Response.ok().build();
       } else {
-        String stringifiedBundle = FileUtils.readFileToString(bundle);
-        return Response.ok(stringifiedBundle).build();
+        String stringified = FileUtils.readFileToString(bundle);
+        return Response.ok(stringified).build();
       }
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
-
       // returning error will prevent zeppelin front-end render any notebook.
       // visualization load fail doesn't need to block notebook rendering work.
       // so it's better return ok instead of any error.
@@ -172,7 +200,7 @@ public class HeliumRestApi {
 
   @POST
   @Path("disable/{packageName}")
-  public Response enablePackage(@PathParam("packageName") String packageName) {
+  public Response disablePackage(@PathParam("packageName") String packageName) {
     try {
       helium.disable(packageName);
       return new JsonResponse(Response.Status.OK).build();

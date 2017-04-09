@@ -46,7 +46,7 @@ if [[ $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
   DO_SNAPSHOT="yes"
 fi
 
-PUBLISH_PROFILES="-Ppublish-distr -Pspark-2.1 -Phadoop-2.6 -Pyarn -Psparkr -Pr"
+PUBLISH_PROFILES="-Ppublish-distr -Pspark-2.1 -Phadoop-2.6 -Pyarn -Pr"
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"

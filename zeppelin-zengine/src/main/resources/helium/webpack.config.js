@@ -19,42 +19,21 @@ var path = require('path');
 
 module.exports = {
     entry: './src/load.js',
-    output: { path: path.join(__dirname, './'), filename: 'helium.bundle.js', },
-    module: {
-        loaders: [
-          {
-            test: path.join(__dirname, 'src'),
-            // DON'T exclude. since zeppelin will bundle all necessary packages: `exclude: /node_modules/,`
-            loader: 'babel-loader',
-            query: { presets: ['env', 'es2015', 'stage-0', 'node6'] },
-          },
-          {
-            test: /(\.css)$/,
-            loader: 'style-loader!css-loader?sourceMap&importLoaders=1',
-          },
-          {
-            test: /\.woff(\?\S*)?$/,
-            loader: 'url-loader?limit=10000&minetype=application/font-woff',
-          },
-          {
-            test: /\.woff2(\?\S*)?$/,
-            loader: 'url-loader?limit=10000&minetype=application/font-woff',
-          },
-          {
-            test: /\.eot(\?\S*)?$/,
-            loader: 'url-loader',
-          }, {
-            test: /\.ttf(\?\S*)?$/,
-            loader: 'url-loader',
-          },
-          {
-            test: /\.svg(\?\S*)?$/,
-            loader: 'url-loader',
-          },
-          {
-            test: /\.json$/,
-            loader: 'json-loader'
-          }
-        ],
-    }
+    output: { path: './', filename: 'helium.bundle.js', },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules\/(?!(zeppelin-spell|zeppelin-vis|zeppelin-tabledata)\/).*/,
+        query: { presets: ['es2015', 'stage-0'] },
+      },
+      { test: /(\.css)$/, loaders: ['style', 'css?sourceMap&importLoaders=1'], },
+      { test: /\.woff(\?\S*)?$/, loader: 'url-loader?limit=10000&minetype=application/font-woff', },
+      { test: /\.woff2(\?\S*)?$/, loader: 'url-loader?limit=10000&minetype=application/font-woff', },
+      { test: /\.eot(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.ttf(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.svg(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.json$/, loader: 'json-loader' }, ],
+  }
 }

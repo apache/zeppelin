@@ -47,6 +47,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -371,7 +372,8 @@ public class JDBCInterpreter extends Interpreter {
 
       switch (authType) {
           case KERBEROS:
-            if (user == null) {
+            if (user == null || "false".equalsIgnoreCase(
+              property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
               connection = getConnectionFromPool(url, user, propertyKey, properties);
             } else {
               if (url.trim().startsWith("jdbc:hive")) {
@@ -474,7 +476,7 @@ public class JDBCInterpreter extends Interpreter {
     msg.append(NEWLINE);
 
     int displayRowCount = 0;
-    while (resultSet.next() && displayRowCount < getMaxResult()) {
+    while (displayRowCount < getMaxResult() && resultSet.next()) {
       for (int i = 1; i < md.getColumnCount() + 1; i++) {
         Object resultObject;
         String resultValue;
@@ -506,19 +508,36 @@ public class JDBCInterpreter extends Interpreter {
   protected ArrayList<String> splitSqlQueries(String sql) {
     ArrayList<String> queries = new ArrayList<>();
     StringBuilder query = new StringBuilder();
-    Character character;
+    char character;
 
     Boolean antiSlash = false;
+    Boolean multiLineComment = false;
+    Boolean singleLineComment = false;
     Boolean quoteString = false;
     Boolean doubleQuoteString = false;
 
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
 
-      if (character.equals('\\')) {
+      if ((singleLineComment && (character == '\n' || item == sql.length() - 1))
+          || (multiLineComment && character == '/' && sql.charAt(item - 1) == '*')) {
+        singleLineComment = false;
+        multiLineComment = false;
+        if (item == sql.length() - 1 && query.length() > 0) {
+          queries.add(StringUtils.trim(query.toString()));
+        }
+        continue;
+      }
+
+      if (singleLineComment || multiLineComment) {
+        continue;
+      }
+
+      if (character == '\\') {
         antiSlash = true;
       }
-      if (character.equals('\'')) {
+
+      if (character == '\'') {
         if (antiSlash) {
           antiSlash = false;
         } else if (quoteString) {
@@ -527,7 +546,8 @@ public class JDBCInterpreter extends Interpreter {
           quoteString = true;
         }
       }
-      if (character.equals('"')) {
+
+      if (character == '"') {
         if (antiSlash) {
           antiSlash = false;
         } else if (doubleQuoteString) {
@@ -537,16 +557,30 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
-      if (character.equals(';') && !antiSlash && !quoteString && !doubleQuoteString) {
-        queries.add(query.toString());
+      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
+          && sql.length() > item + 1) {
+        if (character == '-' && sql.charAt(item + 1) == '-') {
+          singleLineComment = true;
+          continue;
+        }
+
+        if (character == '/' && sql.charAt(item + 1) == '*') {
+          multiLineComment = true;
+          continue;
+        }
+      }
+
+      if (character == ';' && !antiSlash && !quoteString && !doubleQuoteString) {
+        queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
         query.append(character);
-        queries.add(query.toString());
+        queries.add(StringUtils.trim(query.toString()));
       } else {
         query.append(character);
       }
     }
+
     return queries;
   }
 
@@ -602,8 +636,13 @@ public class JDBCInterpreter extends Interpreter {
               interpreterResult.add(InterpreterResult.Type.TEXT,
                   "Query executed successfully.");
             } else {
-              interpreterResult.add(
-                  getResults(resultSet, !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE)));
+              String results = getResults(resultSet,
+                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
+              interpreterResult.add(results);
+              if (resultSet.next()) {
+                interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
+                    String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
+              }
             }
           } else {
             // Response contains either an update count or there are no results.
