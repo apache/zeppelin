@@ -529,6 +529,12 @@ Connection to Hive JDBC with a proxy user can be disabled with `hive.proxy.user`
 
 [Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
+##### Impersonation
+When Zeppelin server is running with authentication enabled, then this interpreter utilizes Hive's user proxy feature i.e. sends extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a Notebook server.
+
+To enable this set `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
+
+
 ### Apache Phoenix
 
 Phoenix supports `thick` and `thin` connection types:
