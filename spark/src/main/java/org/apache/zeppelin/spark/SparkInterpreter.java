@@ -215,7 +215,7 @@ public class SparkInterpreter extends Interpreter {
    */
   private boolean hiveClassesArePresent() {
     try {
-      this.getClass().forName("org.apache.spark.sql.hive.HiveSessionState");
+      this.getClass().forName("org.apache.spark.sql.hive.execution.InsertIntoHiveTable");
       this.getClass().forName("org.apache.hadoop.hive.conf.HiveConf");
       return true;
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
