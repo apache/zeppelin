@@ -25,6 +25,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,7 +273,9 @@ public abstract class BaseLivyInterprereter extends Interpreter {
           throw new LivyException(e);
         }
         stmtInfo = getStatementInfo(stmtInfo.id);
-        paragraphId2StmtProgressMap.put(paragraphId, (int) (stmtInfo.progress * 100));
+        if (paragraphId != null) {
+          paragraphId2StmtProgressMap.put(paragraphId, (int) (stmtInfo.progress * 100));
+        }
       }
       if (appendSessionExpired) {
         return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
@@ -367,13 +370,11 @@ public abstract class BaseLivyInterprereter extends Interpreter {
       }
 
       if (displayAppInfo) {
-        //TODO(zjffdu), use multiple InterpreterResult to display appInfo
         InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
         interpreterResult.add(InterpreterResult.Type.TEXT, result);
         String appInfoHtml = "<hr/>Spark Application Id: " + sessionInfo.appId + "<br/>"
             + "Spark WebUI: <a href=\"" + sessionInfo.webUIAddress + "\">"
             + sessionInfo.webUIAddress + "</a>";
-        LOGGER.info("appInfoHtml:" + appInfoHtml);
         interpreterResult.add(InterpreterResult.Type.HTML, appInfoHtml);
         return interpreterResult;
       } else {
@@ -484,6 +485,8 @@ public abstract class BaseLivyInterprereter extends Interpreter {
         if (cause.getResponseBodyAsString().matches(SESSION_NOT_FOUND_PATTERN)) {
           throw new SessionNotFoundException(cause.getResponseBodyAsString());
         }
+        throw new LivyException(cause.getResponseBodyAsString() + "\n"
+            + ExceptionUtils.getFullStackTrace(ExceptionUtils.getRootCause(e)));
       }
       throw new LivyException(e);
     }

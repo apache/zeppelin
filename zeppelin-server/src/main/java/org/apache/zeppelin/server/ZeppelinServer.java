@@ -124,6 +124,7 @@ public class ZeppelinServer extends Application {
        */
       heliumBundleFactory = new HeliumBundleFactory(
           conf,
+          null,
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")),
@@ -131,6 +132,7 @@ public class ZeppelinServer extends Application {
     } else {
       heliumBundleFactory = new HeliumBundleFactory(
           conf,
+          null,
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
           new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")),
@@ -147,7 +149,7 @@ public class ZeppelinServer extends Application {
 
     // create bundle
     try {
-      heliumBundleFactory.buildBundle(helium.getBundlePackagesToBundle());
+      heliumBundleFactory.buildAllPackages(helium.getBundlePackagesToBundle());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }

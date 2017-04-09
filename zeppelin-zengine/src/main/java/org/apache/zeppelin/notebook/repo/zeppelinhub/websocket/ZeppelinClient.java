@@ -68,6 +68,7 @@ public class ZeppelinClient {
   private SchedulerService schedulerService;
   private Authentication authModule;
   private static final int MIN = 60;
+  private static final String ORIGIN = "Origin";
 
   private static final Set<String> actionable = new  HashSet<String>(Arrays.asList(
       // running events
@@ -188,6 +189,7 @@ public class ZeppelinClient {
   private Session openWatcherSession() {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader(WatcherSecurityKey.HTTP_HEADER, WatcherSecurityKey.getKey());
+    request.setHeader(ORIGIN, "*");
     WatcherWebsocket socket = WatcherWebsocket.createInstace();
     Future<Session> future = null;
     Session session = null;
@@ -241,6 +243,7 @@ public class ZeppelinClient {
   
   private Session openNoteSession(String noteId, String principal, String ticket) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
+    request.setHeader(ORIGIN, "*");
     ZeppelinWebsocket socket = new ZeppelinWebsocket(noteId);
     Future<Session> future = null;
     Session session = null;

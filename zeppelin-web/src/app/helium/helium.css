@@ -140,6 +140,12 @@
   display: inline-block;
 }
 
+.heliumVisIconButton > img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .heliumLocalPackage {
   color: #636363;
 }
@@ -194,4 +200,28 @@
 
 .heliumConfigValueText {
   vertical-align: top;
+}
+
+
+/* hide arrows when current page is on first & last */
+.hide-first-boundaries.pagination > .disabled > a,
+.hide-first-boundaries.pagination > li:first-child > a,
+.hide-first-boundaries.pagination > li:first-child > span {
+  display: none;
+}
+
+.hide-first-boundaries.pagination > .active > a {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.hide-last-boundaries.pagination > .disabled > a,
+.hide-last-boundaries.pagination > li:last-child > a,
+.hide-last-boundaries.pagination > li:last-child > span {
+  display: none;
+}
+
+.hide-last-boundaries.pagination > .active > a {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
 }

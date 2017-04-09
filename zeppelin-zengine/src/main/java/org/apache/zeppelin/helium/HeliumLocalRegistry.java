@@ -43,7 +43,6 @@ public class HeliumLocalRegistry extends HeliumRegistry {
 
   }
 
-
   @Override
   public synchronized List<HeliumPackage> getAll() throws IOException {
     List<HeliumPackage> result = new LinkedList<>();

@@ -320,6 +320,19 @@
   </dependencies>
 
   <build>
+    <!-- sparkr resources -->
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>interpreter-setting.json</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src/main/sparkr-resources</directory>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -440,18 +453,13 @@
         </executions>
       </plugin>
 
-      <!-- exclude sparkr by default. sparkr is enabled by profile 'sparkr' -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <excludes>
-            <exclude>**/SparkRInterpreter.java</exclude>
-          </excludes>
-          <testExcludes>
+          <excludes combine.self="override"></excludes>
+          <testExcludes combine.self="override">
             <testExclude>${pyspark.test.exclude}</testExclude>
-            <testExclude>**/SparkRInterpreterTest.java</testExclude>
-            <testExclude>**/ZeppelinRTest.java</testExclude>
           </testExcludes>
         </configuration>
       </plugin>
@@ -459,9 +467,7 @@
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
         <configuration>
-          <excludes>
-            <exclude>**/ZeppelinR.scala</exclude>
-            <exclude>**/SparkRBackend.scala</exclude>
+          <excludes combine.self="override">
           </excludes>
         </configuration>
       </plugin>
@@ -469,12 +475,37 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <includes>
-            <include>${pyspark.test.include}</include>
-          </includes>
-          <excludes>
+          <excludes combine.self="override">
             <exclude>${pyspark.test.exclude}</exclude>
-            <exclude>**/SparkRInterpreterTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <!-- include sparkr by default -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes combine.self="override"></excludes>
+          <testExcludes combine.self="override">
+            <testExclude>${pyspark.test.exclude}</testExclude>
+          </testExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <configuration>
+          <excludes combine.self="override">
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes combine.self="override">
+            <exclude>${pyspark.test.exclude}</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -506,7 +537,7 @@
       <id>spark-1.6</id>
       <properties>
         <spark.version>1.6.3</spark.version>
-        <py4j.version>0.9</py4j.version>
+        <spark.py4j.version>0.9</spark.py4j.version>
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
@@ -518,7 +549,7 @@
       <properties>
         <spark.version>2.0.2</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.3</py4j.version>
+        <spark.py4j.version>0.10.3</spark.py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
@@ -531,7 +562,7 @@
       <properties>
         <spark.version>2.1.0</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <py4j.version>0.10.4</py4j.version>
+        <spark.py4j.version>0.10.4</spark.py4j.version>
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
@@ -608,54 +639,6 @@
         <jets3t.version>0.9.0</jets3t.version>
         <avro.mapred.classifier>hadoop2</avro.mapred.classifier>
       </properties>
-    </profile>
-
-    <!-- include sparkr in the build -->
-    <profile>
-      <id>sparkr</id>
-      <build>
-        <resources>
-          <resource>
-            <directory>src/main/resources</directory>
-            <excludes>
-              <exclude>interpreter-setting.json</exclude>
-            </excludes>
-          </resource>
-          <resource>
-            <directory>src/main/sparkr-resources</directory>
-          </resource>
-        </resources>
-
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <excludes combine.self="override"></excludes>
-              <testExcludes combine.self="override">
-                <testExclude>${pyspark.test.exclude}</testExclude>
-              </testExcludes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.scala-tools</groupId>
-            <artifactId>maven-scala-plugin</artifactId>
-            <configuration>
-              <excludes combine.self="override">
-              </excludes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <excludes combine.self="override">
-                <exclude>${pyspark.test.exclude}</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>
