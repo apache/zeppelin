@@ -1,11 +1,11 @@
 {
-  "name": "zeppelin-helium-bundle",
-  "main": "load",
+  "name": "PACKAGE_NAME",
+  "main": "MAIN_FILE",
   "scripts": {
-    "bundle": "node/node node_modules/webpack/bin/webpack.js --display-error-details --json"
+    "bundle": "webpack --display-error-details --json"
   },
   "dependencies": {
-    DEPENDENCIES
+DEPENDENCIES
   },
   "devDependencies": {
     "webpack": "^1.12.2",

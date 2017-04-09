@@ -97,6 +97,10 @@ public class InterpreterResult implements Serializable {
     msg.add(new InterpreterResultMessage(type, data));
   }
 
+  public void add(InterpreterResultMessage interpreterResultMessage) {
+    msg.add(interpreterResultMessage);
+  }
+
   public Code code() {
     return code;
   }
