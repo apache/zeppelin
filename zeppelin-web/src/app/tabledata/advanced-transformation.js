@@ -27,7 +27,7 @@ import {
 
 const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
 
-class AdvancedTransformation extends Transformation {
+export default class AdvancedTransformation extends Transformation {
   constructor(config, spec) {
     super(config);
 
@@ -223,5 +223,3 @@ class AdvancedTransformation extends Transformation {
     }
   }
 }
-
-export default AdvancedTransformation
