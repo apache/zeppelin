@@ -17,12 +17,13 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class InterpreterTest {
 
@@ -49,6 +50,40 @@ public class InterpreterTest {
     assertEquals(1, intp.getProperty().size());
     assertEquals("v2", intp.getProperty().get("p1"));
     assertEquals("v2", intp.getProperty("p1"));
+  }
+
+  @Test
+  public void testPropertyWithReplacedContextFields() {
+    String noteId = "testNoteId";
+    String paragraphTitle = "testParagraphTitle";
+    String paragraphText = "testParagraphText";
+    String paragraphId = "testParagraphId";
+    String user = "username";
+    InterpreterContext.set(new InterpreterContext(noteId,
+        paragraphId,
+        null,
+        paragraphTitle,
+        paragraphText,
+        new AuthenticationInfo("testUser", "testTicket"),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null));
+    Properties p = new Properties();
+    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
+        " #{authenticationInfo}");
+    MockInterpreterA intp = new MockInterpreterA(p);
+    intp.setUserName(user);
+    String actual = intp.getProperty("p1");
+    InterpreterContext.remove();
+
+    assertEquals(
+        String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , %s, %s, #{authenticationInfo}", noteId,
+            noteId, user),
+        actual
+    );
   }
 
 }

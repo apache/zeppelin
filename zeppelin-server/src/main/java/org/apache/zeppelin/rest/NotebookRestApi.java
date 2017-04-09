@@ -969,9 +969,10 @@ public class NotebookRestApi {
       throw new BadRequestException("paragraph config cannot be empty");
     }
     Map<String, Object> origConfig = p.getConfig();
-    for (String key : newConfig.keySet()) {
-      origConfig.put(key, newConfig.get(key));
+    for ( final Map.Entry<String, Object> entry : newConfig.entrySet()){
+      origConfig.put(entry.getKey(), entry.getValue());
     }
+
     p.setConfig(origConfig);
   }
 

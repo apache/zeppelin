@@ -95,7 +95,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
         LOG.debug("No changes found {}", pattern);
       }
     } catch (GitAPIException e) {
-      LOG.error("Failed to add+comit {} to Git", pattern, e);
+      LOG.error("Failed to add+commit {} to Git", pattern, e);
     }
     return revision;
   }

@@ -66,12 +66,25 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
   configureChart(chart) {
     var self = this;
 
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d, self.yLabels);});
+    chart.xAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
+      return self.xAxisTickFormat(Math.round(d * 1e3)/1e3, self.xLabels);
+      });
+
+    chart.yAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
+      return self.yAxisTickFormat(Math.round(d * 1e3)/1e3, self.yLabels);
+      });
 
     chart.showDistX(true).showDistY(true);
     //handle the problem of tooltip not showing when muliple points have same value.
   };
+
+  yAxisTickFormat(d, yLabels){
+     if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
+      return yLabels[d];
+     } else {
+      return super.yAxisTickFormat(d);
+     }
+   }
 
   selectDefault() {
     if (!this.config.xAxis && !this.config.yAxis) {
@@ -116,6 +129,9 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       };
     }
 
+
+
+
     for (var i = 0; i < data.rows.length; i++) {
       row = data.rows[i];
       if (xAxis) {
@@ -152,6 +168,8 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       grpName = size.name;
     }
 
+    var epsilon = 1e-4; // TODO remove after bump to nvd3 > 1.8.5
+
     for (i = 0; i < rows.length; i++) {
       row = rows[i];
       if (xAxis) {
@@ -187,11 +205,35 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
         };
       }
 
+
+      // TODO remove epsilon jitter after bump to nvd3 > 1.8.5
+      var xval, yval = 0;
+      if ( xAxis ){
+        xval = (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) + Math.random() * epsilon;
+      }
+      if ( yAxis ){
+        yval = (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) + Math.random() * epsilon;
+      }
+
       d3g[grpNameIndex[grpName]].values.push({
-        x: xAxis ? (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) : 0,
-        y: yAxis ? (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) : 0,
+        x: xval,
+        y: yval,
         size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz)
       });
+    }
+
+    // TODO remove sort and dedup after bump to nvd3 > 1.8.5
+    var d3gvalues = d3g[grpNameIndex[grpName]].values;
+    d3gvalues.sort(function(a,b){
+                  return ((a['x'] - b['x']) || (a['y'] - b['y']))});
+
+    for (var i = 0; i < d3gvalues.length - 1; ){
+      if ( (Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
+           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon) ){
+           d3gvalues.splice(i+1,1);
+      } else{
+        i++;
+      }
     }
 
     return {

@@ -44,7 +44,7 @@ public class InputTest {
 	public void testFormExtraction() {
 		// input form
 		String script = "${input_form=}";
-		Map<String, Input> forms = Input.extractSimpleQueryParam(script);
+		Map<String, Input> forms = Input.extractSimpleQueryForm(script);
 		assertEquals(1, forms.size());
 		Input form = forms.get("input_form");
 		assertEquals("input_form", form.name);
@@ -54,13 +54,13 @@ public class InputTest {
 
 		// input form with display name & default value
 		script = "${input_form(Input Form)=xxx}";
-		forms = Input.extractSimpleQueryParam(script);
+		forms = Input.extractSimpleQueryForm(script);
 		form = forms.get("input_form");
 		assertEquals("xxx", form.defaultValue);
 
 		// selection form
 		script = "${select_form(Selection Form)=op1,op1|op2(Option 2)|op3}";
-		form = Input.extractSimpleQueryParam(script).get("select_form");
+		form = Input.extractSimpleQueryForm(script).get("select_form");
 		assertEquals("select_form", form.name);
 		assertEquals("op1", form.defaultValue);
 		assertArrayEquals(new ParamOption[]{new ParamOption("op1", null),
@@ -68,7 +68,7 @@ public class InputTest {
 
 		// checkbox form
 		script = "${checkbox:checkbox_form=op1,op1|op2|op3}";
-		form = Input.extractSimpleQueryParam(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("checkbox", form.type);
 		assertArrayEquals(new Object[]{"op1"}, (Object[]) form.defaultValue);
@@ -77,7 +77,7 @@ public class InputTest {
 
 		// checkbox form with multiple default checks
 		script = "${checkbox:checkbox_form(Checkbox Form)=op1|op3,op1(Option 1)|op2|op3}";
-		form = Input.extractSimpleQueryParam(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("Checkbox Form", form.displayName);
 		assertEquals("checkbox", form.type);
@@ -87,7 +87,7 @@ public class InputTest {
 
 		// checkbox form with no default check
 		script = "${checkbox:checkbox_form(Checkbox Form)=,op1(Option 1)|op2(Option 2)|op3(Option 3)}";
-		form = Input.extractSimpleQueryParam(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("Checkbox Form", form.displayName);
 		assertEquals("checkbox", form.type);
