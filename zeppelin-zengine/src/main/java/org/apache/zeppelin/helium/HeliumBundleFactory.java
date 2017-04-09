@@ -55,6 +55,7 @@ public class HeliumBundleFactory {
   public static final String HELIUM_LOCAL_MODULE_DIR = "local_modules";
   public static final String HELIUM_BUNDLES_SRC_DIR = "src";
   public static final String HELIUM_BUNDLES_SRC = "load.js";
+  public static final String YARN_CACHE_DIR = "yarn-cache";
   public static final String PACKAGE_JSON = "package.json";
   public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   public static final String HELIUM_BUNDLE = "helium.bundle.js";
@@ -68,6 +69,7 @@ public class HeliumBundleFactory {
   private final File heliumLocalRepoDirectory;
   private final File heliumBundleDirectory;
   private final File heliumLocalModuleDirectory;
+  private final File yarnCacheDir;
   private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
@@ -98,6 +100,7 @@ public class HeliumBundleFactory {
     this.heliumLocalRepoDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
+    this.yarnCacheDir = new File(heliumLocalRepoDirectory, YARN_CACHE_DIR);
     this.conf = conf;
     this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
 
@@ -110,7 +113,7 @@ public class HeliumBundleFactory {
     gson = new Gson();
   }
 
-  void installNodeAndNpm() {
+  void installNodeAndNpm() throws TaskRunnerException {
     if (nodeAndNpmInstalled) {
       return;
     }
@@ -126,6 +129,8 @@ public class HeliumBundleFactory {
       YarnInstaller yarnInstaller = frontEndPluginFactory.getYarnInstaller(getProxyConfig());
       yarnInstaller.setYarnVersion(YARN_VERSION);
       yarnInstaller.install();
+      String yarnCacheDirPath = yarnCacheDir.getAbsolutePath();
+      yarnCommand(frontEndPluginFactory, "config set cache-folder " + yarnCacheDirPath);
 
       configureLogger();
       nodeAndNpmInstalled = true;
@@ -362,7 +367,11 @@ public class HeliumBundleFactory {
     }
 
     // 0. install node, npm (should be called before `downloadPackage`
-    installNodeAndNpm();
+    try {
+      installNodeAndNpm();
+    } catch (TaskRunnerException e) {
+      throw new IOException(e);
+    }
 
     // 1. prepare directories
     if (!heliumLocalRepoDirectory.exists() || !heliumLocalRepoDirectory.isDirectory()) {
@@ -444,7 +453,6 @@ public class HeliumBundleFactory {
     if (tabledataModulePath != null) {
       if (recopy && tabledataModuleInstallPath.exists()) {
         FileUtils.deleteDirectory(tabledataModuleInstallPath);
-
       }
 
       if (!tabledataModuleInstallPath.exists()) {
