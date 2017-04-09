@@ -431,7 +431,7 @@ public class JDBCInterpreter extends Interpreter {
 
       if (user != null && !user.equals("anonymous") &&
           !"false".equalsIgnoreCase(property.getProperty("hive.proxy.user"))) {
-        logger.debug("Using hive proxy user");
+        logger.info("Using hive proxy user as :" + user);
         connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
       }
     }
