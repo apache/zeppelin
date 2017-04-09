@@ -27,40 +27,13 @@ angular.module('zeppelinWebApp').service('heliumService', heliumService);
 export default function heliumService($http, $sce, baseUrlSrv) {
   'ngInject';
 
-  var url = baseUrlSrv.getRestApiBase() + '/helium/bundle/load';
-  if (process.env.HELIUM_BUNDLE_DEV) {
-    url = url + '?refresh=true';
-  }
-
   let visualizationBundles = [];
-  // name `heliumBundles` should be same as `HelumBundleFactory.HELIUM_BUNDLES_VAR`
+  // name `heliumBundles` should be same as `HeliumBundleFactory.HELIUM_BUNDLES_VAR`
   let heliumBundles = [];
   // map for `{ magic: interpreter }`
   let spellPerMagic = {};
   // map for `{ magic: package-name }`
   let pkgNamePerMagic = {}
-
-  // load should be promise
-  this.load = $http.get(url).success(function(response) {
-    if (response.substring(0, 'ERROR:'.length) !== 'ERROR:') {
-      // evaluate bundles
-      eval(response);
-
-      // extract bundles by type
-      heliumBundles.map(b => {
-        if (b.type === HeliumType.SPELL) {
-          const spell = new b.class(); // eslint-disable-line new-cap
-          const pkgName = b.id;
-          spellPerMagic[spell.getMagic()] = spell;
-          pkgNamePerMagic[spell.getMagic()] = pkgName;
-        } else if (b.type === HeliumType.VISUALIZATION) {
-          visualizationBundles.push(b);
-        }
-      });
-    } else {
-      console.error(response);
-    }
-  });
 
   /**
    * @param magic {string} e.g `%flowchart`
@@ -160,6 +133,37 @@ export default function heliumService($http, $sce, baseUrlSrv) {
       });
   };
 
+  this.getAllEnabledPackages = function() {
+    return $http.get(`${baseUrlSrv.getRestApiBase()}/helium/enabledPackage`)
+      .then(function(response, status) {
+        return response.data.body;
+      })
+      .catch(function(error) {
+        console.error('Failed to get all enabled package infos', error);
+      });
+  };
+
+  this.getSingleBundle = function(pkgName) {
+    let url = `${baseUrlSrv.getRestApiBase()}/helium/bundle/load/${pkgName}`
+    if (process.env.HELIUM_BUNDLE_DEV) {
+      url = url + '?refresh=true';
+    }
+
+    return $http.get(url)
+      .then(function(response, status) {
+        const bundle = response.data
+        if (bundle.substring(0, 'ERROR:'.length) === 'ERROR:') {
+          console.error(`Failed to get bundle: ${pkgName}`, bundle);
+          return '' // empty bundle will be filtered later
+        }
+
+        return bundle
+      })
+      .catch(function(error) {
+        console.error(`Failed to get single bundle: ${pkgName}`, error);
+      });
+  }
+
   this.getDefaultPackages = function() {
     return this.getAllPackageInfo()
       .then(pkgSearchResults => {
@@ -241,4 +245,44 @@ export default function heliumService($http, $sce, baseUrlSrv) {
       return merged;
     });
   }
+
+  const p = this.getAllEnabledPackages()
+    .then(enabledPackageSearchResults => {
+      const promises = enabledPackageSearchResults.map(packageSearchResult => {
+        const pkgName = packageSearchResult.pkg.name
+        return this.getSingleBundle(pkgName)
+      })
+
+      return Promise.all(promises)
+    })
+    .then(bundles => {
+      return bundles.reduce((acc, b) => {
+        // filter out empty bundle
+        if (b === '') { return acc }
+        acc.push(b)
+        return acc;
+      }, [])
+    })
+
+  // load should be promise
+  this.load = p.then(availableBundles => {
+
+    // evaluate bundles
+    availableBundles.map(b => {
+      eval(b)
+    })
+
+    // extract bundles by type
+    heliumBundles.map(b => {
+      if (b.type === HeliumType.SPELL) {
+        const spell = new b.class() // eslint-disable-line new-cap
+        const pkgName = b.id
+        spellPerMagic[spell.getMagic()] = spell
+        pkgNamePerMagic[spell.getMagic()] = pkgName
+      } else if (b.type === HeliumType.VISUALIZATION) {
+        visualizationBundles.push(b)
+      }
+    })
+  })
+
 }
