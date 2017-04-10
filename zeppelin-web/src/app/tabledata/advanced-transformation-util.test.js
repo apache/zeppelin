@@ -1317,7 +1317,7 @@ describe('advanced-transformation-util', () => {
         expect(key2Names).toEqual([])
         expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { selector: 'age(sum)', value: [ [ 44 + 43 + 39 + 33, ], ], },
+          { selector: 'age(sum)', value: [ { aggregated: 44 + 43 + 39 + 33, }, ] },
         ])
       })
 
@@ -1335,7 +1335,7 @@ describe('advanced-transformation-util', () => {
         expect(key2Names).toEqual([])
         expect(selectors).toEqual([ 'age(count)', ])
         expect(rows).toEqual([
-          { selector: 'age(count)', value: [ [ 4, ],  ], },
+          { selector: 'age(count)', value: [ { aggregated: 4, }, ] },
         ])
       })
 
@@ -1353,7 +1353,7 @@ describe('advanced-transformation-util', () => {
         expect(key2Names).toEqual([])
         expect(selectors).toEqual([ 'age(avg)', ])
         expect(rows).toEqual([
-          { selector: 'age(avg)', value: [ [ (44 + 43 + 39 + 33) / 4.0, ],  ], },
+          { selector: 'age(avg)', value: [ { aggregated: (44 + 43 + 39 + 33) / 4.0, }, ] },
         ])
       })
 
@@ -1371,7 +1371,7 @@ describe('advanced-transformation-util', () => {
         expect(key2Names).toEqual([])
         expect(selectors).toEqual([ 'age(max)', ])
         expect(rows).toEqual([
-          { selector: 'age(max)', value: [ [ 44, ],  ], },
+          { selector: 'age(max)', value: [ { aggregated: 44, }, ] },
         ])
       })
 
@@ -1389,7 +1389,7 @@ describe('advanced-transformation-util', () => {
         expect(key2Names).toEqual([])
         expect(selectors).toEqual([ 'age(min)', ])
         expect(rows).toEqual([
-          { selector: 'age(min)', value: [ [ 33, ],  ], },
+          { selector: 'age(min)', value: [ { aggregated: 33, }, ] },
         ])
       })
 
@@ -1408,8 +1408,8 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', 'balance(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', 'balance(sum)', ])
         expect(rows).toEqual([
-          { selector: 'age(sum)', value: [ [ 159, ], ], },
-          { selector: 'balance(sum)', value: [ [ 14181, ], ], },
+          { selector: 'age(sum)', value: [ { aggregated: 159 } ] },
+          { selector: 'balance(sum)', value: [ { aggregated: 14181 }, ] },
         ])
       })
 
@@ -1427,8 +1427,8 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'married', 'single', ])
         expect(selectors).toEqual([ 'married', 'single', ])
         expect(rows).toEqual([
-          { selector: 'married', value: [ [ 82, ], ], },
-          { selector: 'single', value: [ [ 77 ], ], },
+          { selector: 'married', value: [ { aggregated: 82 }, ] },
+          { selector: 'single', value: [ { aggregated: 77 }, ] },
         ])
       })
 
@@ -1450,10 +1450,10 @@ describe('advanced-transformation-util', () => {
           'married / age(sum)', 'married / balance(sum)', 'single / age(sum)', 'single / balance(sum)',
         ])
         expect(rows).toEqual([
-          { selector: 'married / age(sum)', value: [ [ 82, ], ] },
-          { selector: 'married / balance(sum)', value: [ [ 9286, ], ] },
-          { selector: 'single / age(sum)', value: [ [ 77, ], ] },
-          { selector: 'single / balance(sum)', value: [ [ 4895, ], ] },
+          { selector: 'married / age(sum)', value: [ { aggregated: 82 }, ] },
+          { selector: 'married / balance(sum)', value: [ { aggregated: 9286 }, ] },
+          { selector: 'single / age(sum)', value: [ { aggregated: 77 }, ] },
+          { selector: 'single / balance(sum)', value: [ { aggregated: 4895 }, ] },
         ])
       })
 
@@ -1472,9 +1472,9 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
         expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
         expect(rows).toEqual([
-          { selector: 'married.primary', value: [ [ '43', ], ] },
-          { selector: 'married.secondary', value: [ [ '39', ], ] },
-          { selector: 'single.tertiary', value: [ [ 77, ], ] },
+          { selector: 'married.primary', value: [ { aggregated: '43' }, ] },
+          { selector: 'married.secondary', value: [ { aggregated: '39' }, ] },
+          { selector: 'single.tertiary', value: [ { aggregated: 77 }, ] },
         ])
       })
 
@@ -1497,7 +1497,15 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { selector: 'age(sum)', value: [ [ '43' ], [ '44' ], [ '33' ], [ '39' ], ] },
+          {
+            selector: 'age(sum)',
+            value: [
+              { aggregated: '43', key1: '-88' },
+              { aggregated: '44', key1: '106' },
+              { aggregated: '33', key1: '4789' },
+              { aggregated: '39', key1: '9374' },
+            ]
+          }
         ])
       })
 
@@ -1520,7 +1528,15 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { selector: 'age(sum)', value: [ [ '43', '44', '33', '39', ], ] },
+          {
+            selector: 'age(sum)',
+            value: [
+              { aggregated: '43', key2: '-88' },
+              { aggregated: '44', key2: '106' },
+              { aggregated: '33', key2: '4789' },
+              { aggregated: '39', key2: '9374' },
+            ]
+          },
         ])
       })
 
@@ -1544,9 +1560,15 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
         expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
         expect(rows).toEqual([
-          { selector: 'primary', value: [ [ '43' ], undefined, undefined, undefined, ], },
-          { selector: 'secondary', value: [ undefined, undefined, undefined, [ '39' ], ] },
-          { selector: 'tertiary', value: [ undefined, [ '44' ], [ '33' ], undefined, ], },
+          { selector: 'primary', value: [ { aggregated: '43', key1: '-88' }, ] },
+          { selector: 'secondary', value: [ { aggregated: '39', key1: '9374' }, ] },
+          {
+            selector: 'tertiary',
+            value: [
+              { aggregated: '44', key1: '106' },
+              { aggregated: '33', key1: '4789' },
+            ]
+          },
         ])
       })
 
@@ -1570,9 +1592,15 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
         expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
         expect(rows).toEqual([
-          { selector: 'primary', value: [ [ '43', undefined, undefined, undefined, ], ] },
-          { selector: 'secondary', value: [ [ undefined, undefined, undefined, '39', ], ] },
-          { selector: 'tertiary', value: [ [ undefined, '44', '33', undefined, ] ], },
+          { selector: 'primary', value: [ { aggregated: '43', key2: '-88' }, ] },
+          { selector: 'secondary', value: [ { aggregated: '39', key2: '9374' }, ] },
+          {
+            selector: 'tertiary',
+            value: [
+              { aggregated: '44', key2: '106' },
+              { aggregated: '33', key2: '4789' },
+            ]
+          },
         ])
       })
 
@@ -1599,13 +1627,18 @@ describe('advanced-transformation-util', () => {
         expect(rows).toEqual([
           {
             selector: 'primary',
-            value: [ undefined, [ '43', undefined, undefined, undefined ], undefined ] },
+            value: [ { aggregated: '43', key1: '147', key2: '-88' }, ]
+          },
           {
             selector: 'secondary',
-            value: [ [ undefined, undefined, undefined, '39' ], undefined, undefined ] },
+            value: [ { aggregated: '39', key1: '-1', key2: '9374' }, ]
+          },
           {
             selector: 'tertiary',
-            value: [ [ undefined, '44', undefined, undefined ], undefined, [ undefined, undefined, '33', undefined ] ]
+            value: [
+              { aggregated: '44', key1: '-1', key2: '106' },
+              { aggregated: '33', key1: '339', key2: '4789' },
+            ]
           },
         ])
       })
@@ -1634,15 +1667,18 @@ describe('advanced-transformation-util', () => {
         expect(rows).toEqual([
           {
             selector: 'primary.married',
-            value: [ undefined, [ '43', undefined, undefined, undefined ], undefined ]
+            value: [ { aggregated: '43', key1: '147', key2: '-88'}, ]
           },
           {
             selector: 'secondary.married',
-            value: [ [ undefined, undefined, undefined, '39' ], undefined, undefined ]
+            value: [ { aggregated: '39', key1: '-1', key2: '9374' }, ]
           },
           {
             selector: 'tertiary.single',
-            value: [ [ undefined, '44', undefined, undefined ], undefined, [ undefined, undefined, '33', undefined ] ]
+            value: [
+              { aggregated: '44', key1: '-1', key2: '106' },
+              { aggregated: '33', key1: '339', key2: '4789' },
+            ]
           },
         ])
       })
@@ -1675,38 +1711,34 @@ describe('advanced-transformation-util', () => {
           {
             selector: 'married / age(min)',
             value: [
-              [ undefined, undefined, undefined, '39' ],
-              [ '43', undefined, undefined, undefined ],
-              undefined
+              { aggregated: '39', key1: '-1', key2: '9374' },
+              { aggregated: '43', key1: '147', key2: '-88' },
             ]
           },
           {
             selector: 'married / day(max)',
             value: [
-              [ undefined, undefined, undefined, '20' ],
-              [ '17', undefined, undefined, undefined ],
-              undefined
+              { aggregated: '20', key1: '-1', key2: '9374' },
+              { aggregated: '17', key1: '147', key2: '-88' },
             ]
           },
           {
             selector: 'single / age(min)',
             value: [
-              [ undefined, '44', undefined, undefined ],
-              undefined, [ undefined, undefined, '33', undefined ]
+              { aggregated: '44', key1: '-1', key2: '106' },
+              { aggregated: '33', key1: '339', key2: '4789' },
             ]
           },
           {
             selector: 'single / day(max)',
             value: [
-              [ undefined, '12', undefined, undefined ],
-              undefined,
-              [ undefined,undefined, '11', undefined ]
+              { aggregated: '12', key1: '-1', key2: '106' },
+              { aggregated: '11', key1: '339', key2: '4789' },
             ]
           },
         ])
       })
 
-      // TODO 1 key1 1 key2, 1 group, 2 aggr (min), (max)
     }) // end: describe('method: array:2-key')
 
   }) // end: describe('getTransformer')

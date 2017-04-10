@@ -976,12 +976,9 @@ export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
 /** truly mutable style func. will return nothing */
 export function fillSelectorRows(schema, cube, selectorRows,
                                  aggrColumns, selectorNameWithIndex,
-                                 key1Names, key2Names, key1NameWithIndex, key2NameWithIndex) {
+                                 key1Names, key2Names) {
 
-  const key1Length = (key1Names.length === 0) ? 1 : key1Names.length
-  const key2Length = (key2Names.length === 0) ? 1 : key2Names.length
-
-  function fill(grouped, mergedGroupName, key1Index, key2Index) {
+  function fill(grouped, mergedGroupName, key1Name, key2Name) {
     // should iterate aggrColumns in the most nested loop to utilize memory locality
     for (let aggrColumn of aggrColumns) {
       const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
@@ -990,22 +987,21 @@ export function fillSelectorRows(schema, cube, selectorRows,
       const selectorIndex = selectorNameWithIndex[selector]
 
       if (typeof selectorRows[selectorIndex] === 'undefined') {
-        selectorRows[selectorIndex] = { selector: selector, value: new Array(key1Length) }
-      }
-      if (typeof selectorRows[selectorIndex].value[key1Index] === 'undefined') {
-        selectorRows[selectorIndex].value[key1Index] = new Array(key2Length)
+        selectorRows[selectorIndex] = { selector: selector, value: [], }
       }
 
-      selectorRows[selectorIndex].value[key1Index][key2Index] = value
+      const row = { aggregated: value, }
+
+      if (typeof key1Name !== 'undefined') { row.key1 = key1Name }
+      if (typeof key2Name !== 'undefined') { row.key2 = key2Name }
+
+      selectorRows[selectorIndex].value.push(row)
     }
   }
 
-  function iterateGroupNames(keyed, key1Index, key2Index) {
-    if (typeof key1Index === 'undefined') { key1Index = 0 }
-    if (typeof key2Index === 'undefined') { key2Index = 0 }
-
+  function iterateGroupNames(keyed, key1Name, key2Name) {
     if (!schema.group) {
-      fill(keyed, undefined, key1Index, key2Index)
+      fill(keyed, undefined, key1Name, key2Name)
     } else {
       // assuming sparse distribution (usual case)
       // otherwise we need to iterate using `groupNameSet`
@@ -1013,14 +1009,13 @@ export function fillSelectorRows(schema, cube, selectorRows,
 
       for (let groupName of availableGroupNames) {
         const grouped = keyed[groupName]
-        fill(grouped, groupName, key1Index, key2Index)
+        fill(grouped, groupName, key1Name, key2Name)
       }
     }
   }
 
   if (schema.key1 && schema.key2) {
     for (let key1Name of key1Names) {
-      const key1Index = key1NameWithIndex[key1Name]
       const key1ed = cube[key1Name]
 
       // assuming sparse distribution (usual case)
@@ -1028,22 +1023,19 @@ export function fillSelectorRows(schema, cube, selectorRows,
       const availableKey2Names = Object.keys(key1ed)
 
       for (let key2Name of availableKey2Names) {
-        const key2Index = key2NameWithIndex[key2Name]
         const keyed = key1ed[key2Name]
-        iterateGroupNames(keyed, key1Index, key2Index)
+        iterateGroupNames(keyed, key1Name, key2Name)
       }
     }
   } else if (schema.key1 && !schema.key2) {
     for (let key1Name of key1Names) {
-      const key1Index = key1NameWithIndex[key1Name]
       const keyed = cube[key1Name]
-      iterateGroupNames(keyed, key1Index, undefined)
+      iterateGroupNames(keyed, key1Name, undefined)
     }
   } else if (!schema.key1 && schema.key2) {
     for (let key2Name of key2Names) {
-      const key2Index = key2NameWithIndex[key2Name]
       const keyed = cube[key2Name]
-      iterateGroupNames(keyed, undefined, key2Index)
+      iterateGroupNames(keyed, undefined, key2Name)
     }
   } else {
     iterateGroupNames(cube, undefined, undefined)
