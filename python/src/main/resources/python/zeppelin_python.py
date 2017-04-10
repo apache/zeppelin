@@ -47,7 +47,7 @@ class __ZeppelinLogger__(object):
     pass
 
 
-class PyZeppelinContext(object):
+class __PyZeppelinContext__(object):
   """ A context impl that uses Py4j to communicate to JVM
   """
 
@@ -204,11 +204,11 @@ intp = gateway.entry_point
 intp.onPythonScriptInitialized(os.getpid())
 
 java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-z = _zc = PyZeppelinContext(intp)
+z = _zc = __PyZeppelinContext__(intp)
 _zc._setup_matplotlib()
 
-output = __ZeppelinLogger__()
-sys.stdout = output
+__zcStdOutput__ = __ZeppelinLogger__()
+sys.stdout = __zcStdOutput__
 #sys.stderr = output
 
 while True :
@@ -290,4 +290,4 @@ while True :
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 
-  output.reset()
+  __zcStdOutput__.reset()

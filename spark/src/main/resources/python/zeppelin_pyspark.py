@@ -49,7 +49,7 @@ class __ZeppelinLogger__(object):
     pass
 
 
-class PyZeppelinContext(dict):
+class __PyZeppelinContext__(dict):
   def __init__(self, zc):
     self.z = zc
     self._displayhook = lambda *args: None
@@ -230,9 +230,9 @@ class PySparkCompletion:
       self.interpreterObject.setStatementsFinished(result, False)
 
 
-output = __ZeppelinLogger__()
-sys.stdout = output
-sys.stderr = output
+__zcStdOutput__ = __ZeppelinLogger__()
+sys.stdout = __zcStdOutput__
+sys.stderr = __zcStdOutput__
 
 client = GatewayClient(port=int(sys.argv[1]))
 sparkVersion = SparkVersion(int(sys.argv[2]))
@@ -282,7 +282,7 @@ else:
 sqlContext = sqlc
 
 completion = PySparkCompletion(intp)
-z = _zc = PyZeppelinContext(intp.getZeppelinContext())
+z = _zc = __PyZeppelinContext__(intp.getZeppelinContext())
 _zc._setup_matplotlib()
 
 while True :
@@ -358,4 +358,4 @@ while True :
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 
-  output.reset()
+  __zcStdOutput__.reset()
