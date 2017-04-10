@@ -48,8 +48,8 @@ public class CassandraInterpreter extends Interpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CassandraInterpreter.class);
 
-  public static final String CASSANDRA_INTERPRETER_PARALLELISM = "cassandra.interpreter" +
-          ".parallelism";
+  public static final String CASSANDRA_INTERPRETER_PARALLELISM =
+          "cassandra.interpreter.parallelism";
   public static final String CASSANDRA_HOSTS = "cassandra.hosts";
   public static final String CASSANDRA_PORT = "cassandra.native.port";
   public static final String CASSANDRA_PROTOCOL_VERSION = "cassandra.protocol.version";
@@ -174,7 +174,8 @@ public class CassandraInterpreter extends Interpreter {
       hosts.append(address).append(",");
     }
 
-    LOGGER.info("Bootstrapping Cassandra Java Driver to connect to " + hosts.toString() + "on port " + port);
+    LOGGER.info("Bootstrapping Cassandra Java Driver to connect to " + hosts.toString() +
+            "on port " + port);
 
     Compression compression = driverConfig.getCompressionProtocol(this);
 
@@ -214,7 +215,9 @@ public class CassandraInterpreter extends Interpreter {
           sslContext = SSLContext.getInstance("TLS");
           sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
         }
-        clusterBuilder = clusterBuilder.withSSL(JdkSSLOptions.builder().withSSLContext(sslContext).build());
+        clusterBuilder = clusterBuilder.withSSL(JdkSSLOptions.builder()
+                .withSSLContext(sslContext)
+                .build());
       } catch (Exception e) {
         LOGGER.error(e.toString());
       }
@@ -263,11 +266,5 @@ public class CassandraInterpreter extends Interpreter {
     return SchedulerFactory.singleton()
             .createOrGetParallelScheduler(CassandraInterpreter.class.getName() + this.hashCode(),
                     parseInt(getProperty(CASSANDRA_INTERPRETER_PARALLELISM)));
-  }
-
-  @Override
-  public void destroy() {
-    super.destroy();
-    this.close();
   }
 }
