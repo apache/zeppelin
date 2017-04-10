@@ -81,9 +81,9 @@ class AwesomeVisualization extends Visualization {
           transform: { method: 'object', },
           sharedAxis: false, /** set if you want to share axes between sub charts, default is `false` */
           axis: {
-            'xAxis': { dimension: 'multiple', axisType: 'key', },
-            'yAxis': { dimension: 'multiple', axisType: 'aggregator'},
-            'category': { dimension: 'multiple', axisType: 'group', },
+            'xAxis': { dimension: 'multiple', axisType: 'key', description: 'serial', },
+            'yAxis': { dimension: 'multiple', axisType: 'aggregator', description: 'serial', },
+            'category': { dimension: 'multiple', axisType: 'group', description: 'categorical', },
           },
           parameter: {
             'xAxisUnit': { valueType: 'string', defaultValue: '', description: 'unit of xAxis', },
@@ -138,9 +138,9 @@ class AwesomeVisualization extends Visualization {
 |`axisType` | `aggregator` | Column(s) in this axis will be used as `value` like in `PivotTransformation`. These columns will be served in `column.aggregator` |
 |`axisType` | `group` | Column(s) in this axis will be used as `group` like in `PivotTransformation`. These columns will be served in `column.group` |
 |`axisType` | (string) | Any string value can be used here. These columns will be served in `column.custom` |
-|`valueType` | (string) | Describe the value type just for annotation |
-|`maxAxisCount` | (int) | The max number of columns that this axis can contain. (unlimited if `undefined`) |
-|`minAxisCount` | (int) | The min number of columns that this axis should contain to draw chart. (`1` in case of single dimension) |
+|`maxAxisCount` (optional) | (int) | The max number of columns that this axis can contain. (unlimited if `undefined`) |
+|`minAxisCount` (optional) | (int) | The min number of columns that this axis should contain to draw chart. (`1` in case of single dimension) |
+|`description` (optional) | (string) | Description for the axis. |
 
 <br/>
 

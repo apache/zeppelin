@@ -86,8 +86,9 @@ limitations under the License.
         <div class="columns lightBold">
           <!-- axis name -->
           <span class="label label-default"
+                uib-tooltip="{{axisSpec.description ? axisSpec.description : ''}}"
                 style="font-weight: 300; font-size: 13px; margin-left: 1px;">
-            {{getAxisAnnotation(axisSpec)}}
+            {{getAxisAnnotation(axisSpec)}} 1
           </span>
           <span class="label label-default"
                 ng-style="getAxisTypeAnnotationColor(axisSpec)"
