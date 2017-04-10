@@ -761,7 +761,40 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.savePermissions = function () {
+    if ($scope.isAnonymous || $rootScope.ticket.principal.trim().length === 0) {
+      $scope.blockAnonUsers()
+    }
     convertPermissionsToArray()
+    if ($scope.isOwnerEmpty()) {
+      BootstrapDialog.show({
+        closable: false,
+        title: 'Setting Owners Permissions',
+        message: 'Please fill the [Owners] field. If not, it will set as current user.\n\n' +
+          'Current user : [ ' + $rootScope.ticket.principal + ']',
+        buttons: [
+          {
+            label: 'Set',
+            action: function(dialog) {
+              dialog.close()
+              $scope.permissions.owners = [$rootScope.ticket.principal]
+              $scope.setPermissions()
+            }
+          },
+          {
+            label: 'Cancel',
+            action: function(dialog) {
+              dialog.close()
+              $scope.openPermissions()
+            }
+          }
+        ]
+      })
+    } else {
+      $scope.setPermissions()
+    }
+  }
+
+  $scope.setPermissions = function() {
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
       $scope.permissions, {withCredentials: true})
     .success(function (data, status, headers, config) {
@@ -769,7 +802,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         console.log('Note permissions %o saved', $scope.permissions)
         BootstrapDialog.alert({
           closable: true,
-          title: 'Permissions Saved Successfully!!!',
+          title: 'Permissions Saved Successfully',
           message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
           $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
         })
@@ -876,6 +909,20 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   angular.element(document).click(function () {
     angular.element('.ace_autocomplete').hide()
   })
+
+  $scope.isOwnerEmpty = function() {
+    if ($scope.permissions.owners.length > 0) {
+      for (let i = 0; i < $scope.permissions.owners.length; i++) {
+        if ($scope.permissions.owners[i].trim().length > 0) {
+          return false
+        } else if (i === $scope.permissions.owners.length - 1) {
+          return true
+        }
+      }
+    } else {
+      return true
+    }
+  }
 
   /*
    ** $scope.$on functions below

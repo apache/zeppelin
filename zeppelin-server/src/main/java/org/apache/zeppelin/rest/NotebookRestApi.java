@@ -208,9 +208,6 @@ public class NotebookRestApi {
     HashSet<String> writers = permMap.get("writers");
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
-      if (writers.isEmpty()) {
-        writers = Sets.newHashSet(SecurityUtils.getPrincipal());
-      }
       if (owners.isEmpty()) {
         owners = Sets.newHashSet(SecurityUtils.getPrincipal());
       }
