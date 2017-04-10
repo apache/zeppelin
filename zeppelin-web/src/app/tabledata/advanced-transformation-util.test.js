@@ -466,7 +466,9 @@ describe('advanced-transformation-util', () => {
         config.chart.current = chart
 
         const rows = [ { 'r1': 1, }, ]
-        const transformer = Util.getTransformer(config, rows)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, rows, axisSpecs, axis).transformer
         const transformed = transformer()
 
         expect(transformed).toBe(rows)
@@ -497,9 +499,9 @@ describe('advanced-transformation-util', () => {
       it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -516,9 +518,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'count'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         let { rows, } = transformer()
         expect(rows).toEqual([
@@ -530,9 +532,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'avg'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -544,9 +546,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'max'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -558,9 +560,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'min'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -573,9 +575,10 @@ describe('advanced-transformation-util', () => {
         balanceColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].aggrAxis.push(balanceColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -593,9 +596,10 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].groupAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -615,9 +619,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].aggrAxis.push(balanceColumn)
         config.axis[chart].groupAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -640,9 +645,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].groupAxis.push(martialColumn)
         config.axis[chart].groupAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -661,9 +667,10 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -681,9 +688,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
         config.axis[chart].keyAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -701,9 +709,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
         config.axis[chart].groupAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -742,9 +751,10 @@ describe('advanced-transformation-util', () => {
       it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -759,9 +769,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'count'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([{ 'age(count)': 4, }])
@@ -771,9 +781,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'avg'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -785,9 +795,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'max'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([{ 'age(max)': 44, }])
@@ -797,9 +807,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'min'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([{ 'age(min)': 33, }])
@@ -810,9 +820,10 @@ describe('advanced-transformation-util', () => {
         balanceColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].aggrAxis.push(balanceColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -827,9 +838,10 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].groupAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -848,9 +860,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].aggrAxis.push(balanceColumn)
         config.axis[chart].groupAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -873,9 +886,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].groupAxis.push(martialColumn)
         config.axis[chart].groupAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -892,9 +906,10 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -913,9 +928,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
         config.axis[chart].keyAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -935,9 +951,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
         config.axis[chart].groupAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -975,9 +992,10 @@ describe('advanced-transformation-util', () => {
       it('should transform properly: 0 key, 0 group, 1 aggr(sum)', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -994,9 +1012,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'count'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -1008,9 +1026,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'avg'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -1022,9 +1040,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'max'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -1036,9 +1054,9 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'min'
         config.axis[chart].aggrAxis.push(ageColumn)
 
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, } = transformer()
         expect(rows).toEqual([
@@ -1051,9 +1069,10 @@ describe('advanced-transformation-util', () => {
         balanceColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].aggrAxis.push(balanceColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -1071,9 +1090,10 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].groupAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -1099,9 +1119,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].aggrAxis.push(balanceColumn)
         config.axis[chart].groupAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -1134,9 +1155,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].groupAxis.push(martialColumn)
         config.axis[chart].groupAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -1161,9 +1183,10 @@ describe('advanced-transformation-util', () => {
         ageColumn.aggr = 'sum'
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -1182,9 +1205,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
         config.axis[chart].keyAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 
@@ -1204,9 +1228,10 @@ describe('advanced-transformation-util', () => {
         config.axis[chart].aggrAxis.push(ageColumn)
         config.axis[chart].keyAxis.push(martialColumn)
         config.axis[chart].groupAxis.push(educationColumn)
-        const column = Util.getColumnsFromAxis(config.axisSpecs[chart], config.axis[chart])
-        const transformer = Util.getTransformer(config, tableDataRows,
-          column.key, column.group, column.aggregator)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
 
         const { rows, keyColumnName, keyNames, groupNames, selectors, } = transformer()
 

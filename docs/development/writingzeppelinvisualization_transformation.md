@@ -233,6 +233,7 @@ parameter: {
 | --- | --- | --- |
 |`method` | `object` |  designed for rows requiring object manipulation | 
 |`method` | `array` |  designed for rows requiring array manipulation | 
+|`method` | `array:2-key` |  designed for xyz charts (e.g bubble chart) | 
 |`method` | `drill-down` |  designed for drill-down charts | 
 |`method` | `raw` | will return the original `tableData.rows` | 
 

@@ -124,18 +124,23 @@ export function parseParameter(paramSpecs, param) {
   return parsed
 }
 
+export const AxisType = {
+  AGGREGATOR: 'aggregator',
+  KEY: 'key',
+  GROUP: 'group',
+}
 
 export function isAggregatorAxis(axisSpec) {
-  return axisSpec && axisSpec.axisType === 'aggregator';
+  return axisSpec && axisSpec.axisType === AxisType.AGGREGATOR
 }
 export function isGroupAxis(axisSpec) {
-  return axisSpec && axisSpec.axisType === 'group';
+  return axisSpec && axisSpec.axisType === AxisType.GROUP
 }
 export function isKeyAxis(axisSpec) {
-  return axisSpec && axisSpec.axisType === 'key';
+  return axisSpec && axisSpec.axisType === AxisType.KEY
 }
 export function isSingleDimensionAxis(axisSpec) {
-  return axisSpec && axisSpec.dimension === 'single';
+  return axisSpec && axisSpec.dimension === 'single'
 }
 
 /**
@@ -321,6 +326,30 @@ export function initializeConfig(config, spec) {
   return config
 }
 
+export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
+  const axisNames = []
+  let column = {}
+
+  for(let i = 0; i < axisSpecs.length; i++) {
+    const axisSpec = axisSpecs[i];
+
+    if (axisType === AxisType.KEY && isKeyAxis(axisSpec)) {
+      axisNames.push(axisSpec.name)
+    } else if (axisType === AxisType.GROUP && isGroupAxis(axisSpec)) {
+      axisNames.push(axisSpec.name)
+    } else if (axisType.AGGREGATOR && isAggregatorAxis(axisSpec)) {
+      axisNames.push(axisSpec.name)
+    }
+  }
+
+  for(let axisName of axisNames) {
+    const columns = axis[axisName];
+    if (!column[axisName]) { column[axisName] = []; }
+    column[axisName] = column[axisName].concat(columns);
+  }
+
+  return column
+}
 
 export function getColumnsFromAxis(axisSpecs, axis) {
   const keyAxisNames = [];
@@ -382,7 +411,7 @@ const TransformMethod = {
   OBJECT: 'object',
   /**
    * `array` is designed for column, pie charts which have categorical `key` values.
-   * But some libraries (e.g amcharts) may require `OBJECT` transform method even if pie, column charts.
+   * But some libraries may require `OBJECT` transform method even if pie, column charts.
    *
    * `row.value` will be filled for `keyNames`.
    * In other words, if you have `keyNames` which is length 4,
@@ -390,17 +419,28 @@ const TransformMethod = {
    * (DO NOT use this transform method for serial (numerical) x axis charts which have so-oo many keys)
    */
   ARRAY: 'array',
+  ARRAY_2_KEY: 'array:2-key',
   DRILL_DOWN: 'drill-down',
 }
 
 /** return function for lazy computation */
-export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorColumns) {
+export function getTransformer(conf, rows, axisSpecs, axis) {
   let transformer = () => {}
 
   const transformSpec = getCurrentChartTransform(conf)
   if (!transformSpec) { return transformer }
 
   const method = transformSpec.method
+
+  const columns = getColumnsFromAxis(axisSpecs, axis);
+  const keyColumns = columns.key;
+  const groupColumns = columns.group;
+  const aggregatorColumns = columns.aggregator;
+  const customColumns = columns.custom
+
+  let column = {
+    key: keyColumns, group: groupColumns, aggregator: aggregatorColumns, custom: customColumns,
+  }
 
   if (method === TransformMethod.RAW) {
     transformer = () => { return rows; }
@@ -415,7 +455,8 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
         keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
-        rows: transformed, keyColumnName, keyNames,
+        rows: transformed, keyColumnName,
+        keyNames,
         groupNames: groupNames,
         selectors: sortedSelectors,
       }
@@ -431,12 +472,50 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
         keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
-        rows: transformed, keyColumnName, keyNames,
+        rows: transformed, keyColumnName,
+        keyNames,
         groupNames: groupNames,
         selectors: sortedSelectors,
       }
     }
-  } else if (method === TransformMethod.DRILL_DOWN) {
+  } else if (method === TransformMethod.ARRAY_2_KEY) {
+    const keyAxisColumn = getColumnsForMultipleAxes(AxisType.KEY, axisSpecs, axis)
+    column.key = keyAxisColumn
+
+    let key1Columns = []
+    let key2Columns = []
+
+    // since ARRAY_2_KEY :)
+    let i = 0
+    for (let axisName in keyAxisColumn) {
+      if (i == 2) { break }
+
+      if (i == 0) { key1Columns = keyAxisColumn[axisName] }
+      else if (i == 1) { key2Columns  = keyAxisColumn[axisName] }
+      i++
+    }
+
+    const { cube, schema,
+      key1ColumnName, key1Names, key2ColumnName, key2Names,
+      groupNameSet, selectorNameWithIndex,
+    } = getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggregatorColumns)
+
+    const {
+      transformed, groupNames, sortedSelectors,
+    } = getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
+      key1Names, key2Names, groupNameSet, selectorNameWithIndex)
+
+    transformer = () => {
+      return {
+        rows: transformed,
+        key1Names: key1Names,
+        key2Names: key2Names,
+        groupNames: groupNames,
+        selectors: sortedSelectors,
+      }
+    }
+  }
+  else if (method === TransformMethod.DRILL_DOWN) {
     transformer = () => {
       const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
         getKAGCube(rows, keyColumns, groupColumns, aggregatorColumns)
@@ -454,8 +533,9 @@ export function getTransformer(conf, rows, keyColumns, groupColumns, aggregatorC
     }
   }
 
-  return transformer
+  return { transformer: transformer, column: column, }
 }
+
 const AggregatorFunctions = {
   sum: function(a, b) {
     const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
@@ -711,6 +791,125 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
     selectorNameWithIndex: selectorNameWithIndex,
   }
 }
+/** nested cube `(key1) -> (key2) -> (group) -> aggregator` */
+export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrColumns) {
+  const schema = {
+    key1: key1Columns.length !== 0,
+    key2: key2Columns.length !== 0,
+    group: groupColumns.length !== 0,
+    aggregator: aggrColumns.length !== 0,
+  };
+
+  let cube = {}
+  const entry = {}
+
+  const key1ColumnName = key1Columns.map(c => c.name).join('.')
+  const key1NameSet = {}
+  const key2ColumnName = key2Columns.map(c => c.name).join('.')
+  const key2NameSet = {}
+  const groupNameSet = new Set()
+  const selectorNameWithIndex = {} /** { selectorName: index } */
+  let indexCounter = 0
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    let e = entry;
+    let c = cube;
+
+    // key1: add to entry
+    let mergedKey1Name = undefined
+    if (schema.key1) {
+      mergedKey1Name = key1Columns.map(c => row[c.index]).join('.')
+      if (!e[mergedKey1Name]) { e[mergedKey1Name] = { children: {}, } }
+      e = e[mergedKey1Name].children
+      // key1: add to row
+      if (!c[mergedKey1Name]) { c[mergedKey1Name] = {} }
+      c = c[mergedKey1Name]
+
+      if (!key1NameSet[mergedKey1Name]) { key1NameSet[mergedKey1Name] = true }
+    }
+
+    // key2: add to entry
+    let mergedKey2Name = undefined
+    if (schema.key2) {
+      mergedKey2Name = key2Columns.map(c => row[c.index]).join('.')
+      if (!e[mergedKey2Name]) { e[mergedKey2Name] = { children: {}, } }
+      e = e[mergedKey2Name].children
+      // key2: add to row
+      if (!c[mergedKey2Name]) { c[mergedKey2Name] = {} }
+      c = c[mergedKey2Name]
+
+      if (!key2NameSet[mergedKey2Name]) { key2NameSet[mergedKey2Name] = true }
+    }
+
+    let mergedGroupName = undefined
+    if (schema.group) {
+      mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
+
+      // add group to entry
+      if (!e[mergedGroupName]) { e[mergedGroupName] = { children: {}, } }
+      e = e[mergedGroupName].children
+      // add group to row
+      if (!c[mergedGroupName]) { c[mergedGroupName] = {} }
+      c = c[mergedGroupName]
+      groupNameSet.add(mergedGroupName)
+    }
+
+    for (let a = 0; a < aggrColumns.length; a++) {
+      const aggrColumn = aggrColumns[a]
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
+
+      // update groupNameSet
+      if (!mergedGroupName) {
+        groupNameSet.add(aggrName) /** aggr column name will be used as group name if group is empty */
+      }
+
+      // update selectorNameWithIndex
+      const selector = getSelectorName(mergedGroupName, aggrColumns.length, aggrName)
+      if (typeof selectorNameWithIndex[selector] === 'undefined' /** value might be 0 */) {
+        selectorNameWithIndex[selector] = indexCounter
+        indexCounter = indexCounter + 1
+      }
+
+      // add aggregator to entry
+      if (!e[aggrName]) {
+        e[aggrName] = { type: 'aggregator', order: aggrColumn, index: aggrColumn.index, }
+      }
+
+      // add aggregatorName to row
+      if (!c[aggrName]) {
+        c[aggrName] = {
+          aggr: aggrColumn.aggr,
+          value: (aggrColumn.aggr !== 'count') ? row[aggrColumn.index] : 1,
+          count: 1,
+        }
+      } else {
+        const value = AggregatorFunctions[aggrColumn.aggr](
+          c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1)
+        const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
+          c[aggrName].count + 1 : c[aggrName].count
+
+        c[aggrName].value = value
+        c[aggrName].count = count
+      }
+
+    } /** end loop for aggrColumns */
+  }
+
+  let key1Names = Object.keys(key1NameSet).sort() /** keys should be sorted */
+  let key2Names = Object.keys(key2NameSet).sort() /** keys should be sorted */
+
+  return {
+    cube: cube,
+    schema: schema,
+    key1ColumnName: key1ColumnName,
+    key1Names: key1Names,
+    key2ColumnName: key2ColumnName,
+    key2Names: key2Names,
+    groupNameSet: groupNameSet,
+    selectorNameWithIndex: selectorNameWithIndex,
+  }
+}
 
 export function getSelectorName(mergedGroupName, aggrColumnLength, aggrColumnName) {
   if (!mergedGroupName) {
@@ -750,8 +949,107 @@ export function getNameWithIndex(names) {
   return nameWithIndex
 }
 
+export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
+                                         key1Names, key2Names, groupNameSet, selectorNameWithIndex) {
+
+  const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
+  const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
+
+  const selectorRows = new Array(sortedSelectors.length)
+  const key1NameWithIndex = getNameWithIndex(key1Names)
+  const key2NameWithIndex = getNameWithIndex(key2Names)
+
+  fillSelectorRows(schema, cube, selectorRows,
+    aggregatorColumns, sortedSelectorNameWithIndex,
+    key1Names, key2Names, key1NameWithIndex, key2NameWithIndex)
+
+  return {
+    transformed: selectorRows,
+    groupNames: Array.from(groupNameSet).sort(),
+    sortedSelectors: sortedSelectors,
+  }
+}
+
+/** truly mutable style func. will return nothing */
+export function fillSelectorRows(schema, cube, selectorRows,
+                                 aggrColumns, selectorNameWithIndex,
+                                 key1Names, key2Names, key1NameWithIndex, key2NameWithIndex) {
+
+  const key1Length = (key1Names.length === 0) ? 1 : key1Names.length
+  const key2Length = (key2Names.length === 0) ? 1 : key2Names.length
+
+  function fill(grouped, mergedGroupName, key1Index, key2Index) {
+    // should iterate aggrColumns in the most nested loop to utilize memory locality
+    for (let aggrColumn of aggrColumns) {
+      const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
+      const value = getCubeValue(grouped, aggrColumn.aggr, aggrName)
+      const selector = getSelectorName(mergedGroupName, aggrColumns.length, aggrName)
+      const selectorIndex = selectorNameWithIndex[selector]
+
+      if (typeof selectorRows[selectorIndex] === 'undefined') {
+        selectorRows[selectorIndex] = { selector: selector, value: new Array(key1Length) }
+      }
+      if (typeof selectorRows[selectorIndex].value[key1Index] === 'undefined') {
+        selectorRows[selectorIndex].value[key1Index] = new Array(key2Length)
+      }
+
+      selectorRows[selectorIndex].value[key1Index][key2Index] = value
+    }
+  }
+
+  function iterateGroupNames(keyed, key1Index, key2Index) {
+    if (typeof key1Index === 'undefined') { key1Index = 0 }
+    if (typeof key2Index === 'undefined') { key2Index = 0 }
+
+    if (!schema.group) {
+      fill(keyed, undefined, key1Index, key2Index)
+    } else {
+      // assuming sparse distribution (usual case)
+      // otherwise we need to iterate using `groupNameSet`
+      const availableGroupNames = Object.keys(keyed)
+
+      for (let groupName of availableGroupNames) {
+        const grouped = keyed[groupName]
+        fill(grouped, groupName, key1Index, key2Index)
+      }
+    }
+  }
+
+  if (schema.key1 && schema.key2) {
+    for (let key1Name of key1Names) {
+      const key1Index = key1NameWithIndex[key1Name]
+      const key1ed = cube[key1Name]
+
+      // assuming sparse distribution (usual case)
+      // otherwise we need to iterate using `key2Names`
+      const availableKey2Names = Object.keys(key1ed)
+
+      for (let key2Name of availableKey2Names) {
+        const key2Index = key2NameWithIndex[key2Name]
+        const keyed = key1ed[key2Name]
+        iterateGroupNames(keyed, key1Index, key2Index)
+      }
+    }
+  } else if (schema.key1 && !schema.key2) {
+    for (let key1Name of key1Names) {
+      const key1Index = key1NameWithIndex[key1Name]
+      const keyed = cube[key1Name]
+      iterateGroupNames(keyed, key1Index, undefined)
+    }
+  } else if (!schema.key1 && schema.key2) {
+    for (let key2Name of key2Names) {
+      const key2Index = key2NameWithIndex[key2Name]
+      const keyed = cube[key2Name]
+      iterateGroupNames(keyed, undefined, key2Index)
+    }
+  } else {
+    iterateGroupNames(cube, undefined, undefined)
+  }
+}
+
 export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
-                                        keyColumnName, keyNames, groupNameSet, selectorNameWithIndex) {
+                                        keyColumnName, keyNames, groupNameSet,
+                                        selectorNameWithIndex) {
 
   const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
@@ -772,8 +1070,6 @@ export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
     transformed: keyArrowRows,
     groupNames: Array.from(groupNameSet).sort(),
     sortedSelectors: sortedSelectors,
-    sortedSelectorNameWithIndex: sortedSelectorNameWithIndex,
-    keyNameWithIndex: keyNameWithIndex,
   }
 }
 
@@ -781,23 +1077,27 @@ export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
 export function fillArrayRow(schema, aggrColumns, obj,
                              groupNameSet, selectorNameWithIndex,
                              keyName, keyNames, keyArrayRows, keyNameWithIndex) {
+
+  function fill(target, mergedGroupName, aggr, aggrName) {
+    const value = getCubeValue(target, aggr, aggrName)
+    const selector = getSelectorName(mergedGroupName, aggrColumns.length, aggrName)
+    const selectorIndex = selectorNameWithIndex[selector]
+    const keyIndex = keyNameWithIndex[keyName]
+
+    if (typeof keyArrayRows[selectorIndex] === 'undefined') {
+      keyArrayRows[selectorIndex] = {
+        selector: selector, value: new Array(keyNames.length)
+      }
+    }
+    keyArrayRows[selectorIndex].value[keyIndex] = value
+  }
+
   /** when group is empty */
   if (!schema.group) {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
       const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
-
-      const value = getCubeValue(obj, aggrColumn.aggr, aggrName)
-      const selector = getSelectorName(undefined, aggrColumns.length, aggrName)
-      const selectorIndex = selectorNameWithIndex[selector]
-      const keyIndex = keyNameWithIndex[keyName]
-
-      if (typeof keyArrayRows[selectorIndex] === 'undefined') {
-        keyArrayRows[selectorIndex] = {
-          selector: selector, value: new Array(keyNames.length)
-        }
-      }
-      keyArrayRows[selectorIndex].value[keyIndex] = value
+      fill(obj, undefined, aggrColumn.aggr, aggrName)
     }
   } else {
     for(let i = 0; i < aggrColumns.length; i++) {
@@ -806,18 +1106,7 @@ export function fillArrayRow(schema, aggrColumns, obj,
 
       for (let groupName of groupNameSet) {
         const grouped = obj[groupName]
-
-        const value = getCubeValue(grouped, aggrColumn.aggr, aggrName)
-        const selector = getSelectorName(groupName, aggrColumns.length, aggrName)
-        const selectorIndex = selectorNameWithIndex[selector]
-        const keyIndex = keyNameWithIndex[keyName]
-
-        if (typeof keyArrayRows[selectorIndex] === 'undefined') {
-          keyArrayRows[selectorIndex] = {
-            selector: selector, value: new Array(keyNames.length)
-          }
-        }
-        keyArrayRows[selectorIndex].value[keyIndex] = value
+        fill(grouped, groupName, aggrColumn.aggr, aggrName)
       }
     }
   }
@@ -847,15 +1136,19 @@ export function getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
 export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
   const row = {}
 
+  function fill(row, target, mergedGroupName, aggr, aggrName) {
+    const value = getCubeValue(target, aggr, aggrName)
+    const selector = getSelectorName(mergedGroupName, aggrColumns.length, aggrName)
+    row[selector] = value
+  }
+
   /** when group is empty */
   if (!schema.group) {
     for(let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
       const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
-      const value = getCubeValue(obj, aggrColumn.aggr, aggrName)
-      const selector = getSelectorName(undefined, aggrColumns.length, aggrName)
-      row[selector] = value
+      fill(row, obj, undefined, aggrColumn.aggr, aggrName)
     }
 
     return row
@@ -870,9 +1163,7 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
       const grouped = obj[groupName]
 
       if (grouped) {
-        const value = getCubeValue(grouped, aggrColumn.aggr, aggrName)
-        const selector = getSelectorName(groupName, aggrColumns.length, aggrName)
-        row[selector] = value
+        fill(row, grouped, groupName, aggrColumn.aggr, aggrName)
       }
     }
   }

@@ -213,13 +213,7 @@ export default class AdvancedTransformation extends Transformation {
     const paramSpecs = getCurrentChartParamSpecs(conf)
     const parsedParam = parseParameter(paramSpecs, param)
 
-    const columns = getColumnsFromAxis(axisSpecs, axis);
-    const keyColumns = columns.key;
-    const groupColumns = columns.group;
-    const aggregatorColumns = columns.aggregator;
-    const customColumns = columns.custom
-
-   let transformer = getTransformer(conf, tableData.rows, keyColumns, groupColumns, aggregatorColumns)
+   let { transformer, column, }  = getTransformer(conf, tableData.rows, axisSpecs, axis)
 
     return {
       chartChanged: conf.chartChanged,
@@ -228,9 +222,7 @@ export default class AdvancedTransformation extends Transformation {
       chart: chart, /** current chart */
       axis: axis, /** persisted axis */
       parameter: parsedParam, /** persisted parameter */
-      column: {
-        key: keyColumns, group: groupColumns, aggregator: aggregatorColumns, custom: customColumns,
-      },
+      column: column,
 
       transformer: transformer,
     }
