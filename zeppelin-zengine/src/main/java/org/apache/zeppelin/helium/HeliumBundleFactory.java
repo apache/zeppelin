@@ -446,6 +446,27 @@ public class HeliumBundleFactory {
     }
   }
 
+  void deleteYarnCache() {
+    FilenameFilter filter = new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        if ((name.startsWith("npm-zeppelin-vis-") ||
+            name.startsWith("npm-zeppelin-tabledata-") ||
+            name.startsWith("npm-zeppelin-spell-")) &&
+            dir.isDirectory()) {
+          return true;
+        }
+
+        return false;
+      }
+    };
+
+    File[] localModuleCaches = yarnCacheDir.listFiles(filter);
+    for (File f : localModuleCaches) {
+      FileUtils.deleteQuietly(f);
+    }
+  }
+
   void copyFrameworkModulesToInstallPath(boolean recopy)
       throws IOException {
 
@@ -461,9 +482,11 @@ public class HeliumBundleFactory {
       }
     };
 
-    // install tabledata module
     FileUtils.forceMkdir(heliumLocalModuleDirectory);
+    // should delete yarn caches for local modules since they might be updated
+    deleteYarnCache();
 
+    // install tabledata module
     File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-tabledata");
     copyFrameworkModule(recopy, npmPackageCopyFilter,
