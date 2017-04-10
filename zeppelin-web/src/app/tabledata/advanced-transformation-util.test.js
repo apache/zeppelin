@@ -43,6 +43,14 @@ const MockAxis3 = {
   'customAxis2': { dimension: 'multiple', axisType: 'value', },
 }
 
+const MockAxis4 = {
+  'key1Axis': { dimension: 'multiple', axisType: 'key', },
+  'key2Axis': { dimension: 'multiple', axisType: 'key', },
+  'aggrAxis': { dimension: 'multiple', axisType: 'aggregator', },
+  'groupAxis': { dimension: 'multiple', axisType: 'group', },
+}
+
+
 // test spec for axis, param, widget
 const MockSpec = {
   charts: {
@@ -103,6 +111,15 @@ const MockSpec2 = {
       transform: { method: 'drill-down', },
       sharedAxis: false,
       axis: JSON.parse(JSON.stringify(MockAxis1)),
+      parameter: {
+        'drillDownChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
+      },
+    },
+
+    'array2Key-chart': {
+      transform: { method: 'array:2-key', },
+      sharedAxis: false,
+      axis: JSON.parse(JSON.stringify(MockAxis4)),
       parameter: {
         'drillDownChartParam0': { valueType: 'string', defaultValue: '', description: 'param0', },
       },
@@ -1261,6 +1278,436 @@ describe('advanced-transformation-util', () => {
         ])
       })
     }) // end: describe('method: drill-down')
+
+    describe('method: array:2-key', () => {
+      let config = {}
+      const chart = 'array2Key-chart'
+      let ageColumn = null
+      let balanceColumn = null
+      let educationColumn = null
+      let martialColumn = null
+      let daysColumn = null
+      let pDaysColumn = null
+      const tableDataRows = JSON.parse(JSON.stringify(MockTableDataRows1))
+
+      beforeEach(() => {
+        const spec = JSON.parse(JSON.stringify(MockSpec2))
+        config = {}
+        Util.initializeConfig(config, spec)
+        config.chart.current = chart
+        ageColumn = JSON.parse(JSON.stringify(MockTableDataColumn[0]))
+        martialColumn = JSON.parse(JSON.stringify(MockTableDataColumn[2]))
+        educationColumn = JSON.parse(JSON.stringify(MockTableDataColumn[3]))
+        balanceColumn = JSON.parse(JSON.stringify(MockTableDataColumn[5]))
+        daysColumn = JSON.parse(JSON.stringify(MockTableDataColumn[9]))
+        pDaysColumn = JSON.parse(JSON.stringify(MockTableDataColumn[13]))
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key2Names, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key2Names).toEqual([])
+        expect(selectors).toEqual([ 'age(sum)', ])
+        expect(rows).toEqual([
+          { selector: 'age(sum)', value: [ [ 44 + 43 + 39 + 33, ], ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 0 group, 1 aggr(count)', () => {
+        ageColumn.aggr = 'count'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key2Names, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key2Names).toEqual([])
+        expect(selectors).toEqual([ 'age(count)', ])
+        expect(rows).toEqual([
+          { selector: 'age(count)', value: [ [ 4, ],  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 0 group, 1 aggr(avg)', () => {
+        ageColumn.aggr = 'avg'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key2Names, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key2Names).toEqual([])
+        expect(selectors).toEqual([ 'age(avg)', ])
+        expect(rows).toEqual([
+          { selector: 'age(avg)', value: [ [ (44 + 43 + 39 + 33) / 4.0, ],  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 0 group, 1 aggr(max)', () => {
+        ageColumn.aggr = 'max'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key2Names, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key2Names).toEqual([])
+        expect(selectors).toEqual([ 'age(max)', ])
+        expect(rows).toEqual([
+          { selector: 'age(max)', value: [ [ 44, ],  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 0 group, 1 aggr(min)', () => {
+        ageColumn.aggr = 'min'
+        config.axis[chart].aggrAxis.push(ageColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key2Names, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key2Names).toEqual([])
+        expect(selectors).toEqual([ 'age(min)', ])
+        expect(rows).toEqual([
+          { selector: 'age(min)', value: [ [ 33, ],  ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 0 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, groupNames, selectors, } = transformer()
+
+        expect(groupNames).toEqual([ 'age(sum)', 'balance(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', 'balance(sum)', ])
+        expect(rows).toEqual([
+          { selector: 'age(sum)', value: [ [ 159, ], ], },
+          { selector: 'balance(sum)', value: [ [ 14181, ], ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, groupNames, selectors, } = transformer()
+
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([ 'married', 'single', ])
+        expect(rows).toEqual([
+          { selector: 'married', value: [ [ 82, ], ], },
+          { selector: 'single', value: [ [ 77 ], ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 1 group, 2 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        balanceColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, groupNames, selectors, } = transformer()
+
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual([
+          'married / age(sum)', 'married / balance(sum)', 'single / age(sum)', 'single / balance(sum)',
+        ])
+        expect(rows).toEqual([
+          { selector: 'married / age(sum)', value: [ [ 82, ], ] },
+          { selector: 'married / balance(sum)', value: [ [ 9286, ], ] },
+          { selector: 'single / age(sum)', value: [ [ 77, ], ] },
+          { selector: 'single / balance(sum)', value: [ [ 4895, ], ] },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 0 key2, 2 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, groupNames, selectors, } = transformer()
+
+        expect(groupNames).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(selectors).toEqual([ 'married.primary', 'married.secondary', 'single.tertiary', ])
+        expect(rows).toEqual([
+          { selector: 'married.primary', value: [ [ '43', ], ] },
+          { selector: 'married.secondary', value: [ [ '39', ], ] },
+          { selector: 'single.tertiary', value: [ [ 77, ], ] },
+        ])
+      })
+
+      it('should transform properly: 1 key1, 0 key2, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].key1Axis.push(balanceColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key1ColumnName).toEqual('balance')
+        expect(key2Names).toEqual([])
+        expect(key2ColumnName).toEqual('')
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
+        expect(rows).toEqual([
+          { selector: 'age(sum)', value: [ [ '43' ], [ '44' ], [ '33' ], [ '39' ], ] },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 1 key2, 0 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].key2Axis.push(balanceColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key1ColumnName).toEqual('')
+        expect(key2Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key2ColumnName).toEqual('balance')
+        expect(groupNames).toEqual([ 'age(sum)', ])
+        expect(selectors).toEqual([ 'age(sum)', ])
+        expect(rows).toEqual([
+          { selector: 'age(sum)', value: [ [ '43', '44', '33', '39', ], ] },
+        ])
+      })
+
+      it('should transform properly: 1 key1, 0 key2, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].key1Axis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key1ColumnName).toEqual('balance')
+        expect(key2Names).toEqual([])
+        expect(key2ColumnName).toEqual('')
+        expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(rows).toEqual([
+          { selector: 'primary', value: [ [ '43' ], undefined, undefined, undefined, ], },
+          { selector: 'secondary', value: [ undefined, undefined, undefined, [ '39' ], ] },
+          { selector: 'tertiary', value: [ undefined, [ '44' ], [ '33' ], undefined, ], },
+        ])
+      })
+
+      it('should transform properly: 0 key1, 1 key2, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].key2Axis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([])
+        expect(key1ColumnName).toEqual('')
+        expect(key2Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key2ColumnName).toEqual('balance')
+        expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(rows).toEqual([
+          { selector: 'primary', value: [ [ '43', undefined, undefined, undefined, ], ] },
+          { selector: 'secondary', value: [ [ undefined, undefined, undefined, '39', ], ] },
+          { selector: 'tertiary', value: [ [ undefined, '44', '33', undefined, ] ], },
+        ])
+      })
+
+      it('should transform properly: 1 key1, 1 key2, 1 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].key1Axis.push(pDaysColumn)
+        config.axis[chart].key2Axis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([ '-1', '147', '339', ])
+        expect(key1ColumnName).toEqual('pdays')
+        expect(key2Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key2ColumnName).toEqual('balance')
+        expect(groupNames).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(selectors).toEqual([ 'primary', 'secondary', 'tertiary', ])
+        expect(rows).toEqual([
+          {
+            selector: 'primary',
+            value: [ undefined, [ '43', undefined, undefined, undefined ], undefined ] },
+          {
+            selector: 'secondary',
+            value: [ [ undefined, undefined, undefined, '39' ], undefined, undefined ] },
+          {
+            selector: 'tertiary',
+            value: [ [ undefined, '44', undefined, undefined ], undefined, [ undefined, undefined, '33', undefined ] ]
+          },
+        ])
+      })
+
+      it('should transform properly: 1 key1, 1 key2, 2 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'sum'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].key1Axis.push(pDaysColumn)
+        config.axis[chart].key2Axis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(educationColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([ '-1', '147', '339', ])
+        expect(key1ColumnName).toEqual('pdays')
+        expect(key2Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key2ColumnName).toEqual('balance')
+        expect(groupNames).toEqual([ 'primary.married', 'secondary.married', 'tertiary.single', ])
+        expect(selectors).toEqual([ 'primary.married', 'secondary.married', 'tertiary.single', ])
+        expect(rows).toEqual([
+          {
+            selector: 'primary.married',
+            value: [ undefined, [ '43', undefined, undefined, undefined ], undefined ]
+          },
+          {
+            selector: 'secondary.married',
+            value: [ [ undefined, undefined, undefined, '39' ], undefined, undefined ]
+          },
+          {
+            selector: 'tertiary.single',
+            value: [ [ undefined, '44', undefined, undefined ], undefined, [ undefined, undefined, '33', undefined ] ]
+          },
+        ])
+      })
+
+      it('should transform properly: 1 key1, 1 key2, 2 group, 1 aggr(sum)', () => {
+        ageColumn.aggr = 'min'
+        daysColumn.aggr = 'max'
+        config.axis[chart].aggrAxis.push(ageColumn)
+        config.axis[chart].aggrAxis.push(daysColumn)
+        config.axis[chart].key1Axis.push(pDaysColumn)
+        config.axis[chart].key2Axis.push(balanceColumn)
+        config.axis[chart].groupAxis.push(martialColumn)
+
+        const axisSpecs = config.axisSpecs[chart]
+        const axis = config.axis[chart]
+        const transformer = Util.getTransformer(config, tableDataRows, axisSpecs, axis).transformer
+
+        const { rows, key1Names, key1ColumnName,
+          key2Names, key2ColumnName, groupNames, selectors, } = transformer()
+
+        expect(key1Names).toEqual([ '-1', '147', '339', ])
+        expect(key1ColumnName).toEqual('pdays')
+        expect(key2Names).toEqual([ '-88', '106', '4789', '9374' ])
+        expect(key2ColumnName).toEqual('balance')
+        expect(groupNames).toEqual([ 'married', 'single', ])
+        expect(selectors).toEqual(
+          [ 'married / age(min)', 'married / day(max)', 'single / age(min)', 'single / day(max)', ]
+        )
+        expect(rows).toEqual([
+          {
+            selector: 'married / age(min)',
+            value: [
+              [ undefined, undefined, undefined, '39' ],
+              [ '43', undefined, undefined, undefined ],
+              undefined
+            ]
+          },
+          {
+            selector: 'married / day(max)',
+            value: [
+              [ undefined, undefined, undefined, '20' ],
+              [ '17', undefined, undefined, undefined ],
+              undefined
+            ]
+          },
+          {
+            selector: 'single / age(min)',
+            value: [
+              [ undefined, '44', undefined, undefined ],
+              undefined, [ undefined, undefined, '33', undefined ]
+            ]
+          },
+          {
+            selector: 'single / day(max)',
+            value: [
+              [ undefined, '12', undefined, undefined ],
+              undefined,
+              [ undefined,undefined, '11', undefined ]
+            ]
+          },
+        ])
+      })
+
+      // TODO 1 key1 1 key2, 1 group, 2 aggr (min), (max)
+    }) // end: describe('method: array:2-key')
 
   }) // end: describe('getTransformer')
 })

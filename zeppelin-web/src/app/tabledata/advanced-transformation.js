@@ -20,7 +20,7 @@ import {
   getCurrentChartAxisSpecs, getCurrentChartParamSpecs,
   initializeConfig, resetAxisConfig, resetParameterConfig,
   isAggregatorAxis, isGroupAxis, isKeyAxis, isSingleDimensionAxis,
-  removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount, getColumnsFromAxis,
+  removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount,
   isInputWidget, isOptionWidget, isCheckboxWidget, isTextareaWidget, parseParameter,
   getTransformer,
 } from './advanced-transformation-util';

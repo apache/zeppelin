@@ -488,10 +488,10 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
     // since ARRAY_2_KEY :)
     let i = 0
     for (let axisName in keyAxisColumn) {
-      if (i == 2) { break }
+      if (i === 2) { break }
 
-      if (i == 0) { key1Columns = keyAxisColumn[axisName] }
-      else if (i == 1) { key2Columns  = keyAxisColumn[axisName] }
+      if (i === 0) { key1Columns = keyAxisColumn[axisName] }
+      else if (i === 1) { key2Columns  = keyAxisColumn[axisName] }
       i++
     }
 
@@ -509,7 +509,9 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
       return {
         rows: transformed,
         key1Names: key1Names,
+        key1ColumnName: key1ColumnName,
         key2Names: key2Names,
+        key2ColumnName: key2ColumnName,
         groupNames: groupNames,
         selectors: sortedSelectors,
       }
