@@ -344,8 +344,9 @@ export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
 
   for(let axisName of axisNames) {
     const columns = axis[axisName];
-    if (!column[axisName]) { column[axisName] = []; }
-    column[axisName] = column[axisName].concat(columns);
+    if (typeof axis[axisName] === 'undefined') { continue }
+    if (!column[axisName]) { column[axisName] = [] }
+    column[axisName] = column[axisName].concat(columns)
   }
 
   return column
