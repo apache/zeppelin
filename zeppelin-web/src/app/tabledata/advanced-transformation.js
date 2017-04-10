@@ -101,8 +101,21 @@ export default class AdvancedTransformation extends Transformation {
 
         getAxisTypeAnnotation: (axisSpec) => {
           let anno = `${axisSpec.axisType}`
-          if (typeof axisSpec.maxAxisCount !== 'undefined') {
-            anno = `${anno} (${axisSpec.maxAxisCount})`
+
+          let minAxisCount = axisSpec.minAxisCount
+          let maxAxisCount = axisSpec.maxAxisCount
+
+          if (isSingleDimensionAxis(axisSpec)) {
+            maxAxisCount = 1
+          }
+
+          let comment = ''
+          if (minAxisCount) { comment = `min: ${minAxisCount}` }
+          if (minAxisCount && maxAxisCount) { comment = `${comment}, `}
+          if (maxAxisCount) { comment = `${comment}max: ${maxAxisCount}` }
+
+          if (comment !== '') {
+            anno = `${anno} (${comment})`
           }
 
           return anno

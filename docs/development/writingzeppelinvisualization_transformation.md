@@ -139,7 +139,8 @@ class AwesomeVisualization extends Visualization {
 |`axisType` | `group` | Column(s) in this axis will be used as `group` like in `PivotTransformation`. These columns will be served in `column.group` |
 |`axisType` | (string) | Any string value can be used here. These columns will be served in `column.custom` |
 |`valueType` | (string) | Describe the value type just for annotation |
-|`maxAxisCount` | (int) | The maximum column count that this axis can contains. (unlimited if `undefined`) |
+|`maxAxisCount` | (int) | The max number of columns that this axis can contain. (unlimited if `undefined`) |
+|`minAxisCount` | (int) | The min number of columns that this axis should contain to draw chart. (`1` in case of single dimension) |
 
 <br/>
 
