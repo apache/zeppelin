@@ -400,7 +400,7 @@ public class HeliumBundleFactory {
     prepareSource(pkg, moduleNameVersion, mainFileName);
 
     // 4. install node and local modules for a bundle
-    copyFrameworkModuleToInstallPath(recopyLocalModule); // should copy local modules first
+    copyFrameworkModulesToInstallPath(recopyLocalModule); // should copy local modules first
     installNodeModules(fpf);
 
     // 5. let's bundle and update cache
@@ -430,7 +430,23 @@ public class HeliumBundleFactory {
     }
   }
 
-  void copyFrameworkModuleToInstallPath(boolean recopy)
+  void copyFrameworkModule(boolean recopy, FileFilter filter,
+                           File src, File dest) throws IOException {
+    if (src != null) {
+      if (recopy && dest.exists()) {
+        FileUtils.deleteDirectory(dest);
+      }
+
+      if (!dest.exists()) {
+        FileUtils.copyDirectory(
+            src,
+            dest,
+            filter);
+      }
+    }
+  }
+
+  void copyFrameworkModulesToInstallPath(boolean recopy)
       throws IOException {
 
     FileFilter npmPackageCopyFilter = new FileFilter() {
@@ -450,50 +466,20 @@ public class HeliumBundleFactory {
 
     File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-tabledata");
-    if (tabledataModulePath != null) {
-      if (recopy && tabledataModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(tabledataModuleInstallPath);
-      }
-
-      if (!tabledataModuleInstallPath.exists()) {
-        FileUtils.copyDirectory(
-            tabledataModulePath,
-            tabledataModuleInstallPath,
-            npmPackageCopyFilter);
-      }
-    }
+    copyFrameworkModule(recopy, npmPackageCopyFilter,
+        tabledataModulePath, tabledataModuleInstallPath);
 
     // install visualization module
     File visModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-vis");
-    if (visualizationModulePath != null) {
-      if (recopy && visModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(visModuleInstallPath);
-      }
-
-      if (!visModuleInstallPath.exists()) {
-        FileUtils.copyDirectory(
-            visualizationModulePath,
-            visModuleInstallPath,
-            npmPackageCopyFilter);
-      }
-    }
+    copyFrameworkModule(recopy, npmPackageCopyFilter,
+        visualizationModulePath, visModuleInstallPath);
 
     // install spell module
     File spellModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-spell");
-    if (spellModulePath != null) {
-      if (recopy && spellModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(spellModuleInstallPath);
-      }
-
-      if (!spellModuleInstallPath.exists()) {
-        FileUtils.copyDirectory(
-            spellModulePath,
-            spellModuleInstallPath,
-            npmPackageCopyFilter);
-      }
-    }
+    copyFrameworkModule(recopy, npmPackageCopyFilter,
+        spellModulePath, spellModuleInstallPath);
   }
 
   private WebpackResult getWebpackResultFromOutput(String output) {
