@@ -508,7 +508,7 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { key: '', selector: 'age(sum)', value: [ 159, ], }
+          { selector: 'age(sum)', value: [ 159, ], }
         ])
       })
 
@@ -522,7 +522,7 @@ describe('advanced-transformation-util', () => {
 
         let { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age(count)', value: [ 4, ], }
+          { selector: 'age(count)', value: [ 4, ], }
         ])
       })
 
@@ -536,7 +536,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age(avg)', value: [ (44 + 43 + 39 + 33) / 4.0, ], }
+          { selector: 'age(avg)', value: [ (44 + 43 + 39 + 33) / 4.0, ], }
         ])
       })
 
@@ -550,7 +550,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age(max)', value: [ 44, ], }
+          { selector: 'age(max)', value: [ 44, ], }
         ])
       })
 
@@ -564,7 +564,7 @@ describe('advanced-transformation-util', () => {
 
         const { rows, } = transformer()
         expect(rows).toEqual([
-          { key: '', selector: 'age(min)', value: [ 33, ], }
+          { selector: 'age(min)', value: [ 33, ], }
         ])
       })
 
@@ -584,8 +584,8 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', 'balance(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', 'balance(sum)', ])
         expect(rows).toEqual([
-          { key: '', selector: 'age(sum)', value: [ 159, ], },
-          { key: '', selector: 'balance(sum)', value: [ 14181, ], },
+          { selector: 'age(sum)', value: [ 159, ], },
+          { selector: 'balance(sum)', value: [ 14181, ], },
         ])
       })
 
@@ -672,7 +672,7 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { key: 'married', selector: 'age(sum)', value: [ 82, 77, ] },
+          { selector: 'age(sum)', value: [ 82, 77, ] },
         ])
       })
 
@@ -692,7 +692,7 @@ describe('advanced-transformation-util', () => {
         expect(groupNames).toEqual([ 'age(sum)', ])
         expect(selectors).toEqual([ 'age(sum)', ])
         expect(rows).toEqual([
-          { key: 'married.primary', selector: 'age(sum)', value: [ '43', '39', 77, ] },
+          { selector: 'age(sum)', value: [ '43', '39', 77, ] },
         ])
       })
 

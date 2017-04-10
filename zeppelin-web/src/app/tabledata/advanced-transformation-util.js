@@ -794,7 +794,7 @@ export function fillArrayRow(schema, aggrColumns, obj,
 
       if (typeof keyArrayRows[selectorIndex] === 'undefined') {
         keyArrayRows[selectorIndex] = {
-          key: keyName, selector: selector, value: new Array(keyNames.length)
+          selector: selector, value: new Array(keyNames.length)
         }
       }
       keyArrayRows[selectorIndex].value[keyIndex] = value
