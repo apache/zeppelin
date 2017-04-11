@@ -19,10 +19,10 @@ package org.apache.zeppelin.spark;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -112,7 +112,11 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      rdd = sqlMethod.invoke(sqlc, st);
+      for (String statement : splitSqlScript(st)) {
+          if (StringUtils.isNotBlank(statement)) {
+              rdd = sqlMethod.invoke(sqlc, statement);
+          }
+      }
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);
@@ -131,11 +135,53 @@ public class SparkSqlInterpreter extends Interpreter {
     return new InterpreterResult(Code.SUCCESS, msg);
   }
 
-  @Override
-  public void cancel(InterpreterContext context) {
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    SQLContext sqlc = sparkInterpreter.getSQLContext();
-    SparkContext sc = sqlc.sparkContext();
+    //split sql script to single statement list
+    public static List<String> splitSqlScript(String script) {
+        List<String> queries = new LinkedList<String>();
+        StringBuilder query = new StringBuilder();
+        List<Character> quoteList = Arrays.asList('\'', '"', '`');
+        Stack<String> operatorStack = new Stack<String>();
+        char lastCharacter = ' ';
+        for (char character : script.toCharArray()) {
+            if (';' == character && lastCharacter != '\\' && operatorStack.isEmpty()) {
+                if (query.length() > 0) {
+                    queries.add(query.toString());
+                    query.setLength(0);
+                }
+            } else {
+                query.append(character);
+                if (operatorStack.isEmpty()) {
+                    if ('-' == character && '-' == lastCharacter) {
+                        operatorStack.push("--");
+                    } else if (lastCharacter == '/' && '*' == character) {
+                        operatorStack.push("/*");
+                    } else if (quoteList.contains(character) && lastCharacter != '\\') {
+                        operatorStack.push(String.valueOf(character));
+                    }
+                } else {
+                    if ('\n' == character && "--".equals(operatorStack.peek())) {
+                        operatorStack.pop();
+                    } else if (lastCharacter == '*' && character == '/'
+                            && operatorStack.peek().equals("/*")) {
+                        operatorStack.pop();
+                    } else if (quoteList.contains(character)
+                            && operatorStack.peek().equals(String.valueOf(character))) {
+                        operatorStack.pop();
+                    }
+                }
+            }
+            lastCharacter = character;
+        }
+        if (query.length() > 0) {
+            queries.add(query.toString());
+        }
+        return queries;
+    }
+
+    @Override
+    public void cancel(InterpreterContext context) {
+        SQLContext sqlc = getSparkInterpreter().getSQLContext();
+        SparkContext sc = sqlc.sparkContext();
 
     sc.cancelJobGroup(Utils.buildJobGroupId(context));
   }
