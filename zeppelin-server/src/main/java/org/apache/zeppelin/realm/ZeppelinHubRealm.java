@@ -131,6 +131,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     String responseBody = StringUtils.EMPTY;
     String userSession = StringUtils.EMPTY;
     try {
+      put.addRequestHeader("User-Agent",
+          "Mozilla/5.0 (X11; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0");
       put.setRequestEntity(new StringRequestEntity(requestBody, JSON_CONTENT_TYPE, UTF_8_ENCODING));
       int statusCode = httpClient.executeMethod(put);
       if (statusCode != HttpStatus.SC_OK) {
