@@ -142,7 +142,7 @@ public class SparkSqlInterpreter extends Interpreter {
     Stack<String> operatorStack = new Stack<String>();
     char lastCharacter = ' ';
     for (char character : script.toCharArray()) {
-      if (';' == character && lastCharacter != '\\' && operatorStack.isEmpty()) {
+      if (';' == character && operatorStack.isEmpty()) {
         if (query.length() > 0) {
           queries.add(query.toString());
           query.setLength(0);
@@ -154,7 +154,7 @@ public class SparkSqlInterpreter extends Interpreter {
             operatorStack.push("--");
           } else if (lastCharacter == '/' && '*' == character) {
             operatorStack.push("/*");
-          } else if (quoteList.contains(character) && lastCharacter != '\\') {
+          } else if (quoteList.contains(character)) {
             operatorStack.push(String.valueOf(character));
           }
         } else {
