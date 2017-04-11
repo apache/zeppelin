@@ -281,16 +281,19 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   }
 
   private void cancel(int id, String paragraphId) {
-    if (livyVersion.isCancelSupported()) {
-      try {
-        LOGGER.info("Cancelling statement " + id);
-        cancelStatement(id);
-        paragraphsToCancel.remove(paragraphId);
-      } catch (LivyException e) {
-        LOGGER.error("Fail to cancel statement " + id + " for paragraph " + paragraphId, e);
+    try {
+      if (livyVersion.isCancelSupported()) {
+        try {
+          LOGGER.info("Cancelling statement " + id);
+          cancelStatement(id);
+        } catch (LivyException e) {
+          LOGGER.error("Fail to cancel statement " + id + " for paragraph " + paragraphId, e);
+        }
+      } else {
+        LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
       }
-    } else {
-      LOGGER.warn("cancel is not supported for this version of livy: " + livyVersion);
+    } finally {
+      paragraphsToCancel.remove(paragraphId);
     }
   }
 
