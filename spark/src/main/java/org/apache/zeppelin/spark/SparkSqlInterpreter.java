@@ -180,8 +180,10 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    SQLContext sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
+
     sc.cancelJobGroup(Utils.buildJobGroupId(context));
   }
 
