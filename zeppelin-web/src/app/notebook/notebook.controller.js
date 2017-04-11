@@ -712,13 +712,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove();
   }
 
-  $scope.restartInterpreter = function(interpeter) {
+  $scope.restartInterpreter = function(interpreter) {
     var thisConfirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
       title: '',
-      message: 'Do you want to restart ' + interpeter.name + ' interpreter?',
+      message: 'Do you want to restart ' + interpreter.name + ' interpreter?',
       callback: function(result) {
         if (result) {
           var payload  = {
@@ -729,9 +729,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
           thisConfirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
 
-          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpeter.id, payload)
+          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpreter.id, payload)
             .success(function(data, status, headers, config) {
-              var index = _.findIndex($scope.interpreterSettings, {'id': interpeter.id});
+              var index = _.findIndex($scope.interpreterSettings, {'id': interpreter.id});
               $scope.interpreterSettings[index] = data.body;
               thisConfirm.close();
             }).error(function(data, status, headers, config) {
