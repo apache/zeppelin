@@ -291,38 +291,59 @@ export function resetParameterConfig(config) {
 }
 
 export function getSpecVersion(availableCharts, spec) {
-  const hash = {}
+  const axisHash = {}
+  const paramHash = {}
+
   for (let i = 0; i < availableCharts.length; i++) {
     const chartName = availableCharts[i];
     const axisSpecs = getSpecs(spec.charts[chartName].axis)
+    axisHash[chartName] = axisSpecs
 
-    hash[chartName] = axisSpecs
+    const paramSpecs = getSpecs(spec.charts[chartName].parameter)
+    paramHash[chartName] = paramSpecs
   }
 
-  return JSON.stringify(hash)
+  return { axisVersion: JSON.stringify(axisHash), paramVersion: JSON.stringify(paramHash), }
 }
 
 export function initializeConfig(config, spec) {
   config.chartChanged = true
   config.parameterChanged = false
 
-  const availableCharts = getAvailableChartNames(spec.charts)
-  // if spex.axis is changed, then need to clear persisted axis
-  const currentVersion = getSpecVersion(availableCharts, spec)
-  if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
-    spec.version = currentVersion
-    spec.initialized = true
-    delete config.chart      /** Object: contains current, available chart */
-    delete config.spec       /** Object: axis, parameter spec for each chart */
-    config.panel = { columnPanelOpened: true, parameterPanelOpened: false, }
-    clearAxisConfig(config)
-    clearParameterConfig(config)
+  let updated = false
 
+  const availableCharts = getAvailableChartNames(spec.charts)
+  const { axisVersion, paramVersion, } = getSpecVersion(availableCharts, spec)
+
+  if (!config.spec || !config.spec.version ||
+    !config.spec.version.axis ||
+    config.spec.version.axis !== axisVersion) {
+
+    spec.initialized = true
+    updated = true
+
+    delete config.chart      /** Object: contains current, available chart */
+    config.panel = { columnPanelOpened: true, parameterPanelOpened: false, }
+
+    clearAxisConfig(config)
     delete config.axisSpecs  /** Object: persisted axisSpecs for each chart */
+  }
+
+  if (!config.spec || !config.spec.version ||
+    !config.spec.version.parameter ||
+    config.spec.version.parameter !== paramVersion) {
+
+    updated = true
+
+    clearParameterConfig(config)
     delete config.paramSpecs /** Object: persisted paramSpecs for each chart */
   }
 
-  if (!config.spec) { config.spec = spec; }
+  if (!spec.version) { spec.version = {} }
+  spec.version.axis = axisVersion
+  spec.version.parameter = paramVersion
+
+  if (!config.spec || updated) { config.spec = spec; }
 
   if (!config.chart) {
     config.chart = {};
@@ -515,6 +536,7 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
 
     const {
       transformed, groupNames, sortedSelectors,
+      key1NameWithIndex, key2NameWithIndex,
     } = getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
       key1Names, key2Names, groupNameSet, selectorNameWithIndex)
 
@@ -523,8 +545,10 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
         rows: transformed,
         key1Names: key1Names,
         key1ColumnName: key1ColumnName,
+        key1NameWithIndex: key1NameWithIndex,
         key2Names: key2Names,
         key2ColumnName: key2ColumnName,
+        key2NameWithIndex: key2NameWithIndex,
         groupNames: groupNames,
         selectors: sortedSelectors,
       }
@@ -979,6 +1003,8 @@ export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
     key1Names, key2Names, key1NameWithIndex, key2NameWithIndex)
 
   return {
+    key1NameWithIndex: key1NameWithIndex,
+    key2NameWithIndex: key2NameWithIndex,
     transformed: selectorRows,
     groupNames: Array.from(groupNameSet).sort(),
     sortedSelectors: sortedSelectors,
