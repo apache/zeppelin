@@ -135,7 +135,6 @@ public class SparkSqlInterpreter extends Interpreter {
     return new InterpreterResult(Code.SUCCESS, msg);
   }
 
-  //split sql script to single statement list
   public static List<String> splitSqlScript(String script) {
     List<String> queries = new LinkedList<String>();
     StringBuilder query = new StringBuilder();
