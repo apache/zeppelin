@@ -290,12 +290,25 @@ export function resetParameterConfig(config) {
   initParameterConfig(config)
 }
 
+export function getSpecVersion(availableCharts, spec) {
+  const hash = {}
+  for (let i = 0; i < availableCharts.length; i++) {
+    const chartName = availableCharts[i];
+    const axisSpecs = getSpecs(spec.charts[chartName].axis)
+
+    hash[chartName] = axisSpecs
+  }
+
+  return JSON.stringify(hash)
+}
+
 export function initializeConfig(config, spec) {
   config.chartChanged = true
   config.parameterChanged = false
 
+  const availableCharts = getAvailableChartNames(spec.charts)
   // if spex.axis is changed, then need to clear persisted axis
-  const currentVersion = JSON.stringify(spec.axis)
+  const currentVersion = getSpecVersion(availableCharts, spec)
   if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
     spec.version = currentVersion
     spec.initialized = true
@@ -308,8 +321,6 @@ export function initializeConfig(config, spec) {
     delete config.axisSpecs  /** Object: persisted axisSpecs for each chart */
     delete config.paramSpecs /** Object: persisted paramSpecs for each chart */
   }
-
-  const availableCharts = getAvailableChartNames(spec.charts)
 
   if (!config.spec) { config.spec = spec; }
 
