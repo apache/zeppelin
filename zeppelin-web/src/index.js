@@ -23,6 +23,7 @@ import './app/tabledata/transformation.js';
 import './app/tabledata/pivot.js';
 import './app/tabledata/passthrough.js';
 import './app/tabledata/columnselector.js';
+import './app/tabledata/advanced-transformation.js';
 import './app/visualization/visualization.js';
 import './app/visualization/builtins/visualization-table.js';
 import './app/visualization/builtins/visualization-nvd3chart.js';
