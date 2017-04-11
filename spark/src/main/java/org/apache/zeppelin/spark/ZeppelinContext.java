@@ -136,7 +136,7 @@ public class ZeppelinContext {
   }
 
   @ZeppelinApi
-  public scala.collection.Iterable<Object> checkbox(String name,
+  public scala.collection.Seq<Object> checkbox(String name,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
     List<Object> allChecked = new LinkedList<>();
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
@@ -146,11 +146,12 @@ public class ZeppelinContext {
   }
 
   @ZeppelinApi
-  public scala.collection.Iterable<Object> checkbox(String name,
+  public scala.collection.Seq<Object> checkbox(String name,
       scala.collection.Iterable<Object> defaultChecked,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return collectionAsScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
-      tuplesToParamOptions(options)));
+    return scala.collection.JavaConversions.asScalaBuffer(
+        gui.checkbox(name, asJavaCollection(defaultChecked),
+            tuplesToParamOptions(options))).toSeq();
   }
 
   private ParamOption[] tuplesToParamOptions(
