@@ -97,13 +97,15 @@ class PyZeppelinContext(dict):
 
   def checkbox(self, name, options, defaultChecked=None):
     if defaultChecked is None:
-      defaultChecked = list(map(lambda items: items[0], options))
+      defaultChecked = []
     optionTuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
     optionIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(optionTuples)
     defaultCheckedIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
-
-    checkedIterables = self.z.checkbox(name, defaultCheckedIterables, optionIterables)
-    return gateway.jvm.scala.collection.JavaConversions.asJavaCollection(checkedIterables)
+    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.checkbox(name, defaultCheckedIterables, optionIterables))
+    result = []
+    for checkedItem in checkedItems:
+      result.append(checkedItem)
+    return result;
 
   def registerHook(self, event, cmd, replName=None):
     if replName is None:
