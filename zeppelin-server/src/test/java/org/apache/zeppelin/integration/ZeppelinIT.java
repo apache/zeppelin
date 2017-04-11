@@ -137,7 +137,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        *   z.run(2, context)
        * }
        */
-      setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2)})");
+      setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, false)})");
       runParagraph(4);
       waitForParagraph(4, "FINISHED");
 
@@ -156,6 +156,21 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
               getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
+
+
+      /*
+       * Click element, again and see watcher still works
+       */
+      driver.findElement(By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      // check expected text
+      waitForText("BindingTest_4_", By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      waitForParagraph(3, "FINISHED");
+
+      // check expected text by watcher
+      waitForText("myVar=4", By.xpath(
+          getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
