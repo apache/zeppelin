@@ -294,7 +294,8 @@ export function initializeConfig(config, spec) {
   config.chartChanged = true
   config.parameterChanged = false
 
-  const currentVersion = JSON.stringify(spec)
+  // if spex.axis is changed, then need to clear persisted axis
+  const currentVersion = JSON.stringify(spec.axis)
   if (!config.spec || !config.spec.version || config.spec.version !== currentVersion) {
     spec.version = currentVersion
     spec.initialized = true
