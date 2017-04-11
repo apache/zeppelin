@@ -25,8 +25,29 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 public abstract class AngularObjectWatcher {
   private InterpreterContext context;
 
+  private String watcherId;
+
+  public AngularObjectWatcher(InterpreterContext context, String watcherId) {
+    this.context = context;
+    this.watcherId = watcherId;
+  }
+
+  /**
+   * @deprecated  use AngularObjectWatcher(context, watcherId) instead.
+   *              watcherId should be specified.
+   * @param context
+   */
+  @Deprecated
   public AngularObjectWatcher(InterpreterContext context) {
     this.context = context;
+  }
+
+  public String getWatcherId() {
+    return watcherId;
+  }
+
+  public void setWatcherId(String watcherId) {
+    this.watcherId = watcherId;
   }
 
   void watch(Object oldObject, Object newObject) {

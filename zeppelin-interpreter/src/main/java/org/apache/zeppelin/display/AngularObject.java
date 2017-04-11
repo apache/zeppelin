@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.display;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.ExecutorFactory;
@@ -38,7 +36,7 @@ public class AngularObject<T> {
   private T object;
   
   private transient AngularObjectListener listener;
-  private transient List<AngularObjectWatcher> watchers = new LinkedList<>();
+  private transient Map<String, AngularObjectWatcher> watchers = new LinkedHashMap<>();
   
   private String noteId;   // noteId belonging to. null for global scope 
   private String paragraphId; // paragraphId belongs to. null for notebook scope
@@ -176,7 +174,7 @@ public class AngularObject<T> {
     final Logger logger = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
-      ws.addAll(watchers);
+      ws.addAll(watchers.values());
     }
 
     ExecutorService executor = ExecutorFactory.singleton().createOrGet("angularObjectWatcher", 50);
@@ -218,7 +216,7 @@ public class AngularObject<T> {
    */
   public void addWatcher(AngularObjectWatcher watcher) {
     synchronized (watchers) {
-      watchers.add(watcher);
+      watchers.put(watcher.getWatcherId(), watcher);
     }
   }
 
@@ -228,7 +226,13 @@ public class AngularObject<T> {
    */
   public void removeWatcher(AngularObjectWatcher watcher) {
     synchronized (watchers) {
-      watchers.remove(watcher);
+      watchers.remove(watcher.getWatcherId());
+    }
+  }
+
+  public void removeWatcher(String watcherId) {
+    synchronized (watchers) {
+      watchers.remove(watcherId);
     }
   }
 
