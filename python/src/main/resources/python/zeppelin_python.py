@@ -33,7 +33,7 @@ except ImportError:
 
 # for back compatibility
 
-class __ZeppelinLogger__(object):
+class Logger(object):
   def __init__(self):
     pass
 
@@ -47,7 +47,7 @@ class __ZeppelinLogger__(object):
     pass
 
 
-class __PyZeppelinContext__(object):
+class PyZeppelinContext(object):
   """ A context impl that uses Py4j to communicate to JVM
   """
 
@@ -205,14 +205,14 @@ intp = gateway.entry_point
 intp.onPythonScriptInitialized(os.getpid())
 
 java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-z = __zeppelin__ = __PyZeppelinContext__(intp)
+z = __zeppelin__ = PyZeppelinContext(intp)
 __zeppelin__._setup_matplotlib()
 
 _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
 _zcUserQueryNameSpace["z"] = z
 
-__zcStdOutput__ = __ZeppelinLogger__()
-sys.stdout = __zcStdOutput__
+output = Logger()
+sys.stdout = output
 #sys.stderr = output
 
 while True :
@@ -294,4 +294,4 @@ while True :
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 
-  __zcStdOutput__.reset()
+  output.reset()

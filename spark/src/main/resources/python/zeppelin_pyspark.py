@@ -35,7 +35,7 @@ import warnings
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
-class __ZeppelinLogger__(object):
+class Logger(object):
   def __init__(self):
     pass
 
@@ -49,7 +49,7 @@ class __ZeppelinLogger__(object):
     pass
 
 
-class __PyZeppelinContext__(dict):
+class PyZeppelinContext(dict):
   def __init__(self, zc):
     self.z = zc
     self._displayhook = lambda *args: None
@@ -230,9 +230,9 @@ class PySparkCompletion:
       self.interpreterObject.setStatementsFinished(result, False)
 
 
-__zcStdOutput__ = __ZeppelinLogger__()
-sys.stdout = __zcStdOutput__
-sys.stderr = __zcStdOutput__
+output = Logger()
+sys.stdout = output
+sys.stderr = output
 
 client = GatewayClient(port=int(sys.argv[1]))
 sparkVersion = SparkVersion(int(sys.argv[2]))
@@ -295,7 +295,7 @@ sqlContext = __zSqlc__
 _zcUserQueryNameSpace["sqlContext"] = sqlContext
 
 completion = PySparkCompletion(intp)
-z = __zeppelin__ = __PyZeppelinContext__(intp.getZeppelinContext())
+z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
 __zeppelin__._setup_matplotlib()
 _zcUserQueryNameSpace["z"] = z
 _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
@@ -373,4 +373,4 @@ while True :
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 
-  __zcStdOutput__.reset()
+  output.reset()
