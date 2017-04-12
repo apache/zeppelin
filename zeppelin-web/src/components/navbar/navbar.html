@@ -80,9 +80,9 @@ limitations under the License.
         <li style="margin-left: 10px;">
           <div class="dropdown">
             <i ng-if="navbar.connected" class="fa fa-circle server-connected"
-               tooltip="WebSocket Connected" tooltip-placement="bottom" style="margin-top: 7px; margin-right: 0px; vertical-align: top"></i>
+               uib-tooltip="WebSocket Connected" tooltip-placement="bottom" style="margin-top: 7px; margin-right: 0px; vertical-align: top"></i>
             <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
-               tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
+               uib-tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
             <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0; padding-left: 0px;">
               <span class="username">{{ticket.principal}}</span>
               <span class="caret" style="margin-bottom: 8px"></span>

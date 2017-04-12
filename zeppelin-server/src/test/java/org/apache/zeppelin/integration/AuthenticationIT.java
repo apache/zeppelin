@@ -187,7 +187,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
 
-      pollingWait(By.xpath("//span[@tooltip='Note permissions']"),
+      pollingWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
