@@ -45,6 +45,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -134,7 +135,9 @@ public class NotebookServer extends WebSocketServlet
             }
           }
         }
-      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
+
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();

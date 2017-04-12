@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -54,6 +55,9 @@ import com.google.gson.Gson;
 public class Note implements Serializable, ParagraphJobListener {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
+  private static final Gson gson = new GsonBuilder()
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .create();
 
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
@@ -882,4 +886,19 @@ public class Note implements Serializable, ParagraphJobListener {
     this.noteEventListener = noteEventListener;
   }
 
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static Note fromJson(String json) {
+    Note note = gson.fromJson(json, Note.class);
+    convertOldInput(note);
+    return note;
+  }
+
+  private static void convertOldInput(Note note) {
+    for (Paragraph p : note.paragraphs) {
+      p.settings.convertOldInput();
+    }
+  }
 }
