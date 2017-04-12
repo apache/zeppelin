@@ -113,7 +113,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "_zc._displayhook()");
+      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
     }
     DepInterpreter depInterpreter = getDepInterpreter();
 
@@ -390,9 +390,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
     String jobGroup = Utils.buildJobGroupId(context);
-    ZeppelinContext _zc = sparkInterpreter.getZeppelinContext();
-    _zc.setInterpreterContext(context);
-    _zc.setGui(context.getGui());
+    ZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
+    __zeppelin__.setInterpreterContext(context);
+    __zeppelin__.setGui(context.getGui());
     pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
     statementOutput = null;
 

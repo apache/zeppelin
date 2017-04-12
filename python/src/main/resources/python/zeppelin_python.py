@@ -195,6 +195,7 @@ host = "127.0.0.1"
 if len(sys.argv) >= 3:
   host = sys.argv[2]
 
+_zcUserQueryNameSpace = {}
 client = GatewayClient(address=host, port=int(sys.argv[1]))
 
 #gateway = JavaGateway(client, auto_convert = True)
@@ -204,8 +205,11 @@ intp = gateway.entry_point
 intp.onPythonScriptInitialized(os.getpid())
 
 java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-z = _zc = __PyZeppelinContext__(intp)
-_zc._setup_matplotlib()
+z = __zeppelin__ = __PyZeppelinContext__(intp)
+__zeppelin__._setup_matplotlib()
+
+_zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
+_zcUserQueryNameSpace["z"] = z
 
 __zcStdOutput__ = __ZeppelinLogger__()
 sys.stdout = __zcStdOutput__
@@ -227,7 +231,7 @@ while True :
       global_hook = None
 
     try:
-      user_hook = _zc.getHook('post_exec')
+      user_hook = __zeppelin__.getHook('post_exec')
     except:
       user_hook = None
       
@@ -263,17 +267,17 @@ while True :
         for node in to_run_exec:
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
 
         for node in to_run_single:
           mod = ast.Interactive([node])
           code = compile(mod, '<stdin>', 'single')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
 
         for node in to_run_hooks:
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
       except:
         raise Exception(traceback.format_exc())
 
