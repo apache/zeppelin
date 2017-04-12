@@ -55,6 +55,7 @@ import './components/noteName-import/notenameImport.controller.js';
 import './components/popover-html-unsafe/popover-html-unsafe.directive.js';
 import './components/popover-html-unsafe/popover-html-unsafe-popup.directive.js';
 import './components/editor/codeEditor.directive.js';
+import './components/editor/paragraphText.service';
 import './components/ngenter/ngenter.directive.js';
 import './components/dropdowninput/dropdowninput.directive.js';
 import './components/resizable/resizable.directive.js';
