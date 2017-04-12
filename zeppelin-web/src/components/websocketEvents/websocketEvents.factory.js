@@ -54,6 +54,7 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
+    console.log('Receive Json << %o', event.data)
     console.log('Receive << %o, %o', payload.op, payload);
     var op = payload.op;
     var data = payload.data;

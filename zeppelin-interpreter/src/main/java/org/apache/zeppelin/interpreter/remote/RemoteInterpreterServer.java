@@ -592,7 +592,7 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getAuthenticationInfo(), AuthenticationInfo.class),
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
-        gson.fromJson(ric.getGui(), GUI.class),
+        GUI.fromJson(ric.getGui()),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
         contextRunners, output, remoteWorksController, eventClient);
@@ -737,7 +737,7 @@ public class RemoteInterpreterServer
         result.code().name(),
         msg,
         gson.toJson(config),
-        gson.toJson(gui));
+        gui.toJson());
   }
 
   @Override
