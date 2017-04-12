@@ -294,7 +294,10 @@ else:
 sqlContext = __zSqlc__
 _zcUserQueryNameSpace["sqlContext"] = sqlContext
 
-completion = PySparkCompletion(intp)
+completion = __zeppelin_completion__ = PySparkCompletion(intp)
+_zcUserQueryNameSpace["completion"] = completion
+_zcUserQueryNameSpace["__zeppelin_completion__"] = __zeppelin_completion__
+
 z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
 __zeppelin__._setup_matplotlib()
 _zcUserQueryNameSpace["z"] = z
