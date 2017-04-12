@@ -355,9 +355,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void onReceivedZeppelinResource(String responseJson) throws TException {
-    RemoteZeppelinServerResource response = gson.fromJson(
-        responseJson, RemoteZeppelinServerResource.class);
-
+    RemoteZeppelinServerResource response = RemoteZeppelinServerResource.fromJson(responseJson);
     if (response == null) {
       throw new TException("Bad response for remote resource");
     }
@@ -609,7 +607,7 @@ public class RemoteInterpreterServer
         ric.getReplName(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
-        gson.fromJson(ric.getAuthenticationInfo(), AuthenticationInfo.class),
+        AuthenticationInfo.fromJson(ric.getAuthenticationInfo()),
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
         GUI.fromJson(ric.getGui()),
@@ -942,11 +940,8 @@ public class RemoteInterpreterServer
     }
 
     ResourceSet resourceSet = resourcePool.getAll(false);
-
-    Gson gson = new Gson();
-
     for (Resource r : resourceSet) {
-      result.add(gson.toJson(r));
+      result.add(r.toJson());
     }
 
     return result;
@@ -981,7 +976,7 @@ public class RemoteInterpreterServer
   public ByteBuffer resourceInvokeMethod(
       String noteId, String paragraphId, String resourceName, String invokeMessage) {
     InvokeResourceMethodEventMessage message =
-        gson.fromJson(invokeMessage, InvokeResourceMethodEventMessage.class);
+        InvokeResourceMethodEventMessage.fromJson(invokeMessage);
 
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
     if (resource == null || resource.get() == null) {
@@ -1030,7 +1025,7 @@ public class RemoteInterpreterServer
   public void resourceResponseInvokeMethod(
       String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
     InvokeResourceMethodEventMessage message =
-        gson.fromJson(invokeResourceMethodEventMessage, InvokeResourceMethodEventMessage.class);
+        InvokeResourceMethodEventMessage.fromJson(invokeResourceMethodEventMessage);
 
     if (message.shouldPutResultIntoResourcePool()) {
       Resource resource = resourcePool.get(
@@ -1102,7 +1097,7 @@ public class RemoteInterpreterServer
       logger.warn("Application instance {} is already running");
       return new RemoteApplicationResult(true, "");
     }
-    HeliumPackage pkgInfo = gson.fromJson(packageInfo, HeliumPackage.class);
+    HeliumPackage pkgInfo = HeliumPackage.fromJson(packageInfo);
     ApplicationContext context = getApplicationContext(
         pkgInfo, noteId, paragraphId, applicationInstanceId);
     try {

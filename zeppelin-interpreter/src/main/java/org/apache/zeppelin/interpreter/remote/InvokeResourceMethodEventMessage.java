@@ -16,12 +16,16 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.resource.ResourceId;
 
 /**
  * message payload to invoke method of resource in the resourcepool
  */
-public class InvokeResourceMethodEventMessage {
+public class InvokeResourceMethodEventMessage implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   public final ResourceId resourceId;
   public final String methodName;
   public final String[] paramClassnames;
@@ -90,5 +94,13 @@ public class InvokeResourceMethodEventMessage {
     } else {
       return false;
     }
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static InvokeResourceMethodEventMessage fromJson(String json) {
+    return gson.fromJson(json, InvokeResourceMethodEventMessage.class);
   }
 }

@@ -20,13 +20,17 @@ package org.apache.zeppelin.rest.message;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
  * UpdateInterpreterSetting rest api request message
  */
-public class UpdateInterpreterSettingRequest {
+public class UpdateInterpreterSettingRequest implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   Properties properties;
   List<Dependency> dependencies;
   InterpreterOption option;
@@ -48,5 +52,13 @@ public class UpdateInterpreterSettingRequest {
 
   public InterpreterOption getOption() {
     return option;
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static UpdateInterpreterSettingRequest fromJson(String json) {
+    return gson.fromJson(json, UpdateInterpreterSettingRequest.class);
   }
 }

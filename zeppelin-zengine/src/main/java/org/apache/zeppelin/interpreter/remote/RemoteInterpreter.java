@@ -515,8 +515,8 @@ public class RemoteInterpreter extends Interpreter {
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(ic.getNoteId(), ic.getParagraphId(), ic.getReplName(),
-        ic.getParagraphTitle(), ic.getParagraphText(), gson.toJson(ic.getAuthenticationInfo()),
-        gson.toJson(ic.getConfig()), gson.toJson(ic.getGui()), gson.toJson(ic.getRunners()));
+        ic.getParagraphTitle(), ic.getParagraphText(), ic.getAuthenticationInfo().toJson(),
+        gson.toJson(ic.getConfig()), ic.getGui().toJson(), gson.toJson(ic.getRunners()));
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {

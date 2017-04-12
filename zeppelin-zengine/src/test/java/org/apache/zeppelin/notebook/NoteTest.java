@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -31,6 +35,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Date;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -232,5 +238,29 @@ public class NoteTest {
     assertNotEquals(System.identityHashCode(baseParagraph), System.identityHashCode(user1Paragraph));
     assertNotEquals(System.identityHashCode(baseParagraph), System.identityHashCode(user2Paragraph));
     assertNotEquals(System.identityHashCode(user1Paragraph), System.identityHashCode(user2Paragraph));
+  }
+
+  public void testNoteJson() {
+    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    note.setName("/test_note");
+    note.getConfig().put("config_1", "value_1");
+    note.getInfo().put("info_1", "value_1");
+    String pText = "%spark sc.version";
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p.dateUpdated = new Date();
+    p.setText(pText);
+    p.setResult("1.6.2");
+    p.settings.getForms().put("textbox_1", new TextBox("name", "default_name"));
+    p.settings.getParams().put("textbox_1", "my_name");
+    note.getAngularObjects().put("ao_1", Lists.newArrayList(new AngularObject("name_1", "value_1", note.getId(), p.getId(), null)));
+
+    // test Paragraph Json
+    Paragraph p2 = Paragraph.fromJson(p.toJson());
+    assertEquals(p2.settings, p.settings);
+    assertEquals(p2, p);
+
+    // test Note Json
+    Note note2 = Note.fromJson(note.toJson());
+    assertEquals(note2, note);
   }
 }

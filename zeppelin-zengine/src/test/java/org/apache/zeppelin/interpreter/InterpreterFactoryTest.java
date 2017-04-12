@@ -19,19 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Properties;
-
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -40,7 +27,6 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
@@ -50,21 +36,22 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.quartz.SchedulerException;
 import org.sonatype.aether.RepositoryException;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
-import org.mockito.Mock;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class InterpreterFactoryTest {
 
@@ -341,8 +328,7 @@ public class InterpreterFactoryTest {
     byte[] encoded = Files.readAllBytes(Paths.get(confFilePath));
     String json = new String(encoded, "UTF-8");
 
-    Gson gson = new Gson();
-    InterpreterInfoSaving infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
+    InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
     Map<String, InterpreterSetting> interpreterSettings = infoSaving.interpreterSettings;
     for (String key : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(key);
