@@ -109,7 +109,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
   @Test
   public void testRedefinitionZeppelinContext() {
     String pyRedefinitionCode = "z = 1\n";
-    String pyRestoreCode = "z = _zc\n";
+    String pyRestoreCode = "z = __zeppelin__\n";
     String pyValidCode = "z.input(\"test\")\n";
 
     assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());

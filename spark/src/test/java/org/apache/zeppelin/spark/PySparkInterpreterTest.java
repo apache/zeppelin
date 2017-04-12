@@ -127,7 +127,7 @@ public class PySparkInterpreterTest {
   public void testRedefinitionZeppelinContext() {
     if (getSparkVersionNumber() > 11) {
       String redefinitionCode = "z = 1\n";
-      String restoreCode = "z = _zc\n";
+      String restoreCode = "z = __zeppelin__\n";
       String validCode = "z.input(\"test\")\n";
 
       assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
