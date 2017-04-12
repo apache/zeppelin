@@ -490,7 +490,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
-        String code = "%spark.spark println(z.input(\"my_input\", \"default_name\"))\n" +
+        String code = "%spark.spark println(z.textbox(\"my_input\", \"default_name\"))\n" +
             "println(z.select(\"my_select\", \"1\"," +
             "Seq((\"1\", \"select_1\"), (\"2\", \"select_2\"))))\n" +
             "val items=z.checkbox(\"my_checkbox\", Seq(\"2\"), " +
