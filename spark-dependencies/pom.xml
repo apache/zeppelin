@@ -344,6 +344,19 @@
       </exclusions>
     </dependency>
 
+    <!-- yarn (not supported for Spark v1.5.0 or higher) -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-yarn_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-api</artifactId>
+      <version>${yarn.version}</version>
+    </dependency>
+
   </dependencies>
 
   <profiles>
@@ -810,74 +823,6 @@
       </repositories>
     </profile>
 
-    <profile>
-      <id>yarn</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-yarn_${scala.binary.version}</artifactId>
-          <version>${spark.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-          <version>${yarn.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>sparkr</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.googlecode.maven-download-plugin</groupId>
-            <artifactId>download-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>download-sparkr-files</id>
-                <phase>validate</phase>
-                <goals>
-                  <goal>wget</goal>
-                </goals>
-                <configuration>
-                  <readTimeOut>60000</readTimeOut>
-                  <retries>5</retries>
-                  <url>${spark.bin.download.url}</url>
-                  <unpack>true</unpack>
-                  <outputDirectory>${project.build.directory}</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.7</version>
-            <executions>
-              <execution>
-                <id>copy-sparkr-files</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/../../interpreter/spark/R/lib</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>
-                        ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
-                      </directory>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
   </profiles>
 
   <build>
@@ -1035,6 +980,51 @@
                      basedir="${project.build.directory}/${spark.archive}/python"
                      includes="pyspark/*.py,pyspark/**/*.py"/>
               </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- include sparkr by default -->
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>download-sparkr-files</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>${spark.bin.download.url}</url>
+              <unpack>true</unpack>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <id>copy-sparkr-files</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/../../interpreter/spark/R/lib</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>
+                    ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
+                  </directory>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>

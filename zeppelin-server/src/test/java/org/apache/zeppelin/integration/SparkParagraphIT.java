@@ -198,8 +198,8 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
     }
     try {
       // restart spark interpreter before running %dep
-      clickAndWait(By.xpath("//span[@tooltip='Interpreter binding']"));
-      clickAndWait(By.xpath("//div[font[contains(text(), 'spark')]]/preceding-sibling::a[@tooltip='Restart']"));
+      clickAndWait(By.xpath("//span[@uib-tooltip='Interpreter binding']"));
+      clickAndWait(By.xpath("//div[font[contains(text(), 'spark')]]/preceding-sibling::a[@uib-tooltip='Restart']"));
       clickAndWait(By.xpath("//button[contains(.,'OK')]"));
 
       setTextOfParagraph(1,"%dep z.load(\"org.apache.commons:commons-csv:1.1\")");
