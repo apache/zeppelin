@@ -35,7 +35,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
@@ -47,7 +46,6 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
@@ -64,8 +62,6 @@ public class InterpreterRestApi {
 
   private InterpreterSettingManager interpreterSettingManager;
   private NotebookServer notebookServer;
-
-  Gson gson = new Gson();
 
   public InterpreterRestApi() {
   }
@@ -118,7 +114,7 @@ public class InterpreterRestApi {
   public Response newSettings(String message) {
     try {
       NewInterpreterSettingRequest request =
-          gson.fromJson(message, NewInterpreterSettingRequest.class);
+          NewInterpreterSettingRequest.fromJson(message);
       if (request == null) {
         return new JsonResponse<>(Status.BAD_REQUEST).build();
       }
@@ -144,7 +140,7 @@ public class InterpreterRestApi {
 
     try {
       UpdateInterpreterSettingRequest request =
-          gson.fromJson(message, UpdateInterpreterSettingRequest.class);
+          UpdateInterpreterSettingRequest.fromJson(message);
       interpreterSettingManager
           .setPropertyAndRestart(settingId, request.getOption(), request.getProperties(),
               request.getDependencies());
@@ -187,7 +183,7 @@ public class InterpreterRestApi {
 
     InterpreterSetting setting = interpreterSettingManager.get(settingId);
     try {
-      RestartInterpreterRequest request = gson.fromJson(message, RestartInterpreterRequest.class);
+      RestartInterpreterRequest request = RestartInterpreterRequest.fromJson(message);
 
       String noteId = request == null ? null : request.getNoteId();
       if (null == noteId) {
@@ -239,7 +235,7 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response addRepository(String message) {
     try {
-      Repository request = gson.fromJson(message, Repository.class);
+      Repository request = Repository.fromJson(message);
       interpreterSettingManager.addRepository(request.getId(), request.getUrl(),
           request.isSnapshot(), request.getAuthentication(), request.getProxy());
       logger.info("New repository {} added", request.getId());

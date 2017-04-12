@@ -17,12 +17,26 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
+
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Only used for saving NotebookAuthorization info
  */
-public class NotebookAuthorizationInfoSaving {
+public class NotebookAuthorizationInfoSaving implements JsonSerializable {
+
+  private static final Gson gson = new Gson();
+
   public Map<String, Map<String, Set<String>>> authInfo;
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static NotebookAuthorizationInfoSaving fromJson(String json) {
+    return gson.fromJson(json, NotebookAuthorizationInfoSaving.class);
+  }
 }

@@ -115,7 +115,7 @@ public class NotebookServer extends WebSocketServlet
 
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
-  Gson gson = new GsonBuilder()
+  private static Gson gson = new GsonBuilder()
       .registerTypeAdapterFactory(new NotebookTypeAdapterFactory<Paragraph>(Paragraph.class) {
         @Override
         protected void beforeWrite(Paragraph source, JsonElement toSerialize) {
@@ -2432,7 +2432,7 @@ public class NotebookServer extends WebSocketServlet
         try {
           watcher.send(
               WatcherMessage.builder(noteId).subject(subject).message(serializeMessage(message))
-                  .build().serialize());
+                  .build().toJson());
         } catch (IOException e) {
           LOG.error("Cannot broadcast message to watcher", e);
         }

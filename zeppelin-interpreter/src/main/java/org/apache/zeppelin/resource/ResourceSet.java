@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.resource;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
@@ -23,7 +26,9 @@ import java.util.regex.Pattern;
 /**
  * List of resources
  */
-public class ResourceSet extends LinkedList<Resource> {
+public class ResourceSet extends LinkedList<Resource> implements JsonSerializable {
+
+  private static final Gson gson = new Gson();
 
   public ResourceSet(Collection<Resource> resources) {
     super(resources);
@@ -101,5 +106,13 @@ public class ResourceSet extends LinkedList<Resource> {
     } else {
       return false;
     }
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static ResourceSet fromJson(String json) {
+    return gson.fromJson(json, ResourceSet.class);
   }
 }
