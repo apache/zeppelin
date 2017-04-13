@@ -97,6 +97,7 @@
     <jetty.version>9.2.15.v20160210</jetty.version>
     <httpcomponents.core.version>4.3.3</httpcomponents.core.version>
     <httpcomponents.client.version>4.3.6</httpcomponents.client.version>
+    <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.lang.version>2.5</commons.lang.version>
     <commons.configuration.version>1.9</commons.configuration.version>
     <commons.codec.version>1.5</commons.codec.version>
@@ -171,6 +172,12 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
         <version>${httpcomponents.client.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpasyncclient</artifactId>
+        <version>${httpcomponents.asyncclient.version}</version>
       </dependency>
 
       <dependency>
