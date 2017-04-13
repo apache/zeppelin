@@ -722,6 +722,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
+      $scope.editor.commands.bindKey('ctrl-l', null);
 
       var keyBindingEditorFocusAction = function(scrollValue) {
         var numRows = $scope.editor.getSession().getLength();
