@@ -207,7 +207,8 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
 
 
       // TODO remove epsilon jitter after bump to nvd3 > 1.8.5
-      var xval, yval = 0;
+      var xval = 0
+      var yval = 0;
       if ( xAxis ){
         xval = (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) + Math.random() * epsilon;
       }

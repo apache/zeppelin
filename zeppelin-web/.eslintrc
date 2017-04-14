@@ -31,7 +31,6 @@
     "process": false
   },
   "rules": {
-    "one-var": 0,
     "prefer-rest-params": 0,
     "no-useless-constructor": 0,
     "no-multi-spaces": 0,
