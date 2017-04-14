@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').controller('SearchResultCtrl', SearchResultCtrl
 function SearchResultCtrl($scope, $routeParams, searchService) {
   'ngInject';
 
-  $scope.isResult = true ;
+  $scope.isResult = true;
   $scope.searchTerm = $routeParams.searchTerm;
   var results = searchService.search({'q': $routeParams.searchTerm}).query();
 

@@ -31,7 +31,6 @@
     "process": false
   },
   "rules": {
-    "semi-spacing": 0,
     "no-tabs": 0,
     "no-extra-boolean-cast": 0,
     "object-property-newline": 0,
