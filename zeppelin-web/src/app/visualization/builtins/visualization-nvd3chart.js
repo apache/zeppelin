@@ -49,8 +49,7 @@ export default class Nvd3ChartVisualization extends Visualization {
       if (d3g[0].values.length > numberOfDataThreshold) {
         animationDuration = 0;
       }
-    } catch (ignoreErr) {
-    }
+    } catch (err) { /** ignore */ }
 
     d3.select('#' + this.targetEl[0].id + ' svg')
       .attr('height', height)
