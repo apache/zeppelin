@@ -437,7 +437,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     var newIndex = -1;
     for (var i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === $scope.paragraph.id) {
-        //determine position of where to add new paragraph; default is below
+        // determine position of where to add new paragraph; default is below
         if (position === 'above') {
           newIndex = i;
         } else {

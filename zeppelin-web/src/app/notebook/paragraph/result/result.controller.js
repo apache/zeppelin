@@ -397,7 +397,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         elem.find('pre code').each(function(i, e) {
           hljs.highlightBlock(e);
         });
-        /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
+        /* eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}] */
         MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
       },
       (error) => { elem.html(`${error.stack}`); }

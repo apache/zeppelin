@@ -39,7 +39,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
       $rootScope.userName = $scope.loginParams.userName;
       $scope.SigningIn = false;
 
-      //redirect to the page from where the user originally was
+      // redirect to the page from where the user originally was
       if ($location.search() && $location.search()['ref']) {
         $timeout(function() {
           var redirectLocation = $location.search()['ref'];
@@ -62,7 +62,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
     };
   };
 
-  //handle session logout message received from WebSocket
+  // handle session logout message received from WebSocket
   $rootScope.$on('session_logout', function(event, data) {
     if ($rootScope.userName !== '') {
       $rootScope.userName = '';

@@ -172,13 +172,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
   };
 
-  //Export notebook
+  // Export notebook
   $scope.exportNote = function() {
     var jsonContent = JSON.stringify($scope.note);
     saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
   };
 
-  //Clone note
+  // Clone note
   $scope.cloneNote = function(noteId) {
     BootstrapDialog.confirm({
       closable: true,
@@ -366,7 +366,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.startSaveTimer = function() {
     $scope.killSaveTimer();
     $scope.isNoteDirty = true;
-    //console.log('startSaveTimer called ' + $scope.note.id);
+    // console.log('startSaveTimer called ' + $scope.note.id);
     $scope.saveTimer = $timeout(function() {
       $scope.saveNote();
     }, 10000);
@@ -961,7 +961,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     var newIndex = -1;
     for (var i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
-        //determine position of where to add new paragraph; default is below
+        // determine position of where to add new paragraph; default is below
         if (position === 'above') {
           newIndex = i;
         } else {
@@ -996,7 +996,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
     initializeLookAndFeel();
 
-    //open interpreter binding setting when there're none selected
+    // open interpreter binding setting when there're none selected
     getInterpreterBindings();
     getPermissions();
     var isPersonalized = $scope.note.config.personalizedMode;

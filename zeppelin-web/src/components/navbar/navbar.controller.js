@@ -88,10 +88,10 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
   function logout() {
     var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
-    //for firefox and safari
+    // for firefox and safari
     logoutURL = logoutURL.replace('//', '//false:false@');
     $http.post(logoutURL).error(function() {
-      //force authcBasic (if configured) to logout
+      // force authcBasic (if configured) to logout
       $http.post(logoutURL).error(function() {
         $rootScope.userName = '';
         $rootScope.ticket.principal = '';

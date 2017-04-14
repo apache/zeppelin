@@ -31,8 +31,8 @@ function saveAsService(browserDetectService) {
       frameSaveAs.document.execCommand('SaveAs', false, filename + '.' + extension);
       var t2 = Date.now();
 
-      //This means, this version of IE dosen't support auto download of a file with extension provided in param
-      //falling back to ".txt"
+      // This means, this version of IE dosen't support auto download of a file with extension provided in param
+      // falling back to ".txt"
       if (t1 === t2) {
         frameSaveAs.document.execCommand('SaveAs', true, filename + '.txt');
       }

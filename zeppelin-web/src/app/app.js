@@ -118,7 +118,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
     });
   })
 
-  //handel logout on API failure
+  // handel logout on API failure
   .config(function ($httpProvider, $provide) {
     $provide.factory('httpInterceptor', function ($q, $rootScope) {
       return {

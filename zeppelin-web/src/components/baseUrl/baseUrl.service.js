@@ -23,7 +23,7 @@ function baseUrlSrv() {
         port = 443;
       }
     }
-    //Exception for when running locally via grunt
+    // Exception for when running locally via grunt
     if (port === process.env.WEB_PORT) {
       port = process.env.SERVER_PORT;
     }

@@ -99,7 +99,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
   $scope.$on('interpreterSettings', function(event, data) {
     $scope.interpreterSettings = data.interpreterSettings;
 
-    //initialize default interpreter with Spark interpreter
+    // initialize default interpreter with Spark interpreter
     $scope.note.defaultInterpreter = data.interpreterSettings[0];
   });
 

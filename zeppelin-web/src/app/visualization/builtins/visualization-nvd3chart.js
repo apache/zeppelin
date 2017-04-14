@@ -121,7 +121,7 @@ export default class Nvd3ChartVisualization extends Visualization {
     };
 
     var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
-      //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
+      // console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
 
       if (s.type === 'key') {
         rowName = concat(rowName, sKey);
@@ -163,7 +163,7 @@ export default class Nvd3ChartVisualization extends Visualization {
 
     for (var k in rows) {
       traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
-        //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
+        // console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
         if (rowNameIndex[rowValue] === undefined) {
           rowIndexValue[rowIdx] = rowValue;
           rowNameIndex[rowValue] = rowIdx++;

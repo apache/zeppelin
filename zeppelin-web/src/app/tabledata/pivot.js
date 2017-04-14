@@ -250,7 +250,7 @@ export default class PivotTransformation extends Transformation {
       }
     }
 
-    //console.log('schema=%o, rows=%o', schema, rows);
+    // console.log('schema=%o, rows=%o', schema, rows);
     return {
       keys: keys,
       groups: groups,

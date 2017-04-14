@@ -75,7 +75,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       });
 
     chart.showDistX(true).showDistY(true);
-    //handle the problem of tooltip not showing when muliple points have same value.
+    // handle the problem of tooltip not showing when muliple points have same value.
   };
 
   yAxisTickFormat(d, yLabels) {
@@ -335,7 +335,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       var row = rows[i];
       var size = row[options.size.index];
 
-      //check if the field is numeric
+      // check if the field is numeric
       if (isNaN(parseFloat(size)) || !isFinite(size)) {
         return false;
       }
@@ -350,7 +350,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       }
     }
 
-    //check if all existing fields are discrete
+    // check if all existing fields are discrete
     var isAllDiscrete = ((options.xAxis && options.yAxis && this.isDiscrete(xValues) && this.isDiscrete(yValues)) ||
     (!options.xAxis && this.isDiscrete(yValues)) ||
     (!options.yAxis && this.isDiscrete(xValues)));

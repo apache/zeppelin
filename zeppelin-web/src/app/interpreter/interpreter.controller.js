@@ -440,7 +440,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   };
 
   $scope.addNewInterpreterSetting = function() {
-    //user input validation on interpreter creation
+    // user input validation on interpreter creation
     if (!$scope.newInterpreterSetting.name ||
       !$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
       BootstrapDialog.alert({

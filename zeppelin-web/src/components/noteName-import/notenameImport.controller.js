@@ -119,7 +119,7 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
         result.name = $scope.note.noteImportName;
       }
       websocketMsgSrv.importNote(result);
-      //angular.element('#noteImportModal').modal('hide');
+      // angular.element('#noteImportModal').modal('hide');
     } else {
       $scope.note.errorText = 'Invalid JSON';
     }
