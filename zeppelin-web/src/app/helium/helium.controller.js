@@ -321,8 +321,8 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   };
 
   $scope.getConfigButtonClass = function(pkgSearchResult) {
-    return (pkgSearchResult.configOpened && pkgSearchResult.configFetching) ?
-      'disabled' : '';
+    return (pkgSearchResult.configOpened && pkgSearchResult.configFetching)
+      ? 'disabled' : '';
   }
 
   $scope.toggleConfigButton = function(pkgSearchResult) {
