@@ -1,5 +1,5 @@
 {
-  "preset": "google",
+  "extends": ["eslint:recommended", "google", "standard"],
   "env": {
     "browser": true,
     "jasmine": true,
