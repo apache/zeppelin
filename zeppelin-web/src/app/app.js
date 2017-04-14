@@ -35,20 +35,20 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
   'ngResource',
   'ngclipboard'
 ])
-  .filter('breakFilter', function() {
-    return function(text) {
+  .filter('breakFilter', function () {
+    return function (text) {
       // eslint-disable-next-line no-extra-boolean-cast
       if (!!text) {
         return text.replace(/\n/g, '<br />');
       }
     };
   })
-  .config(function($httpProvider, $routeProvider, ngToastProvider) {
+  .config(function ($httpProvider, $routeProvider, ngToastProvider) {
     // withCredentials when running locally via grunt
     $httpProvider.defaults.withCredentials = true;
 
     var visBundleLoad = {
-      load: ['heliumService', function(heliumService) {
+      load: ['heliumService', function (heliumService) {
         return heliumService.load;
       }]
     };
@@ -137,7 +137,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
   })
   .constant('TRASH_FOLDER_ID', '~Trash');
 
-function auth() {
+function auth () {
   var $http = angular.injector(['ng']).get('$http');
   var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
   // withCredentials when running locally via grunt
@@ -149,18 +149,18 @@ function auth() {
     },
     crossDomain: true
   });
-  return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function(response) {
-    zeppelinWebApp.run(function($rootScope) {
+  return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function (response) {
+    zeppelinWebApp.run(function ($rootScope) {
       $rootScope.ticket = angular.fromJson(response.data).body;
     });
-  }, function(errorResponse) {
+  }, function (errorResponse) {
     // Handle error case
   });
 }
 
-function bootstrapApplication() {
-  zeppelinWebApp.run(function($rootScope, $location) {
-    $rootScope.$on('$routeChangeStart', function(event, next, current) {
+function bootstrapApplication () {
+  zeppelinWebApp.run(function ($rootScope, $location) {
+    $rootScope.$on('$routeChangeStart', function (event, next, current) {
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
         $location.path('/');
       }
@@ -169,6 +169,6 @@ function bootstrapApplication() {
   angular.bootstrap(document, ['zeppelinWebApp']);
 }
 
-angular.element(document).ready(function() {
+angular.element(document).ready(function () {
   auth().then(bootstrapApplication);
 });

@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').directive('codeEditor', codeEditor);
 
-function codeEditor($templateRequest, $compile) {
+function codeEditor ($templateRequest, $compile) {
   return {
     restrict: 'AE',
     scope: {
@@ -25,8 +25,8 @@ function codeEditor($templateRequest, $compile) {
       onLoad: '=onLoad',
       revisionView: '=revisionView'
     },
-    link: function(scope, element, attrs, controller) {
-      $templateRequest('components/editor/ace.editor.directive.html').then(function(editorHtml) {
+    link: function (scope, element, attrs, controller) {
+      $templateRequest('components/editor/ace.editor.directive.html').then(function (editorHtml) {
         var editor = angular.element(editorHtml);
         editor.attr('id', scope.paragraphId + '_editor');
         element.append(editor);

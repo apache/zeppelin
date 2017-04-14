@@ -27,7 +27,7 @@ import { ParagraphStatus, } from '../paragraph.status';
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
-function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
+function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
                     $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
                     baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
   'ngInject';
@@ -138,10 +138,10 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   // queue for append output
   const textResultQueueForAppend = [];
 
-  $scope.init = function(result, config, paragraph, index) {
+  $scope.init = function (result, config, paragraph, index) {
     // register helium plugin vis
     var visBundles = heliumService.getVisualizationBundles();
-    visBundles.forEach(function(vis) {
+    visBundles.forEach(function (vis) {
       $scope.builtInTableDataVisualizationList.push({
         id: vis.id,
         name: vis.name,
@@ -156,13 +156,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     renderResult($scope.type);
   };
 
-  function isDOMLoaded(targetElemId) {
+  function isDOMLoaded (targetElemId) {
     const elem = angular.element(`#${targetElemId}`);
     return elem.length;
   }
 
-  function retryUntilElemIsLoaded(targetElemId, callback) {
-    function retry() {
+  function retryUntilElemIsLoaded (targetElemId, callback) {
+    function retry () {
       if (!isDOMLoaded(targetElemId)) {
         $timeout(retry, 10);
         return;
@@ -175,7 +175,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $timeout(retry);
   }
 
-  $scope.$on('updateResult', function(event, result, newConfig, paragraphRef, index) {
+  $scope.$on('updateResult', function (event, result, newConfig, paragraphRef, index) {
     if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
       return;
     }
@@ -188,7 +188,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     renderResult($scope.type, refresh);
   });
 
-  $scope.$on('appendParagraphOutput', function(event, data) {
+  $scope.$on('appendParagraphOutput', function (event, data) {
     /* It has been observed that append events
      * can be errorneously called even if paragraph
      * execution has ended, and in that case, no append
@@ -208,7 +208,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  var updateData = function(result, config, paragraphRef, index) {
+  var updateData = function (result, config, paragraphRef, index) {
     data = result.data;
     paragraph = paragraphRef;
     resultIndex = parseInt(index);
@@ -250,7 +250,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  $scope.createDisplayDOMId = function(baseDOMId, type) {
+  $scope.createDisplayDOMId = function (baseDOMId, type) {
     if (type === DefaultDisplayType.TABLE) {
       return `${baseDOMId}_graph`;
     } else if (type === DefaultDisplayType.HTML) {
@@ -266,7 +266,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  $scope.renderDefaultDisplay = function(targetElemId, type, data, refresh) {
+  $scope.renderDefaultDisplay = function (targetElemId, type, data, refresh) {
     const afterLoaded = () => {
       if (type === DefaultDisplayType.TABLE) {
         renderGraph(targetElemId, $scope.graphMode, refresh);
@@ -290,7 +290,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $scope.$emit('resultRendered', paragraphId);
   };
 
-  const renderResult = function(type, refresh) {
+  const renderResult = function (type, refresh) {
     let activeApp;
     if (enableHelium) {
       getSuggestions();
@@ -311,14 +311,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  $scope.isDefaultDisplay = function() {
+  $scope.isDefaultDisplay = function () {
     return DefaultDisplayType[$scope.type];
   };
 
   /**
    * Render multiple sub results for custom display
    */
-  $scope.renderCustomDisplay = function(type, data) {
+  $scope.renderCustomDisplay = function (type, data) {
     // get result from intp
     if (!heliumService.getSpellByMagic(type)) {
       console.error(`Can't execute spell due to unknown display type: ${type}`);
@@ -364,7 +364,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
    * @param successCallback
    * @param failureCallback
    */
-  const handleData = function(data, type, successCallback, failureCallback) {
+  const handleData = function (data, type, successCallback, failureCallback) {
     if (SpellResult.isFunction(data)) {
       try {
         successCallback(data());
@@ -381,7 +381,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  const renderElem = function(targetElemId, data) {
+  const renderElem = function (targetElemId, data) {
     const elem = angular.element(`#${targetElemId}`);
     handleData(() => { data(targetElemId) }, DefaultDisplayType.ELEMENT,
       () => {}, /** HTML element will be filled with data. thus pass empty success callback */
@@ -389,12 +389,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     );
   };
 
-  const renderHtml = function(targetElemId, data) {
+  const renderHtml = function (targetElemId, data) {
     const elem = angular.element(`#${targetElemId}`);
     handleData(data, DefaultDisplayType.HTML,
       (generated) => {
         elem.html(generated);
-        elem.find('pre code').each(function(i, e) {
+        elem.find('pre code').each(function (i, e) {
           hljs.highlightBlock(e);
         });
         /* eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}] */
@@ -404,7 +404,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     );
   };
 
-  const renderAngular = function(targetElemId, data) {
+  const renderAngular = function (targetElemId, data) {
     const elem = angular.element(`#${targetElemId}`);
     const paragraphScope = noteVarShareService.get(`${paragraph.id}_paragraphScope`);
     handleData(data, DefaultDisplayType.ANGULAR,
@@ -420,7 +420,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return `p${resultId}_text`;
   };
 
-  const renderText = function(targetElemId, data) {
+  const renderText = function (targetElemId, data) {
     const elem = angular.element(`#${targetElemId}`);
     handleData(data, DefaultDisplayType.TEXT,
       (generated) => {
@@ -438,14 +438,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     );
   };
 
-  const removeChildrenDOM = function(targetElemId) {
+  const removeChildrenDOM = function (targetElemId) {
     const elem = angular.element(`#${targetElemId}`);
     if (elem.length) {
       elem.children().remove();
     }
   };
 
-  function appendTextOutput(data) {
+  function appendTextOutput (data) {
     const elemId = getTextResultElemId($scope.id);
     textResultQueueForAppend.push(data);
 
@@ -468,15 +468,15 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   }
 
-  const getTrSettingElem = function(scopeId, graphMode) {
+  const getTrSettingElem = function (scopeId, graphMode) {
     return angular.element('#trsetting' + scopeId + '_' + graphMode)
   }
 
-  const getVizSettingElem = function(scopeId, graphMode) {
+  const getVizSettingElem = function (scopeId, graphMode) {
     return angular.element('#vizsetting' + scopeId + '_' + graphMode)
   }
 
-  const renderGraph = function(graphElemId, graphMode, refresh) {
+  const renderGraph = function (graphElemId, graphMode, refresh) {
     // set graph height
     const height = $scope.config.graph.height;
     const graphElem = angular.element(`#${graphElemId}`);
@@ -497,11 +497,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }
     }
 
-    let afterLoaded = function() { /** will be overwritten */ };
+    let afterLoaded = function () { /** will be overwritten */ };
 
     if (!builtInViz.instance) { // not instantiated yet
       // render when targetEl is available
-      afterLoaded = function(loadedElem) {
+      afterLoaded = function (loadedElem) {
         try {
           const transformationSettingTargetEl = getTrSettingElem($scope.id, graphMode)
           const visualizationSettingTargetEl = getVizSettingElem($scope.id, graphMode)
@@ -514,7 +514,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
           builtInViz.instance = new Visualization(loadedElem, config);
 
           // inject emitter, $templateRequest
-          const emitter = function(graphSetting) {
+          const emitter = function (graphSetting) {
             commitVizConfigChange(graphSetting, graphMode);
           };
           builtInViz.instance._emitter = emitter;
@@ -544,7 +544,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       // when graph options or data are changed
       console.log('Refresh data %o', tableData);
 
-      afterLoaded = function(loadedElem) {
+      afterLoaded = function (loadedElem) {
         const transformationSettingTargetEl = getTrSettingElem($scope.id, graphMode)
         const visualizationSettingTargetEl = getVizSettingElem($scope.id, graphMode)
         const config = getVizConfig(graphMode);
@@ -559,7 +559,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       };
 
     } else {
-      afterLoaded = function(loadedElem) {
+      afterLoaded = function (loadedElem) {
         loadedElem.height(height);
         builtInViz.instance.activate();
       };
@@ -569,7 +569,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     retryUntilElemIsLoaded(tableElemId, afterLoaded);
   };
 
-  $scope.switchViz = function(newMode) {
+  $scope.switchViz = function (newMode) {
     var newConfig = angular.copy($scope.config);
     var newParams = angular.copy(paragraph.settings.params);
 
@@ -582,11 +582,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
-  var createNewScope = function() {
+  var createNewScope = function () {
     return $rootScope.$new(true);
   };
 
-  var commitParagraphResult = function(title, text, config, params) {
+  var commitParagraphResult = function (title, text, config, params) {
     var newParagraphConfig = angular.copy(paragraph.config);
     newParagraphConfig.results = newParagraphConfig.results || [];
     newParagraphConfig.results[resultIndex] = config;
@@ -602,7 +602,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
-  $scope.toggleGraphSetting = function() {
+  $scope.toggleGraphSetting = function () {
     var newConfig = angular.copy($scope.config);
     if (newConfig.graph.optionOpen) {
       newConfig.graph.optionOpen = false;
@@ -614,7 +614,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
-  var getVizConfig = function(vizId) {
+  var getVizConfig = function (vizId) {
     var config;
     var graph = $scope.config.graph;
     if (graph) {
@@ -643,7 +643,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return config;
   };
 
-  var commitVizConfigChange = function(config, vizId) {
+  var commitVizConfigChange = function (config, vizId) {
     var newConfig = angular.copy($scope.config);
     if (!newConfig.graph) {
       newConfig.graph = {};
@@ -673,7 +673,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
-  $scope.$on('paragraphResized', function(event, paragraphId) {
+  $scope.$on('paragraphResized', function (event, paragraphId) {
     // paragraph col width changed
     if (paragraphId === paragraph.id) {
       var builtInViz = builtInVisualizations[$scope.graphMode];
@@ -683,13 +683,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  $scope.resize = function(width, height) {
-    $timeout(function() {
+  $scope.resize = function (width, height) {
+    $timeout(function () {
       changeHeight(width, height);
     }, 200);
   };
 
-  var changeHeight = function(width, height) {
+  var changeHeight = function (width, height) {
     var newParams = angular.copy(paragraph.settings.params);
     var newConfig = angular.copy($scope.config);
 
@@ -699,7 +699,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
-  $scope.exportToDSV = function(delimiter) {
+  $scope.exportToDSV = function (delimiter) {
     var dsv = '';
     var dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
     var exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
@@ -730,7 +730,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     saveAsService.saveAs(dsv, exportedFileName, extension);
   };
 
-  $scope.getBase64ImageSrc = function(base64Data) {
+  $scope.getBase64ImageSrc = function (base64Data) {
     return 'data:image/png;base64,' + base64Data;
   };
 
@@ -743,7 +743,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   // suggested apps
   $scope.suggestion = {};
 
-  $scope.switchApp = function(appId) {
+  $scope.switchApp = function (appId) {
     var newConfig = angular.copy($scope.config);
     var newParams = angular.copy(paragraph.settings.params);
 
@@ -753,27 +753,27 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     commitConfig(newConfig, newParams);
   };
 
-  $scope.loadApp = function(heliumPackage) {
+  $scope.loadApp = function (heliumPackage) {
     var noteId = $route.current.pathParams.noteId;
     $http.post(baseUrlSrv.getRestApiBase() + '/helium/load/' + noteId + '/' + paragraph.id, heliumPackage)
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         console.log('Load app %o', data);
       })
-      .error(function(err, status, headers, config) {
+      .error(function (err, status, headers, config) {
         console.log('Error %o', err);
       });
   };
 
-  var commitConfig = function(config, params) {
+  var commitConfig = function (config, params) {
     commitParagraphResult(paragraph.title, paragraph.text, config, params);
   };
 
-  var getApplicationStates = function() {
+  var getApplicationStates = function () {
     var appStates = [];
 
     // Display ApplicationState
     if (paragraph.apps) {
-      _.forEach(paragraph.apps, function(app) {
+      _.forEach(paragraph.apps, function (app) {
         appStates.push({
           id: app.id,
           pkg: app.pkg,
@@ -784,7 +784,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
 
     // update or remove app states no longer exists
-    _.forEach($scope.apps, function(currentAppState, idx) {
+    _.forEach($scope.apps, function (currentAppState, idx) {
       var newAppState = _.find(appStates, {id: currentAppState.id});
       if (newAppState) {
         angular.extend($scope.apps[idx], newAppState);
@@ -794,29 +794,29 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     });
 
     // add new app states
-    _.forEach(appStates, function(app, idx) {
+    _.forEach(appStates, function (app, idx) {
       if ($scope.apps.length <= idx || $scope.apps[idx].id !== app.id) {
         $scope.apps.splice(idx, 0, app);
       }
     });
   };
 
-  var getSuggestions = function() {
+  var getSuggestions = function () {
     // Get suggested apps
     var noteId = $route.current.pathParams.noteId;
     if (!noteId) {
       return;
     }
     $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + paragraph.id)
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         $scope.suggestion = data.body;
       })
-      .error(function(err, status, headers, config) {
+      .error(function (err, status, headers, config) {
         console.log('Error %o', err);
       });
   };
 
-  const renderApp = function(targetElemId, appState) {
+  const renderApp = function (targetElemId, appState) {
     const afterLoaded = (loadedElem) => {
       try {
         console.log('renderApp %o', appState);
@@ -832,7 +832,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   /*
    ** $scope.$on functions below
    */
-  $scope.$on('appendAppOutput', function(event, data) {
+  $scope.$on('appendAppOutput', function (event, data) {
     if (paragraph.id === data.paragraphId) {
       var app = _.find($scope.apps, {id: data.appId});
       if (app) {
@@ -849,7 +849,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  $scope.$on('updateAppOutput', function(event, data) {
+  $scope.$on('updateAppOutput', function (event, data) {
     if (paragraph.id === data.paragraphId) {
       var app = _.find($scope.apps, {id: data.appId});
       if (app) {
@@ -866,7 +866,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  $scope.$on('appLoad', function(event, data) {
+  $scope.$on('appLoad', function (event, data) {
     if (paragraph.id === data.paragraphId) {
       var app = _.find($scope.apps, {id: data.appId});
       if (!app) {
@@ -884,7 +884,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  $scope.$on('appStatusChange', function(event, data) {
+  $scope.$on('appStatusChange', function (event, data) {
     if (paragraph.id === data.paragraphId) {
       var app = _.find($scope.apps, {id: data.appId});
       if (app) {
@@ -895,7 +895,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  var getAppRegistry = function(appState) {
+  var getAppRegistry = function (appState) {
     if (!appState.registry) {
       appState.registry = {};
     }
@@ -903,14 +903,14 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     return appState.registry;
   };
 
-  var getAppScope = function(appState) {
+  var getAppScope = function (appState) {
     if (!appState.scope) {
       appState.scope = $rootScope.$new(true, $rootScope);
     }
     return appState.scope;
   };
 
-  $scope.$on('angularObjectUpdate', function(event, data) {
+  $scope.$on('angularObjectUpdate', function (event, data) {
     var noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
       var scope;
@@ -946,7 +946,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       registry[varName].skipEmit = true;
 
       if (!registry[varName].clearWatcher) {
-        registry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+        registry[varName].clearWatcher = scope.$watch(varName, function (newValue, oldValue) {
           console.log('angular object (paragraph) updated %o %o', varName, registry[varName]);
           if (registry[varName].skipEmit) {
             registry[varName].skipEmit = false;
@@ -966,7 +966,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       // create proxy for AngularFunction
       if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
         var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = function() {
+        scope[funcName] = function () {
           scope[varName] = arguments;
           console.log('angular function (paragraph) invoked %o', arguments);
         };
@@ -976,7 +976,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   });
 
-  $scope.$on('angularObjectRemove', function(event, data) {
+  $scope.$on('angularObjectRemove', function (event, data) {
     var noteId = $route.current.pathParams.noteId;
     if (!data.noteId || data.noteId === noteId) {
       var scope;

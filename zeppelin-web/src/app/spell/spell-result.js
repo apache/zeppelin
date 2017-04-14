@@ -32,7 +32,7 @@ export const DefaultDisplayMagic = {
 };
 
 export class DataWithType {
-  constructor(data, type, magic, text) {
+  constructor (data, type, magic, text) {
     this.data = data;
     this.type = type;
 
@@ -48,7 +48,7 @@ export class DataWithType {
     this.text = text;
   }
 
-  static handleDefaultMagic(m) {
+  static handleDefaultMagic (m) {
     // let's use default display type instead of magic in case of default
     // to keep consistency with backend interpreter
     if (DefaultDisplayMagic[m]) {
@@ -58,7 +58,7 @@ export class DataWithType {
     }
   }
 
-  static createPropagable(dataWithType) {
+  static createPropagable (dataWithType) {
     if (!SpellResult.isFunction(dataWithType.data)) {
       return dataWithType;
     }
@@ -75,8 +75,8 @@ export class DataWithType {
    * @param customDisplayType
    * @return {Array<DataWithType>}
    */
-  static parseStringData(data, customDisplayMagic) {
-    function availableMagic(magic) {
+  static parseStringData (data, customDisplayMagic) {
+    function availableMagic (magic) {
       return magic && (DefaultDisplayMagic[magic] || customDisplayMagic[magic]);
     }
 
@@ -126,7 +126,7 @@ export class DataWithType {
    * @param textWithoutMagic
    * @return {Promise<Array<DataWithType>>}
    */
-  static produceMultipleData(dataWithType, customDisplayType,
+  static produceMultipleData (dataWithType, customDisplayType,
                              magic, textWithoutMagic) {
     const data = dataWithType.getData();
     const type = dataWithType.getType();
@@ -176,7 +176,7 @@ export class DataWithType {
    *   will be called in `then()` of this promise.
    * @returns {*} `data` which can be object, function or promise.
    */
-  getData() {
+  getData () {
     return this.data;
   }
 
@@ -186,40 +186,40 @@ export class DataWithType {
    * by `SpellResult.parseStringData()`
    * @returns {string}
    */
-  getType() {
+  getType () {
     return this.type;
   }
 
-  getMagic() {
+  getMagic () {
     return this.magic;
   }
 
-  getText() {
+  getText () {
     return this.text;
   }
 }
 
 export class SpellResult {
-  constructor(resultData, resultType) {
+  constructor (resultData, resultType) {
     this.dataWithTypes = [];
     this.add(resultData, resultType);
   }
 
-  static isFunction(data) {
+  static isFunction (data) {
     return (data && typeof data === 'function');
   }
 
-  static isPromise(data) {
+  static isPromise (data) {
     return (data && typeof data.then === 'function');
   }
 
-  static isObject(data) {
+  static isObject (data) {
     return (data &&
       !SpellResult.isFunction(data) &&
       !SpellResult.isPromise(data));
   }
 
-  static extractMagic(allParagraphText) {
+  static extractMagic (allParagraphText) {
     const pattern = /^\s*%(\S+)\s*/g;
     try {
       let match = pattern.exec(allParagraphText);
@@ -233,13 +233,13 @@ export class SpellResult {
     return undefined;
   }
 
-  static createPropagable(resultMsg) {
+  static createPropagable (resultMsg) {
     return resultMsg.map(dt => {
       return DataWithType.createPropagable(dt);
     })
   }
 
-  add(resultData, resultType) {
+  add (resultData, resultType) {
     if (resultData) {
       this.dataWithTypes.push(
         new DataWithType(resultData, resultType));
@@ -253,7 +253,7 @@ export class SpellResult {
    * @param textWithoutMagic
    * @return {Promise<Array<DataWithType>>}
    */
-  getAllParsedDataWithTypes(customDisplayType, magic, textWithoutMagic) {
+  getAllParsedDataWithTypes (customDisplayType, magic, textWithoutMagic) {
     const promises = this.dataWithTypes.map(dt => {
       return DataWithType.produceMultipleData(
         dt, customDisplayType, magic, textWithoutMagic);

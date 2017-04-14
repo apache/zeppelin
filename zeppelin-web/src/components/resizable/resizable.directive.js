@@ -14,12 +14,12 @@
 
 angular.module('zeppelinWebApp').directive('resizable', resizable);
 
-function resizable() {
+function resizable () {
   var resizableConfig = {
     autoHide: true,
     handles: 'se',
     helper: 'resizable-helper',
-    stop: function() {
+    stop: function () {
       angular.element(this).css({'width': '100%', 'height': '100%'});
     }
   };
@@ -29,9 +29,9 @@ function resizable() {
     scope: {
       callback: '&onResize'
     },
-    link: function postLink(scope, elem, attrs) {
-      attrs.$observe('resize', function(resize) {
-        var resetResize = function(elem, resize) {
+    link: function postLink (scope, elem, attrs) {
+      attrs.$observe('resize', function (resize) {
+        var resetResize = function (elem, resize) {
           var colStep = window.innerWidth / 12;
           elem.off('resizestop');
           var conf = angular.copy(resizableConfig);
@@ -45,7 +45,7 @@ function resizable() {
           conf.maxWidth = window.innerWidth;
 
           elem.resizable(conf);
-          elem.on('resizestop', function() {
+          elem.on('resizestop', function () {
             if (scope.callback) {
               var height = elem.height();
               if (height < 50) {
@@ -59,7 +59,7 @@ function resizable() {
         resize = JSON.parse(resize);
         if (resize.allowresize === 'true') {
           resetResize(elem, resize);
-          angular.element(window).resize(function() {
+          angular.element(window).resize(function () {
             resetResize(elem, resize);
           });
         }

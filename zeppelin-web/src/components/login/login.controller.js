@@ -14,12 +14,12 @@
 
 angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
 
-function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {
+function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {
   'ngInject';
 
   $scope.SigningIn = false;
   $scope.loginParams = {};
-  $scope.login = function() {
+  $scope.login = function () {
 
     $scope.SigningIn = true;
     $http({
@@ -32,7 +32,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
         'userName': $scope.loginParams.userName,
         'password': $scope.loginParams.password
       })
-    }).then(function successCallback(response) {
+    }).then(function successCallback (response) {
       $rootScope.ticket = response.data.body;
       angular.element('#loginModal').modal('toggle');
       $rootScope.$broadcast('loginSuccess', true);
@@ -41,21 +41,21 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
 
       // redirect to the page from where the user originally was
       if ($location.search() && $location.search()['ref']) {
-        $timeout(function() {
+        $timeout(function () {
           var redirectLocation = $location.search()['ref'];
           $location.$$search = {};
           $location.path(redirectLocation);
         }, 100);
 
       }
-    }, function errorCallback(errorResponse) {
+    }, function errorCallback (errorResponse) {
       $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
       $scope.SigningIn = false;
     });
 
   };
 
-  var initValues = function() {
+  var initValues = function () {
     $scope.loginParams = {
       userName: '',
       password: ''
@@ -63,12 +63,12 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
   };
 
   // handle session logout message received from WebSocket
-  $rootScope.$on('session_logout', function(event, data) {
+  $rootScope.$on('session_logout', function (event, data) {
     if ($rootScope.userName !== '') {
       $rootScope.userName = '';
       $rootScope.ticket = undefined;
 
-      setTimeout(function() {
+      setTimeout(function () {
         $scope.loginParams = {};
         $scope.loginParams.errorText = data.info;
         angular.element('.nav-login-btn').click();
@@ -81,7 +81,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
   /*
    ** $scope.$on functions below
    */
-  $scope.$on('initLoginValues', function() {
+  $scope.$on('initLoginValues', function () {
     initValues();
   });
 }

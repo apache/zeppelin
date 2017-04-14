@@ -20,23 +20,23 @@ import HandsonHelper from '../../handsontable/handsonHelper';
  * Visualize data in table format
  */
 export default class TableVisualization extends Visualization {
-  constructor(targetEl, config) {
+  constructor (targetEl, config) {
     super(targetEl, config);
     console.log('Init table viz');
     targetEl.addClass('table');
     this.passthrough = new PassthroughTransformation(config);
   };
 
-  refresh() {
+  refresh () {
     this.hot.render();
   };
 
-  render(tableData) {
+  render (tableData) {
     var height = this.targetEl.height();
     var container = this.targetEl.css('height', height).get(0);
     var resultRows = tableData.rows;
     var columnNames = _.pluck(tableData.columns, 'name');
-    var columns = Array.apply(null, Array(tableData.columns.length)).map(function() {
+    var columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
       return {type: 'text'};
     });
 
@@ -50,13 +50,13 @@ export default class TableVisualization extends Visualization {
     this.hot.validateCells(null);
   };
 
-  destroy() {
+  destroy () {
     if (this.hot) {
       this.hot.destroy();
     }
   };
 
-  getTransformation() {
+  getTransformation () {
     return this.passthrough;
   };
 }

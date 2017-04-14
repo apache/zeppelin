@@ -18,14 +18,14 @@ import Transformation from './transformation';
  * passthough the data
  */
 export default class PassthroughTransformation extends Transformation {
-  constructor(config) {
+  constructor (config) {
     super(config);
   };
 
   /**
    * Method will be invoked when tableData or config changes
    */
-  transform(tableData) {
+  transform (tableData) {
     return tableData;
   };
 }

@@ -14,24 +14,24 @@
 
 angular.module('zeppelinWebApp').service('noteVarShareService', noteVarShareService);
 
-function noteVarShareService() {
+function noteVarShareService () {
   'ngInject';
 
   var store = {};
 
-  this.clear = function() {
+  this.clear = function () {
     store = {};
   };
 
-  this.put = function(key, value) {
+  this.put = function (key, value) {
     store[key] = value;
   };
 
-  this.get = function(key) {
+  this.get = function (key) {
     return store[key];
   };
 
-  this.del = function(key) {
+  this.del = function (key) {
     var v = store[key];
     delete store[key];
     return v;

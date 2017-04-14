@@ -16,13 +16,13 @@
  * Create table data object from paragraph table type result
  */
 export default class TableData {
-  constructor(columns, rows, comment) {
+  constructor (columns, rows, comment) {
     this.columns = columns || [];
     this.rows = rows || [];
     this.comment = comment || '';
   };
 
-  loadParagraphResult(paragraphResult) {
+  loadParagraphResult (paragraphResult) {
     if (!paragraphResult || paragraphResult.type !== 'TABLE') {
       console.log('Can not load paragraph result');
       return;

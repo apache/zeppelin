@@ -14,14 +14,14 @@
 
 angular.module('zeppelinWebApp').directive('interpreterDirective', interpreterDirective);
 
-function interpreterDirective($timeout) {
+function interpreterDirective ($timeout) {
   'ngInject';
 
   return {
     restrict: 'A',
-    link: function(scope, element, attr) {
+    link: function (scope, element, attr) {
       if (scope.$last === true) {
-        $timeout(function() {
+        $timeout(function () {
           var id = 'ngRenderFinished';
           scope.$emit(id);
         });

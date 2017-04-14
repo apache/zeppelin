@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').service('renameSrv', renameSrv);
 
-function renameSrv($rootScope) {
+function renameSrv ($rootScope) {
   'ngInject';
 
   var self = this;
@@ -26,7 +26,7 @@ function renameSrv($rootScope) {
    * callback: (newName: string)=>void - callback onButtonClick
    * validator: (str: string)=>boolean - input validator
    */
-  self.openRenameModal = function(options) {
+  self.openRenameModal = function (options) {
     $rootScope.$broadcast('openRenameModal', options);
   };
 }

@@ -44,7 +44,6 @@
     "no-unneeded-ternary": 0,
     "padded-blocks": 0,
     "no-var": 0,
-    "space-before-function-paren": 0,
     "object-curly-spacing": 0,
     "comma-dangle": 0,
     "semi": 0,

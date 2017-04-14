@@ -19,7 +19,7 @@ import ColumnselectorTransformation from '../../tabledata/columnselector';
  * Visualize data in scatter char
  */
 export default class ScatterchartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
+  constructor (targetEl, config) {
     super(targetEl, config);
 
     this.columnselectorProps = [
@@ -45,15 +45,15 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps);
   };
 
-  type() {
+  type () {
     return 'scatterChart';
   };
 
-  getTransformation() {
+  getTransformation () {
     return this.columnselector;
   };
 
-  render(tableData) {
+  render (tableData) {
     this.tableData = tableData;
     this.selectDefault();
     var d3Data = this.setScatterChart(tableData, true);
@@ -63,14 +63,14 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     super.render(d3Data);
   };
 
-  configureChart(chart) {
+  configureChart (chart) {
     var self = this;
 
-    chart.xAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
+    chart.xAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
       return self.xAxisTickFormat(Math.round(d * 1e3)/1e3, self.xLabels);
     });
 
-    chart.yAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
+    chart.yAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
       return self.yAxisTickFormat(Math.round(d * 1e3)/1e3, self.yLabels);
     });
 
@@ -78,7 +78,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     // handle the problem of tooltip not showing when muliple points have same value.
   };
 
-  yAxisTickFormat(d, yLabels) {
+  yAxisTickFormat (d, yLabels) {
     if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
       return yLabels[d];
     } else {
@@ -86,7 +86,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  selectDefault() {
+  selectDefault () {
     if (!this.config.xAxis && !this.config.yAxis) {
       if (this.tableData.columns.length > 1) {
         this.config.xAxis = this.tableData.columns[0];
@@ -97,7 +97,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
   };
 
-  setScatterChart(data, refresh) {
+  setScatterChart (data, refresh) {
     var xAxis = this.config.xAxis;
     var yAxis = this.config.yAxis;
     var group = this.config.group;
@@ -221,7 +221,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
 
     // TODO remove sort and dedup after bump to nvd3 > 1.8.5
     var d3gvalues = d3g[grpNameIndex[grpName]].values;
-    d3gvalues.sort(function(a, b) {
+    d3gvalues.sort(function (a, b) {
       return ((a['x'] - b['x']) || (a['y'] - b['y']))
     });
 
@@ -241,7 +241,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     };
   };
 
-  setDiscreteScatterData(data) {
+  setDiscreteScatterData (data) {
     var xAxis = this.config.xAxis;
     var yAxis = this.config.yAxis;
     var group = this.config.group;
@@ -291,8 +291,8 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     return newRows;
   };
 
-  isDiscrete(field) {
-    var getUnique = function(f) {
+  isDiscrete (field) {
+    var getUnique = function (f) {
       var uniqObj = {};
       var uniqArr = [];
       var j = 0;
@@ -322,7 +322,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
   };
 
-  isValidSizeOption(options) {
+  isValidSizeOption (options) {
     var xValues = [];
     var yValues = [];
     var rows = this.tableData.rows;

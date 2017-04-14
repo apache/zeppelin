@@ -14,26 +14,26 @@
 
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl);
 
-function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   'ngInject';
 
   $scope.configrations = [];
   $scope._ = _;
   ngToast.dismiss();
 
-  var getConfigurations = function() {
+  var getConfigurations = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
-    .success(function(data, status, headers, config) {
+    .success(function (data, status, headers, config) {
       $scope.configurations = data.body;
     })
-    .error(function(data, status, headers, config) {
+    .error(function (data, status, headers, config) {
       if (status === 401) {
         ngToast.danger({
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
           timeout: '3000'
         });
-        setTimeout(function() {
+        setTimeout(function () {
           window.location.replace('/');
         }, 3000);
       }
@@ -41,7 +41,7 @@ function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     });
   };
 
-  var init = function() {
+  var init = function () {
     getConfigurations();
   };
 

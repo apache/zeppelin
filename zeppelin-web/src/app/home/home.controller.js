@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl);
 
-function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
+function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
                   ngToast, noteActionSrv, TRASH_FOLDER_ID) {
   'ngInject';
 
@@ -36,21 +36,21 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
   $scope.TRASH_FOLDER_ID = TRASH_FOLDER_ID;
   $scope.query = {q: ''};
 
-  $scope.initHome = function() {
+  $scope.initHome = function () {
     websocketMsgSrv.getHomeNote();
     vm.noteCustomHome = false;
   };
 
-  $scope.reloadNoteList = function() {
+  $scope.reloadNoteList = function () {
     websocketMsgSrv.reloadAllNotesFromRepo();
     $scope.isReloadingNotes = true;
   };
 
-  $scope.toggleFolderNode = function(node) {
+  $scope.toggleFolderNode = function (node) {
     node.hidden = !node.hidden;
   };
 
-  angular.element('#loginModal').on('hidden.bs.modal', function(e) {
+  angular.element('#loginModal').on('hidden.bs.modal', function (e) {
     $rootScope.$broadcast('initLoginValues');
   });
 
@@ -58,11 +58,11 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
    ** $scope.$on functions below
    */
 
-  $scope.$on('setNoteMenu', function(event, notes) {
+  $scope.$on('setNoteMenu', function (event, notes) {
     $scope.isReloadingNotes = false;
   });
 
-  $scope.$on('setNoteContent', function(event, note) {
+  $scope.$on('setNoteContent', function (event, note) {
     if (vm.noteCustomHome) {
       return;
     }
@@ -84,51 +84,51 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
     }
   });
 
-  $scope.renameNote = function(nodeId, nodePath) {
+  $scope.renameNote = function (nodeId, nodePath) {
     noteActionSrv.renameNote(nodeId, nodePath);
   };
 
-  $scope.moveNoteToTrash = function(noteId) {
+  $scope.moveNoteToTrash = function (noteId) {
     noteActionSrv.moveNoteToTrash(noteId, false);
   };
 
-  $scope.moveFolderToTrash = function(folderId) {
+  $scope.moveFolderToTrash = function (folderId) {
     noteActionSrv.moveFolderToTrash(folderId);
   };
 
-  $scope.restoreNote = function(noteId) {
+  $scope.restoreNote = function (noteId) {
     websocketMsgSrv.restoreNote(noteId);
   };
 
-  $scope.restoreFolder = function(folderId) {
+  $scope.restoreFolder = function (folderId) {
     websocketMsgSrv.restoreFolder(folderId);
   };
 
-  $scope.restoreAll = function() {
+  $scope.restoreAll = function () {
     noteActionSrv.restoreAll();
   };
 
-  $scope.renameFolder = function(node) {
+  $scope.renameFolder = function (node) {
     noteActionSrv.renameFolder(node.id);
   };
 
-  $scope.removeNote = function(noteId) {
+  $scope.removeNote = function (noteId) {
     noteActionSrv.removeNote(noteId, false);
   };
 
-  $scope.removeFolder = function(folderId) {
+  $scope.removeFolder = function (folderId) {
     noteActionSrv.removeFolder(folderId);
   };
 
-  $scope.emptyTrash = function() {
+  $scope.emptyTrash = function () {
     noteActionSrv.emptyTrash();
   };
 
-  $scope.clearAllParagraphOutput = function(noteId) {
+  $scope.clearAllParagraphOutput = function (noteId) {
     noteActionSrv.clearAllParagraphOutput(noteId);
   };
 
-  $scope.isFilterNote = function(note) {
+  $scope.isFilterNote = function (note) {
     if (!$scope.query.q) {
       return true;
     }
@@ -140,7 +140,7 @@ function HomeCtrl($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arra
     return false;
   };
 
-  $scope.getNoteName = function(note) {
+  $scope.getNoteName = function (note) {
     return arrayOrderingSrv.getNoteName(note);
   };
 }

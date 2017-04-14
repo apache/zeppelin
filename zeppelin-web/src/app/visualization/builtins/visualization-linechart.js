@@ -19,13 +19,13 @@ import PivotTransformation from '../../tabledata/pivot';
  * Visualize data in line chart
  */
 export default class LinechartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
+  constructor (targetEl, config) {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
   };
 
-  type() {
+  type () {
     if (this.config.lineWithFocus) {
       return 'lineWithFocusChart';
     } else {
@@ -33,11 +33,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     }
   };
 
-  getTransformation() {
+  getTransformation () {
     return this.pivot;
   };
 
-  render(pivot) {
+  render (pivot) {
     var d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
@@ -55,7 +55,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   /**
    * Set new config
    */
-  setConfig(config) {
+  setConfig (config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
 
@@ -66,10 +66,10 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     }
   };
 
-  configureChart(chart) {
+  configureChart (chart) {
     var self = this;
-    chart.xAxis.tickFormat(function(d) { return self.xAxisTickFormat(d, self.xLabels); });
-    chart.yAxis.tickFormat(function(d) {
+    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels); });
+    chart.yAxis.tickFormat(function (d) {
       if (d === undefined) {
         return 'N/A';
       }
@@ -86,7 +86,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     }
   };
 
-  getSetting(chart) {
+  getSetting (chart) {
     var self = this;
     var configObj = self.config;
 
@@ -109,14 +109,14 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       </div>`,
       scope: {
         config: configObj,
-        save: function() {
+        save: function () {
           self.emitConfig(configObj);
         }
       }
     };
   };
 
-  defaultY() {
+  defaultY () {
     return undefined;
   };
 }

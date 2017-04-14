@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-export function createDefaultPackage(pkgSearchResult, sce) {
+export function createDefaultPackage (pkgSearchResult, sce) {
   for (let pkgIdx in pkgSearchResult) {
     const pkg = pkgSearchResult[pkgIdx];
     pkg.pkg.icon = sce.trustAsHtml(pkg.pkg.icon);
@@ -35,7 +35,7 @@ export function createDefaultPackage(pkgSearchResult, sce) {
  * @param sce angular `$sce` object
  * @returns {Object} including {name, pkgInfo}
  */
-export function createDefaultPackages(pkgSearchResults, sce) {
+export function createDefaultPackages (pkgSearchResults, sce) {
   const defaultPackages = {};
   // show enabled version if any version of package is enabled
   for (let name in pkgSearchResults) {

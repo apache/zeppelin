@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents);
 
-function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
+function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
   'ngInject';
 
   var websocketCalls = {};
@@ -23,15 +23,15 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
   websocketCalls.ws.reconnectIfNotNormalClose = true;
 
-  websocketCalls.ws.onOpen(function() {
+  websocketCalls.ws.onOpen(function () {
     console.log('Websocket created');
     $rootScope.$broadcast('setConnectedStatus', true);
-    pingIntervalId = setInterval(function() {
+    pingIntervalId = setInterval(function () {
       websocketCalls.sendNewEvent({op: 'PING'});
     }, 10000);
   });
 
-  websocketCalls.sendNewEvent = function(data) {
+  websocketCalls.sendNewEvent = function (data) {
     if ($rootScope.ticket !== undefined) {
       data.principal = $rootScope.ticket.principal;
       data.ticket = $rootScope.ticket.ticket;
@@ -45,11 +45,11 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
     websocketCalls.ws.send(JSON.stringify(data));
   };
 
-  websocketCalls.isConnected = function() {
+  websocketCalls.isConnected = function () {
     return (websocketCalls.ws.socket.readyState === 1);
   };
 
-  websocketCalls.ws.onMessage(function(event) {
+  websocketCalls.ws.onMessage(function (event) {
     var payload;
     if (event.data) {
       payload = angular.fromJson(event.data);
@@ -73,14 +73,14 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
       if ($rootScope.ticket.roles === '[]') {
         btn = [{
           label: 'Close',
-          action: function(dialog) {
+          action: function (dialog) {
             dialog.close();
           }
         }];
       } else {
         btn = [{
           label: 'Login',
-          action: function(dialog) {
+          action: function (dialog) {
             dialog.close();
             angular.element('#loginModal').modal({
               show: 'true'
@@ -88,11 +88,11 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
           }
         }, {
           label: 'Cancel',
-          action: function(dialog) {
+          action: function (dialog) {
             dialog.close();
             // using $rootScope.apply to trigger angular digest cycle
             // changing $location.path inside bootstrap modal wont trigger digest
-            $rootScope.$apply(function() {
+            $rootScope.$apply(function () {
               $location.path('/');
             });
           }
@@ -150,7 +150,7 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
         buttons: [{
           // close all the dialogs when there are error on running all paragraphs
           label: 'Close',
-          action: function() {
+          action: function () {
             BootstrapDialog.closeAll();
           }
         }]
@@ -178,12 +178,12 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
     }
   });
 
-  websocketCalls.ws.onError(function(event) {
+  websocketCalls.ws.onError(function (event) {
     console.log('error message: ', event);
     $rootScope.$broadcast('setConnectedStatus', false);
   });
 
-  websocketCalls.ws.onClose(function(event) {
+  websocketCalls.ws.onClose(function (event) {
     console.log('close message: ', event);
     if (pingIntervalId !== undefined) {
       clearInterval(pingIntervalId);

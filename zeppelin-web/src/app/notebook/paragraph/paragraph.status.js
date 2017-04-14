@@ -21,7 +21,7 @@ export const ParagraphStatus = {
   ERROR: 'ERROR',
 };
 
-export function isParagraphRunning(paragraph) {
+export function isParagraphRunning (paragraph) {
   if (!paragraph) { return false; }
   const status = paragraph.status;
   if (!status) { return false; }

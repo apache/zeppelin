@@ -16,14 +16,14 @@
  * HandsonHelper class
  */
 export default class HandsonHelper {
-  constructor(columns, rows, comment) {
+  constructor (columns, rows, comment) {
     this.columns = columns || [];
     this.rows = rows || [];
     this.comment = comment || '';
     this._numericValidator = this._numericValidator.bind(this);
   };
 
-  getHandsonTableConfig(columns, columnNames, resultRows) {
+  getHandsonTableConfig (columns, columnNames, resultRows) {
     var self = this;
     return {
       colHeaders: columnNames,
@@ -41,22 +41,22 @@ export default class HandsonHelper {
       fillHandle: false,
       fragmentSelection: true,
       disableVisualSelection: true,
-      cells: function(ro, co, pro) {
+      cells: function (ro, co, pro) {
         var cellProperties = {};
         var colType = columns[co].type;
-        cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
+        cellProperties.renderer = function (instance, td, row, col, prop, value, cellProperties) {
           self._cellRenderer(instance, td, row, col, prop, value, cellProperties, colType);
         };
         return cellProperties;
       },
-      afterGetColHeader: function(col, TH) {
+      afterGetColHeader: function (col, TH) {
         var instance = this;
         var menu = self._buildDropDownMenu(columns[col].type);
         var button = self._buildTypeSwitchButton();
 
         self._addButtonMenuEvent(button, menu);
 
-        Handsontable.Dom.addEvent(menu, 'click', function(event) {
+        Handsontable.Dom.addEvent(menu, 'click', function (event) {
           if (event.target.nodeName === 'LI') {
             self._setColumnType(columns, event.target.data.colType, instance, col);
           }
@@ -74,8 +74,8 @@ export default class HandsonHelper {
   ** Private Service Functions
   */
 
-  _addButtonMenuEvent(button, menu) {
-    Handsontable.Dom.addEvent(button, 'click', function(event) {
+  _addButtonMenuEvent (button, menu) {
+    Handsontable.Dom.addEvent(button, 'click', function (event) {
       var changeTypeMenu;
       var position;
       var removeMenu;
@@ -96,7 +96,7 @@ export default class HandsonHelper {
       menu.style.top = (position.top + (window.scrollY || window.pageYOffset)) + 2 + 'px';
       menu.style.left = (position.left) + 'px';
 
-      removeMenu = function(event) {
+      removeMenu = function (event) {
         if (menu.parentNode) {
           menu.parentNode.removeChild(menu);
         }
@@ -106,7 +106,7 @@ export default class HandsonHelper {
     });
   }
 
-  _buildDropDownMenu(activeCellType) {
+  _buildDropDownMenu (activeCellType) {
     var menu = document.createElement('UL');
     var types = ['text', 'numeric', 'date'];
     var item;
@@ -132,7 +132,7 @@ export default class HandsonHelper {
     return menu;
   }
 
-  _buildTypeSwitchButton() {
+  _buildTypeSwitchButton () {
     var button = document.createElement('BUTTON');
 
     button.innerHTML = '\u25BC';
@@ -141,7 +141,7 @@ export default class HandsonHelper {
     return button;
   }
 
-  _isNumeric(value) {
+  _isNumeric (value) {
     if (!isNaN(value)) {
       if (value.length !== 0) {
         if (Number(value) <= Number.MAX_SAFE_INTEGER && Number(value) >= Number.MIN_SAFE_INTEGER) {
@@ -152,7 +152,7 @@ export default class HandsonHelper {
     return false;
   }
 
-  _cellRenderer(instance, td, row, col, prop, value, cellProperties, colType) {
+  _cellRenderer (instance, td, row, col, prop, value, cellProperties, colType) {
     if (colType === 'numeric' && this._isNumeric(value)) {
       cellProperties.format = '0,0.[00000]';
       td.style.textAlign = 'left';
@@ -164,16 +164,16 @@ export default class HandsonHelper {
     }
   }
 
-  _dateValidator(value, callback) {
+  _dateValidator (value, callback) {
     var d = moment(value);
     return callback(d.isValid());
   }
 
-  _numericValidator(value, callback) {
+  _numericValidator (value, callback) {
     return callback(this._isNumeric(value));
   }
 
-  _setColumnType(columns, type, instance, col) {
+  _setColumnType (columns, type, instance, col) {
     columns[col].type = type;
     this._setColumnValidator(columns, col);
     instance.updateSettings({columns: columns});
@@ -183,11 +183,11 @@ export default class HandsonHelper {
     }
   }
 
-  _isColumnSorted(instance, col) {
+  _isColumnSorted (instance, col) {
     return instance.sortingEnabled && instance.sortColumn === col;
   }
 
-  _setColumnValidator(columns, col) {
+  _setColumnValidator (columns, col) {
     if (columns[col].type === 'numeric') {
       columns[col].validator = this._numericValidator;
     } else if (columns[col].type === 'date') {

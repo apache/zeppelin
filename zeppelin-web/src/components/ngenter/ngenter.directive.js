@@ -14,12 +14,12 @@
 
 angular.module('zeppelinWebApp').directive('ngEnter', ngEnter);
 
-function ngEnter() {
-  return function(scope, element, attrs) {
-    element.bind('keydown keypress', function(event) {
+function ngEnter () {
+  return function (scope, element, attrs) {
+    element.bind('keydown keypress', function (event) {
       if (event.which === 13) {
         if (!event.shiftKey) {
-          scope.$apply(function() {
+          scope.$apply(function () {
             scope.$eval(attrs.ngEnter);
           });
         }

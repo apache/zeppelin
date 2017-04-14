@@ -14,15 +14,15 @@
 
 angular.module('zeppelinWebApp').service('noteActionSrv', noteActionSrv);
 
-function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactory) {
+function noteActionSrv (websocketMsgSrv, $location, renameSrv, noteListDataFactory) {
   'ngInject';
 
-  this.moveNoteToTrash = function(noteId, redirectToHome) {
+  this.moveNoteToTrash = function (noteId, redirectToHome) {
     BootstrapDialog.confirm({
       closable: true,
       title: 'Move this note to trash?',
       message: 'This note will be moved to <strong>trash</strong>.',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.moveNoteToTrash(noteId);
           if (redirectToHome) {
@@ -33,12 +33,12 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.moveFolderToTrash = function(folderId) {
+  this.moveFolderToTrash = function (folderId) {
     BootstrapDialog.confirm({
       closable: true,
       title: 'Move this folder to trash?',
       message: 'This folder will be moved to <strong>trash</strong>.',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.moveFolderToTrash(folderId);
         }
@@ -46,13 +46,13 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.removeNote = function(noteId, redirectToHome) {
+  this.removeNote = function (noteId, redirectToHome) {
     BootstrapDialog.confirm({
       type: BootstrapDialog.TYPE_WARNING,
       closable: true,
       title: 'WARNING! This note will be removed permanently',
       message: 'This cannot be undone. Are you sure?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.deleteNote(noteId);
           if (redirectToHome) {
@@ -63,13 +63,13 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.removeFolder = function(folderId) {
+  this.removeFolder = function (folderId) {
     BootstrapDialog.confirm({
       type: BootstrapDialog.TYPE_WARNING,
       closable: true,
       title: 'WARNING! This folder will be removed permanently',
       message: 'This cannot be undone. Are you sure?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.removeFolder(folderId);
         }
@@ -77,13 +77,13 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.restoreAll = function() {
+  this.restoreAll = function () {
     BootstrapDialog.confirm({
       closable: true,
       title: 'Are you sure want to restore all notes in the trash?',
       message: 'Folders and notes in the trash will be ' +
       '<strong>merged</strong> into their original position.',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.restoreAll();
         }
@@ -91,13 +91,13 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.emptyTrash = function() {
+  this.emptyTrash = function () {
     BootstrapDialog.confirm({
       type: BootstrapDialog.TYPE_WARNING,
       closable: true,
       title: 'WARNING! Notes under trash will be removed permanently',
       message: 'This cannot be undone. Are you sure?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.emptyTrash();
         }
@@ -105,12 +105,12 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.clearAllParagraphOutput = function(noteId) {
+  this.clearAllParagraphOutput = function (noteId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Do you want to clear all output?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.clearAllParagraphOutput(noteId);
         }
@@ -118,21 +118,21 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  this.renameNote = function(noteId, notePath) {
+  this.renameNote = function (noteId, notePath) {
     renameSrv.openRenameModal({
       title: 'Rename note',
       oldName: notePath,
-      callback: function(newName) {
+      callback: function (newName) {
         websocketMsgSrv.renameNote(noteId, newName);
       }
     });
   };
 
-  this.renameFolder = function(folderId) {
+  this.renameFolder = function (folderId) {
     renameSrv.openRenameModal({
       title: 'Rename folder',
       oldName: folderId,
-      callback: function(newName) {
+      callback: function (newName) {
         var newFolderId = normalizeFolderId(newName);
         if (_.has(noteListDataFactory.flatFolderMap, newFolderId)) {
           BootstrapDialog.confirm({
@@ -140,7 +140,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
             closable: true,
             title: 'WARNING! The folder will be MERGED',
             message: 'The folder will be merged into <strong>' + newFolderId + '</strong>. Are you sure?',
-            callback: function(result) {
+            callback: function (result) {
               if (result) {
                 websocketMsgSrv.renameFolder(folderId, newFolderId);
               }
@@ -153,7 +153,7 @@ function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactor
     });
   };
 
-  function normalizeFolderId(folderId) {
+  function normalizeFolderId (folderId) {
     folderId = folderId.trim();
 
     while (folderId.indexOf('\\') > -1) {

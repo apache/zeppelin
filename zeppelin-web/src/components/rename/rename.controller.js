@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('RenameCtrl', RenameCtrl);
 
-function RenameCtrl($scope) {
+function RenameCtrl ($scope) {
   'ngInject';
 
   var self = this;
@@ -22,25 +22,25 @@ function RenameCtrl($scope) {
   $scope.params = {newName: ''};
   $scope.isValid = true;
 
-  $scope.rename = function() {
+  $scope.rename = function () {
     angular.element('#renameModal').modal('hide');
     self.callback($scope.params.newName);
   };
 
-  $scope.$on('openRenameModal', function(event, options) {
+  $scope.$on('openRenameModal', function (event, options) {
     self.validator = options.validator || defaultValidator;
-    self.callback = options.callback || function() {};
+    self.callback = options.callback || function () {};
 
     $scope.title = options.title || 'Rename';
     $scope.params.newName = options.oldName || '';
-    $scope.validate = function() {
+    $scope.validate = function () {
       $scope.isValid = self.validator($scope.params.newName);
     };
 
     angular.element('#renameModal').modal('show');
   });
 
-  function defaultValidator(str) {
+  function defaultValidator (str) {
     return !!str.trim();
   }
 }

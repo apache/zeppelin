@@ -19,20 +19,20 @@ import PivotTransformation from '../../tabledata/pivot';
  * Visualize data in pie chart
  */
 export default class PiechartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
+  constructor (targetEl, config) {
     super(targetEl, config);
     this.pivot = new PivotTransformation(config);
   };
 
-  type() {
+  type () {
     return 'pieChart';
   };
 
-  getTransformation() {
+  getTransformation () {
     return this.pivot;
   };
 
-  render(pivot) {
+  render (pivot) {
     // [ZEPPELIN-2253] New chart function will be created each time inside super.render()
     this.chart = null;
     const d3Data = this.d3DataFromPivot(
@@ -69,14 +69,14 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   /**
    * Set new config
    */
-  setConfig(config) {
+  setConfig (config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
   };
 
-  configureChart(chart) {
-    chart.x(function(d) { return d.label; })
-      .y(function(d) { return d.value; })
+  configureChart (chart) {
+    chart.x(function (d) { return d.label; })
+      .y(function (d) { return d.value; })
       .showLabels(false)
       .showTooltipPercent(true);
   };

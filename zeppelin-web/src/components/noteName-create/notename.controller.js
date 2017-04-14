@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl);
 
-function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {
+function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {
   'ngInject';
 
   var vm = this;
@@ -25,7 +25,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
   $scope.interpreterSettings = {};
   $scope.note.defaultInterpreter = null;
 
-  vm.createNote = function() {
+  vm.createNote = function () {
     if (!vm.clone) {
       var defaultInterpreterId = '';
       if ($scope.note.defaultInterpreter !== null) {
@@ -39,7 +39,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
     }
   };
 
-  vm.handleNameEnter = function() {
+  vm.handleNameEnter = function () {
     angular.element('#noteNameModal').modal('toggle');
     vm.createNote();
   };
@@ -53,7 +53,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
 
   vm.newNoteName = function(path) {
     var newCount = 1;
-    angular.forEach(vm.notes.flatList, function(noteName) {
+    angular.forEach(vm.notes.flatList, function (noteName) {
       noteName = noteName.name;
       if (noteName.match(/^Untitled Note [0-9]*$/)) {
         var lastCount = noteName.substr(14) * 1;
@@ -65,7 +65,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
     return (path ? path + '/' : '') +'Untitled Note ' + newCount;
   };
 
-  vm.cloneNoteName = function() {
+  vm.cloneNoteName = function () {
     var copyCount = 1;
     var newCloneName = '';
     var lastIndex = vm.sourceNoteName.lastIndexOf(' ');
@@ -73,7 +73,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
     var noteNamePrefix = endsWithNumber ? vm.sourceNoteName.substr(0, lastIndex) : vm.sourceNoteName;
     var regexp = new RegExp('^' + noteNamePrefix + ' .+');
 
-    angular.forEach(vm.notes.flatList, function(noteName) {
+    angular.forEach(vm.notes.flatList, function (noteName) {
       noteName = noteName.name;
       if (noteName.match(regexp)) {
         var lastCopyCount = noteName.substr(lastIndex).trim();
@@ -91,11 +91,11 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
     return newCloneName + ' ' + copyCount;
   };
 
-  vm.getInterpreterSettings = function() {
+  vm.getInterpreterSettings = function () {
     vm.websocketMsgSrv.getInterpreterSettings();
   };
 
-  $scope.$on('interpreterSettings', function(event, data) {
+  $scope.$on('interpreterSettings', function (event, data) {
     $scope.interpreterSettings = data.interpreterSettings;
 
     // initialize default interpreter with Spark interpreter

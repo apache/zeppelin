@@ -24,7 +24,7 @@ import {
 
 angular.module('zeppelinWebApp').service('heliumService', heliumService);
 
-export default function heliumService($http, $sce, baseUrlSrv) {
+export default function heliumService ($http, $sce, baseUrlSrv) {
   'ngInject';
 
   let visualizationBundles = [];
@@ -39,11 +39,11 @@ export default function heliumService($http, $sce, baseUrlSrv) {
    * @param magic {string} e.g `%flowchart`
    * @returns {SpellBase} undefined if magic is not registered
    */
-  this.getSpellByMagic = function(magic) {
+  this.getSpellByMagic = function (magic) {
     return spellPerMagic[magic];
   };
 
-  this.executeSpell = function(magic, textWithoutMagic) {
+  this.executeSpell = function (magic, textWithoutMagic) {
     const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
       .then(confs => createPersistableConfig(confs));
 
@@ -57,7 +57,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     });
   };
 
-  this.executeSpellAsDisplaySystem = function(magic, textWithoutMagic) {
+  this.executeSpellAsDisplaySystem = function (magic, textWithoutMagic) {
     const promisedConf = this.getSinglePackageConfigUsingMagic(magic)
       .then(confs => createPersistableConfig(confs));
 
@@ -70,36 +70,36 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     });
   };
 
-  this.getVisualizationBundles = function() {
+  this.getVisualizationBundles = function () {
     return visualizationBundles;
   };
 
   /**
    * @returns {Promise} which returns bundleOrder
    */
-  this.getVisualizationPackageOrder = function() {
+  this.getVisualizationPackageOrder = function () {
     return $http.get(baseUrlSrv.getRestApiBase() + '/helium/order/visualization')
-      .then(function(response, status) {
+      .then(function (response, status) {
         return response.data.body;
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.error('Can not get bundle order', error);
       });
   };
 
-  this.setVisualizationPackageOrder = function(list) {
+  this.setVisualizationPackageOrder = function (list) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/order/visualization', list);
   };
 
-  this.enable = function(name, artifact) {
+  this.enable = function (name, artifact) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/enable/' + name, artifact);
   };
 
-  this.disable = function(name) {
+  this.disable = function (name) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
   };
 
-  this.saveConfig = function(pkg, defaultPackageConfig, closeConfigPanelCallback) {
+  this.saveConfig = function (pkg, defaultPackageConfig, closeConfigPanelCallback) {
     // in case of local package, it will include `/`
     const pkgArtifact = encodeURIComponent(pkg.artifact);
     const pkgName = pkg.name;
@@ -123,34 +123,34 @@ export default function heliumService($http, $sce, baseUrlSrv) {
   /**
    * @returns {Promise<Object>} which including {name, Array<package info for artifact>}
    */
-  this.getAllPackageInfo = function() {
+  this.getAllPackageInfo = function () {
     return $http.get(`${baseUrlSrv.getRestApiBase()}/helium/package`)
-      .then(function(response, status) {
+      .then(function (response, status) {
         return response.data.body;
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.error('Failed to get all package infos', error);
       });
   };
 
-  this.getAllEnabledPackages = function() {
+  this.getAllEnabledPackages = function () {
     return $http.get(`${baseUrlSrv.getRestApiBase()}/helium/enabledPackage`)
-      .then(function(response, status) {
+      .then(function (response, status) {
         return response.data.body;
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.error('Failed to get all enabled package infos', error);
       });
   };
 
-  this.getSingleBundle = function(pkgName) {
+  this.getSingleBundle = function (pkgName) {
     let url = `${baseUrlSrv.getRestApiBase()}/helium/bundle/load/${pkgName}`
     if (process.env.HELIUM_BUNDLE_DEV) {
       url = url + '?refresh=true';
     }
 
     return $http.get(url)
-      .then(function(response, status) {
+      .then(function (response, status) {
         const bundle = response.data
         if (bundle.substring(0, 'ERROR:'.length) === 'ERROR:') {
           console.error(`Failed to get bundle: ${pkgName}`, bundle);
@@ -159,19 +159,19 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
         return bundle
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.error(`Failed to get single bundle: ${pkgName}`, error);
       });
   }
 
-  this.getDefaultPackages = function() {
+  this.getDefaultPackages = function () {
     return this.getAllPackageInfo()
       .then(pkgSearchResults => {
         return createDefaultPackages(pkgSearchResults, $sce);
       });
   };
 
-  this.getAllPackageInfoAndDefaultPackages = function() {
+  this.getAllPackageInfoAndDefaultPackages = function () {
     return this.getAllPackageInfo()
       .then(pkgSearchResults => {
         return {
@@ -185,11 +185,11 @@ export default function heliumService($http, $sce, baseUrlSrv) {
    * get all package configs.
    * @return { Promise<{name, Array<Object>}> }
    */
-  this.getAllPackageConfigs = function() {
+  this.getAllPackageConfigs = function () {
     const promisedDefaultPackages = this.getDefaultPackages();
     const promisedPersistedConfs =
       $http.get(`${baseUrlSrv.getRestApiBase()}/helium/config`)
-      .then(function(response, status) {
+      .then(function (response, status) {
         return response.data.body;
       });
 
@@ -200,7 +200,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
         return createAllPackageConfigs(defaultPackages, persistedConfs);
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.error('Failed to get all package configs', error);
       });
   };
@@ -209,7 +209,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
    * get the package config which is persisted in server.
    * @return { Promise<Array<Object>> }
    */
-  this.getSinglePackageConfigs = function(pkg) {
+  this.getSinglePackageConfigs = function (pkg) {
     const pkgName = pkg.name;
     // in case of local package, it will include `/`
     const pkgArtifact = encodeURIComponent(pkg.artifact);
@@ -221,7 +221,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
 
     const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/config/${pkgName}/${pkgArtifact}`;
     const promisedConf = $http.get(confUrl)
-      .then(function(response, status) {
+      .then(function (response, status) {
         return response.data.body;
       });
 
@@ -231,12 +231,12 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     });
   };
 
-  this.getSinglePackageConfigUsingMagic = function(magic) {
+  this.getSinglePackageConfigUsingMagic = function (magic) {
     const pkgName = pkgNamePerMagic[magic];
 
     const confUrl = `${baseUrlSrv.getRestApiBase()}/helium/spell/config/${pkgName}`;
     const promisedConf = $http.get(confUrl)
-      .then(function(response, status) {
+      .then(function (response, status) {
         return response.data.body;
       });
 

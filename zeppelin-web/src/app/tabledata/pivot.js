@@ -18,11 +18,11 @@ import Transformation from './transformation';
  * pivot table data and return d3 chart data
  */
 export default class PivotTransformation extends Transformation {
-  constructor(config) {
+  constructor (config) {
     super(config);
   };
 
-  getSetting() {
+  getSetting () {
     var self = this;
 
     var configObj = self.config;
@@ -32,22 +32,22 @@ export default class PivotTransformation extends Transformation {
       scope: {
         config: configObj.common.pivot,
         tableDataColumns: self.tableDataColumns,
-        save: function() {
+        save: function () {
           self.emitConfig(configObj);
         },
-        removeKey: function(idx) {
+        removeKey: function (idx) {
           configObj.common.pivot.keys.splice(idx, 1);
           self.emitConfig(configObj);
         },
-        removeGroup: function(idx) {
+        removeGroup: function (idx) {
           configObj.common.pivot.groups.splice(idx, 1);
           self.emitConfig(configObj);
         },
-        removeValue: function(idx) {
+        removeValue: function (idx) {
           configObj.common.pivot.values.splice(idx, 1);
           self.emitConfig(configObj);
         },
-        setValueAggr: function(idx, aggr) {
+        setValueAggr: function (idx, aggr) {
           configObj.common.pivot.values[idx].aggr = aggr;
           self.emitConfig(configObj);
         }
@@ -58,7 +58,7 @@ export default class PivotTransformation extends Transformation {
   /**
    * Method will be invoked when tableData or config changes
    */
-  transform(tableData) {
+  transform (tableData) {
     this.tableDataColumns = tableData.columns;
     this.config.common = this.config.common || {};
     this.config.common.pivot = this.config.common.pivot || {};
@@ -80,10 +80,10 @@ export default class PivotTransformation extends Transformation {
       config.values);
   };
 
-  removeUnknown() {
+  removeUnknown () {
     var config = this.config.common.pivot;
     var tableDataColumns = this.tableDataColumns;
-    var unique = function(list) {
+    var unique = function (list) {
       for (var i = 0; i < list.length; i++) {
         for (var j = i + 1; j < list.length; j++) {
           if (angular.equals(list[i], list[j])) {
@@ -93,7 +93,7 @@ export default class PivotTransformation extends Transformation {
       }
     };
 
-    var removeUnknown = function(list) {
+    var removeUnknown = function (list) {
       for (var i = 0; i < list.length; i++) {
         // remove non existing column
         var found = false;
@@ -118,7 +118,7 @@ export default class PivotTransformation extends Transformation {
     removeUnknown(config.values);
   };
 
-  selectDefault() {
+  selectDefault () {
     var config = this.config.common.pivot;
     if (config.keys.length === 0 &&
         config.groups.length === 0 &&
@@ -133,29 +133,29 @@ export default class PivotTransformation extends Transformation {
     }
   };
 
-  pivot(data, keys, groups, values) {
+  pivot (data, keys, groups, values) {
     var aggrFunc = {
-      sum: function(a, b) {
+      sum: function (a, b) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return varA + varB;
       },
-      count: function(a, b) {
+      count: function (a, b) {
         var varA = (a !== undefined) ? parseInt(a) : 0;
         var varB = (b !== undefined) ? 1 : 0;
         return varA + varB;
       },
-      min: function(a, b) {
+      min: function (a, b) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return Math.min(varA, varB);
       },
-      max: function(a, b) {
+      max: function (a, b) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return Math.max(varA, varB);
       },
-      avg: function(a, b, c) {
+      avg: function (a, b, c) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return varA + varB;

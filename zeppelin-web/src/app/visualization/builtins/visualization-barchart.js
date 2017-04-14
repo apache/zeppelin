@@ -19,21 +19,21 @@ import PivotTransformation from '../../tabledata/pivot';
  * Visualize data in bar char
  */
 export default class BarchartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
+  constructor (targetEl, config) {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
   };
 
-  type() {
+  type () {
     return 'multiBarChart';
   };
 
-  getTransformation() {
+  getTransformation () {
     return this.pivot;
   };
 
-  render(pivot) {
+  render (pivot) {
     var d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
@@ -51,17 +51,17 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   /**
    * Set new config
    */
-  setConfig(config) {
+  setConfig (config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
   };
 
-  configureChart(chart) {
+  configureChart (chart) {
     var self = this;
     var configObj = self.config;
 
     chart.yAxis.axisLabelDistance(50);
-    chart.yAxis.tickFormat(function(d) { return self.yAxisTickFormat(d); });
+    chart.yAxis.tickFormat(function (d) { return self.yAxisTickFormat(d); });
 
     self.chart.stacked(this.config.stacked);
 

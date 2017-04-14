@@ -1,16 +1,16 @@
-describe('Factory: NoteList', function() {
+describe('Factory: NoteList', function () {
 
   var noteList;
 
-  beforeEach(function() {
+  beforeEach(function () {
     angular.mock.module('zeppelinWebApp');
 
-    inject(function($injector) {
+    inject(function ($injector) {
       noteList = $injector.get('noteListDataFactory');
     });
   });
 
-  it('should generate both flat list and folder-based list properly', function() {
+  it('should generate both flat list and folder-based list properly', function () {
     var notesList = [
       {name: 'A', id: '000001'},
       {name: 'B', id: '000002'},

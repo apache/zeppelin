@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory);
 
-function noteListDataFactory(TRASH_FOLDER_ID) {
+function noteListDataFactory (TRASH_FOLDER_ID) {
   'ngInject';
 
   var notes = {
@@ -22,7 +22,7 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
     flatList: [],
     flatFolderMap: {},
 
-    setNotes: function(notesList) {
+    setNotes: function (notesList) {
       // a flat list to boost searching
       notes.flatList = _.map(notesList, (note) => {
         note.isTrash = note.name
@@ -33,7 +33,7 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
       // construct the folder-based tree
       notes.root = {children: []};
       notes.flatFolderMap = {};
-      _.reduce(notesList, function(root, note) {
+      _.reduce(notesList, function (root, note) {
         var noteName = note.name || note.id;
         var nodes = noteName.match(/([^\/][^\/]*)/g);
 
@@ -45,7 +45,7 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
     }
   };
 
-  var addNode = function(curDir, nodes, noteId) {
+  var addNode = function (curDir, nodes, noteId) {
     if (nodes.length === 1) {  // the leaf
       curDir.children.push({
         name: nodes[0],
@@ -56,7 +56,7 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
     } else {  // a folder node
       var node = nodes.shift();
       var dir = _.find(curDir.children,
-        function(c) { return c.name === node && c.children !== undefined; });
+        function (c) { return c.name === node && c.children !== undefined; });
       if (dir !== undefined) { // found an existing dir
         addNode(dir, nodes, noteId);
       } else {

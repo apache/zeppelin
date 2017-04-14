@@ -16,16 +16,16 @@ import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl);
 
-function JobCtrl($scope, $http, baseUrlSrv) {
+function JobCtrl ($scope, $http, baseUrlSrv) {
   'ngInject';
 
-  $scope.init = function(jobInformation) {
+  $scope.init = function (jobInformation) {
     $scope.progressValue = 0;
   };
 
-  $scope.getProgress = function() {
+  $scope.getProgress = function () {
     var statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
-    var runningJob = _.countBy(statusList, function(status) {
+    var runningJob = _.countBy(statusList, function (status) {
       if (status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED) {
         return 'matchCount';
       } else {
@@ -38,12 +38,12 @@ function JobCtrl($scope, $http, baseUrlSrv) {
     return isNaN(result) ? 0 : result;
   };
 
-  $scope.runNotebookJob = function(notebookId) {
+  $scope.runNotebookJob = function (notebookId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Run all paragraphs?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           $http({
             method: 'POST',
@@ -51,9 +51,9 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             }
-          }).then(function successCallback(response) {
+          }).then(function successCallback (response) {
             // success
-          }, function errorCallback(errorResponse) {
+          }, function errorCallback (errorResponse) {
             var errorText = 'SERVER ERROR';
             // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
@@ -70,12 +70,12 @@ function JobCtrl($scope, $http, baseUrlSrv) {
     });
   };
 
-  $scope.stopNotebookJob = function(notebookId) {
+  $scope.stopNotebookJob = function (notebookId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Stop all paragraphs?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           $http({
             method: 'DELETE',
@@ -83,9 +83,9 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             }
-          }).then(function successCallback(response) {
+          }).then(function successCallback (response) {
             // success
-          }, function errorCallback(errorResponse) {
+          }, function errorCallback (errorResponse) {
             var errorText = 'SERVER ERROR';
             // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
@@ -102,7 +102,7 @@ function JobCtrl($scope, $http, baseUrlSrv) {
     });
   };
 
-  $scope.lastExecuteTime = function(unixtime) {
+  $scope.lastExecuteTime = function (unixtime) {
     return moment.unix(unixtime / 1000).fromNow();
   };
 

@@ -16,7 +16,7 @@ import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
-function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
   'ngInject';
 
   var interpreterSettingsTmp = [];
@@ -28,29 +28,29 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope._ = _;
   ngToast.dismiss();
 
-  $scope.openPermissions = function() {
+  $scope.openPermissions = function () {
     $scope.showInterpreterAuth = true;
   };
 
-  $scope.closePermissions = function() {
+  $scope.closePermissions = function () {
     $scope.showInterpreterAuth = false;
   };
 
-  var getSelectJson = function() {
+  var getSelectJson = function () {
     var selectJson = {
       tags: false,
       multiple: true,
       tokenSeparators: [',', ' '],
       minimumInputLength: 2,
       ajax: {
-        url: function(params) {
+        url: function (params) {
           if (!params.term) {
             return false;
           }
           return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
         },
         delay: 250,
-        processResults: function(data, params) {
+        processResults: function (data, params) {
           var users = [];
           if (data.body.users.length !== 0) {
             for (var i = 0; i < data.body.users.length; i++) {
@@ -73,7 +73,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     return selectJson;
   };
 
-  $scope.togglePermissions = function(intpName) {
+  $scope.togglePermissions = function (intpName) {
     angular.element('#' + intpName + 'Users').select2(getSelectJson());
     if ($scope.showInterpreterAuth) {
       $scope.closePermissions();
@@ -82,25 +82,25 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.$on('ngRenderFinished', function(event, data) {
+  $scope.$on('ngRenderFinished', function (event, data) {
     for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
       angular.element('#' + $scope.interpreterSettings[setting].name + 'Users').select2(getSelectJson());
     }
   });
 
-  var getInterpreterSettings = function() {
+  var getInterpreterSettings = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         $scope.interpreterSettings = data.body;
         checkDownloadingDependencies();
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         if (status === 401) {
           ngToast.danger({
             content: 'You don\'t have permission on this page',
             verticalPosition: 'bottom',
             timeout: '3000'
           });
-          setTimeout(function() {
+          setTimeout(function () {
             window.location.replace('/');
           }, 3000);
         }
@@ -108,7 +108,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       });
   };
 
-  var checkDownloadingDependencies = function() {
+  var checkDownloadingDependencies = function () {
     var isDownloading = false;
     for (var index = 0; index < $scope.interpreterSettings.length; index++) {
       var setting = $scope.interpreterSettings[index];
@@ -126,7 +126,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
 
     if (isDownloading) {
-      $timeout(function() {
+      $timeout(function () {
         if ($route.current.$$route.originalPath === '/interpreter') {
           getInterpreterSettings();
         }
@@ -134,32 +134,32 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  var getAvailableInterpreters = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').success(function(data, status, headers, config) {
+  var getAvailableInterpreters = function () {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').success(function (data, status, headers, config) {
       $scope.availableInterpreters = data.body;
-    }).error(function(data, status, headers, config) {
+    }).error(function (data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
     });
   };
 
-  var emptyNewProperty = function(object) {
+  var emptyNewProperty = function (object) {
     angular.extend(object, {propertyValue: '', propertyKey: ''});
   };
 
-  var emptyNewDependency = function(object) {
+  var emptyNewDependency = function (object) {
     angular.extend(object, {depArtifact: '', depExclude: ''});
   };
 
-  var removeTMPSettings = function(index) {
+  var removeTMPSettings = function (index) {
     interpreterSettingsTmp.splice(index, 1);
   };
 
-  $scope.copyOriginInterpreterSettingProperties = function(settingId) {
+  $scope.copyOriginInterpreterSettingProperties = function (settingId) {
     var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
     interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
   };
 
-  $scope.setPerNoteOption = function(settingId, sessionOption) {
+  $scope.setPerNoteOption = function (settingId, sessionOption) {
     var option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
@@ -184,7 +184,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.setPerUserOption = function(settingId, sessionOption) {
+  $scope.setPerUserOption = function (settingId, sessionOption) {
     var option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
@@ -209,7 +209,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.getPerNoteOption = function(settingId) {
+  $scope.getPerNoteOption = function (settingId) {
     var option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
@@ -228,7 +228,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.getPerUserOption = function(settingId) {
+  $scope.getPerUserOption = function (settingId) {
     var option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
@@ -247,7 +247,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.getInterpreterRunningOption = function(settingId) {
+  $scope.getInterpreterRunningOption = function (settingId) {
     var sharedModeName = 'shared';
 
     var globallyModeName = 'Globally';
@@ -289,7 +289,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     return globallyModeName;
   };
 
-  $scope.setInterpreterRunningOption = function(settingId, isPerNoteMode, isPerUserMode) {
+  $scope.setInterpreterRunningOption = function (settingId, isPerNoteMode, isPerUserMode) {
     var option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
@@ -302,14 +302,14 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     option.perUser = isPerUserMode;
   };
 
-  $scope.updateInterpreterSetting = function(form, settingId) {
+  $scope.updateInterpreterSetting = function (form, settingId) {
     var thisConfirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
       title: '',
       message: 'Do you want to update this interpreter and restart with new settings?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
           var setting = $scope.interpreterSettings[index];
@@ -353,13 +353,13 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting');
 
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request)
-            .success(function(data, status, headers, config) {
+            .success(function (data, status, headers, config) {
               $scope.interpreterSettings[index] = data.body;
               removeTMPSettings(index);
               checkDownloadingDependencies();
               thisConfirm.close();
             })
-            .error(function(data, status, headers, config) {
+            .error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message);
               ngToast.danger({content: data.message, verticalPosition: 'bottom'});
               form.$show();
@@ -373,7 +373,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     });
   };
 
-  $scope.resetInterpreterSetting = function(settingId) {
+  $scope.resetInterpreterSetting = function (settingId) {
     var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
 
     // Set the old settings back
@@ -381,19 +381,19 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     removeTMPSettings(index);
   };
 
-  $scope.removeInterpreterSetting = function(settingId) {
+  $scope.removeInterpreterSetting = function (settingId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Do you want to delete this interpreter setting?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId)
-            .success(function(data, status, headers, config) {
+            .success(function (data, status, headers, config) {
 
               var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings.splice(index, 1);
-            }).error(function(data, status, headers, config) {
+            }).error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message);
             });
         }
@@ -401,7 +401,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     });
   };
 
-  $scope.newInterpreterGroupChange = function() {
+  $scope.newInterpreterGroupChange = function () {
     var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
       'properties');
     var properties = {};
@@ -417,19 +417,19 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $scope.newInterpreterSetting.properties = properties;
   };
 
-  $scope.restartInterpreterSetting = function(settingId) {
+  $scope.restartInterpreterSetting = function (settingId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Do you want to restart this interpreter?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId)
-            .success(function(data, status, headers, config) {
+            .success(function (data, status, headers, config) {
               var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings[index] = data.body;
               ngToast.info('Interpreter stopped. Will be lazily started on next run.');
-            }).error(function(data, status, headers, config) {
+            }).error(function (data, status, headers, config) {
               var errorMsg = (data !== null) ? data.message : 'Could not connect to server.';
               console.log('Error %o %o', status, errorMsg);
               ngToast.danger(errorMsg);
@@ -439,7 +439,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     });
   };
 
-  $scope.addNewInterpreterSetting = function() {
+  $scope.addNewInterpreterSetting = function () {
     // user input validation on interpreter creation
     if (!$scope.newInterpreterSetting.name ||
       !$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
@@ -491,23 +491,23 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     request.properties = newProperties;
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
         $scope.showAddNewSetting = false;
         checkDownloadingDependencies();
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
         ngToast.danger({content: data.message, verticalPosition: 'bottom'});
       });
   };
 
-  $scope.cancelInterpreterSetting = function() {
+  $scope.cancelInterpreterSetting = function () {
     $scope.showAddNewSetting = false;
     $scope.resetNewInterpreterSetting();
   };
 
-  $scope.resetNewInterpreterSetting = function() {
+  $scope.resetNewInterpreterSetting = function () {
     $scope.newInterpreterSetting = {
       name: undefined,
       group: undefined,
@@ -525,7 +525,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     emptyNewProperty($scope.newInterpreterSetting);
   };
 
-  $scope.removeInterpreterProperty = function(key, settingId) {
+  $scope.removeInterpreterProperty = function (key, settingId) {
     if (settingId === undefined) {
       delete $scope.newInterpreterSetting.properties[key];
     } else {
@@ -534,22 +534,22 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.removeInterpreterDependency = function(artifact, settingId) {
+  $scope.removeInterpreterDependency = function (artifact, settingId) {
     if (settingId === undefined) {
       $scope.newInterpreterSetting.dependencies = _.reject($scope.newInterpreterSetting.dependencies,
-        function(el) {
+        function (el) {
           return el.groupArtifactVersion === artifact;
         });
     } else {
       var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
       $scope.interpreterSettings[index].dependencies = _.reject($scope.interpreterSettings[index].dependencies,
-        function(el) {
+        function (el) {
           return el.groupArtifactVersion === artifact;
         });
     }
   };
 
-  $scope.addNewInterpreterProperty = function(settingId) {
+  $scope.addNewInterpreterProperty = function (settingId) {
     if (settingId === undefined) {
       // Add new property from create form
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
@@ -573,7 +573,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.addNewInterpreterDependency = function(settingId) {
+  $scope.addNewInterpreterDependency = function (settingId) {
     if (settingId === undefined) {
       // Add new dependency from create form
       if (!$scope.newInterpreterSetting.depArtifact || $scope.newInterpreterSetting.depArtifact === '') {
@@ -624,7 +624,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.resetNewRepositorySetting = function() {
+  $scope.resetNewRepositorySetting = function () {
     $scope.newRepoSetting = {
       id: '',
       url: '',
@@ -639,40 +639,40 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     };
   };
 
-  var getRepositories = function() {
+  var getRepositories = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/repository')
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         $scope.repositories = data.body;
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
   };
 
-  $scope.addNewRepository = function() {
+  $scope.addNewRepository = function () {
     var request = angular.copy($scope.newRepoSetting);
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/repository', request)
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         getRepositories();
         $scope.resetNewRepositorySetting();
         angular.element('#repoModal').modal('hide');
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         console.log('Error %o %o', headers, config);
       });
   };
 
-  $scope.removeRepository = function(repoId) {
+  $scope.removeRepository = function (repoId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Do you want to delete this repository?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/repository/' + repoId)
-            .success(function(data, status, headers, config) {
+            .success(function (data, status, headers, config) {
               var index = _.findIndex($scope.repositories, {'id': repoId});
               $scope.repositories.splice(index, 1);
-            }).error(function(data, status, headers, config) {
+            }).error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message);
             });
         }
@@ -680,7 +680,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     });
   };
 
-  $scope.isDefaultRepository = function(repoId) {
+  $scope.isDefaultRepository = function (repoId) {
     if (repoId === 'central' || repoId === 'local') {
       return true;
     } else {
@@ -688,14 +688,14 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.showErrorMessage = function(setting) {
+  $scope.showErrorMessage = function (setting) {
     BootstrapDialog.show({
       title: 'Error downloading dependencies',
       message: setting.errorReason
     });
   };
 
-  var init = function() {
+  var init = function () {
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
 
@@ -704,9 +704,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     getRepositories();
   };
 
-  $scope.showSparkUI = function(settingId) {
+  $scope.showSparkUI = function (settingId) {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         var url = data.body.url;
         if (!url) {
           BootstrapDialog.alert({
@@ -715,7 +715,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
           return;
         }
         window.open(url, '_blank');
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
   };

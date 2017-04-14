@@ -22,7 +22,7 @@ export const HeliumConfFieldType = {
  * @param persisted <Object> including `type`, `description`, `defaultValue` for each conf key
  * @param spec <Object> including `value` for each conf key
  */
-export function mergePersistedConfWithSpec(persisted, spec) {
+export function mergePersistedConfWithSpec (persisted, spec) {
   const confs = [];
 
   for (let name in spec) {
@@ -44,7 +44,7 @@ export function mergePersistedConfWithSpec(persisted, spec) {
   return confs;
 }
 
-export function createAllPackageConfigs(defaultPackages, persistedConfs) {
+export function createAllPackageConfigs (defaultPackages, persistedConfs) {
   let packageConfs = {};
 
   for (let name in defaultPackages) {
@@ -68,7 +68,7 @@ export function createAllPackageConfigs(defaultPackages, persistedConfs) {
   return packageConfs;
 }
 
-export function parseConfigValue(type, stringified) {
+export function parseConfigValue (type, stringified) {
   let value = stringified;
 
   try {
@@ -89,7 +89,7 @@ export function parseConfigValue(type, stringified) {
  * persist key-value only
  * since other info (e.g type, desc) can be provided by default config
  */
-export function createPersistableConfig(currentConfs) {
+export function createPersistableConfig (currentConfs) {
   const filtered = currentConfs.reduce((acc, c) => {
     acc[c.name] = parseConfigValue(c.type, c.value);
     return acc;

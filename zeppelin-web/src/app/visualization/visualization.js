@@ -16,7 +16,7 @@
  * Base class for visualization
  */
 export default class Visualization {
-  constructor(targetEl, config) {
+  constructor (targetEl, config) {
     this.targetEl = targetEl;
     this.config = config;
     this._dirty = false;
@@ -27,21 +27,21 @@ export default class Visualization {
   /**
    * get transformation
    */
-  getTransformation() {
+  getTransformation () {
     // override this
   };
 
   /**
    * Method will be invoked when data or configuration changed
    */
-  render(tableData) {
+  render (tableData) {
     // override this
   };
 
   /**
    * Refresh visualization.
    */
-  refresh() {
+  refresh () {
     // override this
   };
 
@@ -49,7 +49,7 @@ export default class Visualization {
    * method will be invoked when visualization need to be destroyed.
    * Don't need to destroy this.targetEl.
    */
-  destroy() {
+  destroy () {
     // override this
   };
 
@@ -59,14 +59,14 @@ export default class Visualization {
    *   scope : an object to bind to template scope
    * }
    */
-  getSetting() {
+  getSetting () {
     // override this
   };
 
   /**
    * Activate. invoked when visualization is selected
    */
-  activate() {
+  activate () {
     if (!this._active || this._dirty) {
       this.refresh();
       this._dirty = false;
@@ -77,21 +77,21 @@ export default class Visualization {
   /**
    * Activate. invoked when visualization is de selected
    */
-  deactivate() {
+  deactivate () {
     this._active = false;
   };
 
   /**
    * Is active
    */
-  isActive() {
+  isActive () {
     return this._active;
   };
 
   /**
    * When window or paragraph is resized
    */
-  resize() {
+  resize () {
     if (this.isActive()) {
       this.refresh();
     } else {
@@ -102,7 +102,7 @@ export default class Visualization {
   /**
    * Set new config
    */
-  setConfig(config) {
+  setConfig (config) {
     this.config = config;
     if (this.isActive()) {
       this.refresh();
@@ -114,14 +114,14 @@ export default class Visualization {
   /**
    * Emit config. config will sent to server and saved.
    */
-  emitConfig(config) {
+  emitConfig (config) {
     this._emitter(config);
   };
 
   /**
    * render setting
    */
-  renderSetting(targetEl) {
+  renderSetting (targetEl) {
     var setting = this.getSetting();
     if (!setting) {
       return;
@@ -130,7 +130,7 @@ export default class Visualization {
     // already readered
     if (this._scope) {
       var self = this;
-      this._scope.$apply(function() {
+      this._scope.$apply(function () {
         for (var k in setting.scope) {
           self._scope[k] = setting.scope[k];
         }
@@ -163,7 +163,7 @@ export default class Visualization {
   };
 }
 
-function _renderSetting(instance, targetEl, template, scope) {
+function _renderSetting (instance, targetEl, template, scope) {
   instance._targetEl = targetEl;
   targetEl.html(template);
   instance._compile(targetEl.contents())(scope);

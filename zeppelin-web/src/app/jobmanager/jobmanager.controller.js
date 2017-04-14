@@ -15,29 +15,29 @@
 angular.module('zeppelinWebApp')
   .controller('JobmanagerCtrl', JobmanagerCtrl);
 
-function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
+function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
   'ngInject';
 
   ngToast.dismiss();
-  var asyncNotebookJobFilter = function(jobInfomations, filterConfig) {
-    return $q(function(resolve, reject) {
+  var asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
+    return $q(function (resolve, reject) {
       $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig);
       resolve($scope.JobInfomationsByFilter);
     });
   };
 
-  $scope.doFiltering = function(jobInfomations, filterConfig) {
+  $scope.doFiltering = function (jobInfomations, filterConfig) {
     asyncNotebookJobFilter(jobInfomations, filterConfig).then(
-      function() {
+      function () {
         // success
         $scope.isLoadingFilter = false;
       },
-      function() {
+      function () {
         // failed
       });
   };
 
-  $scope.filterValueToName = function(filterValue, maxStringLength) {
+  $scope.filterValueToName = function (filterValue, maxStringLength) {
     if ($scope.activeInterpreters === undefined) {
       return;
     }
@@ -52,26 +52,26 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
     }
   };
 
-  $scope.setFilterValue = function(filterValue) {
+  $scope.setFilterValue = function (filterValue) {
     $scope.filterConfig.filterValueInterpreter = filterValue;
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
   };
 
-  $scope.onChangeRunJobToAlwaysTopToggle = function() {
+  $scope.onChangeRunJobToAlwaysTopToggle = function () {
     $scope.filterConfig.isRunningAlwaysTop = !$scope.filterConfig.isRunningAlwaysTop;
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
   };
 
-  $scope.onChangeSortAsc = function() {
+  $scope.onChangeSortAsc = function () {
     $scope.filterConfig.isSortByAsc = !$scope.filterConfig.isSortByAsc;
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
   };
 
-  $scope.doFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
+  $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
     var RETURN_KEY_CODE = 13;
     $timeout.cancel($scope.dofilterTimeoutObject);
     $scope.isActiveSearchTimer = true;
-    $scope.dofilterTimeoutObject = $timeout(function() {
+    $scope.dofilterTimeoutObject = $timeout(function () {
       $scope.doFiltering(jobInfomations, filterConfig);
       $scope.isActiveSearchTimer = false;
     }, 10000);
@@ -82,13 +82,13 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
     }
   };
 
-  $scope.doForceFilterInputTyping = function(keyEvent, jobInfomations, filterConfig) {
+  $scope.doForceFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
     $timeout.cancel($scope.dofilterTimeoutObject);
     $scope.doFiltering(jobInfomations, filterConfig);
     $scope.isActiveSearchTimer = false;
   };
 
-  $scope.init = function() {
+  $scope.init = function () {
     $scope.isLoadingFilter = true;
     $scope.jobInfomations = [];
     $scope.JobInfomationsByFilter = $scope.jobInfomations;
@@ -111,7 +111,7 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
       }
     });
 
-    $scope.$on('$destroy', function() {
+    $scope.$on('$destroy', function () {
       websocketMsgSrv.unsubscribeJobManager();
     });
   };
@@ -120,7 +120,7 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
    ** $scope.$on functions below
    */
 
-  $scope.$on('setNoteJobs', function(event, responseData) {
+  $scope.$on('setNoteJobs', function (event, responseData) {
     $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
     $scope.jobInfomations = responseData.jobs;
     $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'noteId') : {};
@@ -141,12 +141,12 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig);
   });
 
-  $scope.$on('setUpdateNoteJobs', function(event, responseData) {
+  $scope.$on('setUpdateNoteJobs', function (event, responseData) {
     var jobInfomations = $scope.jobInfomations;
     var indexStore = $scope.jobInfomationsIndexs;
     $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
     var notes = responseData.jobs;
-    notes.map(function(changedItem) {
+    notes.map(function (changedItem) {
       if (indexStore[changedItem.noteId] === undefined) {
         var newItem = angular.copy(changedItem);
         jobInfomations.push(newItem);

@@ -16,7 +16,7 @@
  * Base class for visualization
  */
 export default class Transformation {
-  constructor(config) {
+  constructor (config) {
     this.config = config;
     this._emitter;
   };
@@ -27,21 +27,21 @@ export default class Transformation {
    *   scope : an object to bind to template scope
    * }
    */
-  getSetting() {
+  getSetting () {
     // override this
   };
 
   /**
    * Method will be invoked when tableData or config changes
    */
-  transform(tableData) {
+  transform (tableData) {
     // override this
   };
 
   /**
    * render setting
    */
-  renderSetting(targetEl) {
+  renderSetting (targetEl) {
     var setting = this.getSetting();
     if (!setting) {
       return;
@@ -50,7 +50,7 @@ export default class Transformation {
     // already readered
     if (this._scope) {
       var self = this;
-      this._scope.$apply(function() {
+      this._scope.$apply(function () {
         for (var k in setting.scope) {
           self._scope[k] = setting.scope[k];
         }
@@ -75,7 +75,7 @@ export default class Transformation {
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
       var self = this;
-      this._templateRequest(template).then(function(t) {
+      this._templateRequest(template).then(function (t) {
         self._render(targetEl, t, scope);
       });
     } else {
@@ -83,21 +83,21 @@ export default class Transformation {
     }
   };
 
-  _render(targetEl, template, scope) {
+  _render (targetEl, template, scope) {
     this._targetEl = targetEl;
     targetEl.html(template);
     this._compile(targetEl.contents())(scope);
     this._scope = scope;
   };
 
-  setConfig(config) {
+  setConfig (config) {
     this.config = config;
   };
 
   /**
    * Emit config. config will sent to server and saved.
    */
-  emitConfig(config) {
+  emitConfig (config) {
     this._emitter(config);
   };
 }

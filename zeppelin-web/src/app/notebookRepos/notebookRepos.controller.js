@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('NotebookReposCtrl', NotebookReposCtrl);
 
-function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
+function NotebookReposCtrl ($http, baseUrlSrv, ngToast) {
   'ngInject';
 
   var vm = this;
@@ -26,19 +26,19 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
 
   // Public functions
 
-  function saveNotebookRepo(valueform, repo, data) {
+  function saveNotebookRepo (valueform, repo, data) {
     console.log('data %o', data);
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook-repositories', {
       'name': repo.className,
       'settings': data
-    }).success(function(data) {
+    }).success(function (data) {
       var index = _.findIndex(vm.notebookRepos, {'className': repo.className});
       if (index >= 0) {
         vm.notebookRepos[index] = data.body;
         console.log('repos %o, data %o', vm.notebookRepos, data.body);
       }
       valueform.$show();
-    }).error(function() {
+    }).error(function () {
       ngToast.danger({
         content: 'We couldn\'t save that NotebookRepo\'s settings',
         verticalPosition: 'bottom',
@@ -50,7 +50,7 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
     return 'manual';
   }
 
-  function showDropdownSelected(setting) {
+  function showDropdownSelected (setting) {
     var index = _.findIndex(setting.value, {'value': setting.selected});
     if (index < 0) {
       return 'No value';
@@ -61,19 +61,19 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
 
   // Private functions
 
-  function _getInterpreterSettings() {
+  function _getInterpreterSettings () {
     $http.get(baseUrlSrv.getRestApiBase() + '/notebook-repositories')
-      .success(function(data, status, headers, config) {
+      .success(function (data, status, headers, config) {
         vm.notebookRepos = data.body;
         console.log('ya notebookRepos %o', vm.notebookRepos);
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         if (status === 401) {
           ngToast.danger({
             content: 'You don\'t have permission on this page',
             verticalPosition: 'bottom',
             timeout: '3000'
           });
-          setTimeout(function() {
+          setTimeout(function () {
             window.location.replace('/');
           }, 3000);
         }
@@ -81,7 +81,7 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
       });
   }
 
-  function _init() {
+  function _init () {
     _getInterpreterSettings();
   };
 }

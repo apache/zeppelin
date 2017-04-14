@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').directive('popoverHtmlUnsafePopup', popoverHtmlUnsafePopup);
 
-function popoverHtmlUnsafePopup() {
+function popoverHtmlUnsafePopup () {
   return {
     restrict: 'EA',
     replace: true,

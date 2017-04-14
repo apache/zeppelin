@@ -16,7 +16,7 @@ import { isParagraphRunning, } from './paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
 
-function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
+function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
                       ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID,
                       heliumService) {
@@ -48,7 +48,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.saveTimer = null;
 
   var connectedOnce = false;
-  var isRevisionPath = function(path) {
+  var isRevisionPath = function (path) {
     var pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
     return pattern.test(path);
   };
@@ -57,14 +57,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.currentRevision = 'Head';
   $scope.revisionView = isRevisionPath($location.path());
 
-  $scope.$on('setConnectedStatus', function(event, param) {
+  $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
       initNotebook();
     }
     connectedOnce = true;
   });
 
-  $scope.getCronOptionNameFromValue = function(value) {
+  $scope.getCronOptionNameFromValue = function (value) {
     if (!value) {
       return '';
     }
@@ -77,7 +77,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return value;
   };
 
-  $scope.blockAnonUsers = function() {
+  $scope.blockAnonUsers = function () {
     var zeppelinVersion = $rootScope.zeppelinVersion;
     var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/security/notebook_authorization.html';
     var content = 'Only authenticated user can set the permission.' +
@@ -92,7 +92,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: content,
       buttons: [{
         label: 'Close',
-        action: function(dialog) {
+        action: function (dialog) {
           dialog.close();
         }
       }]
@@ -100,7 +100,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   /** Init the new controller */
-  var initNotebook = function() {
+  var initNotebook = function () {
     noteVarShareService.clear();
     if ($routeParams.revisionId) {
       websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
@@ -111,7 +111,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     var currentRoute = $route.current;
     if (currentRoute) {
       setTimeout(
-        function() {
+        function () {
           var routeParams = currentRoute.params;
           var $id = angular.element('#' + routeParams.paragraph + '_container');
 
@@ -128,7 +128,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   initNotebook();
 
-  $scope.focusParagraphOnClick = function(clickEvent) {
+  $scope.focusParagraphOnClick = function (clickEvent) {
     if (!$scope.note) {
       return;
     }
@@ -144,7 +144,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick);
 
-  $scope.keyboardShortcut = function(keyEvent) {
+  $scope.keyboardShortcut = function (keyEvent) {
     // handle keyevent
     if (!$scope.viewOnly && !$scope.revisionView) {
       $scope.$broadcast('keyEvent', keyEvent);
@@ -154,37 +154,37 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   // register mouseevent handler for focus paragraph
   document.addEventListener('keydown', $scope.keyboardShortcut);
 
-  $scope.paragraphOnDoubleClick = function(paragraphId) {
+  $scope.paragraphOnDoubleClick = function (paragraphId) {
     $scope.$broadcast('doubleClickParagraph', paragraphId);
   };
 
   // Move the note to trash and go back to the main page
-  $scope.moveNoteToTrash = function(noteId) {
+  $scope.moveNoteToTrash = function (noteId) {
     noteActionSrv.moveNoteToTrash(noteId, true);
   };
 
   // Remove the note permanently if it's in the trash
-  $scope.removeNote = function(noteId) {
+  $scope.removeNote = function (noteId) {
     noteActionSrv.removeNote(noteId, true);
   };
 
-  $scope.isTrash = function(note) {
+  $scope.isTrash = function (note) {
     return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
   };
 
   // Export notebook
-  $scope.exportNote = function() {
+  $scope.exportNote = function () {
     var jsonContent = JSON.stringify($scope.note);
     saveAsService.saveAs(jsonContent, $scope.note.name, 'json');
   };
 
   // Clone note
-  $scope.cloneNote = function(noteId) {
+  $scope.cloneNote = function (noteId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Do you want to clone this note?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.cloneNote(noteId);
           $location.path('/');
@@ -194,12 +194,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   // checkpoint/commit notebook
-  $scope.checkpointNote = function(commitMessage) {
+  $scope.checkpointNote = function (commitMessage) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Commit note to current repository?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.checkpointNote($routeParams.noteId, commitMessage);
         }
@@ -209,12 +209,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   // set notebook head to given revision
-  $scope.setNoteRevision = function() {
+  $scope.setNoteRevision = function () {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Set notebook head to current revision?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
         }
@@ -222,7 +222,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
-  $scope.$on('listRevisionHistory', function(event, data) {
+  $scope.$on('listRevisionHistory', function (event, data) {
     console.log('received list of revisions %o', data);
     $scope.noteRevisions = data.revisionList;
     $scope.noteRevisions.splice(0, 0, {
@@ -237,7 +237,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   });
 
-  $scope.$on('noteRevision', function(event, data) {
+  $scope.$on('noteRevision', function (event, data) {
     console.log('received note revision %o', data);
     if (data.note) {
       $scope.note = data.note;
@@ -247,14 +247,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   });
 
-  $scope.$on('setNoteRevisionResult', function(event, data) {
+  $scope.$on('setNoteRevisionResult', function (event, data) {
     console.log('received set note revision result %o', data);
     if (data.status) {
       $location.path('/notebook/' + $routeParams.noteId);
     }
   });
 
-  $scope.visitRevision = function(revision) {
+  $scope.visitRevision = function (revision) {
     if (revision.id) {
       if (revision.id === 'Head') {
         $location.path('/notebook/' + $routeParams.noteId);
@@ -269,12 +269,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  $scope.runAllParagraphs = function(noteId) {
+  $scope.runAllParagraphs = function (noteId) {
     BootstrapDialog.confirm({
       closable: true,
       title: '',
       message: 'Run all paragraphs?',
-      callback: function(result) {
+      callback: function (result) {
         if (result) {
           const paragraphs = $scope.note.paragraphs.map(p => {
             return {
@@ -291,9 +291,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
-  $scope.saveNote = function() {
+  $scope.saveNote = function () {
     if ($scope.note && $scope.note.paragraphs) {
-      _.forEach($scope.note.paragraphs, function(par) {
+      _.forEach($scope.note.paragraphs, function (par) {
         angular
           .element('#' + par.id + '_paragraphColumn_main')
           .scope()
@@ -303,11 +303,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  $scope.clearAllParagraphOutput = function(noteId) {
+  $scope.clearAllParagraphOutput = function (noteId) {
     noteActionSrv.clearAllParagraphOutput(noteId);
   };
 
-  $scope.toggleAllEditor = function() {
+  $scope.toggleAllEditor = function () {
     if ($scope.editorToggled) {
       $scope.$broadcast('openEditor');
     } else {
@@ -316,15 +316,15 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.editorToggled = !$scope.editorToggled;
   };
 
-  $scope.showAllEditor = function() {
+  $scope.showAllEditor = function () {
     $scope.$broadcast('openEditor');
   };
 
-  $scope.hideAllEditor = function() {
+  $scope.hideAllEditor = function () {
     $scope.$broadcast('closeEditor');
   };
 
-  $scope.toggleAllTable = function() {
+  $scope.toggleAllTable = function () {
     if ($scope.tableToggled) {
       $scope.$broadcast('openTable');
     } else {
@@ -333,18 +333,18 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.tableToggled = !$scope.tableToggled;
   };
 
-  $scope.showAllTable = function() {
+  $scope.showAllTable = function () {
     $scope.$broadcast('openTable');
   };
 
-  $scope.hideAllTable = function() {
+  $scope.hideAllTable = function () {
     $scope.$broadcast('closeTable');
   };
 
   /**
    * @returns {boolean} true if one more paragraphs are running. otherwise return false.
    */
-  $scope.isNoteRunning = function() {
+  $scope.isNoteRunning = function () {
     if (!$scope.note) { return false; }
 
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
@@ -356,28 +356,28 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return false;
   };
 
-  $scope.killSaveTimer = function() {
+  $scope.killSaveTimer = function () {
     if ($scope.saveTimer) {
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
     }
   };
 
-  $scope.startSaveTimer = function() {
+  $scope.startSaveTimer = function () {
     $scope.killSaveTimer();
     $scope.isNoteDirty = true;
     // console.log('startSaveTimer called ' + $scope.note.id);
-    $scope.saveTimer = $timeout(function() {
+    $scope.saveTimer = $timeout(function () {
       $scope.saveNote();
     }, 10000);
   };
 
-  angular.element(window).on('beforeunload', function(e) {
+  angular.element(window).on('beforeunload', function (e) {
     $scope.killSaveTimer();
     $scope.saveNote();
   });
 
-  $scope.setLookAndFeel = function(looknfeel) {
+  $scope.setLookAndFeel = function (looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
     if ($scope.revisionView === true) {
       $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
@@ -387,7 +387,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   /** Set cron expression for this note **/
-  $scope.setCronScheduler = function(cronExpr) {
+  $scope.setCronScheduler = function (cronExpr) {
     if (cronExpr) {
       if (!$scope.note.config.cronExecutingUser) {
         $scope.note.config.cronExecutingUser = $rootScope.ticket.principal;
@@ -400,19 +400,19 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   /** Set the username of the user to be used to execute all notes in notebook **/
-  $scope.setCronExecutingUser = function(cronExecutingUser) {
+  $scope.setCronExecutingUser = function (cronExecutingUser) {
     $scope.note.config.cronExecutingUser = cronExecutingUser;
     $scope.setConfig();
   };
 
   /** Set release resource for this note **/
-  $scope.setReleaseResource = function(value) {
+  $scope.setReleaseResource = function (value) {
     $scope.note.config.releaseresource = value;
     $scope.setConfig();
   };
 
   /** Update note config **/
-  $scope.setConfig = function(config) {
+  $scope.setConfig = function (config) {
     if (config) {
       $scope.note.config = config;
     }
@@ -420,7 +420,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   /** Update the note name */
-  $scope.updateNoteName = function(newName) {
+  $scope.updateNoteName = function (newName) {
     const trimmedNewName = newName.trim();
     if (trimmedNewName.length > 0 && $scope.note.name !== trimmedNewName) {
       $scope.note.name = trimmedNewName;
@@ -428,7 +428,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  var initializeLookAndFeel = function() {
+  var initializeLookAndFeel = function () {
     if (!$scope.note.config.looknfeel) {
       $scope.note.config.looknfeel = 'default';
     } else {
@@ -441,7 +441,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
-  var cleanParagraphExcept = function(paragraphId, note) {
+  var cleanParagraphExcept = function (paragraphId, note) {
     var noteCopy = {};
     noteCopy.id = note.id;
     noteCopy.name = note.name;
@@ -462,9 +462,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return noteCopy;
   };
 
-  var addPara = function(paragraph, index) {
+  var addPara = function (paragraph, index) {
     $scope.note.paragraphs.splice(index, 0, paragraph);
-    _.each($scope.note.paragraphs, function(para) {
+    _.each($scope.note.paragraphs, function (para) {
       if (para.id === paragraph.id) {
         para.focus = true;
         $scope.$broadcast('focusParagraph', para.id, 0, false);
@@ -472,9 +472,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
-  var removePara = function(paragraphId) {
+  var removePara = function (paragraphId) {
     var removeIdx;
-    _.each($scope.note.paragraphs, function(para, idx) {
+    _.each($scope.note.paragraphs, function (para, idx) {
       if (para.id === paragraphId) {
         removeIdx = idx;
       }
@@ -482,28 +482,28 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return $scope.note.paragraphs.splice(removeIdx, 1);
   };
 
-  $scope.$on('addParagraph', function(event, paragraph, index) {
+  $scope.$on('addParagraph', function (event, paragraph, index) {
     if ($scope.paragraphUrl) {
       return;
     }
     addPara(paragraph, index);
   });
 
-  $scope.$on('removeParagraph', function(event, paragraphId) {
+  $scope.$on('removeParagraph', function (event, paragraphId) {
     if ($scope.paragraphUrl) {
       return;
     }
     removePara(paragraphId);
   });
 
-  $scope.$on('moveParagraph', function(event, paragraphId, newIdx) {
+  $scope.$on('moveParagraph', function (event, paragraphId, newIdx) {
     var removedPara = removePara(paragraphId);
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx);
     }
   });
 
-  $scope.$on('updateNote', function(event, name, config, info) {
+  $scope.$on('updateNote', function (event, name, config, info) {
     /** update Note name */
     if (name !== $scope.note.name) {
       console.log('change note name to : %o', $scope.note.name);
@@ -514,11 +514,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     initializeLookAndFeel();
   });
 
-  var getInterpreterBindings = function() {
+  var getInterpreterBindings = function () {
     websocketMsgSrv.getInterpreterBindings($scope.note.id);
   };
 
-  $scope.$on('interpreterBindings', function(event, data) {
+  $scope.$on('interpreterBindings', function (event, data) {
     $scope.interpreterBindings = data.interpreterBindings;
     $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
 
@@ -549,25 +549,25 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.interpreterSelectionListeners = {
-    accept: function(sourceItemHandleScope, destSortableScope) { return true; },
-    itemMoved: function(event) {},
-    orderChanged: function(event) {}
+    accept: function (sourceItemHandleScope, destSortableScope) { return true; },
+    itemMoved: function (event) {},
+    orderChanged: function (event) {}
   };
 
-  $scope.openSetting = function() {
+  $scope.openSetting = function () {
     $scope.showSetting = true;
     getInterpreterBindings();
   };
 
-  $scope.closeSetting = function() {
+  $scope.closeSetting = function () {
     if (isSettingDirty()) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
         message: 'Interpreter setting changes will be discarded.',
-        callback: function(result) {
+        callback: function (result) {
           if (result) {
-            $scope.$apply(function() {
+            $scope.$apply(function () {
               $scope.showSetting = false;
             });
           }
@@ -578,7 +578,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  $scope.saveSetting = function() {
+  $scope.saveSetting = function () {
     var selectedSettingIds = [];
     for (var no in $scope.interpreterBindings) {
       var setting = $scope.interpreterBindings[no];
@@ -589,7 +589,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     websocketMsgSrv.saveInterpreterBindings($scope.note.id, selectedSettingIds);
     console.log('Interpreter bindings %o saved', selectedSettingIds);
 
-    _.forEach($scope.note.paragraphs, function(n, key) {
+    _.forEach($scope.note.paragraphs, function (n, key) {
       var regExp = /^\s*%/g;
       if (n.text && !regExp.exec(n.text)) {
         $scope.$broadcast('saveInterpreterBindings', n.id);
@@ -599,7 +599,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.showSetting = false;
   };
 
-  $scope.toggleSetting = function() {
+  $scope.toggleSetting = function () {
     if ($scope.showSetting) {
       $scope.closeSetting();
     } else {
@@ -609,23 +609,23 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  var getPermissions = function(callback) {
+  var getPermissions = function (callback) {
     $http.get(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions')
-    .success(function(data, status, headers, config) {
+    .success(function (data, status, headers, config) {
       $scope.permissions = data.body;
       $scope.permissionsOrig = angular.copy($scope.permissions); // to check dirty
 
       var selectJson = {
         tokenSeparators: [',', ' '],
         ajax: {
-          url: function(params) {
+          url: function (params) {
             if (!params.term) {
               return false;
             }
             return baseUrlSrv.getRestApiBase() + '/security/userlist/' + params.term;
           },
           delay: 250,
-          processResults: function(data, params) {
+          processResults: function (data, params) {
             var results = [];
 
             if (data.body.users.length !== 0) {
@@ -676,27 +676,27 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         callback();
       }
     })
-    .error(function(data, status, headers, config) {
+    .error(function (data, status, headers, config) {
       if (status !== 0) {
         console.log('Error %o %o', status, data.message);
       }
     });
   };
 
-  $scope.openPermissions = function() {
+  $scope.openPermissions = function () {
     $scope.showPermissions = true;
     getPermissions();
   };
 
-  $scope.closePermissions = function() {
+  $scope.closePermissions = function () {
     if (isPermissionsDirty()) {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
         message: 'Changes will be discarded.',
-        callback: function(result) {
+        callback: function (result) {
           if (result) {
-            $scope.$apply(function() {
+            $scope.$apply(function () {
               $scope.showPermissions = false;
             });
           }
@@ -707,7 +707,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  function convertPermissionsToArray() {
+  function convertPermissionsToArray () {
     $scope.permissions.owners = angular.element('#selectOwners').val();
     $scope.permissions.readers = angular.element('#selectReaders').val();
     $scope.permissions.writers = angular.element('#selectWriters').val();
@@ -736,7 +736,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
               var index = _.findIndex($scope.interpreterSettings, {'id': interpreter.id});
               $scope.interpreterSettings[index] = data.body;
               thisConfirm.close();
-            }).error(function(data, status, headers, config) {
+            }).error(function (data, status, headers, config) {
               thisConfirm.close();
               console.log('Error %o %o', status, data.message);
               BootstrapDialog.show({
@@ -750,12 +750,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
-  $scope.savePermissions = function() {
+  $scope.savePermissions = function () {
     convertPermissionsToArray();
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
       $scope.permissions, {withCredentials: true})
-    .success(function(data, status, headers, config) {
-      getPermissions(function() {
+    .success(function (data, status, headers, config) {
+      getPermissions(function () {
         console.log('Note permissions %o saved', $scope.permissions);
         BootstrapDialog.alert({
           closable: true,
@@ -766,7 +766,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         $scope.showPermissions = false;
       });
     })
-    .error(function(data, status, headers, config) {
+    .error(function (data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
       BootstrapDialog.show({
         closable: false,
@@ -777,7 +777,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         buttons: [
           {
             label: 'Login',
-            action: function(dialog) {
+            action: function (dialog) {
               dialog.close();
               angular.element('#loginModal').modal({
                 show: 'true'
@@ -786,7 +786,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
           },
           {
             label: 'Cancel',
-            action: function(dialog) {
+            action: function (dialog) {
               dialog.close();
               $location.path('/');
             }
@@ -796,7 +796,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
-  $scope.togglePermissions = function() {
+  $scope.togglePermissions = function () {
     var principal = $rootScope.ticket.principal;
     $scope.isAnonymous = principal === 'anonymous' ? true : false;
     if (!!principal && $scope.isAnonymous) {
@@ -814,7 +814,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  $scope.setIamOwner = function() {
+  $scope.setIamOwner = function () {
     if ($scope.permissions.owners.length > 0 &&
       _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0) {
       $scope.isOwner = false;
@@ -824,17 +824,17 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return true;
   };
 
-  $scope.toggleNotePersonalizedMode = function() {
+  $scope.toggleNotePersonalizedMode = function () {
     var personalizedMode = $scope.note.config.personalizedMode;
     if ($scope.isOwner) {
       BootstrapDialog.confirm({
         closable: true,
         title: 'Setting the result display',
-        message: function(dialog) {
+        message: function (dialog) {
           var modeText = $scope.note.config.personalizedMode === 'true' ? 'collaborate' : 'personalize';
           return 'Do you want to <span class="text-info">' + modeText + '</span> your analysis?';
         },
-        callback: function(result) {
+        callback: function (result) {
           if (result) {
             if ($scope.note.config.personalizedMode === undefined) {
               $scope.note.config.personalizedMode = 'false';
@@ -847,7 +847,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  var isSettingDirty = function() {
+  var isSettingDirty = function () {
     if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
       return false;
     } else {
@@ -855,7 +855,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  var isPermissionsDirty = function() {
+  var isPermissionsDirty = function () {
     if (angular.equals($scope.permissions, $scope.permissionsOrig)) {
       return false;
     } else {
@@ -863,7 +863,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  angular.element(document).click(function() {
+  angular.element(document).click(function () {
     angular.element('.ace_autocomplete').hide();
   });
 
@@ -871,14 +871,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
    ** $scope.$on functions below
    */
 
-  $scope.$on('setConnectedStatus', function(event, param) {
+  $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
       initNotebook();
     }
     connectedOnce = true;
   });
 
-  $scope.$on('moveParagraphUp', function(event, paragraph) {
+  $scope.$on('moveParagraphUp', function (event, paragraph) {
     var newIndex = -1;
     for (var i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraph.id) {
@@ -902,7 +902,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
   });
 
-  $scope.$on('moveParagraphDown', function(event, paragraph) {
+  $scope.$on('moveParagraphDown', function (event, paragraph) {
     var newIndex = -1;
     for (var i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraph.id) {
@@ -927,7 +927,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     websocketMsgSrv.moveParagraph(paragraph.id, newIndex);
   });
 
-  $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId) {
+  $scope.$on('moveFocusToPreviousParagraph', function (event, currentParagraphId) {
     var focus = false;
     for (var i = $scope.note.paragraphs.length - 1; i >= 0; i--) {
       if (focus === false) {
@@ -942,7 +942,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   });
 
-  $scope.$on('moveFocusToNextParagraph', function(event, currentParagraphId) {
+  $scope.$on('moveFocusToNextParagraph', function (event, currentParagraphId) {
     var focus = false;
     for (var i = 0; i < $scope.note.paragraphs.length; i++) {
       if (focus === false) {
@@ -957,7 +957,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   });
 
-  $scope.$on('insertParagraph', function(event, paragraphId, position) {
+  $scope.$on('insertParagraph', function (event, paragraphId, position) {
     var newIndex = -1;
     for (var i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -977,7 +977,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     websocketMsgSrv.insertParagraph(newIndex);
   });
 
-  $scope.$on('setNoteContent', function(event, note) {
+  $scope.$on('setNoteContent', function (event, note) {
     if (note === undefined) {
       $location.path('/');
     }
@@ -1004,7 +1004,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.note.config.personalizedMode = isPersonalized;
   });
 
-  $scope.$on('$destroy', function() {
+  $scope.$on('$destroy', function () {
     angular.element(window).off('beforeunload');
     $scope.killSaveTimer();
     $scope.saveNote();
@@ -1013,12 +1013,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     document.removeEventListener('keydown', $scope.keyboardShortcut);
   });
 
-  $scope.$on('$unBindKeyEvent', function() {
+  $scope.$on('$unBindKeyEvent', function () {
     document.removeEventListener('click', $scope.focusParagraphOnClick);
     document.removeEventListener('keydown', $scope.keyboardShortcut);
   });
 
-  angular.element(window).bind('resize', function() {
+  angular.element(window).bind('resize', function () {
     const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
     angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
   });
