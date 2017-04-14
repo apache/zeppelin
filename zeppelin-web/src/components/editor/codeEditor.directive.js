@@ -27,7 +27,7 @@ function codeEditor ($templateRequest, $compile) {
     },
     link: function (scope, element, attrs, controller) {
       $templateRequest('components/editor/ace.editor.directive.html').then(function (editorHtml) {
-        var editor = angular.element(editorHtml);
+        let editor = angular.element(editorHtml);
         editor.attr('id', scope.paragraphId + '_editor');
         element.append(editor);
         $compile(editor)(scope);

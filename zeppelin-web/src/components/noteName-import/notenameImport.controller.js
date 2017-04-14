@@ -17,12 +17,12 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
   'ngInject';
 
-  var vm = this;
+  let vm = this;
   $scope.note = {};
   $scope.note.step1 = true;
   $scope.note.step2 = false;
   $scope.maxLimit = '';
-  var limit = 0;
+  let limit = 0;
 
   websocketMsgSrv.listConfigurations();
   $scope.$on('configurationsInfo', function (scope, event) {
@@ -44,8 +44,8 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
   $scope.importFile = function (element) {
     $scope.note.errorText = '';
     $scope.note.importFile = element.files[0];
-    var file = $scope.note.importFile;
-    var reader = new FileReader();
+    let file = $scope.note.importFile;
+    let reader = new FileReader();
 
     if (file.size > limit) {
       $scope.note.errorText = 'File size limit Exceeded!';

@@ -17,8 +17,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents);
 function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
   'ngInject';
 
-  var websocketCalls = {};
-  var pingIntervalId;
+  let websocketCalls = {};
+  let pingIntervalId;
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
   websocketCalls.ws.reconnectIfNotNormalClose = true;
@@ -50,14 +50,14 @@ function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
   };
 
   websocketCalls.ws.onMessage(function (event) {
-    var payload;
+    let payload;
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
     console.log('Receive Json << %o', event.data)
     console.log('Receive << %o, %o', payload.op, payload);
-    var op = payload.op;
-    var data = payload.data;
+    let op = payload.op;
+    let data = payload.data;
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NEW_NOTE') {
@@ -69,7 +69,7 @@ function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
     } else if (op === 'LIST_UPDATE_NOTE_JOBS') {
       $rootScope.$broadcast('setUpdateNoteJobs', data.noteRunningJobs);
     } else if (op === 'AUTH_INFO') {
-      var btn = [];
+      let btn = [];
       if ($rootScope.ticket.roles === '[]') {
         btn = [{
           label: 'Close',

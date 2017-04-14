@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').controller('RenameCtrl', RenameCtrl);
 function RenameCtrl ($scope) {
   'ngInject';
 
-  var self = this;
+  let self = this;
 
   $scope.params = {newName: ''};
   $scope.isValid = true;

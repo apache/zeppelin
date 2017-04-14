@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-var zeppelinWebApp = angular.module('zeppelinWebApp', [
+let zeppelinWebApp = angular.module('zeppelinWebApp', [
   'ngCookies',
   'ngAnimate',
   'ngRoute',
@@ -47,7 +47,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
     // withCredentials when running locally via grunt
     $httpProvider.defaults.withCredentials = true;
 
-    var visBundleLoad = {
+    let visBundleLoad = {
       load: ['heliumService', function (heliumService) {
         return heliumService.load;
       }]
@@ -124,7 +124,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
       return {
         'responseError': function (rejection) {
           if (rejection.status === 405) {
-            var data = {};
+            let data = {};
             data.info = '';
             $rootScope.$broadcast('session_logout', data);
           }
@@ -138,8 +138,8 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
   .constant('TRASH_FOLDER_ID', '~Trash');
 
 function auth () {
-  var $http = angular.injector(['ng']).get('$http');
-  var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
+  let $http = angular.injector(['ng']).get('$http');
+  let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
   // withCredentials when running locally via grunt
   $http.defaults.withCredentials = true;
   jQuery.ajaxSetup({

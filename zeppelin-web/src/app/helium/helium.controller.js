@@ -60,7 +60,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
       });
   }
 
-  var orderPackageByPubDate = function (a, b) {
+  let orderPackageByPubDate = function (a, b) {
     if (!a.pkg.published) {
       // Because local registry pkgs don't have 'published' field, put current time instead to show them first
       a.pkg.published = new Date().getTime()
@@ -69,19 +69,19 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     return new Date(a.pkg.published).getTime() - new Date(b.pkg.published).getTime();
   };
 
-  var classifyPkgType = function (packageInfo) {
-    var allTypesOfPkg = {};
-    var vizTypePkg = [];
-    var spellTypePkg = [];
-    var intpTypePkg = [];
-    var appTypePkg = [];
+  const classifyPkgType = function (packageInfo) {
+    let allTypesOfPkg = {};
+    let vizTypePkg = [];
+    let spellTypePkg = [];
+    let intpTypePkg = [];
+    let appTypePkg = [];
 
-    var packageInfoArr = Object.keys(packageInfo).map(key => packageInfo[key])
+    let packageInfoArr = Object.keys(packageInfo).map(key => packageInfo[key])
     packageInfoArr = packageInfoArr.sort(orderPackageByPubDate).reverse();
 
-    for (var name in packageInfoArr) {
-      var pkgs = packageInfoArr[name];
-      var pkgType = pkgs.pkg.type;
+    for (let name in packageInfoArr) {
+      let pkgs = packageInfoArr[name];
+      let pkgType = pkgs.pkg.type;
 
       switch (pkgType) {
         case HeliumType.VISUALIZATION:
@@ -99,13 +99,13 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
       }
     }
 
-    var pkgsArr = [
+    let pkgsArr = [
       vizTypePkg,
       spellTypePkg,
       intpTypePkg,
       appTypePkg
     ]
-    for (var idx in _.keys(HeliumType)) {
+    for (let idx in _.keys(HeliumType)) {
       allTypesOfPkg[_.keys(HeliumType)[idx]] = pkgsArr[idx];
     }
 
@@ -121,7 +121,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
   };
 
   $scope.saveBundleOrder = function () {
-    var confirm = BootstrapDialog.confirm({
+    const confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
@@ -151,12 +151,12 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     });
   };
 
-  var getLicense = function (name, artifact) {
-    var filteredPkgSearchResults = _.filter($scope.defaultPackages[name], function (p) {
+  let getLicense = function (name, artifact) {
+    let filteredPkgSearchResults = _.filter($scope.defaultPackages[name], function (p) {
       return p.artifact === artifact;
     });
 
-    var license;
+    let license;
     if (filteredPkgSearchResults.length === 0) {
       filteredPkgSearchResults = _.filter($scope.pkgSearchResults[name], function (p) {
         return p.pkg.artifact === artifact;
@@ -186,12 +186,12 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
   }
 
   $scope.enable = function (name, artifact, type, groupId, description) {
-    var license = getLicense(name, artifact);
-    var mavenArtifactInfoToHTML = groupId + ':' + artifact.split('@')[0] + ':' + artifact.split('@')[1];
-    var zeppelinVersion = $rootScope.zeppelinVersion;
-    var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
+    let license = getLicense(name, artifact);
+    let mavenArtifactInfoToHTML = groupId + ':' + artifact.split('@')[0] + ':' + artifact.split('@')[1];
+    let zeppelinVersion = $rootScope.zeppelinVersion;
+    let url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
 
-    var confirm = ''
+    let confirm = ''
     if (type === HeliumType.INTERPRETER) {
       confirm = BootstrapDialog.show({
         title: '',
@@ -248,7 +248,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
   };
 
   $scope.disable = function (name, artifact) {
-    var confirm = BootstrapDialog.confirm({
+    const confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
@@ -304,7 +304,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
   };
 
   $scope.getPackageSize = function (pkgSearchResult, targetPkgType) {
-    var result = []
+    let result = []
     _.map(pkgSearchResult, function (pkg) {
       result.push(_.find(pkg, {type: targetPkgType}))
     })

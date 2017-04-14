@@ -17,7 +17,7 @@ angular.module('zeppelinWebApp').controller('NotebookReposCtrl', NotebookReposCt
 function NotebookReposCtrl ($http, baseUrlSrv, ngToast) {
   'ngInject';
 
-  var vm = this;
+  let vm = this;
   vm.notebookRepos = [];
   vm.showDropdownSelected = showDropdownSelected;
   vm.saveNotebookRepo = saveNotebookRepo;
@@ -32,7 +32,7 @@ function NotebookReposCtrl ($http, baseUrlSrv, ngToast) {
       'name': repo.className,
       'settings': data
     }).success(function (data) {
-      var index = _.findIndex(vm.notebookRepos, {'className': repo.className});
+      let index = _.findIndex(vm.notebookRepos, {'className': repo.className});
       if (index >= 0) {
         vm.notebookRepos[index] = data.body;
         console.log('repos %o, data %o', vm.notebookRepos, data.body);
@@ -51,7 +51,7 @@ function NotebookReposCtrl ($http, baseUrlSrv, ngToast) {
   }
 
   function showDropdownSelected (setting) {
-    var index = _.findIndex(setting.value, {'value': setting.selected});
+    let index = _.findIndex(setting.value, {'value': setting.selected});
     if (index < 0) {
       return 'No value';
     } else {

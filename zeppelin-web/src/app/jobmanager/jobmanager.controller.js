@@ -19,7 +19,7 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
   'ngInject';
 
   ngToast.dismiss();
-  var asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
+  let asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
     return $q(function (resolve, reject) {
       $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig);
       resolve($scope.JobInfomationsByFilter);
@@ -41,7 +41,7 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
     if ($scope.activeInterpreters === undefined) {
       return;
     }
-    var index = _.findIndex($scope.activeInterpreters, {value: filterValue});
+    let index = _.findIndex($scope.activeInterpreters, {value: filterValue});
     if ($scope.activeInterpreters[index].name !== undefined) {
       if (maxStringLength !== undefined && maxStringLength > $scope.activeInterpreters[index].name) {
         return $scope.activeInterpreters[index].name.substr(0, maxStringLength - 3) + '...';
@@ -68,7 +68,7 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
   };
 
   $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
-    var RETURN_KEY_CODE = 13;
+    let RETURN_KEY_CODE = 13;
     $timeout.cancel($scope.dofilterTimeoutObject);
     $scope.isActiveSearchTimer = true;
     $scope.dofilterTimeoutObject = $timeout(function () {
@@ -131,8 +131,8 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
         value: '*'
       }
     ];
-    var interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), false);
-    for (var index = 0, length = interpreterLists.length; index < length; index++) {
+    let interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), false);
+    for (let index = 0, length = interpreterLists.length; index < length; index++) {
       $scope.activeInterpreters.push({
         name: interpreterLists[index],
         value: interpreterLists[index]
@@ -142,21 +142,21 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
   });
 
   $scope.$on('setUpdateNoteJobs', function (event, responseData) {
-    var jobInfomations = $scope.jobInfomations;
-    var indexStore = $scope.jobInfomationsIndexs;
+    let jobInfomations = $scope.jobInfomations;
+    let indexStore = $scope.jobInfomationsIndexs;
     $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime;
-    var notes = responseData.jobs;
+    let notes = responseData.jobs;
     notes.map(function (changedItem) {
       if (indexStore[changedItem.noteId] === undefined) {
-        var newItem = angular.copy(changedItem);
+        let newItem = angular.copy(changedItem);
         jobInfomations.push(newItem);
         indexStore[changedItem.noteId] = newItem;
       } else {
-        var changeOriginTarget = indexStore[changedItem.noteId];
+        let changeOriginTarget = indexStore[changedItem.noteId];
 
         if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
           // remove Item.
-          var removeIndex = _.findIndex(indexStore, changedItem.noteId);
+          let removeIndex = _.findIndex(indexStore, changedItem.noteId);
           if (removeIndex > -1) {
             indexStore.splice(removeIndex, 1);
           }

@@ -24,8 +24,8 @@ function modalvisible () {
     },
     link: function (scope, element, attrs) {
       // Add some listeners
-      var previsibleMethod = scope.preVisibleCallback;
-      var postVisibleMethod = scope.postVisibleCallback;
+      let previsibleMethod = scope.preVisibleCallback;
+      let postVisibleMethod = scope.postVisibleCallback;
       element.on('show.bs.modal', function (e) {
         var relatedTarget = angular.element(e.relatedTarget);
         var clone = relatedTarget.data('clone');

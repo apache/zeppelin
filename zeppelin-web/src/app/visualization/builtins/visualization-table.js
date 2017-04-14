@@ -32,12 +32,12 @@ export default class TableVisualization extends Visualization {
   }
 
   render (tableData) {
-    var height = this.targetEl.height();
-    var container = this.targetEl.css('height', height).get(0);
-    var resultRows = tableData.rows;
-    var columnNames = _.pluck(tableData.columns, 'name');
+    let height = this.targetEl.height();
+    let container = this.targetEl.css('height', height).get(0);
+    let resultRows = tableData.rows;
+    let columnNames = _.pluck(tableData.columns, 'name');
     // eslint-disable-next-line prefer-spread
-    var columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
+    let columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
       return {type: 'text'};
     });
 
@@ -45,7 +45,7 @@ export default class TableVisualization extends Visualization {
       this.hot.destroy();
     }
 
-    var handsonHelper = new HandsonHelper();
+    let handsonHelper = new HandsonHelper();
     this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
       columns, columnNames, resultRows));
     this.hot.validateCells(null);

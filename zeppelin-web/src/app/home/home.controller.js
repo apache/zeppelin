@@ -19,7 +19,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
   'ngInject';
 
   ngToast.dismiss();
-  var vm = this;
+  let vm = this;
   vm.notes = noteListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
@@ -133,7 +133,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
       return true;
     }
 
-    var noteName = note.name;
+    let noteName = note.name;
     if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
       return true;
     }

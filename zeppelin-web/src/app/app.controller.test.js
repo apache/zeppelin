@@ -1,8 +1,8 @@
 describe('Controller: MainCtrl', function () {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var scope;
-  var rootScope;
+  let scope;
+  let rootScope;
 
   beforeEach(inject(function ($controller, $rootScope) {
     rootScope = $rootScope;

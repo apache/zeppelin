@@ -30,8 +30,8 @@ export default class Nvd3ChartVisualization extends Visualization {
   }
 
   render (data) {
-    var type = this.type();
-    var d3g = data.d3g;
+    let type = this.type();
+    let d3g = data.d3g;
 
     if (!this.chart) {
       this.chart = nv.models[type]();
@@ -39,9 +39,9 @@ export default class Nvd3ChartVisualization extends Visualization {
 
     this.configureChart(this.chart);
 
-    var animationDuration = 300;
-    var numberOfDataThreshold = 150;
-    var height = this.targetEl.height();
+    let animationDuration = 300;
+    let numberOfDataThreshold = 150;
+    let height = this.targetEl.height();
 
     // turn off animation when dataset is too large. (for performance issue)
     // still, since dataset is large, the chart content sequentially appears like animated
@@ -73,7 +73,7 @@ export default class Nvd3ChartVisualization extends Visualization {
   }
 
   customAbbrevFormatter (x) {
-    var s = d3.format('.3s')(x);
+    let s = d3.format('.3s')(x);
     switch (s[s.length - 1]) {
       case 'G': return s.slice(0, -1) + 'B';
     }
@@ -101,11 +101,11 @@ export default class Nvd3ChartVisualization extends Visualization {
 
   d3DataFromPivot (
     schema, rows, keys, groups, values, allowTextXAxis, fillMissingValues, multiBarChart) {
-    var self = this;
+    let self = this;
     // construct table data
-    var d3g = [];
+    let d3g = [];
 
-    var concat = function (o, n) {
+    let concat = function (o, n) {
       if (!o) {
         return n;
       } else {
@@ -113,14 +113,14 @@ export default class Nvd3ChartVisualization extends Visualization {
       }
     };
 
-    var getSchemaUnderKey = function (key, s) {
-      for (var c in key.children) {
+    const getSchemaUnderKey = function (key, s) {
+      for (let c in key.children) {
         s[c] = {};
         getSchemaUnderKey(key.children[c], s[c]);
       }
     };
 
-    var traverse = function (sKey, s, rKey, r, func, rowName, rowValue, colName) {
+    const traverse = function (sKey, s, rKey, r, func, rowName, rowValue, colName) {
       // console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
 
       if (s.type === 'key') {
@@ -133,15 +133,15 @@ export default class Nvd3ChartVisualization extends Visualization {
         func(rowName, rowValue, colName, r);
       }
 
-      for (var c in s.children) {
+      for (let c in s.children) {
         if (fillMissingValues && s.children[c].type === 'group' && r[c] === undefined) {
-          var cs = {};
+          let cs = {};
           getSchemaUnderKey(s.children[c], cs);
           traverse(c, s.children[c], c, cs, func, rowName, rowValue, colName);
           continue;
         }
 
-        for (var j in r) {
+        for (let j in r) {
           if (s.children[c].type === 'key' || c === j) {
             traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
           }
@@ -149,19 +149,19 @@ export default class Nvd3ChartVisualization extends Visualization {
       }
     };
 
-    var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
-    var noKey = (keys.length === 0);
-    var isMultiBarChart = multiBarChart;
+    const valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
+    let noKey = (keys.length === 0);
+    let isMultiBarChart = multiBarChart;
 
-    var sKey = Object.keys(schema)[0];
+    let sKey = Object.keys(schema)[0];
 
-    var rowNameIndex = {};
-    var rowIdx = 0;
-    var colNameIndex = {};
-    var colIdx = 0;
-    var rowIndexValue = {};
+    let rowNameIndex = {};
+    let rowIdx = 0;
+    let colNameIndex = {};
+    let colIdx = 0;
+    let rowIndexValue = {};
 
-    for (var k in rows) {
+    for (let k in rows) {
       traverse(sKey, schema[sKey], k, rows[k], function (rowName, rowValue, colName, value) {
         // console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
         if (rowNameIndex[rowValue] === undefined) {
@@ -172,7 +172,7 @@ export default class Nvd3ChartVisualization extends Visualization {
         if (colNameIndex[colName] === undefined) {
           colNameIndex[colName] = colIdx++;
         }
-        var i = colNameIndex[colName];
+        let i = colNameIndex[colName];
         if (noKey && isMultiBarChart) {
           i = 0;
         }
@@ -184,8 +184,8 @@ export default class Nvd3ChartVisualization extends Visualization {
           };
         }
 
-        var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
-        var yVar = self.defaultY();
+        let xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
+        let yVar = self.defaultY();
         if (xVar === undefined) { xVar = colName; }
         if (value !== undefined) {
           yVar = isNaN(value.value) ? self.defaultY() : parseFloat(value.value) / parseFloat(value.count);
@@ -198,9 +198,9 @@ export default class Nvd3ChartVisualization extends Visualization {
     }
 
     // clear aggregation name, if possible
-    var namesWithoutAggr = {};
-    var colName;
-    var withoutAggr;
+    let namesWithoutAggr = {};
+    let colName;
+    let withoutAggr;
     // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
     for (colName in colNameIndex) {
       withoutAggr = colName.substring(0, colName.lastIndexOf('('));
@@ -212,7 +212,7 @@ export default class Nvd3ChartVisualization extends Visualization {
     }
 
     if (valueOnly) {
-      for (var valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
+      for (let valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
         colName = d3g[0].values[valueIndex].x;
         if (!colName) {
           continue;
@@ -224,7 +224,7 @@ export default class Nvd3ChartVisualization extends Visualization {
         }
       }
     } else {
-      for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
+      for (let d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
         colName = d3g[d3gIndex].key;
         withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1) {
@@ -234,7 +234,7 @@ export default class Nvd3ChartVisualization extends Visualization {
 
       // use group name instead of group.value as a column name, if there're only one group and one value selected.
       if (groups.length === 1 && values.length === 1) {
-        for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
+        for (let d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           colName = d3g[d3gIndex].key;
           colName = colName.split('.').slice(0, -1).join('.');
           d3g[d3gIndex].key = colName;

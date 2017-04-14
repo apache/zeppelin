@@ -24,7 +24,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope.showAddNewCredentialInfo = false;
   $scope.availableInterpreters = [];
 
-  var getCredentialInfo = function () {
+  let getCredentialInfo = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/credential')
     .success(function (data, status, headers, config) {
       $scope.credentialInfo = _.map(data.body.userCredentials, function (value, prop) {
@@ -58,7 +58,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       return;
     }
 
-    var newCredential = {
+    let newCredential = {
       'entity': $scope.entity,
       'username': $scope.username,
       'password': $scope.password
@@ -86,10 +86,10 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     });
   };
 
-  var getAvailableInterpreters = function () {
+  let getAvailableInterpreters = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
       .success(function (data, status, headers, config) {
-        for (var setting = 0; setting < data.body.length; setting++) {
+        for (let setting = 0; setting < data.body.length; setting++) {
           $scope.availableInterpreters.push(
             data.body[setting].group + '.' + data.body[setting].name);
         }
@@ -118,7 +118,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     resetCredentialInfo();
   };
 
-  var resetCredentialInfo = function () {
+  const resetCredentialInfo = function () {
     $scope.entity = '';
     $scope.username = '';
     $scope.password = '';
@@ -133,7 +133,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   };
 
   $scope.updateCredentialInfo = function (form, data, entity) {
-    var request = {
+    let request = {
       entity: entity,
       username: data.username,
       password: data.password
@@ -141,7 +141,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential/', request)
     .success(function (data, status, headers, config) {
-      var index = _.findIndex($scope.credentialInfo, {'entity': entity});
+      let index = _.findIndex($scope.credentialInfo, {'entity': entity});
       $scope.credentialInfo[index] = request;
       return true;
     })
@@ -168,7 +168,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/credential/' + entity)
           .success(function (data, status, headers, config) {
-            var index = _.findIndex($scope.credentialInfo, {'entity': entity});
+            let index = _.findIndex($scope.credentialInfo, {'entity': entity});
             $scope.credentialInfo.splice(index, 1);
             console.log('Success %o %o', status, data.message);
           })
@@ -180,7 +180,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     });
   };
 
-  var init = function () {
+  let init = function () {
     getAvailableInterpreters();
     getCredentialInfo();
   };

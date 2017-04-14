@@ -38,7 +38,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   }
 
   render (pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -67,7 +67,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   }
 
   configureChart (chart) {
-    var self = this;
+    let self = this;
     chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels); });
     chart.yAxis.tickFormat(function (d) {
       if (d === undefined) {
@@ -87,8 +87,8 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   }
 
   getSetting (chart) {
-    var self = this;
-    var configObj = self.config;
+    let self = this;
+    let configObj = self.config;
 
     return {
       template: `<div>

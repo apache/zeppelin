@@ -15,7 +15,7 @@
 import TableData from './tabledata.js';
 
 describe('TableData build', function () {
-  var td;
+  let td;
 
   beforeEach(function () {
     console.log(TableData);

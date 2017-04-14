@@ -24,17 +24,17 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
   };
 
   $scope.getProgress = function () {
-    var statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
-    var runningJob = _.countBy(statusList, function (status) {
+    let statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
+    let runningJob = _.countBy(statusList, function (status) {
       if (status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED) {
         return 'matchCount';
       } else {
         return 'none';
       }
     });
-    var totalCount = statusList.length;
-    var runningJobCount = runningJob.matchCount;
-    var result = Math.ceil(runningJobCount / totalCount * 100);
+    let totalCount = statusList.length;
+    let runningJobCount = runningJob.matchCount;
+    let result = Math.ceil(runningJobCount / totalCount * 100);
     return isNaN(result) ? 0 : result;
   };
 
@@ -54,7 +54,7 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
           }).then(function successCallback (response) {
             // success
           }, function errorCallback (errorResponse) {
-            var errorText = 'SERVER ERROR';
+            let errorText = 'SERVER ERROR';
             // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
               errorText = errorResponse.data.message;
@@ -86,7 +86,7 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
           }).then(function successCallback (response) {
             // success
           }, function errorCallback (errorResponse) {
-            var errorText = 'SERVER ERROR';
+            let errorText = 'SERVER ERROR';
             // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
               errorText = errorResponse.data.message;

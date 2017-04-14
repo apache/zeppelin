@@ -19,7 +19,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
                  arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
   'ngInject';
 
-  var vm = this;
+  let vm = this;
   vm.arrayOrderingSrv = arrayOrderingSrv;
   vm.connected = websocketMsgSrv.isConnected();
   vm.isActive = isActive;
@@ -62,7 +62,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
       return true;
     }
 
-    var noteName = note.name;
+    let noteName = note.name;
     if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
       return true;
     }
@@ -86,7 +86,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   }
 
   function logout () {
-    var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
+    let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
     // for firefox and safari
     logoutURL = logoutURL.replace('//', '//false:false@');

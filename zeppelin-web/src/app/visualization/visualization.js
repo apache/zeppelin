@@ -122,14 +122,14 @@ export default class Visualization {
    * render setting
    */
   renderSetting (targetEl) {
-    var setting = this.getSetting();
+    let setting = this.getSetting();
     if (!setting) {
       return;
     }
 
     // already readered
     if (this._scope) {
-      var self = this;
+      let self = this;
       this._scope.$apply(function () {
         for (let k in setting.scope) {
           self._scope[k] = setting.scope[k];
@@ -146,11 +146,11 @@ export default class Visualization {
       this._prevSettingScope = setting.scope;
     }
 
-    var scope = this._createNewScope();
-    for (var k in setting.scope) {
+    let scope = this._createNewScope();
+    for (let k in setting.scope) {
       scope[k] = setting.scope[k];
     }
-    var template = setting.template;
+    let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url

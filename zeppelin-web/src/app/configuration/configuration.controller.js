@@ -21,7 +21,7 @@ function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   $scope._ = _;
   ngToast.dismiss();
 
-  var getConfigurations = function () {
+  let getConfigurations = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
     .success(function (data, status, headers, config) {
       $scope.configurations = data.body;
@@ -41,7 +41,7 @@ function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
     });
   };
 
-  var init = function () {
+  let init = function () {
     getConfigurations();
   };
 

@@ -19,7 +19,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
   'ngInject';
 
-  var interpreterSettingsTmp = [];
+  let interpreterSettingsTmp = [];
   $scope.interpreterSettings = [];
   $scope.availableInterpreters = {};
   $scope.showAddNewSetting = false;
@@ -36,8 +36,8 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     $scope.showInterpreterAuth = false;
   };
 
-  var getSelectJson = function () {
-    var selectJson = {
+  let getSelectJson = function () {
+    let selectJson = {
       tags: false,
       multiple: true,
       tokenSeparators: [',', ' '],
@@ -51,9 +51,9 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         },
         delay: 250,
         processResults: function (data, params) {
-          var users = [];
+          let users = [];
           if (data.body.users.length !== 0) {
-            for (var i = 0; i < data.body.users.length; i++) {
+            for (let i = 0; i < data.body.users.length; i++) {
               users.push({
                 'id': data.body.users[i],
                 'text': data.body.users[i]
@@ -83,12 +83,12 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.$on('ngRenderFinished', function (event, data) {
-    for (var setting = 0; setting < $scope.interpreterSettings.length; setting++) {
+    for (let setting = 0; setting < $scope.interpreterSettings.length; setting++) {
       angular.element('#' + $scope.interpreterSettings[setting].name + 'Users').select2(getSelectJson());
     }
   });
 
-  var getInterpreterSettings = function () {
+  let getInterpreterSettings = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
       .success(function (data, status, headers, config) {
         $scope.interpreterSettings = data.body;
@@ -108,10 +108,10 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       });
   };
 
-  var checkDownloadingDependencies = function () {
-    var isDownloading = false;
-    for (var index = 0; index < $scope.interpreterSettings.length; index++) {
-      var setting = $scope.interpreterSettings[index];
+  const checkDownloadingDependencies = function () {
+    let isDownloading = false;
+    for (let index = 0; index < $scope.interpreterSettings.length; index++) {
+      let setting = $scope.interpreterSettings[index];
       if (setting.status === 'DOWNLOADING_DEPENDENCIES') {
         isDownloading = true;
       }
@@ -134,7 +134,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     }
   };
 
-  var getAvailableInterpreters = function () {
+  let getAvailableInterpreters = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').success(function (data, status, headers, config) {
       $scope.availableInterpreters = data.body;
     }).error(function (data, status, headers, config) {
@@ -142,30 +142,30 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     });
   };
 
-  var emptyNewProperty = function (object) {
+  let emptyNewProperty = function (object) {
     angular.extend(object, {propertyValue: '', propertyKey: ''});
   };
 
-  var emptyNewDependency = function (object) {
+  let emptyNewDependency = function (object) {
     angular.extend(object, {depArtifact: '', depExclude: ''});
   };
 
-  var removeTMPSettings = function (index) {
+  let removeTMPSettings = function (index) {
     interpreterSettingsTmp.splice(index, 1);
   };
 
   $scope.copyOriginInterpreterSettingProperties = function (settingId) {
-    var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+    let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
     interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
   };
 
   $scope.setPerNoteOption = function (settingId, sessionOption) {
-    var option;
+    let option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       option = setting.option;
     }
 
@@ -185,12 +185,12 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.setPerUserOption = function (settingId, sessionOption) {
-    var option;
+    let option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       option = setting.option;
     }
 
@@ -210,12 +210,12 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.getPerNoteOption = function (settingId) {
-    var option;
+    let option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       option = setting.option;
     }
 
@@ -229,12 +229,12 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.getPerUserOption = function (settingId) {
-    var option;
+    let option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       option = setting.option;
     }
 
@@ -248,23 +248,23 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.getInterpreterRunningOption = function (settingId) {
-    var sharedModeName = 'shared';
+    let sharedModeName = 'shared';
 
-    var globallyModeName = 'Globally';
-    var perNoteModeName = 'Per Note';
-    var perUserModeName = 'Per User';
+    let globallyModeName = 'Globally';
+    let perNoteModeName = 'Per Note';
+    let perUserModeName = 'Per User';
 
-    var option;
+    let option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       option = setting.option;
     }
 
-    var perNote = option.perNote;
-    var perUser = option.perUser;
+    let perNote = option.perNote;
+    let perUser = option.perUser;
 
     // Globally == shared_perNote + shared_perUser
     if (perNote === sharedModeName && perUser === sharedModeName) {
@@ -290,12 +290,12 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.setInterpreterRunningOption = function (settingId, isPerNoteMode, isPerUserMode) {
-    var option;
+    let option;
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option;
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       option = setting.option;
     }
     option.perNote = isPerNoteMode;
@@ -303,7 +303,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.updateInterpreterSetting = function (form, settingId) {
-    var thisConfirm = BootstrapDialog.confirm({
+    const thisConfirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
@@ -311,8 +311,8 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       message: 'Do you want to update this interpreter and restart with new settings?',
       callback: function (result) {
         if (result) {
-          var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-          var setting = $scope.interpreterSettings[index];
+          let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+          let setting = $scope.interpreterSettings[index];
           if (setting.propertyKey !== '' || setting.propertyKey) {
             $scope.addNewInterpreterProperty(settingId);
           }
@@ -342,7 +342,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
           }
           setting.option.users = angular.element('#' + setting.name + 'Users').val();
 
-          var request = {
+          let request = {
             option: angular.copy(setting.option),
             properties: angular.copy(setting.properties),
             dependencies: angular.copy(setting.dependencies)
@@ -374,7 +374,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.resetInterpreterSetting = function (settingId) {
-    var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+    let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
 
     // Set the old settings back
     $scope.interpreterSettings[index] = angular.copy(interpreterSettingsTmp[index]);
@@ -390,7 +390,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId)
             .success(function (data, status, headers, config) {
-              var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+              let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings.splice(index, 1);
             }).error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message);
@@ -401,12 +401,12 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.newInterpreterGroupChange = function () {
-    var el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
+    let el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
       'properties');
-    var properties = {};
-    for (var i = 0; i < el.length; i++) {
-      var intpInfo = el[i];
-      for (var key in intpInfo) {
+    let properties = {};
+    for (let i = 0; i < el.length; i++) {
+      let intpInfo = el[i];
+      for (let key in intpInfo) {
         properties[key] = {
           value: intpInfo[key].defaultValue,
           description: intpInfo[key].description
@@ -425,11 +425,11 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         if (result) {
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId)
             .success(function (data, status, headers, config) {
-              var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+              let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings[index] = data.body;
               ngToast.info('Interpreter stopped. Will be lazily started on next run.');
             }).error(function (data, status, headers, config) {
-              var errorMsg = (data !== null) ? data.message : 'Could not connect to server.';
+              let errorMsg = (data !== null) ? data.message : 'Could not connect to server.';
               console.log('Error %o %o', status, errorMsg);
               ngToast.danger(errorMsg);
             });
@@ -468,7 +468,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       return;
     }
 
-    var newSetting = $scope.newInterpreterSetting;
+    let newSetting = $scope.newInterpreterSetting;
     if (newSetting.propertyKey !== '' || newSetting.propertyKey) {
       $scope.addNewInterpreterProperty();
     }
@@ -480,11 +480,11 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     }
     newSetting.option.users = angular.element('#newInterpreterUsers').val();
 
-    var request = angular.copy($scope.newInterpreterSetting);
+    let request = angular.copy($scope.newInterpreterSetting);
 
     // Change properties to proper request format
-    var newProperties = {};
-    for (var p in newSetting.properties) {
+    let newProperties = {};
+    for (let p in newSetting.properties) {
       newProperties[p] = newSetting.properties[p].value;
     }
     request.properties = newProperties;
@@ -528,7 +528,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     if (settingId === undefined) {
       delete $scope.newInterpreterSetting.properties[key];
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
       delete $scope.interpreterSettings[index].properties[key];
     }
   };
@@ -540,7 +540,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
           return el.groupArtifactVersion === artifact;
         });
     } else {
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
       $scope.interpreterSettings[index].dependencies = _.reject($scope.interpreterSettings[index].dependencies,
         function (el) {
           return el.groupArtifactVersion === artifact;
@@ -561,8 +561,8 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       emptyNewProperty($scope.newInterpreterSetting);
     } else {
       // Add new property from edit form
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
 
       if (!setting.propertyKey || setting.propertyKey === '') {
         return;
@@ -580,8 +580,8 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       }
 
       // overwrite if artifact already exists
-      var newSetting = $scope.newInterpreterSetting;
-      for (var d in newSetting.dependencies) {
+      let newSetting = $scope.newInterpreterSetting;
+      for (let d in newSetting.dependencies) {
         if (newSetting.dependencies[d].groupArtifactVersion === newSetting.depArtifact) {
           newSetting.dependencies[d] = {
             'groupArtifactVersion': newSetting.depArtifact,
@@ -598,14 +598,14 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       emptyNewDependency(newSetting);
     } else {
       // Add new dependency from edit form
-      var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-      var setting = $scope.interpreterSettings[index];
+      let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+      let setting = $scope.interpreterSettings[index];
       if (!setting.depArtifact || setting.depArtifact === '') {
         return;
       }
 
       // overwrite if artifact already exists
-      for (var dep in setting.dependencies) {
+      for (let dep in setting.dependencies) {
         if (setting.dependencies[dep].groupArtifactVersion === setting.depArtifact) {
           setting.dependencies[dep] = {
             'groupArtifactVersion': setting.depArtifact,
@@ -638,7 +638,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     };
   };
 
-  var getRepositories = function () {
+  let getRepositories = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/repository')
       .success(function (data, status, headers, config) {
         $scope.repositories = data.body;
@@ -648,7 +648,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   };
 
   $scope.addNewRepository = function () {
-    var request = angular.copy($scope.newRepoSetting);
+    let request = angular.copy($scope.newRepoSetting);
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/repository', request)
       .success(function (data, status, headers, config) {
@@ -669,7 +669,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/repository/' + repoId)
             .success(function (data, status, headers, config) {
-              var index = _.findIndex($scope.repositories, {'id': repoId});
+              let index = _.findIndex($scope.repositories, {'id': repoId});
               $scope.repositories.splice(index, 1);
             }).error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message);
@@ -694,7 +694,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     });
   };
 
-  var init = function () {
+  let init = function () {
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
 
@@ -706,7 +706,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   $scope.showSparkUI = function (settingId) {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
       .success(function (data, status, headers, config) {
-        var url = data.body.url;
+        let url = data.body.url;
         if (!url) {
           BootstrapDialog.alert({
             message: 'No spark application running'

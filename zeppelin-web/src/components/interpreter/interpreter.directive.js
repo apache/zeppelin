@@ -22,7 +22,7 @@ function interpreterDirective ($timeout) {
     link: function (scope, element, attr) {
       if (scope.$last === true) {
         $timeout(function () {
-          var id = 'ngRenderFinished';
+          let id = 'ngRenderFinished';
           scope.$emit(id);
         });
       }

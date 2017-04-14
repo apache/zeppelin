@@ -133,7 +133,7 @@ function noteActionSrv (websocketMsgSrv, $location, renameSrv, noteListDataFacto
       title: 'Rename folder',
       oldName: folderId,
       callback: function (newName) {
-        var newFolderId = normalizeFolderId(newName);
+        let newFolderId = normalizeFolderId(newName);
         if (_.has(noteListDataFactory.flatFolderMap, newFolderId)) {
           BootstrapDialog.confirm({
             type: BootstrapDialog.TYPE_WARNING,

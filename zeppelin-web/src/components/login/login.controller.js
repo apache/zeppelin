@@ -41,7 +41,7 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
       // redirect to the page from where the user originally was
       if ($location.search() && $location.search()['ref']) {
         $timeout(function () {
-          var redirectLocation = $location.search()['ref'];
+          let redirectLocation = $location.search()['ref'];
           $location.$$search = {};
           $location.path(redirectLocation);
         }, 100);
@@ -52,7 +52,7 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
     });
   };
 
-  var initValues = function () {
+  let initValues = function () {
     $scope.loginParams = {
       userName: '',
       password: ''
@@ -70,7 +70,7 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
         $scope.loginParams.errorText = data.info;
         angular.element('.nav-login-btn').click();
       }, 1000);
-      var locationPath = $location.path();
+      let locationPath = $location.path();
       $location.path('/').search('ref', locationPath);
     }
   });

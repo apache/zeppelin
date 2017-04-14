@@ -2,8 +2,8 @@ describe('Directive: ngEnter', function () {
   // load the directive's module
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var element;
-  var scope;
+  let element;
+  let scope;
 
   beforeEach(inject(function ($rootScope) {
     scope = $rootScope.$new();

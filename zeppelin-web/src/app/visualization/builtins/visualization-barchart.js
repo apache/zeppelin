@@ -34,7 +34,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   }
 
   render (pivot) {
-    var d3Data = this.d3DataFromPivot(
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,

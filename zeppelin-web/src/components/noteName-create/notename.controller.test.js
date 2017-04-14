@@ -1,9 +1,9 @@
 describe('Controller: NotenameCtrl', function () {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  var scope;
-  var ctrl;
-  var noteList;
+  let scope;
+  let ctrl;
+  let noteList;
 
   beforeEach(inject(function ($injector, $rootScope, $controller) {
     noteList = $injector.get('noteListDataFactory');
@@ -15,7 +15,7 @@ describe('Controller: NotenameCtrl', function () {
   }));
 
   it('should create a new name from current name when cloneNoteName is called', function () {
-    var notesList = [
+    let notesList = [
       {name: 'dsds 1', id: '1'},
       {name: 'dsds 2', id: '2'},
       {name: 'test name', id: '3'},
