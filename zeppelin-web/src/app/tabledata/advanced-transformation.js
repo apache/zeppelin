@@ -111,7 +111,7 @@ export default class AdvancedTransformation extends Transformation {
 
           let comment = ''
           if (minAxisCount) { comment = `min: ${minAxisCount}` }
-          if (minAxisCount && maxAxisCount) { comment = `${comment}, `}
+          if (minAxisCount && maxAxisCount) { comment = `${comment}, ` }
           if (maxAxisCount) { comment = `${comment}max: ${maxAxisCount}` }
 
           if (comment !== '') {
@@ -179,7 +179,6 @@ export default class AdvancedTransformation extends Transformation {
         isTextareaWidget: function(paramSpec) { return isTextareaWidget(paramSpec) },
 
         parameterChanged: (paramSpec) => {
-
           configInstance.chartChanged = false
           configInstance.parameterChanged = true
           self.emitParameterChange(configInstance)
@@ -213,7 +212,7 @@ export default class AdvancedTransformation extends Transformation {
     const paramSpecs = getCurrentChartParamSpecs(conf)
     const parsedParam = parseParameter(paramSpecs, param)
 
-   let { transformer, column, }  = getTransformer(conf, tableData.rows, axisSpecs, axis)
+    let { transformer, column, } = getTransformer(conf, tableData.rows, axisSpecs, axis)
 
     return {
       chartChanged: conf.chartChanged,

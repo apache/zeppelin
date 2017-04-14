@@ -86,23 +86,17 @@ export function parseParameter(paramSpecs, param) {
   /** copy original params */
   const parsed = JSON.parse(JSON.stringify(param))
 
-  for (let i = 0 ; i < paramSpecs.length; i++) {
+  for (let i = 0; i < paramSpecs.length; i++) {
     const paramSpec = paramSpecs[i]
     const name = paramSpec.name
 
     if (paramSpec.valueType === ParameterValueType.INT &&
       typeof parsed[name] !== 'number') {
-
-      try { parsed[name] = parseInt(parsed[name]); }
-      catch (error) { parsed[name] = paramSpec.defaultValue; }
-    }
-    else if (paramSpec.valueType === ParameterValueType.FLOAT &&
+      try { parsed[name] = parseInt(parsed[name]); } catch (error) { parsed[name] = paramSpec.defaultValue; }
+    } else if (paramSpec.valueType === ParameterValueType.FLOAT &&
       typeof parsed[name] !== 'number') {
-
-      try { parsed[name] = parseFloat(parsed[name]); }
-      catch (error) { parsed[name] = paramSpec.defaultValue; }
-    }
-    else if (paramSpec.valueType === ParameterValueType.BOOLEAN) {
+      try { parsed[name] = parseFloat(parsed[name]); } catch (error) { parsed[name] = paramSpec.defaultValue; }
+    } else if (paramSpec.valueType === ParameterValueType.BOOLEAN) {
       if (parsed[name] === 'false') {
         parsed[name] = false;
       } else if (parsed[name] === 'true') {
@@ -110,11 +104,9 @@ export function parseParameter(paramSpecs, param) {
       } else if (typeof parsed[name] !== 'boolean') {
         parsed[name] = paramSpec.defaultValue;
       }
-    }
-    else if (paramSpec.valueType === ParameterValueType.JSON) {
+    } else if (paramSpec.valueType === ParameterValueType.JSON) {
       if (parsed[name] !== null && typeof parsed[name] !== 'object') {
-        try { parsed[name] = JSON.parse(parsed[name]); }
-        catch (error) { parsed[name] = paramSpec.defaultValue; }
+        try { parsed[name] = JSON.parse(parsed[name]); } catch (error) { parsed[name] = paramSpec.defaultValue; }
       } else if (parsed[name] === null) {
         parsed[name] = paramSpec.defaultValue;
       }
@@ -163,7 +155,7 @@ export function getSpecs(specObject) {
 
 export function getAvailableChartNames(charts) {
   const available = []
-  for (var name in charts) {
+  for (let name in charts) {
     available.push(name)
   }
 
@@ -318,7 +310,6 @@ export function initializeConfig(config, spec) {
   if (!config.spec || !config.spec.version ||
     !config.spec.version.axis ||
     config.spec.version.axis !== axisVersion) {
-
     spec.initialized = true
     updated = true
 
@@ -332,7 +323,6 @@ export function initializeConfig(config, spec) {
   if (!config.spec || !config.spec.version ||
     !config.spec.version.parameter ||
     config.spec.version.parameter !== paramVersion) {
-
     updated = true
 
     clearParameterConfig(config)
@@ -363,7 +353,7 @@ export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
   const axisNames = []
   let column = {}
 
-  for(let i = 0; i < axisSpecs.length; i++) {
+  for (let i = 0; i < axisSpecs.length; i++) {
     const axisSpec = axisSpecs[i];
 
     if (axisType === AxisType.KEY && isKeyAxis(axisSpec)) {
@@ -375,7 +365,7 @@ export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
     }
   }
 
-  for(let axisName of axisNames) {
+  for (let axisName of axisNames) {
     const columns = axis[axisName];
     if (typeof axis[axisName] === 'undefined') { continue }
     if (!column[axisName]) { column[axisName] = [] }
@@ -390,7 +380,7 @@ export function getColumnsFromAxis(axisSpecs, axis) {
   const groupAxisNames = [];
   const aggrAxisNames = [];
 
-  for(let i = 0; i < axisSpecs.length; i++) {
+  for (let i = 0; i < axisSpecs.length; i++) {
     const axisSpec = axisSpecs[i];
 
     if (isKeyAxis(axisSpec)) { keyAxisNames.push(axisSpec.name); }
@@ -403,7 +393,7 @@ export function getColumnsFromAxis(axisSpecs, axis) {
   let aggregatorColumns = [];
   let customColumn = {};
 
-  for(let axisName in axis) {
+  for (let axisName in axis) {
     const columns = axis[axisName];
     if (keyAxisNames.includes(axisName)) {
       keyColumns = keyColumns.concat(columns);
@@ -480,7 +470,7 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
     transformer = () => { return rows; }
   } else if (method === TransformMethod.OBJECT) {
     transformer = () => {
-      const { cube, schema, keyColumnName,  keyNames, groupNameSet, selectorNameWithIndex, } =
+      const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
         getKGACube(rows, keyColumns, groupColumns, aggregatorColumns)
 
       const {
@@ -489,7 +479,8 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
         keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
-        rows: transformed, keyColumnName,
+        rows: transformed,
+        keyColumnName,
         keyNames,
         groupNames: groupNames,
         selectors: sortedSelectors,
@@ -506,7 +497,8 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
         keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
-        rows: transformed, keyColumnName,
+        rows: transformed,
+        keyColumnName,
         keyNames,
         groupNames: groupNames,
         selectors: sortedSelectors,
@@ -524,8 +516,7 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
     for (let axisName in keyAxisColumn) {
       if (i === 2) { break }
 
-      if (i === 0) { key1Columns = keyAxisColumn[axisName] }
-      else if (i === 1) { key2Columns  = keyAxisColumn[axisName] }
+      if (i === 0) { key1Columns = keyAxisColumn[axisName] } else if (i === 1) { key2Columns = keyAxisColumn[axisName] }
       i++
     }
 
@@ -553,8 +544,7 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
         selectors: sortedSelectors,
       }
     }
-  }
-  else if (method === TransformMethod.DRILL_DOWN) {
+  } else if (method === TransformMethod.DRILL_DOWN) {
     transformer = () => {
       const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
         getKAGCube(rows, keyColumns, groupColumns, aggregatorColumns)
@@ -565,7 +555,9 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
         keyColumnName, keyNames, groupNameSet, selectorNameWithIndex)
 
       return {
-        rows: transformed, keyColumnName, keyNames,
+        rows: transformed,
+        keyColumnName,
+        keyNames,
         groupNames: groupNames,
         selectors: sortedSelectors,
       }
@@ -589,12 +581,12 @@ const AggregatorFunctions = {
   min: function(a, b) {
     const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
     const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-    return Math.min(varA,varB);
+    return Math.min(varA, varB);
   },
   max: function(a, b) {
     const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
     const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-    return Math.max(varA,varB);
+    return Math.max(varA, varB);
   },
   avg: function(a, b, c) {
     const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
@@ -634,7 +626,7 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
     let c = cube;
 
     // key: add to entry
-    let mergedKeyName = undefined
+    let mergedKeyName
     if (schema.key) {
       mergedKeyName = keyColumns.map(c => row[c.index]).join('.')
       if (!e[mergedKeyName]) { e[mergedKeyName] = { children: {}, } }
@@ -646,7 +638,7 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
       keyNameSet.add(mergedKeyName)
     }
 
-    let mergedGroupName = undefined
+    let mergedGroupName
     if (schema.group) {
       mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
 
@@ -690,13 +682,12 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
       } else {
         const value = AggregatorFunctions[aggrColumn.aggr](
           c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1)
-        const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
-          c[aggrName].count + 1 : c[aggrName].count
+        const count = (AggregatorFunctionDiv[aggrColumn.aggr])
+          ? c[aggrName].count + 1 : c[aggrName].count
 
         c[aggrName].value = value
         c[aggrName].count = count
       }
-
     } /** end loop for aggrColumns */
   }
 
@@ -740,7 +731,7 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
     let c = cube;
 
     // key: add to entry
-    let mergedKeyName = undefined
+    let mergedKeyName
     if (schema.key) {
       mergedKeyName = keyColumns.map(c => row[c.index]).join('.')
       // key: add to row
@@ -750,7 +741,7 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
       keyNameSet.add(mergedKeyName)
     }
 
-    let mergedGroupName = undefined
+    let mergedGroupName
     if (schema.group) {
       mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
       groupNameSet.add(mergedGroupName)
@@ -781,8 +772,8 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
       } else {
         const value = AggregatorFunctions[aggrColumn.aggr](
           c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1)
-        const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
-          c[aggrName].count + 1 : c[aggrName].count
+        const count = (AggregatorFunctionDiv[aggrColumn.aggr])
+          ? c[aggrName].count + 1 : c[aggrName].count
 
         c[aggrName].value = value
         c[aggrName].count = count
@@ -800,15 +791,13 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
           const drillDownedCount = c[aggrName].children[mergedGroupName].count
           const value = AggregatorFunctions[aggrColumn.aggr](
             drillDownedValue, row[aggrColumn.index], drillDownedCount + 1)
-          const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
-            drillDownedCount + 1 : drillDownedCount
+          const count = (AggregatorFunctionDiv[aggrColumn.aggr])
+            ? drillDownedCount + 1 : drillDownedCount
 
           c[aggrName].children[mergedGroupName].value = value
           c[aggrName].children[mergedGroupName].count = count
         }
-
       }
-
     } /** end loop for aggrColumns */
   }
 
@@ -856,7 +845,7 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
     let c = cube;
 
     // key1: add to entry
-    let mergedKey1Name = undefined
+    let mergedKey1Name
     if (schema.key1) {
       mergedKey1Name = key1Columns.map(c => row[c.index]).join('.')
       if (!e[mergedKey1Name]) { e[mergedKey1Name] = { children: {}, } }
@@ -869,7 +858,7 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
     }
 
     // key2: add to entry
-    let mergedKey2Name = undefined
+    let mergedKey2Name
     if (schema.key2) {
       mergedKey2Name = key2Columns.map(c => row[c.index]).join('.')
       if (!e[mergedKey2Name]) { e[mergedKey2Name] = { children: {}, } }
@@ -881,7 +870,7 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
       if (!key2NameSet[mergedKey2Name]) { key2NameSet[mergedKey2Name] = true }
     }
 
-    let mergedGroupName = undefined
+    let mergedGroupName
     if (schema.group) {
       mergedGroupName = groupColumns.map(c => row[c.index]).join('.')
 
@@ -925,13 +914,12 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
       } else {
         const value = AggregatorFunctions[aggrColumn.aggr](
           c[aggrName].value, row[aggrColumn.index], c[aggrName].count + 1)
-        const count = (AggregatorFunctionDiv[aggrColumn.aggr]) ?
-          c[aggrName].count + 1 : c[aggrName].count
+        const count = (AggregatorFunctionDiv[aggrColumn.aggr])
+          ? c[aggrName].count + 1 : c[aggrName].count
 
         c[aggrName].value = value
         c[aggrName].count = count
       }
-
     } /** end loop for aggrColumns */
   }
 
@@ -954,8 +942,8 @@ export function getSelectorName(mergedGroupName, aggrColumnLength, aggrColumnNam
   if (!mergedGroupName) {
     return aggrColumnName
   } else {
-    return (aggrColumnLength > 1) ?
-      `${mergedGroupName} / ${aggrColumnName}` : mergedGroupName
+    return (aggrColumnLength > 1)
+      ? `${mergedGroupName} / ${aggrColumnName}` : mergedGroupName
   }
 }
 
@@ -990,7 +978,6 @@ export function getNameWithIndex(names) {
 
 export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
                                          key1Names, key2Names, groupNameSet, selectorNameWithIndex) {
-
   const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
 
@@ -1015,7 +1002,6 @@ export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
 export function fillSelectorRows(schema, cube, selectorRows,
                                  aggrColumns, selectorNameWithIndex,
                                  key1Names, key2Names) {
-
   function fill(grouped, mergedGroupName, key1Name, key2Name) {
     // should iterate aggrColumns in the most nested loop to utilize memory locality
     for (let aggrColumn of aggrColumns) {
@@ -1083,14 +1069,13 @@ export function fillSelectorRows(schema, cube, selectorRows,
 export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
                                         keyColumnName, keyNames, groupNameSet,
                                         selectorNameWithIndex) {
-
   const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
 
   const keyArrowRows = new Array(sortedSelectors.length)
   const keyNameWithIndex = getNameWithIndex(keyNames)
 
-  for(let i = 0; i < keyNames.length; i++) {
+  for (let i = 0; i < keyNames.length; i++) {
     const key = keyNames[i]
 
     const obj = cube[key]
@@ -1110,7 +1095,6 @@ export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
 export function fillArrayRow(schema, aggrColumns, obj,
                              groupNameSet, selectorNameWithIndex,
                              keyName, keyNames, keyArrayRows, keyNameWithIndex) {
-
   function fill(target, mergedGroupName, aggr, aggrName) {
     const value = getCubeValue(target, aggr, aggrName)
     const selector = getSelectorName(mergedGroupName, aggrColumns.length, aggrName)
@@ -1127,13 +1111,13 @@ export function fillArrayRow(schema, aggrColumns, obj,
 
   /** when group is empty */
   if (!schema.group) {
-    for(let i = 0; i < aggrColumns.length; i++) {
+    for (let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
       const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
       fill(obj, undefined, aggrColumn.aggr, aggrName)
     }
   } else {
-    for(let i = 0; i < aggrColumns.length; i++) {
+    for (let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
       const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
@@ -1148,7 +1132,6 @@ export function fillArrayRow(schema, aggrColumns, obj,
 export function getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
                                          keyColumnName, keyNames, groupNameSet,
                                          selectorNameWithIndex) {
-
   const rows = keyNames.reduce((acc, key) => {
     const obj = cube[key]
     const row = getObjectRow(schema, aggregatorColumns, obj, groupNameSet)
@@ -1177,7 +1160,7 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
 
   /** when group is empty */
   if (!schema.group) {
-    for(let i = 0; i < aggrColumns.length; i++) {
+    for (let i = 0; i < aggrColumns.length; i++) {
       const aggrColumn = aggrColumns[i]
       const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
@@ -1188,7 +1171,7 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
   }
 
   /** when group is specified */
-  for(let i = 0; i < aggrColumns.length; i++) {
+  for (let i = 0; i < aggrColumns.length; i++) {
     const aggrColumn = aggrColumns[i]
     const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
 
@@ -1206,7 +1189,6 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
 
 export function getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
                                             keyColumnName, keyNames, groupNameSet, selectorNameWithIndex) {
-
   const sortedSelectors = Object.keys(selectorNameWithIndex).sort()
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors)
 
@@ -1232,7 +1214,7 @@ export function getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
 export function fillDrillDownRow(schema, obj, rows, key,
                                  selectorNameWithIndex, aggrColumns, groupNames) {
   /** when group is empty */
-  for(let i = 0; i < aggrColumns.length; i++) {
+  for (let i = 0; i < aggrColumns.length; i++) {
     const row = {}
     const aggrColumn = aggrColumns[i]
     const aggrName = `${aggrColumn.name}(${aggrColumn.aggr})`
@@ -1248,7 +1230,7 @@ export function fillDrillDownRow(schema, obj, rows, key,
     if (schema.group) {
       row.drillDown = []
 
-      for(let groupName of groupNames) {
+      for (let groupName of groupNames) {
         const value = getCubeValue(obj[aggrName].children, aggrColumn.aggr, groupName)
         row.drillDown.push({ group: groupName, value: value, })
       }
