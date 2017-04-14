@@ -94,18 +94,18 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         $scope.interpreterSettings = data.body;
         checkDownloadingDependencies();
       }).error(function(data, status, headers, config) {
-      if (status === 401) {
-        ngToast.danger({
-          content: 'You don\'t have permission on this page',
-          verticalPosition: 'bottom',
-          timeout: '3000'
-        });
-        setTimeout(function() {
-          window.location.replace('/');
-        }, 3000);
-      }
-      console.log('Error %o %o', status, data.message);
-    });
+        if (status === 401) {
+          ngToast.danger({
+            content: 'You don\'t have permission on this page',
+            verticalPosition: 'bottom',
+            timeout: '3000'
+          });
+          setTimeout(function() {
+            window.location.replace('/');
+          }, 3000);
+        }
+        console.log('Error %o %o', status, data.message);
+      });
   };
 
   var checkDownloadingDependencies = function() {
@@ -394,8 +394,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
               var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings.splice(index, 1);
             }).error(function(data, status, headers, config) {
-            console.log('Error %o %o', status, data.message);
-          });
+              console.log('Error %o %o', status, data.message);
+            });
         }
       }
     });
@@ -433,7 +433,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
               var errorMsg = (data !== null) ? data.message : 'Could not connect to server.';
               console.log('Error %o %o', status, errorMsg);
               ngToast.danger(errorMsg);
-          });
+            });
         }
       }
     });
@@ -497,9 +497,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         $scope.showAddNewSetting = false;
         checkDownloadingDependencies();
       }).error(function(data, status, headers, config) {
-      console.log('Error %o %o', status, data.message);
-      ngToast.danger({content: data.message, verticalPosition: 'bottom'});
-    });
+        console.log('Error %o %o', status, data.message);
+        ngToast.danger({content: data.message, verticalPosition: 'bottom'});
+      });
   };
 
   $scope.cancelInterpreterSetting = function() {
@@ -644,8 +644,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       .success(function(data, status, headers, config) {
         $scope.repositories = data.body;
       }).error(function(data, status, headers, config) {
-      console.log('Error %o %o', status, data.message);
-    });
+        console.log('Error %o %o', status, data.message);
+      });
   };
 
   $scope.addNewRepository = function() {
@@ -657,8 +657,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         $scope.resetNewRepositorySetting();
         angular.element('#repoModal').modal('hide');
       }).error(function(data, status, headers, config) {
-      console.log('Error %o %o', headers, config);
-    });
+        console.log('Error %o %o', headers, config);
+      });
   };
 
   $scope.removeRepository = function(repoId) {
@@ -673,8 +673,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
               var index = _.findIndex($scope.repositories, {'id': repoId});
               $scope.repositories.splice(index, 1);
             }).error(function(data, status, headers, config) {
-            console.log('Error %o %o', status, data.message);
-          });
+              console.log('Error %o %o', status, data.message);
+            });
         }
       }
     });
@@ -716,8 +716,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         }
         window.open(url, '_blank');
       }).error(function(data, status, headers, config) {
-      console.log('Error %o %o', status, data.message);
-    });
+        console.log('Error %o %o', status, data.message);
+      });
   };
 
   init();

@@ -101,8 +101,8 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
           }
         });
       }).error(function(data, status, headers, config) {
-      console.log('Error %o %o', status, data.message);
-    });
+        console.log('Error %o %o', status, data.message);
+      });
   };
 
   $scope.toggleAddNewCredentialInfo = function() {

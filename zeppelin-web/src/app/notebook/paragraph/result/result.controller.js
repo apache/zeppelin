@@ -805,7 +805,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     // Get suggested apps
     var noteId = $route.current.pathParams.noteId;
     if (!noteId) {
-    return;
+      return;
     }
     $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + paragraph.id)
       .success(function(data, status, headers, config) {

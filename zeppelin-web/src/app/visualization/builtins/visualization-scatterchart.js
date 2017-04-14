@@ -68,23 +68,23 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
 
     chart.xAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
       return self.xAxisTickFormat(Math.round(d * 1e3)/1e3, self.xLabels);
-      });
+    });
 
     chart.yAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
       return self.yAxisTickFormat(Math.round(d * 1e3)/1e3, self.yLabels);
-      });
+    });
 
     chart.showDistX(true).showDistY(true);
     // handle the problem of tooltip not showing when muliple points have same value.
   };
 
   yAxisTickFormat(d, yLabels) {
-     if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
+    if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
       return yLabels[d];
-     } else {
+    } else {
       return super.yAxisTickFormat(d);
-     }
-   }
+    }
+  }
 
   selectDefault() {
     if (!this.config.xAxis && !this.config.yAxis) {
@@ -228,7 +228,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     for (var i = 0; i < d3gvalues.length - 1;) {
       if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
            (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon)) {
-           d3gvalues.splice(i+1, 1);
+        d3gvalues.splice(i+1, 1);
       } else {
         i++;
       }

@@ -93,8 +93,8 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
           $scope.note.errorText = 'Unable to Fetch URL';
           $scope.$apply();
         }}).done(function(data) {
-        vm.processImportJson(data);
-      });
+          vm.processImportJson(data);
+        });
     } else {
       $scope.note.errorText = 'Enter URL';
       $scope.$apply();

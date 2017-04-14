@@ -263,9 +263,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       }
     } else {
       ngToast.danger({content: 'There is a problem with this Revision',
-          verticalPosition: 'top',
-          dismissOnTimeout: false
-        });
+        verticalPosition: 'top',
+        dismissOnTimeout: false
+      });
     }
   };
 
@@ -737,13 +737,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
               $scope.interpreterSettings[index] = data.body;
               thisConfirm.close();
             }).error(function(data, status, headers, config) {
-            thisConfirm.close();
-            console.log('Error %o %o', status, data.message);
-            BootstrapDialog.show({
-              title: 'Error restart interpreter.',
-              message: data.message
+              thisConfirm.close();
+              console.log('Error %o %o', status, data.message);
+              BootstrapDialog.show({
+                title: 'Error restart interpreter.',
+                message: data.message
+              });
             });
-          });
           return false;
         }
       }

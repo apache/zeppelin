@@ -67,18 +67,18 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
         vm.notebookRepos = data.body;
         console.log('ya notebookRepos %o', vm.notebookRepos);
       }).error(function(data, status, headers, config) {
-      if (status === 401) {
-        ngToast.danger({
-          content: 'You don\'t have permission on this page',
-          verticalPosition: 'bottom',
-          timeout: '3000'
-        });
-        setTimeout(function() {
-          window.location.replace('/');
-        }, 3000);
-      }
-      console.log('Error %o %o', status, data.message);
-    });
+        if (status === 401) {
+          ngToast.danger({
+            content: 'You don\'t have permission on this page',
+            verticalPosition: 'bottom',
+            timeout: '3000'
+          });
+          setTimeout(function() {
+            window.location.replace('/');
+          }, 3000);
+        }
+        console.log('Error %o %o', status, data.message);
+      });
   }
 
   function _init() {
