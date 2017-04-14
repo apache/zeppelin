@@ -26,18 +26,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.google.common.base.Joiner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
-
-import org.apache.spark.SecurityManager;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.ActiveJob;
@@ -47,20 +50,21 @@ import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
-import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -68,8 +72,13 @@ import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import scala.*;
+import com.google.common.base.Joiner;
+import scala.Console;
 import scala.Enumeration.Value;
+import scala.None;
+import scala.Option;
+import scala.Some;
+import scala.Tuple2;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
@@ -517,11 +526,14 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForPySpark(SparkConf conf) {
-    String pysparkBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
+    String pysparkBasePath =
+        new DefaultInterpreterProperty("SPARK_HOME", null, null, null, InterpreterPropertyType.text)
+            .getValue();
     File pysparkPath;
     if (null == pysparkBasePath) {
       pysparkBasePath =
-              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
+          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null,
+              InterpreterPropertyType.text).getValue();
       pysparkPath = new File(pysparkBasePath,
           "interpreter" + File.separator + "spark" + File.separator + "pyspark");
     } else {
@@ -566,11 +578,14 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForSparkR(SparkConf conf) {
-    String sparkRBasePath = new InterpreterProperty("SPARK_HOME", null, null, null).getValue();
+    String sparkRBasePath =
+        new DefaultInterpreterProperty("SPARK_HOME", null, null, null,
+            InterpreterPropertyType.text).getValue();
     File sparkRPath;
     if (null == sparkRBasePath) {
       sparkRBasePath =
-              new InterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null).getValue();
+              new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null,
+                  InterpreterPropertyType.text).getValue();
       sparkRPath = new File(sparkRBasePath,
               "interpreter" + File.separator + "spark" + File.separator + "R");
     } else {

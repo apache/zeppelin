@@ -61,13 +61,15 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
         "envName": null,
         "propertyName": "property.1.name",
         "defaultValue": "propertyDefaultValue",
-        "description": "Property description"
+        "description": "Property description",
+        "type": "text"
       },
       "properties2": {
         "envName": PROPERTIES_2,
         "propertyName": null,
         "defaultValue": "property2DefaultValue",
-        "description": "Property 2 description"
+        "description": "Property 2 description",
+        "type": "text"
       }, ...
     },
     "editor": {

@@ -54,14 +54,14 @@ public class InterpreterSetting {
   private transient Map<String, Set<String>> runtimeInfosToBeCleared;
 
   /**
-   * properties can be either Properties or Map<String, InterpreterProperty>
+   * properties can be either Map<String, DefaultInterpreterProperty> or
+   * Map<String, InterpreterProperty>
    * properties should be:
-   * - Properties when Interpreter instances are saved to `conf/interpreter.json` file
-   * - Map<String, InterpreterProperty> when Interpreters are registered
+   * - Map<String, InterpreterProperty> when Interpreter instances are saved to
+   * `conf/interpreter.json` file
+   * - Map<String, DefaultInterpreterProperty> when Interpreters are registered
    * : this is needed after https://github.com/apache/zeppelin/pull/1145
    * which changed the way of getting default interpreter setting AKA interpreterSettingsRef
-   * Note(mina): In order to simplify the implementation, I chose to change properties
-   * from Properties to Object instead of creating new classes.
    */
   private Object properties;
   private Status status;
@@ -274,6 +274,18 @@ public class InterpreterSetting {
     return properties;
   }
 
+  public Properties getFlatProperties() {
+    Properties p = new Properties();
+    if (properties != null) {
+      Map<String, InterpreterProperty> propertyMap = (Map<String, InterpreterProperty>) properties;
+      for (String key : propertyMap.keySet()) {
+        InterpreterProperty tmp = propertyMap.get(key);
+        p.put(tmp.getName() != null ? tmp.getName() : key, tmp.getValue());
+      }
+    }
+    return p;
+  }
+
   public List<Dependency> getDependencies() {
     if (dependencies == null) {
       return new LinkedList<>();
@@ -325,7 +337,7 @@ public class InterpreterSetting {
     this.option = interpreterOption;
   }
 
-  public void setProperties(Properties p) {
+  public void setProperties(Map<String, InterpreterProperty> p) {
     this.properties = p;
   }
 

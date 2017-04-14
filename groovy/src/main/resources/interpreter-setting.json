@@ -8,7 +8,8 @@
         "envName": null,
         "propertyName": "GROOVY_CLASSES",
         "defaultValue": "",
-        "description": "The path for custom groovy classes location. If empty `./interpreter/groovy/classes`"
+        "description": "The path for custom groovy classes location. If empty `./interpreter/groovy/classes`",
+        "type": "text"
       }
     }
   }

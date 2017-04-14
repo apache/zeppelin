@@ -8,43 +8,50 @@
         "envName": null,
         "propertyName": "zeppelin.lens.run.concurrent",
         "defaultValue": "true",
-        "description": "Run concurrent Lens Sessions"
+        "description": "Run concurrent Lens Sessions",
+        "type": "text"
       },
       "zeppelin.lens.maxThreads": {
         "envName": null,
         "propertyName": "zeppelin.lens.maxThreads",
         "defaultValue": "10",
-        "description": "If concurrency is true then how many threads?"
+        "description": "If concurrency is true then how many threads?",
+        "type": "text"
       },
       "zeppelin.lens.maxResults": {
         "envName": null,
         "propertyName": "zeppelin.lens.maxResults",
         "defaultValue": "1000",
-        "description": "max number of rows to display"
+        "description": "max number of rows to display",
+        "type": "text"
       },
       "lens.server.base.url": {
         "envName": null,
         "propertyName": "lens.server.base.url",
         "defaultValue": "http://<hostname>:<port>/lensapi",
-        "description": "The URL for Lens Server"
+        "description": "The URL for Lens Server",
+        "type": "text"
       },
       "lens.client.dbname": {
         "envName": null,
         "propertyName": "lens.client.dbname",
         "defaultValue": "default",
-        "description": "The database schema name"
+        "description": "The database schema name",
+        "type": "text"
       },
       "lens.query.enable.persistent.resultset": {
         "envName": null,
         "propertyName": "lens.query.enable.persistent.resultset",
         "defaultValue": "false",
-        "description": "Apache Lens to persist result in HDFS?"
+        "description": "Apache Lens to persist result in HDFS?",
+        "type": "text"
       },
       "lens.session.cluster.user": {
         "envName": null,
         "propertyName": "lens.session.cluster.user",
         "defaultValue": "default",
-        "description": "Hadoop cluster username"
+        "description": "Hadoop cluster username",
+        "type": "text"
       }
     }
   }

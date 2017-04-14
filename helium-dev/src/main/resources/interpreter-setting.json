@@ -8,7 +8,8 @@
         "envName": "PORT",
         "propertyName": "port",
         "defaultValue": "jdbc:postgresql://localhost:5432/",
-        "description": "The URL for JDBC."
+        "description": "The URL for JDBC.",
+        "type": "text"
       }
     },
     "editor": {

@@ -9,88 +9,105 @@
         "envName": "ZEPPELIN_LIVY_HOST_URL",
         "propertyName": "zeppelin.livy.url",
         "defaultValue": "http://localhost:8998",
-        "description": "The URL for Livy Server."
+        "description": "The URL for Livy Server.",
+        "type": "text"
       },
       "zeppelin.livy.session.create_timeout": {
         "envName": "ZEPPELIN_LIVY_SESSION_CREATE_TIMEOUT",
         "propertyName": "zeppelin.livy.session.create_timeout",
         "defaultValue": "120",
-        "description": "Livy Server create session timeout (seconds)."
+        "description": "Livy Server create session timeout (seconds).",
+        "type": "text"
       },
       "livy.spark.driver.cores": {
         "propertyName": "livy.spark.driver.cores",
         "defaultValue": "",
-        "description": "Driver cores. ex) 1, 2"
+        "description": "Driver cores. ex) 1, 2",
+        "type": "text"
       },
       "livy.spark.driver.memory": {
         "propertyName": "livy.spark.driver.memory",
         "defaultValue": "",
-        "description": "Driver memory. ex) 512m, 32g"
+        "description": "Driver memory. ex) 512m, 32g",
+        "type": "text"
       },
       "livy.spark.executor.instances": {
         "propertyName": "livy.spark.executor.instances",
         "defaultValue": "",
-        "description": "Executor instances. ex) 1, 4"
+        "description": "Executor instances. ex) 1, 4",
+        "type": "text"
       },
       "livy.spark.executor.cores": {
         "propertyName": "livy.spark.executor.cores",
         "defaultValue": "",
-        "description": "Num cores per executor. ex) 1, 4"
+        "description": "Num cores per executor. ex) 1, 4",
+        "type": "text"
       },
       "livy.spark.executor.memory": {
         "propertyName": "livy.spark.executor.memory",
         "defaultValue": "",
-        "description": "Executor memory per worker instance. ex) 512m, 32g"
+        "description": "Executor memory per worker instance. ex) 512m, 32g",
+        "type": "text"
       },
       "livy.spark.dynamicAllocation.enabled": {
         "propertyName": "livy.spark.dynamicAllocation.enabled",
         "defaultValue": "",
-        "description": "Use dynamic resource allocation"
+        "description": "Use dynamic resource allocation",
+        "type": "text"
       },
       "livy.spark.dynamicAllocation.cachedExecutorIdleTimeout": {
         "propertyName": "livy.spark.dynamicAllocation.cachedExecutorIdleTimeout",
         "defaultValue": "",
-        "description": "Remove an executor which has cached data blocks"
+        "description": "Remove an executor which has cached data blocks",
+        "type": "text"
       },
       "livy.spark.dynamicAllocation.minExecutors": {
         "propertyName": "livy.spark.dynamicAllocation.minExecutors",
         "defaultValue": "",
-        "description": "Lower bound for the number of executors if dynamic allocation is enabled."
+        "description": "Lower bound for the number of executors if dynamic allocation is enabled.",
+        "type": "text"
       },
       "livy.spark.dynamicAllocation.initialExecutors": {
         "propertyName": "livy.spark.dynamicAllocation.initialExecutors",
         "defaultValue": "",
-        "description": "Initial number of executors to run if dynamic allocation is enabled."
+        "description": "Initial number of executors to run if dynamic allocation is enabled.",
+        "type": "text"
       },
       "livy.spark.dynamicAllocation.maxExecutors": {
         "propertyName": "livy.spark.dynamicAllocation.maxExecutors",
         "defaultValue": "",
-        "description": "Upper bound for the number of executors if dynamic allocation is enabled."
+        "description": "Upper bound for the number of executors if dynamic allocation is enabled.",
+        "type": "text"
       },
       "zeppelin.livy.principal": {
         "propertyName": "zeppelin.livy.principal",
         "defaultValue": "",
-        "description": "Kerberos principal to authenticate livy"
+        "description": "Kerberos principal to authenticate livy",
+        "type": "text"
       },
       "zeppelin.livy.keytab": {
         "propertyName": "zeppelin.livy.keytab",
         "defaultValue": "",
-        "description": "Kerberos keytab to authenticate livy"
+        "description": "Kerberos keytab to authenticate livy",
+        "type": "text"
       },
       "zeppelin.livy.pull_status.interval.millis": {
         "propertyName": "zeppelin.livy.pull_status.interval.millis",
         "defaultValue": "1000",
-        "description": "The interval for checking paragraph execution status"
+        "description": "The interval for checking paragraph execution status",
+        "type": "text"
       },
       "livy.spark.jars.packages": {
         "propertyName": "livy.spark.jars.packages",
         "defaultValue": "",
-        "description": "Adding extra libraries to livy interpreter"
+        "description": "Adding extra libraries to livy interpreter",
+        "type": "text"
       },
       "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
         "defaultValue": "false",
-        "description": "Whether display app info"
+        "description": "Whether display app info",
+        "type": "text"
       }
     },
     "option": {
@@ -116,17 +133,20 @@
         "envName": "ZEPPELIN_LIVY_MAXRESULT",
         "propertyName": "zeppelin.livy.spark.sql.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of Spark SQL result to display."
+        "description": "Max number of Spark SQL result to display.",
+        "type": "text"
       },
       "zeppelin.livy.spark.sql.field.truncate": {
         "propertyName": "zeppelin.livy.spark.sql.field.truncate",
         "defaultValue": "true",
-        "description": "If true, truncate field values longer than 20 characters."
+        "description": "If true, truncate field values longer than 20 characters.",
+        "type": "text"
       },
       "zeppelin.livy.concurrentSQL": {
         "propertyName": "zeppelin.livy.concurrentSQL",
         "defaultValue": "false",
-        "description": "Execute multiple SQL concurrently if set true."
+        "description": "Execute multiple SQL concurrently if set true.",
+        "type": "text"
       }
     },
     "option": {

@@ -8,19 +8,22 @@
         "envName": null,
         "propertyName": "zeppelin.bigquery.project_id",
         "defaultValue": " ",
-        "description": "Google Project ID"
+        "description": "Google Project ID",
+        "type": "text"
       },
       "zeppelin.bigquery.wait_time": {
         "envName": null,
         "propertyName": "zeppelin.bigquery.wait_time",
         "defaultValue": "5000",
-        "description": "Query timeout in Milliseconds"
+        "description": "Query timeout in Milliseconds",
+        "type": "text"
       },
       "zeppelin.bigquery.max_no_of_rows": {
         "envName": null,
         "propertyName": "zeppelin.bigquery.max_no_of_rows",
         "defaultValue": "100000",
-        "description": "Maximum number of rows to fetch from BigQuery"
+        "description": "Maximum number of rows to fetch from BigQuery",
+        "type": "text"
       }
     },
     "editor": {

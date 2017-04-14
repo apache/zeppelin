@@ -60,4 +60,39 @@ So, copying `notebook` and `conf` directory should be enough.
 ### Upgrading from Zeppelin 0.7 to 0.8
 
  - From 0.8, we recommend to use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` instead of `zeppelin.pyspark.python` as `zeppelin.pyspark.python` only effects driver. You can use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` as using them in spark.
+ - From 0.8, changed the format settings for interpreters (`interpreter.json`)
+ 
+   old format:
+   ```
+     "interpreterSettings": {
+         "2CD8TH1XV": {
+           "id": "2CD8TH1XV",
+           "name": "spark",
+           "group": "spark",
+           "properties": {
+             "spark.executor.memory": "",
+             "zeppelin.spark.concurrentSQL": "false",
+             ...
+           }
+   ```
+   new format:
+   ```
+     "interpreterSettings": {
+         "2CD8TH1XV": {
+           "id": "2CD8TH1XV",
+           "name": "spark",
+           "group": "spark",
+           "properties": {
+             "spark.executor.memory": {
+               "name": "spark.executor.memory",
+               "value": "",
+               "type": "text"
+              },
+             "zeppelin.spark.concurrentSQL": {
+               "name": "zeppelin.spark.concurrentSQL", 
+               "value": "false",
+               "type": "text"
+             ...
+           }
+   ```
  

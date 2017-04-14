@@ -9,56 +9,64 @@
         "envName": null,
         "propertyName": "spark.executor.memory",
         "defaultValue": "",
-        "description": "Executor memory per worker instance. ex) 512m, 32g"
+        "description": "Executor memory per worker instance. ex) 512m, 32g",
+        "type": "text"
       },
       "args": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "",
-        "description": "spark commandline args"
+        "description": "spark commandline args",
+        "type": "text"
       },
       "zeppelin.spark.useHiveContext": {
         "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
         "propertyName": "zeppelin.spark.useHiveContext",
         "defaultValue": "true",
-        "description": "Use HiveContext instead of SQLContext if it is true."
+        "description": "Use HiveContext instead of SQLContext if it is true.",
+        "type": "text"
       },
       "spark.app.name": {
         "envName": "SPARK_APP_NAME",
-
         "propertyName": "spark.app.name",
         "defaultValue": "Zeppelin",
-        "description": "The name of spark application."
+        "description": "The name of spark application.",
+        "type": "text"
       },
       "zeppelin.spark.printREPLOutput": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "true",
-        "description": "Print REPL output"
+        "description": "Print REPL output",
+        "type": "text"
       },
       "spark.cores.max": {
         "envName": null,
         "propertyName": "spark.cores.max",
         "defaultValue": "",
-        "description": "Total number of cores to use. Empty value uses all available core."
+        "description": "Total number of cores to use. Empty value uses all available core.",
+        "type": "text"
       },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of Spark SQL result to display."
+        "description": "Max number of Spark SQL result to display.",
+        "type": "text"
       },
       "master": {
         "envName": "MASTER",
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
-        "description": "Spark master uri. ex) spark://masterhost:7077"
+        "description": "Spark master uri. ex) spark://masterhost:7077",
+        "type": "text"
       },
       "zeppelin.spark.unSupportedVersionCheck": {
         "envName": null,
         "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
         "defaultValue": "true",
-        "description": "Do not change - developer only setting, not for production use"
+        "description": "Do not change - developer only setting, not for production use",
+        "type": "text"
       }
     },
     "editor": {
@@ -74,25 +82,29 @@
         "envName": "ZEPPELIN_SPARK_CONCURRENTSQL",
         "propertyName": "zeppelin.spark.concurrentSQL",
         "defaultValue": "false",
-        "description": "Execute multiple SQL concurrently if set true."
+        "description": "Execute multiple SQL concurrently if set true.",
+        "type": "text"
       },
       "zeppelin.spark.sql.stacktrace": {
         "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
         "propertyName": "zeppelin.spark.sql.stacktrace",
         "defaultValue": "false",
-        "description": "Show full exception stacktrace for SQL queries if set to true."
+        "description": "Show full exception stacktrace for SQL queries if set to true.",
+        "type": "text"
       },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of Spark SQL result to display."
+        "description": "Max number of Spark SQL result to display.",
+        "type": "text"
       },
       "zeppelin.spark.importImplicit": {
         "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",
         "propertyName": "zeppelin.spark.importImplicit",
         "defaultValue": "true",
-        "description": "Import implicits, UDF collection, and sql if set true. true by default."
+        "description": "Import implicits, UDF collection, and sql if set true. true by default.",
+        "type": "text"
       }
     },
     "editor": {
@@ -108,13 +120,15 @@
         "envName": "ZEPPELIN_DEP_LOCALREPO",
         "propertyName": null,
         "defaultValue": "local-repo",
-        "description": "local repository for dependency loader"
+        "description": "local repository for dependency loader",
+        "type": "text"
       },
       "zeppelin.dep.additionalRemoteRepository": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
-        "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository."
+        "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.",
+        "type": "text"
       }
     },
     "editor": {
@@ -130,7 +144,8 @@
         "envName": "PYSPARK_PYTHON",
         "propertyName": null,
         "defaultValue": "python",
-        "description": "Python command to run pyspark with"
+        "description": "Python command to run pyspark with",
+        "type": "text"
       }
     },
     "editor": {
@@ -146,25 +161,29 @@
         "envName": "ZEPPELIN_R_KNITR",
         "propertyName": "zeppelin.R.knitr",
         "defaultValue": "true",
-        "description": "whether use knitr or not"
+        "description": "whether use knitr or not",
+        "type": "text"
       },
       "zeppelin.R.cmd": {
         "envName": "ZEPPELIN_R_CMD",
         "propertyName": "zeppelin.R.cmd",
         "defaultValue": "R",
-        "description": "R repl path"
+        "description": "R repl path",
+        "type": "text"
       },
       "zeppelin.R.image.width": {
         "envName": "ZEPPELIN_R_IMAGE_WIDTH",
         "propertyName": "zeppelin.R.image.width",
         "defaultValue": "100%",
-        "description": ""
+        "description": "",
+        "type": "text"
       },
       "zeppelin.R.render.options": {
         "envName": "ZEPPELIN_R_RENDER_OPTIONS",
         "propertyName": "zeppelin.R.render.options",
         "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F",
-        "description": ""
+        "description": "",
+        "type": "text"
       }
     },
     "editor": {

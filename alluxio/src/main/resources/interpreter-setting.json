@@ -8,13 +8,15 @@
         "envName": "ALLUXIO_MASTER_HOSTNAME",
         "propertyName": "alluxio.master.hostname",
         "defaultValue": "localhost",
-        "description": "Alluxio master hostname"
+        "description": "Alluxio master hostname",
+        "type": "text"
       },
       "alluxio.master.port": {
         "envName": "ALLUXIO_MASTER_PORT",
         "propertyName": "alluxio.master.port",
         "defaultValue": "19998",
-        "description": "Alluxio master port"
+        "description": "Alluxio master port",
+        "type": "text"
       }
     },
     "editor": {

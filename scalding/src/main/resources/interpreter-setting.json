@@ -7,12 +7,14 @@
       "args.string": {
         "envName": null,
         "defaultValue": "--local --repl",
-        "description": "Arguments for scalding REPL"
+        "description": "Arguments for scalding REPL",
+        "type": "text"
       },
       "max.open.instances": {
         "envName": null,
         "defaultValue": "50",
-        "description": "Maximum number of open interpreter instances"
+        "description": "Maximum number of open interpreter instances",
+        "type": "text"
       }
     }
   }

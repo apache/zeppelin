@@ -76,11 +76,13 @@ The role of registered interpreters, settings and interpreters group are describ
       "properties": {
         "spark.executor.memory": {
           "defaultValue": "1g",
-          "description": "Executor memory per worker instance. ex) 512m, 32g"
+          "description": "Executor memory per worker instance. ex) 512m, 32g",
+          "type": "text
         },
         "spark.cores.max": {
           "defaultValue": "",
-          "description": "Total number of cores to use. Empty value uses all available core."
+          "description": "Total number of cores to use. Empty value uses all available core.",
+          "type": "text"
         },
       },
       "path": "/zeppelin/interpreter/spark"
@@ -92,7 +94,8 @@ The role of registered interpreters, settings and interpreters group are describ
       "properties": {
         "zeppelin.spark.maxResult": {
           "defaultValue": "1000",
-          "description": "Max number of Spark SQL result to display."
+          "description": "Max number of Spark SQL result to display.",
+          "type": "text"
         }
       },
       "path": "/zeppelin/interpreter/spark"
@@ -153,8 +156,16 @@ The role of registered interpreters, settings and interpreters group are describ
       "name": "spark",
       "group": "spark",
       "properties": {
-        "spark.cores.max": "",
-        "spark.executor.memory": "1g",
+        "spark.cores.max": {
+          name: "",
+          value: "spark.cores.max",
+          type: "text"
+        },
+        "spark.executor.memory": {
+          "name": "",
+          "value": "1g",
+          "type": "text"
+        }
       },
       "interpreterGroup": [
         {
@@ -215,7 +226,11 @@ The role of registered interpreters, settings and interpreters group are describ
     "name": "Markdown setting name",
     "group": "md",
     "properties": {
-      "propname": "propvalue"
+      "propname": {
+        "name": "propname",
+        "value": "propvalue",
+        "type": "text"
+      }
     },
     "interpreterGroup": [
       {
@@ -270,7 +285,10 @@ The role of registered interpreters, settings and interpreters group are describ
   "name": "Markdown setting name",
   "group": "md",
   "properties": {
-    "propname": "propvalue"
+    "propname": {
+      "name": "propname",
+      "value": "propvalue",
+      "type": "text"
   },
   "interpreterGroup": [
     {
@@ -302,7 +320,10 @@ The role of registered interpreters, settings and interpreters group are describ
     "name": "Markdown setting name",
     "group": "md",
     "properties": {
-      "propname": "propvalue"
+      "propname": {
+        "name": "propname",
+        "value": "propvalue",
+        "type": "text"
     },
     "interpreterGroup": [
       {
@@ -353,7 +374,10 @@ The role of registered interpreters, settings and interpreters group are describ
   "name": "Markdown setting name",
   "group": "md",
   "properties": {
-    "propname": "Otherpropvalue"
+    "propname": {
+      "name": "propname",
+      "value": "Otherpropvalue",
+      "type": "text"
   },
   "interpreterGroup": [
     {
@@ -385,7 +409,10 @@ The role of registered interpreters, settings and interpreters group are describ
     "name": "Markdown setting name",
     "group": "md",
     "properties": {
-      "propname": "Otherpropvalue"
+      "propname": {
+        "name": "propname",
+        "value": "Otherpropvalue",
+        "type": "text"
     },
     "interpreterGroup": [
       {
@@ -540,4 +567,37 @@ The role of registered interpreters, settings and interpreters group are describ
       <td> 500 </td>
     </tr>
   </table>
+  
+<br/>
+### Get available types for property
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns available types for interpreter property.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/property/types```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+        <td>
+          <pre>
+{
+  "status": "OK",
+  "body": ["text", "password"]
+}            
+          </pre>
+        </td>
+    </td>        
+  </table>  
   

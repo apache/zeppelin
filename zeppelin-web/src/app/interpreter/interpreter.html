@@ -395,15 +395,23 @@ limitations under the License.
             <tr>
               <th style="width:40%">name</th>
               <th style="width:40%">value</th>
-              <th style="width:20%" ng-if="valueform.$visible">action</th>
+              <th style="width:10%" ng-if="valueform.$visible">type</th>
+              <th style="width:10%" ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
             <td style="vertical-align: middle;">{{key}}</td>
-            <td style="vertical-align: middle;">
-              <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key] | breakFilter}}
+            <td style="vertical-align: middle;" ng-switch on="setting.properties[key].type">
+              <span ng-switch-default editable-textarea="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                 {{setting.properties[key].value | breakFilter}}
               </span>
+              <span ng-switch-when="password" editable-password="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                {{setting.properties[key].value ? '***' : ''}}
+              </span>
+            </td>
+            <td style="vertical-align: middle;" ng-if="valueform.$visible">
+              <select ng-model="setting.properties[key].type" ng-options="item for item in interpreterPropertyTypes">
+              </select>
             </td>
             <td style="vertical-align: middle;" ng-if="valueform.$visible">
               <button class="btn btn-default btn-sm fa fa-remove"
@@ -416,12 +424,19 @@ limitations under the License.
               <input ng-model="setting.propertyKey"
                      pu-elastic-input pu-elastic-input-minwidth="180px" />
             </td>
+
+            <td style="vertical-align: middle;" ng-switch on="setting.propertyType">
+              <textarea ng-switch-default msd-elastic ng-model="setting.propertyValue"></textarea>
+              <input ng-switch-when="password" type="password" msd-elastic ng-model="setting.propertyValue" />
+            </td>
             <td style="vertical-align: middle;">
-              <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
+              <select ng-model="setting.propertyType" ng-init="setting.propertyType=interpreterPropertyTypes[0]"
+                      ng-options="item for item in interpreterPropertyTypes">
+              </select>
             </td>
             <td style="vertical-align: middle;">
               <button class="btn btn-default btn-sm fa fa-plus"
-                   ng-click="addNewInterpreterProperty(setting.id)">
+                      ng-click="addNewInterpreterProperty(setting.id)">
               </button>
             </td>
           </tr>

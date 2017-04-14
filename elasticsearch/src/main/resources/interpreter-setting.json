@@ -8,31 +8,36 @@
         "envName": "ELASTICSEARCH_HOST",
         "propertyName": "elasticsearch.host",
         "defaultValue": "localhost",
-        "description": "The host for Elasticsearch"
+        "description": "The host for Elasticsearch",
+        "type": "text"
       },
       "elasticsearch.port": {
         "envName": "ELASTICSEARCH_PORT",
         "propertyName": "elasticsearch.port",
         "defaultValue": "9300",
-        "description": "The port for Elasticsearch"
+        "description": "The port for Elasticsearch",
+        "type": "text"
       },
       "elasticsearch.client.type": {
         "envName": "ELASTICSEARCH_CLIENT_TYPE",
         "propertyName": "elasticsearch.client.type",
         "defaultValue": "transport",
-        "description": "The type of client for Elasticsearch (transport or http)"
+        "description": "The type of client for Elasticsearch (transport or http)",
+        "type": "text"
       },
       "elasticsearch.cluster.name": {
         "envName": "ELASTICSEARCH_CLUSTER_NAME",
         "propertyName": "elasticsearch.cluster.name",
         "defaultValue": "elasticsearch",
-        "description": "The cluster name for Elasticsearch"
+        "description": "The cluster name for Elasticsearch",
+        "type": "text"
       },
       "elasticsearch.result.size": {
         "envName": "ELASTICSEARCH_RESULT_SIZE",
         "propertyName": "elasticsearch.result.size",
         "defaultValue": "10",
-        "description": "The size of the result set of a search query"
+        "description": "The size of the result set of a search query",
+        "type": "text"
       },
       "elasticsearch.basicauth.username": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_USERNAME",
@@ -44,7 +49,8 @@
         "envName": "ELASTICSEARCH_BASIC_AUTH_PASSWORD",
         "propertyName": "elasticsearch.basicauth.password",
         "defaultValue": "",
-        "description": "Password for a basic authentication"
+        "description": "Password for a basic authentication",
+        "type": "password"
       }
     },
     "editor": {
