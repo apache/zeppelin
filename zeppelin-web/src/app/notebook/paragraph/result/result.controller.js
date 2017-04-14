@@ -400,7 +400,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         /*eslint new-cap: [2, {"capIsNewExceptions": ["MathJax.Hub.Queue"]}]*/
         MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
       },
-      (error) => {  elem.html(`${error.stack}`); }
+      (error) => { elem.html(`${error.stack}`); }
     );
   };
 
@@ -412,7 +412,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         elem.html(generated);
         $compile(elem.contents())(paragraphScope);
       },
-      (error) => {  elem.html(`${error.stack}`); }
+      (error) => { elem.html(`${error.stack}`); }
     );
   };
 
@@ -434,7 +434,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
         elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false; });
       },
-      (error) => {  elem.html(`${error.stack}`); }
+      (error) => { elem.html(`${error.stack}`); }
     );
   };
 
@@ -712,7 +712,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       var row = tableData.rows[r];
       var dsvRow = '';
       for (var index in row) {
-        var stringValue =  (row[index]).toString();
+        var stringValue = (row[index]).toString();
         if (stringValue.indexOf(delimiter) > -1) {
           dsvRow += '"' + stringValue + '"' + delimiter;
         } else {

@@ -268,7 +268,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
         grp = row[group.index];
       }
 
-      var key = xValue + ',' + yValue +  ',' + grp;
+      var key = xValue + ',' + yValue + ',' + grp;
 
       if (!rows[key]) {
         rows[key] = {

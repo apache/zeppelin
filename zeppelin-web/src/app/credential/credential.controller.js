@@ -27,7 +27,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   var getCredentialInfo = function() {
     $http.get(baseUrlSrv.getRestApiBase() + '/credential')
     .success(function(data, status, headers, config) {
-      $scope.credentialInfo  = _.map(data.body.userCredentials, function(value, prop) {
+      $scope.credentialInfo = _.map(data.body.userCredentials, function(value, prop) {
         return {entity: prop, password: value.password, username: value.username};
       });
       console.log('Success %o %o', status, $scope.credentialInfo);
@@ -58,7 +58,7 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
       return;
     }
 
-    var newCredential  = {
+    var newCredential = {
       'entity': $scope.entity,
       'username': $scope.username,
       'password': $scope.password

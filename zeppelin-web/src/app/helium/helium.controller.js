@@ -163,7 +163,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       });
 
       if (filteredPkgSearchResults.length > 0) {
-        license  = filteredPkgSearchResults[0].pkg.license;
+        license = filteredPkgSearchResults[0].pkg.license;
       }
     } else {
       license = filteredPkgSearchResults[0].license;

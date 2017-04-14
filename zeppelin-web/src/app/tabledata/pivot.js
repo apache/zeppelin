@@ -244,7 +244,7 @@ export default class PivotTransformation extends Transformation {
         } else {
           p[valueKey] = {
             value: aggrFunc[value.aggr](p[valueKey].value, row[value.index], p[valueKey].count + 1),
-            count: (aggrFuncDiv[value.aggr]) ?  p[valueKey].count + 1 : p[valueKey].count
+            count: (aggrFuncDiv[value.aggr]) ? p[valueKey].count + 1 : p[valueKey].count
           };
         }
       }

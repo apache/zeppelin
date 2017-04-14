@@ -68,7 +68,7 @@ describe('Controller: NotebookCtrl', function() {
     var oneHour = scope.getCronOptionNameFromValue('0 0 0/1 * * ?');
     var threeHours = scope.getCronOptionNameFromValue('0 0 0/3 * * ?');
     var sixHours = scope.getCronOptionNameFromValue('0 0 0/6 * * ?');
-    var twelveHours =  scope.getCronOptionNameFromValue('0 0 0/12 * * ?');
+    var twelveHours = scope.getCronOptionNameFromValue('0 0 0/12 * * ?');
     var oneDay = scope.getCronOptionNameFromValue('0 0 0 * * ?');
 
     expect(none).toEqual('');

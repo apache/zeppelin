@@ -723,7 +723,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: 'Do you want to restart ' + interpreter.name + ' interpreter?',
       callback: function(result) {
         if (result) {
-          var payload  = {
+          var payload = {
             'noteId': $scope.note.id
           };
 
@@ -839,7 +839,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
             if ($scope.note.config.personalizedMode === undefined) {
               $scope.note.config.personalizedMode = 'false';
             }
-            $scope.note.config.personalizedMode = personalizedMode === 'true' ?  'false' : 'true';
+            $scope.note.config.personalizedMode = personalizedMode === 'true' ? 'false' : 'true';
             websocketMsgSrv.updatePersonalizedMode($scope.note.id, $scope.note.config.personalizedMode);
           }
         }
@@ -1000,7 +1000,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     getInterpreterBindings();
     getPermissions();
     var isPersonalized = $scope.note.config.personalizedMode;
-    isPersonalized = isPersonalized === undefined ?  'false' : isPersonalized;
+    isPersonalized = isPersonalized === undefined ? 'false' : isPersonalized;
     $scope.note.config.personalizedMode = isPersonalized;
   });
 
