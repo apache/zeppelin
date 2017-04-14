@@ -16,7 +16,7 @@ angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 
 function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
   'ngInject';
-  
+
   var vm = this;
   $scope.note = {};
   $scope.note.step1 = true;

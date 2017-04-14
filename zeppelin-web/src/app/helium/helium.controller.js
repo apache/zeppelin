@@ -41,11 +41,11 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
         $scope.itemsPerPage = 10;
         $scope.currentPage = 1;
         $scope.maxSize = 5;
-        
+
         $scope.pkgSearchResults = pkgSearchResults;
         $scope.defaultPackages = defaultPackages;
         classifyPkgType($scope.defaultPackages);
-        
+
         return heliumService.getAllPackageConfigs()
       })
       .then(defaultPackageConfigs => {
@@ -108,7 +108,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
     for (var idx in _.keys(HeliumType)) {
       allTypesOfPkg[_.keys(HeliumType)[idx]] = pkgsArr[idx];
     }
-  
+
     $scope.allTypesOfPkg = allTypesOfPkg;
   };
 

@@ -43,7 +43,6 @@
     "arrow-parens": 0,
     "no-unneeded-ternary": 0,
     "no-multiple-empty-lines": 0,
-    "no-trailing-spaces": 0,
     "padded-blocks": 0,
     "indent": 0,
     "no-var": 0,
