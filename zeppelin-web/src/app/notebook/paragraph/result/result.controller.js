@@ -964,7 +964,9 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
         var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = function () {
+          // eslint-disable-next-line prefer-rest-params
           scope[varName] = arguments;
+          // eslint-disable-next-line prefer-rest-params
           console.log('angular function (paragraph) invoked %o', arguments);
         };
 

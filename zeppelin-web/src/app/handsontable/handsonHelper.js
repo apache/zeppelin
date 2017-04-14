@@ -156,10 +156,12 @@ export default class HandsonHelper {
     if (colType === 'numeric' && this._isNumeric(value)) {
       cellProperties.format = '0,0.[00000]';
       td.style.textAlign = 'left';
+      // eslint-disable-next-line prefer-rest-params
       Handsontable.renderers.NumericRenderer.apply(this, arguments);
     } else if (value.length > '%html'.length && value.substring(0, '%html '.length) === '%html ') {
       td.innerHTML = value.substring('%html'.length);
     } else {
+      // eslint-disable-next-line prefer-rest-params
       Handsontable.renderers.TextRenderer.apply(this, arguments);
     }
   }
