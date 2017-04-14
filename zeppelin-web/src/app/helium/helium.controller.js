@@ -132,12 +132,12 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
           confirm.$modalFooter.find('button').addClass('disabled');
           confirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
-          heliumService.setVisualizationPackageOrder($scope.bundleOrder).
-          success(function(data, status) {
+          heliumService.setVisualizationPackageOrder($scope.bundleOrder)
+          .success(function(data, status) {
             init();
             confirm.close();
-          }).
-          error(function(data, status) {
+          })
+          .error(function(data, status) {
             confirm.close();
             console.log('Failed to save order');
             BootstrapDialog.show({
@@ -259,12 +259,12 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
           confirm.$modalFooter.find('button').addClass('disabled');
           confirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Disabling');
-          heliumService.disable(name).
-          success(function(data, status) {
+          heliumService.disable(name)
+          .success(function(data, status) {
             init();
             confirm.close();
-          }).
-          error(function(data, status) {
+          })
+          .error(function(data, status) {
             confirm.close();
             console.log('Failed to disable package %o. %o', name, data);
             BootstrapDialog.show({

@@ -22,11 +22,11 @@ function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   ngToast.dismiss();
 
   var getConfigurations = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').
-    success(function(data, status, headers, config) {
+    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
+    .success(function(data, status, headers, config) {
       $scope.configurations = data.body;
-    }).
-    error(function(data, status, headers, config) {
+    })
+    .error(function(data, status, headers, config) {
       if (status === 401) {
         ngToast.danger({
           content: 'You don\'t have permission on this page',

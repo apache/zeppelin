@@ -610,8 +610,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   var getPermissions = function(callback) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions').
-    success(function(data, status, headers, config) {
+    $http.get(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions')
+    .success(function(data, status, headers, config) {
       $scope.permissions = data.body;
       $scope.permissionsOrig = angular.copy($scope.permissions); // to check dirty
 
@@ -675,8 +675,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       if (callback) {
         callback();
       }
-    }).
-    error(function(data, status, headers, config) {
+    })
+    .error(function(data, status, headers, config) {
       if (status !== 0) {
         console.log('Error %o %o', status, data.message);
       }
@@ -753,8 +753,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.savePermissions = function() {
     convertPermissionsToArray();
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
-      $scope.permissions, {withCredentials: true}).
-    success(function(data, status, headers, config) {
+      $scope.permissions, {withCredentials: true})
+    .success(function(data, status, headers, config) {
       getPermissions(function() {
         console.log('Note permissions %o saved', $scope.permissions);
         BootstrapDialog.alert({
@@ -765,8 +765,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         });
         $scope.showPermissions = false;
       });
-    }).
-    error(function(data, status, headers, config) {
+    })
+    .error(function(data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
       BootstrapDialog.show({
         closable: false,
