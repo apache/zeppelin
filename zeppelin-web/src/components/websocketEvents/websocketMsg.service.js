@@ -338,4 +338,3 @@ function websocketMsgSrv($rootScope, websocketEvents) {
 
   };
 }
-

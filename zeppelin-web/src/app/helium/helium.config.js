@@ -99,5 +99,3 @@ export function createPersistableConfig(currentConf) {
 
   return filtered;
 }
-
-

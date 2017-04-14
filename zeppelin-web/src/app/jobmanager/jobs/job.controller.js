@@ -107,4 +107,3 @@ function JobCtrl($scope, $http, baseUrlSrv) {
   };
 
 }
-

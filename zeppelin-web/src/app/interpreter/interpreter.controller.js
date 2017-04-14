@@ -722,4 +722,3 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
   init();
 }
-

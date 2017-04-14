@@ -85,4 +85,3 @@ function NotebookReposCtrl($http, baseUrlSrv, ngToast) {
     _getInterpreterSettings();
   };
 }
-

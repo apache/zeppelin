@@ -22,4 +22,3 @@ function popoverHtmlUnsafePopup() {
     templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
   };
 }
-

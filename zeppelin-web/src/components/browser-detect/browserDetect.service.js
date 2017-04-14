@@ -37,4 +37,3 @@ function browserDetectService() {
     return false;
   };
 }
-

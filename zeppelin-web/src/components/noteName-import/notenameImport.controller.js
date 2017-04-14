@@ -135,4 +135,3 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
     angular.element('#noteImportModal').modal('hide');
   });
 }
-

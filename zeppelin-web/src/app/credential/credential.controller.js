@@ -187,4 +187,3 @@ function CredentialCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
 
   init();
 }
-

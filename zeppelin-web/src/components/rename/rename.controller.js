@@ -44,4 +44,3 @@ function RenameCtrl($scope) {
     return !!str.trim();
   }
 }
-

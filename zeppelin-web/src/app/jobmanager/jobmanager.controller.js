@@ -181,4 +181,3 @@ function JobmanagerCtrl($scope, websocketMsgSrv, $interval, ngToast, $q, $timeou
     $scope.doFiltering(jobInfomations, $scope.filterConfig);
   });
 }
-

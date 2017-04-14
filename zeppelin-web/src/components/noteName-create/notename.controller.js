@@ -95,7 +95,6 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
     vm.websocketMsgSrv.getInterpreterSettings();
   };
 
-
   $scope.$on('interpreterSettings', function(event, data) {
     $scope.interpreterSettings = data.interpreterSettings;
 
@@ -104,4 +103,3 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
   });
 
 }
-

@@ -129,9 +129,6 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       };
     }
 
-
-
-
     for (var i = 0; i < data.rows.length; i++) {
       row = data.rows[i];
       if (xAxis) {
@@ -204,7 +201,6 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
           values: []
         };
       }
-
 
       // TODO remove epsilon jitter after bump to nvd3 > 1.8.5
       var xval = 0

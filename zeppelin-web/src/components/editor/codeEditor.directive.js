@@ -36,4 +36,3 @@ function codeEditor($templateRequest, $compile) {
     }
   };
 }
-

@@ -46,4 +46,3 @@ function baseUrlSrv() {
     return path.replace(/\/$/, '');
   };
 }
-

@@ -194,4 +194,3 @@ function websocketEvents($rootScope, $websocket, $location, baseUrlSrv) {
 
   return websocketCalls;
 }
-

@@ -85,4 +85,3 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
     initValues();
   });
 }
-

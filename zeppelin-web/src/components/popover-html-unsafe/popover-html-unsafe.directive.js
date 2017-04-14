@@ -19,4 +19,3 @@ function popoverHtmlUnsafe($tooltip) {
 
   return $tooltip('popoverHtmlUnsafe', 'popover', 'click');
 }
-

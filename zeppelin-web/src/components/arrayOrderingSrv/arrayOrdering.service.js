@@ -34,4 +34,3 @@ function arrayOrderingSrv(TRASH_FOLDER_ID) {
     }
   };
 }
-

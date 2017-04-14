@@ -19,4 +19,3 @@ function ElasticInputCtrl() {
   vm.showEditor = false;
   vm.value = '';
 }
-

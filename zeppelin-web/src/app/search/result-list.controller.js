@@ -153,4 +153,3 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
     };
   };
 }
-

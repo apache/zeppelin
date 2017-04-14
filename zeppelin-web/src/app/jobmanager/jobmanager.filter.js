@@ -45,4 +45,3 @@ function jobManagerFilter() {
   }
   return filterContext;
 }
-

@@ -79,4 +79,3 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
 
   return notes;
 }
-

@@ -57,4 +57,3 @@ function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
   // Remove BootstrapDialog animation
   BootstrapDialog.configDefaultOptions({animate: false});
 }
-

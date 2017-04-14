@@ -31,4 +31,3 @@ function searchService($resource, baseUrlSrv) {
 
   this.searchTerm = '';
 }
-
