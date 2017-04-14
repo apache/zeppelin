@@ -233,7 +233,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
            (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon)){
            d3gvalues.splice(i+1,1);
-      } else{
+      } else {
         i++;
       }
     }

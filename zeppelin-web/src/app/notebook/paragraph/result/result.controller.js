@@ -332,7 +332,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         const afterLoaded = () => {
           const containerDOM = angular.element(`#${containerDOMId}`);
           // Spell.interpret() can create multiple outputs
-          for(let i = 0; i < dataWithTypes.length; i++) {
+          for (let i = 0; i < dataWithTypes.length; i++) {
             const dt = dataWithTypes[i];
             const data = dt.data;
             const type = dt.type;

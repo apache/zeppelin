@@ -87,7 +87,7 @@ export class DataWithType {
     let previousMagic = DefaultDisplayType.TEXT;
 
     // create `DataWithType` whenever see available display type.
-    for(let i = 0; i < splited.length; i++) {
+    for (let i = 0; i < splited.length; i++) {
       const g = splited[i];
       const magic = SpellResult.extractMagic(g);
 

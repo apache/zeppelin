@@ -25,7 +25,7 @@ export const HeliumConfFieldType = {
 export function mergePersistedConfWithSpec(persisted, spec) {
   const confs = [];
 
-  for(let name in spec) {
+  for (let name in spec) {
     const specField = spec[name];
     const persistedValue = persisted[name];
 
@@ -77,7 +77,7 @@ export function parseConfigValue(type, stringified) {
     } else if (HeliumConfFieldType.JSON === type) {
       value = JSON.parse(stringified);
     }
-  } catch(error) {
+  } catch (error) {
     // return just the stringified one
     console.error(`Failed to parse conf type ${type}, value ${value}`);
   }
