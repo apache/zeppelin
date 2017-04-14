@@ -31,6 +31,13 @@
     "process": false
   },
   "rules": {
+    "require-jsdoc": 0,
+    "valid-jsdoc": 0,
+    "no-invalid-this": 0,
+    "no-console": 0,
+    "guard-for-in": 0,
+    "no-mixed-operators": 1,
+    "no-useless-escape": 1,
     "no-bitwise": 2,
     "camelcase": 2,
     "curly": 2,
