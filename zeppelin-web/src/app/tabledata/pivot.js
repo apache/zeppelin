@@ -18,6 +18,7 @@ import Transformation from './transformation';
  * pivot table data and return d3 chart data
  */
 export default class PivotTransformation extends Transformation {
+  // eslint-disable-next-line no-useless-constructor
   constructor (config) {
     super(config);
   }
