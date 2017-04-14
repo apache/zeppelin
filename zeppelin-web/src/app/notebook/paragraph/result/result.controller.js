@@ -103,16 +103,16 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   };
 
   // type
-  $scope.type;
+  $scope.type = null;
 
   // Data of the result
   var data;
 
   // config
-  $scope.config;
+  $scope.config = null;
 
   // resultId = paragraph.id + index
-  $scope.id;
+  $scope.id = null;
 
   // referece to paragraph
   var paragraph;
@@ -130,10 +130,10 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   var enableHelium = false;
 
   // graphMode
-  $scope.graphMode;
+  $scope.graphMode = null;
 
   // image data
-  $scope.imageData;
+  $scope.imageData = null;
 
   // queue for append output
   const textResultQueueForAppend = [];

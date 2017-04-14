@@ -32,7 +32,6 @@
   },
   "rules": {
     "prefer-rest-params": 0,
-    "no-unused-expressions": 0,
     "prefer-spread": 0,
     "no-redeclare": 0,
     "no-var": 0,

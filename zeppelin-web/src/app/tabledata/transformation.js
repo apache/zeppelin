@@ -18,7 +18,7 @@
 export default class Transformation {
   constructor (config) {
     this.config = config;
-    this._emitter;
+    this._emitter = () => {};
   }
 
   /**

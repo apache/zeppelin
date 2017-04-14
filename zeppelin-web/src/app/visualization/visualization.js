@@ -21,7 +21,7 @@ export default class Visualization {
     this.config = config;
     this._dirty = false;
     this._active = false;
-    this._emitter;
+    this._emitter = () => {};
   }
 
   /**
