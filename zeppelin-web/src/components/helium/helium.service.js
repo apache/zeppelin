@@ -99,7 +99,7 @@ export default function heliumService($http, $sce, baseUrlSrv) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
   };
 
-  this.saveConfig = function(pkg , defaultPackageConfig, closeConfigPanelCallback) {
+  this.saveConfig = function(pkg, defaultPackageConfig, closeConfigPanelCallback) {
     // in case of local package, it will include `/`
     const pkgArtifact = encodeURIComponent(pkg.artifact);
     const pkgName = pkg.name;

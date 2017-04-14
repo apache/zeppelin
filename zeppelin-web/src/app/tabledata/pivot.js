@@ -148,12 +148,12 @@ export default class PivotTransformation extends Transformation {
       min: function(a, b) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-        return Math.min(varA,varB);
+        return Math.min(varA, varB);
       },
       max: function(a, b) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-        return Math.max(varA,varB);
+        return Math.max(varA, varB);
       },
       avg: function(a, b, c) {
         var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;

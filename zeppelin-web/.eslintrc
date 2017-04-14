@@ -38,7 +38,6 @@
     "prefer-spread": 0,
     "no-redeclare": 0,
     "standard/object-curly-even-spacing": 0,
-    "comma-spacing": 0,
     "no-eval": 0,
     "no-extra-semi": 0,
     "arrow-parens": 0,

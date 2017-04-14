@@ -93,7 +93,7 @@ export default class Nvd3ChartVisualization extends Visualization {
   };
 
   yAxisTickFormat(d) {
-    if (Math.abs(d) >= Math.pow(10,6)) {
+    if (Math.abs(d) >= Math.pow(10, 6)) {
       return this.customAbbrevFormatter(d);
     }
     return this.groupedThousandsWith3DigitsFormatter(d);

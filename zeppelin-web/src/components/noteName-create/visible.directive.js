@@ -26,7 +26,7 @@ function modalvisible() {
       // Add some listeners
       var previsibleMethod = scope.preVisibleCallback;
       var postVisibleMethod = scope.postVisibleCallback;
-      element.on('show.bs.modal',function(e) {
+      element.on('show.bs.modal', function(e) {
         var relatedTarget = angular.element(e.relatedTarget);
         var clone = relatedTarget.data('clone');
         var sourceNoteName = relatedTarget.data('source-note-name');
