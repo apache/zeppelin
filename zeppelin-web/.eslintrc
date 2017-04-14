@@ -31,7 +31,6 @@
     "process": false
   },
   "rules": {
-    "prefer-spread": 0,
     "no-redeclare": 0,
     "no-var": 0,
     "semi": 0,

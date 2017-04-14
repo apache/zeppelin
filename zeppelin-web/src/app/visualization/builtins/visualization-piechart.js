@@ -62,7 +62,7 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
     });
     // the map function returns d3g as a nested array
     // [].concat flattens it, http://stackoverflow.com/a/10865042/5154397
-    d3g = [].concat.apply([], d3g);
+    d3g = [].concat.apply([], d3g); // eslint-disable-line prefer-spread
     super.render({d3g: d3g});
   }
 

@@ -36,6 +36,7 @@ export default class TableVisualization extends Visualization {
     var container = this.targetEl.css('height', height).get(0);
     var resultRows = tableData.rows;
     var columnNames = _.pluck(tableData.columns, 'name');
+    // eslint-disable-next-line prefer-spread
     var columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
       return {type: 'text'};
     });
