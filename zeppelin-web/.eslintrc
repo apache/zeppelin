@@ -31,7 +31,6 @@
     "process": false
   },
   "rules": {
-    "no-redeclare": 0,
     "no-var": 0,
     "semi": 0,
     "no-unneeded-ternary": 0,

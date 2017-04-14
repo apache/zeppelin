@@ -57,7 +57,7 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
   }
 
   configureChart (chart) {
-    var self = this;
+    let self = this;
     chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels); });
     chart.yAxis.tickFormat(function (d) { return self.yAxisTickFormat(d); });
     chart.yAxis.axisLabelDistance(50);
@@ -65,7 +65,6 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
     this.chart.style(this.config.style || 'stack');
 
-    var self = this;
     this.chart.dispatch.on('stateChange', function (s) {
       self.config.style = s.style;
 

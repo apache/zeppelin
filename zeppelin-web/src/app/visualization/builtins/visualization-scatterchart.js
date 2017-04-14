@@ -225,7 +225,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       return ((a['x'] - b['x']) || (a['y'] - b['y']))
     });
 
-    for (var i = 0; i < d3gvalues.length - 1;) {
+    for (let i = 0; i < d3gvalues.length - 1;) {
       if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i + 1]['x']) < epsilon) &&
            (Math.abs(d3gvalues[i]['y'] - d3gvalues[i + 1]['y']) < epsilon)) {
         d3gvalues.splice(i + 1, 1);

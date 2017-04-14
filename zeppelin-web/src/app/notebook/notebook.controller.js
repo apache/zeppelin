@@ -643,7 +643,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
             }
             if (data.body.roles.length !== 0) {
               var roles = [];
-              for (var len = 0; len < data.body.roles.length; len++) {
+              for (let len = 0; len < data.body.roles.length; len++) {
                 roles.push({
                   'id': data.body.roles[len],
                   'text': data.body.roles[len]
