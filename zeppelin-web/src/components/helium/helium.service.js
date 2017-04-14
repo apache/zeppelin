@@ -268,6 +268,7 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
   this.load = p.then(availableBundles => {
     // evaluate bundles
     availableBundles.map(b => {
+      // eslint-disable-next-line no-eval
       eval(b)
     })
 
