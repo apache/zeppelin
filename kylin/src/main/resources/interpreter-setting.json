@@ -9,49 +9,49 @@
         "propertyName": "kylin.api.url",
         "defaultValue": "http://localhost:7070/kylin/api/query",
         "description": "Kylin API",
-        "widget": "url"
+        "type": "text"
       },
       "kylin.api.user": {
         "envName": null,
         "propertyName": "kylin.api.user",
         "defaultValue": "ADMIN",
         "description": "Kylin username",
-        "widget": "string"
+        "type": "text"
       },
       "kylin.api.password": {
         "envName": null,
         "propertyName": "kylin.api.password",
         "defaultValue": "KYLIN",
         "description": "Kylin password",
-        "widget": "password"
+        "type": "password"
       },
       "kylin.query.project": {
         "envName": null,
         "propertyName": "kylin.query.project",
         "defaultValue": "learn_kylin",
         "description": "Default Kylin project name",
-        "widget": "text"
+        "type": "text"
       },
       "kylin.query.offset": {
         "envName": null,
         "propertyName": "kylin.query.offset",
         "defaultValue": "0",
         "description": "Kylin query offset",
-        "widget": "number"
+        "type": "text"
       },
       "kylin.query.limit": {
         "envName": null,
         "propertyName": "kylin.query.limit",
         "defaultValue": "5000",
         "description": "Kylin query limit",
-        "widget": "number"
+        "type": "text"
       },
       "kylin.query.ispartial": {
         "envName": null,
         "propertyName": "kylin.query.ispartial",
-        "defaultValue": true,
+        "defaultValue": "true",
         "description": "Kylin query partial flag, deprecated",
-        "widget": "checkbox"
+        "type": "text"
       }
     },
     "editor": {

@@ -77,12 +77,12 @@ The role of registered interpreters, settings and interpreters group are describ
         "spark.executor.memory": {
           "defaultValue": "1g",
           "description": "Executor memory per worker instance. ex) 512m, 32g",
-          "widget": "text
+          "type": "text
         },
         "spark.cores.max": {
           "defaultValue": "",
           "description": "Total number of cores to use. Empty value uses all available core.",
-          "widget": "text"
+          "type": "text"
         },
       },
       "path": "/zeppelin/interpreter/spark"
@@ -95,7 +95,7 @@ The role of registered interpreters, settings and interpreters group are describ
         "zeppelin.spark.maxResult": {
           "defaultValue": "1000",
           "description": "Max number of Spark SQL result to display.",
-          "widget": "text"
+          "type": "text"
         }
       },
       "path": "/zeppelin/interpreter/spark"
@@ -157,14 +157,14 @@ The role of registered interpreters, settings and interpreters group are describ
       "group": "spark",
       "properties": {
         "spark.cores.max": {
-          "name": "",
-          "value": "spark.cores.max",
-          "widget": "text"
+          name: "",
+          value: "spark.cores.max",
+          type: "text"
         },
         "spark.executor.memory": {
           "name": "",
           "value": "1g",
-          "widget": "text"
+          "type": "text"
         }
       },
       "interpreterGroup": [
@@ -229,7 +229,7 @@ The role of registered interpreters, settings and interpreters group are describ
       "propname": {
         "name": "propname",
         "value": "propvalue",
-        "widget": "text"
+        "type": "text"
       }
     },
     "interpreterGroup": [
@@ -288,7 +288,7 @@ The role of registered interpreters, settings and interpreters group are describ
     "propname": {
       "name": "propname",
       "value": "propvalue",
-      "widget": "text"
+      "type": "text"
   },
   "interpreterGroup": [
     {
@@ -323,7 +323,7 @@ The role of registered interpreters, settings and interpreters group are describ
       "propname": {
         "name": "propname",
         "value": "propvalue",
-        "widget": "text"
+        "type": "text"
     },
     "interpreterGroup": [
       {
@@ -377,7 +377,7 @@ The role of registered interpreters, settings and interpreters group are describ
     "propname": {
       "name": "propname",
       "value": "Otherpropvalue",
-      "widget": "text"
+      "type": "text"
   },
   "interpreterGroup": [
     {
@@ -412,7 +412,7 @@ The role of registered interpreters, settings and interpreters group are describ
       "propname": {
         "name": "propname",
         "value": "Otherpropvalue",
-        "widget": "text"
+        "type": "text"
     },
     "interpreterGroup": [
       {
@@ -569,16 +569,16 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
   
 <br/>
-### Get available widgets for property
+### Get available types for property
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns available widgets for interpreter property.</td>
+      <td>This ```GET``` method returns available types for interpreter property.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/property/widgets```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/property/types```</td>
     </tr>
     <tr>
       <td>Success code</td>

@@ -18,40 +18,9 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Property for instance of interpreter
+ * Types of interpreter properties
  */
-public class InterpreterProperty {
-  private String name;
-  private String value;
-  private InterpreterPropertyType type;
-
-  public InterpreterProperty(String name, String value, InterpreterPropertyType type) {
-    this.name = name;
-    this.value = value;
-    this.type = type;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public InterpreterPropertyType getType() {
-    return type;
-  }
-
-  public void setType(InterpreterPropertyType type) {
-    this.type = type;
-  }
+public enum InterpreterPropertyType {
+  text,
+  password
 }
