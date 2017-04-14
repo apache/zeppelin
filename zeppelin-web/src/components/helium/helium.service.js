@@ -105,7 +105,7 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
     const pkgName = pkg.name;
     const filtered = createPersistableConfig(defaultPackageConfig);
 
-    if (!pkgName || !pkgArtifact|| !filtered) {
+    if (!pkgName || !pkgArtifact || !filtered) {
       console.error(
         `Can't save config for helium package '${pkgArtifact}'`, filtered);
       return;

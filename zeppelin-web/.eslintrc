@@ -34,7 +34,6 @@
     "prefer-rest-params": 0,
     "no-useless-constructor": 0,
     "no-unused-expressions": 0,
-    "space-infix-ops": 0,
     "prefer-spread": 0,
     "no-redeclare": 0,
     "standard/object-curly-even-spacing": 0,

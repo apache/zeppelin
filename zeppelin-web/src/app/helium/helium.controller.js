@@ -187,7 +187,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
 
   $scope.enable = function (name, artifact, type, groupId, description) {
     var license = getLicense(name, artifact);
-    var mavenArtifactInfoToHTML = groupId +':'+ artifact.split('@')[0] + ':' + artifact.split('@')[1];
+    var mavenArtifactInfoToHTML = groupId + ':' + artifact.split('@')[0] + ':' + artifact.split('@')[1];
     var zeppelinVersion = $rootScope.zeppelinVersion;
     var url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
 
@@ -201,7 +201,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
         ' and all of its transitive dependencies into interpreter/interpreter-name directory.<p>' +
         '<div class="highlight"><pre><code class="text language-text" data-lang="text" style="font-size: 11.5px">' +
         './bin/install-interpreter.sh --name "interpreter-name" --artifact ' +
-        mavenArtifactInfoToHTML +' </code></pre>' +
+        mavenArtifactInfoToHTML + ' </code></pre>' +
         '<p>After restart Zeppelin, create interpreter setting and bind it with your note. ' +
         'For more detailed information, see <a target="_blank" href=' +
         url + '>Interpreter Installation.</a></p>'

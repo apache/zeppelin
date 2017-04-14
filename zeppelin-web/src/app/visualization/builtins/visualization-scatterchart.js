@@ -67,11 +67,11 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     var self = this;
 
     chart.xAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
-      return self.xAxisTickFormat(Math.round(d * 1e3)/1e3, self.xLabels);
+      return self.xAxisTickFormat(Math.round(d * 1e3) / 1e3, self.xLabels);
     });
 
     chart.yAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
-      return self.yAxisTickFormat(Math.round(d * 1e3)/1e3, self.yLabels);
+      return self.yAxisTickFormat(Math.round(d * 1e3) / 1e3, self.yLabels);
     });
 
     chart.showDistX(true).showDistY(true);
@@ -226,9 +226,9 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     });
 
     for (var i = 0; i < d3gvalues.length - 1;) {
-      if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
-           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon)) {
-        d3gvalues.splice(i+1, 1);
+      if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i + 1]['x']) < epsilon) &&
+           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i + 1]['y']) < epsilon)) {
+        d3gvalues.splice(i + 1, 1);
       } else {
         i++;
       }
