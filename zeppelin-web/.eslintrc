@@ -31,7 +31,6 @@
     "process": false
   },
   "rules": {
-    "no-mixed-spaces-and-tabs": 0,
     "semi-spacing": 0,
     "no-tabs": 0,
     "no-extra-boolean-cast": 0,
