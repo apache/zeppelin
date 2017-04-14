@@ -335,7 +335,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
           $scope.paragraph.results.msg = resultsMsg;
           $scope.paragraph.config.tableHide = false;
-
         })
         .catch(error => {
           $scope.handleSpellError(paragraphText, error,
@@ -1054,7 +1053,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       return angular.element('#p' + id + '_text')[0].scrollTop !== 0;
     }
     return false;
-
   };
 
   $scope.scrollParagraphUp = function (id) {
@@ -1191,7 +1189,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           $scope.paragraph.text = newPara.text;
           $scope.dirtyText = undefined;
           $scope.originalText = angular.copy(newPara.text);
-
         } else { // if there're local update, keep it.
           $scope.paragraph.text = newPara.text;
         }
@@ -1320,7 +1317,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.$on('keyEvent', function (event, keyEvent) {
     if ($scope.paragraphFocused) {
-
       var paragraphId = $scope.paragraph.id;
       var keyCode = keyEvent.keyCode;
       var noShortcutDefined = false;

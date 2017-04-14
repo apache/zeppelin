@@ -101,5 +101,4 @@ function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSr
     // initialize default interpreter with Spark interpreter
     $scope.note.defaultInterpreter = data.interpreterSettings[0];
   });
-
 }

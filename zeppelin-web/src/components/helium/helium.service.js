@@ -266,7 +266,6 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
 
   // load should be promise
   this.load = p.then(availableBundles => {
-
     // evaluate bundles
     availableBundles.map(b => {
       eval(b)
@@ -284,5 +283,4 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
       }
     })
   })
-
 }

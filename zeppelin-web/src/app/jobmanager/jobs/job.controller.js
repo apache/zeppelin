@@ -105,5 +105,4 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
   $scope.lastExecuteTime = function (unixtime) {
     return moment.unix(unixtime / 1000).fromNow();
   };
-
 }

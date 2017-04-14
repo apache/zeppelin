@@ -155,7 +155,6 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
         var changeOriginTarget = indexStore[changedItem.noteId];
 
         if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
-
           // remove Item.
           var removeIndex = _.findIndex(indexStore, changedItem.noteId);
           if (removeIndex > -1) {
@@ -166,7 +165,6 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
           if (removeIndex) {
             jobInfomations.splice(removeIndex, 1);
           }
-
         } else {
           // change value for item.
           changeOriginTarget.isRunningJob = changedItem.isRunningJob;

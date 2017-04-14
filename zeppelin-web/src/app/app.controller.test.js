@@ -25,5 +25,4 @@ describe('Controller: MainCtrl', function () {
     rootScope.$broadcast('setIframe', true);
     expect(scope.asIframe).toEqual(true);
   });
-
 });

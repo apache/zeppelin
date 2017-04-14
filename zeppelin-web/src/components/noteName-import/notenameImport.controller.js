@@ -110,7 +110,6 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
         $scope.$apply();
         return;
       }
-
     }
     if (result.paragraphs && result.paragraphs.length > 0) {
       if (!$scope.note.noteImportName) {

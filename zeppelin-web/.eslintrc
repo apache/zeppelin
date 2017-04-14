@@ -39,7 +39,6 @@
     "standard/object-curly-even-spacing": 0,
     "no-eval": 0,
     "no-unneeded-ternary": 0,
-    "padded-blocks": 0,
     "no-var": 0,
     "comma-dangle": 0,
     "semi": 0,

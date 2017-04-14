@@ -1,5 +1,4 @@
 describe('Factory: NoteList', function () {
-
   var noteList;
 
   beforeEach(function () {
@@ -73,5 +72,4 @@ describe('Factory: NoteList', function () {
     expect(folderList[4].children[0].children[0].id).toBe('000009');
     expect(folderList[4].children[0].children[0].children).toBeUndefined();
   });
-
 });

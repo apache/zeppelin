@@ -154,7 +154,6 @@ export class DataWithType {
           DataWithType.parseStringData(generated, customDisplayType);
         return result;
       })
-
     } else {
       // if data is a object, parse it to multiples
       wrapped = new Promise((resolve) => {

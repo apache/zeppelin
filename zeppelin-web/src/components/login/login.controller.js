@@ -20,7 +20,6 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
   $scope.SigningIn = false;
   $scope.loginParams = {};
   $scope.login = function () {
-
     $scope.SigningIn = true;
     $http({
       method: 'POST',
@@ -46,13 +45,11 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
           $location.$$search = {};
           $location.path(redirectLocation);
         }, 100);
-
       }
     }, function errorCallback (errorResponse) {
       $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
       $scope.SigningIn = false;
     });
-
   };
 
   var initValues = function () {

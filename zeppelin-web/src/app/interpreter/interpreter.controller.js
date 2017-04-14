@@ -390,7 +390,6 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId)
             .success(function (data, status, headers, config) {
-
               var index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings.splice(index, 1);
             }).error(function (data, status, headers, config) {

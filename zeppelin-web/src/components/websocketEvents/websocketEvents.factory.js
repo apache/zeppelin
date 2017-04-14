@@ -107,7 +107,6 @@ function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
         message: data.info.toString(),
         buttons: btn
       });
-
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
     } else if (op === 'RUN_PARAGRAPH_USING_SPELL') {

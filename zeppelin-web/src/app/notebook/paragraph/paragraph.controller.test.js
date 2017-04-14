@@ -1,5 +1,4 @@
 describe('Controller: ParagraphCtrl', function () {
-
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
   var scope;

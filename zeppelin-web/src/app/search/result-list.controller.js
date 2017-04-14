@@ -97,7 +97,6 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
       var lines = result
         .split('\n')
         .map(function (line, row) {
-
           var match = line.match(/<B>(.+?)<\/B>/);
 
           // return early if nothing to highlight
@@ -149,7 +148,6 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
       );
 
       _editor.getSession().setValue(lines.join('\n'));
-
     };
   };
 }

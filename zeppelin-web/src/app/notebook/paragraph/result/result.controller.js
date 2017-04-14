@@ -200,7 +200,6 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
       (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
-
       if (DefaultDisplayType.TEXT !== $scope.type) {
         $scope.type = DefaultDisplayType.TEXT;
       }
@@ -539,7 +538,6 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           console.error('Graph drawing error %o', err);
         }
       };
-
     } else if (refresh) {
       // when graph options or data are changed
       console.log('Refresh data %o', tableData);
@@ -557,7 +555,6 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         builtInViz.instance.render(transformed);
         builtInViz.instance.renderSetting(visualizationSettingTargetEl);
       };
-
     } else {
       afterLoaded = function (loadedElem) {
         loadedElem.height(height);

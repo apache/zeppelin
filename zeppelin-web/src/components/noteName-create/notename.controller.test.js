@@ -36,5 +36,4 @@ describe('Controller: NotenameCtrl', function () {
     ctrl.sourceNoteName = 'dsds 2';
     expect(ctrl.cloneNoteName()).toEqual('dsds 3');
   });
-
 });
