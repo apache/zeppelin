@@ -78,7 +78,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     //handle the problem of tooltip not showing when muliple points have same value.
   };
 
-  yAxisTickFormat(d, yLabels){
+  yAxisTickFormat(d, yLabels) {
      if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
       return yLabels[d];
      } else {
@@ -209,10 +209,10 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       // TODO remove epsilon jitter after bump to nvd3 > 1.8.5
       var xval = 0
       var yval = 0;
-      if (xAxis){
+      if (xAxis) {
         xval = (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) + Math.random() * epsilon;
       }
-      if (yAxis){
+      if (yAxis) {
         yval = (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) + Math.random() * epsilon;
       }
 
@@ -225,13 +225,13 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
 
     // TODO remove sort and dedup after bump to nvd3 > 1.8.5
     var d3gvalues = d3g[grpNameIndex[grpName]].values;
-    d3gvalues.sort(function(a,b){
+    d3gvalues.sort(function(a,b) {
       return ((a['x'] - b['x']) || (a['y'] - b['y']))
     });
 
-    for (var i = 0; i < d3gvalues.length - 1;){
+    for (var i = 0; i < d3gvalues.length - 1;) {
       if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
-           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon)){
+           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon)) {
            d3gvalues.splice(i+1,1);
       } else {
         i++;

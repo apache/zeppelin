@@ -37,7 +37,6 @@
     "space-infix-ops": 0,
     "operator-linebreak": 0,
     "prefer-spread": 0,
-    "space-before-blocks": 0,
     "no-redeclare": 0,
     "standard/object-curly-even-spacing": 0,
     "comma-spacing": 0,

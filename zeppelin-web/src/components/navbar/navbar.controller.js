@@ -81,7 +81,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     websocketMsgSrv.getNoteList();
   }
 
-  function getHomeNote(){
+  function getHomeNote() {
     websocketMsgSrv.getHomeNote();
   }
 
