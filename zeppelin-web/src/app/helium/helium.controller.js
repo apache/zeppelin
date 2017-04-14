@@ -113,7 +113,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   };
 
   $scope.bundleOrderListeners = {
-    accept: function(sourceItemHandleScope, destSortableScope) {return true;},
+    accept: function(sourceItemHandleScope, destSortableScope) { return true; },
     itemMoved: function(event) {},
     orderChanged: function(event) {
       $scope.bundleOrderChanged = true;

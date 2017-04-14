@@ -145,7 +145,7 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       // resize editor based on content length
       _editor.setOption(
         'maxLines',
-        lines.reduce(function(len, line) {return len + line.length;}, 0)
+        lines.reduce(function(len, line) { return len + line.length; }, 0)
       );
 
       _editor.getSession().setValue(lines.join('\n'));

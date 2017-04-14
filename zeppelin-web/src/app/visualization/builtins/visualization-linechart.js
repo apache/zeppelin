@@ -68,7 +68,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
 
   configureChart(chart) {
     var self = this;
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
+    chart.xAxis.tickFormat(function(d) { return self.xAxisTickFormat(d, self.xLabels); });
     chart.yAxis.tickFormat(function(d) {
       if (d === undefined) {
         return 'N/A';

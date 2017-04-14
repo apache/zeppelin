@@ -549,7 +549,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.interpreterSelectionListeners = {
-    accept: function(sourceItemHandleScope, destSortableScope) {return true;},
+    accept: function(sourceItemHandleScope, destSortableScope) { return true; },
     itemMoved: function(event) {},
     orderChanged: function(event) {}
   };

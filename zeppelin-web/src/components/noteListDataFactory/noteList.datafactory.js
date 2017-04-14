@@ -56,7 +56,7 @@ function noteListDataFactory(TRASH_FOLDER_ID) {
     } else {  // a folder node
       var node = nodes.shift();
       var dir = _.find(curDir.children,
-        function(c) {return c.name === node && c.children !== undefined;});
+        function(c) { return c.name === node && c.children !== undefined; });
       if (dir !== undefined) { // found an existing dir
         addNode(dir, nodes, noteId);
       } else {
