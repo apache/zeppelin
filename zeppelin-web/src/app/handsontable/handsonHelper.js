@@ -157,7 +157,7 @@ export default class HandsonHelper {
       cellProperties.format = '0,0.[00000]';
       td.style.textAlign = 'left';
       Handsontable.renderers.NumericRenderer.apply(this, arguments);
-    } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
+    } else if (value.length > '%html'.length && value.substring(0, '%html '.length) === '%html ') {
       td.innerHTML = value.substring('%html'.length);
     } else {
       Handsontable.renderers.TextRenderer.apply(this, arguments);
