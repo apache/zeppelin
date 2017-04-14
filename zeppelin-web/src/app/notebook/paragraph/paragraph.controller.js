@@ -64,7 +64,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     runParagraph: function(paragraphId) {
       if (paragraphId) {
         var filtered = $scope.parentNote.paragraphs.filter(function(x) {
-          return x.id === paragraphId;});
+          return x.id === paragraphId;
+        });
         if (filtered.length === 1) {
           var paragraph = filtered[0];
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,

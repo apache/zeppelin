@@ -225,7 +225,8 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     // TODO remove sort and dedup after bump to nvd3 > 1.8.5
     var d3gvalues = d3g[grpNameIndex[grpName]].values;
     d3gvalues.sort(function(a,b){
-                  return ((a['x'] - b['x']) || (a['y'] - b['y']))});
+      return ((a['x'] - b['x']) || (a['y'] - b['y']))
+    });
 
     for (var i = 0; i < d3gvalues.length - 1; ){
       if ( (Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
