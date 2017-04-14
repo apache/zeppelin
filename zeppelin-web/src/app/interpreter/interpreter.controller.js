@@ -119,7 +119,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       if (setting.status === ParagraphStatus.ERROR || setting.errorReason) {
         ngToast.danger({content: 'Error setting properties for interpreter \'' +
         setting.group + '.' + setting.name + '\': ' + setting.errorReason,
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false
+        });
       }
     }
 

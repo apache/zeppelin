@@ -263,7 +263,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       }
     } else {
       ngToast.danger({content: 'There is a problem with this Revision',
-        verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false
+        });
     }
   };
 

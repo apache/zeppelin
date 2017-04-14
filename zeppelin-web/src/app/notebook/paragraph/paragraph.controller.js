@@ -42,8 +42,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   // transactional info for spell execution
   $scope.spellTransaction = {
-    totalResultCount: 0, renderedResultCount: 0,
-    propagated: false, resultsMsg: [], paragraphText: '',
+    totalResultCount: 0,
+    renderedResultCount: 0,
+    propagated: false,
+    resultsMsg: [],
+    paragraphText: '',
   };
 
   var editorSetting = {};
@@ -67,13 +70,18 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
             paragraph.config, paragraph.settings.params);
         } else {
-          ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
-            verticalPosition: 'top', dismissOnTimeout: false});
+          ngToast.danger({
+            content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
+            verticalPosition: 'top',
+            dismissOnTimeout: false
+          });
         }
       } else {
         ngToast.danger({
           content: 'Please provide a \'paragraphId\' when calling z.runParagraph(paragraphId)',
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false
+        });
       }
     },
 
@@ -86,7 +94,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         ngToast.danger({
           content: 'Please provide a \'paragraphId\' when calling ' +
           'z.angularBind(varName, value, \'PUT_HERE_PARAGRAPH_ID\')',
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false
+        });
       }
     },
 
@@ -99,7 +109,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         ngToast.danger({
           content: 'Please provide a \'paragraphId\' when calling ' +
           'z.angularUnbind(varName, \'PUT_HERE_PARAGRAPH_ID\')',
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false});
       }
     }
   };
