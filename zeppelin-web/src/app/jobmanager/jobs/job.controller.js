@@ -55,6 +55,7 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             // success
           }, function errorCallback(errorResponse) {
             var errorText = 'SERVER ERROR';
+            // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
               errorText = errorResponse.data.message;
             }
@@ -86,8 +87,8 @@ function JobCtrl($scope, $http, baseUrlSrv) {
             // success
           }, function errorCallback(errorResponse) {
             var errorText = 'SERVER ERROR';
+            // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
-
               errorText = errorResponse.data.message;
             }
             BootstrapDialog.alert({

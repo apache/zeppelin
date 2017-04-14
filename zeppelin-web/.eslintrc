@@ -31,8 +31,6 @@
     "process": false
   },
   "rules": {
-    "no-tabs": 0,
-    "no-extra-boolean-cast": 0,
     "object-property-newline": 0,
     "dot-location": 0,
     "brace-style": 0,

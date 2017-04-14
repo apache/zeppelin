@@ -37,6 +37,7 @@ var zeppelinWebApp = angular.module('zeppelinWebApp', [
 ])
   .filter('breakFilter', function() {
     return function(text) {
+      // eslint-disable-next-line no-extra-boolean-cast
       if (!!text) {
         return text.replace(/\n/g, '<br />');
       }
