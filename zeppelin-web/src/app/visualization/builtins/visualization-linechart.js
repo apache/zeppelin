@@ -23,7 +23,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
-  };
+  }
 
   type () {
     if (this.config.lineWithFocus) {
@@ -31,11 +31,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     } else {
       return 'lineChart';
     }
-  };
+  }
 
   getTransformation () {
     return this.pivot;
-  };
+  }
 
   render (pivot) {
     var d3Data = this.d3DataFromPivot(
@@ -50,7 +50,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
 
     this.xLabels = d3Data.xLabels;
     super.render(d3Data);
-  };
+  }
 
   /**
    * Set new config
@@ -64,7 +64,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       super.destroy();
       this.currentMode = config.lineWithFocus;
     }
-  };
+  }
 
   configureChart (chart) {
     var self = this;
@@ -84,7 +84,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     } else {
       chart.forceY([]);
     }
-  };
+  }
 
   getSetting (chart) {
     var self = this;
@@ -114,9 +114,9 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
         }
       }
     };
-  };
+  }
 
   defaultY () {
     return undefined;
-  };
+  }
 }

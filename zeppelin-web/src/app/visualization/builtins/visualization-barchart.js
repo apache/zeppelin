@@ -23,15 +23,15 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
-  };
+  }
 
   type () {
     return 'multiBarChart';
-  };
+  }
 
   getTransformation () {
     return this.pivot;
-  };
+  }
 
   render (pivot) {
     var d3Data = this.d3DataFromPivot(
@@ -54,7 +54,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   setConfig (config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart (chart) {
     var self = this;
@@ -105,8 +105,6 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       }, 500);
     });
   };
-
-
 
   getSetting(chart) {
     var self = this;

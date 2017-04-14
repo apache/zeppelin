@@ -43,15 +43,15 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       }
     ];
     this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps);
-  };
+  }
 
   type () {
     return 'scatterChart';
-  };
+  }
 
   getTransformation () {
     return this.columnselector;
-  };
+  }
 
   render (tableData) {
     this.tableData = tableData;
@@ -61,7 +61,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     this.yLabels = d3Data.yLabels;
 
     super.render(d3Data);
-  };
+  }
 
   configureChart (chart) {
     var self = this;
@@ -76,7 +76,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
 
     chart.showDistX(true).showDistY(true);
     // handle the problem of tooltip not showing when muliple points have same value.
-  };
+  }
 
   yAxisTickFormat (d, yLabels) {
     if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
@@ -95,7 +95,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
         this.config.xAxis = this.tableData.columns[0];
       }
     }
-  };
+  }
 
   setScatterChart (data, refresh) {
     var xAxis = this.config.xAxis;
@@ -239,7 +239,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       yLabels: colIndexValue,
       d3g: d3g
     };
-  };
+  }
 
   setDiscreteScatterData (data) {
     var xAxis = this.config.xAxis;
@@ -289,7 +289,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       newRows.push(newRow);
     }
     return newRows;
-  };
+  }
 
   isDiscrete (field) {
     var getUnique = function (f) {
@@ -320,7 +320,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     } else {
       return false;
     }
-  };
+  }
 
   isValidSizeOption (options) {
     var xValues = [];
@@ -356,5 +356,5 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
 
     return true;
-  };
+  }
 }

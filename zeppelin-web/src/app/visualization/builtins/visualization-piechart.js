@@ -22,15 +22,15 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   constructor (targetEl, config) {
     super(targetEl, config);
     this.pivot = new PivotTransformation(config);
-  };
+  }
 
   type () {
     return 'pieChart';
-  };
+  }
 
   getTransformation () {
     return this.pivot;
-  };
+  }
 
   render (pivot) {
     // [ZEPPELIN-2253] New chart function will be created each time inside super.render()
@@ -64,7 +64,7 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
     // [].concat flattens it, http://stackoverflow.com/a/10865042/5154397
     d3g = [].concat.apply([], d3g);
     super.render({d3g: d3g});
-  };
+  }
 
   /**
    * Set new config
@@ -72,12 +72,12 @@ export default class PiechartVisualization extends Nvd3ChartVisualization {
   setConfig (config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
-  };
+  }
 
   configureChart (chart) {
     chart.x(function (d) { return d.label; })
       .y(function (d) { return d.value; })
       .showLabels(false)
       .showTooltipPercent(true);
-  };
+  }
 }

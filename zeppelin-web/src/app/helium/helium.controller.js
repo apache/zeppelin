@@ -58,7 +58,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
         $scope.bundleOrder = visPackageOrder;
         $scope.bundleOrderChanged = false;
       });
-  };
+  }
 
   var orderPackageByPubDate = function (a, b) {
     if (!a.pkg.published) {
