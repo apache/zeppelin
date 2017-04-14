@@ -709,20 +709,27 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
        */
 
       // remove binding
-      $scope.editor.commands.bindKey('ctrl-alt-n.', null);
       $scope.editor.commands.removeCommand('showSettingsMenu');
 
-      $scope.editor.commands.bindKey('ctrl-alt-l', null);
-      $scope.editor.commands.bindKey('ctrl-alt-w', null);
-      $scope.editor.commands.bindKey('ctrl-alt-a', null);
-      $scope.editor.commands.bindKey('ctrl-alt-k', null);
-      $scope.editor.commands.bindKey('ctrl-alt-e', null);
-      $scope.editor.commands.bindKey('ctrl-alt-t', null);
+      var isOption = $rootScope.isMac? 'option' : 'alt';
+
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-n.', null);
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-l', null);
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-w', null);
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-a', null);
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-k', null);
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-e', null);
+      $scope.editor.commands.bindKey('ctrl-'+isOption+'-t', null);
+      $scope.editor.commands.bindKey('ctrl-space', null);
+
+      if ($rootScope.isMac) {
+        $scope.editor.commands.bindKey('command-l', null);
+      } else {
+        $scope.editor.commands.bindKey('ctrl-l', null);
+      }
 
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
-      $scope.editor.commands.bindKey('ctrl-space', null);
-      $scope.editor.commands.bindKey('ctrl-l', null);
 
       var keyBindingEditorFocusAction = function(scrollValue) {
         var numRows = $scope.editor.getSession().getLength();
