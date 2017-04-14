@@ -12,25 +12,25 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
+angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv)
 
 function arrayOrderingSrv (TRASH_FOLDER_ID) {
-  'ngInject';
+  'ngInject'
 
-  let arrayOrderingSrv = this;
+  let arrayOrderingSrv = this
 
   this.noteListOrdering = function (note) {
     if (note.id === TRASH_FOLDER_ID) {
-      return '\uFFFF';
+      return '\uFFFF'
     }
-    return arrayOrderingSrv.getNoteName(note);
-  };
+    return arrayOrderingSrv.getNoteName(note)
+  }
 
   this.getNoteName = function (note) {
     if (note.name === undefined || note.name.trim() === '') {
-      return 'Note ' + note.id;
+      return 'Note ' + note.id
     } else {
-      return note.name;
+      return note.name
     }
-  };
+  }
 }

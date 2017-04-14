@@ -12,25 +12,25 @@
  * limitations under the License.
  */
 
-import Nvd3ChartVisualization from './visualization-nvd3chart';
-import PivotTransformation from '../../tabledata/pivot';
+import Nvd3ChartVisualization from './visualization-nvd3chart'
+import PivotTransformation from '../../tabledata/pivot'
 
 /**
  * Visualize data in bar char
  */
 export default class BarchartVisualization extends Nvd3ChartVisualization {
   constructor (targetEl, config) {
-    super(targetEl, config);
+    super(targetEl, config)
 
-    this.pivot = new PivotTransformation(config);
+    this.pivot = new PivotTransformation(config)
   }
 
   type () {
-    return 'multiBarChart';
+    return 'multiBarChart'
   }
 
   getTransformation () {
-    return this.pivot;
+    return this.pivot
   }
 
   render (pivot) {
@@ -42,7 +42,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       pivot.values,
       true,
       true,
-      true);
+      true)
 
     super.render(d3Data);
     this.config.changeXLabel(this.config.xLabelStatus);
@@ -52,8 +52,8 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
    * Set new config
    */
   setConfig (config) {
-    super.setConfig(config);
-    this.pivot.setConfig(config);
+    super.setConfig(config)
+    this.pivot.setConfig(config)
   }
 
   configureChart (chart) {

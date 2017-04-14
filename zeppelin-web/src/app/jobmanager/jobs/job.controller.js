@@ -12,31 +12,31 @@
  * limitations under the License.
  */
 
-import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status';
+import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status'
 
-angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl);
+angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl)
 
 function JobCtrl ($scope, $http, baseUrlSrv) {
-  'ngInject';
+  'ngInject'
 
   $scope.init = function (jobInformation) {
-    $scope.progressValue = 0;
-  };
+    $scope.progressValue = 0
+  }
 
   $scope.getProgress = function () {
-    let statusList = _.pluck($scope.notebookJob.paragraphs, 'status');
+    let statusList = _.pluck($scope.notebookJob.paragraphs, 'status')
     let runningJob = _.countBy(statusList, function (status) {
       if (status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED) {
-        return 'matchCount';
+        return 'matchCount'
       } else {
-        return 'none';
+        return 'none'
       }
-    });
-    let totalCount = statusList.length;
-    let runningJobCount = runningJob.matchCount;
-    let result = Math.ceil(runningJobCount / totalCount * 100);
-    return isNaN(result) ? 0 : result;
-  };
+    })
+    let totalCount = statusList.length
+    let runningJobCount = runningJob.matchCount
+    let result = Math.ceil(runningJobCount / totalCount * 100)
+    return isNaN(result) ? 0 : result
+  }
 
   $scope.runNotebookJob = function (notebookId) {
     BootstrapDialog.confirm({
@@ -54,21 +54,21 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
           }).then(function successCallback (response) {
             // success
           }, function errorCallback (errorResponse) {
-            let errorText = 'SERVER ERROR';
+            let errorText = 'SERVER ERROR'
             // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
-              errorText = errorResponse.data.message;
+              errorText = errorResponse.data.message
             }
             BootstrapDialog.alert({
               closable: true,
               title: 'Execution Failure',
               message: errorText
-            });
-          });
+            })
+          })
         }
       }
-    });
-  };
+    })
+  }
 
   $scope.stopNotebookJob = function (notebookId) {
     BootstrapDialog.confirm({
@@ -86,23 +86,23 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
           }).then(function successCallback (response) {
             // success
           }, function errorCallback (errorResponse) {
-            let errorText = 'SERVER ERROR';
+            let errorText = 'SERVER ERROR'
             // eslint-disable-next-line no-extra-boolean-cast
             if (!!errorResponse.data.message) {
-              errorText = errorResponse.data.message;
+              errorText = errorResponse.data.message
             }
             BootstrapDialog.alert({
               closable: true,
               title: 'Stop Failure',
               message: errorText
-            });
-          });
+            })
+          })
         }
       }
-    });
-  };
+    })
+  }
 
   $scope.lastExecuteTime = function (unixtime) {
-    return moment.unix(unixtime / 1000).fromNow();
-  };
+    return moment.unix(unixtime / 1000).fromNow()
+  }
 }

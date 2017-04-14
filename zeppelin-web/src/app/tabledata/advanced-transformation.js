@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import Transformation from './transformation';
+import Transformation from './transformation'
 
 import {
   getCurrentChart, getCurrentChartAxis, getCurrentChartParam,
@@ -23,19 +23,19 @@ import {
   removeDuplicatedColumnsInMultiDimensionAxis, applyMaxAxisCount,
   isInputWidget, isOptionWidget, isCheckboxWidget, isTextareaWidget, parseParameter,
   getTransformer,
-} from './advanced-transformation-util';
+} from './advanced-transformation-util'
 
-const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html';
+const SETTING_TEMPLATE = 'app/tabledata/advanced-transformation-setting.html'
 
 export default class AdvancedTransformation extends Transformation {
   constructor(config, spec) {
-    super(config);
+    super(config)
 
-    this.columns = []; /** [{ name, index, comment }] */
-    this.props = {};
+    this.columns = [] /** [{ name, index, comment }] */
+    this.props = {}
     this.spec = spec
 
-    initializeConfig(config, spec);
+    initializeConfig(config, spec)
   }
 
   emitConfigChange(conf) {
@@ -57,8 +57,8 @@ export default class AdvancedTransformation extends Transformation {
   }
 
   getSetting() {
-    const self = this; /** for closure */
-    const configInstance = self.config; /** for closure */
+    const self = this /** for closure */
+    const configInstance = self.config /** for closure */
 
     if (self.spec.initialized) {
       self.spec.initialized = false
@@ -123,13 +123,13 @@ export default class AdvancedTransformation extends Transformation {
 
         getAxisTypeAnnotationColor: (axisSpec) => {
           if (isAggregatorAxis(axisSpec)) {
-            return { 'background-color': '#5782bd' };
+            return { 'background-color': '#5782bd' }
           } else if (isGroupAxis(axisSpec)) {
-            return { 'background-color': '#cd5c5c' };
+            return { 'background-color': '#cd5c5c' }
           } else if (isKeyAxis(axisSpec)) {
-            return { 'background-color': '#906ebd' };
+            return { 'background-color': '#906ebd' }
           } else {
-            return { 'background-color': '#62bda9' };
+            return { 'background-color': '#62bda9' }
           }
         },
 
@@ -185,7 +185,7 @@ export default class AdvancedTransformation extends Transformation {
         },
 
         parameterOnKeyDown: function(event, paramSpec) {
-          const code = event.keyCode || event.which;
+          const code = event.keyCode || event.which
           if (code === 13 && isInputWidget(paramSpec)) {
             self.emitParameterChange(configInstance)
           } else if (code === 13 && event.shiftKey && isTextareaWidget(paramSpec)) {
@@ -200,7 +200,7 @@ export default class AdvancedTransformation extends Transformation {
   }
 
   transform(tableData) {
-    this.columns = tableData.columns; /** used in `getSetting` */
+    this.columns = tableData.columns /** used in `getSetting` */
     /** initialize in `transform` instead of `getSetting` because this method is called before */
     serializeSharedAxes(this.config)
 

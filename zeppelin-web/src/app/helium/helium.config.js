@@ -16,73 +16,73 @@ export const HeliumConfFieldType = {
   NUMBER: 'number',
   JSON: 'json',
   STRING: 'string',
-};
+}
 
 /**
  * @param persisted <Object> including `type`, `description`, `defaultValue` for each conf key
  * @param spec <Object> including `value` for each conf key
  */
 export function mergePersistedConfWithSpec (persisted, spec) {
-  const confs = [];
+  const confs = []
 
   for (let name in spec) {
-    const specField = spec[name];
-    const persistedValue = persisted[name];
+    const specField = spec[name]
+    const persistedValue = persisted[name]
 
-    const value = (persistedValue) ? persistedValue : specField.defaultValue;
+    const value = (persistedValue) ? persistedValue : specField.defaultValue
     const merged = {
       name: name,
       type: specField.type,
       description: specField.description,
       value: value,
       defaultValue: specField.defaultValue,
-    };
+    }
 
-    confs.push(merged);
+    confs.push(merged)
   }
 
-  return confs;
+  return confs
 }
 
 export function createPackageConf (defaultPackages, persistedPackacgeConfs) {
-  let packageConfs = {};
+  let packageConfs = {}
 
   for (let name in defaultPackages) {
-    const pkgInfo = defaultPackages[name];
+    const pkgInfo = defaultPackages[name]
 
-    const configSpec = pkgInfo.pkg.config;
-    if (!configSpec) { continue; }
+    const configSpec = pkgInfo.pkg.config
+    if (!configSpec) { continue }
 
-    const version = pkgInfo.pkg.version;
-    if (!version) { continue; }
+    const version = pkgInfo.pkg.version
+    if (!version) { continue }
 
-    let config = {};
+    let config = {}
     if (persistedPackacgeConfs[name] && persistedPackacgeConfs[name][version]) {
-      config = persistedPackacgeConfs[name][version];
+      config = persistedPackacgeConfs[name][version]
     }
 
-    const confs = mergePersistedConfWithSpec(config, configSpec);
-    packageConfs[name] = confs;
+    const confs = mergePersistedConfWithSpec(config, configSpec)
+    packageConfs[name] = confs
   }
 
-  return packageConfs;
+  return packageConfs
 }
 
 export function parseConfigValue (type, stringified) {
-  let value = stringified;
+  let value = stringified
 
   try {
     if (HeliumConfFieldType.NUMBER === type) {
-      value = parseFloat(stringified);
+      value = parseFloat(stringified)
     } else if (HeliumConfFieldType.JSON === type) {
-      value = JSON.parse(stringified);
+      value = JSON.parse(stringified)
     }
   } catch (error) {
     // return just the stringified one
-    console.error(`Failed to parse conf type ${type}, value ${value}`);
+    console.error(`Failed to parse conf type ${type}, value ${value}`)
   }
 
-  return value;
+  return value
 }
 
 /**
@@ -92,10 +92,10 @@ export function createPersistableConfig (currentConf) {
   // persist key-value only
   // since other info (e.g type, desc) can be provided by default config
   const filtered = currentConf.reduce((acc, c) => {
-    let value = parseConfigValue(c.type, c.value);
-    acc[c.name] = value;
-    return acc;
-  }, {});
+    let value = parseConfigValue(c.type, c.value)
+    acc[c.name] = value
+    return acc
+  }, {})
 
-  return filtered;
+  return filtered
 }

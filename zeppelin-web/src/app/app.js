@@ -39,19 +39,19 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', [
     return function (text) {
       // eslint-disable-next-line no-extra-boolean-cast
       if (!!text) {
-        return text.replace(/\n/g, '<br />');
+        return text.replace(/\n/g, '<br />')
       }
-    };
+    }
   })
   .config(function ($httpProvider, $routeProvider, ngToastProvider) {
     // withCredentials when running locally via grunt
-    $httpProvider.defaults.withCredentials = true;
+    $httpProvider.defaults.withCredentials = true
 
     let visBundleLoad = {
       load: ['heliumService', function (heliumService) {
-        return heliumService.load;
+        return heliumService.load
       }]
-    };
+    }
 
     $routeProvider
       .when('/', {
@@ -108,14 +108,14 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', [
       })
       .otherwise({
         redirectTo: '/'
-      });
+      })
 
     ngToastProvider.configure({
       dismissButton: true,
       dismissOnClick: false,
       combineDuplications: true,
       timeout: 6000
-    });
+    })
   })
 
   // handel logout on API failure
@@ -124,51 +124,51 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', [
       return {
         'responseError': function (rejection) {
           if (rejection.status === 405) {
-            let data = {};
-            data.info = '';
-            $rootScope.$broadcast('session_logout', data);
+            let data = {}
+            data.info = ''
+            $rootScope.$broadcast('session_logout', data)
           }
-          $rootScope.$broadcast('httpResponseError', rejection);
-          return $q.reject(rejection);
+          $rootScope.$broadcast('httpResponseError', rejection)
+          return $q.reject(rejection)
         }
-      };
-    });
-    $httpProvider.interceptors.push('httpInterceptor');
+      }
+    })
+    $httpProvider.interceptors.push('httpInterceptor')
   })
-  .constant('TRASH_FOLDER_ID', '~Trash');
+  .constant('TRASH_FOLDER_ID', '~Trash')
 
 function auth () {
-  let $http = angular.injector(['ng']).get('$http');
-  let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
+  let $http = angular.injector(['ng']).get('$http')
+  let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv')
   // withCredentials when running locally via grunt
-  $http.defaults.withCredentials = true;
+  $http.defaults.withCredentials = true
   jQuery.ajaxSetup({
     dataType: 'json',
     xhrFields: {
       withCredentials: true
     },
     crossDomain: true
-  });
+  })
   return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function (response) {
     zeppelinWebApp.run(function ($rootScope) {
-      $rootScope.ticket = angular.fromJson(response.data).body;
-    });
+      $rootScope.ticket = angular.fromJson(response.data).body
+    })
   }, function (errorResponse) {
     // Handle error case
-  });
+  })
 }
 
 function bootstrapApplication () {
   zeppelinWebApp.run(function ($rootScope, $location) {
     $rootScope.$on('$routeChangeStart', function (event, next, current) {
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
-        $location.path('/');
+        $location.path('/')
       }
-    });
-  });
-  angular.bootstrap(document, ['zeppelinWebApp']);
+    })
+  })
+  angular.bootstrap(document, ['zeppelinWebApp'])
 }
 
 angular.element(document).ready(function () {
-  auth().then(bootstrapApplication);
-});
+  auth().then(bootstrapApplication)
+})

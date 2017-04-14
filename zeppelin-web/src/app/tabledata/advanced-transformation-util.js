@@ -13,7 +13,7 @@
  */
 
 export function getCurrentChart(config) {
-  return config.chart.current;
+  return config.chart.current
 }
 
 export function getCurrentChartTransform(config) {
@@ -43,7 +43,7 @@ export function useSharedAxis(config, chart) {
 export function serializeSharedAxes(config) {
   const availableCharts = getAvailableChartNames(config.spec.charts)
   for (let i = 0; i < availableCharts.length; i++) {
-    const chartName = availableCharts[i];
+    const chartName = availableCharts[i]
     if (useSharedAxis(config, chartName)) {
       /** use reference :) in case of sharedAxis */
       config.axis[chartName] = config.sharedAxis
@@ -59,19 +59,19 @@ export const Widget = {
 }
 
 export function isInputWidget(paramSpec) {
-  return (paramSpec && !paramSpec.widget) || (paramSpec && paramSpec.widget === Widget.INPUT);
+  return (paramSpec && !paramSpec.widget) || (paramSpec && paramSpec.widget === Widget.INPUT)
 }
 
 export function isOptionWidget(paramSpec) {
-  return paramSpec && paramSpec.widget === Widget.OPTION;
+  return paramSpec && paramSpec.widget === Widget.OPTION
 }
 
 export function isCheckboxWidget(paramSpec) {
-  return paramSpec && paramSpec.widget === Widget.CHECKBOX;
+  return paramSpec && paramSpec.widget === Widget.CHECKBOX
 }
 
 export function isTextareaWidget(paramSpec) {
-  return paramSpec && paramSpec.widget === Widget.TEXTAREA;
+  return paramSpec && paramSpec.widget === Widget.TEXTAREA
 }
 
 export const ParameterValueType = {
@@ -92,23 +92,23 @@ export function parseParameter(paramSpecs, param) {
 
     if (paramSpec.valueType === ParameterValueType.INT &&
       typeof parsed[name] !== 'number') {
-      try { parsed[name] = parseInt(parsed[name]); } catch (error) { parsed[name] = paramSpec.defaultValue; }
+      try { parsed[name] = parseInt(parsed[name]) } catch (error) { parsed[name] = paramSpec.defaultValue }
     } else if (paramSpec.valueType === ParameterValueType.FLOAT &&
       typeof parsed[name] !== 'number') {
-      try { parsed[name] = parseFloat(parsed[name]); } catch (error) { parsed[name] = paramSpec.defaultValue; }
+      try { parsed[name] = parseFloat(parsed[name]) } catch (error) { parsed[name] = paramSpec.defaultValue }
     } else if (paramSpec.valueType === ParameterValueType.BOOLEAN) {
       if (parsed[name] === 'false') {
-        parsed[name] = false;
+        parsed[name] = false
       } else if (parsed[name] === 'true') {
-        parsed[name] = true;
+        parsed[name] = true
       } else if (typeof parsed[name] !== 'boolean') {
-        parsed[name] = paramSpec.defaultValue;
+        parsed[name] = paramSpec.defaultValue
       }
     } else if (paramSpec.valueType === ParameterValueType.JSON) {
       if (parsed[name] !== null && typeof parsed[name] !== 'object') {
-        try { parsed[name] = JSON.parse(parsed[name]); } catch (error) { parsed[name] = paramSpec.defaultValue; }
+        try { parsed[name] = JSON.parse(parsed[name]) } catch (error) { parsed[name] = paramSpec.defaultValue }
       } else if (parsed[name] === null) {
-        parsed[name] = paramSpec.defaultValue;
+        parsed[name] = paramSpec.defaultValue
       }
     }
   }
@@ -142,12 +142,12 @@ export function isSingleDimensionAxis(axisSpec) {
  * add the `name` field while converting to array to easily manipulate
  */
 export function getSpecs(specObject) {
-  const specs = [];
+  const specs = []
   for (let name in specObject) {
-    const singleSpec = specObject[name];
+    const singleSpec = specObject[name]
     if (!singleSpec) { continue }
-    singleSpec.name = name;
-    specs.push(singleSpec);
+    singleSpec.name = name
+    specs.push(singleSpec)
   }
 
   return specs
@@ -164,11 +164,11 @@ export function getAvailableChartNames(charts) {
 
 export function applyMaxAxisCount(config, axisSpec) {
   if (isSingleDimensionAxis(axisSpec) || typeof axisSpec.maxAxisCount === 'undefined') {
-    return;
+    return
   }
 
   const columns = getCurrentChartAxis(config)[axisSpec.name]
-  if (columns.length <= axisSpec.maxAxisCount) { return; }
+  if (columns.length <= axisSpec.maxAxisCount) { return }
 
   const sliced = columns.slice(1)
   getCurrentChartAxis(config)[axisSpec.name] = sliced
@@ -205,23 +205,23 @@ export function initAxisConfig(config) {
   const spec = config.spec
   const availableCharts = getAvailableChartNames(spec.charts)
 
-  if (!config.axisSpecs) { config.axisSpecs = {}; }
+  if (!config.axisSpecs) { config.axisSpecs = {} }
   for (let i = 0; i < availableCharts.length; i++) {
-    const chartName = availableCharts[i];
+    const chartName = availableCharts[i]
 
     if (!config.axis[chartName]) {
-      config.axis[chartName] = {};
+      config.axis[chartName] = {}
     }
     const axisSpecs = getSpecs(spec.charts[chartName].axis)
     if (!config.axisSpecs[chartName]) {
-      config.axisSpecs[chartName] = axisSpecs;
+      config.axisSpecs[chartName] = axisSpecs
     }
 
     /** initialize multi-dimension axes */
     for (let i = 0; i < axisSpecs.length; i++) {
       const axisSpec = axisSpecs[i]
       if (isSingleDimensionAxis(axisSpec)) {
-        continue;
+        continue
       }
 
       /** intentionally nested if-stmt is used because order of conditions matter here */
@@ -260,18 +260,18 @@ export function initParameterConfig(config) {
   const spec = config.spec
   const availableCharts = getAvailableChartNames(spec.charts)
 
-  if (!config.paramSpecs) { config.paramSpecs = {}; }
+  if (!config.paramSpecs) { config.paramSpecs = {} }
   for (let i = 0; i < availableCharts.length; i++) {
-    const chartName = availableCharts[i];
+    const chartName = availableCharts[i]
 
-    if (!config.parameter[chartName]) { config.parameter[chartName] = {}; }
+    if (!config.parameter[chartName]) { config.parameter[chartName] = {} }
     const paramSpecs = getSpecs(spec.charts[chartName].parameter)
-    if (!config.paramSpecs[chartName]) { config.paramSpecs[chartName] = paramSpecs; }
+    if (!config.paramSpecs[chartName]) { config.paramSpecs[chartName] = paramSpecs }
 
     for (let i = 0; i < paramSpecs.length; i++) {
-      const paramSpec = paramSpecs[i];
+      const paramSpec = paramSpecs[i]
       if (!config.parameter[chartName][paramSpec.name]) {
-        config.parameter[chartName][paramSpec.name] = paramSpec.defaultValue;
+        config.parameter[chartName][paramSpec.name] = paramSpec.defaultValue
       }
     }
   }
@@ -287,7 +287,7 @@ export function getSpecVersion(availableCharts, spec) {
   const paramHash = {}
 
   for (let i = 0; i < availableCharts.length; i++) {
-    const chartName = availableCharts[i];
+    const chartName = availableCharts[i]
     const axisSpecs = getSpecs(spec.charts[chartName].axis)
     axisHash[chartName] = axisSpecs
 
@@ -333,12 +333,12 @@ export function initializeConfig(config, spec) {
   spec.version.axis = axisVersion
   spec.version.parameter = paramVersion
 
-  if (!config.spec || updated) { config.spec = spec; }
+  if (!config.spec || updated) { config.spec = spec }
 
   if (!config.chart) {
-    config.chart = {};
-    config.chart.current = availableCharts[0];
-    config.chart.available = availableCharts;
+    config.chart = {}
+    config.chart.current = availableCharts[0]
+    config.chart.available = availableCharts
   }
 
   /** initialize config.axis, config.axisSpecs for each chart */
@@ -354,7 +354,7 @@ export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
   let column = {}
 
   for (let i = 0; i < axisSpecs.length; i++) {
-    const axisSpec = axisSpecs[i];
+    const axisSpec = axisSpecs[i]
 
     if (axisType === AxisType.KEY && isKeyAxis(axisSpec)) {
       axisNames.push(axisSpec.name)
@@ -366,7 +366,7 @@ export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
   }
 
   for (let axisName of axisNames) {
-    const columns = axis[axisName];
+    const columns = axis[axisName]
     if (typeof axis[axisName] === 'undefined') { continue }
     if (!column[axisName]) { column[axisName] = [] }
     column[axisName] = column[axisName].concat(columns)
@@ -376,35 +376,39 @@ export function getColumnsForMultipleAxes(axisType, axisSpecs, axis) {
 }
 
 export function getColumnsFromAxis(axisSpecs, axis) {
-  const keyAxisNames = [];
-  const groupAxisNames = [];
-  const aggrAxisNames = [];
+  const keyAxisNames = []
+  const groupAxisNames = []
+  const aggrAxisNames = []
 
   for (let i = 0; i < axisSpecs.length; i++) {
-    const axisSpec = axisSpecs[i];
+    const axisSpec = axisSpecs[i]
 
-    if (isKeyAxis(axisSpec)) { keyAxisNames.push(axisSpec.name); }
-    else if (isGroupAxis(axisSpec)) { groupAxisNames.push(axisSpec.name); }
-    else if (isAggregatorAxis(axisSpec)) { aggrAxisNames.push(axisSpec.name); }
+    if (isKeyAxis(axisSpec)) {
+      keyAxisNames.push(axisSpec.name)
+    } else if (isGroupAxis(axisSpec)) {
+      groupAxisNames.push(axisSpec.name)
+    } else if (isAggregatorAxis(axisSpec)) {
+      aggrAxisNames.push(axisSpec.name)
+    }
   }
 
-  let keyColumns = [];
-  let groupColumns = [];
-  let aggregatorColumns = [];
-  let customColumn = {};
+  let keyColumns = []
+  let groupColumns = []
+  let aggregatorColumns = []
+  let customColumn = {}
 
   for (let axisName in axis) {
-    const columns = axis[axisName];
+    const columns = axis[axisName]
     if (keyAxisNames.includes(axisName)) {
-      keyColumns = keyColumns.concat(columns);
+      keyColumns = keyColumns.concat(columns)
     } else if (groupAxisNames.includes(axisName)) {
-      groupColumns = groupColumns.concat(columns);
+      groupColumns = groupColumns.concat(columns)
     } else if (aggrAxisNames.includes(axisName)) {
-      aggregatorColumns = aggregatorColumns.concat(columns);
+      aggregatorColumns = aggregatorColumns.concat(columns)
     } else {
       const axisType = axisSpecs.filter(s => s.name === axisName)[0].axisType
-      if (!customColumn[axisType]) { customColumn[axisType] = []; }
-      customColumn[axisType] = customColumn[axisType].concat(columns);
+      if (!customColumn[axisType]) { customColumn[axisType] = [] }
+      customColumn[axisType] = customColumn[axisType].concat(columns)
     }
   }
 
@@ -456,10 +460,10 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
 
   const method = transformSpec.method
 
-  const columns = getColumnsFromAxis(axisSpecs, axis);
-  const keyColumns = columns.key;
-  const groupColumns = columns.group;
-  const aggregatorColumns = columns.aggregator;
+  const columns = getColumnsFromAxis(axisSpecs, axis)
+  const keyColumns = columns.key
+  const groupColumns = columns.group
+  const aggregatorColumns = columns.aggregator
   const customColumns = columns.custom
 
   let column = {
@@ -467,7 +471,7 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
   }
 
   if (method === TransformMethod.RAW) {
-    transformer = () => { return rows; }
+    transformer = () => { return rows }
   } else if (method === TransformMethod.OBJECT) {
     transformer = () => {
       const { cube, schema, keyColumnName, keyNames, groupNameSet, selectorNameWithIndex, } =
@@ -569,31 +573,31 @@ export function getTransformer(conf, rows, axisSpecs, axis) {
 
 const AggregatorFunctions = {
   sum: function(a, b) {
-    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-    return varA + varB;
+    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
+    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
+    return varA + varB
   },
   count: function(a, b) {
-    const varA = (a !== undefined) ? parseInt(a) : 0;
-    const varB = (b !== undefined) ? 1 : 0;
-    return varA + varB;
+    const varA = (a !== undefined) ? parseInt(a) : 0
+    const varB = (b !== undefined) ? 1 : 0
+    return varA + varB
   },
   min: function(a, b) {
-    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-    return Math.min(varA, varB);
+    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
+    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
+    return Math.min(varA, varB)
   },
   max: function(a, b) {
-    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-    return Math.max(varA, varB);
+    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
+    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
+    return Math.max(varA, varB)
   },
   avg: function(a, b, c) {
-    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-    return varA + varB;
+    const varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
+    const varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
+    return varA + varB
   }
-};
+}
 
 const AggregatorFunctionDiv = {
   sum: false,
@@ -601,7 +605,7 @@ const AggregatorFunctionDiv = {
   max: false,
   count: false,
   avg: true
-};
+}
 
 /** nested cube `(key) -> (group) -> aggregator` */
 export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
@@ -609,7 +613,7 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
     key: keyColumns.length !== 0,
     group: groupColumns.length !== 0,
     aggregator: aggrColumns.length !== 0,
-  };
+  }
 
   let cube = {}
   const entry = {}
@@ -621,9 +625,9 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
   let indexCounter = 0
 
   for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    let e = entry;
-    let c = cube;
+    const row = rows[i]
+    let e = entry
+    let c = cube
 
     // key: add to entry
     let mergedKeyName
@@ -716,7 +720,7 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
     key: keyColumns.length !== 0,
     group: groupColumns.length !== 0,
     aggregator: aggrColumns.length !== 0,
-  };
+  }
 
   let cube = {}
 
@@ -727,8 +731,8 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
   let indexCounter = 0
 
   for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    let c = cube;
+    const row = rows[i]
+    let c = cube
 
     // key: add to entry
     let mergedKeyName
@@ -826,7 +830,7 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
     key2: key2Columns.length !== 0,
     group: groupColumns.length !== 0,
     aggregator: aggrColumns.length !== 0,
-  };
+  }
 
   let cube = {}
   const entry = {}
@@ -840,9 +844,9 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
   let indexCounter = 0
 
   for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    let e = entry;
-    let c = cube;
+    const row = rows[i]
+    let e = entry
+    let c = cube
 
     // key1: add to entry
     let mergedKey1Name

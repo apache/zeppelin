@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('modalvisible', modalvisible);
+angular.module('zeppelinWebApp').directive('modalvisible', modalvisible)
 
 function modalvisible () {
   return {
@@ -24,8 +24,8 @@ function modalvisible () {
     },
     link: function (scope, element, attrs) {
       // Add some listeners
-      let previsibleMethod = scope.preVisibleCallback;
-      let postVisibleMethod = scope.postVisibleCallback;
+      let previsibleMethod = scope.preVisibleCallback
+      let postVisibleMethod = scope.postVisibleCallback
       element.on('show.bs.modal', function (e) {
         var relatedTarget = angular.element(e.relatedTarget);
         var clone = relatedTarget.data('clone');
@@ -36,10 +36,10 @@ function modalvisible () {
       });
       element.on('shown.bs.modal', function (e) {
         if (scope.targetinput) {
-          angular.element(e.target).find('input#' + scope.targetinput).select();
+          angular.element(e.target).find('input#' + scope.targetinput).select()
         }
-        postVisibleMethod();
-      });
+        postVisibleMethod()
+      })
     }
-  };
+  }
 }

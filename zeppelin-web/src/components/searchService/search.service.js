@@ -12,22 +12,22 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('searchService', searchService);
+angular.module('zeppelinWebApp').service('searchService', searchService)
 
 function searchService ($resource, baseUrlSrv) {
-  'ngInject';
+  'ngInject'
 
   this.search = function (term) {
-    this.searchTerm = term.q;
-    console.log('Searching for: %o', term.q);
+    this.searchTerm = term.q
+    console.log('Searching for: %o', term.q)
     if (!term.q) { // TODO(bzz): empty string check
-      return;
+      return
     }
-    let encQuery = window.encodeURIComponent(term.q);
+    let encQuery = window.encodeURIComponent(term.q)
     return $resource(baseUrlSrv.getRestApiBase() + '/notebook/search?q=' + encQuery, {}, {
       query: {method: 'GET'}
-    });
-  };
+    })
+  }
 
-  this.searchTerm = '';
+  this.searchTerm = ''
 }

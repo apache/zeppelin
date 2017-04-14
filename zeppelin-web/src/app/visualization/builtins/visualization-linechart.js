@@ -12,29 +12,29 @@
  * limitations under the License.
  */
 
-import Nvd3ChartVisualization from './visualization-nvd3chart';
-import PivotTransformation from '../../tabledata/pivot';
+import Nvd3ChartVisualization from './visualization-nvd3chart'
+import PivotTransformation from '../../tabledata/pivot'
 
 /**
  * Visualize data in line chart
  */
 export default class LinechartVisualization extends Nvd3ChartVisualization {
   constructor (targetEl, config) {
-    super(targetEl, config);
+    super(targetEl, config)
 
-    this.pivot = new PivotTransformation(config);
+    this.pivot = new PivotTransformation(config)
   }
 
   type () {
     if (this.config.lineWithFocus) {
-      return 'lineWithFocusChart';
+      return 'lineWithFocusChart'
     } else {
-      return 'lineChart';
+      return 'lineChart'
     }
   }
 
   getTransformation () {
-    return this.pivot;
+    return this.pivot
   }
 
   render (pivot) {
@@ -46,49 +46,49 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       pivot.values,
       false,
       true,
-      false);
+      false)
 
-    this.xLabels = d3Data.xLabels;
-    super.render(d3Data);
+    this.xLabels = d3Data.xLabels
+    super.render(d3Data)
   }
 
   /**
    * Set new config
    */
   setConfig (config) {
-    super.setConfig(config);
-    this.pivot.setConfig(config);
+    super.setConfig(config)
+    this.pivot.setConfig(config)
 
     // change mode
     if (this.currentMode !== config.lineWithFocus) {
-      super.destroy();
-      this.currentMode = config.lineWithFocus;
+      super.destroy()
+      this.currentMode = config.lineWithFocus
     }
   }
 
   configureChart (chart) {
-    let self = this;
-    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels); });
+    let self = this
+    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels) })
     chart.yAxis.tickFormat(function (d) {
       if (d === undefined) {
-        return 'N/A';
+        return 'N/A'
       }
-      return self.yAxisTickFormat(d, self.xLabels);
-    });
-    chart.yAxis.axisLabelDistance(50);
+      return self.yAxisTickFormat(d, self.xLabels)
+    })
+    chart.yAxis.axisLabelDistance(50)
     if (chart.useInteractiveGuideline) {   // lineWithFocusChart hasn't got useInteractiveGuideline
-      chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+      chart.useInteractiveGuideline(true) // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
     }
     if (this.config.forceY) {
-      chart.forceY([0]); // force y-axis minimum to 0 for line chart.
+      chart.forceY([0]) // force y-axis minimum to 0 for line chart.
     } else {
-      chart.forceY([]);
+      chart.forceY([])
     }
   }
 
   getSetting (chart) {
-    let self = this;
-    let configObj = self.config;
+    let self = this
+    let configObj = self.config
 
     return {
       template: `<div>
@@ -110,13 +110,13 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       scope: {
         config: configObj,
         save: function () {
-          self.emitConfig(configObj);
+          self.emitConfig(configObj)
         }
       }
-    };
+    }
   }
 
   defaultY () {
-    return undefined;
+    return undefined
   }
 }

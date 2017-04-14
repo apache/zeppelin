@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory);
+angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory)
 
 function noteListDataFactory (TRASH_FOLDER_ID) {
-  'ngInject';
+  'ngInject'
 
   const notes = {
     root: {children: []},
@@ -26,24 +26,24 @@ function noteListDataFactory (TRASH_FOLDER_ID) {
       // a flat list to boost searching
       notes.flatList = _.map(notesList, (note) => {
         note.isTrash = note.name
-          ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
-        return note;
-      });
+          ? note.name.split('/')[0] === TRASH_FOLDER_ID : false
+        return note
+      })
 
       // construct the folder-based tree
-      notes.root = {children: []};
-      notes.flatFolderMap = {};
+      notes.root = {children: []}
+      notes.flatFolderMap = {}
       _.reduce(notesList, function (root, note) {
-        let noteName = note.name || note.id;
-        let nodes = noteName.match(/([^\/][^\/]*)/g);
+        let noteName = note.name || note.id
+        let nodes = noteName.match(/([^\/][^\/]*)/g)
 
         // recursively add nodes
-        addNode(root, nodes, note.id);
+        addNode(root, nodes, note.id)
 
-        return root;
-      }, notes.root);
+        return root
+      }, notes.root)
     }
-  };
+  }
 
   const addNode = function (curDir, nodes, noteId) {
     if (nodes.length === 1) {  // the leaf
@@ -52,13 +52,13 @@ function noteListDataFactory (TRASH_FOLDER_ID) {
         id: noteId,
         path: curDir.id ? curDir.id + '/' + nodes[0] : nodes[0],
         isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
-      });
+      })
     } else {  // a folder node
-      let node = nodes.shift();
+      let node = nodes.shift()
       let dir = _.find(curDir.children,
-        function (c) { return c.name === node && c.children !== undefined; });
+        function (c) { return c.name === node && c.children !== undefined })
       if (dir !== undefined) { // found an existing dir
-        addNode(dir, nodes, noteId);
+        addNode(dir, nodes, noteId)
       } else {
         let newDir = {
           id: curDir.id ? curDir.id + '/' + node : node,
@@ -66,16 +66,16 @@ function noteListDataFactory (TRASH_FOLDER_ID) {
           hidden: true,
           children: [],
           isTrash: curDir.id ? curDir.id.split('/')[0] === TRASH_FOLDER_ID : false
-        };
+        }
 
         // add the folder to flat folder map
-        notes.flatFolderMap[newDir.id] = newDir;
+        notes.flatFolderMap[newDir.id] = newDir
 
-        curDir.children.push(newDir);
-        addNode(newDir, nodes, noteId);
+        curDir.children.push(newDir)
+        addNode(newDir, nodes, noteId)
       }
     }
-  };
+  }
 
-  return notes;
+  return notes
 }

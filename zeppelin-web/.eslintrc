@@ -31,7 +31,6 @@
     "process": false
   },
   "rules": {
-    "semi": 0,
     "array-bracket-spacing": 0,
     "space-before-function-paren": 0,
     "no-unneeded-ternary": 0,

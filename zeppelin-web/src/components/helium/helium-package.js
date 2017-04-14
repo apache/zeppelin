@@ -14,18 +14,18 @@
 
 export function createDefaultPackage (pkgSearchResult, sce) {
   for (let pkgIdx in pkgSearchResult) {
-    const pkg = pkgSearchResult[pkgIdx];
-    pkg.pkg.icon = sce.trustAsHtml(pkg.pkg.icon);
+    const pkg = pkgSearchResult[pkgIdx]
+    pkg.pkg.icon = sce.trustAsHtml(pkg.pkg.icon)
     if (pkg.enabled) {
-      pkgSearchResult.splice(pkgIdx, 1);
-      return pkg;
+      pkgSearchResult.splice(pkgIdx, 1)
+      return pkg
     }
   }
 
   // show first available version if package is not enabled
-  const result = pkgSearchResult[0];
-  pkgSearchResult.splice(0, 1);
-  return result;
+  const result = pkgSearchResult[0]
+  pkgSearchResult.splice(0, 1)
+  return result
 }
 
 /**
@@ -36,12 +36,12 @@ export function createDefaultPackage (pkgSearchResult, sce) {
  * @returns {Object} including {name, pkgInfo}
  */
 export function createDefaultPackages (pkgSearchResults, sce) {
-  const defaultPackages = {};
+  const defaultPackages = {}
   // show enabled version if any version of package is enabled
   for (let name in pkgSearchResults) {
-    const pkgSearchResult = pkgSearchResults[name];
+    const pkgSearchResult = pkgSearchResults[name]
     defaultPackages[name] = createDefaultPackage(pkgSearchResult, sce)
   }
 
-  return defaultPackages;
+  return defaultPackages
 }
