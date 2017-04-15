@@ -45,14 +45,14 @@ function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSr
   }
 
   vm.preVisible = function(clone, sourceNoteName, path) {
-    vm.clone = clone;
-    vm.sourceNoteName = sourceNoteName;
-    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName(path);
-    $scope.$apply();
-  };
+    vm.clone = clone
+    vm.sourceNoteName = sourceNoteName
+    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName(path)
+    $scope.$apply()
+  }
 
   vm.newNoteName = function(path) {
-    var newCount = 1;
+    let newCount = 1
     angular.forEach(vm.notes.flatList, function (noteName) {
       noteName = noteName.name
       if (noteName.match(/^Untitled Note [0-9]*$/)) {
@@ -61,9 +61,9 @@ function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSr
           newCount = lastCount + 1
         }
       }
-    });
-    return (path ? path + '/' : '') +'Untitled Note ' + newCount;
-  };
+    })
+    return (path ? path + '/' : '') + 'Untitled Note ' + newCount
+  }
 
   vm.cloneNoteName = function () {
     let copyCount = 1

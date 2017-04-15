@@ -27,13 +27,13 @@ function modalvisible () {
       let previsibleMethod = scope.preVisibleCallback
       let postVisibleMethod = scope.postVisibleCallback
       element.on('show.bs.modal', function (e) {
-        var relatedTarget = angular.element(e.relatedTarget);
-        var clone = relatedTarget.data('clone');
-        var sourceNoteName = relatedTarget.data('source-note-name');
-        var path = relatedTarget.data('path');
-        var cloneNote = clone ? true : false;
-        previsibleMethod()(cloneNote, sourceNoteName, path);
-      });
+        let relatedTarget = angular.element(e.relatedTarget)
+        let clone = relatedTarget.data('clone')
+        let sourceNoteName = relatedTarget.data('source-note-name')
+        let path = relatedTarget.data('path')
+        let cloneNote = clone ? true : false
+        previsibleMethod()(cloneNote, sourceNoteName, path)
+      })
       element.on('shown.bs.modal', function (e) {
         if (scope.targetinput) {
           angular.element(e.target).find('input#' + scope.targetinput).select()
