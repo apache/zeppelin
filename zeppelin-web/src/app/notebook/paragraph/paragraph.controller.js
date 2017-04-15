@@ -713,13 +713,13 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
       var isOption = $rootScope.isMac? 'option' : 'alt';
 
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-n.', null);
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-l', null);
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-w', null);
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-a', null);
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-k', null);
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-e', null);
-      $scope.editor.commands.bindKey('ctrl-'+isOption+'-t', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-n.', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-l', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-w', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-a', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-k', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-e', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-t', null);
       $scope.editor.commands.bindKey('ctrl-space', null);
 
       if ($rootScope.isMac) {
