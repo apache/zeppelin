@@ -644,6 +644,22 @@ public class NotebookServer extends WebSocketServlet
     broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
   }
 
+  public void unicastParagraph(Note note, Paragraph p, String user) {
+    if (!note.isPersonalizedMode() || p == null || user == null) {
+      return;
+    }
+
+    if (!userConnectedSockets.containsKey(user)) {
+      LOG.warn("Failed to send unicast. user {} that is not in connections map", user);
+      return;
+    }
+
+    for (NotebookSocket conn : userConnectedSockets.get(user)) {
+      Message m = new Message(OP.PARAGRAPH).put("paragraph", p);
+      unicast(m, conn);
+    }
+  }
+
   public void broadcastParagraph(Note note, Paragraph p) {
     if (note.isPersonalizedMode()) {
       broadcastParagraphs(p.getUserParagraphMap(), p);
@@ -1301,9 +1317,15 @@ public class NotebookServer extends WebSocketServlet
     }
 
     final Note note = notebook.getNote(noteId);
-    note.clearParagraphOutput(paragraphId);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    broadcastParagraph(note, paragraph);
+    if (note.isPersonalizedMode()) {
+      String user = fromMessage.principal;
+      Paragraph p = note.clearPersonalizedParagraphOutput(paragraphId, user);
+      unicastParagraph(note, p, user);
+    } else {
+      note.clearParagraphOutput(paragraphId);
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      broadcastParagraph(note, paragraph);
+    }
   }
 
   private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1696,12 +1718,21 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
+    // 1. clear paragraph only if personalized,
+    // otherwise this will be handed in `onOutputClear`
+    final Note note = notebook.getNote(noteId);
+    if (note.isPersonalizedMode()) {
+      String user = fromMessage.principal;
+      Paragraph p = note.clearPersonalizedParagraphOutput(paragraphId, user);
+      unicastParagraph(note, p, user);
+    }
+
+    // 2. set paragraph values
     String text = (String) fromMessage.get("paragraph");
     String title = (String) fromMessage.get("title");
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
 
-    final Note note = notebook.getNote(noteId);
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
         text, title, params, config);
 
