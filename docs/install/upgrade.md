@@ -60,4 +60,4 @@ So, copying `notebook` and `conf` directory should be enough.
 ### Upgrading from Zeppelin 0.7 to 0.8
 
  - From 0.8, we recommend to use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` instead of `zeppelin.pyspark.python` as `zeppelin.pyspark.python` only effects driver. You can use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` as using them in spark.
- - From 0.8, depending on your device, the keyboard shortcut `Ctrl-L` or `Command-L` is not supported. This function is provided by [Ace](https://ace.c9.io/) editor. 
+ - From 0.8, depending on your device, the keyboard shortcut `Ctrl-L` or `Command-L` which go to the line somewhere user wants is not supported. 
