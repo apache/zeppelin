@@ -134,6 +134,12 @@
         "propertyName": null,
         "defaultValue": "python",
         "description": "Python command to run pyspark with"
+      },
+      "zeppelin.pyspark.precode": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "Snippet of code which executes when interpreter initialize"
       }
     },
     "editor": {

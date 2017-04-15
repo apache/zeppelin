@@ -116,6 +116,11 @@ You can also set other Spark properties which are not listed in the table. For a
             Property <code>spark.pyspark.driver.python</code> take precedence if it is set</td>
   </tr>
   <tr>
+    <td>zeppelin.pyspark.precode</td>
+    <td></td>
+    <td>Snippet of code which executes when interpreter initialize. Variables, methods, classes, etc defined in snippet are available in your paragraphs</td>
+  </tr>
+  <tr>
     <td>zeppelin.spark.concurrentSQL</td>
     <td>false</td>
     <td>Execute multiple SQL concurrently if set true.</td>

@@ -285,6 +285,9 @@ completion = PySparkCompletion(intp)
 z = PyZeppelinContext(intp.getZeppelinContext())
 z._setup_matplotlib()
 
+# Place to set precode if precode is set
+#precode#
+
 while True :
   req = intp.getStatements()
   try:
