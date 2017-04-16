@@ -379,7 +379,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
 
       if (displayAppInfo) {
         InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
-        interpreterResult.add(InterpreterResult.Type.TEXT, result);
+        interpreterResult.add(result);
         String appInfoHtml = "<hr/>Spark Application Id: " + sessionInfo.appId + "<br/>"
             + "Spark WebUI: <a href=\"" + sessionInfo.webUIAddress + "\">"
             + sessionInfo.webUIAddress + "</a>";

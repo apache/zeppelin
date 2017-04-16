@@ -145,6 +145,13 @@ public class LivyInterpreterIT {
         assertTrue(result.message().get(0).getData().contains("defined object Person"));
       }
 
+      // html output
+      String htmlCode = "println(\"%html <h1> hello </h1>\")";
+      result = sparkInterpreter.interpret(htmlCode, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+      assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
+
       // error
       result = sparkInterpreter.interpret("println(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
@@ -626,8 +633,15 @@ public class LivyInterpreterIT {
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(2, result.message().size());
-
       assertTrue(result.message().get(1).getData().contains("Spark Application Id"));
+
+      // html output
+      String htmlCode = "println(\"%html <h1> hello </h1>\")";
+      result = sparkInterpreter.interpret(htmlCode, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(2, result.message().size());
+      assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
+
     } finally {
       sparkInterpreter.close();
     }
