@@ -344,6 +344,19 @@
       </exclusions>
     </dependency>
 
+    <!-- yarn (not supported for Spark v1.5.0 or higher) -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-yarn_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-api</artifactId>
+      <version>${yarn.version}</version>
+    </dependency>
+
   </dependencies>
 
   <profiles>
@@ -808,23 +821,6 @@
           </releases>
         </repository>
       </repositories>
-    </profile>
-
-    <profile>
-      <id>yarn</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-yarn_${scala.binary.version}</artifactId>
-          <version>${spark.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-          <version>${yarn.version}</version>
-        </dependency>
-      </dependencies>
     </profile>
 
   </profiles>
