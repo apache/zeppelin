@@ -66,7 +66,7 @@ public class HeliumBundleFactoryTest {
         new File(moduleDir, "visualization"),
         new File(moduleDir, "spell"));
     hbf.installNodeAndNpm();
-    hbf.copyFrameworkModuleToInstallPath(true);
+    hbf.copyFrameworkModulesToInstallPath(true);
   }
 
   @After

@@ -55,6 +55,7 @@ public class HeliumBundleFactory {
   public static final String HELIUM_LOCAL_MODULE_DIR = "local_modules";
   public static final String HELIUM_BUNDLES_SRC_DIR = "src";
   public static final String HELIUM_BUNDLES_SRC = "load.js";
+  public static final String YARN_CACHE_DIR = "yarn-cache";
   public static final String PACKAGE_JSON = "package.json";
   public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   public static final String HELIUM_BUNDLE = "helium.bundle.js";
@@ -68,6 +69,7 @@ public class HeliumBundleFactory {
   private final File heliumLocalRepoDirectory;
   private final File heliumBundleDirectory;
   private final File heliumLocalModuleDirectory;
+  private final File yarnCacheDir;
   private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
@@ -98,6 +100,7 @@ public class HeliumBundleFactory {
     this.heliumLocalRepoDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
+    this.yarnCacheDir = new File(heliumLocalRepoDirectory, YARN_CACHE_DIR);
     this.conf = conf;
     this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
 
@@ -110,7 +113,7 @@ public class HeliumBundleFactory {
     gson = new Gson();
   }
 
-  void installNodeAndNpm() {
+  void installNodeAndNpm() throws TaskRunnerException {
     if (nodeAndNpmInstalled) {
       return;
     }
@@ -126,6 +129,8 @@ public class HeliumBundleFactory {
       YarnInstaller yarnInstaller = frontEndPluginFactory.getYarnInstaller(getProxyConfig());
       yarnInstaller.setYarnVersion(YARN_VERSION);
       yarnInstaller.install();
+      String yarnCacheDirPath = yarnCacheDir.getAbsolutePath();
+      yarnCommand(frontEndPluginFactory, "config set cache-folder " + yarnCacheDirPath);
 
       configureLogger();
       nodeAndNpmInstalled = true;
@@ -362,7 +367,11 @@ public class HeliumBundleFactory {
     }
 
     // 0. install node, npm (should be called before `downloadPackage`
-    installNodeAndNpm();
+    try {
+      installNodeAndNpm();
+    } catch (TaskRunnerException e) {
+      throw new IOException(e);
+    }
 
     // 1. prepare directories
     if (!heliumLocalRepoDirectory.exists() || !heliumLocalRepoDirectory.isDirectory()) {
@@ -391,7 +400,7 @@ public class HeliumBundleFactory {
     prepareSource(pkg, moduleNameVersion, mainFileName);
 
     // 4. install node and local modules for a bundle
-    copyFrameworkModuleToInstallPath(recopyLocalModule); // should copy local modules first
+    copyFrameworkModulesToInstallPath(recopyLocalModule); // should copy local modules first
     installNodeModules(fpf);
 
     // 5. let's bundle and update cache
@@ -421,7 +430,44 @@ public class HeliumBundleFactory {
     }
   }
 
-  void copyFrameworkModuleToInstallPath(boolean recopy)
+  void copyFrameworkModule(boolean recopy, FileFilter filter,
+                           File src, File dest) throws IOException {
+    if (src != null) {
+      if (recopy && dest.exists()) {
+        FileUtils.deleteDirectory(dest);
+      }
+
+      if (!dest.exists()) {
+        FileUtils.copyDirectory(
+            src,
+            dest,
+            filter);
+      }
+    }
+  }
+
+  void deleteYarnCache() {
+    FilenameFilter filter = new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        if ((name.startsWith("npm-zeppelin-vis-") ||
+            name.startsWith("npm-zeppelin-tabledata-") ||
+            name.startsWith("npm-zeppelin-spell-")) &&
+            dir.isDirectory()) {
+          return true;
+        }
+
+        return false;
+      }
+    };
+
+    File[] localModuleCaches = yarnCacheDir.listFiles(filter);
+    for (File f : localModuleCaches) {
+      FileUtils.deleteQuietly(f);
+    }
+  }
+
+  void copyFrameworkModulesToInstallPath(boolean recopy)
       throws IOException {
 
     FileFilter npmPackageCopyFilter = new FileFilter() {
@@ -436,56 +482,27 @@ public class HeliumBundleFactory {
       }
     };
 
-    // install tabledata module
     FileUtils.forceMkdir(heliumLocalModuleDirectory);
+    // should delete yarn caches for local modules since they might be updated
+    deleteYarnCache();
 
+    // install tabledata module
     File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-tabledata");
-    if (tabledataModulePath != null) {
-      if (recopy && tabledataModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(tabledataModuleInstallPath);
-
-      }
-
-      if (!tabledataModuleInstallPath.exists()) {
-        FileUtils.copyDirectory(
-            tabledataModulePath,
-            tabledataModuleInstallPath,
-            npmPackageCopyFilter);
-      }
-    }
+    copyFrameworkModule(recopy, npmPackageCopyFilter,
+        tabledataModulePath, tabledataModuleInstallPath);
 
     // install visualization module
     File visModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-vis");
-    if (visualizationModulePath != null) {
-      if (recopy && visModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(visModuleInstallPath);
-      }
-
-      if (!visModuleInstallPath.exists()) {
-        FileUtils.copyDirectory(
-            visualizationModulePath,
-            visModuleInstallPath,
-            npmPackageCopyFilter);
-      }
-    }
+    copyFrameworkModule(recopy, npmPackageCopyFilter,
+        visualizationModulePath, visModuleInstallPath);
 
     // install spell module
     File spellModuleInstallPath = new File(heliumLocalModuleDirectory,
         "zeppelin-spell");
-    if (spellModulePath != null) {
-      if (recopy && spellModuleInstallPath.exists()) {
-        FileUtils.deleteDirectory(spellModuleInstallPath);
-      }
-
-      if (!spellModuleInstallPath.exists()) {
-        FileUtils.copyDirectory(
-            spellModulePath,
-            spellModuleInstallPath,
-            npmPackageCopyFilter);
-      }
-    }
+    copyFrameworkModule(recopy, npmPackageCopyFilter,
+        spellModulePath, spellModuleInstallPath);
   }
 
   private WebpackResult getWebpackResultFromOutput(String output) {

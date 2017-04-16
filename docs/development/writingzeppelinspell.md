@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Writing a new Spell(Experimental)"
+title: "Writing a new Spell"
 description: "Spell is a kind of interpreter that runs on browser not on backend. So, technically it's the frontend interpreter. "
 group: development
 ---
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Writing a new Spell (Experimental)
+# Writing a new Spell
 
 <div id="toc"></div>
 
