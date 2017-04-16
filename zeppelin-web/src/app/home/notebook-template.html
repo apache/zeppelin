@@ -25,28 +25,28 @@ limitations under the License.
       <i style="margin-left: 10px;"
          class="fa fa-pencil notebook-list-btn" ng-show="showNoteButton"
          ng-click="node.path ? renameNote(node.id, node.path) : renameNote(node.id, node.name)"
-         tooltip-placement="bottom" tooltip="Rename note">
+         tooltip-placement="bottom" uib-tooltip="Rename note">
       </i>
     </a>
     <a ng-if="!node.isTrash" style="text-decoration: none;">
       <i class="fa fa-eraser notebook-list-btn" ng-show="showNoteButton" ng-click="clearAllParagraphOutput(node.id)"
-         tooltip-placement="bottom" tooltip="Clear output">
+         tooltip-placement="bottom" uib-tooltip="Clear output">
       </i>
     </a>
     <a ng-if="!node.isTrash" style="text-decoration: none;">
       <i class="fa fa-trash-o notebook-list-btn" ng-show="showNoteButton" ng-click="moveNoteToTrash(node.id)"
-         tooltip-placement="bottom" tooltip="Move note to Trash">
+         tooltip-placement="bottom" uib-tooltip="Move note to Trash">
       </i>
     </a>
     <!-- if note is in trash -->
     <a ng-if="node.isTrash">
       <i class="fa fa-undo notebook-list-btn" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
-         tooltip-placement="bottom" tooltip="Restore note">
+         tooltip-placement="bottom" uib-tooltip="Restore note">
       </i>
     </a>
     <a ng-if="node.isTrash" style="font-size: 16px;">
       <i class="fa fa-times notebook-list-btn" ng-show="showNoteButton" ng-click="removeNote(node.id)"
-         tooltip-placement="bottom" tooltip="Remove note permanently">
+         tooltip-placement="bottom" uib-tooltip="Remove note permanently">
       </i>
     </a>
   </div>
@@ -59,26 +59,34 @@ limitations under the License.
         <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'"></i> {{getNoteName(node)}}
       </a>
       <a ng-if="!node.isTrash" style="text-decoration: none;">
-        <i style="margin-left: 10px;"
-           class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
-           tooltip-placement="bottom" tooltip="Rename folder">
+        <a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;"
+           ng-controller="NotenameCtrl as notenamectrl" ng-click="notenamectrl.getInterpreterSettings()" data-path="{{node.id}}">
+          <i style="margin-left: 10px;"
+             class="fa fa-plus notebook-list-btn" ng-show="showFolderButton"
+             tooltip-placement="bottom" uib-tooltip="Create new note">
+          </i>
+        </a>
+      </a>
+      <a ng-if="!node.isTrash" style="text-decoration: none;">
+        <i class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
+           tooltip-placement="bottom" uib-tooltip="Rename folder">
         </i>
       </a>
       <!-- if folder is not in trash -->
       <a ng-if="!node.isTrash">
         <i class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"
-           tooltip-placement="bottom" tooltip="Move folder to Trash">
+           tooltip-placement="bottom" uib-tooltip="Move folder to Trash">
         </i>
       </a>
       <!-- if folder is in trash -->
       <a ng-if="node.isTrash">
         <i class="fa fa-undo notebook-list-btn" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
-           tooltip-placement="bottom" tooltip="Restore folder">
+           tooltip-placement="bottom" uib-tooltip="Restore folder">
         </i>
       </a>
       <a ng-if="node.isTrash" style="font-size: 16px">
         <i class="fa fa-times notebook-list-btn" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
-           tooltip-placement="bottom" tooltip="Remove folder permanently">
+           tooltip-placement="bottom" uib-tooltip="Remove folder permanently">
         </i>
       </a>
     </div>
@@ -98,11 +106,11 @@ limitations under the License.
       <a style="text-decoration: none;">
         <i style="margin-left: 10px"
            class="fa fa-undo notebook-list-btn" ng-show="showFolderButton" ng-click="restoreAll()"
-           tooltip-placement="bottom" tooltip="Restore all">
+           tooltip-placement="bottom" uib-tooltip="Restore all">
         </i>
         <i style="font-size: 16px;"
            class="fa fa-times notebook-list-btn" ng-show="showFolderButton" ng-click="emptyTrash()"
-           tooltip-placement="bottom" tooltip="Empty trash">
+           tooltip-placement="bottom" uib-tooltip="Empty trash">
         </i>
       </a>
     </div>
