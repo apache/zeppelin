@@ -22,5 +22,6 @@ package org.apache.zeppelin.interpreter;
  */
 public enum InterpreterPropertyType {
   text,
-  password
+  password,
+  checkbox
 }

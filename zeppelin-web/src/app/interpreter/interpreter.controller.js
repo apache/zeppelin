@@ -192,6 +192,15 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
+  $scope.defaultValueByType = function(setting) {
+    if (setting.propertyType === 'checkbox') {
+      setting.propertyValue = false;
+      return;
+    }
+
+    setting.propertyValue = '';
+  };
+
   $scope.setPerUserOption = function(settingId, sessionOption) {
     var option;
     if (settingId === undefined) {

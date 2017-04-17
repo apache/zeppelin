@@ -105,9 +105,9 @@
       },
       "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Whether display app info",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "option": {
@@ -138,15 +138,15 @@
       },
       "zeppelin.livy.spark.sql.field.truncate": {
         "propertyName": "zeppelin.livy.spark.sql.field.truncate",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "If true, truncate field values longer than 20 characters.",
-        "type": "text"
+        "type": "checkbox"
       },
       "zeppelin.livy.concurrentSQL": {
         "propertyName": "zeppelin.livy.concurrentSQL",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Execute multiple SQL concurrently if set true.",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "option": {

@@ -62,9 +62,9 @@
       "zeppelin.jdbc.concurrent.use": {
         "envName": null,
         "propertyName": "zeppelin.jdbc.concurrent.use",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Use parallel scheduler",
-        "type": "text"
+        "type": "checkbox"
       },
       "zeppelin.jdbc.concurrent.max_connection": {
         "envName": null,

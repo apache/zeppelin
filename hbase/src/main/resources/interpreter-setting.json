@@ -19,9 +19,9 @@
       },
       "zeppelin.hbase.test.mode": {
         "propertyName": "zeppelin.hbase.test.mode",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Disable checks for unit and manual tests",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "editor": {

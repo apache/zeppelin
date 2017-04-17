@@ -14,9 +14,9 @@
       "ignite.clientMode": {
         "envName": null,
         "propertyName": "ignite.clientMode",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Client mode. true or false",
-        "type": "text"
+        "type": "checkbox"
       },
       "ignite.config.url": {
         "envName": null,
@@ -28,9 +28,9 @@
       "ignite.peerClassLoadingEnabled": {
         "envName": null,
         "propertyName": "ignite.peerClassLoadingEnabled",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Peer class loading enabled. True or false",
-        "type": "text"
+        "type": "checkbox"
       }
     }
   },

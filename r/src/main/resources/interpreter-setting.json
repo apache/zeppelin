@@ -16,8 +16,8 @@
       },
       "rscala.debug": {
         "envName": "RSCALA_DEBUG",
-        "defaultValue": "false",
-        "type": "text"
+        "defaultValue": false,
+        "type": "checkbox"
       },
       "rscala.timeout": {
         "envName": "RSCALA_TIMEOUT",
@@ -43,8 +43,8 @@
       },
       "rscala.debug": {
         "envName": "RSCALA_DEBUG",
-        "defaultValue": "false",
-        "type": "text"
+        "defaultValue": false,
+        "type": "checkbox"
       },
       "rscala.timeout": {
         "envName": "RSCALA_TIMEOUT",

@@ -49,9 +49,9 @@
       "kylin.query.ispartial": {
         "envName": null,
         "propertyName": "kylin.query.ispartial",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Kylin query partial flag, deprecated",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "editor": {

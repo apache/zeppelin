@@ -23,11 +23,11 @@ package org.apache.zeppelin.interpreter;
 public class DefaultInterpreterProperty {
   String envName;
   String propertyName;
-  String defaultValue;
+  Object defaultValue;
   String description;
   InterpreterPropertyType type;
 
-  public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue,
+  public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
                                 String description, InterpreterPropertyType type) {
     this.envName = envName;
     this.propertyName = propertyName;
@@ -36,7 +36,7 @@ public class DefaultInterpreterProperty {
     this.type = type;
   }
 
-  public DefaultInterpreterProperty(String defaultValue, String description,
+  public DefaultInterpreterProperty(Object defaultValue, String description,
       InterpreterPropertyType type) {
     this(null, null, defaultValue, description, type);
   }
@@ -57,11 +57,11 @@ public class DefaultInterpreterProperty {
     this.propertyName = propertyName;
   }
 
-  public String getDefaultValue() {
+  public Object getDefaultValue() {
     return defaultValue;
   }
 
-  public void setDefaultValue(String defaultValue) {
+  public void setDefaultValue(Object defaultValue) {
     this.defaultValue = defaultValue;
   }
 
@@ -90,7 +90,7 @@ public class DefaultInterpreterProperty {
     return this.toString().equals(o.toString());
   }
 
-  public String getValue() {
+  public Object getValue() {
     if (envName != null && !envName.isEmpty()) {
       String envValue = System.getenv().get(envName);
       if (envValue != null) {

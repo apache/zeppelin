@@ -14,9 +14,9 @@
       "zeppelin.pig.includeJobStats": {
         "envName": null,
         "propertyName": "zeppelin.pig.includeJobStats",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "flag to include job stats in output",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "editor": {

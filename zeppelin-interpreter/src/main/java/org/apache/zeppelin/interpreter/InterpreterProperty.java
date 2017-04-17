@@ -22,10 +22,10 @@ package org.apache.zeppelin.interpreter;
  */
 public class InterpreterProperty {
   private String name;
-  private String value;
+  private Object value;
   private InterpreterPropertyType type;
 
-  public InterpreterProperty(String name, String value, InterpreterPropertyType type) {
+  public InterpreterProperty(String name, Object value, InterpreterPropertyType type) {
     this.name = name;
     this.value = value;
     this.type = type;
@@ -39,11 +39,11 @@ public class InterpreterProperty {
     this.name = name;
   }
 
-  public String getValue() {
+  public Object getValue() {
     return value;
   }
 
-  public void setValue(String value) {
+  public void setValue(Object value) {
     this.value = value;
   }
 

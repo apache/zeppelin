@@ -209,7 +209,7 @@ public abstract class AbstractTestRestApi {
         sparkProperties.put("spark.cores.max",
             new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.text));
         sparkProperties.put("zeppelin.spark.useHiveContext",
-            new InterpreterProperty("zeppelin.spark.useHiveContext", "false", InterpreterPropertyType.text));
+            new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.checkbox));
         // set spark home for pyspark
         sparkProperties.put("spark.home",
             new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.text));
@@ -234,7 +234,7 @@ public abstract class AbstractTestRestApi {
           sparkProperties.put("spark.home",
               new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.text));
           sparkProperties.put("zeppelin.spark.useHiveContext",
-              new InterpreterProperty("zeppelin.spark.useHiveContext", "false", InterpreterPropertyType.text));
+              new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.checkbox));
           pySpark = true;
           sparkR = true;
         }

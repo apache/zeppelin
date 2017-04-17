@@ -526,14 +526,15 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForPySpark(SparkConf conf) {
-    String pysparkBasePath =
+    Object pysparkBaseProperty =
         new DefaultInterpreterProperty("SPARK_HOME", null, null, null, InterpreterPropertyType.text)
             .getValue();
+    String pysparkBasePath = pysparkBaseProperty != null ? pysparkBaseProperty.toString() : null;
     File pysparkPath;
     if (null == pysparkBasePath) {
       pysparkBasePath =
           new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null,
-              InterpreterPropertyType.text).getValue();
+              InterpreterPropertyType.text).getValue().toString();
       pysparkPath = new File(pysparkBasePath,
           "interpreter" + File.separator + "spark" + File.separator + "pyspark");
     } else {
@@ -578,14 +579,15 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private void setupConfForSparkR(SparkConf conf) {
-    String sparkRBasePath =
+    Object sparkRBaseProperty =
         new DefaultInterpreterProperty("SPARK_HOME", null, null, null,
             InterpreterPropertyType.text).getValue();
+    String sparkRBasePath = sparkRBaseProperty != null ? sparkRBaseProperty.toString() : null;
     File sparkRPath;
     if (null == sparkRBasePath) {
       sparkRBasePath =
               new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../", null,
-                  InterpreterPropertyType.text).getValue();
+                  InterpreterPropertyType.text).getValue().toString();
       sparkRPath = new File(sparkRBasePath,
               "interpreter" + File.separator + "spark" + File.separator + "R");
     } else {

@@ -156,9 +156,9 @@ public abstract class Interpreter {
           registeredInterpreter.getProperties();
       for (String k : defaultProperties.keySet()) {
         if (!p.containsKey(k)) {
-          String value = defaultProperties.get(k).getValue();
+          Object value = defaultProperties.get(k).getValue();
           if (value != null) {
-            p.put(k, defaultProperties.get(k).getValue());
+            p.put(k, defaultProperties.get(k).getValue().toString());
           }
         }
       }

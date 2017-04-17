@@ -22,9 +22,9 @@
       "zeppelin.spark.useHiveContext": {
         "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
         "propertyName": "zeppelin.spark.useHiveContext",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Use HiveContext instead of SQLContext if it is true.",
-        "type": "text"
+        "type": "checkbox"
       },
       "spark.app.name": {
         "envName": "SPARK_APP_NAME",
@@ -35,10 +35,10 @@
       },
       "zeppelin.spark.printREPLOutput": {
         "envName": null,
-        "propertyName": null,
-        "defaultValue": "true",
+        "propertyName": "zeppelin.spark.printREPLOutput",
+        "defaultValue": true,
         "description": "Print REPL output",
-        "type": "text"
+        "type": "checkbox"
       },
       "spark.cores.max": {
         "envName": null,
@@ -64,9 +64,9 @@
       "zeppelin.spark.unSupportedVersionCheck": {
         "envName": null,
         "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Do not change - developer only setting, not for production use",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "editor": {
@@ -82,16 +82,16 @@
       "zeppelin.spark.concurrentSQL": {
         "envName": "ZEPPELIN_SPARK_CONCURRENTSQL",
         "propertyName": "zeppelin.spark.concurrentSQL",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Execute multiple SQL concurrently if set true.",
-        "type": "text"
+        "type": "checkbox"
       },
       "zeppelin.spark.sql.stacktrace": {
         "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
         "propertyName": "zeppelin.spark.sql.stacktrace",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Show full exception stacktrace for SQL queries if set to true.",
-        "type": "text"
+        "type": "checkbox"
       },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
@@ -103,9 +103,9 @@
       "zeppelin.spark.importImplicit": {
         "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",
         "propertyName": "zeppelin.spark.importImplicit",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Import implicits, UDF collection, and sql if set true. true by default.",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "editor": {

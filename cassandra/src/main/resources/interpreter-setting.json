@@ -217,9 +217,9 @@
       "cassandra.socket.tcp.no_delay": {
         "envName": null,
         "propertyName": "cassandra.socket.tcp.no_delay",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Cassandra socket TCP no delay. Default = true",
-        "type": "text"
+        "type": "checkbox"
       }
     },
     "editor": {

@@ -280,7 +280,8 @@ public class InterpreterSetting {
       Map<String, InterpreterProperty> propertyMap = (Map<String, InterpreterProperty>) properties;
       for (String key : propertyMap.keySet()) {
         InterpreterProperty tmp = propertyMap.get(key);
-        p.put(tmp.getName() != null ? tmp.getName() : key, tmp.getValue());
+        p.put(tmp.getName() != null ? tmp.getName() : key,
+            tmp.getValue() != null ? tmp.getValue().toString() : null);
       }
     }
     return p;

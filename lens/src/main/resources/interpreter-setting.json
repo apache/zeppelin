@@ -7,9 +7,9 @@
       "zeppelin.lens.run.concurrent": {
         "envName": null,
         "propertyName": "zeppelin.lens.run.concurrent",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Run concurrent Lens Sessions",
-        "type": "text"
+        "type": "checkbox"
       },
       "zeppelin.lens.maxThreads": {
         "envName": null,
@@ -42,9 +42,9 @@
       "lens.query.enable.persistent.resultset": {
         "envName": null,
         "propertyName": "lens.query.enable.persistent.resultset",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Apache Lens to persist result in HDFS?",
-        "type": "text"
+        "type": "checkbox"
       },
       "lens.session.cluster.user": {
         "envName": null,
