@@ -271,19 +271,37 @@ else:
 
 java_import(gateway.jvm, "scala.Tuple2")
 
+_zcUserQueryNameSpace = {}
+
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
-sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-if sparkVersion.isSpark2():
-  spark = SparkSession(sc, intp.getSparkSession())
-  sqlc = spark._wrapped
-else:
-  sqlc = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
-sqlContext = sqlc
+sc = _zsc_ = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
+_zcUserQueryNameSpace["_zsc_"] = _zsc_
+_zcUserQueryNameSpace["sc"] = sc
 
-completion = PySparkCompletion(intp)
-z = PyZeppelinContext(intp.getZeppelinContext())
-z._setup_matplotlib()
+if sparkVersion.isSpark2():
+  spark = __zSpark__ = SparkSession(sc, intp.getSparkSession())
+  sqlc = __zSqlc__ = __zSpark__._wrapped
+  _zcUserQueryNameSpace["sqlc"] = sqlc
+  _zcUserQueryNameSpace["__zSqlc__"] = __zSqlc__
+  _zcUserQueryNameSpace["spark"] = spark
+  _zcUserQueryNameSpace["__zSpark__"] = __zSpark__
+else:
+  sqlc = __zSqlc__ = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
+  _zcUserQueryNameSpace["sqlc"] = sqlc
+  _zcUserQueryNameSpace["__zSqlc__"] = sqlc
+
+sqlContext = __zSqlc__
+_zcUserQueryNameSpace["sqlContext"] = sqlContext
+
+completion = __zeppelin_completion__ = PySparkCompletion(intp)
+_zcUserQueryNameSpace["completion"] = completion
+_zcUserQueryNameSpace["__zeppelin_completion__"] = __zeppelin_completion__
+
+z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
+__zeppelin__._setup_matplotlib()
+_zcUserQueryNameSpace["z"] = z
+_zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
 
 while True :
   req = intp.getStatements()
@@ -299,7 +317,7 @@ while True :
       global_hook = None
       
     try:
-      user_hook = z.getHook('post_exec')
+      user_hook = __zeppelin__.getHook('post_exec')
     except:
       user_hook = None
       
@@ -334,17 +352,17 @@ while True :
         for node in to_run_exec:
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
 
         for node in to_run_single:
           mod = ast.Interactive([node])
           code = compile(mod, '<stdin>', 'single')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
           
         for node in to_run_hooks:
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
       except:
         raise Exception(traceback.format_exc())
 

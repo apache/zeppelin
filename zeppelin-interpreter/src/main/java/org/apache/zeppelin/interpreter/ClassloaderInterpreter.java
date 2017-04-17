@@ -152,11 +152,12 @@ public class ClassloaderInterpreter
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      List completion = intp.completion(buf, cursor);
+      List completion = intp.completion(buf, cursor, interpreterContext);
       return completion;
     } catch (Exception e) {
       throw new InterpreterException(e);

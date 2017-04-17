@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Writing a new Application(Experimental)"
+title: "Writing a new Application"
 description: "Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. Make your own Application in Apache Zeppelin is quite easy."
 group: development
 ---
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Writing a new Application (Experimental)
+# Writing a new Application
 
 <div id="toc"></div>
 

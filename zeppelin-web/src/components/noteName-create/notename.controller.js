@@ -44,14 +44,14 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
     vm.createNote();
   };
 
-  vm.preVisible = function(clone, sourceNoteName) {
+  vm.preVisible = function(clone, sourceNoteName, path) {
     vm.clone = clone;
     vm.sourceNoteName = sourceNoteName;
-    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName();
+    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName(path);
     $scope.$apply();
   };
 
-  vm.newNoteName = function() {
+  vm.newNoteName = function(path) {
     var newCount = 1;
     angular.forEach(vm.notes.flatList, function(noteName) {
       noteName = noteName.name;
@@ -62,7 +62,7 @@ function NotenameCtrl($scope, noteListDataFactory, $routeParams, websocketMsgSrv
         }
       }
     });
-    return 'Untitled Note ' + newCount;
+    return (path ? path + '/' : '') +'Untitled Note ' + newCount;
   };
 
   vm.cloneNoteName = function() {

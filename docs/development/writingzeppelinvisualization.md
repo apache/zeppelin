@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Writing a new Visualization(Experimental)"
+title: "Writing a new Visualization"
 description: "Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded on runtime through Helium framework in Zeppelin. A Visualization is a javascript npm package and user can use them just like any other built-in visualization in a note."
 group: development
 ---
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Writing a new Visualization (Experimental)
+# Writing a new Visualization
 
 <div id="toc"></div>
 
