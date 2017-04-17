@@ -393,6 +393,17 @@
               <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*</excludes>
             </configuration>
           </execution>
+          <execution>
+            <id>checkstyle-gen-html-report</id>
+            <phase>install</phase>
+            <goals>
+              <goal>checkstyle-aggregate</goal>
+            </goals>
+            <configuration>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
