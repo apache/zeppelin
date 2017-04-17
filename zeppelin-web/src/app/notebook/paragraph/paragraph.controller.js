@@ -649,19 +649,21 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      var remoteCompleter = {
+      let remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
-          var langTools = ace.require('ace/ext/language_tools');
-          var defaultKeywords = new Set();
-          var getDefaultKeywords = function(err, completions) {
-              if (completions !== undefined) {
-                  completions.forEach(function(c) {
-                      defaultKeywords.add(c.value);
-                  });
-              }
+          let langTools = ace.require('ace/ext/language_tools')
+          let defaultKeywords = new Set()
+
+          // eslint-disable-next-line handle-callback-err
+          let getDefaultKeywords = function(err, completions) {
+            if (completions !== undefined) {
+              completions.forEach(function(c) {
+                defaultKeywords.add(c.value)
+              })
+            }
           }
           if (langTools.keyWordCompleter !== undefined) {
-              langTools.keyWordCompleter.getCompletions(editor, session, pos, prefix, getDefaultKeywords);
+            langTools.keyWordCompleter.getCompletions(editor, session, pos, prefix, getDefaultKeywords)
           }
 
           if (!editor.isFocused()) {
@@ -674,23 +676,23 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           websocketMsgSrv.completion($scope.paragraph.id, buf, pos)
 
           $scope.$on('completionList', function(event, data) {
-            var computeCaption = function(value, meta) {
-              var metaLength = meta !== undefined ? meta.length : 0;
-              var length = 42;
-              var whitespaceLength = 3;
-              var ellipses = '...';
-              var maxLengthCaption = length - metaLength - whitespaceLength - ellipses.length;
+            let computeCaption = function(value, meta) {
+              let metaLength = meta !== undefined ? meta.length : 0
+              let length = 42
+              let whitespaceLength = 3
+              let ellipses = '...'
+              let maxLengthCaption = length - metaLength - whitespaceLength - ellipses.length
               if (value !== undefined && value.length > maxLengthCaption) {
-                  return value.substr(0, maxLengthCaption) + ellipses;
+                return value.substr(0, maxLengthCaption) + ellipses
               }
-              return value;
+              return value
             }
             if (data.completions) {
-              var completions = [];
-              for (var c in data.completions) {
-                var v = data.completions[c];
+              let completions = []
+              for (let c in data.completions) {
+                let v = data.completions[c]
                 if (v.meta !== undefined && v.meta === 'keyword' && defaultKeywords.has(v.value.trim())) {
-                    continue;
+                  continue
                 }
                 completions.push({
                   name: v.name,
@@ -749,27 +751,27 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
        */
 
       // remove binding
-      $scope.editor.commands.removeCommand('showSettingsMenu');
+      $scope.editor.commands.removeCommand('showSettingsMenu')
 
-      var isOption = $rootScope.isMac? 'option' : 'alt';
+      let isOption = $rootScope.isMac ? 'option' : 'alt'
 
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-n.', null);
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-l', null);
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-w', null);
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-a', null);
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-k', null);
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-e', null);
-      $scope.editor.commands.bindKey('ctrl-' + isOption + '-t', null);
-      $scope.editor.commands.bindKey('ctrl-space', null);
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-n.', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-l', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-w', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-a', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-k', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-e', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-t', null)
+      $scope.editor.commands.bindKey('ctrl-space', null)
 
       if ($rootScope.isMac) {
-        $scope.editor.commands.bindKey('command-l', null);
+        $scope.editor.commands.bindKey('command-l', null)
       } else {
-        $scope.editor.commands.bindKey('ctrl-l', null);
+        $scope.editor.commands.bindKey('ctrl-l', null)
       }
 
       // autocomplete on 'ctrl+.'
-      $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
+      $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete')
 
       let keyBindingEditorFocusAction = function (scrollValue) {
         let numRows = $scope.editor.getSession().getLength()
@@ -881,9 +883,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     setInterpreterBindings = false
   }
 
-  var getInterpreterName = function(paragraphText) {
-    var intpNameRegexp = /^\s*%(.+?)(\s|\()/g;
-    var match = intpNameRegexp.exec(paragraphText);
+  const getInterpreterName = function(paragraphText) {
+    let intpNameRegexp = /^\s*%(.+?)(\s|\()/g
+    let match = intpNameRegexp.exec(paragraphText)
     if (match) {
       return match[1].trim()
       // get default interpreter name if paragraph text doesn't start with '%'
