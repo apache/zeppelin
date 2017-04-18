@@ -26,7 +26,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showRepositoryInfo = false;
   $scope.searchInterpreter = '';
   $scope._ = _;
-  $scope.interpreterPropertyTypes = [];
+  $scope.interpreterPropertyWidgets = [];
   ngToast.dismiss();
 
   $scope.openPermissions = function() {
@@ -141,17 +141,17 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     });
   };
 
-  var getAvailableInterpreterPropertyTypes = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
+  var getAvailableInterpreterPropertyWidgets = function () {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/widgets')
       .success(function (data, status, headers, config) {
-        $scope.interpreterPropertyTypes = data.body;
+        $scope.interpreterPropertyWidgets = data.body;
       }).error(function (data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
     });
   };
 
   var emptyNewProperty = function(object) {
-    angular.extend(object, {propertyValue: '', propertyKey: '', propertyType: $scope.interpreterPropertyTypes[0]});
+    angular.extend(object, {propertyValue: '', propertyKey: '', propertyWidget: $scope.interpreterPropertyWidgets[0]});
   };
 
   var emptyNewDependency = function(object) {
@@ -192,8 +192,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  $scope.defaultValueByType = function(setting) {
-    if (setting.propertyType === 'checkbox') {
+  $scope.defaultValueByWidget = function(setting) {
+    if (setting.propertyWidget === 'checkbox') {
       setting.propertyValue = false;
       return;
     }
@@ -428,7 +428,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         properties[key] = {
           value: intpInfo[key].defaultValue,
           description: intpInfo[key].description,
-          type: intpInfo[key].type
+          widget: intpInfo[key].widget
         };
       }
     }
@@ -505,7 +505,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     var newProperties = {};
 
     for (var p in newSetting.properties) {
-      newProperties[p] = {value: newSetting.properties[p].value, type: newSetting.properties[p].type, name: p};
+      newProperties[p] = {value: newSetting.properties[p].value, widget: newSetting.properties[p].widget, name: p};
     }
 
     request.properties = newProperties;
@@ -578,7 +578,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
         value: $scope.newInterpreterSetting.propertyValue,
-        type: $scope.newInterpreterSetting.propertyType
+        widget: $scope.newInterpreterSetting.propertyWidget
       };
       emptyNewProperty($scope.newInterpreterSetting);
     } else {
@@ -590,7 +590,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         return;
       }
 
-      setting.properties[setting.propertyKey] = {value: setting.propertyValue, type: setting.propertyType};
+      setting.properties[setting.propertyKey] = {value: setting.propertyValue, widget: setting.propertyWidget};
 
       emptyNewProperty(setting);
     }
@@ -719,7 +719,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   };
 
   var init = function() {
-    getAvailableInterpreterPropertyTypes();
+    getAvailableInterpreterPropertyWidgets();
 
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();

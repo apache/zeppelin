@@ -18,10 +18,13 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Types of interpreter properties
+ * Widgets of interpreter properties
  */
-public enum InterpreterPropertyType {
+public enum InterpreterPropertyWidget {
   text,
+  string,
+  number,
+  url,
   password,
   checkbox
 }

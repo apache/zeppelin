@@ -7,22 +7,22 @@
       "rhadoop.cmd": {
         "envName": "HADOOP_CMD",
         "defaultValue": "",
-        "type": "text"
+        "widget": "text"
       },
       "rhadooop.streamingjar": {
         "envName": "HADOOP_STREAMING",
         "defaultValue": "",
-        "type": "text"
+        "widget": "text"
       },
       "rscala.debug": {
         "envName": "RSCALA_DEBUG",
         "defaultValue": false,
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "rscala.timeout": {
         "envName": "RSCALA_TIMEOUT",
         "defaultValue": "60",
-        "type": "text"
+        "widget": "number"
       }
     }
   },
@@ -34,22 +34,22 @@
       "rhadoop.cmd": {
         "envName": "HADOOP_CMD",
         "defaultValue": "",
-        "type": "text"
+        "widget": "text"
       },
       "rhadooop.streamingjar": {
         "envName": "HADOOP_STREAMING",
         "defaultValue": "",
-        "type": "text"
+        "widget": "text"
       },
       "rscala.debug": {
         "envName": "RSCALA_DEBUG",
         "defaultValue": false,
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "rscala.timeout": {
         "envName": "RSCALA_TIMEOUT",
         "defaultValue": "60",
-        "type": "text"
+        "widget": "number"
       }
     }
   }

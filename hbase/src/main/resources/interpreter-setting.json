@@ -9,19 +9,19 @@
         "propertyName": "hbase.home",
         "defaultValue": "/usr/lib/hbase/",
         "description": "Installation directory of HBase",
-        "type": "text"
+        "widget": "string"
       },
       "hbase.ruby.sources": {
         "propertyName": "hbase.ruby.sources",
         "defaultValue": "lib/ruby",
         "description": "Path to Ruby scripts relative to 'hbase.home'",
-        "type": "text"
+        "widget": "string"
       },
       "zeppelin.hbase.test.mode": {
         "propertyName": "zeppelin.hbase.test.mode",
         "defaultValue": false,
         "description": "Disable checks for unit and manual tests",
-        "type": "checkbox"
+        "widget": "checkbox"
       }
     },
     "editor": {

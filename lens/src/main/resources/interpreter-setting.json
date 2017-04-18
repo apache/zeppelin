@@ -9,49 +9,49 @@
         "propertyName": "zeppelin.lens.run.concurrent",
         "defaultValue": true,
         "description": "Run concurrent Lens Sessions",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "zeppelin.lens.maxThreads": {
         "envName": null,
         "propertyName": "zeppelin.lens.maxThreads",
         "defaultValue": "10",
         "description": "If concurrency is true then how many threads?",
-        "type": "text"
+        "widget": "number"
       },
       "zeppelin.lens.maxResults": {
         "envName": null,
         "propertyName": "zeppelin.lens.maxResults",
         "defaultValue": "1000",
         "description": "max number of rows to display",
-        "type": "text"
+        "widget": "number"
       },
       "lens.server.base.url": {
         "envName": null,
         "propertyName": "lens.server.base.url",
         "defaultValue": "http://<hostname>:<port>/lensapi",
         "description": "The URL for Lens Server",
-        "type": "text"
+        "widget": "url"
       },
       "lens.client.dbname": {
         "envName": null,
         "propertyName": "lens.client.dbname",
         "defaultValue": "default",
         "description": "The database schema name",
-        "type": "text"
+        "widget": "string"
       },
       "lens.query.enable.persistent.resultset": {
         "envName": null,
         "propertyName": "lens.query.enable.persistent.resultset",
         "defaultValue": false,
         "description": "Apache Lens to persist result in HDFS?",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "lens.session.cluster.user": {
         "envName": null,
         "propertyName": "lens.session.cluster.user",
         "defaultValue": "default",
         "description": "Hadoop cluster username",
-        "type": "text"
+        "widget": "string"
       }
     }
   }

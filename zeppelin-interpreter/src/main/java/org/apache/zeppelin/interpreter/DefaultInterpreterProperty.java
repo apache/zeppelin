@@ -25,20 +25,20 @@ public class DefaultInterpreterProperty {
   String propertyName;
   Object defaultValue;
   String description;
-  InterpreterPropertyType type;
+  InterpreterPropertyWidget widget;
 
   public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
-                                String description, InterpreterPropertyType type) {
+                                String description, InterpreterPropertyWidget widget) {
     this.envName = envName;
     this.propertyName = propertyName;
     this.defaultValue = defaultValue;
     this.description = description;
-    this.type = type;
+    this.widget = widget;
   }
 
   public DefaultInterpreterProperty(Object defaultValue, String description,
-      InterpreterPropertyType type) {
-    this(null, null, defaultValue, description, type);
+      InterpreterPropertyWidget widget) {
+    this(null, null, defaultValue, description, widget);
   }
 
   public String getEnvName() {
@@ -73,12 +73,12 @@ public class DefaultInterpreterProperty {
     this.description = description;
   }
 
-  public InterpreterPropertyType getType() {
-    return type;
+  public InterpreterPropertyWidget getWidget() {
+    return widget;
   }
 
-  public void setType(InterpreterPropertyType type) {
-    this.type = type;
+  public void setWidget(InterpreterPropertyWidget widget) {
+    this.widget = widget;
   }
 
   public int hashCode() {
@@ -110,6 +110,6 @@ public class DefaultInterpreterProperty {
   @Override
   public String toString() {
     return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " +
-            "type=%s}", envName, propertyName, defaultValue, description, type);
+            "type=%s}", envName, propertyName, defaultValue, description, widget);
   }
 }

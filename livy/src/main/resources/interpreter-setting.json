@@ -10,104 +10,104 @@
         "propertyName": "zeppelin.livy.url",
         "defaultValue": "http://localhost:8998",
         "description": "The URL for Livy Server.",
-        "type": "text"
+        "widget": "url"
       },
       "zeppelin.livy.session.create_timeout": {
         "envName": "ZEPPELIN_LIVY_SESSION_CREATE_TIMEOUT",
         "propertyName": "zeppelin.livy.session.create_timeout",
         "defaultValue": "120",
         "description": "Livy Server create session timeout (seconds).",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.driver.cores": {
         "propertyName": "livy.spark.driver.cores",
         "defaultValue": "",
         "description": "Driver cores. ex) 1, 2",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.driver.memory": {
         "propertyName": "livy.spark.driver.memory",
         "defaultValue": "",
         "description": "Driver memory. ex) 512m, 32g",
-        "type": "text"
+        "widget": "string"
       },
       "livy.spark.executor.instances": {
         "propertyName": "livy.spark.executor.instances",
         "defaultValue": "",
         "description": "Executor instances. ex) 1, 4",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.executor.cores": {
         "propertyName": "livy.spark.executor.cores",
         "defaultValue": "",
         "description": "Num cores per executor. ex) 1, 4",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.executor.memory": {
         "propertyName": "livy.spark.executor.memory",
         "defaultValue": "",
         "description": "Executor memory per worker instance. ex) 512m, 32g",
-        "type": "text"
+        "widget": "string"
       },
       "livy.spark.dynamicAllocation.enabled": {
         "propertyName": "livy.spark.dynamicAllocation.enabled",
-        "defaultValue": "",
+        "defaultValue": false,
         "description": "Use dynamic resource allocation",
-        "type": "text"
+        "widget": "checkbox"
       },
       "livy.spark.dynamicAllocation.cachedExecutorIdleTimeout": {
         "propertyName": "livy.spark.dynamicAllocation.cachedExecutorIdleTimeout",
         "defaultValue": "",
         "description": "Remove an executor which has cached data blocks",
-        "type": "text"
+        "widget": "string"
       },
       "livy.spark.dynamicAllocation.minExecutors": {
         "propertyName": "livy.spark.dynamicAllocation.minExecutors",
         "defaultValue": "",
         "description": "Lower bound for the number of executors if dynamic allocation is enabled.",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.dynamicAllocation.initialExecutors": {
         "propertyName": "livy.spark.dynamicAllocation.initialExecutors",
         "defaultValue": "",
         "description": "Initial number of executors to run if dynamic allocation is enabled.",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.dynamicAllocation.maxExecutors": {
         "propertyName": "livy.spark.dynamicAllocation.maxExecutors",
         "defaultValue": "",
         "description": "Upper bound for the number of executors if dynamic allocation is enabled.",
-        "type": "text"
+        "widget": "number"
       },
       "zeppelin.livy.principal": {
         "propertyName": "zeppelin.livy.principal",
         "defaultValue": "",
         "description": "Kerberos principal to authenticate livy",
-        "type": "text"
+        "widget": "string"
       },
       "zeppelin.livy.keytab": {
         "propertyName": "zeppelin.livy.keytab",
         "defaultValue": "",
         "description": "Kerberos keytab to authenticate livy",
-        "type": "text"
+        "widget": "text"
       },
       "zeppelin.livy.pull_status.interval.millis": {
         "propertyName": "zeppelin.livy.pull_status.interval.millis",
         "defaultValue": "1000",
         "description": "The interval for checking paragraph execution status",
-        "type": "text"
+        "widget": "number"
       },
       "livy.spark.jars.packages": {
         "propertyName": "livy.spark.jars.packages",
         "defaultValue": "",
         "description": "Adding extra libraries to livy interpreter",
-        "type": "text"
+        "widget": "text"
       },
       "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
         "defaultValue": false,
         "description": "Whether display app info",
-        "type": "checkbox"
+        "widget": "checkbox"
       }
     },
     "option": {
@@ -134,19 +134,19 @@
         "propertyName": "zeppelin.livy.spark.sql.maxResult",
         "defaultValue": "1000",
         "description": "Max number of Spark SQL result to display.",
-        "type": "text"
+        "widget": "number"
       },
       "zeppelin.livy.spark.sql.field.truncate": {
         "propertyName": "zeppelin.livy.spark.sql.field.truncate",
         "defaultValue": true,
         "description": "If true, truncate field values longer than 20 characters.",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "zeppelin.livy.concurrentSQL": {
         "propertyName": "zeppelin.livy.concurrentSQL",
         "defaultValue": false,
         "description": "Execute multiple SQL concurrently if set true.",
-        "type": "checkbox"
+        "widget": "checkbox"
       }
     },
     "option": {

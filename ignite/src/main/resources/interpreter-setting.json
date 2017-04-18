@@ -9,28 +9,28 @@
         "propertyName": "ignite.addresses",
         "defaultValue": "127.0.0.1:47500..47509",
         "description": "Comma separated list of addresses (e.g. 127.0.0.1:47500 or 127.0.0.1:47500..47509)",
-        "type": "text"
+        "widget": "text"
       },
       "ignite.clientMode": {
         "envName": null,
         "propertyName": "ignite.clientMode",
         "defaultValue": true,
         "description": "Client mode. true or false",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "ignite.config.url": {
         "envName": null,
         "propertyName": "ignite.config.url",
         "defaultValue": "",
         "description": "Configuration URL. Overrides all other settings.",
-        "type": "text"
+        "widget": "url"
       },
       "ignite.peerClassLoadingEnabled": {
         "envName": null,
         "propertyName": "ignite.peerClassLoadingEnabled",
         "defaultValue": true,
         "description": "Peer class loading enabled. True or false",
-        "type": "checkbox"
+        "widget": "checkbox"
       }
     }
   },
@@ -44,7 +44,7 @@
         "propertyName": "ignite.jdbc.url",
         "defaultValue": "jdbc:ignite:cfg://default-ignite-jdbc.xml",
         "description": "Ignite JDBC connection URL.",
-        "type": "text"
+        "widget": "string"
         }
     }   
   }

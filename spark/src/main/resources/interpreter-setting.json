@@ -10,63 +10,63 @@
         "propertyName": "spark.executor.memory",
         "defaultValue": "",
         "description": "Executor memory per worker instance. ex) 512m, 32g",
-        "type": "text"
+        "widget": "string"
       },
       "args": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "",
         "description": "spark commandline args",
-        "type": "text"
+        "widget": "text"
       },
       "zeppelin.spark.useHiveContext": {
         "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
         "propertyName": "zeppelin.spark.useHiveContext",
         "defaultValue": true,
         "description": "Use HiveContext instead of SQLContext if it is true.",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "spark.app.name": {
         "envName": "SPARK_APP_NAME",
         "propertyName": "spark.app.name",
         "defaultValue": "Zeppelin",
         "description": "The name of spark application.",
-        "type": "text"
+        "widget": "string"
       },
       "zeppelin.spark.printREPLOutput": {
         "envName": null,
         "propertyName": "zeppelin.spark.printREPLOutput",
         "defaultValue": true,
         "description": "Print REPL output",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "spark.cores.max": {
         "envName": null,
         "propertyName": "spark.cores.max",
         "defaultValue": "",
         "description": "Total number of cores to use. Empty value uses all available core.",
-        "type": "text"
+        "widget": "number"
       },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
         "description": "Max number of Spark SQL result to display.",
-        "type": "text"
+        "widget": "number"
       },
       "master": {
         "envName": "MASTER",
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
         "description": "Spark master uri. ex) spark://masterhost:7077",
-        "type": "text"
+        "widget": "string"
       },
       "zeppelin.spark.unSupportedVersionCheck": {
         "envName": null,
         "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
         "defaultValue": true,
         "description": "Do not change - developer only setting, not for production use",
-        "type": "checkbox"
+        "widget": "checkbox"
       }
     },
     "editor": {
@@ -84,28 +84,28 @@
         "propertyName": "zeppelin.spark.concurrentSQL",
         "defaultValue": false,
         "description": "Execute multiple SQL concurrently if set true.",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "zeppelin.spark.sql.stacktrace": {
         "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
         "propertyName": "zeppelin.spark.sql.stacktrace",
         "defaultValue": false,
         "description": "Show full exception stacktrace for SQL queries if set to true.",
-        "type": "checkbox"
+        "widget": "checkbox"
       },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
         "description": "Max number of Spark SQL result to display.",
-        "type": "text"
+        "widget": "number"
       },
       "zeppelin.spark.importImplicit": {
         "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",
         "propertyName": "zeppelin.spark.importImplicit",
         "defaultValue": true,
         "description": "Import implicits, UDF collection, and sql if set true. true by default.",
-        "type": "checkbox"
+        "widget": "checkbox"
       }
     },
     "editor": {
@@ -123,14 +123,14 @@
         "propertyName": null,
         "defaultValue": "local-repo",
         "description": "local repository for dependency loader",
-        "type": "text"
+        "widget": "string"
       },
       "zeppelin.dep.additionalRemoteRepository": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
         "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.",
-        "type": "text"
+        "widget": "text"
       }
     },
     "editor": {
@@ -148,7 +148,7 @@
         "propertyName": null,
         "defaultValue": "python",
         "description": "Python command to run pyspark with",
-        "type": "text"
+        "widget": "string"
       }
     },
     "editor": {

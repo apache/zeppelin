@@ -28,7 +28,7 @@ public class InterpreterPropertyBuilder {
 
   public InterpreterPropertyBuilder add(String name, String defaultValue, String description){
     properties.put(name,
-        new DefaultInterpreterProperty(defaultValue, description, InterpreterPropertyType.text));
+        new DefaultInterpreterProperty(defaultValue, description, InterpreterPropertyWidget.text));
     return this;
   }
 
@@ -36,7 +36,7 @@ public class InterpreterPropertyBuilder {
         String defaultValue, String description){
     properties.put(name,
             new DefaultInterpreterProperty(envName, propertyName, defaultValue, description,
-                InterpreterPropertyType.text));
+                InterpreterPropertyWidget.text));
     return this;
   }
 
