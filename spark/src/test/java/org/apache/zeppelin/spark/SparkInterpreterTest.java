@@ -127,17 +127,6 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testNextLineComments() {
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
-  }
-
-  @Test
-  public void testNextLineCompanionObject() {
-    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret(code, context).code());
-  }
-
-  @Test
   public void testEndWithComment() {
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
   }

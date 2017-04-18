@@ -1172,34 +1172,13 @@ public class SparkInterpreter extends Interpreter {
     context.out.clear();
     Code r = null;
     String incomplete = "";
-    boolean inComment = false;
 
     for (int l = 0; l < linesToRun.length; l++) {
       String s = linesToRun[l];
       // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
       if (l + 1 < linesToRun.length) {
         String nextLine = linesToRun[l + 1].trim();
-        boolean continuation = false;
-        if (nextLine.isEmpty()
-           || nextLine.startsWith("//")         // skip empty line or comment
-           || nextLine.startsWith("}")
-           || nextLine.startsWith("object")) {  // include "} object" for Scala companion object
-          continuation = true;
-        } else if (!inComment && nextLine.startsWith("/*")) {
-          inComment = true;
-          continuation = true;
-        } else if (inComment && nextLine.lastIndexOf("*/") >= 0) {
-          inComment = false;
-          continuation = true;
-        } else if (nextLine.length() > 1
-                && nextLine.charAt(0) == '.'
-                && nextLine.charAt(1) != '.'     // ".."
-                && nextLine.charAt(1) != '/') {  // "./"
-          continuation = true;
-        } else if (inComment) {
-          continuation = true;
-        }
-        if (continuation) {
+        if (nextLine.startsWith(".") && !nextLine.startsWith("..") && !nextLine.startsWith("./")) {
           incomplete += s + "\n";
           continue;
         }
