@@ -48,6 +48,9 @@ class Logger(object):
   def flush(self):
     pass
 
+  def flush(self):
+    pass
+
 
 class PyZeppelinContext(dict):
   def __init__(self, zc):
