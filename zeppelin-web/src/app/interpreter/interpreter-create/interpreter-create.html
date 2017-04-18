@@ -272,26 +272,25 @@ limitations under the License.
             <tr>
               <th>name</th>
               <th>value</th>
-              <th style="width: 10%;">type</th>
-              <th>description</th>
               <th>action</th>
+              <th>description</th>
             </tr>
             <tr ng-repeat="key in newInterpreterSetting.properties | sortByKey">
               <td>{{key}}</td>
-              <td style="vertical-align: middle;" ng-switch on="newInterpreterSetting.properties[key].type">
+              <td style="vertical-align: middle;" ng-switch on="newInterpreterSetting.properties[key].widget">
                 <textarea ng-switch-default msd-elastic ng-model="newInterpreterSetting.properties[key].value"></textarea>
+                <input ng-switch-when="string" type="text" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+                <input ng-switch-when="number" type="text" widget-number msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+                <input ng-switch-when="url" type="text" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
                 <input ng-switch-when="password" type="password" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
-              </td>
-              <td style="vertical-align: middle;">
-                <select ng-model="newInterpreterSetting.properties[key].type" ng-options="item for item in interpreterPropertyTypes">
-                </select>
-              </td>
-              <td style="vertical-align: middle;">
-                {{newInterpreterSetting.properties[key].description}}
+                <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
               </td>
               <td style="vertical-align: middle;">
                 <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
                 </button>
+              </td>
+              <td style="vertical-align: middle;">
+                {{newInterpreterSetting.properties[key].description}}
               </td>
             </tr>
 
@@ -300,20 +299,22 @@ limitations under the License.
                 <input pu-elastic-input pu-elastic-input-minwidth="180px"
                        ng-model="newInterpreterSetting.propertyKey" />
               </td>
-              <td style="vertical-align: middle;" ng-switch on="newInterpreterSetting.propertyType">
+              <td style="vertical-align: middle;" ng-switch on="newInterpreterSetting.propertyWidget">
                 <textarea ng-switch-default msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea>
+                <input ng-switch-when="string" type="text" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="number" type="text" widget-number msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="url" type="text" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
                 <input ng-switch-when="password" type="password" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
               </td>
               <td style="vertical-align: middle;">
-                <select ng-model="newInterpreterSetting.propertyType" ng-init="newInterpreterSetting.propertyType=interpreterPropertyTypes[0]"
-                        ng-options="item for item in interpreterPropertyTypes">
+                <select msd-elastic ng-model="newInterpreterSetting.propertyWidget" ng-init="newInterpreterSetting.propertyWidget=interpreterPropertyWidgets[0]"
+                        ng-options="item for item in interpreterPropertyWidgets" ng-change="defaultValueByWidget(newInterpreterSetting)">
                 </select>
-              </td>
-              <td></td>
-              <td style="vertical-align: middle;">
                 <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
                 </button>
               </td>
+              <td></td>
             </tr>
           </table>
         </div>

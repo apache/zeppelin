@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -37,7 +36,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.zeppelin.interpreter.InterpreterPropertyType;
+import org.apache.zeppelin.interpreter.InterpreterPropertyWidget;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -296,11 +295,11 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get available types for property
+   * Get available widgets for property
    */
   @GET
-  @Path("property/types")
-  public Response listInterpreterPropertyTypes() {
-    return new JsonResponse<>(Status.OK, InterpreterPropertyType.values()).build();
+  @Path("property/widgets")
+  public Response listInterpreterPropertyWidgets() {
+    return new JsonResponse<>(Status.OK, InterpreterPropertyWidget.values()).build();
   }
 }

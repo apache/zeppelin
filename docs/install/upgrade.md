@@ -79,21 +79,21 @@ So, copying `notebook` and `conf` directory should be enough.
    new format:
    ```
      "interpreterSettings": {
-         "2CD8TH1XV": {
-           "id": "2CD8TH1XV",
-           "name": "spark",
-           "group": "spark",
-           "properties": {
-             "spark.executor.memory": {
-               "name": "spark.executor.memory",
-               "value": "",
-               "type": "text"
-              },
-             "zeppelin.spark.concurrentSQL": {
-               "name": "zeppelin.spark.concurrentSQL", 
-               "value": "false",
-               "type": "text"
-             ...
-           }
+       "2CD8TH1XV": {
+         "id": "2CD8TH1XV",
+         "name": "spark",
+         "group": "spark",
+         "properties": {
+           "spark.executor.memory": {
+             "name": "spark.executor.memory",
+             "value": "",
+             "widget": "text"
+            },
+           "zeppelin.spark.concurrentSQL": {
+             "name": "zeppelin.spark.concurrentSQL", 
+             "value": false,
+             "widget": "checkbox"
+           ...
+         }
    ```
  

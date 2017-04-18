@@ -9,48 +9,49 @@
         "propertyName": "elasticsearch.host",
         "defaultValue": "localhost",
         "description": "The host for Elasticsearch",
-        "type": "text"
+        "widget": "string"
       },
       "elasticsearch.port": {
         "envName": "ELASTICSEARCH_PORT",
         "propertyName": "elasticsearch.port",
         "defaultValue": "9300",
         "description": "The port for Elasticsearch",
-        "type": "text"
+        "widget": "number"
       },
       "elasticsearch.client.type": {
         "envName": "ELASTICSEARCH_CLIENT_TYPE",
         "propertyName": "elasticsearch.client.type",
         "defaultValue": "transport",
         "description": "The type of client for Elasticsearch (transport or http)",
-        "type": "text"
+        "widget": "string"
       },
       "elasticsearch.cluster.name": {
         "envName": "ELASTICSEARCH_CLUSTER_NAME",
         "propertyName": "elasticsearch.cluster.name",
         "defaultValue": "elasticsearch",
         "description": "The cluster name for Elasticsearch",
-        "type": "text"
+        "widget": "string"
       },
       "elasticsearch.result.size": {
         "envName": "ELASTICSEARCH_RESULT_SIZE",
         "propertyName": "elasticsearch.result.size",
         "defaultValue": "10",
         "description": "The size of the result set of a search query",
-        "type": "text"
+        "widget": "number"
       },
       "elasticsearch.basicauth.username": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_USERNAME",
         "propertyName": "elasticsearch.basicauth.username",
         "defaultValue": "",
-        "description": "Username for a basic authentication"
+        "description": "Username for a basic authentication",
+        "widget": "string"
       },
       "elasticsearch.basicauth.password": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_PASSWORD",
         "propertyName": "elasticsearch.basicauth.password",
         "defaultValue": "",
         "description": "Password for a basic authentication",
-        "type": "password"
+        "widget": "password"
       }
     },
     "editor": {

@@ -9,14 +9,14 @@
         "propertyName": null,
         "defaultValue": "local",
         "description": "host name of running JobManager. 'local' runs flink in local mode.",
-        "type": "text"
+        "widget": "string"
       },
       "port": {
         "envName": "port",
         "propertyName": null,
         "defaultValue": "6123",
         "description": "port of running JobManager.",
-        "type": "text"
+        "widget": "number"
       }
     },
     "editor": {

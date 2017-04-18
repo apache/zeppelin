@@ -23,22 +23,22 @@ package org.apache.zeppelin.interpreter;
 public class DefaultInterpreterProperty {
   String envName;
   String propertyName;
-  String defaultValue;
+  Object defaultValue;
   String description;
-  InterpreterPropertyType type;
+  InterpreterPropertyWidget widget;
 
-  public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue,
-                                String description, InterpreterPropertyType type) {
+  public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
+                                String description, InterpreterPropertyWidget widget) {
     this.envName = envName;
     this.propertyName = propertyName;
     this.defaultValue = defaultValue;
     this.description = description;
-    this.type = type;
+    this.widget = widget;
   }
 
-  public DefaultInterpreterProperty(String defaultValue, String description,
-      InterpreterPropertyType type) {
-    this(null, null, defaultValue, description, type);
+  public DefaultInterpreterProperty(Object defaultValue, String description,
+      InterpreterPropertyWidget widget) {
+    this(null, null, defaultValue, description, widget);
   }
 
   public String getEnvName() {
@@ -57,11 +57,11 @@ public class DefaultInterpreterProperty {
     this.propertyName = propertyName;
   }
 
-  public String getDefaultValue() {
+  public Object getDefaultValue() {
     return defaultValue;
   }
 
-  public void setDefaultValue(String defaultValue) {
+  public void setDefaultValue(Object defaultValue) {
     this.defaultValue = defaultValue;
   }
 
@@ -73,12 +73,12 @@ public class DefaultInterpreterProperty {
     this.description = description;
   }
 
-  public InterpreterPropertyType getType() {
-    return type;
+  public InterpreterPropertyWidget getWidget() {
+    return widget;
   }
 
-  public void setType(InterpreterPropertyType type) {
-    this.type = type;
+  public void setWidget(InterpreterPropertyWidget widget) {
+    this.widget = widget;
   }
 
   public int hashCode() {
@@ -90,7 +90,7 @@ public class DefaultInterpreterProperty {
     return this.toString().equals(o.toString());
   }
 
-  public String getValue() {
+  public Object getValue() {
     if (envName != null && !envName.isEmpty()) {
       String envValue = System.getenv().get(envName);
       if (envValue != null) {
@@ -110,6 +110,6 @@ public class DefaultInterpreterProperty {
   @Override
   public String toString() {
     return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " +
-            "type=%s}", envName, propertyName, defaultValue, description, type);
+            "type=%s}", envName, propertyName, defaultValue, description, widget);
   }
 }

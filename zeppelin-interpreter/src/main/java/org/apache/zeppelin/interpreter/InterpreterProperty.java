@@ -22,13 +22,13 @@ package org.apache.zeppelin.interpreter;
  */
 public class InterpreterProperty {
   private String name;
-  private String value;
-  private InterpreterPropertyType type;
+  private Object value;
+  private InterpreterPropertyWidget widget;
 
-  public InterpreterProperty(String name, String value, InterpreterPropertyType type) {
+  public InterpreterProperty(String name, Object value, InterpreterPropertyWidget widget) {
     this.name = name;
     this.value = value;
-    this.type = type;
+    this.widget = widget;
   }
 
   public String getName() {
@@ -39,19 +39,19 @@ public class InterpreterProperty {
     this.name = name;
   }
 
-  public String getValue() {
+  public Object getValue() {
     return value;
   }
 
-  public void setValue(String value) {
+  public void setValue(Object value) {
     this.value = value;
   }
 
-  public InterpreterPropertyType getType() {
-    return type;
+  public InterpreterPropertyWidget getWidget() {
+    return widget;
   }
 
-  public void setType(InterpreterPropertyType type) {
-    this.type = type;
+  public void setWidget(InterpreterPropertyWidget widget) {
+    this.widget = widget;
   }
 }
