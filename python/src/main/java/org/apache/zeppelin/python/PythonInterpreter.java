@@ -222,7 +222,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
     }
     // Add matplotlib display hook
     try {
@@ -435,7 +435,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 

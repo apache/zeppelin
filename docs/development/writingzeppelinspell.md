@@ -23,12 +23,12 @@ limitations under the License.
 
 <div id="toc"></div>
 
-## What is Apache Zeppelin Spell 
+## What is Apache Zeppelin Spell
 
-Spell is a kind of interpreter that runs on browser not on backend. So, technically it's the frontend interpreter. 
+Spell is a kind of interpreter that runs on browser not on backend. So, technically it's the frontend interpreter.
 It can provide many benefits.
 
-- Spell is pluggable frontend interpreter. So it can be installed and removed easily using helium registry. 
+- Spell is pluggable frontend interpreter. So it can be installed and removed easily using helium registry.
 - Every spell is written in javascript. It means you can use existing javascript libraries whatever you want.
 - Spell runs on browser like display system (`%html`, `%table`). In other words, every spell can be used as display system as well.
 
@@ -57,7 +57,7 @@ For example, Use `%echo` for the Echo Spell.
 <img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
 
 
-## Write a new Spell 
+## Write a new Spell
 
 Making a new spell is similar to [Helium Visualization#write-new-visualization](./writingzeppelinvisualization.html#write-new-visualization).
 
@@ -67,14 +67,14 @@ Making a new spell is similar to [Helium Visualization#write-new-visualization](
 
 ### 1. Create a npm package
 
-Create a [package.json](https://docs.npmjs.com/files/package.json) in new directory for spell. 
+Create a [package.json](https://docs.npmjs.com/files/package.json) in new directory for spell.
 
 - You have to add a framework called `zeppelin-spell` as a dependency to create spell ([zeppelin-spell](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/spell))
 - Also, you can add any dependencies you want to utilise.
 
 Here's an example
 
-```
+```json
 {
   "name": "zeppelin-echo-spell",
   "description": "Zeppelin Echo Spell (example)",
@@ -95,7 +95,7 @@ Here's an example
 }
 ```
 
-### 2. Write spell using framework 
+### 2. Write spell using framework
 
 Here are some examples you can refer
 
@@ -106,7 +106,7 @@ Here are some examples you can refer
 
 Now, you need to write code to create spell which processing text.
 
-```javascript
+```js
 import {
     SpellBase,
     SpellResult,
@@ -121,8 +121,8 @@ export default class EchoSpell extends SpellBase {
 
     interpret(paragraphText) {
         const processed = paragraphText + '!';
-        
-        /** 
+
+        /**
          * should return `SpellResult` which including `data` and `type`
          * default type is `TEXT` if you don't specify.  
          */
@@ -133,7 +133,7 @@ export default class EchoSpell extends SpellBase {
 
 Here is another example. Let's say we want to create markdown spell. First of all, we should add a dependency for markdown in package.json
 
-```
+```json
 // package.json
  "dependencies": {
     "markdown": "0.5.0",
@@ -143,7 +143,7 @@ Here is another example. Let's say we want to create markdown spell. First of al
 
 And here is spell code.
 
-```javascript
+```js
 import {
     SpellBase,
     SpellResult,
@@ -171,16 +171,16 @@ export default class MarkdownSpell extends SpellBase {
 }
 ```
 
-- You might want to manipulate DOM directly (e.g google d3.js), then refer [Flowchart Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-flowchart/index.js) 
+- You might want to manipulate DOM directly (e.g google d3.js), then refer [Flowchart Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-flowchart/index.js)
 - You might want to return promise not string (e.g API call), then refer [Google Translation API Spell](https://github.com/apache/zeppelin/blob/master/zeppelin-examples/zeppelin-example-spell-translator/index.js)
 
-### 3. Create __Helium package file__ for local deployment 
+### 3. Create __Helium package file__ for local deployment
 
 You don't want to publish your package every time you make a change in your spell. Zeppelin provides local deploy.
-The only thing you need to do is creating a __Helium Package file__ (JSON) for local deploy. 
+The only thing you need to do is creating a __Helium Package file__ (JSON) for local deploy.
 It's automatically created when you publish to npm repository but in local case, you should make it by yourself.
 
-```
+```json
 {
   "type" : "SPELL",
   "name" : "zeppelin-echo-spell",
@@ -197,18 +197,18 @@ It's automatically created when you publish to npm repository but in local case,
 
 - Place this file in your local registry directory (default `$ZEPPELIN_HOME/helium`).
 - `type` should be `SPELL`
-- Make sure that `artifact` should be same as your spell directory. 
+- Make sure that `artifact` should be same as your spell directory.
 - You can get information about other fields in [Helium Visualization#3-create-helium-package-file-and-locally-deploy](./writingzeppelinvisualization.html#3-create-helium-package-file-and-locally-deploy).
 
 ### 4. Run in dev mode
 
-```
+```bash
 cd zeppelin-web
-yarn run dev:helium 
+yarn run dev:helium
 ```
 
 You can browse localhost:9000. Every time refresh your browser, Zeppelin will rebuild your spell and reload changes.
 
-### 5. Publish your spell to the npm repository 
+### 5. Publish your spell to the npm repository
 
 See [Publishing npm packages](https://docs.npmjs.com/getting-started/publishing-npm-packages)
