@@ -84,7 +84,8 @@ struct ZeppelinServerResourceParagraphRunner {
  */
 struct InterpreterCompletion {
   1: string name,
-  2: string value
+  2: string value,
+  3: string meta
 }
 
 service RemoteInterpreterService {
@@ -96,7 +97,7 @@ service RemoteInterpreterService {
   void cancel(1: string sessionKey, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   i32 getProgress(1: string sessionKey, 2: string className, 3: RemoteInterpreterContext interpreterContext);
   string getFormType(1: string sessionKey, 2: string className);
-  list<InterpreterCompletion> completion(1: string sessionKey, 2: string className, 3: string buf, 4: i32 cursor);
+  list<InterpreterCompletion> completion(1: string sessionKey, 2: string className, 3: string buf, 4: i32 cursor, 5: RemoteInterpreterContext interpreterContext);
   void shutdown();
 
   string getStatus(1: string sessionKey, 2:string jobId);

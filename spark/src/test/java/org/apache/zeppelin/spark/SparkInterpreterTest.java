@@ -301,7 +301,7 @@ public class SparkInterpreterTest {
 
   @Test
   public void testCompletion() {
-    List<InterpreterCompletion> completions = repl.completion("sc.", "sc.".length());
+    List<InterpreterCompletion> completions = repl.completion("sc.", "sc.".length(), null);
     assertTrue(completions.size() > 0);
   }
 

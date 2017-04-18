@@ -61,11 +61,11 @@ User can use just like any other built-in visualizations.
 
 #### 1. Create a npm package
 
-Create a [package.json](https://docs.npmjs.com/files/package.json) in your new Visualization directory. Normally, you can add any dependencies in package.json however Zeppelin Visualization package only allows two dependencies: [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization) and [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/tabledata).
+Create a [package.json](https://docs.npmjs.com/files/package.json) in your new Visualization directory. You can add any dependencies in package.json, but you **must include two dependencies: [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization) and [zeppelin-tabledata](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/tabledata).**
 
 Here's an example
 
-```
+```json
 {
   "name": "zeppelin_horizontalbar",
   "description" : "Horizontal Bar chart",
@@ -86,7 +86,7 @@ To create your own visualization, you need to create a js file and import [Visua
 
 [Visualization](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/app/visualization/visualization.js) class, there're several methods that you need to override and implement. Here's simple visualization that just prints `Hello world`.
 
-```
+```js
 import Visualization from 'zeppelin-vis'
 import PassthroughTransformation from 'zeppelin-tabledata/passthrough'
 
@@ -118,7 +118,7 @@ Zeppelin's built-in visualization uses the same API, so you can check [built-in 
 __Helium Package file__ is a json file that provides information about the application.
 Json file contains the following information
 
-```
+```json
 {
   "type" : "VISUALIZATION",
   "name" : "zeppelin_horizontalbar",
@@ -154,15 +154,15 @@ e.g.
 
 When artifact exists in npm repository
 
-```
-artifact: "my-visualiztion@1.0.0"
+```json
+"artifact": "my-visualiztion@1.0.0"
 ```
 
 
 When artifact exists in local file system
 
-```
-artifact: "/path/to/my/visualization"
+```json
+"artifact": "/path/to/my/visualization"
 ```
 
 ##### license
@@ -171,8 +171,8 @@ License information.
 
 e.g.
 
-```
-license: "Apache-2.0"
+```json
+"license": "Apache-2.0"
 ```
 
 ##### icon
@@ -181,8 +181,8 @@ Icon to be used in visualization select button. String in this field will be ren
 
 e.g.
 
-```
-icon: "<i class='fa fa-coffee'></i>"
+```json
+"icon": "<i class='fa fa-coffee'></i>"
 ```
 
 
@@ -191,9 +191,9 @@ icon: "<i class='fa fa-coffee'></i>"
 Place your __Helium package file__ in local registry (ZEPPELIN_HOME/helium).
 Run Zeppelin. And then run zeppelin-web in visualization dev mode.
 
-```
+```bash
 cd zeppelin-web
-yarn run dev:helium 
+yarn run dev:helium
 ```
 
 You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.

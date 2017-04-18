@@ -483,18 +483,19 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
 
     @Test
-    public void testZeppelinContextDynamicForms() throws IOException {
+    public void testSparkZeppelinContextDynamicForms() throws IOException {
         Note note = ZeppelinServer.notebook.createNote(anonymous);
         Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
         note.setName("note");
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
-        String code = "%spark.spark z.input(\"my_input\", \"default_name\")\n" +
-            "z.select(\"my_select\", \"select_2\"," +
-            "Seq((\"1\", \"select_1\"), (\"2\", \"select_2\")))\n" +
-            "z.checkbox(\"my_checkbox\", Seq(\"check_1\"), " +
-            "Seq((\"1\", \"check_1\"), (\"2\", \"check_2\")))";
+        String code = "%spark.spark println(z.input(\"my_input\", \"default_name\"))\n" +
+            "println(z.select(\"my_select\", \"1\"," +
+            "Seq((\"1\", \"select_1\"), (\"2\", \"select_2\"))))\n" +
+            "val items=z.checkbox(\"my_checkbox\", Seq(\"2\"), " +
+            "Seq((\"1\", \"check_1\"), (\"2\", \"check_2\")))\n" +
+            "println(items(0))";
         p.setText(code);
         p.setAuthenticationInfo(anonymous);
         note.run(p.getId());
@@ -505,5 +506,46 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assert(formIter.next().equals("my_input"));
         assert(formIter.next().equals("my_select"));
         assert(formIter.next().equals("my_checkbox"));
+
+        // check dynamic forms values
+        String[] result = p.getResult().message().get(0).getData().split("\n");
+        assertEquals(4, result.length);
+        assertEquals("default_name", result[0]);
+        assertEquals("1", result[1]);
+        assertEquals("items: Seq[Object] = Buffer(2)", result[2]);
+        assertEquals("2", result[3]);
+    }
+
+    @Test
+    public void testPySparkZeppelinContextDynamicForms() throws IOException {
+        Note note = ZeppelinServer.notebook.createNote(anonymous);
+        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        note.setName("note");
+        Map config = p.getConfig();
+        config.put("enabled", true);
+        p.setConfig(config);
+        String code = "%spark.pyspark print(z.input('my_input', 'default_name'))\n" +
+            "print(z.select('my_select', " +
+            "[('1', 'select_1'), ('2', 'select_2')], defaultValue='1'))\n" +
+            "items=z.checkbox('my_checkbox', " +
+            "[('1', 'check_1'), ('2', 'check_2')], defaultChecked=['2'])\n" +
+            "print(items[0])";
+        p.setText(code);
+        p.setAuthenticationInfo(anonymous);
+        note.run(p.getId());
+        waitForFinish(p);
+
+        assertEquals(Status.FINISHED, p.getStatus());
+        Iterator<String> formIter = p.settings.getForms().keySet().iterator();
+        assert(formIter.next().equals("my_input"));
+        assert(formIter.next().equals("my_select"));
+        assert(formIter.next().equals("my_checkbox"));
+
+        // check dynamic forms values
+        String[] result = p.getResult().message().get(0).getData().split("\n");
+        assertEquals(3, result.length);
+        assertEquals("default_name", result[0]);
+        assertEquals("1", result[1]);
+        assertEquals("2", result[2]);
     }
 }
