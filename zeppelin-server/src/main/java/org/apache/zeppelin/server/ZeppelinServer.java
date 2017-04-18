@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
