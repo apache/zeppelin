@@ -73,6 +73,10 @@ public class CorsFilter implements Filter {
   }
 
   private void addCorsHeaders(HttpServletResponse response, String origin) {
+    if ("true".equals(response.getHeader("Access-Control-Allow-Credentials"))) {
+      // addCorsHeaders invoked multiple times. Ignore
+      return;
+    }
     response.addHeader("Access-Control-Allow-Origin", origin);
     response.addHeader("Access-Control-Allow-Credentials", "true");
     response.addHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
