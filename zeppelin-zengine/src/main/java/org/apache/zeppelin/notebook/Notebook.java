@@ -414,6 +414,10 @@ public class Notebook implements NoteEventListener {
   public void convertFromSingleResultToMultipleResultsFormat(Note note) {
     for (Paragraph p : note.paragraphs) {
       Object ret = p.getPreviousResultFormat();
+      if (ret != null && p.results != null) {
+        continue; // already converted
+      }
+
       try {
         if (ret != null && ret instanceof Map) {
           Map r = ((Map) ret);

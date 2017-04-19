@@ -332,7 +332,8 @@ public class BigQueryInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return NO_COMPLETION;
   }
 }

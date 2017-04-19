@@ -106,6 +106,19 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
     assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("hi\nhi\nhi"));
  }
 
+  @Test
+  public void testRedefinitionZeppelinContext() {
+    String pyRedefinitionCode = "z = 1\n";
+    String pyRestoreCode = "z = __zeppelin__\n";
+    String pyValidCode = "z.input(\"test\")\n";
+
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyRedefinitionCode, context).code());
+    assertEquals(InterpreterResult.Code.ERROR, pythonInterpreter.interpret(pyValidCode, context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyRestoreCode, context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());
+  }
+
   @Override
   public void onUpdateAll(InterpreterOutput out) {
 

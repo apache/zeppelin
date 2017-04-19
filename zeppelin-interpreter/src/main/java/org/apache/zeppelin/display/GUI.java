@@ -75,14 +75,14 @@ public class GUI implements Serializable {
     return value;
   }
 
-  public Collection<Object> checkbox(String id, Collection<Object> defaultChecked,
+  public List<Object> checkbox(String id, Collection<Object> defaultChecked,
                                      ParamOption[] options) {
     Collection<Object> checked = (Collection<Object>) params.get(id);
     if (checked == null) {
       checked = defaultChecked;
     }
     forms.put(id, new Input(id, defaultChecked, "checkbox", options));
-    Collection<Object> filtered = new LinkedList<>();
+    List<Object> filtered = new LinkedList<>();
     for (Object o : checked) {
       if (isValidOption(o, options)) {
         filtered.add(o);

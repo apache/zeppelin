@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
  * @param <T>
  */
 public class AngularObject<T> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AngularObject.class);
+
   private String name;
   private T object;
   
@@ -172,7 +174,7 @@ public class AngularObject<T> {
     if (emit) {
       emit();
     }
-
+    LOGGER.debug("Update angular object: " + name + " with value: " + o);
     final Logger logger = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
