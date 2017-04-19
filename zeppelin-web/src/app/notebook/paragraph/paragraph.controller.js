@@ -340,6 +340,39 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params);
   };
 
+  var runParagraphs = function(note,paragraph){
+    const paragraphs = note.paragraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      };
+    });
+    websocketMsgSrv.runSubsequentParagraphs(note.id, paragraph.id, paragraphs);
+  }
+
+  $scope.runSubsequentParagraphs = function(note,paragraph,dialog=true) {
+    if (!(paragraph.status in ['RUNNING','PENDING']) && paragraph.config.enabled){
+      if ( dialog ){
+        BootstrapDialog.confirm({
+          closable: true,
+          title: '',
+          message: 'Run this paragraph and all the following ones?',
+          callback: function(result) {
+            if (result) {
+              runParagraphs(note,paragraph);
+            }
+          }
+        });
+        $scope.editor.focus();
+      } else{
+        runParagraphs(note,paragraph);
+      }
+    }
+  };
+
   $scope.saveParagraph = function(paragraph) {
     const dirtyText = paragraph.text;
     if (dirtyText === undefined || dirtyText === $scope.originalText) {
@@ -1320,6 +1353,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13){ // Ctrl + Shift + Enter
+        $scope.runSubsequentParagraphs($scope.note,$scope.paragraph, false);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue());
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c

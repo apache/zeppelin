@@ -207,6 +207,17 @@ function websocketMsgSrv($rootScope, websocketEvents) {
       });
     },
 
+    runSubsequentParagraphs: function(noteId, paragraphId, paragraphs){
+      websocketEvents.sendNewEvent({
+        op: 'RUN_SUBSEQUENT_PARAGRAPHS',
+        data: {
+          noteId: noteId,
+          paragraphId: paragraphId,
+          paragraphs: JSON.stringify(paragraphs)
+        }
+      });
+    },
+
     removeParagraph: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },
