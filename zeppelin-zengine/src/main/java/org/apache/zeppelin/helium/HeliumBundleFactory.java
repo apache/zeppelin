@@ -462,8 +462,10 @@ public class HeliumBundleFactory {
     };
 
     File[] localModuleCaches = yarnCacheDir.listFiles(filter);
-    for (File f : localModuleCaches) {
-      FileUtils.deleteQuietly(f);
+    if (localModuleCaches != null) {
+      for (File f : localModuleCaches) {
+        FileUtils.deleteQuietly(f);
+      }
     }
   }
 
