@@ -494,7 +494,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.debug("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m);
       for (NotebookSocket conn : socketLists) {
         try {
           conn.send(serializeMessage(m));
@@ -512,7 +512,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.debug("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m);
       for (NotebookSocket conn : socketLists) {
         if (exclude.equals(conn)) {
           continue;
