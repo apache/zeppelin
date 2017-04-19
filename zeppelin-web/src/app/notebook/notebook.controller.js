@@ -715,7 +715,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.restartInterpreter = function(interpreter) {
-    var thisConfirm = BootstrapDialog.confirm({
+    const thisConfirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
@@ -733,9 +733,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + interpreter.id, payload)
             .success(function(data, status, headers, config) {
-              var index = _.findIndex($scope.interpreterSettings, {'id': interpreter.id});
-              $scope.interpreterSettings[index] = data.body;
-              thisConfirm.close();
+              let index = _.findIndex($scope.interpreterSettings, {'id': interpreter.id})
+              $scope.interpreterSettings[index] = data.body
+              thisConfirm.close()
             }).error(function (data, status, headers, config) {
               thisConfirm.close()
               console.log('Error %o %o', status, data.message)
