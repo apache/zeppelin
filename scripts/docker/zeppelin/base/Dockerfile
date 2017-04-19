@@ -46,7 +46,7 @@ RUN echo "$LOG_TAG Install java8" && \
     rm -rf /var/cache/oracle-jdk8-installer
 
 # should install conda first before numpy, matploylib since pip and python will be installed by conda
-RUN echo "$LOG_TAG Install miniconda3 related packages" && \
+RUN echo "$LOG_TAG Install miniconda2 related packages" && \
     apt-get -y update && \
     apt-get install -y bzip2 ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
