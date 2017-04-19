@@ -25,12 +25,12 @@ limitations under the License.
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
       <ul class="nav navbar-nav" ng-if="ticket">
-        <li class="dropdown notebook-list-dropdown" dropdown>
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" dropdown-toggle>Notebook <span class="caret"></span></a>
+        <li class="dropdown notebook-list-dropdown" uib-dropdown>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" uib-dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             <li ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
-            <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
+            <div id="notebook-list" class="scrollbar-container" ng-show="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <div ng-if="!query.q || query.q === ''">
                 <li ng-repeat="note in navbar.notes.root.children | orderBy:navbar.arrayOrderingSrv.noteListOrdering track by note.id"
