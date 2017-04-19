@@ -95,9 +95,8 @@ public class ZeppelinServer extends Application {
   private InterpreterFactory replFactory;
 
   @Inject
-  private SearchService searchService;
-  @Inject
   private ZeppelinConfiguration conf;
+  @Inject
   private SearchService noteSearchService;
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
