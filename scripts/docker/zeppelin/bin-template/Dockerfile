@@ -23,13 +23,12 @@ ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
     wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    rm -rf /zeppelin-${Z_VERSION}-bin-all.tgz && \
+    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
-    apt-get clean && \
-    rm -rf /tmp
+    apt-get clean
 
 EXPOSE 8080
 

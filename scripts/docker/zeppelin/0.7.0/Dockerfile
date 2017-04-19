@@ -28,8 +28,7 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
-    apt-get clean && \
-    rm -rf /tmp
+    apt-get clean
 
 EXPOSE 8080
 
