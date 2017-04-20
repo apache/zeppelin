@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-import Nvd3ChartVisualization from './visualization-nvd3chart';
-import ColumnselectorTransformation from '../../tabledata/columnselector';
+import Nvd3ChartVisualization from './visualization-nvd3chart'
+import ColumnselectorTransformation from '../../tabledata/columnselector'
 
 /**
  * Visualize data in scatter char
  */
 export default class ScatterchartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
-    super(targetEl, config);
+  constructor (targetEl, config) {
+    super(targetEl, config)
 
     this.columnselectorProps = [
       {
@@ -41,198 +41,196 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
                   or the number of distinct values are bigger than 5% of total number of values.</li>
                   <li>Size field button turns to grey when the option you chose is not valid.</li>`
       }
-    ];
-    this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps);
-  };
+    ]
+    this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps)
+  }
 
-  type() {
-    return 'scatterChart';
-  };
+  type () {
+    return 'scatterChart'
+  }
 
-  getTransformation() {
-    return this.columnselector;
-  };
+  getTransformation () {
+    return this.columnselector
+  }
 
-  render(tableData) {
-    this.tableData = tableData;
-    this.selectDefault();
-    var d3Data = this.setScatterChart(tableData, true);
-    this.xLabels = d3Data.xLabels;
-    this.yLabels = d3Data.yLabels;
+  render (tableData) {
+    this.tableData = tableData
+    this.selectDefault()
+    let d3Data = this.setScatterChart(tableData, true)
+    this.xLabels = d3Data.xLabels
+    this.yLabels = d3Data.yLabels
 
-    super.render(d3Data);
-  };
+    super.render(d3Data)
+  }
 
-  configureChart(chart) {
-    var self = this;
+  configureChart (chart) {
+    let self = this
 
-    chart.xAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
-      return self.xAxisTickFormat(Math.round(d * 1e3)/1e3, self.xLabels);
-      });
+    chart.xAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
+      return self.xAxisTickFormat(Math.round(d * 1e3) / 1e3, self.xLabels)
+    })
 
-    chart.yAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
-      return self.yAxisTickFormat(Math.round(d * 1e3)/1e3, self.yLabels);
-      });
+    chart.yAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
+      return self.yAxisTickFormat(Math.round(d * 1e3) / 1e3, self.yLabels)
+    })
 
-    chart.showDistX(true).showDistY(true);
-    //handle the problem of tooltip not showing when muliple points have same value.
-  };
+    chart.showDistX(true).showDistY(true)
+    // handle the problem of tooltip not showing when muliple points have same value.
+  }
 
-  yAxisTickFormat(d, yLabels){
-     if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
-      return yLabels[d];
-     } else {
-      return super.yAxisTickFormat(d);
-     }
-   }
+  yAxisTickFormat (d, yLabels) {
+    if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
+      return yLabels[d]
+    } else {
+      return super.yAxisTickFormat(d)
+    }
+  }
 
-  selectDefault() {
+  selectDefault () {
     if (!this.config.xAxis && !this.config.yAxis) {
       if (this.tableData.columns.length > 1) {
-        this.config.xAxis = this.tableData.columns[0];
-        this.config.yAxis = this.tableData.columns[1];
+        this.config.xAxis = this.tableData.columns[0]
+        this.config.yAxis = this.tableData.columns[1]
       } else if (this.tableData.columns.length === 1) {
-        this.config.xAxis = this.tableData.columns[0];
+        this.config.xAxis = this.tableData.columns[0]
       }
     }
-  };
+  }
 
-  setScatterChart(data, refresh) {
-    var xAxis = this.config.xAxis;
-    var yAxis = this.config.yAxis;
-    var group = this.config.group;
-    var size = this.config.size;
+  setScatterChart (data, refresh) {
+    let xAxis = this.config.xAxis
+    let yAxis = this.config.yAxis
+    let group = this.config.group
+    let size = this.config.size
 
-    var xValues = [];
-    var yValues = [];
-    var rows = {};
-    var d3g = [];
+    let xValues = []
+    let yValues = []
+    let rows = {}
+    let d3g = []
 
-    var rowNameIndex = {};
-    var colNameIndex = {};
-    var grpNameIndex = {};
-    var rowIndexValue = {};
-    var colIndexValue = {};
-    var grpIndexValue = {};
-    var rowIdx = 0;
-    var colIdx = 0;
-    var grpIdx = 0;
-    var grpName = '';
+    let rowNameIndex = {}
+    let colNameIndex = {}
+    let grpNameIndex = {}
+    let rowIndexValue = {}
+    let colIndexValue = {}
+    let grpIndexValue = {}
+    let rowIdx = 0
+    let colIdx = 0
+    let grpIdx = 0
+    let grpName = ''
 
-    var xValue;
-    var yValue;
-    var row;
+    let xValue
+    let yValue
+    let row
 
     if (!xAxis && !yAxis) {
       return {
         d3g: []
-      };
+      }
     }
 
-
-
-
-    for (var i = 0; i < data.rows.length; i++) {
-      row = data.rows[i];
+    for (let i = 0; i < data.rows.length; i++) {
+      row = data.rows[i]
       if (xAxis) {
-        xValue = row[xAxis.index];
-        xValues[i] = xValue;
+        xValue = row[xAxis.index]
+        xValues[i] = xValue
       }
       if (yAxis) {
-        yValue = row[yAxis.index];
-        yValues[i] = yValue;
+        yValue = row[yAxis.index]
+        yValues[i] = yValue
       }
     }
 
-    var isAllDiscrete = ((xAxis && yAxis && this.isDiscrete(xValues) && this.isDiscrete(yValues)) ||
+    let isAllDiscrete = ((xAxis && yAxis && this.isDiscrete(xValues) && this.isDiscrete(yValues)) ||
     (!xAxis && this.isDiscrete(yValues)) ||
-    (!yAxis && this.isDiscrete(xValues)));
+    (!yAxis && this.isDiscrete(xValues)))
 
     if (isAllDiscrete) {
-      rows = this.setDiscreteScatterData(data);
+      rows = this.setDiscreteScatterData(data)
     } else {
-      rows = data.rows;
+      rows = data.rows
     }
 
     if (!group && isAllDiscrete) {
-      grpName = 'count';
+      grpName = 'count'
     } else if (!group && !size) {
       if (xAxis && yAxis) {
-        grpName = '(' + xAxis.name + ', ' + yAxis.name + ')';
+        grpName = '(' + xAxis.name + ', ' + yAxis.name + ')'
       } else if (xAxis && !yAxis) {
-        grpName = xAxis.name;
+        grpName = xAxis.name
       } else if (!xAxis && yAxis) {
-        grpName = yAxis.name;
+        grpName = yAxis.name
       }
     } else if (!group && size) {
-      grpName = size.name;
+      grpName = size.name
     }
 
-    var epsilon = 1e-4; // TODO remove after bump to nvd3 > 1.8.5
+    let epsilon = 1e-4 // TODO remove after bump to nvd3 > 1.8.5
 
-    for (i = 0; i < rows.length; i++) {
-      row = rows[i];
+    for (let i = 0; i < rows.length; i++) {
+      row = rows[i]
       if (xAxis) {
-        xValue = row[xAxis.index];
+        xValue = row[xAxis.index]
       }
       if (yAxis) {
-        yValue = row[yAxis.index];
+        yValue = row[yAxis.index]
       }
       if (group) {
-        grpName = row[group.index];
+        grpName = row[group.index]
       }
-      var sz = (isAllDiscrete) ? row[row.length - 1] : ((size) ? row[size.index] : 1);
+      let sz = (isAllDiscrete) ? row[row.length - 1] : ((size) ? row[size.index] : 1)
 
       if (grpNameIndex[grpName] === undefined) {
-        grpIndexValue[grpIdx] = grpName;
-        grpNameIndex[grpName] = grpIdx++;
+        grpIndexValue[grpIdx] = grpName
+        grpNameIndex[grpName] = grpIdx++
       }
 
       if (xAxis && rowNameIndex[xValue] === undefined) {
-        rowIndexValue[rowIdx] = xValue;
-        rowNameIndex[xValue] = rowIdx++;
+        rowIndexValue[rowIdx] = xValue
+        rowNameIndex[xValue] = rowIdx++
       }
 
       if (yAxis && colNameIndex[yValue] === undefined) {
-        colIndexValue[colIdx] = yValue;
-        colNameIndex[yValue] = colIdx++;
+        colIndexValue[colIdx] = yValue
+        colNameIndex[yValue] = colIdx++
       }
 
       if (!d3g[grpNameIndex[grpName]]) {
         d3g[grpNameIndex[grpName]] = {
           key: grpName,
           values: []
-        };
+        }
       }
-
 
       // TODO remove epsilon jitter after bump to nvd3 > 1.8.5
-      var xval, yval = 0;
-      if ( xAxis ){
-        xval = (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) + Math.random() * epsilon;
+      let xval = 0
+      let yval = 0
+      if (xAxis) {
+        xval = (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) + Math.random() * epsilon
       }
-      if ( yAxis ){
-        yval = (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) + Math.random() * epsilon;
+      if (yAxis) {
+        yval = (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) + Math.random() * epsilon
       }
 
       d3g[grpNameIndex[grpName]].values.push({
         x: xval,
         y: yval,
         size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz)
-      });
+      })
     }
 
     // TODO remove sort and dedup after bump to nvd3 > 1.8.5
-    var d3gvalues = d3g[grpNameIndex[grpName]].values;
-    d3gvalues.sort(function(a,b){
-                  return ((a['x'] - b['x']) || (a['y'] - b['y']))});
+    let d3gvalues = d3g[grpNameIndex[grpName]].values
+    d3gvalues.sort(function (a, b) {
+      return ((a['x'] - b['x']) || (a['y'] - b['y']))
+    })
 
-    for (var i = 0; i < d3gvalues.length - 1; ){
-      if ( (Math.abs(d3gvalues[i]['x'] - d3gvalues[i+1]['x']) < epsilon) &&
-           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i+1]['y']) < epsilon) ){
-           d3gvalues.splice(i+1,1);
-      } else{
-        i++;
+    for (let i = 0; i < d3gvalues.length - 1;) {
+      if ((Math.abs(d3gvalues[i]['x'] - d3gvalues[i + 1]['x']) < epsilon) &&
+           (Math.abs(d3gvalues[i]['y'] - d3gvalues[i + 1]['y']) < epsilon)) {
+        d3gvalues.splice(i + 1, 1)
+      } else {
+        i++
       }
     }
 
@@ -240,33 +238,33 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       xLabels: rowIndexValue,
       yLabels: colIndexValue,
       d3g: d3g
-    };
-  };
+    }
+  }
 
-  setDiscreteScatterData(data) {
-    var xAxis = this.config.xAxis;
-    var yAxis = this.config.yAxis;
-    var group = this.config.group;
+  setDiscreteScatterData (data) {
+    let xAxis = this.config.xAxis
+    let yAxis = this.config.yAxis
+    let group = this.config.group
 
-    var xValue;
-    var yValue;
-    var grp;
+    let xValue
+    let yValue
+    let grp
 
-    var rows = {};
+    let rows = {}
 
-    for (var i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
+    for (let i = 0; i < data.rows.length; i++) {
+      let row = data.rows[i]
       if (xAxis) {
-        xValue = row[xAxis.index];
+        xValue = row[xAxis.index]
       }
       if (yAxis) {
-        yValue = row[yAxis.index];
+        yValue = row[yAxis.index]
       }
       if (group) {
-        grp = row[group.index];
+        grp = row[group.index]
       }
 
-      var key = xValue + ',' + yValue +  ',' + grp;
+      let key = xValue + ',' + yValue + ',' + grp
 
       if (!rows[key]) {
         rows[key] = {
@@ -274,89 +272,89 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
           y: yValue,
           group: grp,
           size: 1
-        };
+        }
       } else {
-        rows[key].size++;
+        rows[key].size++
       }
     }
 
     // change object into array
-    var newRows = [];
-    for (var r in rows) {
-      var newRow = [];
-      if (xAxis) { newRow[xAxis.index] = rows[r].x; }
-      if (yAxis) { newRow[yAxis.index] = rows[r].y; }
-      if (group) { newRow[group.index] = rows[r].group; }
-      newRow[data.rows[0].length] = rows[r].size;
-      newRows.push(newRow);
+    let newRows = []
+    for (let r in rows) {
+      let newRow = []
+      if (xAxis) { newRow[xAxis.index] = rows[r].x }
+      if (yAxis) { newRow[yAxis.index] = rows[r].y }
+      if (group) { newRow[group.index] = rows[r].group }
+      newRow[data.rows[0].length] = rows[r].size
+      newRows.push(newRow)
     }
-    return newRows;
-  };
+    return newRows
+  }
 
-  isDiscrete(field) {
-    var getUnique = function(f) {
-      var uniqObj = {};
-      var uniqArr = [];
-      var j = 0;
-      for (var i = 0; i < f.length; i++) {
-        var item = f[i];
+  isDiscrete (field) {
+    let getUnique = function (f) {
+      let uniqObj = {}
+      let uniqArr = []
+      let j = 0
+      for (let i = 0; i < f.length; i++) {
+        let item = f[i]
         if (uniqObj[item] !== 1) {
-          uniqObj[item] = 1;
-          uniqArr[j++] = item;
+          uniqObj[item] = 1
+          uniqArr[j++] = item
         }
       }
-      return uniqArr;
-    };
+      return uniqArr
+    }
 
-    for (var i = 0; i < field.length; i++) {
+    for (let i = 0; i < field.length; i++) {
       if (isNaN(parseFloat(field[i])) &&
         (typeof field[i] === 'string' || field[i] instanceof String)) {
-        return true;
+        return true
       }
     }
 
-    var threshold = 0.05;
-    var unique = getUnique(field);
+    let threshold = 0.05
+    let unique = getUnique(field)
     if (unique.length / field.length < threshold) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
-  };
+  }
 
-  isValidSizeOption(options) {
-    var xValues = [];
-    var yValues = [];
-    var rows = this.tableData.rows;
+  isValidSizeOption (options) {
+    let xValues = []
+    let yValues = []
+    let rows = this.tableData.rows
 
-    for (var i = 0; i < rows.length; i++) {
-      var row = rows[i];
-      var size = row[options.size.index];
+    for (let i = 0; i < rows.length; i++) {
+      let row = rows[i]
+      let size = row[options.size.index]
 
-      //check if the field is numeric
+      // check if the field is numeric
       if (isNaN(parseFloat(size)) || !isFinite(size)) {
-        return false;
+        return false
       }
 
       if (options.xAxis) {
-        var x = row[options.xAxis.index];
-        xValues[i] = x;
+        let x = row[options.xAxis.index]
+        xValues[i] = x
       }
       if (options.yAxis) {
-        var y = row[options.yAxis.index];
-        yValues[i] = y;
+        let y = row[options.yAxis.index]
+        yValues[i] = y
       }
     }
 
-    //check if all existing fields are discrete
-    var isAllDiscrete = ((options.xAxis && options.yAxis && this.isDiscrete(xValues) && this.isDiscrete(yValues)) ||
+    // check if all existing fields are discrete
+    let isAllDiscrete = ((options.xAxis && options.yAxis && this.isDiscrete(xValues) && this.isDiscrete(yValues)) ||
     (!options.xAxis && this.isDiscrete(yValues)) ||
-    (!options.yAxis && this.isDiscrete(xValues)));
+    (!options.yAxis && this.isDiscrete(xValues)))
 
     if (isAllDiscrete) {
-      return false;
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 }
