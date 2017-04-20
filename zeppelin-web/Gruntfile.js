@@ -163,7 +163,13 @@ module.exports = function(grunt) {
       options: {},
       app: {
         src: ['<%= yeoman.app %>/index.html'],
-        ignorePath: /\.\.\//
+        ignorePath: /\.\.\//,
+        exclude: [
+          'bower_components/headroom.js/dist/headroom.min.js',
+          'bower_components/headroom.js/dist/jQuery.headroom.js',
+          'bower_components/headroom.js/dist/jQuery.headroom.min.js',
+          'bower_components/headroom.js/dist/angular.headroom.min.js',
+        ]
       },
       test: {
         devDependencies: true,
