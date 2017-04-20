@@ -78,7 +78,7 @@ module.exports = function(grunt) {
     watch: {
       bower: {
         files: ['bower.json'],
-        tasks: ['wiredep']
+        tasks: ['wiredep:dist', 'wiredep:test']
       },
       html: {
         files: [
@@ -136,8 +136,19 @@ module.exports = function(grunt) {
 
     // Automatically inject Bower components into the app
     wiredep: {
-      options: {},
-      app: {
+      ci: {
+        src: ['<%= yeoman.app %>/index.html'],
+        ignorePath: /\.\.\//,
+        exclude: [
+          'bower_components/headroom.js/dist/headroom.js',
+          'bower_components/headroom.js/dist/headroom.min.js',
+          'bower_components/headroom.js/dist/jQuery.headroom.js',
+          'bower_components/headroom.js/dist/jQuery.headroom.min.js',
+          'bower_components/headroom.js/dist/angular.headroom.js',
+          'bower_components/headroom.js/dist/angular.headroom.min.js',
+        ]
+      },
+      dist: {
         src: ['<%= yeoman.app %>/index.html'],
         ignorePath: /\.\.\//,
         exclude: [
@@ -145,12 +156,18 @@ module.exports = function(grunt) {
           'bower_components/headroom.js/dist/jQuery.headroom.js',
           'bower_components/headroom.js/dist/jQuery.headroom.min.js',
           'bower_components/headroom.js/dist/angular.headroom.min.js',
-        ]
+        ],
       },
       test: {
         devDependencies: true,
         src: '<%= karma.unit.configFile %>',
         ignorePath: /\.\.\//,
+        exclude: [
+          'bower_components/headroom.js/dist/headroom.min.js',
+          'bower_components/headroom.js/dist/jQuery.headroom.js',
+          'bower_components/headroom.js/dist/jQuery.headroom.min.js',
+          'bower_components/headroom.js/dist/angular.headroom.min.js',
+        ],
         fileTypes: {
           js: {
             block: /(([\s\t]*)\/{2}\s*?bower:\s*?(\S*))(\n|\r|.)*?(\/{2}\s*endbower)/gi,
@@ -369,7 +386,7 @@ module.exports = function(grunt) {
     // Test settings
     karma: {
       unit: {
-        configFile: 'test/karma.conf.js',
+        configFile: 'karma.conf.js',
         singleRun: true
       }
     }
@@ -377,7 +394,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
-      'wiredep',
+      'wiredep:test',
+      'wiredep:dist',
     ]);
   });
 
@@ -387,7 +405,14 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dist', [
     'htmlhint',
-    'wiredep',
+    'wiredep:test',
+    'wiredep:dist',
+  ]);
+
+  grunt.registerTask('pre-webpack-ci', [
+    'htmlhint',
+    'wiredep:test',
+    'wiredep:ci',
   ]);
 
   grunt.registerTask('post-webpack-dist', [

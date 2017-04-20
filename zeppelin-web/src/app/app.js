@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-let zeppelinWebApp = angular.module('zeppelinWebApp', [
+const requiredModules = [
   'ngCookies',
   'ngAnimate',
   'ngRoute',
@@ -34,8 +34,13 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', [
   'focus-if',
   'ngResource',
   'ngclipboard',
-  'headroom'
-])
+]
+
+// headroom should not be used for CI, since we have to execute some integration tests.
+// otherwise, they will fail.
+if (!process.env.BUILD_CI) { requiredModules.push('headroom') }
+
+let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
   .filter('breakFilter', function () {
     return function (text) {
       // eslint-disable-next-line no-extra-boolean-cast
