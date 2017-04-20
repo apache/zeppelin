@@ -55,9 +55,9 @@ function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
       payload = angular.fromJson(event.data)
     }
     console.log('Receive Json << %o', event.data)
-    console.log('Receive << %o, %o', payload.op, payload);
-    let op = payload.op;
-    let data = payload.data;
+    console.log('Receive << %o, %o', payload.op, payload)
+    let op = payload.op
+    let data = payload.data
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note)
     } else if (op === 'NEW_NOTE') {
