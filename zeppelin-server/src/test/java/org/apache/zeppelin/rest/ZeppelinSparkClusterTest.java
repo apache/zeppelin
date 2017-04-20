@@ -519,7 +519,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void testPySparkZeppelinContextDynamicForms() throws IOException {
         Note note = ZeppelinServer.notebook.createNote(anonymous);
-        Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         note.setName("note");
         Map config = p.getConfig();
         config.put("enabled", true);
