@@ -26,7 +26,7 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="runAllParagraphs(note.id)"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Run all paragraphs"
+              tooltip-placement="bottom" uib-tooltip="Run all paragraphs"
               ng-disabled="revisionView">
         <i class="icon-control-play"></i>
       </button>
@@ -34,14 +34,14 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="toggleAllEditor()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the code"
+              tooltip-placement="bottom" uib-tooltip="Show/hide the code"
               ng-disabled="revisionView">
         <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllTable()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the output"
+              tooltip-placement="bottom" uib-tooltip="Show/hide the output"
               ng-disabled="revisionView">
         <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
       </button>
@@ -50,7 +50,7 @@ limitations under the License.
               ng-click="clearAllParagraphOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Clear output"
+              tooltip-placement="bottom" uib-tooltip="Clear output"
               ng-disabled="revisionView">
         <i class="fa fa-eraser"></i>
       </button>
@@ -58,7 +58,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Clone this note" data-source-note-name="{{note.name}}"
+              tooltip-placement="bottom" uib-tooltip="Clone this note" data-source-note-name="{{note.name}}"
               data-toggle="modal" data-target="#noteNameModal" data-clone="true"
               ng-disabled="revisionView">
         <i class="fa fa-copy"></i>
@@ -67,7 +67,7 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               ng-click="exportNote()"
-              tooltip-placement="bottom" tooltip="Export this note"
+              tooltip-placement="bottom" uib-tooltip="Export this note"
               ng-disabled="revisionView">
         <i class="fa fa-download"></i>
       </button>
@@ -78,7 +78,7 @@ limitations under the License.
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode !== 'true'"
               ng-click="toggleNotePersonalizedMode()"
-              tooltip-placement="bottom" tooltip="Switch to collaboration mode {{isOwner ? '' : '(owner can change)'}}"
+              tooltip-placement="bottom" uib-tooltip="Switch to collaboration mode {{isOwner ? '' : '(owner can change)'}}"
               ng-disabled="revisionView">
         <i class="fa fa-user"></i>
       </button>
@@ -88,7 +88,7 @@ limitations under the License.
               ng-if="ticket.principal && ticket.principal !== 'anonymous'"
               ng-hide="viewOnly || note.config.personalizedMode === 'true'"
               ng-click="toggleNotePersonalizedMode()"
-              tooltip-placement="bottom" tooltip="Switch to personal mode {{isOwner ? '' : '(owner can change)'}}"
+              tooltip-placement="bottom" uib-tooltip="Switch to personal mode {{isOwner ? '' : '(owner can change)'}}"
               ng-disabled="revisionView">
         <i class="fa fa-users"></i>
       </button>
@@ -101,7 +101,7 @@ limitations under the License.
                 id="versionControlDropdown"
                 ng-hide="viewOnly"
                 data-toggle="dropdown"
-                tooltip-placement="bottom" tooltip="Version control"
+                tooltip-placement="bottom" uib-tooltip="Version control"
                 ng-disabled="revisionView">
           <i class="fa fa-file-code-o"></i>
         </button>
@@ -111,7 +111,7 @@ limitations under the License.
                 ng-hide="viewOnly"
                 ng-click="setNoteRevision()"
                 ng-disabled="!revisionView"
-                tooltip-placement="bottom" tooltip="Set revision">
+                tooltip-placement="bottom" uib-tooltip="Set revision">
           <i class="fa fa-arrow-circle-o-right"></i>
         </button>
         <ul class="dropdown-menu" style="width:250px"
@@ -130,7 +130,7 @@ limitations under the License.
                         ng-hide="viewOnly"
                         ng-click="checkpointNote(note.checkpoint.message)"
                         style="margin-left: 4px;"
-                        tooltip-placement="bottom" tooltip="Commit this note">Commit
+                        tooltip-placement="bottom" uib-tooltip="Commit this note">Commit
                 </button>
               </div>
             </div>
@@ -169,7 +169,7 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Remove this note permanently"
+                tooltip-placement="bottom" uib-tooltip="Remove this note permanently"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
         </button>
@@ -179,7 +179,7 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="moveNoteToTrash(note.id)"
                 ng-hide="viewOnly"
-                tooltip-placement="bottom" tooltip="Move this note to trash"
+                tooltip-placement="bottom" uib-tooltip="Move this note to trash"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
         </button>
@@ -191,7 +191,7 @@ limitations under the License.
              type="button"
              data-toggle="dropdown"
              ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
-             tooltip-placement="bottom" tooltip="Run scheduler"
+             tooltip-placement="bottom" uib-tooltip="Run scheduler"
              ng-disabled="revisionView">
           <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
         </div>
@@ -244,19 +244,19 @@ limitations under the License.
               type="button"
               data-toggle="modal"
               data-target="#shortcutModal"
-              tooltip-placement="bottom" tooltip="List of shortcut">
+              tooltip-placement="bottom" uib-tooltip="List of shortcut">
           <i class="fa fa-keyboard-o"></i>
         </span>
         <span class="setting-btn"
               type="button"
               ng-click="toggleSetting()"
-              tooltip-placement="bottom" tooltip="Interpreter binding">
+              tooltip-placement="bottom" uib-tooltip="Interpreter binding">
           <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
         </span>
         <span class="setting-btn"
               type="button"
               ng-click="togglePermissions()"
-              tooltip-placement="bottom" tooltip="Note permissions">
+              tooltip-placement="bottom" uib-tooltip="Note permissions">
           <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
         </span>
       </span>

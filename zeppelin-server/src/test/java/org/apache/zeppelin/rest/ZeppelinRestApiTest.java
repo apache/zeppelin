@@ -27,7 +27,6 @@ import com.google.common.collect.Sets;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -88,7 +87,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -228,7 +227,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for export");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -261,7 +260,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName(noteName);
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -323,7 +322,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for clone");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -374,7 +373,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -429,7 +428,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -483,7 +482,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -527,7 +526,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%md This is test paragraph.");
     
     Map config = paragraph.getConfig();
@@ -576,7 +575,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
 
     note.persist(anonymous);
@@ -656,7 +655,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetParagraph() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("hello");
     p.setText("world");
     note.persist(anonymous);
@@ -685,11 +684,11 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testMoveParagraph() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("title1");
     p.setText("text1");
 
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setTitle("title2");
     p2.setText("text2");
 
@@ -717,7 +716,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testDeleteParagraph() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("title1");
     p.setText("text1");
 

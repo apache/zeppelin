@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-/*eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars */
 import {
   DefaultDisplayType,
   SpellResult,
-} from './spell-result';
-/*eslint-enable no-unused-vars */
+} from './spell-result'
+/* eslint-enable no-unused-vars */
 
 export class SpellBase {
-  constructor(magic) {
-    this.magic = magic;
+  constructor (magic) {
+    this.magic = magic
   }
 
   /**
@@ -34,8 +34,8 @@ export class SpellBase {
    * @param config {Object}
    * @return {SpellResult}
    */
-  interpret(paragraphText, config) {
-    throw new Error('SpellBase.interpret() should be overrided');
+  interpret (paragraphText, config) {
+    throw new Error('SpellBase.interpret() should be overrided')
   }
 
   /**
@@ -43,7 +43,7 @@ export class SpellBase {
    * (e.g `%flowchart`)
    * @return {string}
    */
-  getMagic() {
-    return this.magic;
+  getMagic () {
+    return this.magic
   }
 }

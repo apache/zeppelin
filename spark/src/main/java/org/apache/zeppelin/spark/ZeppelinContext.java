@@ -40,7 +40,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -114,14 +114,33 @@ public class ZeppelinContext {
   public SQLContext sqlContext;
   private GUI gui;
 
+  /**
+   * @deprecated use z.textbox instead
+   *
+   */
+  @Deprecated
   @ZeppelinApi
   public Object input(String name) {
-    return input(name, "");
+    return textbox(name);
+  }
+
+  /**
+   * @deprecated use z.textbox instead
+   */
+  @Deprecated
+  @ZeppelinApi
+  public Object input(String name, Object defaultValue) {
+    return textbox(name, defaultValue.toString());
   }
 
   @ZeppelinApi
-  public Object input(String name, Object defaultValue) {
-    return gui.input(name, defaultValue);
+  public Object textbox(String name) {
+    return textbox(name, "");
+  }
+
+  @ZeppelinApi
+  public Object textbox(String name, String defaultValue) {
+    return gui.textbox(name, defaultValue);
   }
 
   @ZeppelinApi
@@ -136,7 +155,7 @@ public class ZeppelinContext {
   }
 
   @ZeppelinApi
-  public scala.collection.Iterable<Object> checkbox(String name,
+  public scala.collection.Seq<Object> checkbox(String name,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
     List<Object> allChecked = new LinkedList<>();
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
@@ -146,11 +165,12 @@ public class ZeppelinContext {
   }
 
   @ZeppelinApi
-  public scala.collection.Iterable<Object> checkbox(String name,
+  public scala.collection.Seq<Object> checkbox(String name,
       scala.collection.Iterable<Object> defaultChecked,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return collectionAsScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
-      tuplesToParamOptions(options)));
+    return scala.collection.JavaConversions.asScalaBuffer(
+        gui.checkbox(name, asJavaCollection(defaultChecked),
+            tuplesToParamOptions(options))).toSeq();
   }
 
   private ParamOption[] tuplesToParamOptions(
@@ -311,7 +331,7 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(String noteId, String paragraphId) {
-    run(noteId, paragraphId, interpreterContext);
+    run(noteId, paragraphId, interpreterContext, true);
   }
 
   /**
@@ -320,8 +340,27 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(String paragraphId) {
+    run(paragraphId, true);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param paragraphId
+   * @param checkCurrentParagraph
+   */
+  @ZeppelinApi
+  public void run(String paragraphId, boolean checkCurrentParagraph) {
     String noteId = interpreterContext.getNoteId();
-    run(noteId, paragraphId, interpreterContext);
+    run(noteId, paragraphId, interpreterContext, checkCurrentParagraph);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param noteId
+   */
+  @ZeppelinApi
+  public void run(String noteId, String paragraphId, InterpreterContext context) {
+    run(noteId, paragraphId, context, true);
   }
 
   /**
@@ -330,8 +369,9 @@ public class ZeppelinContext {
    * @param context
    */
   @ZeppelinApi
-  public void run(String noteId, String paragraphId, InterpreterContext context) {
-    if (paragraphId.equals(context.getParagraphId())) {
+  public void run(String noteId, String paragraphId, InterpreterContext context,
+                  boolean checkCurrentParagraph) {
+    if (paragraphId.equals(context.getParagraphId()) && checkCurrentParagraph) {
       throw new InterpreterException("Can not run current Paragraph");
     }
 
@@ -411,24 +451,50 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(int idx) {
+    run(idx, true);
+  }
+
+  /**
+   *
+   * @param idx  paragraph index
+   * @param checkCurrentParagraph  check whether you call this run method in the current paragraph.
+   * Set it to false only when you are sure you are not invoking this method to run current
+   * paragraph. Otherwise you would run current paragraph in infinite loop.
+   */
+  public void run(int idx, boolean checkCurrentParagraph) {
     String noteId = interpreterContext.getNoteId();
-    run(noteId, idx, interpreterContext);
+    run(noteId, idx, interpreterContext, checkCurrentParagraph);
   }
 
   /**
    * Run paragraph at index
+   * @param noteId
    * @param idx index starting from 0
    * @param context interpreter context
    */
   public void run(String noteId, int idx, InterpreterContext context) {
+    run(noteId, idx, context, true);
+  }
+
+  /**
+   *
+   * @param noteId
+   * @param idx  paragraph index
+   * @param context interpreter context
+   * @param checkCurrentParagraph check whether you call this run method in the current paragraph.
+   * Set it to false only when you are sure you are not invoking this method to run current
+   * paragraph. Otherwise you would run current paragraph in infinite loop.
+   */
+  public void run(String noteId, int idx, InterpreterContext context,
+                  boolean checkCurrentParagraph) {
     List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
     if (idx >= runners.size()) {
       throw new InterpreterException("Index out of bound");
     }
 
     InterpreterContextRunner runner = runners.get(idx);
-    if (runner.getParagraphId().equals(context.getParagraphId())) {
-      throw new InterpreterException("Can not run current Paragraph");
+    if (runner.getParagraphId().equals(context.getParagraphId()) && checkCurrentParagraph) {
+      throw new InterpreterException("Can not run current Paragraph: " + runner.getParagraphId());
     }
 
     runner.run();

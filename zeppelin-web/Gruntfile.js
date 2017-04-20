@@ -104,13 +104,6 @@ module.exports = function(grunt) {
         files: ['bower.json'],
         tasks: ['wiredep']
       },
-      js: {
-        files: [
-          '<%= yeoman.app %>/app/**/*.js',
-          '<%= yeoman.app %>/components/**/*.js'
-        ],
-        tasks: ['newer:eslint:all'],
-      },
       html: {
         files: [
           '<%= yeoman.app %>/**/*.html'
@@ -120,7 +113,6 @@ module.exports = function(grunt) {
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: [
-          'newer:eslint:test',
           'karma'
         ]
       },
@@ -145,24 +137,6 @@ module.exports = function(grunt) {
           '<%= yeoman.app %>/**/*.css',
           '<%= yeoman.app %>/assets/images/**/*.{png,jpg,jpeg,gif,webp,svg}'
         ]
-      }
-    },
-
-    eslint: {
-      all: {
-        src: [
-          'Gruntfile.js',
-          '<%= yeoman.app %>/app/**/*.js',
-          '<%= yeoman.app %>/components/**/*.js'
-        ]
-      },
-      test: {
-        options: {
-          rules: {
-            'no-undef': 0
-          }
-        },
-        src: ['test/spec/{,*/}*.js']
       }
     },
 
@@ -430,7 +404,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('pre-webpack-dist', [
-    'eslint',
     'htmlhint',
     'wiredep',
   ]);

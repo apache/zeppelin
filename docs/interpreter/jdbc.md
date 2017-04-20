@@ -123,6 +123,11 @@ The JDBC interpreter properties are defined by default like below.
     <td></td>
     <td>Some SQL which executes while opening connection</td>
   </tr>
+  <tr>
+    <td>default.completer.schemaFilters</td>
+    <td></td>
+    <td>Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)</td>
+  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.

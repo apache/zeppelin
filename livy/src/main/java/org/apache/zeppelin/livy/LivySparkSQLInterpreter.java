@@ -230,6 +230,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
   }
 
   @Override
+  public void cancel(InterpreterContext context) {
+    sparkInterpreter.cancel(context);
+  }
+
+  @Override
   public void close() {
     this.sparkInterpreter.close();
   }

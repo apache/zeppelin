@@ -69,7 +69,7 @@ If you're unsure about the options, use the same commands that creates official 
 # update all pom.xml to use scala 2.11
 ./dev/change_scala_version.sh 2.11
 # build zeppelin with all interpreters and include latest version of Apache spark support for local mode.
-mvn clean package -DskipTests -Pspark-2.0 -Phadoop-2.4 -Pyarn -Pr -Pscala-2.11
+mvn clean package -DskipTests -Pspark-2.0 -Phadoop-2.4 -Pr -Pscala-2.11
 ```
 
 ####3. Done
@@ -140,11 +140,6 @@ Available profiles are
 -Pscala-2.11
 ```
 
-##### `-Pyarn` (optional)
-
-enable YARN support for local mode
-> YARN for local mode is not supported for Spark v1.5.0 or higher. Set `SPARK_HOME` instead.
-
 ##### `-Pr` (optional)
 
 enable [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration.
@@ -180,14 +175,14 @@ Here are some examples with several options:
 ```bash
 # build with spark-2.1, scala-2.11
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pyarn -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pscala-2.11 -DskipTests
 
 # build with spark-2.0, scala-2.11
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pyarn -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pscala-2.11 -DskipTests
 
 # build with spark-1.6, scala-2.10
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -DskipTests
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
 
 # spark-cassandra integration
 mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests -DskipTests
@@ -320,10 +315,10 @@ mvn clean package -Pbuild-distr
 To build a distribution with specific profiles, run:
 
 ```sh
-mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4 -Pyarn
+mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4
 ```
 
-The profiles `-Pspark-1.5 -Phadoop-2.4 -Pyarn` can be adjusted if you wish to build to a specific spark versions, or omit support such as `yarn`.  
+The profiles `-Pspark-1.5 -Phadoop-2.4` can be adjusted if you wish to build to a specific spark versions.  
 
 The archive is generated under _`zeppelin-distribution/target`_ directory
 

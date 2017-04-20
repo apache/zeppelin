@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('renameSrv', renameSrv);
+angular.module('zeppelinWebApp').service('renameSrv', renameSrv)
 
-function renameSrv($rootScope) {
-  'ngInject';
+function renameSrv ($rootScope) {
+  'ngInject'
 
-  var self = this;
+  let self = this
 
   /**
    * <options schema>
@@ -26,7 +26,7 @@ function renameSrv($rootScope) {
    * callback: (newName: string)=>void - callback onButtonClick
    * validator: (str: string)=>boolean - input validator
    */
-  self.openRenameModal = function(options) {
-    $rootScope.$broadcast('openRenameModal', options);
-  };
+  self.openRenameModal = function (options) {
+    $rootScope.$broadcast('openRenameModal', options)
+  }
 }

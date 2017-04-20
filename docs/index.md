@@ -172,10 +172,11 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
-* Helium Framework
-  * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)
-  * [Writing Zeppelin Spell (Experimental)](./development/writingzeppelinspell.html)
-  * [Writing Zeppelin Visualization (Experimental)](./development/writingzeppelinvisualization.html)
+* Helium Framework (Experimental)
+  * [Writing Zeppelin Application](./development/writingzeppelinapplication.html)
+  * [Writing Zeppelin Spell](./development/writingzeppelinspell.html)
+  * [Writing Zeppelin Visualization: Basic](./development/writingzeppelinvisualization.html)
+  * [Writing Zeppelin Visualization: Transformation](./development/writingzeppelinvisualization_transformation.html)
 * Advanced
   * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
   * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
