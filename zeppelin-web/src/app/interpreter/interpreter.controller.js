@@ -26,6 +26,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showRepositoryInfo = false;
   $scope.searchInterpreter = '';
   $scope._ = _;
+  $scope.interpreterPropertyWidgets = [];
   ngToast.dismiss();
 
   $scope.openPermissions = function() {
@@ -140,8 +141,17 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     });
   };
 
+  var getAvailableInterpreterPropertyWidgets = function () {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/widgets')
+      .success(function (data, status, headers, config) {
+        $scope.interpreterPropertyWidgets = data.body;
+      }).error(function (data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
+  };
+
   var emptyNewProperty = function(object) {
-    angular.extend(object, {propertyValue: '', propertyKey: ''});
+    angular.extend(object, {propertyValue: '', propertyKey: '', propertyWidget: $scope.interpreterPropertyWidgets[0]});
   };
 
   var emptyNewDependency = function(object) {
@@ -180,6 +190,15 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       option.session = false;
       option.process = false;
     }
+  };
+
+  $scope.defaultValueByWidget = function(setting) {
+    if (setting.propertyWidget === 'checkbox') {
+      setting.propertyValue = false;
+      return;
+    }
+
+    setting.propertyValue = '';
   };
 
   $scope.setPerUserOption = function(settingId, sessionOption) {
@@ -408,7 +427,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       for (var key in intpInfo) {
         properties[key] = {
           value: intpInfo[key].defaultValue,
-          description: intpInfo[key].description
+          description: intpInfo[key].description,
+          widget: intpInfo[key].widget
         };
       }
     }
@@ -483,9 +503,11 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
     // Change properties to proper request format
     var newProperties = {};
+
     for (var p in newSetting.properties) {
-      newProperties[p] = newSetting.properties[p].value;
+      newProperties[p] = {value: newSetting.properties[p].value, widget: newSetting.properties[p].widget, name: p};
     }
+
     request.properties = newProperties;
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
@@ -555,7 +577,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       }
 
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
-        value: $scope.newInterpreterSetting.propertyValue
+        value: $scope.newInterpreterSetting.propertyValue,
+        widget: $scope.newInterpreterSetting.propertyWidget
       };
       emptyNewProperty($scope.newInterpreterSetting);
     } else {
@@ -566,7 +589,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       if (!setting.propertyKey || setting.propertyKey === '') {
         return;
       }
-      setting.properties[setting.propertyKey] = setting.propertyValue;
+
+      setting.properties[setting.propertyKey] = {value: setting.propertyValue, widget: setting.propertyWidget};
+
       emptyNewProperty(setting);
     }
   };
@@ -694,6 +719,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   };
 
   var init = function() {
+    getAvailableInterpreterPropertyWidgets();
+
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
 

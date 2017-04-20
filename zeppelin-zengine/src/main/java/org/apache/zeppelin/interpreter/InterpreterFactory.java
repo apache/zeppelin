@@ -164,7 +164,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       String noteId, String interpreterSessionKey) {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
-    Properties properties = (Properties) interpreterSetting.getProperties();
+    Properties properties = interpreterSetting.getFlatProperties();
     // if interpreters are already there, wait until they're being removed
     synchronized (interpreterGroup) {
       long interpreterRemovalWaitStart = System.nanoTime();

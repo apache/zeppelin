@@ -50,6 +50,7 @@ import './components/clipboard/clipboard.controller.js';
 import './components/navbar/navbar.controller.js';
 import './components/ngescape/ngescape.directive.js';
 import './components/interpreter/interpreter.directive.js';
+import './components/interpreter/widget/widget.number.directive.js';
 import './components/expandCollapse/expandCollapse.directive.js';
 import './components/noteName-create/notename.controller.js';
 import './components/noteName-import/notenameImport.controller.js';

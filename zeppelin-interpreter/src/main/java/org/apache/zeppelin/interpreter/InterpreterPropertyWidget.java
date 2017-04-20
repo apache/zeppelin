@@ -18,40 +18,13 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Property for instance of interpreter
+ * Widgets of interpreter properties
  */
-public class InterpreterProperty {
-  private String name;
-  private Object value;
-  private InterpreterPropertyWidget widget;
-
-  public InterpreterProperty(String name, Object value, InterpreterPropertyWidget widget) {
-    this.name = name;
-    this.value = value;
-    this.widget = widget;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Object getValue() {
-    return value;
-  }
-
-  public void setValue(Object value) {
-    this.value = value;
-  }
-
-  public InterpreterPropertyWidget getWidget() {
-    return widget;
-  }
-
-  public void setWidget(InterpreterPropertyWidget widget) {
-    this.widget = widget;
-  }
+public enum InterpreterPropertyWidget {
+  text,
+  string,
+  number,
+  url,
+  password,
+  checkbox
 }
