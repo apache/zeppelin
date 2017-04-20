@@ -32,7 +32,7 @@ function arrayOrderingSrv (TRASH_FOLDER_ID) {
     } else {
       return note.name
     }
-  };
+  }
 
   this.noteComparator = function (v1, v2) {
     let note1 = v1.value
@@ -58,5 +58,5 @@ function arrayOrderingSrv (TRASH_FOLDER_ID) {
     let noteName2 = arrayOrderingSrv.getNoteName(note2)
 
     return noteName1.localeCompare(noteName2)
-  };
+  }
 }
