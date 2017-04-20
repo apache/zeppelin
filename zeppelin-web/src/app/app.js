@@ -33,7 +33,8 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', [
   'ngToast',
   'focus-if',
   'ngResource',
-  'ngclipboard'
+  'ngclipboard',
+  'headroom'
 ])
   .filter('breakFilter', function () {
     return function (text) {
