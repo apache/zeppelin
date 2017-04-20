@@ -16,10 +16,10 @@ import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl)
 
-function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
   'ngInject'
 
-  var interpreterSettingsTmp = []
+  let interpreterSettingsTmp = []
   $scope.interpreterSettings = []
   $scope.availableInterpreters = {}
   $scope.showAddNewSetting = false
@@ -143,17 +143,17 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     })
   }
 
-  var getAvailableInterpreterPropertyWidgets = function () {
+  let getAvailableInterpreterPropertyWidgets = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/widgets')
       .success(function (data, status, headers, config) {
         $scope.interpreterPropertyWidgets = data.body
       }).error(function (data, status, headers, config) {
-      console.log('Error %o %o', status, data.message)
-    })
+        console.log('Error %o %o', status, data.message)
+      })
   }
 
   let emptyNewProperty = function(object) {
-    angular.extend(object, {propertyValue: '', propertyKey: '', propertyWidget: $scope.interpreterPropertyWidgets[0]});
+    angular.extend(object, {propertyValue: '', propertyKey: '', propertyWidget: $scope.interpreterPropertyWidgets[0]})
   }
 
   let emptyNewDependency = function (object) {
@@ -194,16 +194,16 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     }
   }
 
-  $scope.defaultValueByWidget = function(setting) {
+  $scope.defaultValueByWidget = function (setting) {
     if (setting.propertyWidget === 'checkbox') {
       setting.propertyValue = false
       return
     }
 
     setting.propertyValue = ''
-  };
+  }
 
-  $scope.setPerUserOption = function(settingId, sessionOption) {
+  $scope.setPerUserOption = function (settingId, sessionOption) {
     let option
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
@@ -430,7 +430,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
           value: intpInfo[key].defaultValue,
           description: intpInfo[key].description,
           widget: intpInfo[key].widget
-        };
+        }
       }
     }
     $scope.newInterpreterSetting.properties = properties
@@ -509,7 +509,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       newProperties[p] = {value: newSetting.properties[p].value, widget: newSetting.properties[p].widget, name: p}
     }
 
-    request.properties = newProperties;
+    request.properties = newProperties
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
       .success(function (data, status, headers, config) {
@@ -580,7 +580,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
         value: $scope.newInterpreterSetting.propertyValue,
         widget: $scope.newInterpreterSetting.propertyWidget
-      };
+      }
       emptyNewProperty($scope.newInterpreterSetting)
     } else {
       // Add new property from edit form
@@ -593,7 +593,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
 
       setting.properties[setting.propertyKey] = {value: setting.propertyValue, widget: setting.propertyWidget}
 
-      emptyNewProperty(setting);
+      emptyNewProperty(setting)
     }
   }
 
