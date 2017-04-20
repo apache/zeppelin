@@ -15,35 +15,22 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-unused-vars */
-import {
-  DefaultDisplayType,
-  SpellResult,
-} from './spell-result'
-/* eslint-enable no-unused-vars */
+package org.apache.zeppelin.display.ui;
 
-export class SpellBase {
-  constructor (magic) {
-    this.magic = magic
+/**
+ * Html Dropdown list
+ */
+public class Select extends OptionInput<Object> {
+
+  public Select() {
+
   }
 
-  /**
-   * Consumes text and return `SpellResult`.
-   *
-   * @param paragraphText {string} which doesn't include magic
-   * @param config {Object}
-   * @return {SpellResult}
-   */
-  interpret (paragraphText, config) {
-    throw new Error('SpellBase.interpret() should be overrided')
+  public Select(String name, Object defaultValue, ParamOption[] options) {
+    this.name = name;
+    this.displayName = name;
+    this.defaultValue = defaultValue;
+    this.options = options;
   }
 
-  /**
-   * return magic for this spell.
-   * (e.g `%flowchart`)
-   * @return {string}
-   */
-  getMagic () {
-    return this.magic
-  }
 }

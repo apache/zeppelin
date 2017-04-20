@@ -15,35 +15,31 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-unused-vars */
-import {
-  DefaultDisplayType,
-  SpellResult,
-} from './spell-result'
-/* eslint-enable no-unused-vars */
 
-export class SpellBase {
-  constructor (magic) {
-    this.magic = magic
+package org.apache.zeppelin.display.ui;
+
+import java.awt.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
+/**
+ * Html Checkbox
+ */
+public class CheckBox extends OptionInput<Object[]> {
+
+  public CheckBox() {
   }
 
-  /**
-   * Consumes text and return `SpellResult`.
-   *
-   * @param paragraphText {string} which doesn't include magic
-   * @param config {Object}
-   * @return {SpellResult}
-   */
-  interpret (paragraphText, config) {
-    throw new Error('SpellBase.interpret() should be overrided')
+  public CheckBox(String name, Object[] defaultValue, ParamOption[] options) {
+    this.name = name;
+    this.displayName = name;
+    this.defaultValue = defaultValue;
+    this.options = options;
   }
 
-  /**
-   * return magic for this spell.
-   * (e.g `%flowchart`)
-   * @return {string}
-   */
-  getMagic () {
-    return this.magic
+  public CheckBox(String name, Collection<Object> defaultValue, ParamOption[] options) {
+    this(name, defaultValue.toArray(), options);
   }
+
 }

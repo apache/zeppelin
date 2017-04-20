@@ -34,7 +34,7 @@ import com.datastax.driver.core.Statement;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.junit.Rule;
