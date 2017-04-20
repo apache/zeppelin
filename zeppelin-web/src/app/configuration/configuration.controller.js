@@ -12,38 +12,38 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl);
+angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
 
-function ConfigurationCtrl($scope, $rootScope, $http, baseUrlSrv, ngToast) {
-  'ngInject';
+function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+  'ngInject'
 
-  $scope.configrations = [];
-  $scope._ = _;
-  ngToast.dismiss();
+  $scope.configrations = []
+  $scope._ = _
+  ngToast.dismiss()
 
-  var getConfigurations = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').
-    success(function(data, status, headers, config) {
-      $scope.configurations = data.body;
-    }).
-    error(function(data, status, headers, config) {
+  let getConfigurations = function () {
+    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
+    .success(function (data, status, headers, config) {
+      $scope.configurations = data.body
+    })
+    .error(function (data, status, headers, config) {
       if (status === 401) {
         ngToast.danger({
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
           timeout: '3000'
-        });
-        setTimeout(function() {
-          window.location.replace('/');
-        }, 3000);
+        })
+        setTimeout(function () {
+          window.location.replace('/')
+        }, 3000)
       }
-      console.log('Error %o %o', status, data.message);
-    });
-  };
+      console.log('Error %o %o', status, data.message)
+    })
+  }
 
-  var init = function() {
-    getConfigurations();
-  };
+  let init = function () {
+    getConfigurations()
+  }
 
-  init();
+  init()
 }
