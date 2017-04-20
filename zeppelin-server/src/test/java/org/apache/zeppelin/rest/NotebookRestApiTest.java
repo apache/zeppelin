@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -72,7 +71,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   @Test
   public void testGetNoteParagraphJobStatus() throws IOException {
     Note note1 = ZeppelinServer.notebook.createNote(anonymous);
-    note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     String paragraphId = note1.getLastParagraph().getId();
 
@@ -94,9 +93,9 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   @Test
   public void testRunParagraphJob() throws IOException {
     Note note1 = ZeppelinServer.notebook.createNote(anonymous);
-    note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-    Paragraph p = note1.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // run blank paragraph
     PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
@@ -150,7 +149,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   public void testUpdateParagraphConfig() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     String noteId = note.getId();
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertNull(p.getConfig().get("colWidth"));
     String paragraphId = p.getId();
     String jsonRequest = "{\"colWidth\": 6.0}";
@@ -176,11 +175,11 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   public void testClearAllParagraphOutput() throws IOException {
     // Create note and set result explicitly
     Note note = ZeppelinServer.notebook.createNote(anonymous);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
 
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setReturn(result, new Throwable());
 
     // clear paragraph result

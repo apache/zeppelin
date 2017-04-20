@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import com.google.common.collect.Maps;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -267,10 +268,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       if (intInfo.size() > 1) {
         for (InterpreterInfo info : intInfo) {
           String name = intp.getName() + "." + info.getName();
-          completion.add(new InterpreterCompletion(name, name));
+          completion.add(new InterpreterCompletion(name, name, CompletionType.setting.name()));
         }
       } else {
-        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName(),
+            CompletionType.setting.name()));
       }
     }
     return completion;
@@ -297,7 +299,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    List completion = repl.completion(body, cursor);
+    InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
+
+    List completion = repl.completion(body, cursor, interpreterContext);
     return completion;
   }
 
@@ -533,7 +537,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
-    if (authenticationInfo != null) {
+    setAuthenticationInfo(new AuthenticationInfo(getUser()));
+
+    if (authenticationInfo.getUser() != null) {
       UserCredentials userCredentials =
           credentials.getUserCredentials(authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);

@@ -57,9 +57,7 @@ import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -103,6 +101,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
+  static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
@@ -130,22 +129,12 @@ public class JDBCInterpreter extends Interpreter {
 
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
-  private final Map<String, SqlCompleter> propertyKeySqlCompleterMap;
 
-  private static final Function<CharSequence, InterpreterCompletion> sequenceToStringTransformer =
-      new Function<CharSequence, InterpreterCompletion>() {
-        public InterpreterCompletion apply(CharSequence seq) {
-          return new InterpreterCompletion(seq.toString(), seq.toString());
-        }
-      };
-
-  private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
   private int maxLineResults;
 
   public JDBCInterpreter(Properties property) {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
-    propertyKeySqlCompleterMap = new HashMap<>();
     basePropretiesMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
   }
@@ -193,9 +182,7 @@ public class JDBCInterpreter extends Interpreter {
     if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
       JDBCSecurityImpl.createSecureConfiguration(property);
     }
-    for (String propertyKey : basePropretiesMap.keySet()) {
-      propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(null));
-    }
+
     setMaxLineResults();
   }
 
@@ -206,10 +193,11 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
-
+  private SqlCompleter createSqlCompleter(Connection jdbcConnection, String propertyKey) {
+    String schemaFiltersKey = String.format("%s.%s", propertyKey, COMPLETER_SCHEMA_FILTERS_KEY);
+    String filters = getProperty(schemaFiltersKey);
     SqlCompleter completer = new SqlCompleter();
-    completer.initFromConnection(jdbcConnection, "");
+    completer.initFromConnection(jdbcConnection, filters);
     return completer;
   }
 
@@ -425,7 +413,7 @@ public class JDBCInterpreter extends Interpreter {
             connection = getConnectionFromPool(url, user, propertyKey, properties);
       }
     }
-    propertyKeySqlCompleterMap.put(propertyKey, createSqlCompleter(connection));
+
     return connection;
   }
 
@@ -794,18 +782,26 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
-    List<CharSequence> candidates = new ArrayList<>();
-    SqlCompleter sqlCompleter = propertyKeySqlCompleterMap.get(getPropertyKey(buf));
-    // It's strange but here cursor comes with additional +1 (even if buf is "" cursor = 1)
-    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor - 1, candidates) >= 0) {
-      List<InterpreterCompletion> completion;
-      completion = Lists.transform(candidates, sequenceToStringTransformer);
-
-      return completion;
-    } else {
-      return NO_COMPLETION;
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
+    List<InterpreterCompletion> candidates = new ArrayList<>();
+    String propertyKey = getPropertyKey(buf);
+    Connection connection = null;
+    try {
+      if (interpreterContext != null) {
+        connection = getConnection(propertyKey, interpreterContext);
+      }
+    } catch (ClassNotFoundException | SQLException | IOException e) {
+      logger.warn("SQLCompleter will created without use connection");
     }
+
+    SqlCompleter sqlCompleter = createSqlCompleter(connection, propertyKey);
+
+    if (sqlCompleter != null) {
+      sqlCompleter.complete(buf, cursor - 1, candidates);
+    }
+
+    return candidates;
   }
 
   public int getMaxResult() {

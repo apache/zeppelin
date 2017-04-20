@@ -246,7 +246,7 @@ public class SparkInterpreter extends Interpreter {
    */
   private boolean hiveClassesArePresent() {
     try {
-      this.getClass().forName("org.apache.spark.sql.hive.HiveSessionState");
+      this.getClass().forName("org.apache.spark.sql.hive.execution.InsertIntoHiveTable");
       this.getClass().forName("org.apache.hadoop.hive.conf.HiveConf");
       return true;
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
@@ -1068,7 +1068,8 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     if (completer == null) {
       logger.warn("Can't find completer");
       return new LinkedList<>();
@@ -1090,7 +1091,7 @@ public class SparkInterpreter extends Interpreter {
     List<InterpreterCompletion> completions = new LinkedList<>();
 
     for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate));
+      completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
     }
 
     return completions;

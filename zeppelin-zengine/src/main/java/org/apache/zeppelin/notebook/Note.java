@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -54,6 +55,9 @@ import com.google.gson.Gson;
 public class Note implements Serializable, ParagraphJobListener {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
+  private static final Gson gson = new GsonBuilder()
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .create();
 
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
@@ -289,19 +293,10 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   /**
-   * Add paragraph last.
+   * Create a new paragraph and add it to the end of the note.
    */
-  public Paragraph addParagraph(AuthenticationInfo authenticationInfo) {
-    Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
-    p.setAuthenticationInfo(authenticationInfo);
-    setParagraphMagic(p, paragraphs.size());
-    synchronized (paragraphs) {
-      paragraphs.add(p);
-    }
-    if (noteEventListener != null) {
-      noteEventListener.onParagraphCreate(p);
-    }
-    return p;
+  public Paragraph addNewParagraph(AuthenticationInfo authenticationInfo) {
+    return insertNewParagraph(paragraphs.size(), authenticationInfo);
   }
 
   /**
@@ -345,22 +340,35 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   /**
-   * Insert paragraph in given index.
+   * Create a new paragraph and insert it to the note in given index.
    *
    * @param index index of paragraphs
    */
-  public Paragraph insertParagraph(int index, AuthenticationInfo authenticationInfo) {
+  public Paragraph insertNewParagraph(int index, AuthenticationInfo authenticationInfo) {
+    Paragraph paragraph = createParagraph(index, authenticationInfo);
+    insertParagraph(paragraph, index);
+    return paragraph;
+  }
+
+  private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
-    setParagraphMagic(p, index);
-    synchronized (paragraphs) {
-      paragraphs.add(index, p);
-    }
     p.addUser(p, p.getUser());
-    if (noteEventListener != null) {
-      noteEventListener.onParagraphCreate(p);
-    }
+    setParagraphMagic(p, index);
     return p;
+  }
+
+  public void addParagraph(Paragraph paragraph) {
+    insertParagraph(paragraph, paragraphs.size());
+  }
+
+  public void insertParagraph(Paragraph paragraph, int index) {
+    synchronized (paragraphs) {
+      paragraphs.add(index, paragraph);
+    }
+    if (noteEventListener != null) {
+      noteEventListener.onParagraphCreate(paragraph);
+    }
   }
 
   /**
@@ -390,6 +398,26 @@ public class Note implements Serializable, ParagraphJobListener {
     return null;
   }
 
+  public void clearParagraphOutputFields(Paragraph p) {
+    p.setReturn(null, null);
+    p.clearRuntimeInfo(null);
+  }
+
+  public Paragraph clearPersonalizedParagraphOutput(String paragraphId, String user) {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (!p.getId().equals(paragraphId)) {
+          continue;
+        }
+
+        p = p.getUserParagraphMap().get(user);
+        clearParagraphOutputFields(p);
+        return p;
+      }
+    }
+    return null;
+  }
+
   /**
    * Clear paragraph output by id.
    *
@@ -399,11 +427,12 @@ public class Note implements Serializable, ParagraphJobListener {
   public Paragraph clearParagraphOutput(String paragraphId) {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
-        if (p.getId().equals(paragraphId)) {
-          p.setReturn(null, null);
-          p.clearRuntimeInfo(null);
-          return p;
+        if (!p.getId().equals(paragraphId)) {
+          continue;
         }
+
+        clearParagraphOutputFields(p);
+        return p;
       }
     }
     return null;
@@ -861,4 +890,19 @@ public class Note implements Serializable, ParagraphJobListener {
     this.noteEventListener = noteEventListener;
   }
 
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static Note fromJson(String json) {
+    Note note = gson.fromJson(json, Note.class);
+    convertOldInput(note);
+    return note;
+  }
+
+  private static void convertOldInput(Note note) {
+    for (Paragraph p : note.paragraphs) {
+      p.settings.convertOldInput();
+    }
+  }
 }

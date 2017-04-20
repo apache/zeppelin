@@ -162,7 +162,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     /* create note */
     Note note = notebookSync.createNote(anonymous);
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
@@ -299,7 +299,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     int vCount = gitRepo.revisionHistory(noteId, anonymous).size();
     assertThat(vCount).isEqualTo(1);
     
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
     p.setConfig(config);
@@ -333,7 +333,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, authInfo.getWriters(note.getId()).size());
     
     /* update note and save on secondary storage */
-    Paragraph p1 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("hello world");
     assertEquals(1, note.getParagraphs().size());
     notebookRepoSync.save(1, note, null);

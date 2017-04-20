@@ -30,7 +30,7 @@ import com.datastax.driver.core.exceptions.DriverException
 import com.datastax.driver.core.policies.{LoggingRetryPolicy, FallthroughRetryPolicy, DowngradingConsistencyRetryPolicy, Policies}
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 import org.apache.zeppelin.display.AngularObjectRegistry
-import org.apache.zeppelin.display.Input.ParamOption
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
 import org.apache.zeppelin.interpreter.{InterpreterException, InterpreterResult, InterpreterContext}
 import org.slf4j.LoggerFactory

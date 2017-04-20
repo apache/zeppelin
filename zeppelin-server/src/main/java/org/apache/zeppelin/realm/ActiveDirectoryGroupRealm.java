@@ -24,6 +24,8 @@ import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.Realm;
@@ -91,6 +93,11 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   LdapContextFactory ldapContextFactory;
 
+  protected void onInit() {
+    super.onInit();
+    this.getLdapContextFactory();
+  }
+
   public LdapContextFactory getLdapContextFactory() {
     if (this.ldapContextFactory == null) {
       if (log.isDebugEnabled()) {
@@ -107,6 +114,32 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     }
 
     return this.ldapContextFactory;
+  }
+
+  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
+      throws AuthenticationException {
+    try {
+      AuthenticationInfo info = this.queryForAuthenticationInfo(token,
+          this.getLdapContextFactory());
+      return info;
+    } catch (javax.naming.AuthenticationException var5) {
+      throw new AuthenticationException("LDAP authentication failed.", var5);
+    } catch (NamingException var6) {
+      String msg = "LDAP naming error while attempting to authenticate user.";
+      throw new AuthenticationException(msg, var6);
+    }
+  }
+
+  protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+    try {
+      AuthorizationInfo info = this.queryForAuthorizationInfo(principals,
+          this.getLdapContextFactory());
+      return info;
+    } catch (NamingException var5) {
+      String msg = "LDAP naming error while attempting to " +
+          "retrieve authorization for user [" + principals + "].";
+      throw new AuthorizationException(msg, var5);
+    }
   }
 
   private String getSystemPassword() {

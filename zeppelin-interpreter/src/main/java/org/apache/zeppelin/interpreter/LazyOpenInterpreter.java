@@ -92,7 +92,12 @@ public class LazyOpenInterpreter
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     open();
-    return intp.interpret(st, context);
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    try {
+      return intp.interpret(st, context);
+    } finally {
+      Thread.currentThread().setContextClassLoader(classLoader);
+    }
   }
 
   @Override
@@ -121,9 +126,10 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     open();
-    List completion = intp.completion(buf, cursor);
+    List completion = intp.completion(buf, cursor, interpreterContext);
     return completion;
   }
 

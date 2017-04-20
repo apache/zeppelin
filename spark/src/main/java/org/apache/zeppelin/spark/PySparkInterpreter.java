@@ -42,6 +42,7 @@ import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
@@ -113,7 +114,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "z._displayhook()");
+      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
     }
     DepInterpreter depInterpreter = getDepInterpreter();
 
@@ -390,9 +391,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
     String jobGroup = Utils.buildJobGroupId(context);
-    ZeppelinContext z = sparkInterpreter.getZeppelinContext();
-    z.setInterpreterContext(context);
-    z.setGui(context.getGui());
+    ZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
+    __zeppelin__.setInterpreterContext(context);
+    __zeppelin__.setGui(context.getGui());
     pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
     statementOutput = null;
 
@@ -457,7 +458,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -508,7 +510,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     List<InterpreterCompletion> results = new LinkedList<>();
     for (String name: completionList) {
-      results.add(new InterpreterCompletion(name, name));
+      results.add(new InterpreterCompletion(name, name, StringUtils.EMPTY));
     }
     return results;
   }

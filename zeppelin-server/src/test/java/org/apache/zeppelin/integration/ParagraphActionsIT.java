@@ -548,7 +548,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     try {
       createNewNote();
 
-      setTextOfParagraph(1, "%spark println(\"Hello \"+z.input(\"name\", \"world\")) ");
+      setTextOfParagraph(1, "%spark println(\"Hello \"+z.textbox(\"name\", \"world\")) ");
 
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
