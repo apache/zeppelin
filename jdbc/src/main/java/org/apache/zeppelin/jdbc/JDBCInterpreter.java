@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -363,7 +362,7 @@ public class JDBCInterpreter extends Interpreter {
             } else {
               if (url.trim().startsWith("jdbc:hive")) {
                 StringBuilder connectionUrl = new StringBuilder(url);
-                checkAndAppendHiveProxyUser(connectionUrl, user);
+                appendProxyUserToURL(connectionUrl, user);
                 connection = getConnectionFromPool(connectionUrl.toString(),
                         user, propertyKey, properties);
               } else {
@@ -400,7 +399,7 @@ public class JDBCInterpreter extends Interpreter {
 
           default:
             StringBuilder connectionUrl = new StringBuilder(url);
-            checkAndAppendHiveProxyUser(connectionUrl, user);
+            appendProxyUserToURL(connectionUrl, user);
             connection = getConnectionFromPool(connectionUrl.toString(),
                 user, propertyKey, properties);
       }
@@ -409,7 +408,7 @@ public class JDBCInterpreter extends Interpreter {
     return connection;
   }
 
-  private void checkAndAppendHiveProxyUser(StringBuilder connectionUrl, String user) {
+  private void appendProxyUserToURL(StringBuilder connectionUrl, String user) {
     if (connectionUrl.toString().trim().startsWith("jdbc:hive")) {
       Integer lastIndexOfUrl = connectionUrl.indexOf("?");
       if (lastIndexOfUrl == -1) {
