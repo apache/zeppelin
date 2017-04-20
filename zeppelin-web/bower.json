@@ -35,7 +35,8 @@
     "select2": "^4.0.3",
     "github-markdown-css": "^2.4.0",
     "MathJax": "2.7.0",
-    "ngclipboard": "^1.1.1"
+    "ngclipboard": "^1.1.1",
+    "headroom.js": "https://unpkg.com/headroom.js/bower.zip"
   },
   "devDependencies": {
     "angular-mocks": "1.5.0"
