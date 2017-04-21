@@ -121,6 +121,7 @@ g.table(
 * `g.select(name, default, Map<Object, String> options)`
 
    Creates `select` input with defined options. The parameter `default` is optional.
+
    ```g.select('sex', 'm', ['m':'man', 'w':'woman'])```
    
 * `g.checkbox(name, Collection checked, Map<Object, String> options)`
@@ -129,4 +130,9 @@ g.table(
    
 * `g.get(name, default)`
 
-   Returns interpreter-based variable. Visibility depends on interpreter scope.
+   Returns interpreter-based variable. Visibility depends on interpreter scope. The parameter `default` is optional.
+
+* `g.put(name, value)`
+
+   Stores new value into interpreter-based variable. Visibility depends on interpreter scope.
+   
