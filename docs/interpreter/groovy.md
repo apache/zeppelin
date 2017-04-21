@@ -114,4 +114,19 @@ g.table(
    obj:  List(rows) of List(columns) where first line is a header 
 
 
+* `g.input(name, value )`
 
+   Creates `text` input with value specified. The parameter `value` is optional.
+   
+* `g.select(name, default, Map<Object, String> options)`
+
+   Creates `select` input with defined options. The parameter `default` is optional.
+   ```g.select('sex', 'm', ['m':'man', 'w':'woman'])```
+   
+* `g.checkbox(name, Collection checked, Map<Object, String> options)`
+
+   Creates `checkbox` input.
+   
+* `g.get(name, default)`
+
+   Returns interpreter-based variable. Visibility depends on interpreter scope.
