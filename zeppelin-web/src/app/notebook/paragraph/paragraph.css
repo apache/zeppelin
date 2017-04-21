@@ -222,14 +222,53 @@ table.dataTable.table-condensed .sorting_desc:after {
   cursor: pointer;
 }
 
-.dropdown-menu .shortcut-icon{
+.dropdown-menu .shortcut-icon {
   padding-right: 7px;
   float: left;
 }
 
-.dropdown-menu .shortcut-keys{
+.dropdown-menu .shortcut-keys {
   float: right;
   color: #999;
+}
+
+.modal-dialog .table-scroll {
+  max-height: 70vh;
+  min-width: 160px;
+  overflow: auto;
+  overflow-y: scroll;
+}
+
+.shortcut-modal-header {
+  min-height: 16.428571429px;
+  padding: 15px;
+  border-bottom: 1px solid #9cb4c5;
+  background-color: #3071a9;
+}
+
+.shortcut-modal-header .close {
+  margin-top: -2px;
+}
+
+.shortcut-modal-title {
+  color: white;
+}
+
+table.table-shortcut {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.table-shortcut > tbody > tr > th {
+  background-color: #d6dde7;
+  border-color: 1px solid #9cb4c5;
+  color: #337ab7;
+  font-size: 14px !important;
+}
+
+.kbd-white {
+  color: #777777;
+  border: 1;
 }
 
 /*
