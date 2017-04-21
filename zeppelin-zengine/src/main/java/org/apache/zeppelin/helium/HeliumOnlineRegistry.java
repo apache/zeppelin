@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * This registry reads helium package json data
@@ -55,7 +56,10 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
   public HeliumOnlineRegistry(String name, String uri, File registryCacheDir) {
     super(name, uri);
     registryCacheDir.mkdirs();
-    this.registryCacheFile = new File(registryCacheDir, name);
+
+    UUID registryCacheFileUuid = UUID.nameUUIDFromBytes(uri.getBytes());
+    this.registryCacheFile = new File(registryCacheDir, registryCacheFileUuid.toString());
+
     gson = new Gson();
   }
 
