@@ -124,6 +124,9 @@ public class RemoteInterpreterEventPoller extends Thread {
       AngularObjectRegistry angularObjectRegistry = interpreterGroup.getAngularObjectRegistry();
 
       try {
+        if (event.getType() != RemoteInterpreterEventType.NO_OP) {
+          logger.debug("Receive message from RemoteInterpreter Process: " + event.toString());
+        }
         if (event.getType() == RemoteInterpreterEventType.NO_OP) {
           continue;
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_ADD) {

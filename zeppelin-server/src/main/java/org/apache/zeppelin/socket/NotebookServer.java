@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-import com.google.gson.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -45,6 +44,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -134,7 +134,9 @@ public class NotebookServer extends WebSocketServlet
             }
           }
         }
-      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
+
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
@@ -183,10 +185,11 @@ public class NotebookServer extends WebSocketServlet
     Notebook notebook = notebook();
     try {
       Message messagereceived = deserializeMessage(msg);
-      LOG.debug("RECEIVE << " + messagereceived.op);
-      LOG.debug("RECEIVE PRINCIPAL << " + messagereceived.principal);
-      LOG.debug("RECEIVE TICKET << " + messagereceived.ticket);
-      LOG.debug("RECEIVE ROLES << " + messagereceived.roles);
+      LOG.debug("RECEIVE << " + messagereceived.op +
+          ", RECEIVE PRINCIPAL << " + messagereceived.principal +
+          ", RECEIVE TICKET << " + messagereceived.ticket +
+          ", RECEIVE ROLES << " + messagereceived.roles +
+          ", RECEIVE DATA << " + messagereceived.data);
 
       if (LOG.isTraceEnabled()) {
         LOG.trace("RECEIVE MSG = " + messagereceived);
@@ -491,7 +494,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.debug("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m);
       for (NotebookSocket conn : socketLists) {
         try {
           conn.send(serializeMessage(m));
@@ -509,7 +512,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.debug("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m);
       for (NotebookSocket conn : socketLists) {
         if (exclude.equals(conn)) {
           continue;
@@ -641,6 +644,22 @@ public class NotebookServer extends WebSocketServlet
 
   public void broadcastInterpreterBindings(String noteId, List settingList) {
     broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
+  }
+
+  public void unicastParagraph(Note note, Paragraph p, String user) {
+    if (!note.isPersonalizedMode() || p == null || user == null) {
+      return;
+    }
+
+    if (!userConnectedSockets.containsKey(user)) {
+      LOG.warn("Failed to send unicast. user {} that is not in connections map", user);
+      return;
+    }
+
+    for (NotebookSocket conn : userConnectedSockets.get(user)) {
+      Message m = new Message(OP.PARAGRAPH).put("paragraph", p);
+      unicast(m, conn);
+    }
   }
 
   public void broadcastParagraph(Note note, Paragraph p) {
@@ -1004,7 +1023,7 @@ public class NotebookServer extends WebSocketServlet
         note = notebook.createNote(subject);
       }
 
-      note.addParagraph(subject); // it's an empty note. so add one paragraph
+      note.addNewParagraph(subject); // it's an empty note. so add one paragraph
       if (message != null) {
         String noteName = (String) message.get("name");
         if (StringUtils.isEmpty(noteName)) {
@@ -1300,9 +1319,15 @@ public class NotebookServer extends WebSocketServlet
     }
 
     final Note note = notebook.getNote(noteId);
-    note.clearParagraphOutput(paragraphId);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    broadcastParagraph(note, paragraph);
+    if (note.isPersonalizedMode()) {
+      String user = fromMessage.principal;
+      Paragraph p = note.clearPersonalizedParagraphOutput(paragraphId, user);
+      unicastParagraph(note, p, user);
+    } else {
+      note.clearParagraphOutput(paragraphId);
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      broadcastParagraph(note, paragraph);
+    }
   }
 
   private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1568,7 +1593,7 @@ public class NotebookServer extends WebSocketServlet
       return null;
     }
 
-    Paragraph newPara = note.insertParagraph(index, subject);
+    Paragraph newPara = note.insertNewParagraph(index, subject);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
 
@@ -1695,12 +1720,21 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
+    // 1. clear paragraph only if personalized,
+    // otherwise this will be handed in `onOutputClear`
+    final Note note = notebook.getNote(noteId);
+    if (note.isPersonalizedMode()) {
+      String user = fromMessage.principal;
+      Paragraph p = note.clearPersonalizedParagraphOutput(paragraphId, user);
+      unicastParagraph(note, p, user);
+    }
+
+    // 2. set paragraph values
     String text = (String) fromMessage.get("paragraph");
     String title = (String) fromMessage.get("title");
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
 
-    final Note note = notebook.getNote(noteId);
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
         text, title, params, config);
 
@@ -1713,7 +1747,7 @@ public class NotebookServer extends WebSocketServlet
     if (!(p.getText().trim().equals(p.getMagic()) ||
         Strings.isNullOrEmpty(p.getText())) &&
         isTheLastParagraph) {
-      Paragraph newPara = note.addParagraph(p.getAuthenticationInfo());
+      Paragraph newPara = note.addNewParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);
     }
   }

@@ -217,7 +217,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void close() {
-    //websocketClient.stop();
+    websocketClient.stop();
+    restApiClient.close();
   }
 
   @Override

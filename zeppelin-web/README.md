@@ -31,11 +31,20 @@ $ yarn run build
 # you need to run zeppelin backend instance also
 $ yarn run dev
 
-# If you are using a custom port, you must use the 'SERVER_PORT' variable to run the web application development mode
-$ SERVER_PORT=8080 yarn run dev
-
 # execute tests
 $ yarn run test
+```
+Supports the following options with using npm environment variable when running the web development mode.
+
+```
+# if you are using a custom port instead of default(8080), 
+# you must use the 'SERVER_PORT' variable to run the web application development mode
+$ SERVER_PORT=YOUR_ZEPPELIN_PORT yarn run dev
+
+# if you want to use a web dev port instead of default(9000), 
+# you can use the 'WEB_PORT' variable
+$ WEB_PORT=YOUR_WEB_DEV_PORT yarn run dev
+
 ```
 
 ## Troubleshooting

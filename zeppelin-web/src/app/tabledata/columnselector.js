@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import Transformation from './transformation';
+import Transformation from './transformation'
 
 /**
  * select columns
@@ -26,57 +26,57 @@ import Transformation from './transformation';
  *   ]
  */
 export default class ColumnselectorTransformation extends Transformation {
-  constructor(config, columnSelectorProp) {
-    super(config);
-    this.props = columnSelectorProp;
-  };
+  constructor (config, columnSelectorProp) {
+    super(config)
+    this.props = columnSelectorProp
+  }
 
-  getSetting() {
-    var self = this;
-    var configObj = self.config;
+  getSetting () {
+    let self = this
+    let configObj = self.config
     return {
       template: 'app/tabledata/columnselector_settings.html',
       scope: {
         config: self.config,
         props: self.props,
         tableDataColumns: self.tableDataColumns,
-        save: function() {
-          self.emitConfig(configObj);
+        save: function () {
+          self.emitConfig(configObj)
         },
-        remove: function(selectorName) {
-          configObj[selectorName] = null;
-          self.emitConfig(configObj);
+        remove: function (selectorName) {
+          configObj[selectorName] = null
+          self.emitConfig(configObj)
         }
       }
-    };
-  };
+    }
+  }
 
   /**
    * Method will be invoked when tableData or config changes
    */
-  transform(tableData) {
-    this.tableDataColumns = tableData.columns;
-    this.removeUnknown();
-    return tableData;
-  };
+  transform (tableData) {
+    this.tableDataColumns = tableData.columns
+    this.removeUnknown()
+    return tableData
+  }
 
-  removeUnknown() {
-    var fields = this.config;
-    for (var f in fields) {
+  removeUnknown () {
+    let fields = this.config
+    for (let f in fields) {
       if (fields[f]) {
-        var found = false;
-        for (var i = 0; i < this.tableDataColumns.length; i++) {
-          var a = fields[f];
-          var b = this.tableDataColumns[i];
+        let found = false
+        for (let i = 0; i < this.tableDataColumns.length; i++) {
+          let a = fields[f]
+          let b = this.tableDataColumns[i]
           if (a.index === b.index && a.name === b.name) {
-            found = true;
-            break;
+            found = true
+            break
           }
         }
         if (!found && (fields[f] instanceof Object) && !(fields[f] instanceof Array)) {
-          fields[f] = null;
+          fields[f] = null
         }
       }
     }
-  };
+  }
 }

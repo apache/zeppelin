@@ -20,7 +20,6 @@ package org.apache.zeppelin.livy;
 
 import com.cloudera.livy.test.framework.Cluster;
 import com.cloudera.livy.test.framework.Cluster$;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class LivyInterpreterIT {
@@ -147,6 +145,13 @@ public class LivyInterpreterIT {
         assertTrue(result.message().get(0).getData().contains("defined object Person"));
       }
 
+      // html output
+      String htmlCode = "println(\"%html <h1> hello </h1>\")";
+      result = sparkInterpreter.interpret(htmlCode, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+      assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
+
       // error
       result = sparkInterpreter.interpret("println(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
@@ -164,9 +169,9 @@ public class LivyInterpreterIT {
         Thread cancelThread = new Thread() {
           @Override
           public void run() {
-            // invoke cancel after 3 seconds to wait job starting
+            // invoke cancel after 1 millisecond to wait job starting
             try {
-              Thread.sleep(3000);
+              Thread.sleep(1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
@@ -308,6 +313,213 @@ public class LivyInterpreterIT {
     }
   }
 
+
+  @Test
+  public void testSparkSQLCancellation() {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    final LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+    sqlInterpreter.open();
+
+    try {
+      // detect spark version
+      InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+
+      boolean isSpark2 = isSpark2(sparkInterpreter, context);
+
+      // test DataFrame api
+      if (!isSpark2) {
+        result = sparkInterpreter.interpret(
+            "val df=sqlContext.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+      } else {
+        result = sparkInterpreter.interpret(
+            "val df=spark.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+      }
+      sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
+
+      // cancel
+      if (sqlInterpreter.getLivyVersion().newerThanEquals(LivyVersion.LIVY_0_3_0)) {
+        Thread cancelThread = new Thread() {
+          @Override
+          public void run() {
+            sqlInterpreter.cancel(context);
+          }
+        };
+        cancelThread.start();
+        //sleep so that cancelThread performs a cancel.
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        result = sqlInterpreter
+            .interpret("select count(1) from df", context);
+        if (result.code().equals(InterpreterResult.Code.ERROR)) {
+          String message = result.message().get(0).getData();
+          // 2 possibilities, sometimes livy doesn't return the real cancel exception
+          assertTrue(message.contains("cancelled part of cancelled job group") ||
+              message.contains("Job is cancelled"));
+        }
+      }
+    } catch (LivyException e) {
+    } finally {
+      sparkInterpreter.close();
+      sqlInterpreter.close();
+    }
+  }
+
+  @Test
+  public void testStringWithTruncation() {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+    sqlInterpreter.open();
+
+    try {
+      // detect spark version
+      InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+
+      boolean isSpark2 = isSpark2(sparkInterpreter, context);
+
+      // test DataFrame api
+      if (!isSpark2) {
+        result = sparkInterpreter.interpret(
+            "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
+      } else {
+        result = sparkInterpreter.interpret(
+            "val df=spark.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
+      }
+      sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
+      // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
+      result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      assertEquals("col_1\tcol_2\n12characters12cha...\t20", result.message().get(0).getData());
+    } finally {
+      sparkInterpreter.close();
+      sqlInterpreter.close();
+    }
+  }
+
+  @Test
+  public void testStringWithoutTruncation() {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    Properties newProps = new Properties();
+    for (Object name: properties.keySet()) {
+      newProps.put(name, properties.get(name));
+    }
+    newProps.put(LivySparkSQLInterpreter.ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE, "false");
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(newProps);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+        "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(newProps);
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+    sqlInterpreter.open();
+
+    try {
+      // detect spark version
+      InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+
+      boolean isSpark2 = isSpark2(sparkInterpreter, context);
+
+      // test DataFrame api
+      if (!isSpark2) {
+        result = sparkInterpreter.interpret(
+            "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
+      } else {
+        result = sparkInterpreter.interpret(
+            "val df=spark.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
+      }
+      sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
+      // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
+      result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+      assertEquals("col_1\tcol_2\n12characters12characters\t20", result.message().get(0).getData());
+    } finally {
+      sparkInterpreter.close();
+      sqlInterpreter.close();
+    }
+  }
+
   @Test
   public void testPySparkInterpreter() {
     if (!checkPreCondition()) {
@@ -372,9 +584,9 @@ public class LivyInterpreterIT {
         Thread cancelThread = new Thread() {
           @Override
           public void run() {
-            // invoke cancel after 3 seconds to wait job starting
+            // invoke cancel after 1 millisecond to wait job starting
             try {
-              Thread.sleep(3000);
+              Thread.sleep(1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }
@@ -421,8 +633,15 @@ public class LivyInterpreterIT {
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(2, result.message().size());
-
       assertTrue(result.message().get(1).getData().contains("Spark Application Id"));
+
+      // html output
+      String htmlCode = "println(\"%html <h1> hello </h1>\")";
+      result = sparkInterpreter.interpret(htmlCode, context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(2, result.message().size());
+      assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
+
     } finally {
       sparkInterpreter.close();
     }
@@ -463,9 +682,9 @@ public class LivyInterpreterIT {
         Thread cancelThread = new Thread() {
           @Override
           public void run() {
-            // invoke cancel after 3 seconds to wait job starting
+            // invoke cancel after 1 millisecond to wait job starting
             try {
-              Thread.sleep(3000);
+              Thread.sleep(1);
             } catch (InterruptedException e) {
               e.printStackTrace();
             }

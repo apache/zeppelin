@@ -47,7 +47,7 @@ public class SparkSqlInterpreterTest {
   public static void setUp() throws Exception {
     Properties p = new Properties();
     p.putAll(SparkInterpreterTest.getSparkTestProperties(tmpDir));
-    p.setProperty("zeppelin.spark.maxResult", "1000");
+    p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "false");
     p.setProperty("zeppelin.spark.sql.stacktrace", "false");
 
@@ -159,5 +159,22 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
     assertEquals("name\tage\ngates\tnull\n", ret.message().get(0).getData());
+  }
+
+  @Test
+  public void testMaxResults() {
+    repl.interpret("case class P(age:Int)", context);
+    repl.interpret(
+        "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8),P(9),P(10),P(11)))",
+        context);
+    if (isDataFrameSupported()) {
+      repl.interpret("gr.toDF.registerTempTable(\"gr\")", context);
+    } else {
+      repl.interpret("gr.registerTempTable(\"gr\")", context);
+    }
+
+    InterpreterResult ret = sql.interpret("select * from gr", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertTrue(ret.message().get(1).getData().contains("alert-warning"));
   }
 }

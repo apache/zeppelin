@@ -13,9 +13,9 @@
  */
 
 .result-chart-selector {
-    margin-bottom: 10px; 
-    position: relative; 
-    display: inline-block; 
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
     vertical-align: middle;
 }
 
@@ -39,4 +39,10 @@
   -webkit-transform: rotate(90deg) scaleX(-1);
   -moz-transform: rotate(90deg) scaleX(-1);
   -ms-transform: rotate(90deg) scaleX(-1);
+}
+
+.result-alert {
+  padding: 15px;
+  border: 1px solid transparent;
+  border-radius: 4px;
 }

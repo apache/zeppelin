@@ -130,12 +130,11 @@ mvn clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.3 -Pscala-2.10
 -`-Pscala-2.10` tells maven to build with Scala v2.10.
 
 
-**Note:** You may wish to include additional build flags such as `-Ppyspark` or `-Psparkr`.  See [the build section of github for more details](https://github.com/apache/zeppelin#build).
-
 **Note:** You can build against any version of Spark that has a Zeppelin build profile available. The key is to make sure you check out the matching version of Spark to build. At the time of this writing, Spark 1.6 was the most recent Spark version available.
 
 **Note:** On build failures. Having installed Zeppelin close to 30 times now, I will tell you that sometimes the build fails for seemingly no reason.
 As long as you didn't edit any code, it is unlikely the build is failing because of something you did. What does tend to happen, is some dependency that maven is trying to download is unreachable.  If your build fails on this step here are some tips:
+
 - Don't get discouraged.
 - Scroll up and read through the logs. There will be clues there.
 - Retry (that is, run the `mvn clean package -DskipTests -Pspark-1.6` again)
@@ -154,7 +153,7 @@ Use `ifconfig` to determine the host machine's IP address. If you are not famili
 
 Open a web-browser on a machine connected to the same network as the host (or in the host operating system if using a virtual machine).  Navigate to http://`yourip`:8080, where yourip is the IP address you found in `ifconfig`.
 
-See the [Zeppelin tutorial](../tutorial/tutorial.md) for basic Zeppelin usage. It is also advised that you take a moment to check out the tutorial notebook that is included with each Zeppelin install, and to familiarize yourself with basic notebook functionality.
+See the [Zeppelin tutorial](../tutorial/tutorial.html) for basic Zeppelin usage. It is also advised that you take a moment to check out the tutorial notebook that is included with each Zeppelin install, and to familiarize yourself with basic notebook functionality.
 
 ##### Flink Test
 Create a new notebook named "Flink Test" and copy and paste the following code.
@@ -417,6 +416,6 @@ You should be able check the Flink and Spark webuis (at something like http://`y
 
 ### Next Steps
 
-Check out the [tutorial](./tutorial.md) for more cool things you can do with your new toy!
+Check out the [tutorial](./tutorial.html) for more cool things you can do with your new toy!
 
 [Join the community](http://zeppelin.apache.org/community.html), ask questions and contribute! Every little bit helps.

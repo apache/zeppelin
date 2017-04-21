@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -254,6 +255,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResult.message().get(1).getType());
+    assertTrue(interpreterResult.message().get(1).getData().contains("alert-warning"));
   }
 
   @Test
@@ -293,9 +296,9 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 1);
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3, null);
 
-    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ");
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ", CompletionType.keyword.name());
 
     assertEquals(1, completionList.size());
     assertEquals(true, completionList.contains(correctCompletionKeyword));
@@ -447,5 +450,33 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("@TESTVARIABLE\n2\n", interpreterResult.message().get(0).getData());
+  }
+
+  @Test
+  public void testExcludingComments() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "/* ; */\n" +
+        "-- /* comment\n" +
+        "--select * from test_table\n" +
+        "select * from test_table; /* some comment ; */\n" +
+        "/*\n" +
+        "select * from test_table;\n" +
+        "*/\n" +
+        "-- a ; b\n" +
+        "select * from test_table WHERE ID = ';--';\n" +
+        "select * from test_table WHERE ID = '/*' -- test";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(3, interpreterResult.message().size());
   }
 }

@@ -153,7 +153,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Angular (backend API)](./displaysystem/back-end-angular.html)
   * [Angular (frontend API)](./displaysystem/front-end-angular.html)
 
-####More
+#### More
 
 * Notebook Storage: a guide about saving notebooks to external storage
   * [Git Storage](./storage/storage.html#notebook-storage-in-local-git-repository)
@@ -172,6 +172,11 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
+* Helium Framework (Experimental)
+  * [Writing Zeppelin Application](./development/writingzeppelinapplication.html)
+  * [Writing Zeppelin Spell](./development/writingzeppelinspell.html)
+  * [Writing Zeppelin Visualization: Basic](./development/writingzeppelinvisualization.html)
+  * [Writing Zeppelin Visualization: Transformation](./development/writingzeppelinvisualization_transformation.html)
 * Advanced
   * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
   * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
@@ -180,9 +185,6 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Zeppelin on CDH (via Docker)](./install/cdh.html)
 * Contribute
   * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
-  * [Writing Zeppelin Application (Experimental)](./development/writingzeppelinapplication.html)
-  * [Writing Zeppelin Spell (Experimental)](./development/writingzeppelinspell.html)
-  * [Writing Zeppelin Visualization (Experimental)](./development/writingzeppelinvisualization.html)
   * [How to contribute (code)](./development/howtocontribute.html)
   * [How to contribute (documentation website)](./development/howtocontributewebsite.html)
 

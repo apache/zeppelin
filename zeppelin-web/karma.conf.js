@@ -37,6 +37,9 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      // for polyfill
+      'node_modules/babel-polyfill/dist/polyfill.js',
+
       // bower:js
       'bower_components/jquery/dist/jquery.js',
       'bower_components/es5-shim/es5-shim.js',
@@ -124,8 +127,7 @@ module.exports = function(config) {
 
     preprocessors: {
       'src/*/{*.js,!(test)/**/*.js}': 'coverage',
-      'src/index.js': ['webpack', 'sourcemap',],
-      'src/**/*.test.js': ['webpack', 'sourcemap',],
+      'src/**/*.js': ['webpack', 'sourcemap',],
     },
 
     coverageReporter: {

@@ -12,37 +12,36 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter);
+angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter)
 
-function jobManagerFilter() {
-  function filterContext(jobItems, filterConfig) {
-    var filterValueInterpreter = filterConfig.filterValueInterpreter;
-    var filterValueNotebookName = filterConfig.filterValueNotebookName;
-    var isSortByAsc = filterConfig.isSortByAsc;
-    var filterItems = jobItems;
+function jobManagerFilter () {
+  function filterContext (jobItems, filterConfig) {
+    let filterValueInterpreter = filterConfig.filterValueInterpreter
+    let filterValueNotebookName = filterConfig.filterValueNotebookName
+    let isSortByAsc = filterConfig.isSortByAsc
+    let filterItems = jobItems
 
     if (filterValueInterpreter === undefined) {
-      filterItems = _.filter(filterItems, function(jobItem) {
-        return jobItem.interpreter === undefined ? true : false;
-      });
+      filterItems = _.filter(filterItems, function (jobItem) {
+        return jobItem.interpreter === undefined ? true : false
+      })
     } else if (filterValueInterpreter !== '*') {
-      filterItems = _.where(filterItems, {interpreter: filterValueInterpreter});
+      filterItems = _.where(filterItems, {interpreter: filterValueInterpreter})
     }
 
     if (filterValueNotebookName !== '') {
-      filterItems = _.filter(filterItems, function(jobItem) {
-        var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
-        var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
-        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
-      });
+      filterItems = _.filter(filterItems, function (jobItem) {
+        let lowerFilterValue = filterValueNotebookName.toLocaleLowerCase()
+        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase()
+        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'))
+      })
     }
 
-    filterItems = _.sortBy(filterItems, function(sortItem) {
-      return sortItem.noteName.toLowerCase();
-    });
+    filterItems = _.sortBy(filterItems, function (sortItem) {
+      return sortItem.noteName.toLowerCase()
+    })
 
-    return isSortByAsc ? filterItems : filterItems.reverse();
+    return isSortByAsc ? filterItems : filterItems.reverse()
   }
-  return filterContext;
+  return filterContext
 }
-

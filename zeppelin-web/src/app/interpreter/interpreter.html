@@ -109,18 +109,18 @@ limitations under the License.
           <small ng-switch="setting.status">
             <small ng-switch-when="READY">
               <i style="color: green; margin-right: 3px;" class="fa fa-circle"
-                 tooltip="Ready">
+                 uib-tooltip="Ready">
               </i>
             </small>
             <small ng-switch-when="ERROR">
               <i style="color: red; cursor: pointer" class="fa fa-circle"
                  ng-click="showErrorMessage(setting)"
-                 tooltip="Error downloading dependencies">
+                 uib-tooltip="Error downloading dependencies">
               </i>
             </small>
             <small ng-switch-default>
               <i style="color: blue" class="fa fa-spinner spinAnimation"
-                 tooltip="Dependencies are downloading">
+                 uib-tooltip="Dependencies are downloading">
               </i>
             </small>
           </small>
@@ -196,7 +196,7 @@ limitations under the License.
                 <li
                   ng-if="getInterpreterRunningOption(setting.id) === 'Globally'">
                   <a style="cursor:pointer"
-                     tooltip="Single interpreter instance are shared across notes"
+                     uib-tooltip="Single interpreter instance are shared across notes"
                      ng-click="setPerNoteOption(setting.id, 'shared')">
                     shared per note
                   </a>
@@ -205,7 +205,7 @@ limitations under the License.
                 <li>
                   <a style="cursor:pointer"
                      ng-if="getInterpreterRunningOption(setting.id) === 'Per Note'"
-                     tooltip="Separate Interpreter instance for each note"
+                     uib-tooltip="Separate Interpreter instance for each note"
                      ng-click="setPerNoteOption(setting.id, 'scoped')">
                     scoped per note
                   </a>
@@ -213,7 +213,7 @@ limitations under the License.
                 <li>
                   <a style="cursor:pointer"
                      ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
-                     tooltip="Separate Interpreter instance for each note"
+                     uib-tooltip="Separate Interpreter instance for each note"
                      ng-click="setPerUserOption(setting.id, 'scoped')">
                     scoped per user
                   </a>
@@ -222,7 +222,7 @@ limitations under the License.
                 <li>
                   <a style="cursor:pointer"
                      ng-if="getInterpreterRunningOption(setting.id) === 'Per Note'"
-                     tooltip="Separate Interpreter process for each note"
+                     uib-tooltip="Separate Interpreter process for each note"
                      ng-click="setPerNoteOption(setting.id, 'isolated')">
                     isolated per note
                   </a>
@@ -230,7 +230,7 @@ limitations under the License.
                 <li>
                   <a style="cursor:pointer"
                      ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
-                     tooltip="Separate Interpreter process for each note"
+                     uib-tooltip="Separate Interpreter process for each note"
                      ng-click="setPerUserOption(setting.id, 'isolated')">
                     isolated per user
                   </a>
@@ -285,14 +285,14 @@ limitations under the License.
                 <ul class="dropdown-menu" role="menu">
                   <li>
                     <a style="cursor:pointer"
-                       tooltip="Separate Interpreter instance for each note"
+                       uib-tooltip="Separate Interpreter instance for each note"
                        ng-click="setPerNoteOption(setting.id, 'scoped')">
                       scoped per note
                     </a>
                   </li>
                   <li>
                     <a style="cursor:pointer"
-                       tooltip="Separate Interpreter process for each note"
+                       uib-tooltip="Separate Interpreter process for each note"
                        ng-click="setPerNoteOption(setting.id, 'isolated')">
                       isolated per note
                     </a>
