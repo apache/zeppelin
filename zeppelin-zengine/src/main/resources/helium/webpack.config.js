@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+var path = require('path');
+
 module.exports = {
     entry: './src/load.js',
     output: { path: './', filename: 'helium.bundle.js', },
