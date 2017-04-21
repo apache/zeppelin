@@ -318,13 +318,17 @@ public class LivyInterpreterIT {
             + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
-        assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]"));
+        //python2 has u and python3 don't have u
+        assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]")
+            || result.message().get(0).getData().contains("[Row(_1='hello', _2=20)]"));
       } else {
         result = pysparkInterpreter.interpret("df=spark.createDataFrame([(\"hello\",20)])\n"
             + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
-        assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]"));
+        //python2 has u and python3 don't have u
+        assertTrue(result.message().get(0).getData().contains("[Row(_1=u'hello', _2=20)]")
+            || result.message().get(0).getData().contains("[Row(_1='hello', _2=20)]"));
       }
 
       // test magic api
