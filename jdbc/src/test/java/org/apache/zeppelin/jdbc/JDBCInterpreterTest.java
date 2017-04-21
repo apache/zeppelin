@@ -334,18 +334,18 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
      * 'jdbc1' interpreter has user('dbuser')/password('dbpassword') property
      * 'jdbc2' interpreter doesn't have user/password property
      * 'user1' doesn't have Credential information.
-     * 'user2' has 'jdbc2' Credential information that is same with database account.
+     * 'user2' has 'jdbc2' Credential information that is 'user2Id' / 'user2Pw' as id and password
      */
 
     JDBCInterpreter jdbc1 = new JDBCInterpreter(getDBProperty("dbuser", "dbpassword"));
-    JDBCInterpreter jdbc2 = new JDBCInterpreter(getDBProperty(null, null));
+    JDBCInterpreter jdbc2 = new JDBCInterpreter(getDBProperty("", ""));
 
     AuthenticationInfo user1Credential = getUserAuth("user1", null, null, null);
-    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "dbuser", "dbpassword");
+    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "user2Id","user2Pw");
 
     // user1 runs jdbc1
     jdbc1.open();
-    InterpreterContext ctx1 = new InterpreterContext("", "1", "jdbc.jdbc1", "", "", user1Credential,
+    InterpreterContext ctx1 = new InterpreterContext("", "1", "jdbc1", "", "", user1Credential,
       null, null, null, null, null, null);
     jdbc1.interpret("", ctx1);
 
@@ -356,7 +356,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // user1 runs jdbc2
     jdbc2.open();
-    InterpreterContext ctx2 = new InterpreterContext("", "1", "jdbc.jdbc2", "", "", user1Credential,
+    InterpreterContext ctx2 = new InterpreterContext("", "1", "jdbc2", "", "", user1Credential,
       null, null, null, null, null, null);
     jdbc2.interpret("", ctx2);
 
@@ -367,7 +367,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // user2 runs jdbc1
     jdbc1.open();
-    InterpreterContext ctx3 = new InterpreterContext("", "1", "jdbc.jdbc1", "", "", user2Credential,
+    InterpreterContext ctx3 = new InterpreterContext("", "1", "jdbc1", "", "", user2Credential,
       null, null, null, null, null, null);
     jdbc1.interpret("", ctx3);
 
@@ -378,13 +378,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // user2 runs jdbc2
     jdbc2.open();
-    InterpreterContext ctx4 = new InterpreterContext("", "1", "jdbc.jdbc2", "", "", user2Credential,
+    InterpreterContext ctx4 = new InterpreterContext("", "1", "jdbc2", "", "", user2Credential,
       null, null, null, null, null, null);
     jdbc2.interpret("", ctx4);
 
     JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
-    assertNull(user2JDBC2Conf.getPropertyMap("default").get("user"));
-    assertNull(user2JDBC2Conf.getPropertyMap("default").get("password"));
+    assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("default").get("user"));
+    assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("default").get("password"));
     jdbc2.close();
   }
  }

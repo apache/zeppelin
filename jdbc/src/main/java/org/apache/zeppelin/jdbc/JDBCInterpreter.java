@@ -156,7 +156,7 @@ public class JDBCInterpreter extends Interpreter {
       logger.debug("propertyKey: {}", propertyKey);
       String[] keyValue = propertyKey.split("\\.", 2);
       if (2 == keyValue.length) {
-        logger.info("key: {}, value: {}", keyValue[0], keyValue[1]);
+        logger.debug("key: {}, value: {}", keyValue[0], keyValue[1]);
 
         Properties prefixProperties;
         if (basePropretiesMap.containsKey(keyValue[0])) {
@@ -267,6 +267,7 @@ public class JDBCInterpreter extends Interpreter {
 
   private boolean existAccountInBaseProperty(String propertyKey) {
     return basePropretiesMap.get(propertyKey).containsKey(USER_KEY) &&
+        !isEmpty((String) basePropretiesMap.get(propertyKey).get(USER_KEY)) &&
         basePropretiesMap.get(propertyKey).containsKey(PASSWORD_KEY);
   }
 
@@ -313,7 +314,6 @@ public class JDBCInterpreter extends Interpreter {
       }
     }
     jdbcUserConfigurations.setPropertyMap(propertyKey, basePropretiesMap.get(propertyKey));
-
     if (existAccountInBaseProperty(propertyKey)) {
       return;
     }
@@ -680,7 +680,7 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run SQL command '{}'", cmd);
+    logger.debug("Run SQL command '{}'", cmd);
     String propertyKey = getPropertyKey(cmd);
 
     if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
@@ -688,8 +688,7 @@ public class JDBCInterpreter extends Interpreter {
     }
 
     cmd = cmd.trim();
-
-    logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
+    logger.debug("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
     return executeSql(propertyKey, cmd, contextInterpreter);
   }
 
