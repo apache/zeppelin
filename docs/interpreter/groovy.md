@@ -39,7 +39,8 @@ def r = HTTP.get(
   headers: [
     'Accept':'application/json',
     //'Authorization:' : g.getProperty('search_auth'),
-  ] 
+  ],
+  ssl : g.getProperty('search_ssl') // assume groovy interpreter property search_ssl = HTTP.getNaiveSSLContext()
 )
 //check response code
 if( r.response.code==200 ) {
