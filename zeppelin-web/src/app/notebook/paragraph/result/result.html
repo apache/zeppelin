@@ -15,6 +15,8 @@ limitations under the License.
 <div>
   <div ng-include src="'app/notebook/paragraph/result/result-chart-selector.html'"></div>
   <div
+    ng-mouseout="onMouseOut()"
+    ng-mouseover="onMouseOver()"
     id="p{{id}}_resize"
     ng-if="!config.helium.activeApp"
     style="padding-bottom: 5px;"
@@ -52,7 +54,9 @@ limitations under the License.
     </div>
 
     <div ng-if="type == 'TEXT'"
-         class="plainTextContainer">
+         class="plainTextContainer"
+         ng-style="getPointerEvent()"
+    >
       <div class="fa fa-level-down scroll-paragraph-down"
            ng-show="showScrollDownIcon()"
            ng-click="scrollParagraphDown()"
