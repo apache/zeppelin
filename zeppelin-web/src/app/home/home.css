@@ -133,6 +133,7 @@ a.navbar-brand:hover {
 .dropdown-menu > .scrollbar-container > li > a,
 .dropdown-menu .notebook-list-item {
   display: block;
+  text-decoration: none;
   padding: 1px 10px;
   clear: both;
   font-weight: normal;
