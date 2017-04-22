@@ -260,6 +260,67 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testConnectionMetaData() throws SQLException, IOException {
+
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String command = "explore";
+
+    InterpreterResult interpreterResult = t.interpret(command, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+
+    String testOutput = interpreterResult.message().get(0).getData().replaceAll("H2-TEST-([0-9]+)",
+      "H2-TEST-1");
+
+    assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tTABLE_TYPE\tREMARKS\tTYPE_NAME\tTYPE_NAME\t" +
+      "TYPE_NAME\tTYPE_NAME\tTYPE_NAME\tSQL\nH2-TEST-1\tINFORMATION_SCHEMA\t" +
+      "CATALOGS\tSYSTEM TABLE\t\tnull\tnull\tnull\tnull\tnull\tnull\n", testOutput);
+  }
+
+  @Test
+  public void testTableMetaData() throws SQLException, IOException {
+
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String command = "explore TEST_TABLE";
+
+    InterpreterResult interpreterResult = t.interpret(command, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+
+    System.out.println("Printed:\n" + interpreterResult.message().get(0).getData());
+    String testOutput = interpreterResult.message().get(0).getData().replaceAll("H2-TEST-([0-9]+)",
+            "H2-TEST-1");
+
+    assertEquals("TABLE_CATALOG\tTABLE_SCHEMA\tTABLE_NAME\tCOLUMN_NAME\tDATA_TYPE\tTYPE_NAME\t" +
+      "CHARACTER_MAXIMUM_LENGTH\tCHARACTER_MAXIMUM_LENGTH\tNUMERIC_SCALE\tNUMERIC_PRECISION_RADIX" +
+      "\tNULLABLE\tREMARKS\tCOLUMN_DEFAULT\tDATA_TYPE\tSQL_DATETIME_SUB\tCHARACTER_OCTET_LENGTH\t" +
+      "ORDINAL_POSITION\tIS_NULLABLE\tSCOPE_CATALOG\tSCOPE_SCHEMA\tSCOPE_TABLE\tSOURCE_DATA_TYPE\t" +
+      "IS_AUTOINCREMENT\tSCOPE_CATLOG\nH2-TEST-1\tPUBLIC\tTEST_TABLE\tID\t12\t" +
+      "VARCHAR\t255\t255\t0\t10\t1\t\tnull\t12\t0\t255\t1\tYES\tnull\tnull\tnull\tnull\tNO\tnull\n"
+      , testOutput);
+  }
+
+  @Test
   public void concurrentSettingTest() {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.jdbc.concurrent.use", "true");
