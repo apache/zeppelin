@@ -46,7 +46,7 @@ import java.util.Map;
  * RemoteInterpreterEventPoller is counter part in ZeppelinServer
  */
 public class RemoteInterpreterEventClient implements ResourcePoolConnector {
-  private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEvent.class);
+  private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
   private final List<RemoteInterpreterEvent> eventQueue = new LinkedList<>();
   private final List<ResourceSet> getAllResourceResponse = new LinkedList<>();
   private final Map<ResourceId, Object> getResourceResponse = new HashMap<>();
@@ -415,6 +415,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   }
 
   private void sendEvent(RemoteInterpreterEvent event) {
+    logger.debug("Send Event: " + event);
     synchronized (eventQueue) {
       eventQueue.add(event);
       eventQueue.notifyAll();
@@ -446,7 +447,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     appendOutput.put("appId", appId);
     appendOutput.put("type", type);
     appendOutput.put("data", output);
-    logger.info("onAppoutputUpdate = {}", output);
+    logger.debug("onAppoutputUpdate = {}", output);
     sendEvent(new RemoteInterpreterEvent(
         RemoteInterpreterEventType.OUTPUT_UPDATE,
         gson.toJson(appendOutput)));

@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('popoverHtmlUnsafePopup', popoverHtmlUnsafePopup);
+angular.module('zeppelinWebApp').directive('popoverHtmlUnsafePopup', popoverHtmlUnsafePopup)
 
-function popoverHtmlUnsafePopup() {
+function popoverHtmlUnsafePopup () {
   return {
     restrict: 'EA',
     replace: true,
     scope: {title: '@', content: '@', placement: '@', animation: '&', isOpen: '&'},
     templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
-  };
+  }
 }
-
