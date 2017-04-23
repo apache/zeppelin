@@ -229,8 +229,11 @@ public class InterpreterOutput extends OutputStream {
               return;
             }
           }
-          // not a defined display system
+          // not a defined display system, probably a spell type
+          setType(InterpreterResult.Type.SPELL);
+          buffer.write(displaySystem.getBytes());
           flushBuffer = true;
+          previousChar = b;
         } else {
           buffer.write(b);
           previousChar = b;

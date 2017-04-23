@@ -319,7 +319,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
    * Render multiple sub results for custom display
    */
   $scope.renderCustomDisplay = function(type, data) {
-    var splits = data.split('\n');
+
+    var splits = data.split(' ');
     type = data.substring(0, splits[0].length)
     data = data.substring(splits[0].length, data.length)
 
