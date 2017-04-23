@@ -140,22 +140,12 @@ module.exports = function(grunt) {
         src: ['<%= yeoman.app %>/index.html'],
         ignorePath: /\.\.\//,
         exclude: [
-          'bower_components/headroom.js/dist/headroom.js',
-          'bower_components/headroom.js/dist/headroom.min.js',
-          'bower_components/headroom.js/dist/jQuery.headroom.js',
-          'bower_components/headroom.js/dist/jQuery.headroom.min.js',
-          'bower_components/headroom.js/dist/angular.headroom.js',
-          'bower_components/headroom.js/dist/angular.headroom.min.js',
         ]
       },
       dist: {
         src: ['<%= yeoman.app %>/index.html'],
         ignorePath: /\.\.\//,
         exclude: [
-          'bower_components/headroom.js/dist/headroom.min.js',
-          'bower_components/headroom.js/dist/jQuery.headroom.js',
-          'bower_components/headroom.js/dist/jQuery.headroom.min.js',
-          'bower_components/headroom.js/dist/angular.headroom.min.js',
         ],
       },
       test: {
@@ -163,10 +153,6 @@ module.exports = function(grunt) {
         src: '<%= karma.unit.configFile %>',
         ignorePath: /\.\.\//,
         exclude: [
-          'bower_components/headroom.js/dist/headroom.min.js',
-          'bower_components/headroom.js/dist/jQuery.headroom.js',
-          'bower_components/headroom.js/dist/jQuery.headroom.min.js',
-          'bower_components/headroom.js/dist/angular.headroom.min.js',
         ],
         fileTypes: {
           js: {

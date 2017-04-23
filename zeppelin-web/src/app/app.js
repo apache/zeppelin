@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+import 'headroom.js'
+import 'headroom.js/dist/angular.headroom'
+
 const requiredModules = [
   'ngCookies',
   'ngAnimate',

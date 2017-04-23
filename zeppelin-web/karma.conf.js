@@ -90,8 +90,6 @@ module.exports = function(config) {
       'bower_components/MathJax/MathJax.js',
       'bower_components/clipboard/dist/clipboard.js',
       'bower_components/ngclipboard/dist/ngclipboard.js',
-      'bower_components/headroom.js/dist/headroom.js',
-      'bower_components/headroom.js/dist/angular.headroom.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
 

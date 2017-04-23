@@ -140,6 +140,11 @@ module.exports = function makeWebpackConfig () {
   config.module = {
     preLoaders: [],
     loaders: [{
+      // headroom 0.9.3 doesn't work with webpack
+      // https://github.com/WickyNilliams/headroom.js/issues/213#issuecomment-281106943
+      test: require.resolve('headroom.js'),
+      loader: 'imports-loader?this=>window,define=>false,exports=>false'
+    }, {
       // JS LOADER
       // Reference: https://github.com/babel/babel-loader
       // Transpile .js files using babel-loader
