@@ -95,6 +95,7 @@
     <governator.version>1.14.2</governator.version>
     <gson.version>2.2</gson.version>
     <guice.version>4.1.0</guice.version>
+    <gson-extras.version>0.2.1</gson-extras.version>
     <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
     <httpcomponents.core.version>4.3.3</httpcomponents.core.version>
@@ -195,9 +196,15 @@
       </dependency>
 
       <dependency>
+<<<<<<< HEAD
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>${guice.version}</version>
+=======
+        <groupId>org.danilopianini</groupId>
+        <artifactId>gson-extras</artifactId>
+        <version>${gson-extras.version}</version>
+>>>>>>> master
       </dependency>
 
       <dependency>

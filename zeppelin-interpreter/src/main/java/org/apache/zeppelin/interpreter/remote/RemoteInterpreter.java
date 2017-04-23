@@ -381,14 +381,14 @@ public class RemoteInterpreter extends Interpreter {
       context.getConfig().putAll(remoteConfig);
 
       if (form == FormType.NATIVE) {
-        GUI remoteGui = gson.fromJson(remoteResult.getGui(), GUI.class);
+        GUI remoteGui = GUI.fromJson(remoteResult.getGui());
         currentGUI.clear();
         currentGUI.setParams(remoteGui.getParams());
         currentGUI.setForms(remoteGui.getForms());
       } else if (form == FormType.SIMPLE) {
         final Map<String, Input> currentForms = currentGUI.getForms();
         final Map<String, Object> currentParams = currentGUI.getParams();
-        final GUI remoteGUI = gson.fromJson(remoteResult.getGui(), GUI.class);
+        final GUI remoteGUI = GUI.fromJson(remoteResult.getGui());
         final Map<String, Input> remoteForms = remoteGUI.getForms();
         final Map<String, Object> remoteParams = remoteGUI.getParams();
         currentForms.putAll(remoteForms);

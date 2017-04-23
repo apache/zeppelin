@@ -40,7 +40,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -114,14 +114,33 @@ public class ZeppelinContext {
   public SQLContext sqlContext;
   private GUI gui;
 
+  /**
+   * @deprecated use z.textbox instead
+   *
+   */
+  @Deprecated
   @ZeppelinApi
   public Object input(String name) {
-    return input(name, "");
+    return textbox(name);
+  }
+
+  /**
+   * @deprecated use z.textbox instead
+   */
+  @Deprecated
+  @ZeppelinApi
+  public Object input(String name, Object defaultValue) {
+    return textbox(name, defaultValue.toString());
   }
 
   @ZeppelinApi
-  public Object input(String name, Object defaultValue) {
-    return gui.input(name, defaultValue);
+  public Object textbox(String name) {
+    return textbox(name, "");
+  }
+
+  @ZeppelinApi
+  public Object textbox(String name, String defaultValue) {
+    return gui.textbox(name, defaultValue);
   }
 
   @ZeppelinApi

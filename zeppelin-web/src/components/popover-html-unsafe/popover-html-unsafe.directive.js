@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('popoverHtmlUnsafe', popoverHtmlUnsafe);
+angular.module('zeppelinWebApp').directive('popoverHtmlUnsafe', popoverHtmlUnsafe)
 
-function popoverHtmlUnsafe($tooltip) {
-  'ngInject';
+function popoverHtmlUnsafe ($uibTooltip) {
+  'ngInject'
 
-  return $tooltip('popoverHtmlUnsafe', 'popover', 'click');
+  return $uibTooltip('popoverHtmlUnsafe', 'popover', 'click')
 }
-
