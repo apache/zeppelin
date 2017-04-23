@@ -196,15 +196,15 @@
       </dependency>
 
       <dependency>
-<<<<<<< HEAD
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>${guice.version}</version>
-=======
+      </dependency>
+
+      <dependency>
         <groupId>org.danilopianini</groupId>
         <artifactId>gson-extras</artifactId>
         <version>${gson-extras.version}</version>
->>>>>>> master
       </dependency>
 
       <dependency>
