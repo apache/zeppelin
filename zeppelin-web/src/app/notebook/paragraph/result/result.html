@@ -21,13 +21,13 @@ limitations under the License.
     ng-if="!config.helium.activeApp"
     style="padding-bottom: 5px;"
     resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
-       resizable on-resize="resize(width, height);">
+    resizable on-resize="resize(width, height);">
 
-    <div ng-if="type=='TABLE'">
+    <div ng-if="type=='TABLE'"
+         ng-style="getPointerEvent()">
       <!-- graph setting -->
       <div class="option lightBold" style="overflow: visible;"
-           ng-show="graphMode!='table'
-                    && config.graph.optionOpen && !asIframe && !viewOnly">
+           ng-show="graphMode!='table' && config.graph.optionOpen && !asIframe && !viewOnly">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="trsetting{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>
@@ -55,8 +55,7 @@ limitations under the License.
 
     <div ng-if="type == 'TEXT'"
          class="plainTextContainer"
-         ng-style="getPointerEvent()"
-    >
+         ng-style="getPointerEvent()">
       <div class="fa fa-level-down scroll-paragraph-down"
            ng-show="showScrollDownIcon()"
            ng-click="scrollParagraphDown()"
@@ -70,30 +69,40 @@ limitations under the License.
            uib-tooltip="Scroll Top"></div>
     </div>
 
-    <div id="p{{id}}_custom" class="resultContained"
-      ng-if="!isDefaultDisplay()">
+    <div id="p{{id}}_custom"
+         class="resultContained"
+         ng-if="!isDefaultDisplay()"
+         ng-style="getPointerEvent()">
     </div>
 
-    <div id="p{{id}}_elem" class="resultContained"
-         ng-if="type == 'ELEMENT'">
+    <div id="p{{id}}_elem"
+         class="resultContained"
+         ng-if="type == 'ELEMENT'"
+         ng-style="getPointerEvent()">
     </div>
 
-    <div id="p{{id}}_html" class="resultContained"
-         ng-if="type == 'HTML'">
+    <div id="p{{id}}_html"
+         class="resultContained"
+         ng-if="type == 'HTML'"
+         ng-style="getPointerEvent()">
     </div>
 
-    <div id="p{{id}}_angular" class="resultContained"
-         ng-if="type == 'ANGULAR'">
+    <div id="p{{id}}_angular"
+         class="resultContained"
+         ng-if="type == 'ANGULAR'"
+         ng-style="getPointerEvent()">
     </div>
 
     <img id="{{id}}_img"
          ng-if="type == 'IMG'"
-         ng-src="{{getBase64ImageSrc(result.data)}}" />
+         ng-src="{{getBase64ImageSrc(result.data)}}"
+         ng-style="getPointerEvent()" />
   </div>
 
   <div ng-repeat="app in apps">
     <div id="p{{app.id}}"
-         ng-show="config.helium.activeApp == app.id">
+         ng-show="config.helium.activeApp == app.id"
+         ng-style="getPointerEvent()">
     </div>
   </div>
 </div>
