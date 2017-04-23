@@ -124,6 +124,9 @@ public class RemoteInterpreterEventPoller extends Thread {
       AngularObjectRegistry angularObjectRegistry = interpreterGroup.getAngularObjectRegistry();
 
       try {
+        if (event.getType() != RemoteInterpreterEventType.NO_OP) {
+          logger.debug("Receive message from RemoteInterpreter Process: " + event.toString());
+        }
         if (event.getType() == RemoteInterpreterEventType.NO_OP) {
           continue;
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_ADD) {
@@ -263,9 +266,18 @@ public class RemoteInterpreterEventPoller extends Thread {
         logger.error("Can't handle event " + event, e);
       }
     }
+    try {
+      clearUnreadEvents(interpreterProcess.getClient());
+    } catch (Exception e1) {
+      logger.error("Can't get RemoteInterpreterEvent", e1);
+    }
     if (appendFuture != null) {
       appendFuture.cancel(true);
     }
+  }
+
+  private void clearUnreadEvents(Client client) throws TException {
+    while (client.getEvent().getType() != RemoteInterpreterEventType.NO_OP) {}
   }
 
   private void progressRemoteZeppelinControlEvent(

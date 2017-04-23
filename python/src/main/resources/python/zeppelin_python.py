@@ -53,7 +53,7 @@ class PyZeppelinContext(object):
 
   def __init__(self, z):
     self.z = z
-    self.paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
+    self.paramOption = gateway.jvm.org.apache.zeppelin.display.ui.OptionInput.ParamOption
     self.javaList = gateway.jvm.java.util.ArrayList
     self.max_result = 1000
     self._displayhook = lambda *args: None

@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
+angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl)
 
-function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {
-  'ngInject';
+function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {
+  'ngInject'
 
-  $scope.SigningIn = false;
-  $scope.loginParams = {};
-  $scope.login = function() {
-
-    $scope.SigningIn = true;
+  $scope.SigningIn = false
+  $scope.loginParams = {}
+  $scope.login = function () {
+    $scope.SigningIn = true
     $http({
       method: 'POST',
       url: baseUrlSrv.getRestApiBase() + '/login',
@@ -32,57 +31,54 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
         'userName': $scope.loginParams.userName,
         'password': $scope.loginParams.password
       })
-    }).then(function successCallback(response) {
-      $rootScope.ticket = response.data.body;
-      angular.element('#loginModal').modal('toggle');
-      $rootScope.$broadcast('loginSuccess', true);
-      $rootScope.userName = $scope.loginParams.userName;
-      $scope.SigningIn = false;
+    }).then(function successCallback (response) {
+      $rootScope.ticket = response.data.body
+      angular.element('#loginModal').modal('toggle')
+      $rootScope.$broadcast('loginSuccess', true)
+      $rootScope.userName = $scope.loginParams.userName
+      $scope.SigningIn = false
 
-      //redirect to the page from where the user originally was
+      // redirect to the page from where the user originally was
       if ($location.search() && $location.search()['ref']) {
-        $timeout(function() {
-          var redirectLocation = $location.search()['ref'];
-          $location.$$search = {};
-          $location.path(redirectLocation);
-        }, 100);
-
+        $timeout(function () {
+          let redirectLocation = $location.search()['ref']
+          $location.$$search = {}
+          $location.path(redirectLocation)
+        }, 100)
       }
-    }, function errorCallback(errorResponse) {
-      $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
-      $scope.SigningIn = false;
-    });
+    }, function errorCallback (errorResponse) {
+      $scope.loginParams.errorText = 'The username and password that you entered don\'t match.'
+      $scope.SigningIn = false
+    })
+  }
 
-  };
-
-  var initValues = function() {
+  let initValues = function () {
     $scope.loginParams = {
       userName: '',
       password: ''
-    };
-  };
-
-  //handle session logout message received from WebSocket
-  $rootScope.$on('session_logout', function(event, data) {
-    if ($rootScope.userName !== '') {
-      $rootScope.userName = '';
-      $rootScope.ticket = undefined;
-
-      setTimeout(function() {
-        $scope.loginParams = {};
-        $scope.loginParams.errorText = data.info;
-        angular.element('.nav-login-btn').click();
-      }, 1000);
-      var locationPath = $location.path();
-      $location.path('/').search('ref', locationPath);
     }
-  });
+  }
+
+  // handle session logout message received from WebSocket
+  $rootScope.$on('session_logout', function (event, data) {
+    if ($rootScope.userName !== '') {
+      $rootScope.userName = ''
+      $rootScope.ticket = undefined
+
+      setTimeout(function () {
+        $scope.loginParams = {}
+        $scope.loginParams.errorText = data.info
+        angular.element('.nav-login-btn').click()
+      }, 1000)
+      let locationPath = $location.path()
+      $location.path('/').search('ref', locationPath)
+    }
+  })
 
   /*
    ** $scope.$on functions below
    */
-  $scope.$on('initLoginValues', function() {
-    initValues();
-  });
+  $scope.$on('initLoginValues', function () {
+    initValues()
+  })
 }
-

@@ -12,26 +12,51 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv);
+angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv)
 
-function arrayOrderingSrv(TRASH_FOLDER_ID) {
-  'ngInject';
+function arrayOrderingSrv (TRASH_FOLDER_ID) {
+  'ngInject'
 
-  var arrayOrderingSrv = this;
+  let arrayOrderingSrv = this
 
-  this.noteListOrdering = function(note) {
+  this.noteListOrdering = function (note) {
     if (note.id === TRASH_FOLDER_ID) {
-      return '\uFFFF';
+      return '\uFFFF'
     }
-    return arrayOrderingSrv.getNoteName(note);
-  };
+    return arrayOrderingSrv.getNoteName(note)
+  }
 
-  this.getNoteName = function(note) {
+  this.getNoteName = function (note) {
     if (note.name === undefined || note.name.trim() === '') {
-      return 'Note ' + note.id;
+      return 'Note ' + note.id
     } else {
-      return note.name;
+      return note.name
     }
-  };
-}
+  }
 
+  this.noteComparator = function (v1, v2) {
+    let note1 = v1.value
+    let note2 = v2.value
+
+    if (note1.id === TRASH_FOLDER_ID) {
+      return 1
+    }
+
+    if (note2.id === TRASH_FOLDER_ID) {
+      return -1
+    }
+
+    if (note1.children === undefined && note2.children !== undefined) {
+      return 1
+    }
+
+    if (note1.children !== undefined && note2.children === undefined) {
+      return -1
+    }
+
+    let noteName1 = arrayOrderingSrv.getNoteName(note1)
+    let noteName2 = arrayOrderingSrv.getNoteName(note2)
+
+    return noteName1.localeCompare(noteName2)
+  }
+}

@@ -12,29 +12,29 @@
  * limitations under the License.
  */
 
-import Nvd3ChartVisualization from './visualization-nvd3chart';
-import PivotTransformation from '../../tabledata/pivot';
+import Nvd3ChartVisualization from './visualization-nvd3chart'
+import PivotTransformation from '../../tabledata/pivot'
 
 /**
  * Visualize data in bar char
  */
 export default class BarchartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
-    super(targetEl, config);
+  constructor (targetEl, config) {
+    super(targetEl, config)
 
-    this.pivot = new PivotTransformation(config);
-  };
+    this.pivot = new PivotTransformation(config)
+  }
 
-  type() {
-    return 'multiBarChart';
-  };
+  type () {
+    return 'multiBarChart'
+  }
 
-  getTransformation() {
-    return this.pivot;
-  };
+  getTransformation () {
+    return this.pivot
+  }
 
-  render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+  render (pivot) {
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -42,79 +42,77 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       pivot.values,
       true,
       true,
-      true);
+      true)
 
-    super.render(d3Data);
-    this.config.changeXLabel(this.config.xLabelStatus);
-  };
+    super.render(d3Data)
+    this.config.changeXLabel(this.config.xLabelStatus)
+  }
 
   /**
    * Set new config
    */
-  setConfig(config) {
-    super.setConfig(config);
-    this.pivot.setConfig(config);
-  };
+  setConfig (config) {
+    super.setConfig(config)
+    this.pivot.setConfig(config)
+  }
 
-  configureChart(chart) {
-    var self = this;
-    var configObj = self.config;
+  configureChart (chart) {
+    let self = this
+    let configObj = self.config
 
-    chart.yAxis.axisLabelDistance(50);
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
+    chart.yAxis.axisLabelDistance(50)
+    chart.yAxis.tickFormat(function (d) { return self.yAxisTickFormat(d) })
 
-    self.chart.stacked(this.config.stacked);
+    self.chart.stacked(this.config.stacked)
 
     self.config.changeXLabel = function(type) {
       switch (type) {
         case 'default':
-          self.chart._options['showXAxis'] = true;
-          self.chart._options['margin'] = {bottom: 50};
-          self.chart.xAxis.rotateLabels(0);
-          configObj.xLabelStatus = 'default';
-          break;
+          self.chart._options['showXAxis'] = true
+          self.chart._options['margin'] = {bottom: 50}
+          self.chart.xAxis.rotateLabels(0)
+          configObj.xLabelStatus = 'default'
+          break
         case 'rotate':
-          self.chart._options['showXAxis'] = true;
-          self.chart._options['margin'] = {bottom: 140};
-          self.chart.xAxis.rotateLabels(-45);
-          configObj.xLabelStatus = 'rotate';
-          break;
+          self.chart._options['showXAxis'] = true
+          self.chart._options['margin'] = {bottom: 140}
+          self.chart.xAxis.rotateLabels(-45)
+          configObj.xLabelStatus = 'rotate'
+          break
         case 'hide':
-          self.chart._options['showXAxis'] = false;
-          self.chart._options['margin'] = {bottom: 50};
-          d3.select('#' + self.targetEl[0].id + '> svg').select('g.nv-axis.nv-x').selectAll('*').remove();
-          configObj.xLabelStatus = 'hide';
-          break;
+          self.chart._options['showXAxis'] = false
+          self.chart._options['margin'] = {bottom: 50}
+          d3.select('#' + self.targetEl[0].id + '> svg').select('g.nv-axis.nv-x').selectAll('*').remove()
+          configObj.xLabelStatus = 'hide'
+          break
       }
-    };
+    }
 
     self.config.isXLabelStatus = function(type) {
       if (configObj.xLabelStatus === type) {
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
-    };
+    }
 
     this.chart.dispatch.on('stateChange', function(s) {
-      configObj.stacked = s.stacked;
+      configObj.stacked = s.stacked
 
       // give some time to animation finish
       setTimeout(function() {
-        self.emitConfig(configObj);
-      }, 500);
-    });
-  };
-
-
+        self.emitConfig(configObj)
+      }, 500)
+    })
+  }
 
   getSetting(chart) {
-    var self = this;
-    var configObj = self.config;
+    let self = this
+    let configObj = self.config
 
     // default to visualize xLabel
-    if (typeof(configObj.xLabelStatus) === 'undefined') {
-      configObj.changeXLabel('default');
+    if (typeof (configObj.xLabelStatus) === 'undefined') {
+      configObj.changeXLabel('default')
     }
 
     return {
@@ -147,10 +145,10 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       scope: {
         config: configObj,
         save: function(type) {
-          configObj.changeXLabel(type);
-          self.emitConfig(configObj);
+          configObj.changeXLabel(type)
+          self.emitConfig(configObj)
         }
       }
-    };
-  };
+    }
+  }
 }
