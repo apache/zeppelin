@@ -148,15 +148,9 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         icon: $sce.trustAsHtml(vis.icon)
       })
       builtInVisualizations[vis.id] = {
-<<<<<<< HEAD
         class: vis.classrenderResult
       };
     });
-=======
-        class: vis.class
-      }
-    })
->>>>>>> master
 
     updateData(result, config, paragraph, index)
     renderResult($scope.type)
