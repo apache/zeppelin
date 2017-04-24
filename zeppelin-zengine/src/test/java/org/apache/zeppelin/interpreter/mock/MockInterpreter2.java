@@ -30,7 +30,7 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreter2 extends Interpreter{
-  Map<String, Object> vars = new HashMap<String, Object>();
+  Map<String, Object> vars = new HashMap<>();
 
 	public MockInterpreter2(Properties property) {
 		super(property);
@@ -97,7 +97,8 @@ public class MockInterpreter2 extends Interpreter{
 	}
 
 	@Override
-	public List<InterpreterCompletion> completion(String buf, int cursor) {
+	public List<InterpreterCompletion> completion(String buf, int cursor,
+			InterpreterContext interpreterContext) {
 		return null;
 	}
 }

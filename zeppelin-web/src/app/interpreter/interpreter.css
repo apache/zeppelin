@@ -39,6 +39,15 @@
   display: block;
   height: 23px;
   border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.interpreter textarea {
+  min-height: 23px;
+  border-radius: 3px;
+  vertical-align: middle;
 }
 
 .interpreter .interpreter-title {
@@ -74,6 +83,14 @@
   overflow-y: auto;
 }
 
+.permissionsForm {
+  list-style-type: none;
+  background: #EFEFEF;
+  padding: 10px 10px 10px 10px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E5E5;
+}
+
 .interpreterSettingAdd {
   margin : 5px 5px 5px 5px;
   padding : 10px 10px 10px 10px;
@@ -100,4 +117,9 @@
 .blackOpc:hover {
   color: #000;
   opacity: .5;
+}
+
+.remove-margin-top-bottom {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
 }

@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Install A Zeppelin ready Virtual Machine"
-description: ""
+title: "Apache Zeppelin on Vagrant Virtual Machine"
+description: "Apache Zeppelin provides a script for running a virtual machine for development through Vagrant. The script will create a virtual machine with core dependencies pre-installed, required for developing Apache Zeppelin."
 group: install
 ---
 <!--
@@ -19,17 +19,17 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Vagrant Virtual Machine for Apache Zeppelin
+# Apache Zeppelin on Vagrant Virtual Machine
 
 <div id="toc"></div>
 
 ## Overview
 
-Apache Zeppelin distribution includes a scripts directory
+Apache Zeppelin distribution includes a script directory
 
  `scripts/vagrant/zeppelin-dev`
 
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin. It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
 For SparkR users, this script includes several helpful [R Libraries](#r-extras).
 
@@ -75,7 +75,7 @@ into a directory on your host machine, or directly in your virtual machine.
 
 Cloning Zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 
-Cloning the project again may seem counter intuitive, since this script likley originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the Zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
+Cloning the project again may seem counter intuitive, since this script likely originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the Zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
 
 Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 
@@ -88,7 +88,7 @@ By default, Vagrant will share your project directory (the directory with the Va
 Running the following commands in the guest machine should display these expected versions:
 
 `node --version` should report *v0.12.7*
-`mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
+`mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.7.0_85*
 
 The virtual machine consists of:
 
@@ -96,7 +96,7 @@ The virtual machine consists of:
  - Node.js 0.12.7
  - npm 2.11.3
  - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
- - Maven 3.3.3
+ - Maven 3.3.9
  - Git
  - Unzip
  - libfontconfig to avoid phatomJs missing dependency issues
@@ -110,7 +110,7 @@ This assumes you've already cloned the project either on the host machine in the
 
 ```
 cd /zeppelin
-mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 
@@ -163,7 +163,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import StringIO
 
-# clear out any previous plots on this notebook
+# clear out any previous plots on this note
 plt.clf()
 
 def show(p):

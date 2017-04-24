@@ -1,0 +1,54 @@
+[
+  {
+    "group": "elasticsearch",
+    "name": "elasticsearch",
+    "className": "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter",
+    "properties": {
+      "elasticsearch.host": {
+        "envName": "ELASTICSEARCH_HOST",
+        "propertyName": "elasticsearch.host",
+        "defaultValue": "localhost",
+        "description": "The host for Elasticsearch"
+      },
+      "elasticsearch.port": {
+        "envName": "ELASTICSEARCH_PORT",
+        "propertyName": "elasticsearch.port",
+        "defaultValue": "9300",
+        "description": "The port for Elasticsearch"
+      },
+      "elasticsearch.client.type": {
+        "envName": "ELASTICSEARCH_CLIENT_TYPE",
+        "propertyName": "elasticsearch.client.type",
+        "defaultValue": "transport",
+        "description": "The type of client for Elasticsearch (transport or http)"
+      },
+      "elasticsearch.cluster.name": {
+        "envName": "ELASTICSEARCH_CLUSTER_NAME",
+        "propertyName": "elasticsearch.cluster.name",
+        "defaultValue": "elasticsearch",
+        "description": "The cluster name for Elasticsearch"
+      },
+      "elasticsearch.result.size": {
+        "envName": "ELASTICSEARCH_RESULT_SIZE",
+        "propertyName": "elasticsearch.result.size",
+        "defaultValue": "10",
+        "description": "The size of the result set of a search query"
+      },
+      "elasticsearch.basicauth.username": {
+        "envName": "ELASTICSEARCH_BASIC_AUTH_USERNAME",
+        "propertyName": "elasticsearch.basicauth.username",
+        "defaultValue": "",
+        "description": "Username for a basic authentication"
+      },
+      "elasticsearch.basicauth.password": {
+        "envName": "ELASTICSEARCH_BASIC_AUTH_PASSWORD",
+        "propertyName": "elasticsearch.basicauth.password",
+        "defaultValue": "",
+        "description": "Password for a basic authentication"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

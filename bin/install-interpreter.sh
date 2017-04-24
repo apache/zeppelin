@@ -40,6 +40,7 @@ fi
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 
 addJarInDir "${ZEPPELIN_HOME}/lib"
+addJarInDir "${ZEPPELIN_HOME}/lib/interpreter"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_INSTALL_INTERPRETER_MAIN ${@}

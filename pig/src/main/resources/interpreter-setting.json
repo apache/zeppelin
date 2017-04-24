@@ -1,0 +1,48 @@
+[
+  {
+    "group": "pig",
+    "name": "script",
+    "className": "org.apache.zeppelin.pig.PigInterpreter",
+    "properties": {
+      "zeppelin.pig.execType": {
+        "envName": null,
+        "propertyName": "zeppelin.pig.execType",
+        "defaultValue": "mapreduce",
+        "description": "local | mapreduce | tez"
+      },
+      "zeppelin.pig.includeJobStats": {
+        "envName": null,
+        "propertyName": "zeppelin.pig.includeJobStats",
+        "defaultValue": "false",
+        "description": "flag to include job stats in output"
+      }
+    },
+    "editor": {
+      "language": "pig",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "pig",
+    "name": "query",
+    "className": "org.apache.zeppelin.pig.PigQueryInterpreter",
+    "properties": {
+      "zeppelin.pig.execType": {
+        "envName": null,
+        "propertyName": "zeppelin.pig.execType",
+        "defaultValue": "mapreduce",
+        "description": "local | mapreduce | tez"
+      },
+      "zeppelin.pig.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.pig.maxResult",
+        "defaultValue": "1000",
+        "description": "max row number for %pig.query"
+      }
+    },
+    "editor": {
+      "language": "pig",
+      "editOnDblClick": false
+    }
+  }
+]

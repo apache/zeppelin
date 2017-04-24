@@ -44,7 +44,7 @@ public class IgniteSqlInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
   private static final InterpreterContext INTP_CONTEXT =
-      new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null);
+      new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null);
 
   private Ignite ignite;
   private IgniteSqlInterpreter intp;
@@ -93,8 +93,8 @@ public class IgniteSqlInterpreterTest {
     InterpreterResult result = intp.interpret("select name, age from person where age > 10", INTP_CONTEXT);
 
     assertEquals(Code.SUCCESS, result.code());
-    assertEquals(Type.TABLE, result.type());
-    assertEquals("NAME\tAGE\nsun\t100\nmoon\t50\n", result.message());
+    assertEquals(Type.TABLE, result.message().get(0).getType());
+    assertEquals("NAME\tAGE\nsun\t100\nmoon\t50\n", result.message().get(0).getData());
   }
 
   @Test

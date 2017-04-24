@@ -64,7 +64,7 @@ public class ScaldingInterpreterTest {
     }
 
     InterpreterGroup intpGroup = new InterpreterGroup();
-    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+    context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry(
             intpGroup.getId(), null), null,
         new LinkedList<InterpreterContextRunner>(), null);
@@ -108,7 +108,7 @@ public class ScaldingInterpreterTest {
     // when interpret incomplete expression
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
-    assertTrue(incomplete.message().length() > 0); // expecting some error
+    assertTrue(incomplete.message().get(0).getData().length() > 0); // expecting some error
                                                    // message
   }
 

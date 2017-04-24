@@ -25,7 +25,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 
 /**
- * Search (both, indexing and query) the notebooks.
+ * Search (both, indexing and query) the notes.
  * 
  * Intended to have multiple implementation, i.e:
  *  - local Lucene (in-memory, on-disk)
@@ -34,7 +34,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 public interface SearchService {
 
   /**
-   * Full-text search in all the notebooks
+   * Full-text search in all the notes
    *
    * @param queryStr a query
    * @return A list of matching paragraphs (id, text, snippet w/ highlight)
@@ -59,7 +59,7 @@ public interface SearchService {
   public void addIndexDocs(Collection<Note> collection);
 
   /**
-   * Indexes the given notebook.
+   * Indexes the given note.
    *
    * @throws IOException If there is a low-level I/O error
    */

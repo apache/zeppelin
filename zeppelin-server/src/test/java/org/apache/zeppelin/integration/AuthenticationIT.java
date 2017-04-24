@@ -16,6 +16,13 @@
  */
 package org.apache.zeppelin.integration;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.AbstractZeppelinIT;
@@ -34,10 +41,6 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 
 /**
  * Created for org.apache.zeppelin.integration on 13/06/16.
@@ -47,7 +50,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @Rule
   public ErrorCollector collector = new ErrorCollector();
-
+  static String shiroPath;
   static String authShiro = "[users]\n" +
       "admin = password1, admin\n" +
       "finance1 = finance1, finance\n" +
@@ -77,9 +80,13 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     }
 
     try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      File file = new File(conf.getShiroPath());
-      originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
+      shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
+      File file = new File(shiroPath);
+      if (file.exists()) {
+        originalShiro = StringUtils.join(FileUtils.readLines(file, "UTF-8"), "\n");
+      }
       FileUtils.write(file, authShiro, "UTF-8");
     } catch (IOException e) {
       LOG.error("Error in AuthenticationIT startUp::", e);
@@ -95,9 +102,14 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-      File file = new File(conf.getShiroPath());
-      FileUtils.write(file, originalShiro, "UTF-8");
+      if (!StringUtils.isBlank(shiroPath)) {
+        File file = new File(shiroPath);
+        if (StringUtils.isBlank(originalShiro)) {
+          FileUtils.deleteQuietly(file);
+        } else {
+          FileUtils.write(file, originalShiro, "UTF-8");
+        }
+      }
     } catch (IOException e) {
       LOG.error("Error in AuthenticationIT tearDown::", e);
     }
@@ -109,22 +121,39 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
-    sleep(1000, false);
+    ZeppelinITUtils.sleep(1000, false);
     pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
     pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
-    sleep(1000, false);
+    ZeppelinITUtils.sleep(1000, false);
+  }
+
+  private void testShowNotebookListOnNavbar() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+          MAX_BROWSER_TIMEOUT_SEC).click();
+      assertTrue(driver.findElements(By.xpath("//a[@class=\"notebook-list-item ng-scope\"]")).size() > 0);
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+              MAX_BROWSER_TIMEOUT_SEC).click();
+      pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
+              MAX_BROWSER_TIMEOUT_SEC).click();
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testShowNotebookListOnNavbar ", e);
+    }
   }
 
   private void logoutUser(String userName) {
-    sleep(500, false);
+    ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]")).click();
-    sleep(500, false);
+    ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='logout()']")).click();
-    sleep(5000, false);
+        userName + "')]//a[@ng-click='navbar.logout()']")).click();
+    ZeppelinITUtils.sleep(5000, false);
   }
 
   //  @Test
@@ -142,7 +171,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       authenticationIT.logoutUser("admin");
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+      handleException("Exception in AuthenticationIT while testCreateNewButton ", e);
     }
   }
 
@@ -158,14 +187,14 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
 
-      pollingWait(By.xpath("//span[@tooltip='Note permissions']"),
+      pollingWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
-      pollingWait(By.xpath("//input[@ng-model='permissions.owners']"), MAX_BROWSER_TIMEOUT_SEC)
-          .sendKeys("finance");
-      pollingWait(By.xpath("//input[@ng-model='permissions.readers']"), MAX_BROWSER_TIMEOUT_SEC)
-          .sendKeys("finance");
-      pollingWait(By.xpath("//input[@ng-model='permissions.writers']"), MAX_BROWSER_TIMEOUT_SEC)
-          .sendKeys("finance");
+      pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+          MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
+      pollingWait(By.xpath(".//*[@id='selectReaders']/following::span//input"),
+          MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
+      pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
+          MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
           .sendKeys(Keys.ENTER);
 
@@ -175,13 +204,21 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       authenticationIT.logoutUser("finance1");
 
       authenticationIT.authenticationUser("hr1", "hr1");
-      pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-          MAX_BROWSER_TIMEOUT_SEC).click();
+      try {
+        WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+            MAX_BROWSER_TIMEOUT_SEC);
+        collector.checkThat("Check is user has permission to view this note link", false,
+            CoreMatchers.equalTo(element.isDisplayed()));
+      } catch (Exception e) {
+        //This should have failed, nothing to worry.
+      }
+
+      driver.get(new URI(driver.getCurrentUrl()).resolve("/#/notebook/" + noteId).toString());
 
       List<WebElement> privilegesModal = driver.findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
               "//div[contains(.,'Insufficient privileges')]"));
-      collector.checkThat("Check is user has permission to view this notebook", 1,
+      collector.checkThat("Check is user has permission to view this note", 1,
           CoreMatchers.equalTo(privilegesModal.size()));
       driver.findElement(
           By.xpath("//div[@class='modal-content'][contains(.,'Insufficient privileges')]" +
@@ -189,13 +226,21 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       authenticationIT.logoutUser("hr1");
 
       authenticationIT.authenticationUser("finance2", "finance2");
-      pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-          MAX_BROWSER_TIMEOUT_SEC).click();
+      try {
+        WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+            MAX_BROWSER_TIMEOUT_SEC);
+        collector.checkThat("Check is user has permission to view this note link", true,
+            CoreMatchers.equalTo(element.isDisplayed()));
+      } catch (Exception e) {
+        //This should have failed, nothing to worry.
+      }
+
+      driver.get(new URI(driver.getCurrentUrl()).resolve("/#/notebook/" + noteId).toString());
 
       privilegesModal = driver.findElements(
           By.xpath("//div[@class='modal-content']//div[@class='bootstrap-dialog-header']" +
               "//div[contains(.,'Insufficient privileges')]"));
-      collector.checkThat("Check is user has permission to view this notebook", 0,
+      collector.checkThat("Check is user has permission to view this note", 0,
           CoreMatchers.equalTo(privilegesModal.size()));
       deleteTestNotebook(driver);
       authenticationIT.logoutUser("finance2");

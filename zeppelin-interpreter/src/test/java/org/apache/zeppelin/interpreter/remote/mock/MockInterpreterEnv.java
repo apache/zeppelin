@@ -26,15 +26,6 @@ import java.util.Properties;
 
 
 public class MockInterpreterEnv extends Interpreter {
-  static {
-    Interpreter.register(
-        "interpreterA",
-        "group1",
-        MockInterpreterA.class.getName(),
-        new InterpreterPropertyBuilder().build());
-
-  }
-
 
   public MockInterpreterEnv(Properties property) {
     super(property);
@@ -76,7 +67,8 @@ public class MockInterpreterEnv extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 

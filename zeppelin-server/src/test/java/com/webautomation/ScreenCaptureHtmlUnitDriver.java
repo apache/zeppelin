@@ -114,8 +114,8 @@ public class ScreenCaptureHtmlUnitDriver extends HtmlUnitDriver implements Takes
     // http://stackoverflow.com/questions/2244272/how-can-i-tell-htmlunits-webclient-to-download-images-and-css
     protected byte[] downloadCssAndImages(WebClient webClient, HtmlPage page) throws Exception {
         WebWindow currentWindow = webClient.getCurrentWindow();
-        Map<String, String> urlMapping = new HashMap<String, String>();
-        Map<String, byte[]> files = new HashMap<String, byte[]>();
+        Map<String, String> urlMapping = new HashMap<>();
+        Map<String, byte[]> files = new HashMap<>();
         WebWindow window = null;
         try {
             window = webClient.getWebWindowByName(page.getUrl().toString()+"_screenshot");
@@ -199,7 +199,7 @@ public class ScreenCaptureHtmlUnitDriver extends HtmlUnitDriver implements Takes
     }
 
     List<String> getLinksFromCss(String css) {
-        List<String> result = new LinkedList<String>();
+        List<String> result = new LinkedList<>();
         Matcher m = cssUrlPattern.matcher(css);
         while (m.find()) { // find next match
             result.add( m.group(2));

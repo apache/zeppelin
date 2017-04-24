@@ -19,50 +19,57 @@ limitations under the License.
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="#/">
-        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin
+        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin" /> Zeppelin
       </a>
     </div>
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
       <ul class="nav navbar-nav" ng-if="ticket">
-        <li class="dropdown" dropdown>
-          <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
-          <ul class="dropdown-menu navbar-dropdown-maxHeight" role="menu">
-            <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
+        <li class="dropdown notebook-list-dropdown" uib-dropdown>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" uib-dropdown-toggle>Notebook <span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            <li ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
-            <div id="notebook-list" class="scrollbar-container">
+            <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.root.children | filter:query.q | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-notebookList-elem.html'">
+              <div ng-if="!query.q || query.q === ''">
+              <li ng-repeat="note in navbar.notes.root.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by note.id"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
+            </div>
+            <div ng-if="query.q">
+              <li ng-repeat="note in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering track by note.id"
+                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+              </li>
+            </div>
             </div>
           </ul>
         </li>
+        <li><a href="#/jobmanager">Job</a></li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
         <li class="nav-component" ng-if="ticket">
         <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
 
-          <form role="search" data-ng-model="searchForm"
+          <form role="search" data-ng-model="navbar.searchForm"
             style="display: inline-block; margin: 0px"
              class="navbar-form"
-             ng-submit="search(searchForm.searchTerm)">
+             ng-submit="navbar.search(navbar.searchForm.searchTerm)">
             <div class="input-group">
               <input
                 type="text"
-                style="min-width:200px;"
-                ng-model="searchForm.searchTerm"
+                ng-model="navbar.searchForm.searchTerm"
                 id="searchTermId"
                 ng-disabled="!navbar.connected"
                 class="form-control"
-                placeholder="Search your Notebooks"
+                placeholder="Search your Notes"
               />
               <span class="input-group-btn">
                 <button
                   type="submit"
                   class="btn btn-default"
-                  ng-disabled="!navbar.connected || !searchForm.searchTerm"
+                  ng-disabled="!navbar.connected || !navbar.searchForm.searchTerm"
                 >
                   <i class="glyphicon glyphicon-search"></i>
                 </button>
@@ -73,9 +80,9 @@ limitations under the License.
         <li style="margin-left: 10px;">
           <div class="dropdown">
             <i ng-if="navbar.connected" class="fa fa-circle server-connected"
-               tooltip="WebSocket Connected" tooltip-placement="bottom" style="margin-top: 7px; margin-right: 0px; vertical-align: top"></i>
+               uib-tooltip="WebSocket Connected" tooltip-placement="bottom" style="margin-top: 7px; margin-right: 0px; vertical-align: top"></i>
             <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
-               tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
+               uib-tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
             <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0; padding-left: 0px;">
               <span class="username">{{ticket.principal}}</span>
               <span class="caret" style="margin-bottom: 8px"></span>
@@ -85,16 +92,18 @@ limitations under the License.
               <li><a href="" data-toggle="modal" data-target="#aboutModal">About Zeppelin</a></li>
               <li role="separator" style="margin: 5px 0;" class="divider"></li>
               <li><a href="#/interpreter">Interpreter</a></li>
+              <li><a href="#/notebookRepos">Notebook Repos</a></li>
               <li><a href="#/credential">Credential</a></li>
+              <li><a href="#/helium">Helium</a></li>
               <li><a href="#/configuration">Configuration</a></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
-              <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="logout()">Logout</a></li>
+              <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="navbar.logout()">Logout</a></li>
             </ul>
           </div>
         </li>
         <li class="nav-component" ng-if="!ticket">
           <button class="btn nav-login-btn" data-toggle="modal" data-target="#loginModal"
-                  ng-click="showLoginWindow()">Login
+                  ng-click="navbar.showLoginWindow()">Login
           </button>
         </li>
       </ul>
@@ -102,7 +111,7 @@ limitations under the License.
   </div>
 </div>
 <div id="aboutModal" class="modal fade" role="dialog"
-     tabindex='-1'>
+     tabindex="-1">
   <div class="modal-dialog">
 
     <!-- Modal content-->
@@ -113,19 +122,19 @@ limitations under the License.
       </div>
       <div class="modal-body">
 
-        <div class="about">
-          <div class="logo">
-            <img src="assets/images/zepLogo.png" alt="Apache Zeppelin" title="Apache Zeppelin">
+        <div class="row about">
+          <div class="hidden-xs col-sm-4 logo">
+            <img src="assets/images/zepLogo.png" alt="Apache Zeppelin" title="Apache Zeppelin" />
           </div>
-          <div class="content">
+          <div class="col-xs-12 col-sm-8 content">
             <h3>Apache Zeppelin</h3>
-            <br>
+            <br/>
             <span id="i18n-14">Version</span>
             {{zeppelinVersion}}
-            <br>
-            <br>
+            <br/>
+            <br/>
             <a href="http://zeppelin.apache.org/" target="_blank"><span id="i18n-15">Get involved!</span></a>
-            <br>
+            <br/>
             <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank"><span id="i18n-16">Licensed under the Apache License, Version 2.0</span></a>
           </div>
         </div>

@@ -1,0 +1,64 @@
+<configuration>
+  <property>
+    <name>dfs.replication</name>
+    <value>1</value>
+  </property>
+
+
+  <property>
+    <name>dfs.data.dir</name>
+    <value>/data/hdfs</value>
+    <final>true</final>
+  </property>
+
+  <property>
+    <name>dfs.permissions</name>
+    <value>false</value>
+  </property>
+
+
+  <property>
+    <name>dfs.client.use.datanode.hostname</name>
+    <value>true</value>
+    <description>Whether clients should use datanode hostnames when
+      connecting to datanodes.
+    </description>
+  </property>
+
+  <property>
+    <name>dfs.datanode.use.datanode.hostname</name>
+    <value>true</value>
+    <description>Whether datanodes should use datanode hostnames when
+      connecting to other datanodes for data transfer.
+    </description>
+  </property>
+
+  <property>
+    <name>dfs.datanode.address</name>
+    <value>0.0.0.0:50010</value>
+    <description>
+      The address where the datanode server will listen to.
+      If the port is 0 then the server will start on a free port.
+    </description>
+  </property>
+
+  <property>
+    <name>dfs.datanode.http.address</name>
+    <value>0.0.0.0:50075</value>
+    <description>
+      The datanode http server address and port.
+      If the port is 0 then the server will start on a free port.
+    </description>
+  </property>
+
+  <property>
+    <name>dfs.datanode.ipc.address</name>
+    <value>0.0.0.0:50020</value>
+    <description>
+      The datanode ipc server address and port.
+      If the port is 0 then the server will start on a free port.
+    </description>
+  </property>
+
+</configuration>
+

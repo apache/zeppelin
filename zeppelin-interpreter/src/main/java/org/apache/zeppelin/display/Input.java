@@ -18,118 +18,52 @@
 package org.apache.zeppelin.display;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.display.ui.*;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Input type.
+ * Base class for dynamic forms. Also used as factory class of dynamic forms.
+ *
+ * @param <T>
  */
-public class Input implements Serializable {
-  /**
-   * Parameters option.
-   */
-  public static class ParamOption {
-    Object value;
-    String displayName;
+public class Input<T> implements Serializable {
 
-    public ParamOption(Object value, String displayName) {
-      super();
-      this.value = value;
-      this.displayName = displayName;
-    }
+  // @TODO(zjffdu). Use gson's RuntimeTypeAdapterFactory and remove the old input form support
+  // in future.
+  public static final RuntimeTypeAdapterFactory TypeAdapterFactory =
+      RuntimeTypeAdapterFactory.of(Input.class, "type")
+        .registerSubtype(TextBox.class, "TextBox")
+        .registerSubtype(Select.class, "Select")
+        .registerSubtype(CheckBox.class, "CheckBox")
+        .registerSubtype(OldInput.OldTextBox.class, "input")
+        .registerSubtype(OldInput.OldSelect.class, "select")
+        .registerSubtype(OldInput.OldCheckBox.class, "checkbox")
+        .registerSubtype(OldInput.class, null);
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+  protected String name;
+  protected String displayName;
+  protected T defaultValue;
+  protected boolean hidden;
+  protected String argument;
 
-      ParamOption that = (ParamOption) o;
-
-      if (value != null ? !value.equals(that.value) : that.value != null) return false;
-      return displayName != null ? displayName.equals(that.displayName) : that.displayName == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-      int result = value != null ? value.hashCode() : 0;
-      result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
-      return result;
-    }
-
-    public Object getValue() {
-      return value;
-    }
-
-    public void setValue(Object value) {
-      this.value = value;
-    }
-
-    public String getDisplayName() {
-      return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-      this.displayName = displayName;
-    }
-
+  public Input() {
   }
 
-  String name;
-  String displayName;
-  String type;
-  String argument;
-  Object defaultValue;
-  ParamOption[] options;
-  boolean hidden;
-
-  public Input(String name, Object defaultValue, String type) {
-    this.name = name;
-    this.displayName = name;
-    this.defaultValue = defaultValue;
-    this.type = type;
-  }
-
-  public Input(String name, Object defaultValue, String type, ParamOption[] options) {
-    this.name = name;
-    this.displayName = name;
-    this.defaultValue = defaultValue;
-    this.type = type;
-    this.options = options;
-  }
-
-  public Input(String name, String displayName, String type, String argument, Object defaultValue,
-      ParamOption[] options, boolean hidden) {
-    super();
-    this.name = name;
-    this.displayName = displayName;
-    this.argument = argument;
-    this.type = type;
-    this.defaultValue = defaultValue;
-    this.options = options;
-    this.hidden = hidden;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    return name.equals(((Input) o).getName());
+  public boolean isHidden() {
+    return hidden;
   }
 
   public String getName() {
-    return name;
+    return this.name;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public T getDefaultValue() {
+    return defaultValue;
   }
 
   public String getDisplayName() {
@@ -140,41 +74,37 @@ public class Input implements Serializable {
     this.displayName = displayName;
   }
 
-  public String getType() {
-    return type;
+  public void setArgument(String argument) {
+    this.argument = argument;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setHidden(boolean hidden) {
+    this.hidden = hidden;
   }
 
-  public Object getDefaultValue() {
-    return defaultValue;
+  public String getArgument() {
+    return argument;
   }
 
-  public void setDefaultValue(Object defaultValue) {
-    this.defaultValue = defaultValue;
+  public static TextBox textbox(String name, String defaultValue) {
+    return new TextBox(name, defaultValue);
   }
 
-  public ParamOption[] getOptions() {
-    return options;
+  public static Select select(String name, Object defaultValue, ParamOption[] options) {
+    return new Select(name, defaultValue, options);
   }
 
-  public void setOptions(ParamOption[] options) {
-    this.options = options;
-  }
-
-  public boolean isHidden() {
-    return hidden;
+  public static CheckBox checkbox(String name, Object[] defaultChecked, ParamOption[] options) {
+    return new CheckBox(name, defaultChecked, options);
   }
 
   // Syntax of variables: ${TYPE:NAME=DEFAULT_VALUE1|DEFAULT_VALUE2|...,VALUE1|VALUE2|...}
   // Type is optional. Type may contain an optional argument with syntax: TYPE(ARG)
   // NAME and VALUEs may contain an optional display name with syntax: NAME(DISPLAY_NAME)
   // DEFAULT_VALUEs may not contain display name
-  // Examples:  ${age}                              input form without default value
-  //            ${age=3}                            input form with default value
-  //            ${age(Age)=3}                       input form with display name and default value
+  // Examples:  ${age}                              textbox form without default value
+  //            ${age=3}                            textbox form with default value
+  //            ${age(Age)=3}                       textbox form with display name and default value
   //            ${country=US(United States)|UK|JP}  select form with
   //            ${checkbox( or ):country(Country)=US|JP,US(United States)|UK|JP}
   //                                                checkbox form with " or " as delimiter: will be
@@ -288,24 +218,39 @@ public class Input implements Serializable {
 
     }
 
-    return new Input(varName, displayName, type, arg, defaultValue, paramOptions, hidden);
+    Input input = null;
+    if (type == null) {
+      if (paramOptions == null) {
+        input = new TextBox(varName, (String) defaultValue);
+      } else {
+        input = new Select(varName, defaultValue, paramOptions);
+      }
+    } else if (type.equals("checkbox")) {
+      input = new CheckBox(varName, (Object[]) defaultValue, paramOptions);
+    } else {
+      throw new RuntimeException("Could not recognize dynamic form with type: " + type);
+    }
+    input.setArgument(arg);
+    input.setDisplayName(displayName);
+    input.setHidden(hidden);
+    return input;
   }
 
-  public static Map<String, Input> extractSimpleQueryParam(String script) {
-    Map<String, Input> params = new HashMap<String, Input>();
+  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script) {
+    LinkedHashMap<String, Input> forms = new LinkedHashMap<>();
     if (script == null) {
-      return params;
+      return forms;
     }
     String replaced = script;
 
     Matcher match = VAR_PTN.matcher(replaced);
     while (match.find()) {
-      Input param = getInputForm(match);
-      params.put(param.name, param);
+      Input form = getInputForm(match);
+      forms.put(form.name, form);
     }
 
-    params.remove("pql");
-    return params;
+    forms.remove("pql");
+    return forms;
   }
 
   private static final String DEFAULT_DELIMITER = ",";
@@ -320,20 +265,21 @@ public class Input implements Serializable {
       if (params.containsKey(input.name)) {
         value = params.get(input.name);
       } else {
-        value = input.defaultValue;
+        value = input.getDefaultValue();
       }
 
       String expanded;
       if (value instanceof Object[] || value instanceof Collection) {  // multi-selection
+        OptionInput optionInput = (OptionInput) input;
         String delimiter = input.argument;
         if (delimiter == null) {
           delimiter = DEFAULT_DELIMITER;
         }
         Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
                 : Arrays.asList((Object[]) value);
-        List<Object> validChecked = new LinkedList<Object>();
+        List<Object> validChecked = new LinkedList<>();
         for (Object o : checked) {  // filter out obsolete checked values
-          for (ParamOption option : input.getOptions()) {
+          for (ParamOption option : optionInput.getOptions()) {
             if (option.getValue().equals(o)) {
               validChecked.add(o);
               break;
@@ -387,14 +333,14 @@ public class Input implements Serializable {
   public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
       String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
-    List<String> splits = new ArrayList<String>();
+    List<String> splits = new ArrayList<>();
 
-    String curString = "";
+    StringBuilder curString = new StringBuilder();
 
     boolean escape = false; // true when escape char is found
     int lastEscapeOffset = -1;
     int blockStartPos = -1;
-    List<Integer> blockStack = new LinkedList<Integer>();
+    List<Integer> blockStack = new LinkedList<>();
 
     for (int i = 0; i < str.length(); i++) {
       char c = str.charAt(i);
@@ -408,16 +354,16 @@ public class Input implements Serializable {
       // escaped char comes
       if (escape == true) {
         if (escapeSeq.indexOf(c) < 0) {
-          curString += escapeChar;
+          curString.append(escapeChar);
         }
-        curString += c;
+        curString.append(c);
         escape = false;
         lastEscapeOffset = curString.length();
         continue;
       }
 
       if (blockStack.size() > 0) { // inside of block
-        curString += c;
+        curString.append(c);
         // check multichar block
         boolean multicharBlockDetected = false;
         for (int b = 0; b < blockStart.length; b++) {
@@ -453,11 +399,11 @@ public class Input implements Serializable {
           if (isNestedBlock(blockEnd[blockStack.get(0)]) == false) {
             for (String splitter : splitters) {
               if (splitter.compareTo(getBlockStr(blockEnd[blockStack.get(0)])) == 0) {
-                splits.add(curString);
+                splits.add(curString.toString());
                 if (includeSplitter == true) {
                   splits.add(splitter);
                 }
-                curString = "";
+                curString.setLength(0);
                 lastEscapeOffset = -1;
 
                 break;
@@ -475,11 +421,11 @@ public class Input implements Serializable {
           // forward check for splitter
           int curentLenght = i + splitter.length();
           if (splitter.compareTo(str.substring(i, Math.min(curentLenght, str.length()))) == 0) {
-            splits.add(curString);
+            splits.add(curString.toString());
             if (includeSplitter == true) {
               splits.add(splitter);
             }
-            curString = "";
+            curString.setLength(0);
             lastEscapeOffset = -1;
             i += splitter.length() - 1;
             splitted = true;
@@ -491,7 +437,7 @@ public class Input implements Serializable {
         }
 
         // add char to current string
-        curString += c;
+        curString.append(c);
 
         // check if block is started
         for (int b = 0; b < blockStart.length; b++) {
@@ -505,7 +451,7 @@ public class Input implements Serializable {
       }
     }
     if (curString.length() > 0) {
-      splits.add(curString.trim());
+      splits.add(curString.toString().trim());
     }
     return splits.toArray(new String[] {});
 

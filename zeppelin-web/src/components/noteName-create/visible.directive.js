@@ -11,32 +11,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').directive('modalvisible', function () {
-    return {
-        restrict: 'A',
-        scope: {
-	        	preVisibleCallback: '&previsiblecallback',
-	        	postVisibleCallback: '&postvisiblecallback',
-	        	targetinput: '@targetinput'
-        	   },
-        link: function(scope, elem, attrs) {
-        	// Add some listeners
-    		var previsibleMethod = scope.preVisibleCallback;
-    		var postVisibleMethod = scope.postVisibleCallback;
-    		elem.on('show.bs.modal',function(e) {
-    			var relatedTgt = angular.element(e.relatedTarget);
-    			var clone = relatedTgt.data('clone');
-    			var cloneNote = clone ? true : false;
-    			previsibleMethod()(cloneNote);
-    		});
-    		elem.on('shown.bs.modal', function(e) {
-    			if(scope.targetinput) {
-    			  angular.element(e.target).find('input#' + scope.targetinput ).select();
-    			}
-    			postVisibleMethod();
-    		});
+angular.module('zeppelinWebApp').directive('modalvisible', modalvisible)
+
+function modalvisible () {
+  return {
+    restrict: 'A',
+    scope: {
+      preVisibleCallback: '&previsiblecallback',
+      postVisibleCallback: '&postvisiblecallback',
+      targetinput: '@targetinput'
+    },
+    link: function (scope, element, attrs) {
+      // Add some listeners
+      let previsibleMethod = scope.preVisibleCallback
+      let postVisibleMethod = scope.postVisibleCallback
+      element.on('show.bs.modal', function (e) {
+        let relatedTarget = angular.element(e.relatedTarget)
+        let clone = relatedTarget.data('clone')
+        let sourceNoteName = relatedTarget.data('source-note-name')
+        let path = relatedTarget.data('path')
+        let cloneNote = clone ? true : false
+        previsibleMethod()(cloneNote, sourceNoteName, path)
+      })
+      element.on('shown.bs.modal', function (e) {
+        if (scope.targetinput) {
+          angular.element(e.target).find('input#' + scope.targetinput).select()
         }
-    };
-});
+        postVisibleMethod()
+      })
+    }
+  }
+}

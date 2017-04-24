@@ -1,0 +1,30 @@
+[
+  {
+    "group": "geode",
+    "name": "oql",
+    "className": "org.apache.zeppelin.geode.GeodeOqlInterpreter",
+    "properties": {
+      "geode.locator.host": {
+        "envName": null,
+        "propertyName": "geode.locator.host",
+        "defaultValue": "localhost",
+        "description": "The Geode Locator Host."
+      },
+      "geode.locator.port": {
+        "envName": null,
+        "propertyName": "geode.locator.port",
+        "defaultValue": "10334",
+        "description": "The Geode Locator Port."
+      },
+      "geode.max.result": {
+        "envName": null,
+        "propertyName": "geode.max.result",
+        "defaultValue": "1000",
+        "description": "Max number of OQL result to display."
+      }
+    },
+    "editor": {
+      "language": "sql"
+    }
+  }
+]

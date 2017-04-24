@@ -1,0 +1,63 @@
+{
+  "extends": ["eslint:recommended", "google", "standard"],
+  "env": {
+    "browser": true,
+    "jasmine": true,
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    },
+    "sourceType": "module"
+  },
+  "globals": {
+    "angular": false,
+    "inject": false,
+    "_": false,
+    "jQuery": false,
+    "hljs": false,
+    "confirm": false,
+    "alert": false,
+    "nv": false,
+    "ace": false,
+    "d3": false,
+    "MathJax": false,
+    "BootstrapDialog": false,
+    "Handsontable": false,
+    "moment": false,
+    "zeppelin" : false,
+    "process": false
+  },
+  "rules": {
+    "array-bracket-spacing": 0,
+    "space-before-function-paren": 0,
+    "no-unneeded-ternary": 0,
+    "comma-dangle": 0,
+    "object-curly-spacing": 0,
+    "standard/object-curly-even-spacing": 0,
+    "arrow-parens": 0,
+    "require-jsdoc": 0,
+    "valid-jsdoc": 0,
+    "no-invalid-this": 0,
+    "no-console": 0,
+    "guard-for-in": 0,
+    "no-mixed-operators": 1,
+    "no-useless-escape": 1,
+    "no-bitwise": 2,
+    "camelcase": 2,
+    "curly": 2,
+    "eqeqeq": 2,
+    "wrap-iife": [2, "any"],
+    "no-use-before-define": 0,
+    "new-cap": 2,
+    "no-caller": 2,
+    "quotes": [2, "single"],
+    "no-shadow": 0,
+    "no-undef": 2,
+    "no-unused-vars": [2, { "vars": "local", "args": "none" }],
+    "strict": [2, "global"],
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
+  }
+}

@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class SchedulerFactory implements SchedulerListener {
   private static final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
   ExecutorService executor;
-  Map<String, Scheduler> schedulers = new LinkedHashMap<String, Scheduler>();
+  Map<String, Scheduler> schedulers = new LinkedHashMap<>();
 
   private static SchedulerFactory singleton;
   private static Long singletonLock = new Long(0);
@@ -117,7 +117,7 @@ public class SchedulerFactory implements SchedulerListener {
   }
 
   public Collection<Scheduler> listScheduler(String name) {
-    List<Scheduler> s = new LinkedList<Scheduler>();
+    List<Scheduler> s = new LinkedList<>();
     synchronized (schedulers) {
       for (Scheduler ss : schedulers.values()) {
         s.add(ss);

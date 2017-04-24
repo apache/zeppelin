@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "Elasticsearch Interpreter"
-description: ""
-group: manual
+title: "Elasticsearch Interpreter for Apache Zeppelin"
+description: "Elasticsearch is a highly scalable open-source full-text search and analytics engine."
+group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # Elasticsearch Interpreter for Apache Zeppelin
@@ -33,7 +46,22 @@ group: manual
   <tr>
     <td>elasticsearch.port</td>
     <td>9300</td>
-    <td>Connection port <b>( Important: this is not the HTTP port, but the transport port )</b></td>
+    <td>Connection port <b>( Important: it depends on the client type, transport or http)</b></td>
+  </tr>
+  <tr>
+    <td>elasticsearch.client.type</td>
+    <td>transport</td>
+    <td>The type of client for Elasticsearch (transport or http)<b>( Important: the port depends on this value)</b></td>
+  </tr>
+  <tr>
+    <td>elasticsearch.basicauth.username</td>
+    <td></td>
+    <td>Username for a basic authentication (http)</b></td>
+  </tr>
+  <tr>
+    <td>elasticsearch.basicauth.password</td>
+    <td></td>
+    <td>Password for a basic authentication (http)</b></td>
   </tr>
   <tr>
     <td>elasticsearch.result.size</td>
@@ -230,7 +258,7 @@ delete /index/type/id
 ```
 
 ### Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```bash
 %elasticsearch

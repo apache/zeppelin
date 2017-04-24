@@ -1,9 +1,22 @@
 ---
 layout: page
-title: "Livy Interpreter"
-description: ""
-group: manual
+title: "Livy Interpreter for Apache Zeppelin"
+description: "Livy is an open source REST interface for interacting with Spark from anywhere. It supports executing snippets of code or programs in a Spark context that runs locally or in YARN."
+group: interpreter
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 # Livy Interpreter for Apache Zeppelin
@@ -27,10 +40,10 @@ Additional requirements for the Livy interpreter are:
 
 ## Configuration
 We added some common configurations for spark, and you can set any configuration you want.
-This link contains all spark configurations: http://spark.apache.org/docs/latest/configuration.html#available-properties.
+You can find all Spark configurations in [here](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
-Example: `spark.master` to `livy.spark.master`
-
+Example: `spark.driver.memory` to `livy.spark.driver.memory`
+  
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -38,21 +51,36 @@ Example: `spark.master` to `livy.spark.master`
     <th>Description</th>
   </tr>
   <tr>
-      <td>livy.spark.master</td>
-      <td>local[*]</td>
-      <td>Spark master uri. ex) spark://masterhost:7077</td>
-    </tr>
-  <tr>
     <td>zeppelin.livy.url</td>
     <td>http://localhost:8998</td>
     <td>URL where livy server is running</td>
   </tr>
   <tr>
-    <td>zeppelin.livy.spark.maxResult</td>
+    <td>zeppelin.livy.spark.sql.maxResult</td>
     <td>1000</td>
-    <td>Max number of SparkSQL result to display.</td>
+    <td>Max number of Spark SQL result to display.</td>
   </tr>
-    <tr>
+  <tr>
+    <td>zeppelin.livy.spark.sql.field.truncate</td>
+    <td>true</td>
+    <td>Whether to truncate field values longer than 20 characters or not</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.session.create_timeout</td>
+    <td>120</td>
+    <td>Timeout in seconds for session creation</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.displayAppInfo</td>
+    <td>false</td>
+    <td>Whether to display app info</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.pull_status.interval.millis</td>
+    <td>1000</td>
+    <td>The interval for checking paragraph execution status</td>
+  </tr>
+  <tr>
     <td>livy.spark.driver.cores</td>
     <td></td>
     <td>Driver cores. ex) 1, 2.</td>
@@ -102,8 +130,43 @@ Example: `spark.master` to `livy.spark.master`
     <td></td>
     <td>Upper bound for the number of executors.</td>
   </tr>
+    <tr>
+      <td>livy.spark.jars.packages</td>
+      <td></td>
+      <td>Adding extra libraries to livy interpreter</td>
+    </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.trustStore</td>
+    <td></td>
+    <td>client trustStore file. Used when livy ssl is enabled</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.trustStorePassword</td>
+    <td></td>
+    <td>password for trustStore file. Used when livy ssl is enabled</td>
+  </tr>  
 </table>
 
+**We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
+
+## Adding External libraries
+You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version. 
+
+Example
+
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Example</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+      <td>livy.spark.jars.packages</td>
+      <td>io.spray:spray-json_2.10:1.3.1</td>
+      <td>Adding extra libraries to livy interpreter</td>
+    </tr>
+  </table>
+  
 ## How to use
 Basically, you can use
 
@@ -138,7 +201,7 @@ When Zeppelin server is running with authentication enabled, then this interpret
 
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
 
 ```
 %livy.pyspark

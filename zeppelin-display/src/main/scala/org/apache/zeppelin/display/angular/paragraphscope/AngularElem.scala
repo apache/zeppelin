@@ -73,7 +73,7 @@ object AngularElem {
   }
 
   /**
-    * Disassociate (remove) all angular object in this notebook
+    * Disassociate (remove) all angular object in this note
     */
   def disassociate() = {
     val ic = InterpreterContext.get

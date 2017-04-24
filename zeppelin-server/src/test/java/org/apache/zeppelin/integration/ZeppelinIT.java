@@ -19,6 +19,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +28,8 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +137,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        *   z.run(2, context)
        * }
        */
-      setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, context)})");
+      setTextOfParagraph(4, "z.angularWatch(\"myVar\", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)=>{ z.run(2, false)})");
       runParagraph(4);
       waitForParagraph(4, "FINISHED");
 
@@ -153,6 +156,21 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
               getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
+
+
+      /*
+       * Click element, again and see watcher still works
+       */
+      driver.findElement(By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      // check expected text
+      waitForText("BindingTest_4_", By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      waitForParagraph(3, "FINISHED");
+
+      // check expected text by watcher
+      waitForText("myVar=4", By.xpath(
+          getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
@@ -176,12 +194,12 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
+      driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
           .sendKeys(Keys.ENTER);
-      sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
+      ZeppelinITUtils.sleep(1000, true);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(100, true);
+      ZeppelinITUtils.sleep(100, true);
 
       LOG.info("testCreateNotebook Test executed");
     } catch (Exception e) {
@@ -209,8 +227,16 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
       driver.findElement(By.xpath("//div[@id='spark']//form//button[1]")).click();
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to update this interpreter and restart with new settings?')]" +
+          "//div[@class='modal-footer']//button[contains(.,'OK')]"));
+
+      try {
+        clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to " +
+            "update this interpreter and restart with new settings?')]//" +
+            "div[@class='bootstrap-dialog-close-button']/button"));
+      } catch (TimeoutException | StaleElementReferenceException e) {
+        //Modal dialog got closed earlier than expected nothing to worry.
+      }
 
       driver.navigate().back();
       createNewNote();
@@ -224,7 +250,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text
       WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
+          getParagraphXPath(1) + "//div[contains(@id,\"_text\")]"));
 
       collector.checkThat("Paragraph from ZeppelinIT of testSparkInterpreterDependencyLoading result: ",
           paragraph1Result.getText().toString(), CoreMatchers.containsString(
@@ -234,7 +260,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, false);
+      ZeppelinITUtils.sleep(1000, false);
 
       // reset dependency
       settingButton.click();
@@ -278,7 +304,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // Get 2nd paragraph id
       final String secondParagraphId = driver.findElement(By.xpath(getParagraphXPath(2)
-              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu\"]/li[1]"))
+              + "//div[@class=\"control ng-scope\"]//ul[@class=\"dropdown-menu dropdown-menu-right\"]/li[1]"))
               .getAttribute("textContent");
 
       assertTrue("Cannot find paragraph id for the 2nd paragraph", isNotBlank(secondParagraphId));
@@ -306,7 +332,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, true);
 
       LOG.info("testAngularRunParagraph Test executed");
     }  catch (Exception e) {

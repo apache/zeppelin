@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "Account",
+  "namespace": "org.apache.zeppelin.scio.avro",
+  "doc": "Record for an account",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "type", "type": "string"},
+    {"name": "name", "type": "string"},
+    {"name": "amount", "type": "double"}
+  ]
+}

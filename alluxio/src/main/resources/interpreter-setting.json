@@ -1,0 +1,24 @@
+[
+  {
+    "group": "alluxio",
+    "name": "alluxio",
+    "className": "org.apache.zeppelin.alluxio.AlluxioInterpreter",
+    "properties": {
+      "alluxio.master.hostname": {
+        "envName": "ALLUXIO_MASTER_HOSTNAME",
+        "propertyName": "alluxio.master.hostname",
+        "defaultValue": "localhost",
+        "description": "Alluxio master hostname"
+      },
+      "alluxio.master.port": {
+        "envName": "ALLUXIO_MASTER_PORT",
+        "propertyName": "alluxio.master.port",
+        "defaultValue": "19998",
+        "description": "Alluxio master port"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

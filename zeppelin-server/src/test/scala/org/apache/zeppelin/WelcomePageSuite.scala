@@ -28,7 +28,7 @@ import AbstractFunctionalSuite.SERVER_ADDRESS
 class WelcomePageSuite(implicit driver: WebDriver) extends FunSuite with WebBrowser {
 
   test("Welcome sign is correct") {
-    eventually (timeout(Span(20, Seconds))) {
+    eventually (timeout(Span(180, Seconds))) {
       go to SERVER_ADDRESS
       assert(find("welcome").isDefined)
     }

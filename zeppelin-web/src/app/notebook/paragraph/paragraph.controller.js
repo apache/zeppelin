@@ -1,4 +1,3 @@
-/*jshint loopfunc: true, unused:false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,2176 +11,1460 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp')
-  .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, ngToast, SaveAsService) {
-  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
-  $scope.parentNote = null;
-  $scope.paragraph = null;
-  $scope.originalText = '';
-  $scope.editor = null;
+import { SpellResult, } from '../../spell'
+import {
+  ParagraphStatus, isParagraphRunning,
+} from './paragraph.status'
 
-  var paragraphScope = $rootScope.$new(true, $rootScope);
+const ParagraphExecutor = {
+  SPELL: 'SPELL',
+  INTERPRETER: 'INTERPRETER',
+  NONE: '', /** meaning `DONE` */
+}
+
+angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl)
+
+function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
+                       $timeout, $compile, $http, $q, websocketMsgSrv,
+                       baseUrlSrv, ngToast, saveAsService, noteVarShareService,
+                       heliumService) {
+  'ngInject'
+
+  let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_'
+  $rootScope.keys = Object.keys
+  $scope.parentNote = null
+  $scope.paragraph = {}
+  $scope.paragraph.results = {}
+  $scope.paragraph.results.msg = []
+  $scope.originalText = ''
+  $scope.editor = null
+
+  // transactional info for spell execution
+  $scope.spellTransaction = {
+    totalResultCount: 0,
+    renderedResultCount: 0,
+    propagated: false,
+    resultsMsg: [],
+    paragraphText: '',
+  }
+
+  let editorSetting = {}
+  // flag that is used to set editor setting on paste percent sign
+  let pastePercentSign = false
+  // flag that is used to set editor setting on save interpreter bindings
+  let setInterpreterBindings = false
+  let paragraphScope = $rootScope.$new(true, $rootScope)
 
   // to keep backward compatibility
-  $scope.compiledScope = paragraphScope;
+  $scope.compiledScope = paragraphScope
 
   paragraphScope.z = {
     // z.runParagraph('20150213-231621_168813393')
-    runParagraph: function(paragraphId) {
+    runParagraph: function (paragraphId) {
       if (paragraphId) {
-        var filtered = $scope.parentNote.paragraphs.filter(function(x) {
-          return x.id === paragraphId;});
+        let filtered = $scope.parentNote.paragraphs.filter(function (x) {
+          return x.id === paragraphId
+        })
         if (filtered.length === 1) {
-          var paragraph = filtered[0];
+          let paragraph = filtered[0]
           websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
-              paragraph.config, paragraph.settings.params);
+            paragraph.config, paragraph.settings.params)
         } else {
-          ngToast.danger({content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
-            verticalPosition: 'top', dismissOnTimeout: false});
+          ngToast.danger({
+            content: 'Cannot find a paragraph with id \'' + paragraphId + '\'',
+            verticalPosition: 'top',
+            dismissOnTimeout: false
+          })
         }
       } else {
         ngToast.danger({
           content: 'Please provide a \'paragraphId\' when calling z.runParagraph(paragraphId)',
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false
+        })
       }
     },
 
     // Example: z.angularBind('my_var', 'Test Value', '20150213-231621_168813393')
-    angularBind: function(varName, value, paragraphId) {
+    angularBind: function (varName, value, paragraphId) {
       // Only push to server if there paragraphId is defined
       if (paragraphId) {
-        websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId);
+        websocketMsgSrv.clientBindAngularObject($routeParams.noteId, varName, value, paragraphId)
       } else {
         ngToast.danger({
           content: 'Please provide a \'paragraphId\' when calling ' +
           'z.angularBind(varName, value, \'PUT_HERE_PARAGRAPH_ID\')',
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false
+        })
       }
     },
 
     // Example: z.angularUnBind('my_var', '20150213-231621_168813393')
-    angularUnbind: function(varName, paragraphId) {
+    angularUnbind: function (varName, paragraphId) {
       // Only push to server if paragraphId is defined
       if (paragraphId) {
-        websocketMsgSrv.clientUnbindAngularObject($routeParams.noteId, varName, paragraphId);
+        websocketMsgSrv.clientUnbindAngularObject($routeParams.noteId, varName, paragraphId)
       } else {
         ngToast.danger({
           content: 'Please provide a \'paragraphId\' when calling ' +
           'z.angularUnbind(varName, \'PUT_HERE_PARAGRAPH_ID\')',
-          verticalPosition: 'top', dismissOnTimeout: false});
+          verticalPosition: 'top',
+          dismissOnTimeout: false})
       }
     }
-  };
+  }
 
-  var angularObjectRegistry = {};
-
-  var editorModes = {
-    'ace/mode/python': /^%(\w*\.)?(pyspark|python)\s*$/,
-    'ace/mode/scala': /^%(\w*\.)?spark\s*$/,
-    'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)\s*$/,
-    'ace/mode/sql': /^%(\w*\.)?\wql/,
-    'ace/mode/markdown': /^%md/,
-    'ace/mode/sh': /^%sh/
-  };
+  let angularObjectRegistry = {}
 
   // Controller init
-  $scope.init = function(newParagraph, note) {
-    $scope.paragraph = newParagraph;
-    $scope.parentNote = note;
-    $scope.originalText = angular.copy(newParagraph.text);
-    $scope.chart = {};
-    $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
-    $scope.showTitleEditor = false;
-    $scope.paragraphFocused = false;
+  $scope.init = function (newParagraph, note) {
+    $scope.paragraph = newParagraph
+    $scope.parentNote = note
+    $scope.originalText = angular.copy(newParagraph.text)
+    $scope.chart = {}
+    $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain']
+    $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    $scope.paragraphFocused = false
     if (newParagraph.focus) {
-      $scope.paragraphFocused = true;
+      $scope.paragraphFocused = true
     }
-
     if (!$scope.paragraph.config) {
-      $scope.paragraph.config = {};
+      $scope.paragraph.config = {}
     }
 
-    initializeDefault();
+    noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope)
 
-    if ($scope.getResultType() === 'TABLE') {
-      $scope.loadTableData($scope.paragraph.result);
-      $scope.setGraphMode($scope.getGraphMode(), false, false);
-    } else if ($scope.getResultType() === 'HTML') {
-      $scope.renderHtml();
-    } else if ($scope.getResultType() === 'ANGULAR') {
-      $scope.renderAngular();
-    } else if ($scope.getResultType() === 'TEXT') {
-      $scope.renderText();
-    }
-  };
+    initializeDefault($scope.paragraph.config)
+  }
 
-    $scope.renderHtml = function() {
-      var retryRenderer = function() {
-      if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
-        try {
-          angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
-
-          angular.element('#p' + $scope.paragraph.id + '_html').find('pre code').each(function(i, e) {
-            hljs.highlightBlock(e);
-          });
-        } catch (err) {
-          console.log('HTML rendering error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer, 10);
-      }
-    };
-    $timeout(retryRenderer);
-  };
-
-  $scope.renderAngular = function() {
-    var retryRenderer = function() {
-      if (angular.element('#p'+$scope.paragraph.id+'_angular').length) {
-        try {
-          angular.element('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
-
-          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())(paragraphScope);
-        } catch(err) {
-          console.log('ANGULAR rendering error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer, 10);
-      }
-    };
-    $timeout(retryRenderer);
-  };
-
-  $scope.renderText = function() {
-    var retryRenderer = function() {
-
-      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
-      if (textEl.length) {
-        // clear all lines before render
-        $scope.clearTextOutput();
-
-        if ($scope.paragraph.result && $scope.paragraph.result.msg) {
-          $scope.appendTextOutput($scope.paragraph.result.msg);
-        }
-
-        angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
-          $scope.keepScrollDown = false;
-        });
-        $scope.flushStreamingOutput = true;
-      } else {
-        $timeout(retryRenderer, 10);
-      }
-    };
-    $timeout(retryRenderer);
-  };
-
-  $scope.clearTextOutput = function() {
-    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
-    if (textEl.length) {
-      textEl.children().remove();
-    }
-  };
-
-  $scope.appendTextOutput = function(msg) {
-    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
-    if (textEl.length) {
-      var lines = msg.split('\n');
-      for (var i=0; i < lines.length; i++) {
-        textEl.append(angular.element('<div></div>').text(lines[i]));
-      }
-    }
-    if ($scope.keepScrollDown) {
-      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
-      doc[0].scrollTop = doc[0].scrollHeight;
-    }
-  };
-
-
-
-  $scope.$on('angularObjectUpdate', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
-      var scope = paragraphScope;
-      var varName = data.angularObject.name;
-
-      if (angular.equals(data.angularObject.object, scope[varName])) {
-        // return when update has no change
-        return;
-      }
-
-      if (!angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName] = {
-          interpreterGroupId : data.interpreterGroupId,
-          noteId : data.noteId,
-          paragraphId : data.paragraphId
-        };
-      } else {
-        angularObjectRegistry[varName].noteId = angularObjectRegistry[varName].noteId || data.noteId;
-        angularObjectRegistry[varName].paragraphId = angularObjectRegistry[varName].paragraphId || data.paragraphId;
-      }
-
-      angularObjectRegistry[varName].skipEmit = true;
-
-      if (!angularObjectRegistry[varName].clearWatcher) {
-        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          console.log('angular object (paragraph) updated %o %o', varName, angularObjectRegistry[varName]);
-          if (angularObjectRegistry[varName].skipEmit) {
-            angularObjectRegistry[varName].skipEmit = false;
-            return;
-          }
-          websocketMsgSrv.updateAngularObject(
-            angularObjectRegistry[varName].noteId,
-            angularObjectRegistry[varName].paragraphId,
-            varName,
-            newValue,
-            angularObjectRegistry[varName].interpreterGroupId);
-        });
-      }
-      console.log('angular object (paragraph) created %o', varName);
-      scope[varName] = data.angularObject.object;
-
-      // create proxy for AngularFunction
-      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = function() {
-          scope[varName] = arguments;
-          console.log('angular function (paragraph) invoked %o', arguments);
-        };
-
-        console.log('angular function (paragraph) created %o', scope[funcName]);
-      }
-    }
-  });
-
-
-  $scope.$on('angularObjectRemove', function(event, data) {
-    var noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
-      var scope = paragraphScope;
-      var varName = data.name;
-
-      // clear watcher
-      if (angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName].clearWatcher();
-        angularObjectRegistry[varName] = undefined;
-      }
-
-      // remove scope variable
-      scope[varName] = undefined;
-
-      // remove proxy for AngularFunction
-      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = undefined;
-      }
-    }
-  });
-
-  var initializeDefault = function() {
-    var config = $scope.paragraph.config;
+  const initializeDefault = function (config) {
+    let forms = $scope.paragraph.settings.forms
 
     if (!config.colWidth) {
-      config.colWidth = 12;
-    }
-
-    if (!config.graph) {
-      config.graph = {};
-    }
-
-    if (!config.graph.mode) {
-      config.graph.mode = 'table';
-    }
-
-    if (!config.graph.height) {
-      config.graph.height = 300;
-    }
-
-    if (!config.graph.optionOpen) {
-      config.graph.optionOpen = false;
-    }
-
-    if (!config.graph.keys) {
-      config.graph.keys = [];
-    }
-
-    if (!config.graph.values) {
-      config.graph.values = [];
-    }
-
-    if (!config.graph.groups) {
-      config.graph.groups = [];
-    }
-
-    if (!config.graph.scatter) {
-      config.graph.scatter = {};
+      config.colWidth = 12
     }
 
     if (config.enabled === undefined) {
-      config.enabled = true;
+      config.enabled = true
     }
-  };
+
+    for (let idx in forms) {
+      if (forms[idx]) {
+        if (forms[idx].options) {
+          if (config.runOnSelectionChange === undefined) {
+            config.runOnSelectionChange = true
+          }
+        }
+      }
+    }
+
+    if (!config.results) {
+      config.results = {}
+    }
+
+    if (!config.editorSetting) {
+      config.editorSetting = {}
+    } else if (config.editorSetting.editOnDblClick) {
+      editorSetting.isOutputHidden = config.editorSetting.editOnDblClick
+    }
+  }
+
+  $scope.$on('updateParagraphOutput', function (event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      if (!$scope.paragraph.results) {
+        $scope.paragraph.results = {}
+      }
+      if (!$scope.paragraph.results.msg) {
+        $scope.paragraph.results.msg = []
+      }
+
+      let update = ($scope.paragraph.results.msg[data.index]) ? true : false
+
+      $scope.paragraph.results.msg[data.index] = {
+        data: data.data,
+        type: data.type
+      }
+
+      if (update) {
+        $rootScope.$broadcast(
+          'updateResult',
+          $scope.paragraph.results.msg[data.index],
+          $scope.paragraph.config.results[data.index],
+          $scope.paragraph,
+          data.index)
+      }
+    }
+  })
 
   $scope.getIframeDimensions = function () {
     if ($scope.asIframe) {
-      var paragraphid = '#' + $routeParams.paragraphId + '_container';
-      var height = angular.element(paragraphid).height();
-      return height;
+      let paragraphid = '#' + $routeParams.paragraphId + '_container'
+      let height = angular.element(paragraphid).height()
+      return height
     }
-    return 0;
-  };
+    return 0
+  }
 
   $scope.$watch($scope.getIframeDimensions, function (newValue, oldValue) {
     if ($scope.asIframe && newValue) {
-      var message = {};
-      message.height = newValue;
-      message.url = $location.$$absUrl;
-      $window.parent.postMessage(angular.toJson(message), '*');
+      let message = {}
+      message.height = newValue
+      message.url = $location.$$absUrl
+      $window.parent.postMessage(angular.toJson(message), '*')
     }
-  });
+  })
 
-  var isEmpty = function (object) {
-    return !object;
-  };
+  $scope.getEditor = function () {
+    return $scope.editor
+  }
 
-  // TODO: this may have impact on performance when there are many paragraphs in a note.
-  $scope.$on('updateParagraph', function(event, data) {
-    if (data.paragraph.id === $scope.paragraph.id &&
-        (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
-         data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
-         data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-         data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
-         data.paragraph.status !== $scope.paragraph.status ||
-         data.paragraph.jobName !== $scope.paragraph.jobName ||
-         data.paragraph.title !== $scope.paragraph.title ||
-         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-         data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
-         !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
-         !angular.equals(data.paragraph.config, $scope.paragraph.config))
-       ) {
-
-      var oldType = $scope.getResultType();
-      var newType = $scope.getResultType(data.paragraph);
-      var oldGraphMode = $scope.getGraphMode();
-      var newGraphMode = $scope.getGraphMode(data.paragraph);
-
-      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
-
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
-        isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
-        data.paragraph.status === 'ERROR' || (data.paragraph.status === 'FINISHED' && statusChanged);
-
-      //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
-
-      if ($scope.paragraph.text !== data.paragraph.text) {
-        if ($scope.dirtyText) {         // check if editor has local update
-          if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
-            $scope.paragraph.text = data.paragraph.text;
-            $scope.dirtyText = undefined;
-            $scope.originalText = angular.copy(data.paragraph.text);
-          } else { // if there're local update, keep it.
-            $scope.paragraph.text = $scope.dirtyText;
-          }
-        } else {
-          $scope.paragraph.text = data.paragraph.text;
-          $scope.originalText = angular.copy(data.paragraph.text);
-        }
-      }
-
-      /** push the rest */
-      $scope.paragraph.aborted = data.paragraph.aborted;
-      $scope.paragraph.user = data.paragraph.user;
-      $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
-      $scope.paragraph.dateCreated = data.paragraph.dateCreated;
-      $scope.paragraph.dateFinished = data.paragraph.dateFinished;
-      $scope.paragraph.dateStarted = data.paragraph.dateStarted;
-      $scope.paragraph.errorMessage = data.paragraph.errorMessage;
-      $scope.paragraph.jobName = data.paragraph.jobName;
-      $scope.paragraph.title = data.paragraph.title;
-      $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
-      $scope.paragraph.status = data.paragraph.status;
-      $scope.paragraph.result = data.paragraph.result;
-      $scope.paragraph.settings = data.paragraph.settings;
-
-      if (!$scope.asIframe) {
-        $scope.paragraph.config = data.paragraph.config;
-        initializeDefault();
-      } else {
-        data.paragraph.config.editorHide = true;
-        data.paragraph.config.tableHide = false;
-        $scope.paragraph.config = data.paragraph.config;
-      }
-
-      if (newType === 'TABLE') {
-        $scope.loadTableData($scope.paragraph.result);
-        if (oldType !== 'TABLE' || resultRefreshed) {
-          clearUnknownColsFromGraphOption();
-          selectDefaultColsForGraphOption();
-        }
-        /** User changed the chart type? */
-        if (oldGraphMode !== newGraphMode) {
-          $scope.setGraphMode(newGraphMode, false, false);
-        } else {
-          $scope.setGraphMode(newGraphMode, false, true);
-        }
-      } else if (newType === 'HTML' && resultRefreshed) {
-        $scope.renderHtml();
-      } else if (newType === 'ANGULAR' && resultRefreshed) {
-        $scope.renderAngular();
-      } else if (newType === 'TEXT' && resultRefreshed) {
-        $scope.renderText();
-      }
-
-      if (statusChanged || resultRefreshed) {
-        // when last paragraph runs, zeppelin automatically appends new paragraph.
-        // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-        if (paragraphs.length >= 2 && paragraphs[paragraphs.length-2].id.startsWith($scope.paragraph.id)) {
-          // rendering output can took some time. So delay scrolling event firing for sometime.
-          setTimeout(function() {
-            $rootScope.$broadcast('scrollToCursor');
-          }, 500);
-        }
-      }
+  $scope.$watch($scope.getEditor, function (newValue, oldValue) {
+    if (!$scope.editor) {
+      return
     }
-
-  });
-
-  $scope.$on('appendParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
-      if ($scope.flushStreamingOutput) {
-        $scope.clearTextOutput();
-        $scope.flushStreamingOutput = false;
-      }
-      $scope.appendTextOutput(data.data);
+    if (newValue === null || newValue === undefined) {
+      console.log('editor isnt loaded yet, returning')
+      return
     }
-  });
-
-  $scope.$on('updateParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
-      $scope.clearTextOutput();
-      $scope.appendTextOutput(data.data);
-    }
-  });
-
-  $scope.isRunning = function() {
-    if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
-      return true;
+    if ($scope.revisionView === true) {
+      $scope.editor.setReadOnly(true)
     } else {
-      return false;
+      $scope.editor.setReadOnly(false)
     }
-  };
+  })
 
-  $scope.cancelParagraph = function() {
-    console.log('Cancel %o', $scope.paragraph.id);
-    websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
-  };
+  let isEmpty = function (object) {
+    return !object
+  }
 
-  $scope.runParagraph = function(data) {
+  $scope.isRunning = function (paragraph) {
+    return isParagraphRunning(paragraph)
+  }
+
+  $scope.cancelParagraph = function (paragraph) {
+    console.log('Cancel %o', paragraph.id)
+    websocketMsgSrv.cancelParagraphRun(paragraph.id)
+  }
+
+  $scope.propagateSpellResult = function (paragraphId, paragraphTitle,
+                                         paragraphText, paragraphResults,
+                                         paragraphStatus, paragraphErrorMessage,
+                                         paragraphConfig, paragraphSettingsParam) {
+    websocketMsgSrv.paragraphExecutedBySpell(
+      paragraphId, paragraphTitle,
+      paragraphText, paragraphResults,
+      paragraphStatus, paragraphErrorMessage,
+      paragraphConfig, paragraphSettingsParam)
+  }
+
+  $scope.handleSpellError = function (paragraphText, error,
+                                     digestRequired, propagated) {
+    const errorMessage = error.stack
+    $scope.paragraph.status = ParagraphStatus.ERROR
+    $scope.paragraph.errorMessage = errorMessage
+    console.error('Failed to execute interpret() in spell\n', error)
+
+    if (!propagated) {
+      $scope.propagateSpellResult(
+        $scope.paragraph.id, $scope.paragraph.title,
+        paragraphText, [], $scope.paragraph.status, errorMessage,
+        $scope.paragraph.config, $scope.paragraph.settings.params)
+    }
+  }
+
+  $scope.prepareSpellTransaction = function (resultsMsg, propagated, paragraphText) {
+    $scope.spellTransaction.totalResultCount = resultsMsg.length
+    $scope.spellTransaction.renderedResultCount = 0
+    $scope.spellTransaction.propagated = propagated
+    $scope.spellTransaction.resultsMsg = resultsMsg
+    $scope.spellTransaction.paragraphText = paragraphText
+  }
+
+  /**
+   * - update spell transaction count and
+   * - check transaction is finished based on the result count
+   * @returns {boolean}
+   */
+  $scope.increaseSpellTransactionResultCount = function () {
+    $scope.spellTransaction.renderedResultCount += 1
+
+    const total = $scope.spellTransaction.totalResultCount
+    const current = $scope.spellTransaction.renderedResultCount
+    return total === current
+  }
+
+  $scope.cleanupSpellTransaction = function () {
+    const status = ParagraphStatus.FINISHED
+    $scope.paragraph.executor = ParagraphExecutor.NONE
+    $scope.paragraph.status = status
+    $scope.paragraph.results.code = status
+
+    const propagated = $scope.spellTransaction.propagated
+    const resultsMsg = $scope.spellTransaction.resultsMsg
+    const paragraphText = $scope.spellTransaction.paragraphText
+
+    if (!propagated) {
+      const propagable = SpellResult.createPropagable(resultsMsg)
+      $scope.propagateSpellResult(
+        $scope.paragraph.id, $scope.paragraph.title,
+        paragraphText, propagable, status, '',
+        $scope.paragraph.config, $scope.paragraph.settings.params)
+    }
+  }
+
+  $scope.runParagraphUsingSpell = function (paragraphText,
+                                           magic, digestRequired, propagated) {
+    $scope.paragraph.status = 'RUNNING'
+    $scope.paragraph.executor = ParagraphExecutor.SPELL
+    $scope.paragraph.results = {}
+    $scope.paragraph.errorMessage = ''
+    if (digestRequired) { $scope.$digest() }
+
+    try {
+      // remove magic from paragraphText
+      const splited = paragraphText.split(magic)
+      // remove leading spaces
+      const textWithoutMagic = splited[1].replace(/^\s+/g, '')
+
+      // handle actual result message in promise
+      heliumService.executeSpell(magic, textWithoutMagic)
+        .then(resultsMsg => {
+          $scope.prepareSpellTransaction(resultsMsg, propagated, paragraphText)
+
+          $scope.paragraph.results.msg = resultsMsg
+          $scope.paragraph.config.tableHide = false
+        })
+        .catch(error => {
+          $scope.handleSpellError(paragraphText, error,
+            digestRequired, propagated)
+        })
+    } catch (error) {
+      $scope.handleSpellError(paragraphText, error,
+        digestRequired, propagated)
+    }
+  }
+
+  $scope.runParagraphUsingBackendInterpreter = function (paragraphText) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
-                                 data, $scope.paragraph.config, $scope.paragraph.settings.params);
-    $scope.originalText = angular.copy(data);
-    $scope.dirtyText = undefined;
-  };
+      paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params)
+  }
 
-  $scope.saveParagraph = function(){
-    if($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText){
-      return;
+  $scope.saveParagraph = function (paragraph) {
+    const dirtyText = paragraph.text
+    if (dirtyText === undefined || dirtyText === $scope.originalText) {
+      return
     }
-    commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
-    $scope.originalText = angular.copy($scope.dirtyText);
-    $scope.dirtyText = undefined;
-  };
+    commitParagraph(paragraph)
+    $scope.originalText = dirtyText
+    $scope.dirtyText = undefined
+  }
 
-  $scope.toggleEnableDisable = function () {
-    $scope.paragraph.config.enabled = $scope.paragraph.config.enabled ? false : true;
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
+  $scope.toggleEnableDisable = function (paragraph) {
+    paragraph.config.enabled = !paragraph.config.enabled
+    commitParagraph(paragraph)
+  }
 
-  $scope.run = function() {
-    var editorValue = $scope.editor.getValue();
+  /**
+   * @param paragraphText to be parsed
+   * @param digestRequired true if calling `$digest` is required
+   * @param propagated true if update request is sent from other client
+   */
+  $scope.runParagraph = function (paragraphText, digestRequired, propagated) {
+    if (!paragraphText || $scope.isRunning($scope.paragraph)) {
+      return
+    }
+    const magic = SpellResult.extractMagic(paragraphText)
+
+    if (heliumService.getSpellByMagic(magic)) {
+      $scope.runParagraphUsingSpell(paragraphText, magic, digestRequired, propagated)
+    } else {
+      $scope.runParagraphUsingBackendInterpreter(paragraphText)
+    }
+
+    $scope.originalText = angular.copy(paragraphText)
+    $scope.dirtyText = undefined
+
+    if ($scope.paragraph.config.editorSetting.editOnDblClick) {
+      closeEditorAndOpenTable($scope.paragraph)
+    } else if (editorSetting.isOutputHidden &&
+      !$scope.paragraph.config.editorSetting.editOnDblClick) {
+      // %md/%angular repl make output to be hidden by default after running
+      // so should open output if repl changed from %md/%angular to another
+      openEditorAndOpenTable($scope.paragraph)
+    }
+    editorSetting.isOutputHidden = $scope.paragraph.config.editorSetting.editOnDblClick
+  }
+
+  $scope.runParagraphFromShortcut = function (paragraphText) {
+    // passing `digestRequired` as true to update view immediately
+    // without this, results cannot be rendered in view more than once
+    $scope.runParagraph(paragraphText, true, false)
+  }
+
+  $scope.runParagraphFromButton = function (paragraphText) {
+    // we come here from the view, so we don't need to call `$digest()`
+    $scope.runParagraph(paragraphText, false, false)
+  }
+
+  $scope.turnOnAutoRun = function (paragraph) {
+    paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange
+    commitParagraph(paragraph)
+  }
+
+  $scope.moveUp = function (paragraph) {
+    $scope.$emit('moveParagraphUp', paragraph)
+  }
+
+  $scope.moveDown = function (paragraph) {
+    $scope.$emit('moveParagraphDown', paragraph)
+  }
+
+  $scope.insertNew = function (position) {
+    $scope.$emit('insertParagraph', $scope.paragraph.id, position)
+  }
+
+  $scope.copyPara = function (position) {
+    let editorValue = $scope.getEditorValue()
     if (editorValue) {
-      if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
-        $scope.runParagraph(editorValue);
+      $scope.copyParagraph(editorValue, position)
+    }
+  }
+
+  $scope.copyParagraph = function (data, position) {
+    let newIndex = -1
+    for (let i = 0; i < $scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === $scope.paragraph.id) {
+        // determine position of where to add new paragraph; default is below
+        if (position === 'above') {
+          newIndex = i
+        } else {
+          newIndex = i + 1
+        }
+        break
       }
     }
-  };
 
-  $scope.moveUp = function() {
-    $scope.$emit('moveParagraphUp', $scope.paragraph.id);
-  };
+    if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
+      return
+    }
 
-  $scope.moveDown = function() {
-    $scope.$emit('moveParagraphDown', $scope.paragraph.id);
-  };
+    let config = angular.copy($scope.paragraph.config)
+    config.editorHide = false
 
-  $scope.insertNew = function(position) {
-    $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
-  };
+    websocketMsgSrv.copyParagraph(newIndex, $scope.paragraph.title, data,
+      config, $scope.paragraph.settings.params)
+  }
 
-  $scope.removeParagraph = function() {
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-    if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
+  $scope.removeParagraph = function (paragraph) {
+    let paragraphs = angular.element('div[id$="_paragraphColumn_main"]')
+    if (paragraphs[paragraphs.length - 1].id.indexOf(paragraph.id) === 0) {
       BootstrapDialog.alert({
         closable: true,
-        message: 'The last paragraph can\'t be deleted.'
-      });
+        message: 'The last paragraph can\'t be deleted.',
+        callback: function (result) {
+          if (result) {
+            $scope.editor.focus()
+          }
+        }
+      })
     } else {
       BootstrapDialog.confirm({
         closable: true,
         title: '',
         message: 'Do you want to delete this paragraph?',
-        callback: function(result) {
+        callback: function (result) {
           if (result) {
-            console.log('Remove paragraph');
-            websocketMsgSrv.removeParagraph($scope.paragraph.id);
+            console.log('Remove paragraph')
+            websocketMsgSrv.removeParagraph(paragraph.id)
+            $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id)
           }
         }
-      });
+      })
     }
-  };
+  }
 
-  $scope.clearParagraphOutput = function() {
-    websocketMsgSrv.clearParagraphOutput($scope.paragraph.id);
-  };
+  $scope.clearParagraphOutput = function (paragraph) {
+    websocketMsgSrv.clearParagraphOutput(paragraph.id)
+  }
 
-  $scope.toggleEditor = function() {
-    if ($scope.paragraph.config.editorHide) {
-      $scope.openEditor();
+  $scope.toggleEditor = function (paragraph) {
+    if (paragraph.config.editorHide) {
+      $scope.openEditor(paragraph)
     } else {
-      $scope.closeEditor();
+      $scope.closeEditor(paragraph)
     }
-  };
+  }
 
-  $scope.closeEditor = function() {
-    console.log('close the note');
+  $scope.closeEditor = function (paragraph) {
+    console.log('close the note')
+    paragraph.config.editorHide = true
+    commitParagraph(paragraph)
+  }
 
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.editorHide = true;
+  $scope.openEditor = function (paragraph) {
+    console.log('open the note')
+    paragraph.config.editorHide = false
+    commitParagraph(paragraph)
+  }
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
+  $scope.closeTable = function (paragraph) {
+    console.log('close the output')
+    paragraph.config.tableHide = true
+    commitParagraph(paragraph)
+  }
 
-  $scope.openEditor = function() {
-    console.log('open the note');
+  $scope.openTable = function (paragraph) {
+    console.log('open the output')
+    paragraph.config.tableHide = false
+    commitParagraph(paragraph)
+  }
 
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.editorHide = false;
+  let openEditorAndCloseTable = function (paragraph) {
+    manageEditorAndTableState(paragraph, false, true)
+  }
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
+  const closeEditorAndOpenTable = function (paragraph) {
+    manageEditorAndTableState(paragraph, true, false)
+  }
 
-  $scope.closeTable = function() {
-    console.log('close the output');
+  const openEditorAndOpenTable = function (paragraph) {
+    manageEditorAndTableState(paragraph, false, false)
+  }
 
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.tableHide = true;
+  const manageEditorAndTableState = function (paragraph, hideEditor, hideTable) {
+    paragraph.config.editorHide = hideEditor
+    paragraph.config.tableHide = hideTable
+    commitParagraph(paragraph)
+  }
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
+  $scope.showTitle = function (paragraph) {
+    paragraph.config.title = true
+    commitParagraph(paragraph)
+  }
 
-  $scope.openTable = function() {
-    console.log('open the output');
+  $scope.hideTitle = function (paragraph) {
+    paragraph.config.title = false
+    commitParagraph(paragraph)
+  }
 
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.tableHide = false;
+  $scope.setTitle = function (paragraph) {
+    commitParagraph(paragraph)
+  }
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
+  $scope.showLineNumbers = function (paragraph) {
+    if ($scope.editor) {
+      paragraph.config.lineNumbers = true
+      $scope.editor.renderer.setShowGutter(true)
+      commitParagraph(paragraph)
+    }
+  }
 
-  $scope.showTitle = function() {
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.title = true;
+  $scope.hideLineNumbers = function (paragraph) {
+    if ($scope.editor) {
+      paragraph.config.lineNumbers = false
+      $scope.editor.renderer.setShowGutter(false)
+      commitParagraph(paragraph)
+    }
+  }
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.hideTitle = function() {
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.title = false;
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.setTitle = function() {
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.showLineNumbers = function () {
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.lineNumbers = true;
-    $scope.editor.renderer.setShowGutter(true);
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.hideLineNumbers = function () {
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.lineNumbers = false;
-    $scope.editor.renderer.setShowGutter(false);
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.columnWidthClass = function(n) {
+  $scope.columnWidthClass = function (n) {
     if ($scope.asIframe) {
-      return 'col-md-12';
+      return 'col-md-12'
     } else {
-      return 'col-md-' + n;
+      return 'paragraph-col col-md-' + n
     }
-  };
+  }
 
-  $scope.changeColWidth = function() {
-    angular.element('.navbar-right.open').removeClass('open');
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
+  $scope.changeColWidth = function (paragraph, width) {
+    angular.element('.navbar-right.open').removeClass('open')
+    paragraph.config.colWidth = width
+    commitParagraph(paragraph)
+  }
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
+  $scope.toggleOutput = function (paragraph) {
+    paragraph.config.tableHide = !paragraph.config.tableHide
+    commitParagraph(paragraph)
+  }
 
-  $scope.toggleGraphOption = function() {
-    var newConfig = angular.copy($scope.paragraph.config);
-    if (newConfig.graph.optionOpen) {
-      newConfig.graph.optionOpen = false;
-    } else {
-      newConfig.graph.optionOpen = true;
-    }
-    var newParams = angular.copy($scope.paragraph.settings.params);
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.toggleOutput = function() {
-    var newConfig = angular.copy($scope.paragraph.config);
-    newConfig.tableHide = !newConfig.tableHide;
-    var newParams = angular.copy($scope.paragraph.settings.params);
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.toggleLineWithFocus = function () {
-    var mode = $scope.getGraphMode();
-
-    if (mode === 'lineWithFocusChart') {
-      $scope.setGraphMode('lineChart', true);
-      return true;
-    }
-
-    if (mode === 'lineChart') {
-      $scope.setGraphMode('lineWithFocusChart', true);
-      return true;
-    }
-
-    return false;
-  };
-
-
-
-  $scope.loadForm = function(formulaire, params) {
-    var value = formulaire.defaultValue;
+  $scope.loadForm = function (formulaire, params) {
+    let value = formulaire.defaultValue
     if (params[formulaire.name]) {
-      value = params[formulaire.name];
+      value = params[formulaire.name]
     }
 
-    $scope.paragraph.settings.params[formulaire.name] = value;
-  };
+    $scope.paragraph.settings.params[formulaire.name] = value
+  }
 
-  $scope.toggleCheckbox = function(formulaire, option) {
-    var idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
+  $scope.toggleCheckbox = function (formulaire, option) {
+    let idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value)
     if (idx > -1) {
-      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1);
+      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1)
     } else {
-      $scope.paragraph.settings.params[formulaire.name].push(option.value);
+      $scope.paragraph.settings.params[formulaire.name].push(option.value)
     }
-  };
+  }
 
-  $scope.aceChanged = function() {
-    $scope.dirtyText = $scope.editor.getSession().getValue();
-    $scope.startSaveTimer();
-    $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
-  };
+  $scope.aceChanged = function (_, editor) {
+    let session = editor.getSession()
+    let dirtyText = session.getValue()
+    $scope.dirtyText = dirtyText
+    $scope.startSaveTimer()
+    setParagraphMode(session, dirtyText, editor.getCursorPosition())
+  }
 
-  $scope.aceLoaded = function(_editor) {
-    var langTools = ace.require('ace/ext/language_tools');
-    var Range = ace.require('ace/range').Range;
+  $scope.aceLoaded = function (_editor) {
+    let langTools = ace.require('ace/ext/language_tools')
+    let Range = ace.require('ace/range').Range
 
-    _editor.$blockScrolling = Infinity;
-    $scope.editor = _editor;
-    $scope.editor.on('input', $scope.aceChanged);
+    _editor.$blockScrolling = Infinity
+    $scope.editor = _editor
+    $scope.editor.on('input', $scope.aceChanged)
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
-      $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
-      $scope.editor.setShowFoldWidgets(false);
-      $scope.editor.setHighlightActiveLine(false);
-      $scope.editor.setHighlightGutterLine(false);
-      $scope.editor.getSession().setUseWrapMode(true);
-      $scope.editor.setTheme('ace/theme/chrome');
+      $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers)
+      $scope.editor.setShowFoldWidgets(false)
+      $scope.editor.setHighlightActiveLine(false)
+      $scope.editor.setHighlightGutterLine(false)
+      $scope.editor.getSession().setUseWrapMode(true)
+      $scope.editor.setTheme('ace/theme/chrome')
+      $scope.editor.setReadOnly($scope.isRunning($scope.paragraph))
       if ($scope.paragraphFocused) {
-        $scope.editor.focus();
+        $scope.editor.focus()
+        $scope.goToEnd($scope.editor)
       }
 
-      autoAdjustEditorHeight(_editor.container.id);
-      angular.element(window).resize(function() {
-        autoAdjustEditorHeight(_editor.container.id);
-      });
+      autoAdjustEditorHeight(_editor)
+      angular.element(window).resize(function () {
+        autoAdjustEditorHeight(_editor)
+      })
 
-      if (navigator.appVersion.indexOf('Mac') !== -1 ) {
-        $scope.editor.setKeyboardHandler('ace/keyboard/emacs');
-        $rootScope.isMac = true;
+      if (navigator.appVersion.indexOf('Mac') !== -1) {
+        $scope.editor.setKeyboardHandler('ace/keyboard/emacs')
+        $rootScope.isMac = true
       } else if (navigator.appVersion.indexOf('Win') !== -1 ||
-                 navigator.appVersion.indexOf('X11') !== -1 ||
-                 navigator.appVersion.indexOf('Linux') !== -1) {
-        $rootScope.isMac = false;
+        navigator.appVersion.indexOf('X11') !== -1 ||
+        navigator.appVersion.indexOf('Linux') !== -1) {
+        $rootScope.isMac = false
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      $scope.setParagraphMode = function(session, paragraphText, pos) {
-        // Evaluate the mode only if the first 30 characters of the paragraph have been modified or the the position is undefined.
-        if ( (typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30)) {
-          // If paragraph loading, use config value if exists
-          if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
-            session.setMode($scope.paragraph.config.editorMode);
-          } else {
-            // Defaults to spark mode
-            var newMode = 'ace/mode/scala';
-            // Test first against current mode
-            var oldMode = session.getMode().$id;
-            if (!editorModes[oldMode] || !editorModes[oldMode].test(paragraphText)) {
-              for (var key in editorModes) {
-                if (key !== oldMode) {
-                  if (editorModes[key].test(paragraphText)){
-                    $scope.paragraph.config.editorMode = key;
-                    session.setMode(key);
-                    return true;
-                  }
-                }
-              }
-              $scope.paragraph.config.editorMode = newMode;
-              session.setMode(newMode);
+      let remoteCompleter = {
+        getCompletions: function(editor, session, pos, prefix, callback) {
+          let langTools = ace.require('ace/ext/language_tools')
+          let defaultKeywords = new Set()
+
+          // eslint-disable-next-line handle-callback-err
+          let getDefaultKeywords = function(err, completions) {
+            if (completions !== undefined) {
+              completions.forEach(function(c) {
+                defaultKeywords.add(c.value)
+              })
             }
           }
-        }
-      };
+          if (langTools.keyWordCompleter !== undefined) {
+            langTools.keyWordCompleter.getCompletions(editor, session, pos, prefix, getDefaultKeywords)
+          }
 
-      var remoteCompleter = {
-        getCompletions : function(editor, session, pos, prefix, callback) {
-          if (!$scope.editor.isFocused() ){ return;}
+          if (!editor.isFocused()) {
+            return
+          }
 
-          pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
-          var buf = session.getValue();
+          pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length
+          let buf = session.getValue()
 
-          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+          websocketMsgSrv.completion($scope.paragraph.id, buf, pos)
 
           $scope.$on('completionList', function(event, data) {
+            let computeCaption = function(value, meta) {
+              let metaLength = meta !== undefined ? meta.length : 0
+              let length = 42
+              let whitespaceLength = 3
+              let ellipses = '...'
+              let maxLengthCaption = length - metaLength - whitespaceLength - ellipses.length
+              if (value !== undefined && value.length > maxLengthCaption) {
+                return value.substr(0, maxLengthCaption) + ellipses
+              }
+              return value
+            }
             if (data.completions) {
-              var completions = [];
-              for (var c in data.completions) {
-                var v = data.completions[c];
+              let completions = []
+              for (let c in data.completions) {
+                let v = data.completions[c]
+                if (v.meta !== undefined && v.meta === 'keyword' && defaultKeywords.has(v.value.trim())) {
+                  continue
+                }
                 completions.push({
                   name: v.name,
                   value: v.value,
+                  meta: v.meta,
+                  caption: computeCaption(v.value, v.meta),
                   score: 300
-                });
+                })
               }
-              callback(null, completions);
+              callback(null, completions)
             }
-          });
+          })
         }
-      };
+      }
 
-      langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
+      langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter,
+        langTools.textCompleter])
 
       $scope.editor.setOptions({
         enableBasicAutocompletion: true,
         enableSnippets: false,
-        enableLiveAutocompletion:false
-      });
+        enableLiveAutocompletion: false
+      })
 
-      $scope.handleFocus = function(value, isDigestPass) {
-        $scope.paragraphFocused = value;
-        if (isDigestPass === false || isDigestPass === undefined) {
-          // Protect against error in case digest is already running
-          $timeout(function() {
-            // Apply changes since they come from 3rd party library
-            $scope.$digest();
-          });
+      $scope.editor.on('focus', function () {
+        handleFocus(true)
+      })
+
+      $scope.editor.on('blur', function () {
+        handleFocus(false)
+        $scope.saveParagraph($scope.paragraph)
+      })
+
+      $scope.editor.on('paste', function (e) {
+        if (e.text.indexOf('%') === 0) {
+          pastePercentSign = true
         }
-      };
+      })
 
-      $scope.editor.on('focus', function() {
-        $scope.handleFocus(true);
-      });
+      $scope.editor.getSession().on('change', function (e, editSession) {
+        autoAdjustEditorHeight(_editor)
+      })
 
-      $scope.editor.on('blur', function() {
-        $scope.handleFocus(false);
-      });
-
-      $scope.editor.getSession().on('change', function(e, editSession) {
-        autoAdjustEditorHeight(_editor.container.id);
-      });
-
-      $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
-
+      setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue())
 
       // autocomplete on '.'
       /*
-      $scope.editor.commands.on("afterExec", function(e, t) {
-        if (e.command.name == "insertstring" && e.args == "." ) {
-      var all = e.editor.completers;
-      //e.editor.completers = [remoteCompleter];
-      e.editor.execCommand("startAutocomplete");
-      //e.editor.completers = all;
-    }
-      });
-      */
+       $scope.editor.commands.on("afterExec", function(e, t) {
+       if (e.command.name == "insertstring" && e.args == "." ) {
+       var all = e.editor.completers;
+       //e.editor.completers = [remoteCompleter];
+       e.editor.execCommand("startAutocomplete");
+       //e.editor.completers = all;
+       }
+       });
+       */
 
       // remove binding
-      $scope.editor.commands.bindKey('ctrl-alt-n.', null);
-      $scope.editor.commands.removeCommand('showSettingsMenu');
+      $scope.editor.commands.removeCommand('showSettingsMenu')
 
+      let isOption = $rootScope.isMac ? 'option' : 'alt'
+
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-n.', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-l', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-w', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-a', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-k', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-e', null)
+      $scope.editor.commands.bindKey('ctrl-' + isOption + '-t', null)
+      $scope.editor.commands.bindKey('ctrl-space', null)
+
+      if ($rootScope.isMac) {
+        $scope.editor.commands.bindKey('command-l', null)
+      } else {
+        $scope.editor.commands.bindKey('ctrl-l', null)
+      }
 
       // autocomplete on 'ctrl+.'
-      $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
-      $scope.editor.commands.bindKey('ctrl-space', null);
+      $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete')
 
-      var keyBindingEditorFocusAction = function(scrollValue) {
-        var numRows = $scope.editor.getSession().getLength();
-        var currentRow = $scope.editor.getCursorPosition().row;
+      let keyBindingEditorFocusAction = function (scrollValue) {
+        let numRows = $scope.editor.getSession().getLength()
+        let currentRow = $scope.editor.getCursorPosition().row
         if (currentRow === 0 && scrollValue <= 0) {
           // move focus to previous paragraph
-          $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+          $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id)
         } else if (currentRow === numRows - 1 && scrollValue >= 0) {
-          $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+          $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id)
         } else {
-          $scope.scrollToCursor($scope.paragraph.id, scrollValue);
+          $scope.scrollToCursor($scope.paragraph.id, scrollValue)
         }
-      };
+      }
 
       // handle cursor moves
-      $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
-      $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
+      $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey
+      $scope.editor.keyBinding.onCommandKey = function (e, hashId, keyCode) {
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
           // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
-          if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top').replace('px', '')) < 0) {
-            var position = $scope.editor.getCursorPosition();
-            var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
-            angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
+          if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea')
+              .css('top').replace('px', '')) < 0) {
+            let position = $scope.editor.getCursorPosition()
+            let cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true)
+            angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top)
           }
 
-          var ROW_UP = -1;
-          var ROW_DOWN = 1;
+          let ROW_UP = -1
+          let ROW_DOWN = 1
 
           switch (keyCode) {
             case 38:
-              keyBindingEditorFocusAction(ROW_UP);
-              break;
+              keyBindingEditorFocusAction(ROW_UP)
+              break
             case 80:
               if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_UP);
+                keyBindingEditorFocusAction(ROW_UP)
               }
-              break;
+              break
             case 40:
-              keyBindingEditorFocusAction(ROW_DOWN);
-              break;
+              keyBindingEditorFocusAction(ROW_DOWN)
+              break
             case 78:
               if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_DOWN);
+                keyBindingEditorFocusAction(ROW_DOWN)
               }
-              break;
-           }
+              break
+          }
         }
-        this.origOnCommandKey(e, hashId, keyCode);
-      };
+        this.origOnCommandKey(e, hashId, keyCode)
+      }
     }
-  };
+  }
 
-  var autoAdjustEditorHeight = function(id) {
-    var editor = $scope.editor;
-    var height = editor.getSession().getScreenLength() * editor.renderer.lineHeight + editor.renderer.scrollBar.getWidth();
+  const handleFocus = function (value, isDigestPass) {
+    $scope.paragraphFocused = value
+    if (isDigestPass === false || isDigestPass === undefined) {
+      // Protect against error in case digest is already running
+      $timeout(function () {
+        // Apply changes since they come from 3rd party library
+        $scope.$digest()
+      })
+    }
+  }
 
-    angular.element('#' + id).height(height.toString() + 'px');
-    editor.resize();
-  };
+  let getEditorSetting = function (paragraph, interpreterName) {
+    let deferred = $q.defer()
+    websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
+    $timeout(
+      $scope.$on('editorSetting', function (event, data) {
+        if (paragraph.id === data.paragraphId) {
+          deferred.resolve(data)
+        }
+      }
+      ), 1000)
+    return deferred.promise
+  }
 
-  $rootScope.$on('scrollToCursor', function(event) {
+  let setEditorLanguage = function (session, language) {
+    let mode = 'ace/mode/'
+    mode += language
+    $scope.paragraph.config.editorMode = mode
+    session.setMode(mode)
+  }
+
+  const setParagraphMode = function (session, paragraphText, pos) {
+    // Evaluate the mode only if the the position is undefined
+    // or the first 30 characters of the paragraph have been modified
+    // or cursor position is at beginning of second line.(in case user hit enter after typing %magic)
+    if ((typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30) ||
+      (pos.row === 1 && pos.column === 0) || pastePercentSign) {
+      // If paragraph loading, use config value if exists
+      if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode &&
+        !setInterpreterBindings) {
+        session.setMode($scope.paragraph.config.editorMode)
+      } else {
+        let magic = getInterpreterName(paragraphText)
+        if (editorSetting.magic !== magic) {
+          editorSetting.magic = magic
+          getEditorSetting($scope.paragraph, magic)
+            .then(function (setting) {
+              setEditorLanguage(session, setting.editor.language)
+              _.merge($scope.paragraph.config.editorSetting, setting.editor)
+            })
+        }
+      }
+    }
+    pastePercentSign = false
+    setInterpreterBindings = false
+  }
+
+  const getInterpreterName = function(paragraphText) {
+    let intpNameRegexp = /^\s*%(.+?)(\s|\()/g
+    let match = intpNameRegexp.exec(paragraphText)
+    if (match) {
+      return match[1].trim()
+      // get default interpreter name if paragraph text doesn't start with '%'
+      // TODO(mina): dig into the cause what makes interpreterBindings to have no element
+    } else if ($scope.$parent.interpreterBindings && $scope.$parent.interpreterBindings.length !== 0) {
+      return $scope.$parent.interpreterBindings[0].name
+    }
+    return ''
+  }
+
+  const autoAdjustEditorHeight = function (editor) {
+    let height =
+      editor.getSession().getScreenLength() *
+      editor.renderer.lineHeight +
+      editor.renderer.scrollBar.getWidth()
+
+    angular.element('#' + editor.container.id).height(height.toString() + 'px')
+    editor.resize()
+  }
+
+  $rootScope.$on('scrollToCursor', function (event) {
     // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
-    var paragraphs = angular.element('div[id$="_paragraphColumn_main"]');
-    if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
-      $scope.scrollToCursor($scope.paragraph.id, 0);
+    let paragraphs = angular.element('div[id$="_paragraphColumn_main"]')
+    if (paragraphs[paragraphs.length - 1].id.indexOf($scope.paragraph.id) === 0) {
+      $scope.scrollToCursor($scope.paragraph.id, 0)
     }
-  });
+  })
 
   /** scrollToCursor if it is necessary
    * when cursor touches scrollTriggerEdgeMargin from the top (or bottom) of the screen, it autoscroll to place cursor around 1/3 of screen height from the top (or bottom)
    * paragraphId : paragraph that has active cursor
    * lastCursorMove : 1(down), 0, -1(up) last cursor move event
    **/
-  $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
-    if (!$scope.editor.isFocused()) {
-     // only make sense when editor is focused
-     return;
+  $scope.scrollToCursor = function (paragraphId, lastCursorMove) {
+    if (!$scope.editor || !$scope.editor.isFocused()) {
+      // only make sense when editor is focused
+      return
     }
-    var lineHeight = $scope.editor.renderer.lineHeight;
-    var headerHeight = 103; // menubar, notebook titlebar
-    var scrollTriggerEdgeMargin = 50;
+    let lineHeight = $scope.editor.renderer.lineHeight
+    let headerHeight = 103 // menubar, notebook titlebar
+    let scrollTriggerEdgeMargin = 50
 
-    var documentHeight = angular.element(document).height();
-    var windowHeight = angular.element(window).height();  // actual viewport height
+    let documentHeight = angular.element(document).height()
+    let windowHeight = angular.element(window).height()  // actual viewport height
 
-    var scrollPosition = angular.element(document).scrollTop();
-    var editorPosition = angular.element('#'+paragraphId+'_editor').offset();
-    var position = $scope.editor.getCursorPosition();
-    var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+    let scrollPosition = angular.element(document).scrollTop()
+    let editorPosition = angular.element('#' + paragraphId + '_editor').offset()
+    let position = $scope.editor.getCursorPosition()
+    let lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true)
 
-    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + lineHeight*lastCursorMove;
+    let calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + lineHeight * lastCursorMove
 
-    var scrollTargetPos;
+    let scrollTargetPos
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
-      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
+      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight - headerHeight) / 3)
       if (scrollTargetPos < 0) {
-        scrollTargetPos = 0;
+        scrollTargetPos = 0
       }
-    } else if(calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
-      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
+    } else if (calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
+      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight - headerHeight) * 2 / 3)
 
       if (scrollTargetPos > documentHeight) {
-        scrollTargetPos = documentHeight;
+        scrollTargetPos = documentHeight
       }
     }
 
     // cancel previous scroll animation
-    var bodyEl = angular.element('body');
-    bodyEl.stop();
-    bodyEl.finish();
+    let bodyEl = angular.element('body')
+    bodyEl.stop()
+    bodyEl.finish()
 
     // scroll to scrollTargetPos
-    bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration:100});
-  };
+    bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration: 100})
+  }
 
-  var setEditorHeight = function(id, height) {
-    angular.element('#' + id).height(height.toString() + 'px');
-  };
+  $scope.getEditorValue = function () {
+    return !$scope.editor ? $scope.paragraph.text : $scope.editor.getValue()
+  }
 
-  $scope.getEditorValue = function() {
-    return $scope.editor.getValue();
-  };
+  $scope.getProgress = function () {
+    return $scope.currentProgress || 0
+  }
 
-  $scope.getProgress = function() {
-    return ($scope.currentProgress) ? $scope.currentProgress : 0;
-  };
-
-  $scope.getExecutionTime = function() {
-    var pdata = $scope.paragraph;
-    var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
+  $scope.getExecutionTime = function (pdata) {
+    let timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted)
     if (isNaN(timeMs) || timeMs < 0) {
-      if ($scope.isResultOutdated()){
-        return 'outdated';
+      if ($scope.isResultOutdated(pdata)) {
+        return 'outdated'
       }
-      return '';
+      return ''
     }
-    var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
-    var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
-    if ($scope.isResultOutdated()) {
-      desc += ' (outdated)';
+    let user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user
+    let desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.'
+    if ($scope.isResultOutdated(pdata)) {
+      desc += ' (outdated)'
     }
-    return desc;
-  };
+    return desc
+  }
 
-  $scope.getElapsedTime = function() {
-    return 'Started ' + moment($scope.paragraph.dateStarted).fromNow() + '.';
-  };
+  $scope.getElapsedTime = function (paragraph) {
+    return 'Started ' + moment(paragraph.dateStarted).fromNow() + '.'
+  }
 
-  $scope.isResultOutdated = function() {
-    var pdata = $scope.paragraph;
-    if (pdata.dateUpdated !==undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)){
-      return true;
+  $scope.isResultOutdated = function (pdata) {
+    if (pdata.dateUpdated !== undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)) {
+      return true
     }
-    return false;
-  };
+    return false
+  }
 
-  $scope.$on('updateProgress', function(event, data) {
+  $scope.goToEnd = function (editor) {
+    editor.navigateFileEnd()
+  }
+
+  $scope.parseTableCell = function (cell) {
+    if (!isNaN(cell)) {
+      if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
+        return cell
+      } else {
+        return Number(cell)
+      }
+    }
+    let d = moment(cell)
+    if (d.isValid()) {
+      return d
+    }
+    return cell
+  }
+
+  const commitParagraph = function (paragraph) {
+    const {
+      id,
+      title,
+      text,
+      config,
+      settings: {params},
+    } = paragraph
+
+    websocketMsgSrv.commitParagraph(id, title, text, config, params)
+  }
+
+  /** Utility function */
+  $scope.goToSingleParagraph = function () {
+    let noteId = $route.current.pathParams.noteId
+    let redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId +
+      '/paragraph/' + $scope.paragraph.id + '?asIframe'
+    $window.open(redirectToUrl)
+  }
+
+  $scope.showScrollDownIcon = function (id) {
+    let doc = angular.element('#p' + id + '_text')
+    if (doc[0]) {
+      return doc[0].scrollHeight > doc.innerHeight()
+    }
+    return false
+  }
+
+  $scope.scrollParagraphDown = function (id) {
+    let doc = angular.element('#p' + id + '_text')
+    doc.animate({scrollTop: doc[0].scrollHeight}, 500)
+    $scope.keepScrollDown = true
+  }
+
+  $scope.showScrollUpIcon = function (id) {
+    if (angular.element('#p' + id + '_text')[0]) {
+      return angular.element('#p' + id + '_text')[0].scrollTop !== 0
+    }
+    return false
+  }
+
+  $scope.scrollParagraphUp = function (id) {
+    let doc = angular.element('#p' + id + '_text')
+    doc.animate({scrollTop: 0}, 500)
+    $scope.keepScrollDown = false
+  }
+
+  $scope.$on('angularObjectUpdate', function (event, data) {
+    let noteId = $route.current.pathParams.noteId
+    if (!data.noteId || data.noteId === noteId) {
+      let scope
+      let registry
+
+      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
+        scope = paragraphScope
+        registry = angularObjectRegistry
+      } else {
+        return
+      }
+      let varName = data.angularObject.name
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return
+      }
+
+      if (!registry[varName]) {
+        registry[varName] = {
+          interpreterGroupId: data.interpreterGroupId,
+          noteId: data.noteId,
+          paragraphId: data.paragraphId
+        }
+      } else {
+        registry[varName].noteId = registry[varName].noteId || data.noteId
+        registry[varName].paragraphId = registry[varName].paragraphId || data.paragraphId
+      }
+
+      registry[varName].skipEmit = true
+
+      if (!registry[varName].clearWatcher) {
+        registry[varName].clearWatcher = scope.$watch(varName, function (newValue, oldValue) {
+          console.log('angular object (paragraph) updated %o %o', varName, registry[varName])
+          if (registry[varName].skipEmit) {
+            registry[varName].skipEmit = false
+            return
+          }
+          websocketMsgSrv.updateAngularObject(
+            registry[varName].noteId,
+            registry[varName].paragraphId,
+            varName,
+            newValue,
+            registry[varName].interpreterGroupId)
+        })
+      }
+      console.log('angular object (paragraph) created %o', varName)
+      scope[varName] = data.angularObject.object
+
+      // create proxy for AngularFunction
+      if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
+        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length)
+        scope[funcName] = function () {
+          // eslint-disable-next-line prefer-rest-params
+          scope[varName] = arguments
+          // eslint-disable-next-line prefer-rest-params
+          console.log('angular function (paragraph) invoked %o', arguments)
+        }
+
+        console.log('angular function (paragraph) created %o', scope[funcName])
+      }
+    }
+  })
+
+  $scope.$on('updateParaInfos', function (event, data) {
     if (data.id === $scope.paragraph.id) {
-      $scope.currentProgress = data.progress;
+      $scope.paragraph.runtimeInfos = data.infos
     }
-  });
+  })
 
-  $scope.$on('keyEvent', function(event, keyEvent) {
+  $scope.$on('angularObjectRemove', function (event, data) {
+    let noteId = $route.current.pathParams.noteId
+    if (!data.noteId || data.noteId === noteId) {
+      let scope
+      let registry
+
+      if (!data.paragraphId || data.paragraphId === $scope.paragraph.id) {
+        scope = paragraphScope
+        registry = angularObjectRegistry
+      } else {
+        return
+      }
+
+      let varName = data.name
+
+      // clear watcher
+      if (registry[varName]) {
+        registry[varName].clearWatcher()
+        registry[varName] = undefined
+      }
+
+      // remove scope variable
+      scope[varName] = undefined
+
+      // remove proxy for AngularFunction
+      if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
+        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length)
+        scope[funcName] = undefined
+      }
+    }
+  })
+
+  /**
+   * @returns {boolean} true if updated is needed
+   */
+  function isUpdateRequired (oldPara, newPara) {
+    return (newPara.id === oldPara.id &&
+      (newPara.dateCreated !== oldPara.dateCreated ||
+      newPara.text !== oldPara.text ||
+      newPara.dateFinished !== oldPara.dateFinished ||
+      newPara.dateStarted !== oldPara.dateStarted ||
+      newPara.dateUpdated !== oldPara.dateUpdated ||
+      newPara.status !== oldPara.status ||
+      newPara.jobName !== oldPara.jobName ||
+      newPara.title !== oldPara.title ||
+      isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
+      newPara.errorMessage !== oldPara.errorMessage ||
+      !angular.equals(newPara.settings, oldPara.settings) ||
+      !angular.equals(newPara.config, oldPara.config) ||
+      !angular.equals(newPara.runtimeInfos, oldPara.runtimeInfos)))
+  }
+
+  $scope.updateAllScopeTexts = function (oldPara, newPara) {
+    if (oldPara.text !== newPara.text) {
+      if ($scope.dirtyText) {         // check if editor has local update
+        if ($scope.dirtyText === newPara.text) {  // when local update is the same from remote, clear local update
+          $scope.paragraph.text = newPara.text
+          $scope.dirtyText = undefined
+          $scope.originalText = angular.copy(newPara.text)
+        } else { // if there're local update, keep it.
+          $scope.paragraph.text = newPara.text
+        }
+      } else {
+        $scope.paragraph.text = newPara.text
+        $scope.originalText = angular.copy(newPara.text)
+      }
+    }
+  }
+
+  $scope.updateParagraphObjectWhenUpdated = function (newPara) {
+    // resize col width
+    if ($scope.paragraph.config.colWidth !== newPara.colWidth) {
+      $rootScope.$broadcast('paragraphResized', $scope.paragraph.id)
+    }
+
+    /** push the rest */
+    $scope.paragraph.aborted = newPara.aborted
+    $scope.paragraph.user = newPara.user
+    $scope.paragraph.dateUpdated = newPara.dateUpdated
+    $scope.paragraph.dateCreated = newPara.dateCreated
+    $scope.paragraph.dateFinished = newPara.dateFinished
+    $scope.paragraph.dateStarted = newPara.dateStarted
+    $scope.paragraph.errorMessage = newPara.errorMessage
+    $scope.paragraph.jobName = newPara.jobName
+    $scope.paragraph.title = newPara.title
+    $scope.paragraph.lineNumbers = newPara.lineNumbers
+    $scope.paragraph.status = newPara.status
+    if (newPara.status !== ParagraphStatus.RUNNING) {
+      $scope.paragraph.results = newPara.results
+    }
+    $scope.paragraph.settings = newPara.settings
+    $scope.paragraph.runtimeInfos = newPara.runtimeInfos
+    if ($scope.editor) {
+      $scope.editor.setReadOnly($scope.isRunning(newPara))
+    }
+
+    if (!$scope.asIframe) {
+      $scope.paragraph.config = newPara.config
+      initializeDefault(newPara.config)
+    } else {
+      newPara.config.editorHide = true
+      newPara.config.tableHide = false
+      $scope.paragraph.config = newPara.config
+    }
+  }
+
+  $scope.updateParagraph = function (oldPara, newPara, updateCallback) {
+     // 1. get status, refreshed
+    const statusChanged = (newPara.status !== oldPara.status)
+    const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
+       isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
+       newPara.status === ParagraphStatus.ERROR ||
+       (newPara.status === ParagraphStatus.FINISHED && statusChanged)
+
+     // 2. update texts managed by $scope
+    $scope.updateAllScopeTexts(oldPara, newPara)
+
+     // 3. execute callback to update result
+    updateCallback()
+
+     // 4. update remaining paragraph objects
+    $scope.updateParagraphObjectWhenUpdated(newPara)
+
+     // 5. handle scroll down by key properly if new paragraph is added
+    if (statusChanged || resultRefreshed) {
+       // when last paragraph runs, zeppelin automatically appends new paragraph.
+       // this broadcast will focus to the newly inserted paragraph
+      const paragraphs = angular.element('div[id$="_paragraphColumn_main"]')
+      if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
+         // rendering output can took some time. So delay scrolling event firing for sometime.
+        setTimeout(() => { $rootScope.$broadcast('scrollToCursor') }, 500)
+      }
+    }
+  }
+
+  /** $scope.$on */
+
+  $scope.$on('runParagraphUsingSpell', function (event, data) {
+    const oldPara = $scope.paragraph
+    let newPara = data.paragraph
+    const updateCallback = () => {
+      $scope.runParagraph(newPara.text, true, true)
+    }
+
+    if (!isUpdateRequired(oldPara, newPara)) {
+      return
+    }
+
+    $scope.updateParagraph(oldPara, newPara, updateCallback)
+  })
+
+  $scope.$on('updateParagraph', function (event, data) {
+    const oldPara = $scope.paragraph
+    const newPara = data.paragraph
+
+    if (!isUpdateRequired(oldPara, newPara)) {
+      return
+    }
+
+    const updateCallback = () => {
+      // broadcast `updateResult` message to trigger result update
+      if (newPara.results && newPara.results.msg) {
+        for (let i in newPara.results.msg) {
+          const newResult = newPara.results.msg ? newPara.results.msg[i] : {}
+          const oldResult = (oldPara.results && oldPara.results.msg)
+            ? oldPara.results.msg[i] : {}
+          const newConfig = newPara.config.results ? newPara.config.results[i] : {}
+          const oldConfig = oldPara.config.results ? oldPara.config.results[i] : {}
+          if (!angular.equals(newResult, oldResult) ||
+            !angular.equals(newConfig, oldConfig)) {
+            $rootScope.$broadcast('updateResult', newResult, newConfig, newPara, parseInt(i))
+          }
+        }
+      }
+    }
+
+    $scope.updateParagraph(oldPara, newPara, updateCallback)
+  })
+
+  $scope.$on('updateProgress', function (event, data) {
+    if (data.id === $scope.paragraph.id) {
+      $scope.currentProgress = data.progress
+    }
+  })
+
+  $scope.$on('keyEvent', function (event, keyEvent) {
     if ($scope.paragraphFocused) {
-
-      var paragraphId = $scope.paragraph.id;
-      var keyCode = keyEvent.keyCode;
-      var noShortcutDefined = false;
-      var editorHide = $scope.paragraph.config.editorHide;
+      let paragraphId = $scope.paragraph.id
+      let keyCode = keyEvent.keyCode
+      let noShortcutDefined = false
+      let editorHide = $scope.paragraph.config.editorHide
 
       if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey && !keyEvent.altKey))) { // up
         // move focus to previous paragraph
-        $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
+        $scope.$emit('moveFocusToPreviousParagraph', paragraphId)
       } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
-        $scope.$emit('moveFocusToNextParagraph', paragraphId);
+        $scope.$emit('moveFocusToNextParagraph', paragraphId)
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
-        $scope.run();
+        $scope.runParagraphFromShortcut($scope.getEditorValue())
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
-        $scope.cancelParagraph();
+        $scope.cancelParagraph($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
-        $scope.removeParagraph();
+        $scope.removeParagraph($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
-        $scope.moveUp();
+        $scope.moveUp($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
-        $scope.moveDown();
+        $scope.moveDown($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
-        $scope.insertNew('above');
+        $scope.insertNew('above')
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
-        $scope.insertNew('below');
+        $scope.insertNew('below')
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
-        $scope.toggleOutput();
+        $scope.toggleOutput($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
-        $scope.toggleEnableDisable();
+        $scope.toggleEnableDisable($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
-        $scope.toggleEditor();
+        $scope.toggleEditor($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
         if ($scope.paragraph.config.lineNumbers) {
-          $scope.hideLineNumbers();
+          $scope.hideLineNumbers($scope.paragraph)
         } else {
-          $scope.showLineNumbers();
+          $scope.showLineNumbers($scope.paragraph)
         }
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
-        $scope.paragraph.config.colWidth = Math.max(1, $scope.paragraph.config.colWidth - 1);
-        $scope.changeColWidth();
+        $scope.changeColWidth($scope.paragraph, Math.max(1, $scope.paragraph.config.colWidth - 1))
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
-        $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
-        $scope.changeColWidth();
+        $scope.changeColWidth($scope.paragraph, Math.min(12, $scope.paragraph.config.colWidth + 1))
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
-          $scope.hideTitle();
+          $scope.hideTitle($scope.paragraph)
         } else {
-          $scope.showTitle();
+          $scope.showTitle($scope.paragraph)
         }
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 67) { // Ctrl + Alt + c
+        $scope.copyPara('below')
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 76) { // Ctrl + Alt + l
+        $scope.clearParagraphOutput($scope.paragraph)
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 87) { // Ctrl + Alt + w
+        $scope.goToSingleParagraph()
       } else {
-        noShortcutDefined = true;
+        noShortcutDefined = true
       }
 
       if (!noShortcutDefined) {
-        keyEvent.preventDefault();
+        keyEvent.preventDefault()
       }
     }
-  });
+  })
 
-  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
+  $scope.$on('focusParagraph', function (event, paragraphId, cursorPos, mouseEvent) {
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
         if (!mouseEvent) {
-          $scope.editor.focus();
+          $scope.editor.focus()
           // move cursor to the first row (or the last row)
-          var row;
+          let row
           if (cursorPos >= 0) {
-            row = cursorPos;
-            $scope.editor.gotoLine(row, 0);
+            row = cursorPos
+            $scope.editor.gotoLine(row, 0)
           } else {
-            row = $scope.editor.session.getLength();
-            $scope.editor.gotoLine(row, 0);
+            row = $scope.editor.session.getLength()
+            $scope.editor.gotoLine(row, 0)
           }
-          $scope.scrollToCursor($scope.paragraph.id, 0);
+          $scope.scrollToCursor($scope.paragraph.id, 0)
         }
       }
-      $scope.handleFocus(true);
+      handleFocus(true)
     } else {
-      $scope.editor.blur();
-      var isDigestPass = true;
-      $scope.handleFocus(false, isDigestPass);
+      if ($scope.editor !== undefined && $scope.editor !== null) {
+        $scope.editor.blur()
+      }
+      let isDigestPass = true
+      handleFocus(false, isDigestPass)
     }
-  });
+  })
 
-  $scope.$on('runParagraph', function(event) {
-    $scope.runParagraph($scope.editor.getValue());
-  });
-
-  $scope.$on('openEditor', function(event) {
-    $scope.openEditor();
-  });
-
-  $scope.$on('closeEditor', function(event) {
-    $scope.closeEditor();
-  });
-
-  $scope.$on('openTable', function(event) {
-    $scope.openTable();
-  });
-
-  $scope.$on('closeTable', function(event) {
-    $scope.closeTable();
-  });
-
-
-  $scope.getResultType = function(paragraph) {
-    var pdata = (paragraph) ? paragraph : $scope.paragraph;
-    if (pdata.result && pdata.result.type) {
-      return pdata.result.type;
-    } else {
-      return 'TEXT';
+  $scope.$on('saveInterpreterBindings', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.editor) {
+      setInterpreterBindings = true
+      setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue())
     }
-  };
+  })
 
-  $scope.getBase64ImageSrc = function(base64Data) {
-    return 'data:image/png;base64,'+base64Data;
-  };
-
-  $scope.getGraphMode = function(paragraph) {
-    var pdata = (paragraph) ? paragraph : $scope.paragraph;
-    if (pdata.config.graph && pdata.config.graph.mode) {
-      return pdata.config.graph.mode;
-    } else {
-      return 'table';
-    }
-  };
-
-  $scope.loadTableData = function(result) {
-    if (!result) {
-      return;
-    }
-    if (result.type === 'TABLE') {
-      var columnNames = [];
-      var rows = [];
-      var array = [];
-      var textRows = result.msg.split('\n');
-      result.comment = '';
-      var comment = false;
-
-      for (var i = 0; i < textRows.length; i++) {
-        var textRow = textRows[i];
-        if (comment) {
-          result.comment += textRow;
-          continue;
+  $scope.$on('doubleClickParagraph', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.editorHide &&
+      $scope.paragraph.config.editorSetting.editOnDblClick && $scope.revisionView !== true) {
+      let deferred = $q.defer()
+      openEditorAndCloseTable($scope.paragraph)
+      $timeout(
+        $scope.$on('updateParagraph', function (event, data) {
+          deferred.resolve(data)
         }
+        ), 1000)
 
-        if (textRow === '') {
-          if (rows.length>0) {
-            comment = true;
-          }
-          continue;
+      deferred.promise.then(function (data) {
+        if ($scope.editor) {
+          $scope.editor.focus()
+          $scope.goToEnd($scope.editor)
         }
-        var textCols = textRow.split('\t');
-        var cols = [];
-        var cols2 = [];
-        for (var j = 0; j < textCols.length; j++) {
-          var col = textCols[j];
-          if (i === 0) {
-            columnNames.push({name:col, index:j, aggr:'sum'});
-          } else {
-            cols.push(col);
-            cols2.push({key: (columnNames[i]) ? columnNames[i].name: undefined, value: col});
-          }
-        }
-        if (i !== 0) {
-          rows.push(cols);
-          array.push(cols2);
-        }
-      }
-      result.msgTable = array;
-      result.columnNames = columnNames;
-      result.rows = rows;
+      })
     }
-  };
+  })
 
-  $scope.setGraphMode = function(type, emit, refresh) {
-    if (emit) {
-      setNewMode(type);
-    } else {
-      clearUnknownColsFromGraphOption();
-      // set graph height
-      var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
+  $scope.$on('openEditor', function (event) {
+    $scope.openEditor($scope.paragraph)
+  })
 
-      if (!type || type === 'table') {
-        setTable($scope.paragraph.result, refresh);
-      }
-      else {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-    }
-  };
+  $scope.$on('closeEditor', function (event) {
+    $scope.closeEditor($scope.paragraph)
+  })
 
-  var setNewMode = function(newMode) {
-    var newConfig = angular.copy($scope.paragraph.config);
-    var newParams = angular.copy($scope.paragraph.settings.params);
+  $scope.$on('openTable', function (event) {
+    $scope.openTable($scope.paragraph)
+  })
 
-    // graph options
-    newConfig.graph.mode = newMode;
+  $scope.$on('closeTable', function (event) {
+    $scope.closeTable($scope.paragraph)
+  })
 
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  var commitParagraph = function(title, text, config, params) {
-    websocketMsgSrv.commitParagraph($scope.paragraph.id, title, text, config, params);
-  };
-
-  var setTable = function(data, refresh) {
-    var renderTable = function() {
-      var height = $scope.paragraph.config.graph.height;
-      var container = angular.element('#p' + $scope.paragraph.id + '_table').css('height', height).get(0);
-      var resultRows = data.rows;
-      var columnNames = _.pluck(data.columnNames, 'name');
-
-      if ($scope.hot) {
-        $scope.hot.destroy();
-      }
-
-      $scope.hot = new Handsontable(container, {
-        colHeaders: columnNames,
-        data: resultRows,
-        rowHeaders: false,
-        stretchH: 'all',
-        sortIndicator: true,
-        columnSorting: true,
-        contextMenu: false,
-        manualColumnResize: true,
-        manualRowResize: true,
-        readOnly: true,
-        readOnlyCellClassName: '',  // don't apply any special class so we can retain current styling
-        fillHandle: false,
-        fragmentSelection: true,
-        disableVisualSelection: true,
-        cells: function(row, col, prop) {
-          var cellProperties = {};
-          cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
-              cellProperties.format = '0,0.[00000]';
-              td.style.textAlign = 'left';
-              Handsontable.renderers.NumericRenderer.apply(this, arguments);
-            } else if (value.length > '%html'.length && '%html ' === value.substring(0, '%html '.length)) {
-              td.innerHTML = value.substring('%html'.length);
-            } else {
-              Handsontable.renderers.TextRenderer.apply(this, arguments);
-            }
-          };
-          return cellProperties;
-        }
-      });
-    };
-
-    var retryRenderer = function() {
-      if (angular.element('#p' + $scope.paragraph.id + '_table').length) {
-        try {
-          renderTable();
-        } catch(err) {
-          console.log('Chart drawing error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer,10);
-      }
-    };
-    $timeout(retryRenderer);
-
-  };
-
-  var groupedThousandsWith3DigitsFormatter = function(x){
-    return d3.format(',')(d3.round(x, 3));
-  };
-
-  var customAbbrevFormatter = function(x) {
-    var s = d3.format('.3s')(x);
-    switch (s[s.length - 1]) {
-      case 'G': return s.slice(0, -1) + 'B';
-    }
-    return s;
-  };
-
-  var xAxisTickFormat = function(d, xLabels) {
-    if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
-      return xLabels[d];
-    } else {
-      return d;
-    }
-  };
-
-  var yAxisTickFormat = function(d) {
-    if (Math.abs(d) >= Math.pow(10,6)) {
-      return customAbbrevFormatter(d);
-    }
-    return groupedThousandsWith3DigitsFormatter(d);
-  };
-
-  var setD3Chart = function(type, data, refresh) {
-    if (!$scope.chart[type]) {
-      var chart = nv.models[type]();
-      $scope.chart[type] = chart;
+  $scope.$on('resultRendered', function (event, paragraphId) {
+    if ($scope.paragraph.id !== paragraphId) {
+      return
     }
 
-    var d3g = [];
-    var xLabels;
-    var yLabels;
-
-    if (type === 'scatterChart') {
-      var scatterData = setScatterChart(data, refresh);
-
-      xLabels = scatterData.xLabels;
-      yLabels = scatterData.yLabels;
-      d3g = scatterData.d3g;
-
-      $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-      $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
-
-      // configure how the tooltip looks.
-      $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
-        var tooltipContent = '<h3>' + key + '</h3>';
-        if ($scope.paragraph.config.graph.scatter.size &&
-            $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
-          tooltipContent += '<p>' + data.point.size + '</p>';
-        }
-
-        return tooltipContent;
-      });
-
-      $scope.chart[type].showDistX(true)
-        .showDistY(true);
-      //handle the problem of tooltip not showing when muliple points have same value.
-    } else {
-      var p = pivot(data);
-      if (type === 'pieChart') {
-        var d = pivotDataToD3ChartFormat(p, true).d3g;
-
-        $scope.chart[type].x(function(d) { return d.label;})
-          .y(function(d) { return d.value;});
-
-        if ( d.length > 0 ) {
-          for ( var i=0; i<d[0].values.length ; i++) {
-            var e = d[0].values[i];
-            d3g.push({
-              label : e.x,
-              value : e.y
-            });
-          }
-        }
-      } else if (type === 'multiBarChart') {
-        d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
-        $scope.chart[type].yAxis.axisLabelDistance(50);
-        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
-      } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
-        var pivotdata = pivotDataToD3ChartFormat(p, false, true);
-        xLabels = pivotdata.xLabels;
-        d3g = pivotdata.d3g;
-        $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-        if (type === 'stackedAreaChart') {
-          $scope.chart[type].yAxisTickFormat(function(d) {return yAxisTickFormat(d);});
-        } else {
-          $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, xLabels);});
-        }
-        $scope.chart[type].yAxis.axisLabelDistance(50);
-        if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
-          $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
-        }
-        if($scope.paragraph.config.graph.forceY) {
-          $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
-        } else {
-          $scope.chart[type].forceY([]);
-        }
-      }
+    /** increase spell result count and return if not finished */
+    if (!$scope.increaseSpellTransactionResultCount()) {
+      return
     }
 
-    var renderChart = function() {
-      if (!refresh) {
-        // TODO force destroy previous chart
-      }
-
-      var height = $scope.paragraph.config.graph.height;
-
-      var animationDuration = 300;
-      var numberOfDataThreshold = 150;
-      // turn off animation when dataset is too large. (for performance issue)
-      // still, since dataset is large, the chart content sequentially appears like animated.
-      try {
-        if (d3g[0].values.length > numberOfDataThreshold) {
-          animationDuration = 0;
-        }
-      } catch(ignoreErr) {
-      }
-
-      var chartEl = d3.select('#p'+$scope.paragraph.id+'_'+type+' svg')
-      .attr('height', $scope.paragraph.config.graph.height)
-      .datum(d3g)
-      .transition()
-      .duration(animationDuration)
-      .call($scope.chart[type]);
-      d3.select('#p'+$scope.paragraph.id+'_'+type+' svg').style.height = height+'px';
-      nv.utils.windowResize($scope.chart[type].update);
-    };
-
-    var retryRenderer = function() {
-      if (angular.element('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
-        try {
-          renderChart();
-        } catch(err) {
-          console.log('Chart drawing error %o', err);
-        }
-      } else {
-        $timeout(retryRenderer,10);
-      }
-    };
-    $timeout(retryRenderer);
-  };
-
-  $scope.isGraphMode = function(graphName) {
-    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-
-  $scope.onGraphOptionChange = function() {
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeGraphOptionKeys = function(idx) {
-    $scope.paragraph.config.graph.keys.splice(idx, 1);
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeGraphOptionValues = function(idx) {
-    $scope.paragraph.config.graph.values.splice(idx, 1);
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeGraphOptionGroups = function(idx) {
-    $scope.paragraph.config.graph.groups.splice(idx, 1);
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.setGraphOptionValueAggr = function(idx, aggr) {
-    $scope.paragraph.config.graph.values[idx].aggr = aggr;
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeScatterOptionXaxis = function(idx) {
-    $scope.paragraph.config.graph.scatter.xAxis = null;
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeScatterOptionYaxis = function(idx) {
-    $scope.paragraph.config.graph.scatter.yAxis = null;
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeScatterOptionGroup = function(idx) {
-    $scope.paragraph.config.graph.scatter.group = null;
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  $scope.removeScatterOptionSize = function(idx) {
-    $scope.paragraph.config.graph.scatter.size = null;
-    clearUnknownColsFromGraphOption();
-    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
-  };
-
-  /* Clear unknown columns from graph option */
-  var clearUnknownColsFromGraphOption = function() {
-    var unique = function(list) {
-      for (var i = 0; i<list.length; i++) {
-        for (var j=i+1; j<list.length; j++) {
-          if (angular.equals(list[i], list[j])) {
-            list.splice(j, 1);
-          }
-        }
-      }
-    };
-
-    var removeUnknown = function(list) {
-      for (var i = 0; i<list.length; i++) {
-        // remove non existing column
-        var found = false;
-        for (var j=0; j<$scope.paragraph.result.columnNames.length; j++) {
-          var a = list[i];
-          var b = $scope.paragraph.result.columnNames[j];
-          if (a.index === b.index && a.name === b.name) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          list.splice(i, 1);
-        }
-      }
-    };
-
-    var removeUnknownFromScatterSetting = function(fields) {
-      for (var f in fields) {
-        if (fields[f]) {
-          var found = false;
-          for (var i = 0; i < $scope.paragraph.result.columnNames.length; i++) {
-            var a = fields[f];
-            var b = $scope.paragraph.result.columnNames[i];
-            if (a.index === b.index && a.name === b.name) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            fields[f] = null;
-          }
-        }
-      }
-    };
-
-    unique($scope.paragraph.config.graph.keys);
-    removeUnknown($scope.paragraph.config.graph.keys);
-
-    removeUnknown($scope.paragraph.config.graph.values);
-
-    unique($scope.paragraph.config.graph.groups);
-    removeUnknown($scope.paragraph.config.graph.groups);
-
-    removeUnknownFromScatterSetting($scope.paragraph.config.graph.scatter);
-  };
-
-  /* select default key and value if there're none selected */
-  var selectDefaultColsForGraphOption = function() {
-    if ($scope.paragraph.config.graph.keys.length === 0 && $scope.paragraph.result.columnNames.length > 0) {
-      $scope.paragraph.config.graph.keys.push($scope.paragraph.result.columnNames[0]);
-    }
-
-    if ($scope.paragraph.config.graph.values.length === 0 && $scope.paragraph.result.columnNames.length > 1) {
-      $scope.paragraph.config.graph.values.push($scope.paragraph.result.columnNames[1]);
-    }
-
-    if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
-      if ($scope.paragraph.result.columnNames.length > 1) {
-        $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
-        $scope.paragraph.config.graph.scatter.yAxis = $scope.paragraph.result.columnNames[1];
-      } else if ($scope.paragraph.result.columnNames.length === 1) {
-        $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
-      }
-    }
-  };
-
-  var pivot = function(data) {
-    var keys = $scope.paragraph.config.graph.keys;
-    var groups = $scope.paragraph.config.graph.groups;
-    var values = $scope.paragraph.config.graph.values;
-
-    var aggrFunc = {
-      sum : function(a,b) {
-        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-        return varA+varB;
-      },
-      count : function(a,b) {
-        var varA = (a !== undefined) ? parseInt(a) : 0;
-        var varB = (b !== undefined) ? 1 : 0;
-        return varA+varB;
-      },
-      min : function(a,b) {
-        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-        return Math.min(varA,varB);
-      },
-      max : function(a,b) {
-        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-        return Math.max(varA,varB);
-      },
-      avg : function(a,b,c) {
-        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
-        return varA+varB;
-      }
-    };
-
-    var aggrFuncDiv = {
-      sum : false,
-      count : false,
-      min : false,
-      max : false,
-      avg : true
-    };
-
-    var schema = {};
-    var rows = {};
-
-    for (var i=0; i < data.rows.length; i++) {
-      var row = data.rows[i];
-      var newRow = {};
-      var s = schema;
-      var p = rows;
-
-      for (var k=0; k < keys.length; k++) {
-        var key = keys[k];
-
-        // add key to schema
-        if (!s[key.name]) {
-          s[key.name] = {
-            order : k,
-            index : key.index,
-            type : 'key',
-            children : {}
-          };
-        }
-        s = s[key.name].children;
-
-        // add key to row
-        var keyKey = row[key.index];
-        if (!p[keyKey]) {
-          p[keyKey] = {};
-        }
-        p = p[keyKey];
-      }
-
-      for (var g=0; g < groups.length; g++) {
-        var group = groups[g];
-        var groupKey = row[group.index];
-
-        // add group to schema
-        if (!s[groupKey]) {
-          s[groupKey] = {
-            order : g,
-            index : group.index,
-            type : 'group',
-            children : {}
-          };
-        }
-        s = s[groupKey].children;
-
-        // add key to row
-        if (!p[groupKey]) {
-          p[groupKey] = {};
-        }
-        p = p[groupKey];
-      }
-
-      for (var v=0; v < values.length; v++) {
-        var value = values[v];
-        var valueKey = value.name+'('+value.aggr+')';
-
-        // add value to schema
-        if (!s[valueKey]) {
-          s[valueKey] = {
-            type : 'value',
-            order : v,
-            index : value.index
-          };
-        }
-
-        // add value to row
-        if (!p[valueKey]) {
-          p[valueKey] = {
-            value : (value.aggr !== 'count') ? row[value.index] : 1,
-            count: 1
-          };
-        } else {
-          p[valueKey] = {
-            value : aggrFunc[value.aggr](p[valueKey].value, row[value.index], p[valueKey].count+1),
-            count : (aggrFuncDiv[value.aggr]) ?  p[valueKey].count+1 : p[valueKey].count
-          };
-        }
-      }
-    }
-
-    //console.log("schema=%o, rows=%o", schema, rows);
-
-    return {
-      schema : schema,
-      rows : rows
-    };
-  };
-
-  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues, chartType) {
-    // construct d3 data
-    var d3g = [];
-
-    var schema = data.schema;
-    var rows = data.rows;
-    var values = $scope.paragraph.config.graph.values;
-
-    var concat = function(o, n) {
-      if (!o) {
-        return n;
-      } else {
-        return o+'.'+n;
-      }
-    };
-
-    var getSchemaUnderKey = function(key, s) {
-      for (var c in key.children) {
-        s[c] = {};
-        getSchemaUnderKey(key.children[c], s[c]);
-      }
-    };
-
-    var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
-      //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
-
-      if (s.type==='key') {
-        rowName = concat(rowName, sKey);
-        rowValue = concat(rowValue, rKey);
-      } else if (s.type==='group') {
-        colName = concat(colName, rKey);
-      } else if (s.type==='value' && sKey===rKey || valueOnly) {
-        colName = concat(colName, rKey);
-        func(rowName, rowValue, colName, r);
-      }
-
-      for (var c in s.children) {
-        if (fillMissingValues && s.children[c].type === 'group' && r[c] === undefined) {
-          var cs = {};
-          getSchemaUnderKey(s.children[c], cs);
-          traverse(c, s.children[c], c, cs, func, rowName, rowValue, colName);
-          continue;
-        }
-
-        for (var j in r) {
-          if (s.children[c].type === 'key' || c === j) {
-            traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
-          }
-        }
-      }
-    };
-
-    var keys = $scope.paragraph.config.graph.keys;
-    var groups = $scope.paragraph.config.graph.groups;
-    values = $scope.paragraph.config.graph.values;
-    var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
-    var noKey = (keys.length === 0);
-    var isMultiBarChart = (chartType === 'multiBarChart');
-
-    var sKey = Object.keys(schema)[0];
-
-    var rowNameIndex = {};
-    var rowIdx = 0;
-    var colNameIndex = {};
-    var colIdx = 0;
-    var rowIndexValue = {};
-
-    for (var k in rows) {
-      traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
-        //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
-        if (rowNameIndex[rowValue] === undefined) {
-          rowIndexValue[rowIdx] = rowValue;
-          rowNameIndex[rowValue] = rowIdx++;
-        }
-
-        if (colNameIndex[colName] === undefined) {
-          colNameIndex[colName] = colIdx++;
-        }
-        var i = colNameIndex[colName];
-        if (noKey && isMultiBarChart) {
-          i = 0;
-        }
-
-        if (!d3g[i]) {
-          d3g[i] = {
-            values : [],
-            key : (noKey && isMultiBarChart) ? 'values' : colName
-          };
-        }
-
-        var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
-        var yVar = 0;
-        if (xVar === undefined) { xVar = colName; }
-        if (value !== undefined) {
-          yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
-        }
-        d3g[i].values.push({
-          x : xVar,
-          y : yVar
-        });
-      });
-    }
-
-    // clear aggregation name, if possible
-    var namesWithoutAggr = {};
-    var colName;
-    var withoutAggr;
-    // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
-    for (colName in colNameIndex) {
-      withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-      if (!namesWithoutAggr[withoutAggr]) {
-        namesWithoutAggr[withoutAggr] = 1;
-      } else {
-        namesWithoutAggr[withoutAggr]++;
-      }
-    }
-
-    if (valueOnly) {
-      for (var valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
-        colName = d3g[0].values[valueIndex].x;
-        if (!colName) {
-          continue;
-        }
-
-        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-        if (namesWithoutAggr[withoutAggr] <= 1 ) {
-          d3g[0].values[valueIndex].x = withoutAggr;
-        }
-      }
-    } else {
-      for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-        colName = d3g[d3gIndex].key;
-        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-        if (namesWithoutAggr[withoutAggr] <= 1 ) {
-          d3g[d3gIndex].key = withoutAggr;
-        }
-      }
-
-      // use group name instead of group.value as a column name, if there're only one group and one value selected.
-      if (groups.length === 1 && values.length === 1) {
-        for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-          colName = d3g[d3gIndex].key;
-          colName = colName.split('.').slice(0, -1).join('.');
-          d3g[d3gIndex].key = colName;
-        }
-      }
-
-    }
-
-    return {
-      xLabels : rowIndexValue,
-      d3g : d3g
-    };
-  };
-
-
-  var setDiscreteScatterData = function(data) {
-    var xAxis = $scope.paragraph.config.graph.scatter.xAxis;
-    var yAxis = $scope.paragraph.config.graph.scatter.yAxis;
-    var group = $scope.paragraph.config.graph.scatter.group;
-
-    var xValue;
-    var yValue;
-    var grp;
-
-    var rows = {};
-
-    for (var i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
-      if (xAxis) {
-        xValue = row[xAxis.index];
-      }
-      if (yAxis) {
-        yValue = row[yAxis.index];
-      }
-      if (group) {
-        grp = row[group.index];
-      }
-
-      var key = xValue + ',' + yValue +  ',' + grp;
-
-      if(!rows[key]) {
-        rows[key] = {
-          x : xValue,
-          y : yValue,
-          group : grp,
-          size : 1
-        };
-      } else {
-        rows[key].size++;
-      }
-    }
-
-    // change object into array
-    var newRows = [];
-    for(var r in rows){
-      var newRow = [];
-      if (xAxis) { newRow[xAxis.index] = rows[r].x; }
-      if (yAxis) { newRow[yAxis.index] = rows[r].y; }
-      if (group) { newRow[group.index] = rows[r].group; }
-      newRow[data.rows[0].length] = rows[r].size;
-      newRows.push(newRow);
-    }
-    return newRows;
-  };
-
-  var setScatterChart = function(data, refresh) {
-    var xAxis = $scope.paragraph.config.graph.scatter.xAxis;
-    var yAxis = $scope.paragraph.config.graph.scatter.yAxis;
-    var group = $scope.paragraph.config.graph.scatter.group;
-    var size = $scope.paragraph.config.graph.scatter.size;
-
-    var xValues = [];
-    var yValues = [];
-    var rows = {};
-    var d3g = [];
-
-    var rowNameIndex = {};
-    var colNameIndex = {};
-    var grpNameIndex = {};
-    var rowIndexValue = {};
-    var colIndexValue = {};
-    var grpIndexValue = {};
-    var rowIdx = 0;
-    var colIdx = 0;
-    var grpIdx = 0;
-    var grpName = '';
-
-    var xValue;
-    var yValue;
-    var row;
-
-    if (!xAxis && !yAxis) {
-      return {
-        d3g : []
-      };
-    }
-
-    for (var i = 0; i < data.rows.length; i++) {
-      row = data.rows[i];
-      if (xAxis) {
-        xValue = row[xAxis.index];
-        xValues[i] = xValue;
-      }
-      if (yAxis) {
-        yValue = row[yAxis.index];
-        yValues[i] = yValue;
-      }
-    }
-
-    var isAllDiscrete = ((xAxis && yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
-                         (!xAxis && isDiscrete(yValues)) ||
-                         (!yAxis && isDiscrete(xValues)));
-
-    if (isAllDiscrete) {
-      rows = setDiscreteScatterData(data);
-    } else {
-      rows = data.rows;
-    }
-
-    if (!group && isAllDiscrete) {
-      grpName = 'count';
-    } else if (!group && !size) {
-      if (xAxis && yAxis) {
-        grpName = '(' + xAxis.name + ', ' + yAxis.name + ')';
-      } else if (xAxis && !yAxis) {
-        grpName = xAxis.name;
-      } else if (!xAxis && yAxis) {
-        grpName = yAxis.name;
-      }
-    } else if (!group && size) {
-      grpName = size.name;
-    }
-
-    for (i = 0; i < rows.length; i++) {
-      row = rows[i];
-      if (xAxis) {
-        xValue = row[xAxis.index];
-      }
-      if (yAxis) {
-        yValue = row[yAxis.index];
-      }
-      if (group) {
-        grpName = row[group.index];
-      }
-      var sz = (isAllDiscrete) ? row[row.length-1] : ((size) ? row[size.index] : 1);
-
-      if (grpNameIndex[grpName] === undefined) {
-        grpIndexValue[grpIdx] = grpName;
-        grpNameIndex[grpName] = grpIdx++;
-      }
-
-      if (xAxis && rowNameIndex[xValue] === undefined) {
-        rowIndexValue[rowIdx] = xValue;
-        rowNameIndex[xValue] = rowIdx++;
-      }
-
-      if (yAxis && colNameIndex[yValue] === undefined) {
-        colIndexValue[colIdx] = yValue;
-        colNameIndex[yValue] = colIdx++;
-      }
-
-      if (!d3g[grpNameIndex[grpName]]) {
-        d3g[grpNameIndex[grpName]] = {
-          key : grpName,
-          values : []
-        };
-      }
-
-      d3g[grpNameIndex[grpName]].values.push({
-        x : xAxis ? (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) : 0,
-        y : yAxis ? (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) : 0,
-        size : isNaN(parseFloat(sz))? 1 : parseFloat(sz)
-      });
-    }
-
-    return {
-      xLabels : rowIndexValue,
-      yLabels : colIndexValue,
-      d3g : d3g
-    };
-  };
-
-  var isDiscrete = function(field) {
-    var getUnique = function(f) {
-      var uniqObj = {};
-      var uniqArr = [];
-      var j = 0;
-      for (var i = 0; i < f.length; i++) {
-        var item = f[i];
-        if(uniqObj[item] !== 1) {
-          uniqObj[item] = 1;
-          uniqArr[j++] = item;
-        }
-      }
-      return uniqArr;
-    };
-
-    for (var i = 0; i < field.length; i++) {
-      if(isNaN(parseFloat(field[i])) &&
-         (typeof field[i] === 'string' || field[i] instanceof String)) {
-        return true;
-      }
-    }
-
-    var threshold = 0.05;
-    var unique = getUnique(field);
-    if (unique.length/field.length < threshold) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  $scope.isValidSizeOption = function (options, rows) {
-    var xValues = [];
-    var yValues = [];
-
-    for (var i = 0; i < rows.length; i++) {
-      var row = rows[i];
-      var size = row[options.size.index];
-
-      //check if the field is numeric
-      if (isNaN(parseFloat(size)) || !isFinite(size)) {
-        return false;
-      }
-
-      if (options.xAxis) {
-        var x = row[options.xAxis.index];
-        xValues[i] = x;
-      }
-      if (options.yAxis) {
-        var y = row[options.yAxis.index];
-        yValues[i] = y;
-      }
-    }
-
-    //check if all existing fields are discrete
-    var isAllDiscrete = ((options.xAxis && options.yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
-                         (!options.xAxis && isDiscrete(yValues)) ||
-                         (!options.yAxis && isDiscrete(xValues)));
-
-    if (isAllDiscrete) {
-      return false;
-    }
-
-    return true;
-  };
-
-  $scope.resizeParagraph = function(width, height) {
-    if ($scope.paragraph.config.colWidth !== width) {
-
-        $scope.paragraph.config.colWidth = width;
-        $scope.changeColWidth();
-        $timeout(function() {
-          autoAdjustEditorHeight($scope.paragraph.id + '_editor');
-          $scope.changeHeight(height);
-        }, 200);
-
-    } else {
-      $scope.changeHeight(height);
-    }
-  };
-
-  $scope.changeHeight = function(height) {
-    var newParams = angular.copy($scope.paragraph.settings.params);
-    var newConfig = angular.copy($scope.paragraph.config);
-
-    newConfig.graph.height = height;
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  /** Utility function */
-  if (typeof String.prototype.startsWith !== 'function') {
-    String.prototype.startsWith = function(str) {
-      return this.slice(0, str.length) === str;
-    };
-  }
-
-  $scope.goToSingleParagraph = function () {
-    var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
-    $window.open(redirectToUrl);
-  };
-
-  $scope.showScrollDownIcon = function(){
-    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
-    if(doc[0]){
-      return doc[0].scrollHeight > doc.innerHeight();
-    }
-    return false;
-  };
-
-  $scope.scrollParagraphDown = function() {
-    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
-    doc.animate({scrollTop: doc[0].scrollHeight}, 500);
-    $scope.keepScrollDown = true;
-  };
-
-  $scope.showScrollUpIcon = function(){
-    if(angular.element('#p' + $scope.paragraph.id + '_text')[0]){
-      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
-    }
-    return false;
-
-  };
-
-  $scope.scrollParagraphUp = function() {
-    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
-    doc.animate({scrollTop: 0}, 500);
-    $scope.keepScrollDown = false;
-  };
-
-  $scope.exportToDSV = function (delimiter) {
-    var data = $scope.paragraph.result;
-    var dsv = '';
-    for (var titleIndex in $scope.paragraph.result.columnNames) {
-      dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
-    }
-    dsv = dsv.substring(0, dsv.length - 1) + '\n';
-    for (var r in $scope.paragraph.result.msgTable) {
-      var row = $scope.paragraph.result.msgTable[r];
-      var dsvRow = '';
-      for (var index in row) {
-        dsvRow += row[index].value + delimiter;
-      }
-      dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
-    }
-    var extension = '';
-    if (delimiter === '\t') {
-      extension = 'tsv';
-    } else if (delimiter === ',') {
-      extension = 'csv';
-    }
-    SaveAsService.SaveAs(dsv, 'data', extension);
-  };
-});
+    $scope.cleanupSpellTransaction()
+  })
+}

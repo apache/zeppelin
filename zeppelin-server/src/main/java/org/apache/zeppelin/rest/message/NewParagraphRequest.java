@@ -17,15 +17,21 @@
 
 package org.apache.zeppelin.rest.message;
 
+import java.util.HashMap;
+
 /**
  * NewParagraphRequest rest api request message
  *
  * index field will be ignored when it's used to provide initial paragraphs
+ * visualization (optional) one of:
+ * table,pieChart,multibarChart,stackedAreaChart,lineChart,scatterChart
+ * colWidth (optional), e.g. 12.0
  */
 public class NewParagraphRequest {
   String title;
   String text;
   Double index;
+  HashMap< String, Object > config;
 
   public NewParagraphRequest() {
 
@@ -42,4 +48,6 @@ public class NewParagraphRequest {
   public Double getIndex() {
     return index;
   }
+
+  public HashMap< String, Object > getConfig() { return config; }
 }

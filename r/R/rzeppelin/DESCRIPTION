@@ -9,7 +9,7 @@ URL: http://dahl.byu.edu/software/rscala/
 Imports: utils,
 	evaluate
 Suggests:
-	goolgeVis,
+	googleVis,
 	htmltools,
 	knitr,
 	rCharts,

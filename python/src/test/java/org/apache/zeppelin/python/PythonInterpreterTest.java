@@ -1,233 +1,136 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.zeppelin.python;
 
-
+import static org.apache.zeppelin.python.PythonInterpreter.DEFAULT_ZEPPELIN_PYTHON;
+import static org.apache.zeppelin.python.PythonInterpreter.MAX_RESULT;
+import static org.apache.zeppelin.python.PythonInterpreter.ZEPPELIN_PYTHON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.anyString;
 
-import org.apache.zeppelin.interpreter.InterpreterResult;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 
-/**
- * Python interpreter unit test
- */
-public class PythonInterpreterTest {
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-  Logger logger = LoggerFactory.getLogger(PythonProcess.class);
-
-  public static final String ZEPPELIN_PYTHON = "zeppelin.python";
-  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
-
+public class PythonInterpreterTest implements InterpreterOutputListener {
   PythonInterpreter pythonInterpreter = null;
-  PythonProcess mockPythonProcess;
   String cmdHistory;
+  private InterpreterContext context;
+  InterpreterOutput out;
+
+  public static Properties getPythonTestProperties() {
+    Properties p = new Properties();
+    p.setProperty(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
+    p.setProperty(MAX_RESULT, "1000");
+    return p;
+  }
 
   @Before
-  public void beforeTest() {
+  public void beforeTest() throws IOException {
     cmdHistory = "";
 
-    /*Mock python process*/
-    mockPythonProcess = mock(PythonProcess.class);
-    when(mockPythonProcess.getPid()).thenReturn((long) 1);
-    try {
-      when(mockPythonProcess.sendAndGetResult(anyString())).thenAnswer(
-          new Answer<String>() {
-        @Override
-        public String answer(InvocationOnMock invocationOnMock) throws Throwable {
-          return answerFromPythonMock(invocationOnMock);
-        }
-      });
-    } catch (IOException e) {
-      logger.error("Can't initiate python process", e);
-    }
+    // python interpreter
+    pythonInterpreter = new PythonInterpreter(getPythonTestProperties());
 
-    Properties properties = new Properties();
-    properties.put(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
-    pythonInterpreter = spy(new PythonInterpreter(properties));
+    // create interpreter group
+    InterpreterGroup group = new InterpreterGroup();
+    group.put("note", new LinkedList<Interpreter>());
+    group.get("note").add(pythonInterpreter);
+    pythonInterpreter.setInterpreterGroup(group);
 
-    when(pythonInterpreter.getPythonProcess()).thenReturn(mockPythonProcess);
+    out = new InterpreterOutput(this);
 
-
-    try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("ImportError");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-
+    context = new InterpreterContext("note", "id", null, "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(group.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        out);
+    pythonInterpreter.open();
   }
 
-  @Test
-  public void testOpenInterpreter() {
-    pythonInterpreter.open();
-    assertEquals(pythonInterpreter.getPythonProcess().getPid(), 1);
-
-  }
-
-  @Test
-  public void testPy4jIsNotInstalled() {
-
-    /*
-    If Py4J is not installed, bootstrap_input.py
-    is not sent to Python process and
-    py4j JavaGateway is not running
-     */
-    pythonInterpreter.open();
-    assertNull(pythonInterpreter.getPy4JPort());
-
-    assertTrue(cmdHistory.contains("def help()"));
-    assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
-    assertTrue(cmdHistory.contains("z = PyZeppelinContext"));
-    assertTrue(cmdHistory.contains("def show"));
-    assertFalse(cmdHistory.contains("GatewayClient"));
-
-  }
-
-  @Test
-  public void testPy4JInstalled() {
-
-
-    /*
-    If Py4J installed, bootstrap_input.py
-    is sent to interpreter and JavaGateway is
-    running
-     */
-
-    try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    pythonInterpreter.open();
-    Integer py4jPort = pythonInterpreter.getPy4JPort();
-    assertNotNull(py4jPort);
-
-    assertTrue(cmdHistory.contains("def help()"));
-    assertTrue(cmdHistory.contains("class PyZeppelinContext(object):"));
-    assertTrue(cmdHistory.contains("z = Py4jZeppelinContext"));
-    assertTrue(cmdHistory.contains("def show"));
-    assertTrue(cmdHistory.contains("GatewayClient(port=" + py4jPort + ")"));
-    assertTrue(cmdHistory.contains("org.apache.zeppelin.display.Input"));
-
-
-    assertTrue(checkSocketAdress(py4jPort));
-
-  }
-
-
-  @Test
-  public void testClose() {
-
-    try {
-      when(mockPythonProcess.sendAndGetResult(eq("\n\nimport py4j\n"))).thenReturn("");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    pythonInterpreter.open();
-    Integer py4jPort = pythonInterpreter.getPy4JPort();
-
-    assertNotNull(py4jPort);
+  @After
+  public void afterTest() throws IOException {
     pythonInterpreter.close();
-
-    assertFalse(checkSocketAdress(py4jPort));
-    try {
-      verify(mockPythonProcess, times(1)).close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
-
 
   @Test
-  public void testInterpret() {
-
-    pythonInterpreter.open();
-    cmdHistory = "";
-    InterpreterResult result = pythonInterpreter.interpret("print a", null);
+  public void testInterpret() throws InterruptedException, IOException {
+    InterpreterResult result = pythonInterpreter.interpret("print (\"hi\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("%text print a", result.toString());
+  }
+
+  @Test
+  public void testInterpretInvalidSyntax() throws IOException {
+    InterpreterResult result = pythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\n", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("hi\nhi\nhi"));
+ }
+
+  @Test
+  public void testRedefinitionZeppelinContext() {
+    String pyRedefinitionCode = "z = 1\n";
+    String pyRestoreCode = "z = __zeppelin__\n";
+    String pyValidCode = "z.input(\"test\")\n";
+
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyRedefinitionCode, context).code());
+    assertEquals(InterpreterResult.Code.ERROR, pythonInterpreter.interpret(pyValidCode, context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyRestoreCode, context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());
+  }
+
+  @Override
+  public void onUpdateAll(InterpreterOutput out) {
 
   }
 
+  @Override
+  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
 
-
-  private boolean checkSocketAdress(Integer py4jPort) {
-    Socket s = new Socket();
-    SocketAddress sa = new InetSocketAddress("localhost", py4jPort);
-    Boolean working = null;
-    try {
-      s.connect(sa, 10000);
-    } catch (IOException e) {
-      working = false;
-    }
-
-    if (working == null) {
-      working = s.isConnected();
-      try {
-        s.close();
-      } catch (IOException e) {
-        logger.error("Can't close connection to localhost:" + py4jPort, e);
-      }
-    }
-    return working;
   }
 
+  @Override
+  public void onUpdate(int index, InterpreterResultMessageOutput out) {
 
-
-  private String answerFromPythonMock(InvocationOnMock invocationOnMock) {
-    Object[] inputs = invocationOnMock.getArguments();
-    String cmdToExecute = (String) inputs[0];
-
-    if (cmdToExecute != null) {
-      cmdHistory += cmdToExecute;
-      String[] lines = cmdToExecute.split("\\n");
-      String output = "";
-
-      for (int i = 0; i < lines.length; i++) {
-        output += lines[i];
-      }
-      return output;
-    } else {
-      return "";
-    }
   }
-
 }

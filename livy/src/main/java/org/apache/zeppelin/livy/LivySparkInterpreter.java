@@ -28,123 +28,55 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
  */
-public class LivySparkInterpreter extends Interpreter {
-
-  static String DEFAULT_URL = "http://localhost:8998";
-  static String LOCAL = "local[*]";
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
-  private LivyOutputStream out;
-
-  static {
-    Interpreter.register(
-        "spark",
-        "livy",
-        LivySparkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
-            .add("livy.spark.master", LOCAL, "Spark master uri. ex) spark://masterhost:7077")
-            .add("livy.spark.driver.cores", "", "Driver cores. ex) 1, 2")
-            .add("livy.spark.driver.memory", "", "Driver memory. ex) 512m, 32g")
-            .add("livy.spark.executor.instances", "", "Executor instances. ex) 1, 4")
-            .add("livy.spark.executor.cores", "", "Num cores per executor. ex) 1, 4")
-            .add("livy.spark.executor.memory", "", 
-                 "Executor memory per worker instance. ex) 512m, 32g")
-            .add("livy.spark.dynamicAllocation.enabled", "", "Use dynamic resource allocation")
-            .add("livy.spark.dynamicAllocation.cachedExecutorIdleTimeout", "", 
-                 "Remove an executor which has cached data blocks")
-            .add("livy.spark.dynamicAllocation.minExecutors", "", 
-                 "Lower bound for the number of executors if dynamic allocation is enabled. ")
-            .add("livy.spark.dynamicAllocation.initialExecutors", "", 
-                 "Initial number of executors to run if dynamic allocation is enabled. ")
-            .add("livy.spark.dynamicAllocation.maxExecutors", "", 
-                 "Upper bound for the number of executors if dynamic allocation is enabled. ")
-            .build()
-    );
-  }
-
-  protected static Map<String, Integer> userSessionMap;
-  private LivyHelper livyHelper;
+public class LivySparkInterpreter extends BaseLivyInterprereter {
 
   public LivySparkInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
-    livyHelper = new LivyHelper(property);
-    out = new LivyOutputStream();
-  }
-
-  protected static Map<String, Integer> getUserSessionMap() {
-    return userSessionMap;
-  }
-
-  public void setUserSessionMap(Map<String, Integer> userSessionMap) {
-    this.userSessionMap = userSessionMap;
   }
 
   @Override
-  public void open() {
+  public String getSessionKind() {
+    return "spark";
   }
 
   @Override
-  public void close() {
-    livyHelper.closeSession(userSessionMap);
+  protected String extractAppId() throws LivyException {
+    return extractStatementResult(
+        interpret("sc.applicationId", null, false, false).message()
+            .get(0).getData());
   }
 
   @Override
-  public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
-    try {
-      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
-        try {
-          userSessionMap.put(
-              interpreterContext.getAuthenticationInfo().getUser(),
-              livyHelper.createSession(
-                  interpreterContext,
-                  "spark")
-          );
-        } catch (Exception e) {
-          LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
-          return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-        }
-      }
-      if (line == null || line.trim().length() == 0) {
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
-      }
+  protected String extractWebUIAddress() throws LivyException {
+    interpret(
+        "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
+        null, false, false);
+    return extractStatementResult(
+        interpret(
+            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false)
+            .message().get(0).getData());
+  }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out);
-    } catch (Exception e) {
-      LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          InterpreterUtils.getMostRelevantMessage(e));
+  /**
+   * Extract the eval result of spark shell, e.g. extract application_1473129941656_0048
+   * from following:
+   * res0: String = application_1473129941656_0048
+   *
+   * @param result
+   * @return
+   */
+  public String extractStatementResult(String result) {
+    int pos = -1;
+    if ((pos = result.indexOf("=")) >= 0) {
+      return result.substring(pos + 1).trim();
+    } else {
+      throw new RuntimeException("No result can be extracted from '" + result + "', " +
+          "something must be wrong");
     }
   }
-
-  @Override
-  public void cancel(InterpreterContext context) {
-    livyHelper.cancelHTTP(context.getParagraphId());
-  }
-
-  @Override
-  public FormType getFormType() {
-    return FormType.SIMPLE;
-  }
-
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
-  }
-
-  @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode());
-  }
-
-  @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
-    return null;
-  }
-
 }

@@ -31,15 +31,6 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreterA extends Interpreter {
-  static {
-    Interpreter.register(
-        "interpreterA",
-        "group1",
-        MockInterpreterA.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("p1", "v1", "property1").build());
-
-  }
 
   private String lastSt;
 
@@ -87,7 +78,8 @@ public class MockInterpreterA extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 

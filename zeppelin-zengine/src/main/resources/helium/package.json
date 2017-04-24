@@ -1,0 +1,21 @@
+{
+  "name": "PACKAGE_NAME",
+  "main": "MAIN_FILE",
+  "scripts": {
+    "bundle": "webpack --display-error-details --json"
+  },
+  "dependencies": {
+DEPENDENCIES
+  },
+  "devDependencies": {
+    "webpack": "^1.12.2",
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-env": "^1.4.0",
+    "css-loader": "^0.26.2",
+    "style-loader": "^0.13.2",
+    "url-loader": "^0.5.8",
+    "file-loader": "^0.10.1",
+    "json-loader": "^0.5.4"
+  }
+}

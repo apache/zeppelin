@@ -21,7 +21,6 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -30,15 +29,15 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gemstone.gemfire.cache.client.ClientCache;
-import com.gemstone.gemfire.cache.client.ClientCacheFactory;
-import com.gemstone.gemfire.cache.query.QueryService;
-import com.gemstone.gemfire.cache.query.SelectResults;
-import com.gemstone.gemfire.cache.query.Struct;
-import com.gemstone.gemfire.pdx.PdxInstance;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
- * Apache Geode OQL Interpreter (http://geode.incubator.apache.org)
+ * Apache Geode OQL Interpreter (http://geode.apache.org)
  * 
  * <ul>
  * <li>{@code geode.locator.host} - The Geode Locator {@code <HOST>} to connect to.</li>
@@ -87,29 +86,11 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
 
-  public static final String DEFAULT_PORT = "10334";
-  public static final String DEFAULT_HOST = "localhost";
-  public static final String DEFAULT_MAX_RESULT = "1000";
-
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final char WHITESPACE = ' ';
 
   private static final String TABLE_MAGIC_TAG = "%table ";
-
-  public static final String LOCATOR_HOST = "geode.locator.host";
-  public static final String LOCATOR_PORT = "geode.locator.port";
-  public static final String MAX_RESULT = "geode.max.result";
-
-  static {
-    Interpreter.register(
-        "oql",
-        "geode",
-        GeodeOqlInterpreter.class.getName(),
-        new InterpreterPropertyBuilder().add(LOCATOR_HOST, DEFAULT_HOST, "The Geode Locator Host.")
-            .add(LOCATOR_PORT, DEFAULT_PORT, "The Geode Locator Port")
-            .add(MAX_RESULT, DEFAULT_MAX_RESULT, "Max number of OQL result to display.").build());
-  }
 
   private ClientCache clientCache = null;
   private QueryService queryService = null;
@@ -122,8 +103,8 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   protected ClientCache getClientCache() {
 
-    String locatorHost = getProperty(LOCATOR_HOST);
-    int locatorPort = Integer.valueOf(getProperty(LOCATOR_PORT));
+    String locatorHost = getProperty("geode.locator.host");
+    int locatorPort = Integer.valueOf(getProperty("geode.locator.port"));
 
     ClientCache clientCache =
         new ClientCacheFactory().addPoolLocator(locatorHost, locatorPort).create();
@@ -139,7 +120,7 @@ public class GeodeOqlInterpreter extends Interpreter {
     close();
 
     try {
-      maxResult = Integer.valueOf(getProperty(MAX_RESULT));
+      maxResult = Integer.valueOf(getProperty("geode.max.result"));
 
       clientCache = getClientCache();
       queryService = clientCache.getQueryService();
@@ -301,7 +282,8 @@ public class GeodeOqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 

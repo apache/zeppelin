@@ -46,14 +46,23 @@
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of SparkSQL result to display."
+        "description": "Max number of Spark SQL result to display."
       },
       "master": {
         "envName": "MASTER",
         "propertyName": "spark.master",
         "defaultValue": "local[*]",
         "description": "Spark master uri. ex) spark://masterhost:7077"
+      },
+      "zeppelin.spark.unSupportedVersionCheck": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
+        "defaultValue": "true",
+        "description": "Do not change - developer only setting, not for production use"
       }
+    },
+    "editor": {
+      "language": "scala"
     }
   },
   {
@@ -77,7 +86,7 @@
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of SparkSQL result to display."
+        "description": "Max number of Spark SQL result to display."
       },
       "zeppelin.spark.importImplicit": {
         "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",
@@ -85,6 +94,9 @@
         "defaultValue": "true",
         "description": "Import implicits, UDF collection, and sql if set true. true by default."
       }
+    },
+    "editor": {
+      "language": "sql"
     }
   },
   {
@@ -104,6 +116,9 @@
         "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
         "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository."
       }
+    },
+    "editor": {
+      "language": "scala"
     }
   },
   {
@@ -117,6 +132,9 @@
         "defaultValue": "python",
         "description": "Python command to run pyspark with"
       }
+    },
+    "editor": {
+      "language": "python"
     }
   },
   {
@@ -148,6 +166,9 @@
         "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F",
         "description": ""
       }
+    },
+    "editor": {
+      "language": "r"
     }
   }
 ]

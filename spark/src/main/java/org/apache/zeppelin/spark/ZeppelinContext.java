@@ -28,19 +28,26 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.display.Input.ParamOption;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
+import org.apache.zeppelin.interpreter.RemoteWorksController;
+import org.apache.zeppelin.interpreter.ResultMessages;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -53,19 +60,34 @@ import scala.Unit;
  * Spark context for zeppelin.
  */
 public class ZeppelinContext {
+  // Map interpreter class name (to be used by hook registry) from
+  // given replName in parapgraph
+  private static final Map<String, String> interpreterClassMap;
+  private static RemoteEventClientWrapper eventClient;
+  static {
+    interpreterClassMap = new HashMap<>();
+    interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
+    interpreterClassMap.put("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter");
+    interpreterClassMap.put("dep", "org.apache.zeppelin.spark.DepInterpreter");
+    interpreterClassMap.put("pyspark", "org.apache.zeppelin.spark.PySparkInterpreter");
+  }
+  
   private SparkDependencyResolver dep;
   private InterpreterContext interpreterContext;
   private int maxResult;
   private List<Class> supportedClasses;
-
+  private InterpreterHookRegistry hooks;
+  
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
       SparkDependencyResolver dep,
+      InterpreterHookRegistry hooks,
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
+    this.hooks = hooks;
     this.maxResult = maxResult;
     this.supportedClasses = new ArrayList<>();
     try {
@@ -92,14 +114,33 @@ public class ZeppelinContext {
   public SQLContext sqlContext;
   private GUI gui;
 
+  /**
+   * @deprecated use z.textbox instead
+   *
+   */
+  @Deprecated
   @ZeppelinApi
   public Object input(String name) {
-    return input(name, "");
+    return textbox(name);
+  }
+
+  /**
+   * @deprecated use z.textbox instead
+   */
+  @Deprecated
+  @ZeppelinApi
+  public Object input(String name, Object defaultValue) {
+    return textbox(name, defaultValue.toString());
   }
 
   @ZeppelinApi
-  public Object input(String name, Object defaultValue) {
-    return gui.input(name, defaultValue);
+  public Object textbox(String name) {
+    return textbox(name, "");
+  }
+
+  @ZeppelinApi
+  public Object textbox(String name, String defaultValue) {
+    return gui.textbox(name, defaultValue);
   }
 
   @ZeppelinApi
@@ -114,9 +155,9 @@ public class ZeppelinContext {
   }
 
   @ZeppelinApi
-  public scala.collection.Iterable<Object> checkbox(String name,
+  public scala.collection.Seq<Object> checkbox(String name,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    List<Object> allChecked = new LinkedList<Object>();
+    List<Object> allChecked = new LinkedList<>();
     for (Tuple2<Object, String> option : asJavaIterable(options)) {
       allChecked.add(option._1());
     }
@@ -124,11 +165,12 @@ public class ZeppelinContext {
   }
 
   @ZeppelinApi
-  public scala.collection.Iterable<Object> checkbox(String name,
+  public scala.collection.Seq<Object> checkbox(String name,
       scala.collection.Iterable<Object> defaultChecked,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return collectionAsScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
-      tuplesToParamOptions(options)));
+    return scala.collection.JavaConversions.asScalaBuffer(
+        gui.checkbox(name, asJavaCollection(defaultChecked),
+            tuplesToParamOptions(options))).toSeq();
   }
 
   private ParamOption[] tuplesToParamOptions(
@@ -202,7 +244,7 @@ public class ZeppelinContext {
       Object df, int maxResult) {
     Object[] rows = null;
     Method take;
-    String jobGroup = "zeppelin-" + interpreterContext.getParagraphId();
+    String jobGroup = Utils.buildJobGroupId(interpreterContext);
     sc.setJobGroup(jobGroup, "Zeppelin", false);
 
     try {
@@ -274,7 +316,9 @@ public class ZeppelinContext {
     }
 
     if (rows.length > maxResult) {
-      msg.append("\n<font color=red>Results are limited by " + maxResult + ".</font>");
+      msg.append("\n");
+      msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult,
+          SparkSqlInterpreter.MAX_RESULTS));
     }
     sc.clearJobGroup();
     return msg.toString();
@@ -282,32 +326,123 @@ public class ZeppelinContext {
 
   /**
    * Run paragraph by id
-   * @param id
+   * @param noteId
+   * @param paragraphId
    */
   @ZeppelinApi
-  public void run(String id) {
-    run(id, interpreterContext);
+  public void run(String noteId, String paragraphId) {
+    run(noteId, paragraphId, interpreterContext, true);
   }
 
   /**
    * Run paragraph by id
-   * @param id
+   * @param paragraphId
+   */
+  @ZeppelinApi
+  public void run(String paragraphId) {
+    run(paragraphId, true);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param paragraphId
+   * @param checkCurrentParagraph
+   */
+  @ZeppelinApi
+  public void run(String paragraphId, boolean checkCurrentParagraph) {
+    String noteId = interpreterContext.getNoteId();
+    run(noteId, paragraphId, interpreterContext, checkCurrentParagraph);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param noteId
+   */
+  @ZeppelinApi
+  public void run(String noteId, String paragraphId, InterpreterContext context) {
+    run(noteId, paragraphId, context, true);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param noteId
    * @param context
    */
   @ZeppelinApi
-  public void run(String id, InterpreterContext context) {
-    if (id.equals(context.getParagraphId())) {
+  public void run(String noteId, String paragraphId, InterpreterContext context,
+                  boolean checkCurrentParagraph) {
+    if (paragraphId.equals(context.getParagraphId()) && checkCurrentParagraph) {
       throw new InterpreterException("Can not run current Paragraph");
     }
 
-    for (InterpreterContextRunner r : context.getRunners()) {
-      if (id.equals(r.getParagraphId())) {
-        r.run();
-        return;
-      }
+    List<InterpreterContextRunner> runners =
+        getInterpreterContextRunner(noteId, paragraphId, context);
+
+    if (runners.size() <= 0) {
+      throw new InterpreterException("Paragraph " + paragraphId + " not found " + runners.size());
     }
 
-    throw new InterpreterException("Paragraph " + id + " not found");
+    for (InterpreterContextRunner r : runners) {
+      r.run();
+    }
+
+  }
+
+  public void runNote(String noteId) {
+    runNote(noteId, interpreterContext);
+  }
+
+  public void runNote(String noteId, InterpreterContext context) {
+    String runningNoteId = context.getNoteId();
+    String runningParagraphId = context.getParagraphId();
+    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
+
+    if (runners.size() <= 0) {
+      throw new InterpreterException("Note " + noteId + " not found " + runners.size());
+    }
+
+    for (InterpreterContextRunner r : runners) {
+      if (r.getNoteId().equals(runningNoteId) && r.getParagraphId().equals(runningParagraphId)) {
+        continue;
+      }
+      r.run();
+    }
+  }
+
+
+  /**
+   * get Zeppelin Paragraph Runner from zeppelin server
+   * @param noteId
+   */
+  @ZeppelinApi
+  public List<InterpreterContextRunner> getInterpreterContextRunner(
+      String noteId, InterpreterContext interpreterContext) {
+    List<InterpreterContextRunner> runners = new LinkedList<>();
+    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
+
+    if (remoteWorksController != null) {
+      runners = remoteWorksController.getRemoteContextRunner(noteId);
+    }
+
+    return runners;
+  }
+
+  /**
+   * get Zeppelin Paragraph Runner from zeppelin server
+   * @param noteId
+   * @param paragraphId
+   */
+  @ZeppelinApi
+  public List<InterpreterContextRunner> getInterpreterContextRunner(
+      String noteId, String paragraphId, InterpreterContext interpreterContext) {
+    List<InterpreterContextRunner> runners = new LinkedList<>();
+    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
+
+    if (remoteWorksController != null) {
+      runners = remoteWorksController.getRemoteContextRunner(noteId, paragraphId);
+    }
+
+    return runners;
   }
 
   /**
@@ -316,22 +451,50 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(int idx) {
-    run(idx, interpreterContext);
+    run(idx, true);
+  }
+
+  /**
+   *
+   * @param idx  paragraph index
+   * @param checkCurrentParagraph  check whether you call this run method in the current paragraph.
+   * Set it to false only when you are sure you are not invoking this method to run current
+   * paragraph. Otherwise you would run current paragraph in infinite loop.
+   */
+  public void run(int idx, boolean checkCurrentParagraph) {
+    String noteId = interpreterContext.getNoteId();
+    run(noteId, idx, interpreterContext, checkCurrentParagraph);
   }
 
   /**
    * Run paragraph at index
+   * @param noteId
    * @param idx index starting from 0
    * @param context interpreter context
    */
-  public void run(int idx, InterpreterContext context) {
-    if (idx >= context.getRunners().size()) {
+  public void run(String noteId, int idx, InterpreterContext context) {
+    run(noteId, idx, context, true);
+  }
+
+  /**
+   *
+   * @param noteId
+   * @param idx  paragraph index
+   * @param context interpreter context
+   * @param checkCurrentParagraph check whether you call this run method in the current paragraph.
+   * Set it to false only when you are sure you are not invoking this method to run current
+   * paragraph. Otherwise you would run current paragraph in infinite loop.
+   */
+  public void run(String noteId, int idx, InterpreterContext context,
+                  boolean checkCurrentParagraph) {
+    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
+    if (idx >= runners.size()) {
       throw new InterpreterException("Index out of bound");
     }
 
-    InterpreterContextRunner runner = context.getRunners().get(idx);
-    if (runner.getParagraphId().equals(context.getParagraphId())) {
-      throw new InterpreterException("Can not run current Paragraph");
+    InterpreterContextRunner runner = runners.get(idx);
+    if (runner.getParagraphId().equals(context.getParagraphId()) && checkCurrentParagraph) {
+      throw new InterpreterException("Can not run current Paragraph: " + runner.getParagraphId());
     }
 
     runner.run();
@@ -348,13 +511,14 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void run(List<Object> paragraphIdOrIdx, InterpreterContext context) {
+    String noteId = context.getNoteId();
     for (Object idOrIdx : paragraphIdOrIdx) {
       if (idOrIdx instanceof String) {
-        String id = (String) idOrIdx;
-        run(id, context);
+        String paragraphId = (String) idOrIdx;
+        run(noteId, paragraphId, context);
       } else if (idOrIdx instanceof Integer) {
         Integer idx = (Integer) idOrIdx;
-        run(idx, context);
+        run(noteId, idx, context);
       } else {
         throw new InterpreterException("Paragraph " + idOrIdx + " not found");
       }
@@ -371,18 +535,12 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void runAll(InterpreterContext context) {
-    for (InterpreterContextRunner r : context.getRunners()) {
-      if (r.getParagraphId().equals(context.getParagraphId())) {
-        // skip itself
-        continue;
-      }
-      r.run();
-    }
+    runNote(context.getNoteId());
   }
 
   @ZeppelinApi
   public List<String> listParagraphs() {
-    List<String> paragraphs = new LinkedList<String>();
+    List<String> paragraphs = new LinkedList<>();
 
     for (InterpreterContextRunner r : interpreterContext.getRunners()) {
       paragraphs.add(r.getParagraphId());
@@ -697,6 +855,90 @@ public class ZeppelinContext {
     registry.remove(name, noteId, null);
   }
 
+  /**
+   * Get the interpreter class name from name entered in paragraph
+   * @param replName if replName is a valid className, return that instead.
+   */
+  public String getClassNameFromReplName(String replName) {
+    for (String name : interpreterClassMap.values()) {
+      if (replName.equals(name)) {
+        return replName;
+      }
+    }
+    
+    if (replName.contains("spark.")) {
+      replName = replName.replace("spark.", "");
+    }
+    return interpreterClassMap.get(replName);
+  }
+
+  /**
+   * General function to register hook event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void registerHook(String event, String cmd, String replName) {
+    String noteId = interpreterContext.getNoteId();
+    String className = getClassNameFromReplName(replName);
+    hooks.register(noteId, className, event, cmd);
+  }
+
+  /**
+   * registerHook() wrapper for current repl
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
+   */
+  @Experimental
+  public void registerHook(String event, String cmd) {
+    String className = interpreterContext.getClassName();
+    registerHook(event, cmd, className);
+  }
+
+  /**
+   * Get the hook code
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public String getHook(String event, String replName) {
+    String noteId = interpreterContext.getNoteId();
+    String className = getClassNameFromReplName(replName);
+    return hooks.get(noteId, className, event);
+  }
+
+  /**
+   * getHook() wrapper for current repl
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public String getHook(String event) {
+    String className = interpreterContext.getClassName();
+    return getHook(event, className);
+  }
+
+  /**
+   * Unbind code from given hook event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void unregisterHook(String event, String replName) {
+    String noteId = interpreterContext.getNoteId();
+    String className = getClassNameFromReplName(replName);
+    hooks.unregister(noteId, className, event);
+  }
+
+  /**
+   * unregisterHook() wrapper for current repl
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public void unregisterHook(String event) {
+    String className = interpreterContext.getClassName();
+    unregisterHook(event, className);
+  }
 
   /**
    * Add object into resource pool
@@ -757,4 +999,21 @@ public class ZeppelinContext {
     return resourcePool.getAll();
   }
 
+  /**
+   * Get the event client
+   */
+  @ZeppelinApi
+  public static RemoteEventClientWrapper getEventClient() {
+    return eventClient;
+  }
+
+  /**
+   * Set event client
+   */
+  @ZeppelinApi
+  public void setEventClient(RemoteEventClientWrapper eventClient) {
+    if (ZeppelinContext.eventClient == null) {
+      ZeppelinContext.eventClient = eventClient;
+    }
+  }
 }

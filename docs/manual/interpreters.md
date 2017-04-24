@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Interpreters"
-description: ""
+title: "Interpreters in Apache Zeppelin"
+description: "This document explains about the role of interpreters, interpreters group and interpreter settings in Apache Zeppelin. The concept of Zeppelin interpreter allows any language/data-processing-backend to be plugged into Zeppelin."
 group: manual
 ---
 <!--
@@ -27,7 +27,7 @@ limitations under the License.
 
 In this section, we will explain about the role of interpreters, interpreters group and interpreter settings in Zeppelin.
 The concept of Zeppelin interpreter allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently, Zeppelin supports many interpreters such as Scala ( with Apache Spark ), Python ( with Apache Spark ), SparkSQL, JDBC, Markdown, Shell and so on.
+Currently, Zeppelin supports many interpreters such as Scala ( with Apache Spark ), Python ( with Apache Spark ), Spark SQL, JDBC, Markdown, Shell and so on.
 
 ## What is Zeppelin interpreter?
 Zeppelin Interpreter is a plug-in which enables Zeppelin users to use a specific language/data-processing-backend. For example, to use Scala code in Zeppelin, you need `%spark` interpreter.
@@ -41,8 +41,39 @@ Zeppelin interpreter setting is the configuration of a given interpreter on Zepp
 
 <img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
-Properties are exported as environment variable when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property.
+Properties are exported as environment variables when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property. 
 
+You may use parameters from the context of interpreter by add #{contextParameterName} in value, parameter can be of the following types: string, number, boolean.
+
+###### Context parameters
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+  </tr>
+  <tr>
+    <td>user</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>noteId</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>replName</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td>className</td>
+    <td>string</td>
+  </tr>
+</table>
+
+If context parameter is null then replaced by empty string.
+
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_setting_with_context_parameters.png" width="800px">
+
+<br>
 Each notebook can be bound to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
 
 <img src="../assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
@@ -51,7 +82,7 @@ Each notebook can be bound to multiple Interpreter Settings using setting icon o
 
 ## What is interpreter group?
 Every Interpreter is belonged to an **Interpreter Group**. Interpreter Group is a unit of start/stop interpreter.
-By default, every interpreter is belonged to a single group, but the group might contain more interpreters. For example, Spark interpreter group is including Spark support, pySpark, SparkSQL and the dependency loader.
+By default, every interpreter is belonged to a single group, but the group might contain more interpreters. For example, Spark interpreter group is including Spark support, pySpark, Spark SQL and the dependency loader.
 
 Technically, Zeppelin interpreters from the same group are running in the same JVM. For more information about this, please checkout [here](../development/writingzeppelininterpreter.html).
 
@@ -79,6 +110,6 @@ interpreter.start()
 
 ```
 
-The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter porocess is listening as shown in the image below:
+The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter process is listening as shown in the image below:
 
 <img src="../assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="450px">

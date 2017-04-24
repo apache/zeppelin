@@ -1,0 +1,15 @@
+{
+  "name": "zeppelin-tabledata",
+  "description": "tabledata api",
+  "version": "0.8.0-SNAPSHOT",
+  "main": "tabledata",
+  "dependencies": {
+    "json3": "~3.3.1",
+    "lodash": "~3.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/zeppelin"
+  },
+  "license": "Apache-2.0"
+}

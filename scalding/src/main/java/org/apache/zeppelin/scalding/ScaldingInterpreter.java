@@ -57,18 +57,6 @@ public class ScaldingInterpreter extends Interpreter {
   public static final List NO_COMPLETION =
     Collections.unmodifiableList(new ArrayList<>());
 
-  static {
-    Interpreter.register(
-      "scalding",
-      "scalding",
-      ScaldingInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
-        .add(ARGS_STRING, ARGS_STRING_DEFAULT, "Arguments for scalding REPL")
-        .add(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT,
-                "Maximum number of open interpreter instances")
-        .build());
-  }
-
   static int numOpenInstances = 0;
   private ScaldingILoop interpreter;
   private ByteArrayOutputStream out;
@@ -282,7 +270,8 @@ public class ScaldingInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return NO_COMPLETION;
   }
 

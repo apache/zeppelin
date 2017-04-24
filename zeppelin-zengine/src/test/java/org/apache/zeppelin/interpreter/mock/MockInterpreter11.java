@@ -30,18 +30,25 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreter11 extends Interpreter{
-  Map<String, Object> vars = new HashMap<String, Object>();
+  Map<String, Object> vars = new HashMap<>();
 
   public MockInterpreter11(Properties property) {
     super(property);
   }
+  boolean open;
 
   @Override
   public void open() {
+    open = true;
   }
 
   @Override
   public void close() {
+    open = false;
+  }
+
+  public boolean isOpen() {
+    return open;
   }
 
   @Override
@@ -69,7 +76,8 @@ public class MockInterpreter11 extends Interpreter{
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 }

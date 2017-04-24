@@ -34,12 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static org.openqa.selenium.Keys.ENTER;
-import static org.openqa.selenium.Keys.SHIFT;
 
 abstract public class AbstractZeppelinIT {
   protected static WebDriver driver;
@@ -48,21 +43,6 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
-
-  protected void sleep(long millis, boolean logOutput) {
-    if (logOutput) {
-      LOG.info("Starting sleeping for " + (millis / 1000) + " seconds...");
-      LOG.info("Caller: " + Thread.currentThread().getStackTrace()[2]);
-    }
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-    if (logOutput) {
-      LOG.info("Finished.");
-    }
-  }
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
@@ -84,14 +64,14 @@ abstract public class AbstractZeppelinIT {
 
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
-        + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]");
+        + "//div[contains(@class, 'control')]//span[2][contains(.,'" + state + "')]");
     WebElement element = pollingWait(locator, MAX_PARAGRAPH_TIMEOUT_SEC);
     return element.isDisplayed();
   }
 
   protected String getParagraphStatus(final int paragraphNo) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
-        + "//div[contains(@class, 'control')]//span[1]");
+        + "//div[contains(@class, 'control')]/span[2]");
 
     return driver.findElement(locator).getText();
   }
@@ -106,7 +86,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
-    Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+    Wait<WebDriver> wait = new FluentWait<>(driver)
         .withTimeout(timeWait, TimeUnit.SECONDS)
         .pollingEvery(1, TimeUnit.SECONDS)
         .ignoring(NoSuchElementException.class);
@@ -123,34 +103,28 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void createNewNote() {
-    List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
-    List<String> notebookTitles = new LinkedList<String>();
-    for (WebElement el : notebookLinks) {
-      notebookTitles.add(el.getText());
-    }
-
-    WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
-    createNoteLink.click();
+    clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+        " note')]"));
 
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
-    WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
-    createNoteButton.click();
-
-    try {
-      Thread.sleep(500); // wait for notebook list updated
-    } catch (InterruptedException e) {
-    }
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+    clickAndWait(By.id("createNoteButton"));
+    block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
   }
 
   protected void deleteTestNotebook(final WebDriver driver) {
-    driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
         .sendKeys(Keys.ENTER);
-    sleep(1000, true);
-    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']")));
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-    sleep(100, true);
+    ZeppelinITUtils.sleep(100, true);
+  }
+
+  protected void clickAndWait(final By locator) {
+    pollingWait(locator, MAX_IMPLICIT_WAIT).click();
+    ZeppelinITUtils.sleep(1000, true);
   }
 
   protected void handleException(String message, Exception e) throws Exception {

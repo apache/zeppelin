@@ -58,7 +58,7 @@ public class ZeppelinhubWebsocket implements WebSocketListener {
 
   @Override
   public void onWebSocketError(Throwable cause) {
-    LOG.error("Got error", cause);
+    LOG.error("Remote websocket error");
   }
 
   @Override

@@ -23,11 +23,11 @@ public class RemoteResource extends Resource {
   ResourcePoolConnector resourcePoolConnector;
 
   RemoteResource(ResourceId resourceId, Object r) {
-    super(resourceId, r);
+    super(null, resourceId, r);
   }
 
   RemoteResource(ResourceId resourceId, boolean serializable, String className) {
-    super(resourceId, serializable, className);
+    super(null, resourceId, serializable, className);
   }
 
   @Override
@@ -51,5 +51,44 @@ public class RemoteResource extends Resource {
 
   public void setResourcePoolConnector(ResourcePoolConnector resourcePoolConnector) {
     this.resourcePoolConnector = resourcePoolConnector;
+  }
+
+  /**
+   * Call a method of the object that this remote resource holds
+   * @param methodName name of method to call
+   * @param paramTypes method parameter types
+   * @param params method parameter values
+   * @return return value of the method. Null if return value is not serializable
+   */
+  @Override
+  public Object invokeMethod(
+      String methodName, Class [] paramTypes, Object [] params) {
+    ResourceId resourceId = getResourceId();
+    return resourcePoolConnector.invokeMethod(
+        resourceId,
+        methodName,
+        paramTypes,
+        params);
+  }
+
+  /**
+   * Call a method of the object that this remote resource holds and save return value as a resource
+   * @param methodName name of method to call
+   * @param paramTypes method parameter types
+   * @param params method parameter values
+   * @param returnResourceName name of resource that return value will be saved
+   * @return Resource that holds return value.
+   */
+  @Override
+  public Resource invokeMethod(
+      String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
+    ResourceId resourceId = getResourceId();
+    Resource resource = resourcePoolConnector.invokeMethod(
+        resourceId,
+        methodName,
+        paramTypes,
+        params,
+        returnResourceName);
+    return resource;
   }
 }

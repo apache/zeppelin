@@ -18,13 +18,20 @@
 
 package org.apache.zeppelin.user;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /***
  *
  */
 public class AuthenticationInfo {
+  private static final Logger LOG = LoggerFactory.getLogger(AuthenticationInfo.class);
   String user;
   String ticket;
   UserCredentials userCredentials;
+  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous",
+      "anonymous");
 
   public AuthenticationInfo() {}
 
@@ -66,4 +73,17 @@ public class AuthenticationInfo {
     this.userCredentials = userCredentials;
   }
 
+  public static boolean isAnonymous(AuthenticationInfo subject) {
+    if (subject == null) {
+      LOG.warn("Subject is null, assuming anonymous. "
+          + "Not recommended to use subject as null except in tests");
+      return true;
+    }
+    return subject.isAnonymous();
+  }
+
+  public boolean isAnonymous() {
+    return ANONYMOUS.equals(this) || "anonymous".equalsIgnoreCase(this.getUser())
+        || StringUtils.isEmpty(this.getUser());
+  }
 }

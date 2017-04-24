@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -38,8 +39,8 @@ import java.util.concurrent.ExecutorService;
 public class RemoteScheduler implements Scheduler {
   Logger logger = LoggerFactory.getLogger(RemoteScheduler.class);
 
-  List<Job> queue = new LinkedList<Job>();
-  List<Job> running = new LinkedList<Job>();
+  List<Job> queue = new LinkedList<>();
+  List<Job> running = new LinkedList<>();
   private ExecutorService executor;
   private SchedulerListener listener;
   boolean terminate = false;
@@ -49,8 +50,8 @@ public class RemoteScheduler implements Scheduler {
   private RemoteInterpreterProcess interpreterProcess;
 
   public RemoteScheduler(String name, ExecutorService executor, String noteId,
-      RemoteInterpreterProcess interpreterProcess, SchedulerListener listener,
-      int maxConcurrency) {
+                         RemoteInterpreterProcess interpreterProcess, SchedulerListener listener,
+                         int maxConcurrency) {
     this.name = name;
     this.executor = executor;
     this.listener = listener;
@@ -104,7 +105,7 @@ public class RemoteScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsWaiting() {
-    List<Job> ret = new LinkedList<Job>();
+    List<Job> ret = new LinkedList<>();
     synchronized (queue) {
       for (Job job : queue) {
         ret.add(job);
@@ -130,7 +131,7 @@ public class RemoteScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsRunning() {
-    List<Job> ret = new LinkedList<Job>();
+    List<Job> ret = new LinkedList<>();
     synchronized (queue) {
       for (Job job : running) {
         ret.add(job);
@@ -306,10 +307,10 @@ public class RemoteScheduler implements Scheduler {
     @Override
     public void run() {
       if (job.isAborted()) {
-        job.setStatus(Status.ABORT);
-        job.aborted = false;
-
         synchronized (queue) {
+          job.setStatus(Status.ABORT);
+          job.aborted = false;
+
           running.remove(job);
           queue.notify();
         }
@@ -345,16 +346,20 @@ public class RemoteScheduler implements Scheduler {
           lastStatus = Status.ERROR;
         }
       }
-      job.setStatus(lastStatus);
-
-      if (listener != null) {
-        listener.jobFinished(scheduler, job);
+      if (job.getException() != null) {
+        lastStatus = Status.ERROR;
       }
 
-      // reset aborted flag to allow retry
-      job.aborted = false;
-
       synchronized (queue) {
+        job.setStatus(lastStatus);
+
+        if (listener != null) {
+          listener.jobFinished(scheduler, job);
+        }
+
+        // reset aborted flag to allow retry
+        job.aborted = false;
+
         running.remove(job);
         queue.notify();
       }

@@ -53,7 +53,7 @@ public class LensInterpreterTest {
     t.open();
     //simple help test
     InterpreterResult result = t.interpret("help", null);
-    assertEquals(result.type(), InterpreterResult.Type.TEXT);
+    assertEquals(result.message().get(0).getType(), InterpreterResult.Type.TEXT);
     //assertEquals("unable to find 'query execute' in help message", 
     //  result.message().contains("query execute"), result.message());
     t.close();

@@ -12,48 +12,93 @@
  * limitations under the License.
  */
 
-'use strict';
+angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl)
 
-angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, notebookListDataFactory,
-                                                             $rootScope, $routeParams, websocketMsgSrv) {
-  var vm = this;
-  vm.clone = false;
-  vm.notes = notebookListDataFactory;
-  vm.websocketMsgSrv = websocketMsgSrv;
-  $scope.note = {};
+function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {
+  'ngInject'
 
-  vm.createNote = function() {
-      if (!vm.clone) {
-        vm.websocketMsgSrv.createNotebook($scope.note.notename);
-      } else {
-       var noteId = $routeParams.noteId;
-       vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
+  let vm = this
+  vm.clone = false
+  vm.notes = noteListDataFactory
+  vm.websocketMsgSrv = websocketMsgSrv
+  $scope.note = {}
+  $scope.interpreterSettings = {}
+  $scope.note.defaultInterpreter = null
+
+  vm.createNote = function () {
+    if (!vm.clone) {
+      let defaultInterpreterId = ''
+      if ($scope.note.defaultInterpreter !== null) {
+        defaultInterpreterId = $scope.note.defaultInterpreter.id
       }
-  };
+      vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterId)
+      $scope.note.defaultInterpreter = $scope.interpreterSettings[0]
+    } else {
+      let noteId = $routeParams.noteId
+      vm.websocketMsgSrv.cloneNote(noteId, $scope.note.notename)
+    }
+  }
 
-  vm.handleNameEnter = function(){
-    angular.element('#noteNameModal').modal('toggle');
-    vm.createNote();
-  };
+  vm.handleNameEnter = function () {
+    angular.element('#noteNameModal').modal('toggle')
+    vm.createNote()
+  }
 
-  vm.preVisible = function(clone) {
-    $scope.note.notename = vm.newNoteName();
-    vm.clone = clone;
-    $scope.$apply();
-  };
+  vm.preVisible = function(clone, sourceNoteName, path) {
+    vm.clone = clone
+    vm.sourceNoteName = sourceNoteName
+    $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName(path)
+    $scope.$apply()
+  }
 
-  vm.newNoteName = function () {
-    var newCount = 1;
+  vm.newNoteName = function(path) {
+    let newCount = 1
     angular.forEach(vm.notes.flatList, function (noteName) {
-      noteName = noteName.name;
+      noteName = noteName.name
       if (noteName.match(/^Untitled Note [0-9]*$/)) {
-        var lastCount = noteName.substr(14) * 1;
+        let lastCount = noteName.substr(14) * 1
         if (newCount <= lastCount) {
-          newCount = lastCount + 1;
+          newCount = lastCount + 1
         }
       }
-    });
-    return 'Untitled Note ' + newCount;
-  };
+    })
+    return (path ? path + '/' : '') + 'Untitled Note ' + newCount
+  }
 
-});
+  vm.cloneNoteName = function () {
+    let copyCount = 1
+    let newCloneName = ''
+    let lastIndex = vm.sourceNoteName.lastIndexOf(' ')
+    let endsWithNumber = !!vm.sourceNoteName.match('^.+?\\s\\d$')
+    let noteNamePrefix = endsWithNumber ? vm.sourceNoteName.substr(0, lastIndex) : vm.sourceNoteName
+    let regexp = new RegExp('^' + noteNamePrefix + ' .+')
+
+    angular.forEach(vm.notes.flatList, function (noteName) {
+      noteName = noteName.name
+      if (noteName.match(regexp)) {
+        let lastCopyCount = noteName.substr(lastIndex).trim()
+        newCloneName = noteNamePrefix
+        lastCopyCount = parseInt(lastCopyCount)
+        if (copyCount <= lastCopyCount) {
+          copyCount = lastCopyCount + 1
+        }
+      }
+    })
+
+    if (!newCloneName) {
+      newCloneName = vm.sourceNoteName
+    }
+    return newCloneName + ' ' + copyCount
+  }
+
+  vm.getInterpreterSettings = function () {
+    vm.websocketMsgSrv.getInterpreterSettings()
+  }
+
+  $scope.$on('interpreterSettings', function (event, data) {
+    $scope.interpreterSettings = data.interpreterSettings
+
+    // initialize default interpreter with Spark interpreter
+    $scope.note.defaultInterpreter = data.interpreterSettings[0]
+  })
+}

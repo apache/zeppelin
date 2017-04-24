@@ -11,36 +11,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
+angular.module('zeppelinWebApp').service('baseUrlSrv', baseUrlSrv)
 
-  this.getPort = function() {
-    var port = Number(location.port);
+function baseUrlSrv () {
+  this.getPort = function () {
+    let port = Number(location.port)
     if (!port) {
-      port = 80;
+      port = 80
       if (location.protocol === 'https:') {
-        port = 443;
+        port = 443
       }
     }
-    //Exception for when running locally via grunt
-    if (port === 3333 || port === 9000) {
-      port = 8080;
+    // Exception for when running locally via grunt
+    if (port === process.env.WEB_PORT) {
+      port = process.env.SERVER_PORT
     }
-    return port;
-  };
+    return port
+  }
 
-  this.getWebsocketUrl = function() {
-    var wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return wsProtocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/ws';
-  };
+  this.getWebsocketUrl = function () {
+    let wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+    return wsProtocol + '//' + location.hostname + ':' + this.getPort() +
+      skipTrailingSlash(location.pathname) + '/ws'
+  }
 
-  this.getRestApiBase = function() {
-    return location.protocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/api';
-  };
+  this.getRestApiBase = function () {
+    return location.protocol + '//' + location.hostname + ':' +
+      this.getPort() + skipTrailingSlash(location.pathname) +
+      '/api'
+  }
 
-  var skipTrailingSlash = function(path) {
-    return path.replace(/\/$/, '');
-  };
-
-});
+  const skipTrailingSlash = function (path) {
+    return path.replace(/\/$/, '')
+  }
+}

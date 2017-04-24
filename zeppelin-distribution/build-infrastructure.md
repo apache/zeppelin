@@ -15,38 +15,41 @@
  limitations under the License.
 -->
 
-Zeppelin dependency graph:
---------------
-                     hive, hadoop, ...
+# Apache Zeppelin Build Infrastructure
+
+## Dependency graph
+
+```
+                     e.g. hive, hadoop, ...
                        | | |
                        v v v
-  Zeppelin Server  <- Zengine -> Zeppelin CLI
+  Zeppelin Server  <- Zengine
          +               |
     zeppeli web          v
                         ZAN
+```
+
+
+## Artifacts
+
+ - Zeppelin Server  : Web UI, server to host it  / executable
+ - Zeppelin Web     : Web UI, clint-side JS app  / HTML+JavaScript; war
+ - Zeppelin Zengine : Main library               / java library
+ - ZAN              
 
 
 
-Zeppelin artifacts:
-------------------
-Zeppelin CLI    - Commandline UI             - executable
-Zeppelin Server - Web UI, server to host it  - executable
-Zwppwlin Web    - Web UI, clint-side JS app  - HTML+JavaScript; war
-Zengine         - Main library               - java library
-ZAN             - 
+## Build process
+
+ - compile                => *.class, minify *.js
+ - build modules          => *.jar, war
+ - test                   => UnitTest reports
+ - package -P build-distr => final .zip
+ - integration-test       => selenium over running zeppelin-server (from package)
 
 
+## Verify
 
-Build process:
--------------
-compile                => *.class, minify *.js
-build modules          => *.jar, war
-test                   => UnitTest reports
-package -P build-distr => final .zip
-integration-test       => selenium over running zeppelin-server (from package)
-
-
-verify:
- pre-inegration-test   => start Zeppelin
- integration-test
- post-inegration-test  => stop Zeppelin
+ - pre-inegration-test   => start Zeppelin
+ - integration-test
+ - post-inegration-test  => stop Zeppelin

@@ -87,7 +87,7 @@ This assumes you've already cloned the project either on the host machine in the
 
 ```
 cd /zeppelin
-mvn clean package -Pspark-1.6 -Ppyspark -Phadoop-2.4 -Psparkr -DskipTests
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 
@@ -140,7 +140,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import StringIO
 
-# clear out any previous plots on this notebook
+# clear out any previous plots on this note
 plt.clf()
 
 def show(p):

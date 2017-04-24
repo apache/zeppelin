@@ -77,10 +77,9 @@ class WrapperTest extends FlatSpec {
         |2 + 2
         |```
       """.stripMargin, null)
-    withClue(result.message()) {
+    withClue(result.message().get(0).getData()) {
       result should have (
-      'code (InterpreterResult.Code.SUCCESS),
-      'type (InterpreterResult.Type.HTML)
+      'code (InterpreterResult.Code.SUCCESS)
       )
     }
   }

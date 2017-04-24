@@ -1,0 +1,48 @@
+[
+  {
+    "group": "spark",
+    "name": "r",
+    "className": "org.apache.zeppelin.rinterpreter.RRepl",
+    "properties": {
+      "rhadoop.cmd": {
+        "envName": "HADOOP_CMD",
+        "defaultValue": ""
+      },
+      "rhadooop.streamingjar": {
+        "envName": "HADOOP_STREAMING",
+        "defaultValue": ""
+      },
+      "rscala.debug": {
+        "envName": "RSCALA_DEBUG",
+        "defaultValue": "false"
+      },
+      "rscala.timeout": {
+        "envName": "RSCALA_TIMEOUT",
+        "defaultValue": "60"
+      }
+    }
+  },
+  {
+    "group": "spark",
+    "name": "knitr",
+    "className": "org.apache.zeppelin.rinterpreter.RRepl",
+    "properties": {
+      "rhadoop.cmd": {
+        "envName": "HADOOP_CMD",
+        "defaultValue": ""
+      },
+      "rhadooop.streamingjar": {
+        "envName": "HADOOP_STREAMING",
+        "defaultValue": ""
+      },
+      "rscala.debug": {
+        "envName": "RSCALA_DEBUG",
+        "defaultValue": "false"
+      },
+      "rscala.timeout": {
+        "envName": "RSCALA_TIMEOUT",
+        "defaultValue": "60"
+      }
+    }
+  }
+]

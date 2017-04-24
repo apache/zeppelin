@@ -17,23 +17,29 @@
 
 package org.apache.zeppelin.display;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
+
 import java.io.Serializable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
-import org.apache.zeppelin.display.Input.ParamOption;
 
 /**
  * Settings of a form.
  */
 public class GUI implements Serializable {
 
-  Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
-  Map<String, Input> forms = new TreeMap<String, Input>(); // form configuration
+  private static Gson gson = new GsonBuilder()
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .create();
+
+  Map<String, Object> params = new HashMap<>(); // form parameters from client
+  LinkedHashMap<String, Input> forms = new LinkedHashMap<>(); // form configuration
 
   public GUI() {
 
@@ -47,27 +53,37 @@ public class GUI implements Serializable {
     return params;
   }
 
-  public Map<String, Input> getForms() {
+  public LinkedHashMap<String, Input> getForms() {
     return forms;
   }
 
-  public void setForms(Map<String, Input> forms) {
+  public void setForms(LinkedHashMap<String, Input> forms) {
     this.forms = forms;
   }
 
+  @Deprecated
+  public Object input(String id) {
+    return textbox(id, "");
+  }
+
+  @Deprecated
   public Object input(String id, Object defaultValue) {
+    return textbox(id, defaultValue.toString());
+  }
+
+  public Object textbox(String id, String defaultValue) {
     // first find values from client and then use default
     Object value = params.get(id);
     if (value == null) {
       value = defaultValue;
     }
 
-    forms.put(id, new Input(id, defaultValue, "input"));
+    forms.put(id, new TextBox(id, defaultValue));
     return value;
   }
 
-  public Object input(String id) {
-    return input(id, "");
+  public Object textbox(String id) {
+    return textbox(id, "");
   }
 
   public Object select(String id, Object defaultValue, ParamOption[] options) {
@@ -75,18 +91,18 @@ public class GUI implements Serializable {
     if (value == null) {
       value = defaultValue;
     }
-    forms.put(id, new Input(id, defaultValue, "select", options));
+    forms.put(id, new Select(id, defaultValue, options));
     return value;
   }
 
-  public Collection<Object> checkbox(String id, Collection<Object> defaultChecked,
+  public List<Object> checkbox(String id, Collection<Object> defaultChecked,
                                      ParamOption[] options) {
     Collection<Object> checked = (Collection<Object>) params.get(id);
     if (checked == null) {
       checked = defaultChecked;
     }
-    forms.put(id, new Input(id, defaultChecked, "checkbox", options));
-    Collection<Object> filtered = new LinkedList<Object>();
+    forms.put(id, new CheckBox(id, defaultChecked, options));
+    List<Object> filtered = new LinkedList<>();
     for (Object o : checked) {
       if (isValidOption(o, options)) {
         filtered.add(o);
@@ -105,6 +121,43 @@ public class GUI implements Serializable {
   }
 
   public void clear() {
-    this.forms = new TreeMap<String, Input>();
+    this.forms = new LinkedHashMap<>();
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public void convertOldInput() {
+    for (Map.Entry<String, Input> entry : forms.entrySet()) {
+      if (entry.getValue() instanceof OldInput) {
+        Input convertedInput = convertFromOldInput((OldInput) entry.getValue());
+        forms.put(entry.getKey(), convertedInput);
+      }
+    }
+  }
+
+  public static GUI fromJson(String json) {
+    GUI gui = gson.fromJson(json, GUI.class);
+    gui.convertOldInput();
+    return gui;
+  }
+
+  private Input convertFromOldInput(OldInput oldInput) {
+    Input convertedInput = null;
+
+    if (oldInput.options == null || oldInput instanceof OldInput.OldTextBox) {
+      convertedInput = new TextBox(oldInput.name, oldInput.defaultValue.toString());
+    } else if (oldInput instanceof OldInput.OldCheckBox) {
+      convertedInput = new CheckBox(oldInput.name, (List) oldInput.defaultValue, oldInput.options);
+    } else if (oldInput instanceof OldInput && oldInput.options != null) {
+      convertedInput = new Select(oldInput.name, oldInput.defaultValue, oldInput.options);
+    } else {
+      throw new RuntimeException("Can not convert this OldInput.");
+    }
+    convertedInput.setDisplayName(oldInput.getDisplayName());
+    convertedInput.setHidden(oldInput.isHidden());
+    convertedInput.setArgument(oldInput.getArgument());
+    return convertedInput;
   }
 }

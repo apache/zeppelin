@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Angular (frontend API)"
-description: "Angular (frontend API)"
+title: "Front-end Angular API in Apache Zeppelin"
+description: "In addition to the back-end API to handle Angular objects binding, Apache Zeppelin exposes a simple AngularJS z object on the front-end side to expose the same capabilities."
 group: display
 ---
 <!--
@@ -150,7 +150,17 @@ How does the front-end AngularJS API compares to the [back-end API](./back-end-a
             <td>Executing Paragraph</td>
             <td>z.runParagraph(paragraphId)</td>
             <td>z.run(paragraphId)</td>
-        </tr>                                
+        </tr>
+        <tr>
+            <td>Executing Paragraph (Specific paragraphs in other notes) (</td>
+            <td></td>
+            <td>z.run(noteid, paragraphId)</td>
+        </tr>
+        <tr>
+            <td>Executing note</td>
+            <td></td>
+            <td>z.runNote(noteId)</td>
+        </tr> 
     <tbody>
     <tbody>    
 </table>

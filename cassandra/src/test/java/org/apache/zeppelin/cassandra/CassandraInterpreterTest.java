@@ -143,7 +143,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual).isNotNull();
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("name\tborn\tcountry\tdied\tgender\tstyles\ttype\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("name\tborn\tcountry\tdied\tgender\tstyles\ttype\n" +
                 "Bogdan Raczynski\t1977-01-01\tPoland\tnull\tMale\t[Dance, Electro]\tPerson\n" +
                 "Krishna Das\t1947-05-31\tUSA\tnull\tMale\t[Unknown]\tPerson\n" +
                 "Sheryl Crow\t1962-02-11\tUSA\tnull\tFemale\t[Classic, Rock, Country, Blues, Pop, Folk]\tPerson\n" +
@@ -166,7 +166,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual).isNotNull();
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("name\tborn\tcountry\tdied\tgender\tstyles\ttype\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("name\tborn\tcountry\tdied\tgender\tstyles\ttype\n" +
                 "Bogdan Raczynski\t1977-01-01\tPoland\tnull\tMale\t[Dance, Electro]\tPerson\n" +
                 "Krishna Das\t1947-05-31\tUSA\tnull\tMale\t[Unknown]\tPerson\n");
 
@@ -191,7 +191,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("title\tartist\tyear\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("title\tartist\tyear\n" +
                 "The Impossible Dream EP\tCarter the Unstoppable Sex Machine\t1992\n" +
                 "The Way You Are\tTears for Fears\t1983\n" +
                 "Primitive\tSoulfly\t2003\n");
@@ -207,7 +207,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message())
+        assertThat(actual.message().get(0).getData())
                 .contains("Error parsing input:\n" +
                         "\t'SELECT * zeppelin.albums'\n" +
                         "Did you forget to add ; (semi-colon) at the end of each CQL statement ?");
@@ -223,7 +223,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message()).contains("line 1:9 missing K_FROM at 'zeppelin' (SELECT * [zeppelin]....)");
+        assertThat(actual.message().get(0).getData()).contains("line 1:9 missing K_FROM at 'zeppelin' (SELECT * [zeppelin]....)");
     }
 
     @Test
@@ -237,7 +237,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message())
+        assertThat(actual.message().get(0).getData())
                 .contains("Not enough replicas available for query at consistency THREE (3 required but only 1 alive)");
     }
 
@@ -315,7 +315,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("key\tval\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("key\tval\n" +
                 "myKey\tmyValue\n");
     }
 
@@ -336,7 +336,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo(
+        assertThat(actual.message().get(0).getData()).isEqualTo(
                 "login\taddresses\tage\tdeceased\tfirstname\tlast_update\tlastname\tlocation\n" +
                         "jdoe\t" +
                         "{street_number:3,street_name:'Beverly Hills Bld',zip_code:90209," +
@@ -359,7 +359,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message())
+        assertThat(actual.message().get(0).getData())
                 .isEqualTo("The statement 'select_users' can not be bound to values. " +
                         "Are you sure you did prepare it with @prepare[select_users] ?");
     }
@@ -381,7 +381,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("firstname\tlastname\tage\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("firstname\tlastname\tage\n" +
                 "Helen\tSUE\t27\n");
 
     }
@@ -398,7 +398,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -412,7 +412,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("name\tcountry\tstyles\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("name\tcountry\tstyles\n" +
                 "Bogdan Raczynski\tPoland\t[Dance, Electro]\n" +
                 "Krishna Das\tUSA\t[Unknown]\n" +
                 "Sheryl Crow\tUSA\t[Classic, Rock, Country, Blues, Pop, Folk]\n");
@@ -430,7 +430,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).contains("last_update\n" +
+        assertThat(actual.message().get(0).getData()).contains("last_update\n" +
                 "Thu Jul 30 12:00:01");
     }
 
@@ -445,7 +445,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("firstname\tlastname\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("firstname\tlastname\n" +
                 "null\tNULL\n");
     }
 
@@ -460,7 +460,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("login\tdeceased\n" +
+        assertThat(actual.message().get(0).getData()).isEqualTo("login\tdeceased\n" +
                 "bind_bool\tfalse\n");
     }
 
@@ -477,7 +477,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message()).isEqualTo("The statement 'to_be_removed' can not be bound to values. " +
+        assertThat(actual.message().get(0).getData()).isEqualTo("The statement 'to_be_removed' can not be bound to values. " +
                 "Are you sure you did prepare it with @prepare[to_be_removed] ?");
     }
 
@@ -500,7 +500,7 @@ public class CassandraInterpreterTest {
 
 
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -513,7 +513,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message()).contains("All host(s) tried for query failed");
+        assertThat(actual.message().get(0).getData()).contains("All host(s) tried for query failed");
     }
 
     @Test
@@ -530,7 +530,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -546,7 +546,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -562,7 +562,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -648,7 +648,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -664,7 +664,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -681,7 +681,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     @Test
@@ -695,7 +695,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message()).contains("Cannot find table system.complex_table");
+        assertThat(actual.message().get(0).getData()).contains("Cannot find table system.complex_table");
     }
 
     @Test
@@ -709,7 +709,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
-        assertThat(actual.message()).contains("Cannot find type system.address");
+        assertThat(actual.message().get(0).getData()).contains("Cannot find type system.address");
     }
 
     @Test
@@ -723,7 +723,7 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+        assertThat(reformatHtml(actual.message().get(0).getData())).isEqualTo(expected);
     }
 
     private static String reformatHtml(String rawHtml) {

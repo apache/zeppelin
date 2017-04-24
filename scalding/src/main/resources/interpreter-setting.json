@@ -1,0 +1,19 @@
+[
+  {
+    "group": "scalding",
+    "name": "scalding",
+    "className": "org.apache.zeppelin.scalding.ScaldingInterpreter",
+    "properties": {
+      "args.string": {
+        "envName": null,
+        "defaultValue": "--local --repl",
+        "description": "Arguments for scalding REPL"
+      },
+      "max.open.instances": {
+        "envName": null,
+        "defaultValue": "50",
+        "description": "Maximum number of open interpreter instances"
+      }
+    }
+  }
+]

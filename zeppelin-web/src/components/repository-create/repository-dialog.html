@@ -13,7 +13,7 @@ limitations under the License.
 -->
 
 <div id="repoModal" class="modal fade" role="dialog"
-     tabindex='-1'>
+     tabindex="-1">
   <div class="modal-dialog">
 
     <!-- Modal content-->
@@ -29,7 +29,7 @@ limitations under the License.
               <label class="control-label col-sm-2" for="repoId">ID</label>
               <div class="col-sm-10">
                 <input type="text" class="form-control" id="repoId" ng-model="newRepoSetting.id"
-                       placeholder="Repository id" required>
+                       placeholder="Repository id" required />
               </div>
             </div>
             <div class="form-group">
@@ -37,7 +37,7 @@ limitations under the License.
               <div class="col-sm-10">
                 <input type="text" pattern="(http|https|file)://.*" title="Please enter URL starts with http://, https:// or file://"
                        class="form-control" id="repoUrl" ng-model="newRepoSetting.url"
-                       placeholder="Repository url" required>
+                       placeholder="Repository url" required />
               </div>
             </div>
             <div class="form-group">
@@ -53,14 +53,52 @@ limitations under the License.
             <div class="form-group">
               <label class="control-label col-sm-2" for="repoUsername">Username</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="repoUsername" ng-model="newRepoSetting.username">
+                <input type="text" class="form-control" id="repoUsername" ng-model="newRepoSetting.username" />
               </div>
             </div>
             <div class="form-group">
               <label class="control-label col-sm-2" for="repoPassword">Password</label>
               <div class="col-sm-10">
-                <input type="password" class="form-control" id="repoPassword" ng-model="newRepoSetting.password">
+                <input type="password" class="form-control" id="repoPassword" ng-model="newRepoSetting.password" />
               </div>
+            </div>
+            <hr/>
+            <div class="center-block"><h4>Proxy Settings (optional)</h4></div>
+            <br/>
+            <div class="form-group">
+              <div class="col-sm-10">
+                <label class="control-label col-sm-2" for="proxyProtocol1">Protocol</label>
+                <label class="radio-inline">
+                    <input type="radio" name="proxyProtocol" id="proxyProtocol1" value="HTTP" ng-model="newRepoSetting.proxyProtocol"/> HTTP
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="proxyProtocol" id="proxyProtocol2" value="HTTPS" ng-model="newRepoSetting.proxyProtocol"/> HTTPS
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="proxyHost">Host</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="proxyHost" ng-model="newRepoSetting.proxyHost" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="proxyPort">Port</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="proxyPort" ng-model="newRepoSetting.proxyPort" />
+              </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="proxyLogin">Login</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="proxyLogin" ng-model="newRepoSetting.proxyLogin" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="proxyPassword">Password</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="proxyPassword" ng-model="newRepoSetting.proxyPassword" />
+                </div>
             </div>
         </div>
         <div class="modal-footer">

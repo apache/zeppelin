@@ -12,49 +12,36 @@
  * limitations under the License.
  */
 
-body {
-  background: white;
-}
+ @media print {
 
-.labelBtn {
-  display: none;
-}
+   body {
+     padding-top: 0px;
+   }
 
-.new_h3 {
-  margin-left: 220px;
-  top: 0;
-  position: fixed;
-}
+   .navbar-fixed-top {
+      display: none !important;
+   }
 
-.noteAction {
-  border: 1px solid #3071a9;
-  box-shadow: none;
-}
+   .noteAction {
+      position: initial;
+   }
 
-.control {
-  display: none;
-}
+   .noteAction .btn-group,
+   .noteAction .labelBtn,
+   .noteAction .pull-right {
+      display: none !important;
+   }
 
-.editor {
-  display: none;
-}
+   .control span[class^="icon-"] {
+      display: none;
+   }
 
-.form-horizontal {
-  display: none;
-}
+   .notebookContent {
+     padding-top: 0px;
+   }
 
-.btn-group {
-  display: none;
-}
+   .new-paragraph {
+      display: none;
+   }
 
-.box {
-  border: none;
-}
-
-svg {
-  margin-left: -20px;
-}
-
-.btn-link {
-  display: none;
-}
+ }

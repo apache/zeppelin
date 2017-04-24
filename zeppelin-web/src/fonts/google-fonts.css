@@ -1,0 +1,63 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@font-face {
+	font-family: 'Patua One';
+	font-style: normal;
+	font-weight: 400;
+	src: url(../fonts/patua-one-400-normal.eot);
+	src: local('Patua One'), local('PatuaOne-Regular'), url(../fonts/patua-one-400-normal.woff) format('woff'), url(../fonts/patua-one-400-normal.ttf) format('truetype'), url(../fonts/patua-one-400-normal.svg#PatuaOne) format('svg');
+}
+@font-face {
+	font-family: 'Source Code Pro';
+	font-style: normal;
+	font-weight: 300;
+	src: url(../fonts/source-code-pro-300-normal.eot);
+	src: local('Source Code Pro Light'), local('SourceCodePro-Light'), url(../fonts/source-code-pro-300-normal.woff) format('woff'), url(../fonts/source-code-pro-300-normal.ttf) format('truetype'), url(../fonts/source-code-pro-300-normal.svg#SourceCode Pro) format('svg');
+}
+@font-face {
+	font-family: 'Source Code Pro';
+	font-style: normal;
+	font-weight: 400;
+	src: url(../fonts/source-code-pro-400-normal.eot);
+	src: local('Source Code Pro'), local('SourceCodePro-Regular'), url(../fonts/source-code-pro-400-normal.woff) format('woff'), url(../fonts/source-code-pro-400-normal.ttf) format('truetype'), url(../fonts/source-code-pro-400-normal.svg#SourceCode Pro) format('svg');
+}
+@font-face {
+	font-family: 'Source Code Pro';
+	font-style: normal;
+	font-weight: 500;
+	src: url(../fonts/source-code-pro-500-normal.eot);
+	src: local('Source Code Pro Medium'), local('SourceCodePro-Medium'), url(../fonts/source-code-pro-500-normal.woff) format('woff'), url(../fonts/source-code-pro-500-normal.ttf) format('truetype'), url(../fonts/source-code-pro-500-normal.svg#SourceCode Pro) format('svg');
+}
+@font-face {
+	font-family: 'Roboto';
+	font-style: normal;
+	font-weight: 300;
+	src: url(../fonts/roboto-300-normal.eot);
+	src: local('Roboto Light'), local('Roboto-Light'), url(../fonts/roboto-300-normal.woff) format('woff'), url(../fonts/roboto-300-normal.ttf) format('truetype'), url(../fonts/roboto-300-normal.svg#Roboto) format('svg');
+}
+@font-face {
+	font-family: 'Roboto';
+	font-style: normal;
+	font-weight: 400;
+	src: url(../fonts/roboto-400-normal.eot);
+	src: local('Roboto'), local('Roboto-Regular'), url(../fonts/roboto-400-normal.woff) format('woff'), url(../fonts/roboto-400-normal.ttf) format('truetype'), url(../fonts/roboto-400-normal.svg#Roboto) format('svg');
+}
+@font-face {
+	font-family: 'Roboto';
+	font-style: normal;
+	font-weight: 500;
+	src: url(../fonts/roboto-500-normal.eot);
+	src: local('Roboto Medium'), local('Roboto-Medium'), url(../fonts/roboto-500-normal.woff) format('woff'), url(../fonts/roboto-500-normal.ttf) format('truetype'), url(../fonts/roboto-500-normal.svg#Roboto) format('svg');
+}

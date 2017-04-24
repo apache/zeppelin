@@ -1,0 +1,16 @@
+{
+  "name": "zeppelin-vis",
+  "description": "Visualization API",
+  "version": "0.8.0-SNAPSHOT",
+  "main": "visualization",
+  "dependencies": {
+    "json3": "~3.3.1",
+    "nvd3": "~1.7.1",
+    "lodash": "~3.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/zeppelin"
+  },
+  "license": "Apache-2.0"
+}

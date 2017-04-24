@@ -57,17 +57,6 @@ public class IgniteSqlInterpreter extends Interpreter {
 
   static final String IGNITE_JDBC_URL = "ignite.jdbc.url";
 
-  static {
-    Interpreter.register(
-        "ignitesql",
-        "ignite",
-        IgniteSqlInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add(IGNITE_JDBC_URL,
-                "jdbc:ignite:cfg://default-ignite-jdbc.xml", "Ignite JDBC connection URL.")
-            .build());
-  }
-
   private Logger logger = LoggerFactory.getLogger(IgniteSqlInterpreter.class);
 
   private Connection conn;
@@ -195,7 +184,8 @@ public class IgniteSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 }

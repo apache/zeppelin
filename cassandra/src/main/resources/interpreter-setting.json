@@ -1,0 +1,198 @@
+[
+  {
+    "group": "cassandra",
+    "name": "cassandra",
+    "className": "org.apache.zeppelin.cassandra.CassandraInterpreter",
+    "properties": {
+      "cassandra.hosts": {
+        "envName": null,
+        "propertyName": "cassandra.hosts",
+        "defaultValue": "localhost",
+        "description": "Comma separated Cassandra hosts (DNS name or IP address). Default = localhost. Ex: '192.168.0.12,node2,node3'"
+      },
+      "cassandra.native.port": {
+        "envName": null,
+        "propertyName": "cassandra.native.port",
+        "defaultValue": "9042",
+        "description": "Cassandra native port. Default = 9042"
+      },
+      "cassandra.protocol.version": {
+        "envName": null,
+        "propertyName": "cassandra.protocol.version",
+        "defaultValue": "4",
+        "description": "Cassandra protocol version. Default = 4"
+      },
+      "cassandra.cluster": {
+        "envName": null,
+        "propertyName": "cassandra.cluster",
+        "defaultValue": "Test Cluster",
+        "description": "Cassandra cluster name. Default = 'Test Cluster'"
+      },
+      "cassandra.keyspace": {
+        "envName": null,
+        "propertyName": "cassandra.keyspace",
+        "defaultValue": "system",
+        "description": "Cassandra keyspace name. Default = 'system'"
+      },
+      "cassandra.compression.protocol": {
+        "envName": null,
+        "propertyName": "cassandra.compression.protocol",
+        "defaultValue": "NONE",
+        "description": "Cassandra compression protocol. Available values: NONE, SNAPPY, LZ4. Default = NONE"
+      },
+      "cassandra.credentials.username": {
+        "envName": null,
+        "propertyName": "cassandra.credentials.username",
+        "defaultValue": "none",
+        "description": "Cassandra credentials username. Default = 'none'"
+      },
+      "cassandra.credentials.password": {
+        "envName": null,
+        "propertyName": "cassandra.credentials.password",
+        "defaultValue": "none",
+        "description": "Cassandra credentials password. Default = 'none'"
+      },
+      "cassandra.load.balancing.policy": {
+        "envName": null,
+        "propertyName": "cassandra.load.balancing.policy",
+        "defaultValue": "DEFAULT",
+        "description": "Cassandra Load Balancing Policy. Default = new TokenAwarePolicy(new DCAwareRoundRobinPolicy())"
+      },
+      "cassandra.retry.policy": {
+        "envName": null,
+        "propertyName": "cassandra.retry.policy",
+        "defaultValue": "DEFAULT",
+        "description": "Cassandra Retry Policy. Default = DefaultRetryPolicy.INSTANCE"
+      },
+      "cassandra.reconnection.policy": {
+        "envName": null,
+        "propertyName": "cassandra.reconnection.policy",
+        "defaultValue": "DEFAULT",
+        "description": "Cassandra Reconnection Policy. Default = new ExponentialReconnectionPolicy(1000, 10 * 60 * 1000)"
+      },
+      "cassandra.speculative.execution.policy": {
+        "envName": null,
+        "propertyName": "cassandra.speculative.execution.policy",
+        "defaultValue": "DEFAULT",
+        "description": "Cassandra Speculative Execution Policy. Default = NoSpeculativeExecutionPolicy.INSTANCE"
+      },
+      "cassandra.interpreter.parallelism": {
+        "envName": null,
+        "propertyName": "cassandra.interpreter.parallelism",
+        "defaultValue": "10",
+        "description": "Cassandra interpreter parallelism.Default = 10"
+      },
+      "cassandra.max.schema.agreement.wait.second": {
+        "envName": null,
+        "propertyName": "cassandra.max.schema.agreement.wait.second",
+        "defaultValue": "10",
+        "description": "Cassandra max schema agreement wait in second.Default = ProtocolOptions.DEFAULT_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS"
+      },
+      "cassandra.pooling.new.connection.threshold.local": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.new.connection.threshold.local",
+        "defaultValue": "100",
+        "description": "Cassandra new connection threshold local. Protocol V2 and below default = 100 Protocol V3 and above default = 800"
+      },
+      "cassandra.pooling.new.connection.threshold.remote": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.new.connection.threshold.remote",
+        "defaultValue": "100",
+        "description": "Cassandra new connection threshold remove. Protocol V2 and below default = 100 Protocol V3 and above default = 200"
+      },
+      "cassandra.pooling.core.connection.per.host.local": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.core.connection.per.host.local",
+        "defaultValue": "2",
+        "description": "Cassandra core connection per host local. Protocol V2 and below default = 2 Protocol V3 and above default = 1"
+      },
+      "cassandra.pooling.core.connection.per.host.remote": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.core.connection.per.host.remote",
+        "defaultValue": "1",
+        "description": "Cassandra core connection per host remove. Protocol V2 and below default = 1 Protocol V3 and above default = 1"
+      },
+      "cassandra.pooling.max.connection.per.host.local": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.max.connection.per.host.local",
+        "defaultValue": "8",
+        "description": "Cassandra max connection per host local. Protocol V2 and below default = 8 Protocol V3 and above default = 1"
+      },
+      "cassandra.pooling.max.connection.per.host.remote": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.max.connection.per.host.remote",
+        "defaultValue": "2",
+        "description": "Cassandra max connection per host remote. Protocol V2 and below default = 2 Protocol V3 and above default = 1"
+      },
+      "cassandra.pooling.max.request.per.connection.local": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.max.request.per.connection.local",
+        "defaultValue": "1024",
+        "description": "Cassandra max request per connection local. Protocol V2 and below default = 128 Protocol V3 and above default = 1024"
+      },
+      "cassandra.pooling.max.request.per.connection.remote": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.max.request.per.connection.remote",
+        "defaultValue": "256",
+        "description": "Cassandra max request per connection remote. Protocol V2 and below default = 128 Protocol V3 and above default = 256"
+      },
+      "cassandra.pooling.idle.timeout.seconds": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.idle.timeout.seconds",
+        "defaultValue": "120",
+        "description": "Cassandra idle time out in seconds. Default = 120"
+      },
+      "cassandra.pooling.pool.timeout.millisecs": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.pool.timeout.millisecs",
+        "defaultValue": "5000",
+        "description": "Cassandra pool time out in millisecs. Default = 5000"
+      },
+      "cassandra.pooling.heartbeat.interval.seconds": {
+        "envName": null,
+        "propertyName": "cassandra.pooling.heartbeat.interval.seconds",
+        "defaultValue": "30",
+        "description": "Cassandra pool heartbeat interval in secs. Default = 30"
+      },
+      "cassandra.query.default.consistency": {
+        "envName": null,
+        "propertyName": "cassandra.query.default.consistency",
+        "defaultValue": "ONE",
+        "description": "Cassandra query default consistency level. Default = ONE"
+      },
+      "cassandra.query.default.serial.consistency": {
+        "envName": null,
+        "propertyName": "cassandra.query.default.serial.consistency",
+        "defaultValue": "SERIAL",
+        "description": "Cassandra query default serial consistency level. Default = SERIAL"
+      },
+      "cassandra.query.default.fetchSize": {
+        "envName": null,
+        "propertyName": "cassandra.query.default.fetchSize",
+        "defaultValue": "5000",
+        "description": "Cassandra query default fetch size. Default = 5000"
+      },
+      "cassandra.socket.connection.timeout.millisecs": {
+        "envName": null,
+        "propertyName": "cassandra.socket.connection.timeout.millisecs",
+        "defaultValue": "5000",
+        "description": "Cassandra socket default connection timeout in millisecs. Default = 5000"
+      },
+      "cassandra.socket.read.timeout.millisecs": {
+        "envName": null,
+        "propertyName": "cassandra.socket.read.timeout.millisecs",
+        "defaultValue": "12000",
+        "description": "Cassandra socket read timeout in millisecs. Default = 12000"
+      },
+      "cassandra.socket.tcp.no_delay": {
+        "envName": null,
+        "propertyName": "cassandra.socket.tcp.no_delay",
+        "defaultValue": "true",
+        "description": "Cassandra socket TCP no delay. Default = true"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

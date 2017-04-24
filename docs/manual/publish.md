@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "Publish your Paragraph"
-description: ""
+title: "How can you publish your paragraph"
+description: "Apache Zeppelin provides a feature for publishing your notebook paragraph results. Using this feature, you can show Zeppelin notebook paragraph results in your own website."
 group: manual
 ---
 <!--

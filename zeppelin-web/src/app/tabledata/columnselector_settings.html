@@ -1,0 +1,51 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+All fields:
+<div class="allFields row">
+  <ul class="noDot">
+    <li class="liVertical" ng-repeat="col in tableDataColumns">
+      <div class="btn btn-default btn-xs"
+           data-drag="true"
+           data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+           ng-model="tableDataColumns"
+           jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+        {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="row">
+  <div class="col-md-3"
+       ng-repeat="prop in props">
+    <span class="columns lightBold">
+      {{prop.name}}
+      <a tabindex="0" class="fa fa-info-circle" role="button" popover-placement="top"
+         ng-if="prop.tooltip"
+         popover-trigger="focus"
+         popover-html-unsafe="{{prop.tooltip}}"></a>
+      <ul data-drop="true"
+          ng-model="config[prop.name]"
+          jqyoui-droppable="{onDrop:'save()'}"
+          class="list-unstyled"
+          style="height:36px">
+        <li ng-if="config[prop.name]">
+          <div class="btn btn-primary btn-xs">
+            {{config[prop.name].name}} <span class="fa fa-close" ng-click="remove(prop.name)"></span>
+          </div>
+        </li>
+      </ul>
+    </span>
+  </div>
+</div>

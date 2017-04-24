@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rinterpreter
 
+import java.io.{BufferedInputStream, File, FileInputStream}
 import java.nio.file.{Files, Paths}
 import java.util._
 
@@ -108,18 +109,6 @@ object RInterpreter {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
   logger.trace("logging inside the RInterpreter singleton")
 
-  // These are the additional properties we need on top of the ones provided by the spark interpreters
-  lazy val props: Map[String, InterpreterProperty] = new InterpreterPropertyBuilder()
-    .add("rhadoop.cmd",           SparkInterpreter.getSystemDefault("rhadoop.cmd", "HADOOP_CMD", ""), "Usually /usr/bin/hadoop")
-    .add("rhadooop.streamingjar", SparkInterpreter.getSystemDefault("rhadoop.cmd", "HADOOP_STREAMING", ""), "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
-    .add("rscala.debug",          SparkInterpreter.getSystemDefault("rscala.debug","RSCALA_DEBUG", "false"), "Whether to turn on rScala debugging") // TEST:  Implemented but not tested
-    .add("rscala.timeout",        SparkInterpreter.getSystemDefault("rscala.timeout","RSCALA_TIMEOUT", "60"), "Timeout for rScala") // TEST:  Implemented but not tested
-    .build
-
-  def getProps() = {
-    props
-  }
-
   // Some R interactive visualization packages insist on producing HTML that refers to javascript
   // or css by file path.  These functions are intended to load those files and embed them into the
   // HTML as Base64 encoded DataURIs.
@@ -141,8 +130,15 @@ object RInterpreter {
   }
 
   def dataURI(file : String, mime : String) : String = {
-    val data: String = Source.fromFile(file).getLines().mkString("\n")
-    s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(data.getBytes(), false))
+    val fp = new File(file)
+    val fdata = new Array[Byte](fp.length().toInt)
+    val fin = new BufferedInputStream(new FileInputStream(fp))
+    try {
+      fin.read(fdata)
+    } finally {
+      fin.close()
+    }
+    s"""data:${mime};base64,""" + StringUtils.newStringUtf8(Base64.encodeBase64(fdata, false))
   }
 
   // The purpose here is to deal with knitr producing HTML with script and css tags outside the <body>

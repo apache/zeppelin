@@ -31,15 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 public class MockInterpreterAngular extends Interpreter {
-  static {
-    Interpreter.register(
-        "angularTest",
-        "angular",
-        MockInterpreterA.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("p1", "v1", "property1").build());
-
-  }
 
   AtomicInteger numWatch = new AtomicInteger(0);
 
@@ -115,7 +106,8 @@ public class MockInterpreterAngular extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 }

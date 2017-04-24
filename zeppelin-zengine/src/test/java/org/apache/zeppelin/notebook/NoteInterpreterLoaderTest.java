@@ -18,15 +18,23 @@ package org.apache.zeppelin.notebook;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Properties;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter11;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
@@ -41,6 +49,7 @@ public class NoteInterpreterLoaderTest {
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private InterpreterFactory factory;
+  private InterpreterSettingManager interpreterSettingManager;
   private DependencyResolver depResolver;
 
   @Before
@@ -50,18 +59,26 @@ public class NoteInterpreterLoaderTest {
     new File(tmpDir, "conf").mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter11,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     conf = ZeppelinConfiguration.create();
 
-    Interpreter.registeredInterpreters = Collections
-        .synchronizedMap(new HashMap<String, Interpreter.RegisteredInterpreter>());
-    MockInterpreter1.register("mock1", "group1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-    MockInterpreter11.register("mock11", "group1", "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
-    MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
+    interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+
+    ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, Maps.<String, Object>newHashMap()));
+    interpreterInfos.add(new InterpreterInfo(MockInterpreter11.class.getName(), "mock11", false, Maps.<String, Object>newHashMap()));
+    ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
+    interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, Maps.<String, Object>newHashMap()));
+
+    interpreterSettingManager.add("group1", interpreterInfos, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock", null);
+    interpreterSettingManager.add("group2", interpreterInfos2, Lists.<Dependency>newArrayList(), new InterpreterOption(), Maps.<String, InterpreterProperty>newHashMap(), "mock", null);
+
+    interpreterSettingManager.createNewSetting("group1", "group1", Lists.<Dependency>newArrayList(), new InterpreterOption(), new Properties());
+    interpreterSettingManager.createNewSetting("group2", "group2", Lists.<Dependency>newArrayList(), new InterpreterOption(), new Properties());
+
+
   }
 
   @After
@@ -72,102 +89,142 @@ public class NoteInterpreterLoaderTest {
 
   @Test
   public void testGetInterpreter() throws IOException {
-    NoteInterpreterLoader loader = new NoteInterpreterLoader(factory);
-    loader.setNoteId("note");
-    loader.setInterpreters(factory.getDefaultInterpreterSettingList());
+    interpreterSettingManager.setInterpreters("user", "note", interpreterSettingManager.getDefaultInterpreterSettingList());
 
     // when there're no interpreter selection directive
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", loader.get(null).getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", loader.get("").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", loader.get(" ").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("user", "note", null).getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("user", "note", "").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("user", "note", " ").getClassName());
 
     // when group name is omitted
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", loader.get("mock11").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", factory.getInterpreter("user", "note", "mock11").getClassName());
 
     // when 'name' is ommitted
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", loader.get("group1").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", loader.get("group2").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("user", "note", "group1").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", factory.getInterpreter("user", "note", "group2").getClassName());
 
     // when nothing is ommitted
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", loader.get("group1.mock1").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", loader.get("group1.mock11").getClassName());
-    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", loader.get("group2.mock2").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", factory.getInterpreter("user", "note", "group1.mock1").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", factory.getInterpreter("user", "note", "group1.mock11").getClassName());
+    assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", factory.getInterpreter("user", "note", "group2.mock2").getClassName());
 
-    loader.close();
+    interpreterSettingManager.closeNote("user", "note");
   }
 
   @Test
   public void testNoteSession() throws IOException {
-    NoteInterpreterLoader loaderA = new NoteInterpreterLoader(factory);
-    loaderA.setNoteId("noteA");
-    loaderA.setInterpreters(factory.getDefaultInterpreterSettingList());
-    loaderA.getInterpreterSettings().get(0).getOption().setPerNoteSession(true);
+    interpreterSettingManager.setInterpreters("user", "noteA", interpreterSettingManager.getDefaultInterpreterSettingList());
+    interpreterSettingManager.getInterpreterSettings("noteA").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
 
-    NoteInterpreterLoader loaderB = new NoteInterpreterLoader(factory);
-    loaderB.setNoteId("noteB");
-    loaderB.setInterpreters(factory.getDefaultInterpreterSettingList());
-    loaderB.getInterpreterSettings().get(0).getOption().setPerNoteSession(true);
+    interpreterSettingManager.setInterpreters("user", "noteB", interpreterSettingManager.getDefaultInterpreterSettingList());
+    interpreterSettingManager.getInterpreterSettings("noteB").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
 
     // interpreters are not created before accessing it
-    assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup("shared_process").get("noteA"));
-    assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("shared_process").get("noteB"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
 
-    loaderA.get(null).open();
-    loaderB.get(null).open();
+    factory.getInterpreter("user", "noteA", null).open();
+    factory.getInterpreter("user", "noteB", null).open();
 
     assertTrue(
-        loaderA.get(null).getInterpreterGroup().getId().equals(
-        loaderB.get(null).getInterpreterGroup().getId()));
+        factory.getInterpreter("user", "noteA", null).getInterpreterGroup().getId().equals(
+        factory.getInterpreter("user", "noteB", null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
-    assertNotNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup("shared_process").get("noteA"));
-    assertNotNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("shared_process").get("noteB"));
+    assertNotNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("noteA"));
+    assertNotNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("noteB"));
+
+    // invalid close
+    interpreterSettingManager.closeNote("user", "note");
+    assertNotNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
+    assertNotNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
 
     // when
-    loaderA.close();
-    loaderB.close();
+    interpreterSettingManager.closeNote("user", "noteA");
+    interpreterSettingManager.closeNote("user", "noteB");
 
     // interpreters are destroyed after close
-    assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup("shared_process").get("noteA"));
-    assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("shared_process").get("noteB"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "shared_process").get("noteA"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "shared_process").get("noteB"));
 
   }
 
   @Test
   public void testNotePerInterpreterProcess() throws IOException {
-    NoteInterpreterLoader loaderA = new NoteInterpreterLoader(factory);
-    loaderA.setNoteId("noteA");
-    loaderA.setInterpreters(factory.getDefaultInterpreterSettingList());
-    loaderA.getInterpreterSettings().get(0).getOption().setPerNoteProcess(true);
+    interpreterSettingManager.setInterpreters("user", "noteA", interpreterSettingManager.getDefaultInterpreterSettingList());
+    interpreterSettingManager.getInterpreterSettings("noteA").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
 
-    NoteInterpreterLoader loaderB = new NoteInterpreterLoader(factory);
-    loaderB.setNoteId("noteB");
-    loaderB.setInterpreters(factory.getDefaultInterpreterSettingList());
-    loaderB.getInterpreterSettings().get(0).getOption().setPerNoteProcess(true);
+    interpreterSettingManager.setInterpreters("user", "noteB", interpreterSettingManager.getDefaultInterpreterSettingList());
+    interpreterSettingManager.getInterpreterSettings("noteB").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
 
     // interpreters are not created before accessing it
-    assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup("noteA").get("noteA"));
-    assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("noteB").get("noteB"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("shared_session"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("shared_session"));
 
-    loaderA.get(null).open();
-    loaderB.get(null).open();
+    factory.getInterpreter("user", "noteA", null).open();
+    factory.getInterpreter("user", "noteB", null).open();
 
     // per note interpreter process
     assertFalse(
-        loaderA.get(null).getInterpreterGroup().getId().equals(
-        loaderB.get(null).getInterpreterGroup().getId()));
+        factory.getInterpreter("user", "noteA", null).getInterpreterGroup().getId().equals(
+        factory.getInterpreter("user", "noteB", null).getInterpreterGroup().getId()));
 
     // interpreters are created after accessing it
-    assertNotNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup("noteA").get("noteA"));
-    assertNotNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("noteB").get("noteB"));
+    assertNotNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("shared_session"));
+    assertNotNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("shared_session"));
 
     // when
-    loaderA.close();
-    loaderB.close();
+    interpreterSettingManager.closeNote("user", "noteA");
+    interpreterSettingManager.closeNote("user", "noteB");
 
     // interpreters are destroyed after close
-    assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup("noteA").get("noteA"));
-    assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup("noteB").get("noteB"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteA").get(0).getInterpreterGroup("user", "noteA").get("shared_session"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("noteB").get(0).getInterpreterGroup("user", "noteB").get("shared_session"));
+  }
+
+  @Test
+  public void testNoteInterpreterCloseForAll() throws IOException {
+    interpreterSettingManager.setInterpreters("user", "FitstNote", interpreterSettingManager.getDefaultInterpreterSettingList());
+    interpreterSettingManager.getInterpreterSettings("FitstNote").get(0).getOption().setPerNote(InterpreterOption.SCOPED);
+
+    interpreterSettingManager.setInterpreters("user", "yourFirstNote", interpreterSettingManager.getDefaultInterpreterSettingList());
+    interpreterSettingManager.getInterpreterSettings("yourFirstNote").get(0).getOption().setPerNote(InterpreterOption.ISOLATED);
+
+    // interpreters are not created before accessing it
+    assertNull(interpreterSettingManager.getInterpreterSettings("FitstNote").get(0).getInterpreterGroup("user", "FitstNote").get("FitstNote"));
+    assertNull(interpreterSettingManager.getInterpreterSettings("yourFirstNote").get(0).getInterpreterGroup("user", "yourFirstNote").get("yourFirstNote"));
+
+    Interpreter firstNoteIntp = factory.getInterpreter("user", "FitstNote", "group1.mock1");
+    Interpreter yourFirstNoteIntp = factory.getInterpreter("user", "yourFirstNote", "group1.mock1");
+
+    firstNoteIntp.open();
+    yourFirstNoteIntp.open();
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    interpreterSettingManager.closeNote("user", "FitstNote");
+
+    assertFalse(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    //reopen
+    firstNoteIntp.open();
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    // invalid check
+    interpreterSettingManager.closeNote("invalid", "Note");
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
+
+    // invalid contains value check
+    interpreterSettingManager.closeNote("u", "Note");
+
+    assertTrue(((LazyOpenInterpreter)firstNoteIntp).isOpen());
+    assertTrue(((LazyOpenInterpreter)yourFirstNoteIntp).isOpen());
   }
 
 

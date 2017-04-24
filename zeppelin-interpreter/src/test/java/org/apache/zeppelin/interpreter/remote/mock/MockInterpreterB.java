@@ -32,15 +32,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
 public class MockInterpreterB extends Interpreter {
-  static {
-    Interpreter.register(
-        "interpreterB",
-        "group1",
-        MockInterpreterA.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("p1", "v1", "property1").build());
 
-  }
   public MockInterpreterB(Properties property) {
     super(property);
   }
@@ -86,7 +78,8 @@ public class MockInterpreterB extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 

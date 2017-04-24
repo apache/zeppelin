@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.Constants;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.junit.Test;
@@ -41,13 +42,13 @@ public class RemoteInterpreterProcessTest {
   @Test
   public void testStartStop() {
     InterpreterGroup intpGroup = new InterpreterGroup();
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        10 * 1000, null);
+        10 * 1000, null, null,"fakeName");
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
-    assertEquals(2, rip.reference(intpGroup));
+    assertEquals(1, rip.reference(intpGroup, "anonymous", false));
+    assertEquals(2, rip.reference(intpGroup, "anonymous", false));
     assertEquals(true, rip.isRunning());
     assertEquals(1, rip.dereference());
     assertEquals(true, rip.isRunning());
@@ -58,10 +59,10 @@ public class RemoteInterpreterProcessTest {
   @Test
   public void testClientFactory() throws Exception {
     InterpreterGroup intpGroup = new InterpreterGroup();
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
         INTERPRETER_SCRIPT, "nonexists", "fakeRepo", new HashMap<String, String>(),
-        mock(RemoteInterpreterEventPoller.class), 10 * 1000);
-    rip.reference(intpGroup);
+        mock(RemoteInterpreterEventPoller.class), 10 * 1000, "fakeName");
+    rip.reference(intpGroup, "anonymous", false);
     assertEquals(0, rip.getNumActiveClient());
     assertEquals(0, rip.getNumIdleClient());
 
@@ -96,92 +97,35 @@ public class RemoteInterpreterProcessTest {
     InterpreterGroup intpGroup = mock(InterpreterGroup.class);
     when(intpGroup.getProperty()).thenReturn(properties);
     when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
-        "fakeRepo", new HashMap<String, String>(), 10 * 1000, null);
+
+    RemoteInterpreterProcess rip = new RemoteInterpreterManagedProcess(
+        INTERPRETER_SCRIPT,
+        "nonexists",
+        "fakeRepo",
+        new HashMap<String, String>(),
+        mock(RemoteInterpreterEventPoller.class)
+        , 10 * 1000,
+        "fakeName");
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
+    assertEquals(1, rip.reference(intpGroup, "anonymous", false));
     assertEquals(true, rip.isRunning());
   }
-  
-  
+
+
   @Test
-  public void testRemoteInterpreterWithMultipleInterpreterInGroup() throws TException, InterruptedException {
-    RemoteInterpreterServer server = new RemoteInterpreterServer(3679);
-    server.start();
-    long startTime = System.currentTimeMillis();
-    /*If RemoteInterpreterServer didn't start within 30 seconds than this test may fail
-     * which might be due to issue in RemoteInterpreterServer
-     */
-    while (System.currentTimeMillis() - startTime < 30 * 1000) {
-      if (server.isRunning()) {
-        break;
-      } else {
-        Thread.sleep(200);
-      }
-    }
-    Properties properties = new Properties();
-    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_PORT, "3679");
-    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_HOST, "localhost");
-    InterpreterGroup intpGroup = mock(InterpreterGroup.class);
-    when(intpGroup.getProperty()).thenReturn(properties);
-    when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
-        "fakeRepo", new HashMap<String, String>(), 30 * 1000, null);
+  public void testPropagateError() throws TException, InterruptedException {
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    RemoteInterpreterManagedProcess rip = new RemoteInterpreterManagedProcess(
+        "echo hello_world", "nonexists", "fakeRepo", new HashMap<String, String>(),
+        10 * 1000, null, null, "fakeName");
     assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
-    // Calling reference once again to depict multiple intrepreters in a group
-    assertEquals(2, rip.reference(intpGroup));
-    assertEquals(true, rip.isRunning());
-  }
-  
-  @Test
-  public void testExistingInterpreterDereference() throws TException, InterruptedException {
-    // Using Mocked RemoteInterpreterServer to reproduce the issue.
-    CustomRemoteInterpreterServer server = new CustomRemoteInterpreterServer(3680);
-    server.start();
-    long startTime = System.currentTimeMillis();
-    /*
-     * If RemoteInterpreterServer didn't start within 30 seconds than this test may fail which might
-     * be due to issue in RemoteInterpreterServer
-     */
-    while (System.currentTimeMillis() - startTime < 30 * 1000) {
-      if (server.isRunning()) {
-        break;
-      } else {
-        Thread.sleep(200);
-      }
+    try {
+      assertEquals(1, rip.reference(intpGroup, "anonymous", false));
+    } catch (InterpreterException e) {
+      e.getMessage().contains("hello_world");
     }
-    Properties properties = new Properties();
-    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_PORT, "3680");
-    properties.setProperty(Constants.ZEPPELIN_INTERPRETER_HOST, "localhost");
-    InterpreterGroup intpGroup = mock(InterpreterGroup.class);
-    when(intpGroup.getProperty()).thenReturn(properties);
-    when(intpGroup.containsKey(Constants.EXISTING_PROCESS)).thenReturn(true);
-    RemoteInterpreterProcess rip = new RemoteInterpreterProcess(INTERPRETER_SCRIPT, "nonexists",
-        "fakeRepo", new HashMap<String, String>(), 1000, null);
-    assertFalse(rip.isRunning());
     assertEquals(0, rip.referenceCount());
-    assertEquals(1, rip.reference(intpGroup));
-    // Calling reference once again to depict multiple intrepreters in a group
-    assertEquals(2, rip.reference(intpGroup));
-    assertEquals(true, rip.isRunning());
-    rip.dereference();
-    rip.dereference();
   }
-
-
-  class CustomRemoteInterpreterServer extends RemoteInterpreterServer {
-    public CustomRemoteInterpreterServer(int port) throws TTransportException {
-      super(port);
-    }
-
-    @Override
-    public void shutdown() throws TException {
-      // Keeping this method intentionally empty to depict that server is not stopped
-    }
-
-  }
-
 }

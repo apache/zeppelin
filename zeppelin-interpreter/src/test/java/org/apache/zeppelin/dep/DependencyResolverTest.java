@@ -20,6 +20,7 @@ package org.apache.zeppelin.dep;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
@@ -35,6 +36,9 @@ public class DependencyResolverTest {
   private static String testPath;
   private static File testCopyPath;
   private static File tmpDir;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -90,4 +94,13 @@ public class DependencyResolverTest {
     exception.expect(RepositoryException.class);
     resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
   }
+
+  @Test
+  public void should_throw_exception_if_dependency_not_found() throws Exception {
+    expectedException.expectMessage("Source 'one.two:1.0' does not exist");
+    expectedException.expect(FileNotFoundException.class);
+
+    resolver.load("one.two:1.0", testCopyPath);
+  }
+
 }

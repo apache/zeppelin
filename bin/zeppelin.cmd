@@ -56,6 +56,7 @@ if exist "%ZEPPELIN_HOME%\zeppelin-server\target\classes" (
 
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\lib"
+call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\lib\interpreter"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-zengine\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-server\target\lib"
@@ -81,11 +82,6 @@ if not exist %ZEPPELIN_LOG_DIR% (
 if not exist %ZEPPELIN_PID_DIR% (
     echo Pid dir doesn't exist, create %ZEPPELIN_PID_DIR%
     mkdir "%ZEPPELIN_PID_DIR%"
-)
-
-if not exist %ZEPPELIN_NOTEBOOK_DIR% (
-    echo Notebook dir doesn't exist, create %ZEPPELIN_NOTEBOOK_DIR%
-    mkdir "%ZEPPELIN_NOTEBOOK_DIR%"
 )
 
 "%ZEPPELIN_RUNNER%" %JAVA_OPTS% -cp %CLASSPATH% %ZEPPELIN_SERVER% "%*"

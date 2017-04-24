@@ -23,9 +23,9 @@ import java.io.PrintStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -68,15 +68,6 @@ public class AlluxioInterpreter extends Interpreter {
     alluxioMasterPort = property.getProperty(ALLUXIO_MASTER_PORT);
   }
 
-  static {
-    Interpreter.register("alluxio", "alluxio",
-        AlluxioInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-                .add(ALLUXIO_MASTER_HOSTNAME, "localhost", "Alluxio master hostname")
-                .add(ALLUXIO_MASTER_PORT, "19998", "Alluxio master port")
-                .build());
-  }
-
   @Override
   public void open() {
     logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
@@ -116,14 +107,14 @@ public class AlluxioInterpreter extends Interpreter {
     System.setOut(ps);
     
     for (String command : commands) {
-      int commandResuld = 1;
+      int commandResult = 1;
       String[] args = splitAndRemoveEmpty(command, " ");
       if (args.length > 0 && args[0].equals("help")) {
         System.out.println(getCommandList());
       } else {
-        commandResuld = fs.run(args);
+        commandResult = fs.run(args);
       }
-      if (commandResuld != 0) {
+      if (commandResult != 0) {
         isSuccess = false;
         break;
       } else {
@@ -144,7 +135,7 @@ public class AlluxioInterpreter extends Interpreter {
   
   private String[] splitAndRemoveEmpty(String st, String splitSeparator) {
     String[] voices = st.split(splitSeparator);
-    ArrayList<String> result = new ArrayList<String>();
+    ArrayList<String> result = new ArrayList<>();
     for (String voice : voices) {
       if (!voice.trim().isEmpty()) {
         result.add(voice);
@@ -154,7 +145,7 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   private String[] splitAndRemoveEmpty(String[] sts, String splitSeparator) {
-    ArrayList<String> result = new ArrayList<String>();
+    ArrayList<String> result = new ArrayList<>();
     for (String st : sts) {
       result.addAll(Arrays.asList(splitAndRemoveEmpty(st, splitSeparator)));
     }
@@ -175,16 +166,18 @@ public class AlluxioInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     String[] words = splitAndRemoveEmpty(splitAndRemoveEmpty(buf, "\n"), " ");
     String lastWord = "";
     if (words.length > 0) {
       lastWord = words[ words.length - 1 ];
     }
-    ArrayList voices = new ArrayList<>();
+    
+    List<InterpreterCompletion>  voices = new LinkedList<>();
     for (String command : keywords) {
       if (command.startsWith(lastWord)) {
-        voices.add(command);
+        voices.add(new InterpreterCompletion(command, command, CompletionType.command.name()));
       }
     }
     return voices;

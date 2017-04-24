@@ -1,0 +1,13 @@
+{
+  "name": "zeppelin-spell",
+  "description": "Zeppelin Spell Framework",
+  "version": "0.8.0-SNAPSHOT",
+  "main": "index",
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/zeppelin"
+  },
+  "license": "Apache-2.0"
+}

@@ -17,18 +17,14 @@
 
 package org.apache.zeppelin.user;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User Credentials POJO
  */
 public class UserCredentials {
-  private Map<String, UsernamePassword> userCredentials;
-
-  public UserCredentials() {
-    this.userCredentials = new HashMap<>();
-  }
+  private Map<String, UsernamePassword> userCredentials = new ConcurrentHashMap<>();
 
   public UsernamePassword getUsernamePassword(String entity) {
     return userCredentials.get(entity);
@@ -36,6 +32,14 @@ public class UserCredentials {
 
   public void putUsernamePassword(String entity, UsernamePassword up) {
     userCredentials.put(entity, up);
+  }
+
+  public void removeUsernamePassword(String entity) {
+    userCredentials.remove(entity);
+  }
+
+  public boolean existUsernamePassword(String entity) {
+    return userCredentials.containsKey(entity);
   }
 
   @Override

@@ -31,7 +31,7 @@ public class Dependency {
 
   public Dependency(String groupArtifactVersion) {
     this.groupArtifactVersion = groupArtifactVersion;
-    exclusions = new LinkedList<String>();
+    exclusions = new LinkedList<>();
   }
 
   @Override

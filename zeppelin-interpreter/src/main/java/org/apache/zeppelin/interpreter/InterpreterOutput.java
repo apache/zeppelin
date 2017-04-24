@@ -21,9 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * InterpreterOutput is OutputStream that supposed to print content on notebook
@@ -33,84 +36,229 @@ public class InterpreterOutput extends OutputStream {
   Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
   private final int NEW_LINE_CHAR = '\n';
 
+  private List<InterpreterResultMessageOutput> resultMessageOutputs = new LinkedList<>();
+  private InterpreterResultMessageOutput currentOut;
+  private List<String> resourceSearchPaths = Collections.synchronizedList(new LinkedList<String>());
+
   ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-  private final List<Object> outList = new LinkedList<Object>();
-  private InterpreterOutputChangeWatcher watcher;
   private final InterpreterOutputListener flushListener;
-  private InterpreterResult.Type type = InterpreterResult.Type.TEXT;
-  private boolean firstWrite = true;
+  private final InterpreterOutputChangeListener changeListener;
+
+  private int size = 0;
+
+  // change static var to set interpreter output limit
+  // limit will be applied to all InterpreterOutput object.
+  // so we can expect the consistent behavior
+  public static int limit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
 
   public InterpreterOutput(InterpreterOutputListener flushListener) {
     this.flushListener = flushListener;
+    changeListener = null;
     clear();
   }
 
   public InterpreterOutput(InterpreterOutputListener flushListener,
-                           InterpreterOutputChangeListener listener) throws IOException {
+                           InterpreterOutputChangeListener listener)
+      throws IOException {
     this.flushListener = flushListener;
+    this.changeListener = listener;
     clear();
-    watcher = new InterpreterOutputChangeWatcher(listener);
-    watcher.start();
   }
 
-  public InterpreterResult.Type getType() {
-    return type;
+  public void setType(InterpreterResult.Type type) throws IOException {
+    InterpreterResultMessageOutput out = null;
+
+    synchronized (resultMessageOutputs) {
+      int index = resultMessageOutputs.size();
+      InterpreterResultMessageOutputListener listener =
+          createInterpreterResultMessageOutputListener(index);
+
+      if (changeListener == null) {
+        out = new InterpreterResultMessageOutput(type, listener);
+      } else {
+        out = new InterpreterResultMessageOutput(type, listener, changeListener);
+      }
+      out.setResourceSearchPaths(resourceSearchPaths);
+
+      buffer.reset();
+      size = 0;
+
+      if (currentOut != null) {
+        currentOut.flush();
+      }
+
+      resultMessageOutputs.add(out);
+      currentOut = out;
+    }
   }
 
-  public void setType(InterpreterResult.Type type) {
-    if (this.type != type) {
-      clear();
-      flushListener.onUpdate(this, new byte[]{});
-      this.type = type;
+  public InterpreterResultMessageOutputListener createInterpreterResultMessageOutputListener(
+      final int index) {
+
+    return new InterpreterResultMessageOutputListener() {
+      final int idx = index;
+
+      @Override
+      public void onAppend(InterpreterResultMessageOutput out, byte[] line) {
+        if (flushListener != null) {
+          flushListener.onAppend(idx, out, line);
+        }
+      }
+
+      @Override
+      public void onUpdate(InterpreterResultMessageOutput out) {
+        if (flushListener != null) {
+          flushListener.onUpdate(idx, out);
+        }
+      }
+    };
+  }
+
+  public InterpreterResultMessageOutput getCurrentOutput() {
+    synchronized (resultMessageOutputs) {
+      return currentOut;
+    }
+  }
+
+  public InterpreterResultMessageOutput getOutputAt(int index) {
+    synchronized (resultMessageOutputs) {
+      return resultMessageOutputs.get(index);
+    }
+  }
+
+  public int size() {
+    synchronized (resultMessageOutputs) {
+      return resultMessageOutputs.size();
     }
   }
 
   public void clear() {
-    synchronized (outList) {
-      type = InterpreterResult.Type.TEXT;
-      buffer.reset();
-      outList.clear();
-      if (watcher != null) {
-        watcher.clear();
+    size = 0;
+    truncated = false;
+    buffer.reset();
+
+    synchronized (resultMessageOutputs) {
+      for (InterpreterResultMessageOutput out : resultMessageOutputs) {
+        out.clear();
+        try {
+          out.close();
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+        }
       }
+
+      // clear all ResultMessages
+      resultMessageOutputs.clear();
+      currentOut = null;
+      startOfTheNewLine = true;
+      firstCharIsPercentSign = false;
+      updateAllResultMessages();
     }
   }
+
+  private void updateAllResultMessages() {
+    if (flushListener != null) {
+      flushListener.onUpdateAll(this);
+    }
+  }
+
+
+  int previousChar = 0;
+  boolean startOfTheNewLine = true;
+  boolean firstCharIsPercentSign = false;
+
+  boolean truncated = false;
 
   @Override
   public void write(int b) throws IOException {
-    synchronized (outList) {
-      buffer.write(b);
-      if (b == NEW_LINE_CHAR) {
-        // first time use of this outputstream.
-        if (firstWrite) {
-          // clear the output on gui
-          flushListener.onUpdate(this, new byte[]{});
-          firstWrite = false;
-        }
+    InterpreterResultMessageOutput out;
+    if (truncated) {
+      return;
+    }
 
-        flush();
+    synchronized (resultMessageOutputs) {
+      currentOut = getCurrentOutput();
+
+      if (++size > limit) {
+        if (b == NEW_LINE_CHAR && currentOut != null) {
+          InterpreterResult.Type type = currentOut.getType();
+          if (type == InterpreterResult.Type.TEXT || type == InterpreterResult.Type.TABLE) {
+            setType(InterpreterResult.Type.HTML);
+            getCurrentOutput().write(ResultMessages.getExceedsLimitSizeMessage(limit,
+                "ZEPPELIN_INTERPRETER_OUTPUT_LIMIT").getData().getBytes());
+            truncated = true;
+            return;
+          }
+        }
       }
+
+      if (startOfTheNewLine) {
+        if (b == '%') {
+          startOfTheNewLine = false;
+          firstCharIsPercentSign = true;
+          buffer.write(b);
+          previousChar = b;
+          return;
+        } else if (b != NEW_LINE_CHAR) {
+          startOfTheNewLine = false;
+        }
+      }
+
+      if (b == NEW_LINE_CHAR) {
+        if (currentOut != null && currentOut.getType() == InterpreterResult.Type.TABLE) {
+          if (previousChar == NEW_LINE_CHAR) {
+            startOfTheNewLine = true;
+            return;
+          }
+        } else {
+          startOfTheNewLine = true;
+        }
+      }
+
+      boolean flushBuffer = false;
+      if (firstCharIsPercentSign) {
+        if (b == ' ' || b == NEW_LINE_CHAR || b == '\t') {
+          firstCharIsPercentSign = false;
+          String displaySystem = buffer.toString();
+          for (InterpreterResult.Type type : InterpreterResult.Type.values()) {
+            if (displaySystem.equals('%' + type.name().toLowerCase())) {
+              // new type detected
+              setType(type);
+              previousChar = b;
+              return;
+            }
+          }
+          // not a defined display system
+          flushBuffer = true;
+        } else {
+          buffer.write(b);
+          previousChar = b;
+          return;
+        }
+      }
+
+      out = getCurrentOutputForWriting();
+
+      if (flushBuffer) {
+        out.write(buffer.toByteArray());
+        buffer.reset();
+      }
+      out.write(b);
+      previousChar = b;
     }
   }
 
-  private byte [] detectTypeFromLine(byte [] byteArray) {
-    // check output type directive
-    String line = new String(byteArray);
-    for (InterpreterResult.Type t : InterpreterResult.Type.values()) {
-      String typeString = '%' + t.name().toLowerCase();
-      if ((typeString + "\n").equals(line)) {
-        setType(t);
-        byteArray = null;
-        break;
-      } else if (line.startsWith(typeString + " ")) {
-        setType(t);
-        byteArray = line.substring(typeString.length() + 1).getBytes();
-        break;
+  private InterpreterResultMessageOutput getCurrentOutputForWriting() throws IOException {
+    synchronized (resultMessageOutputs) {
+      InterpreterResultMessageOutput out = getCurrentOutput();
+      if (out == null) {
+        // add text type result message
+        setType(InterpreterResult.Type.TEXT);
+        out = getCurrentOutput();
       }
+      return out;
     }
-
-    return byteArray;
   }
 
   @Override
@@ -120,10 +268,8 @@ public class InterpreterOutput extends OutputStream {
 
   @Override
   public void write(byte [] b, int off, int len) throws IOException {
-    synchronized (outList) {
-      for (int i = off; i < len; i++) {
-        write(b[i]);
-      }
+    for (int i = off; i < len; i++) {
+      write(b[i]);
     }
   }
 
@@ -133,10 +279,8 @@ public class InterpreterOutput extends OutputStream {
    * @throws IOException
    */
   public void write(File file) throws IOException {
-    outList.add(file);
-    if (watcher != null) {
-      watcher.watch(file);
-    }
+    InterpreterResultMessageOutput out = getCurrentOutputForWriting();
+    out.write(file);
   }
 
   public void write(String string) throws IOException {
@@ -149,101 +293,53 @@ public class InterpreterOutput extends OutputStream {
    * @throws IOException
    */
   public void write(URL url) throws IOException {
-    if ("file".equals(url.getProtocol())) {
-      write(new File(url.getPath()));
-    } else {
-      outList.add(url);
-    }
+    InterpreterResultMessageOutput out = getCurrentOutputForWriting();
+    out.write(url);
+  }
+
+  public void addResourceSearchPath(String path) {
+    resourceSearchPaths.add(path);
   }
 
   public void writeResource(String resourceName) throws IOException {
-    // search file under resource dir first for dev mode
-    File mainResource = new File("./src/main/resources/" + resourceName);
-    File testResource = new File("./src/test/resources/" + resourceName);
-    if (mainResource.isFile()) {
-      write(mainResource);
-    } else if (testResource.isFile()) {
-      write(testResource);
-    } else {
-      // search from classpath
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      if (cl == null) {
-        cl = this.getClass().getClassLoader();
-      }
-      if (cl == null) {
-        cl = ClassLoader.getSystemClassLoader();
-      }
+    InterpreterResultMessageOutput out = getCurrentOutputForWriting();
+    out.writeResource(resourceName);
+  }
 
-      write(cl.getResource(resourceName));
+  public List<InterpreterResultMessage> toInterpreterResultMessage() throws IOException {
+    List<InterpreterResultMessage> list = new LinkedList<>();
+    synchronized (resultMessageOutputs) {
+      for (InterpreterResultMessageOutput out : resultMessageOutputs) {
+        list.add(out.toInterpreterResultMessage());
+      }
+    }
+    return list;
+  }
+
+  public void flush() throws IOException {
+    InterpreterResultMessageOutput out = getCurrentOutput();
+    if (out != null) {
+      out.flush();
     }
   }
 
   public byte[] toByteArray() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    List<Object> all = new LinkedList<Object>();
-
-    synchronized (outList) {
-      all.addAll(outList);
-    }
-
-    for (Object o : all) {
-      if (o instanceof File) {
-        File f = (File) o;
-        FileInputStream fin = new FileInputStream(f);
-        copyStream(fin, out);
-        fin.close();
-      } else if (o instanceof byte[]) {
-        out.write((byte[]) o);
-      } else if (o instanceof Integer) {
-        out.write((int) o);
-      } else if (o instanceof URL) {
-        InputStream fin = ((URL) o).openStream();
-        copyStream(fin, out);
-        fin.close();
-      } else {
-        // can not handle the object
+    synchronized (resultMessageOutputs) {
+      for (InterpreterResultMessageOutput m : resultMessageOutputs) {
+        out.write(m.toByteArray());
       }
     }
-    out.close();
+
     return out.toByteArray();
-  }
-
-  public void flush() throws IOException {
-    synchronized (outList) {
-      buffer.flush();
-      byte[] bytes = buffer.toByteArray();
-      bytes = detectTypeFromLine(bytes);
-      if (bytes != null) {
-        outList.add(bytes);
-        if (type == InterpreterResult.Type.TEXT) {
-          flushListener.onAppend(this, bytes);
-        }
-      }
-      buffer.reset();
-    }
-  }
-
-  private void copyStream(InputStream in, OutputStream out) throws IOException {
-    int bufferSize = 8192;
-    byte[] buffer = new byte[bufferSize];
-
-    while (true) {
-      int bytesRead = in.read(buffer);
-      if (bytesRead == -1) {
-        break;
-      } else {
-        out.write(buffer, 0, bytesRead);
-      }
-    }
   }
 
   @Override
   public void close() throws IOException {
-    flush();
-
-    if (watcher != null) {
-      watcher.clear();
-      watcher.shutdown();
+    synchronized (resultMessageOutputs) {
+      for (InterpreterResultMessageOutput out : resultMessageOutputs) {
+        out.close();
+      }
     }
   }
 }

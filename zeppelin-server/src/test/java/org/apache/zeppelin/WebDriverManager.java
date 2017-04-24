@@ -122,10 +122,10 @@ public class WebDriverManager {
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
       try {
-        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
-            return d.findElement(By.xpath("//i[@tooltip='WebSocket Connected']"))
+            return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
                 .isDisplayed();
           }
         });
@@ -150,8 +150,10 @@ public class WebDriverManager {
       firebugUrlString = "http://getfirebug.com/releases/firebug/1.11/firebug-1.11.4.xpi";
     else if (firefoxVersion >= 23 && firefoxVersion < 30)
       firebugUrlString = "http://getfirebug.com/releases/firebug/1.12/firebug-1.12.8.xpi";
-    else if (firefoxVersion >= 30)
+    else if (firefoxVersion >= 30 && firefoxVersion < 33)
       firebugUrlString = "http://getfirebug.com/releases/firebug/2.0/firebug-2.0.7.xpi";
+    else if (firefoxVersion >= 33)
+      firebugUrlString = "http://getfirebug.com/releases/firebug/2.0/firebug-2.0.17.xpi";
 
 
     LOG.info("firebug version: " + firefoxVersion + ", will be downloaded to " + tempPath);

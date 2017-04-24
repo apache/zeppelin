@@ -11,59 +11,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-'use strict';
 
-angular.module('zeppelinWebApp').directive('resizable', function() {
+angular.module('zeppelinWebApp').directive('resizable', resizable)
 
-  var resizableConfig = {
+function resizable () {
+  let resizableConfig = {
     autoHide: true,
     handles: 'se',
     helper: 'resizable-helper',
-    stop: function() {
-      angular.element(this).css({'width': '100%', 'height': '100%'});
+    stop: function () {
+      angular.element(this).css({'width': '100%', 'height': '100%'})
     }
-  };
+  }
 
   return {
     restrict: 'A',
     scope: {
       callback: '&onResize'
     },
-    link: function postLink(scope, elem, attrs) {
-      attrs.$observe('resize', function(resize) {
-        var resetResize = function(elem, resize) {
-          var colStep = window.innerWidth / 12;
-          elem.off('resizestop');
-          var conf = angular.copy(resizableConfig);
+    link: function postLink (scope, elem, attrs) {
+      attrs.$observe('resize', function (resize) {
+        let resetResize = function (elem, resize) {
+          let colStep = window.innerWidth / 12
+          elem.off('resizestop')
+          let conf = angular.copy(resizableConfig)
           if (resize.graphType === 'TABLE' || resize.graphType === 'TEXT') {
-            conf.grid = [colStep, 10];
-            conf.minHeight = 100;
+            conf.grid = [colStep, 10]
+            conf.minHeight = 100
           } else {
-            conf.grid = [colStep, 10000];
-            conf.minHeight = 0;
+            conf.grid = [colStep, 10000]
+            conf.minHeight = 0
           }
-          conf.maxWidth = window.innerWidth;
+          conf.maxWidth = window.innerWidth
 
-          elem.resizable(conf);
-          elem.on('resizestop', function() {
+          elem.resizable(conf)
+          elem.on('resizestop', function () {
             if (scope.callback) {
-              var height = elem.height();
+              let height = elem.height()
               if (height < 50) {
-                height = 300;
+                height = 300
               }
-              scope.callback({width: Math.ceil(elem.width() / colStep), height: height});
+              scope.callback({width: Math.ceil(elem.width() / colStep), height: height})
             }
-          });
-        };
-
-        resize = JSON.parse(resize);
-        if (resize.allowresize === 'true') {
-          resetResize(elem, resize);
-          angular.element(window).resize(function() {
-            resetResize(elem, resize);
-          });
+          })
         }
-      });
+
+        resize = JSON.parse(resize)
+        if (resize.allowresize === 'true') {
+          resetResize(elem, resize)
+          angular.element(window).resize(function () {
+            resetResize(elem, resize)
+          })
+        }
+      })
     }
-  };
-});
+  }
+}
