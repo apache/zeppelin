@@ -21,6 +21,7 @@ limitations under the License.
             ng-repeat="viz in builtInTableDataVisualizationList track by $index"
             ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
             ng-click="switchViz(viz.id)"
+            tooltip-placement="bottom" uib-tooltip="{{viz.name ? viz.name : ''}}"
             ng-bind-html="viz.icon">
     </button>
   </div>
@@ -77,7 +78,7 @@ limitations under the License.
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
           ng-click="exportToDSV(',')"
-          tooltip="Download Data as CSV" tooltip-placement="bottom">
+          uib-tooltip="Download Data as CSV" tooltip-placement="bottom">
     <i class="fa fa-download"></i>
   </button>
   <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"

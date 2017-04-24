@@ -138,7 +138,7 @@ public class AzureNotebookRepo implements NotebookRepo {
     Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
         .create();
 
-    Note note = gson.fromJson(json, Note.class);
+    Note note = Note.fromJson(json);
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Job.Status.PENDING || p.getStatus() == Job.Status.RUNNING) {

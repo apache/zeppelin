@@ -184,9 +184,9 @@ public class InterpreterOutput extends OutputStream {
         if (b == NEW_LINE_CHAR && currentOut != null) {
           InterpreterResult.Type type = currentOut.getType();
           if (type == InterpreterResult.Type.TEXT || type == InterpreterResult.Type.TABLE) {
-
-            setType(InterpreterResult.Type.TEXT);
-            getCurrentOutput().write("Output exceeds " + limit + ". Truncated.\n");
+            setType(InterpreterResult.Type.HTML);
+            getCurrentOutput().write(ResultMessages.getExceedsLimitSizeMessage(limit,
+                "ZEPPELIN_INTERPRETER_OUTPUT_LIMIT").getData().getBytes());
             truncated = true;
             return;
           }

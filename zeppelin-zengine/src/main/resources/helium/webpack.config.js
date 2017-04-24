@@ -16,43 +16,33 @@
  */
 
 module.exports = {
-    entry: './load.js',
+    entry: './src/load.js',
     output: { path: './', filename: 'helium.bundle.js', },
-    module: {
-        loaders: [
-          {
-            test: /\.js$/,
-            // DON'T exclude. since zeppelin will bundle all necessary packages: `exclude: /node_modules/,`
-            loader: 'babel-loader',
-            query: { presets: ['es2015', 'stage-0'] },
-          },
-          {
-            test: /(\.css)$/,
-            loaders: ['style', 'css?sourceMap&importLoaders=1'],
-          },
-          {
-            test: /\.woff(\?\S*)?$/,
-            loader: 'url-loader?limit=10000&minetype=application/font-woff',
-          },
-          {
-            test: /\.woff2(\?\S*)?$/,
-            loader: 'url-loader?limit=10000&minetype=application/font-woff',
-          },
-          {
-            test: /\.eot(\?\S*)?$/,
-            loader: 'url-loader',
-          }, {
-            test: /\.ttf(\?\S*)?$/,
-            loader: 'url-loader',
-          },
-          {
-            test: /\.svg(\?\S*)?$/,
-            loader: 'url-loader',
-          },
-          {
-            test: /\.json$/,
-            loader: 'json-loader'
-          },
-        ],
-    }
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules\/(?!(zeppelin-spell|zeppelin-vis|zeppelin-tabledata)\/).*/,
+        query: {
+          presets: [
+            [
+              "env",
+              {
+                "targets": {
+                  "browsers": ["last 5 version", "> 5%", "edge >= 12", "ie >= 9", "safari 7", "chrome 47", "firefox 31"]
+                }
+              }
+            ]
+          ]
+        },
+      },
+      { test: /(\.css)$/, loaders: ['style', 'css?sourceMap&importLoaders=1'], },
+      { test: /\.woff(\?\S*)?$/, loader: 'url-loader?limit=10000&minetype=application/font-woff', },
+      { test: /\.woff2(\?\S*)?$/, loader: 'url-loader?limit=10000&minetype=application/font-woff', },
+      { test: /\.eot(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.ttf(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.svg(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.json$/, loader: 'json-loader' }, ],
+  }
 }

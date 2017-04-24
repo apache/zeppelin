@@ -123,6 +123,11 @@ The JDBC interpreter properties are defined by default like below.
     <td></td>
     <td>Some SQL which executes every time after initialization of the interpreter (see [Binding mode](../manual/interpreters.md#interpreter-binding-mode))</td>
   </tr>
+  <tr>
+    <td>default.completer.schemaFilters</td>
+    <td></td>
+    <td>Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)</td>
+  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
@@ -163,6 +168,10 @@ There are more JDBC interpreter properties you can specify like below.
   <tr>
     <td>zeppelin.jdbc.keytab.location</td>
     <td>The path to the keytab file</td>
+  </tr>
+  <tr>
+      <td>zeppelin.jdbc.auth.kerberos.proxy.enable</td>
+      <td>When auth type is Kerberos, enable/disable Kerberos proxy with the login user to get the connection. Default value is true.</td>
   </tr>
   <tr>
     <td>default.jceks.file</td>

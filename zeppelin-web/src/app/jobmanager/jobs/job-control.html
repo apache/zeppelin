@@ -31,12 +31,12 @@ limitations under the License.
   <!-- Run / Cancel button -->
   <span
     ng-if="!notebookJob.isRunningJob"
-    class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="left" tooltip="START ALL Job"
+    class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="left" uib-tooltip="START ALL Job"
     ng-click="runNotebookJob(notebookJob.noteId)">
   </span>
   <span
     ng-if="notebookJob.isRunningJob"
-    class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="left" tooltip="STOP ALL Job"
+    class="icon-control-pause" style="cursor:pointer;color:#3071A9" tooltip-placement="left" uib-tooltip="STOP ALL Job"
     ng-click="stopNotebookJob(notebookJob.noteId)">
   </span>
 </div>

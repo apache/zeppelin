@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
 import org.apache.zeppelin.elasticsearch.action.HitWrapper;
@@ -239,12 +240,13 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
+  public List<InterpreterCompletion> completion(String s, int i,
+      InterpreterContext interpreterContext) {
     final List suggestions = new ArrayList<>();
 
     for (final String cmd : COMMANDS) {
       if (cmd.toLowerCase().contains(s)) {
-        suggestions.add(new InterpreterCompletion(cmd, cmd));
+        suggestions.add(new InterpreterCompletion(cmd, cmd, CompletionType.command.name()));
       }
     }
     return suggestions;

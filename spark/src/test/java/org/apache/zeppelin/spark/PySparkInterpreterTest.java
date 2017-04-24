@@ -118,8 +118,23 @@ public class PySparkInterpreterTest {
   @Test
   public void testCompletion() {
     if (getSparkVersionNumber() > 11) {
-      List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
+      List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length(), null);
       assertTrue(completions.size() > 0);
+    }
+  }
+
+  @Test
+  public void testRedefinitionZeppelinContext() {
+    if (getSparkVersionNumber() > 11) {
+      String redefinitionCode = "z = 1\n";
+      String restoreCode = "z = __zeppelin__\n";
+      String validCode = "z.input(\"test\")\n";
+
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(redefinitionCode, context).code());
+      assertEquals(InterpreterResult.Code.ERROR, pySparkInterpreter.interpret(validCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(restoreCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
     }
   }
 

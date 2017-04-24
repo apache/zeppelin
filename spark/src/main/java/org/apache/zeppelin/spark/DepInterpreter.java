@@ -33,6 +33,8 @@ import java.util.Properties;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -284,7 +286,8 @@ public class DepInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     if (Utils.isScala2_10()) {
       ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
       Candidates ret = c.complete(buf, cursor);
@@ -293,7 +296,7 @@ public class DepInterpreter extends Interpreter {
       List<InterpreterCompletion> completions = new LinkedList<>();
 
       for (String candidate : candidates) {
-        completions.add(new InterpreterCompletion(candidate, candidate));
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
       }
 
       return completions;

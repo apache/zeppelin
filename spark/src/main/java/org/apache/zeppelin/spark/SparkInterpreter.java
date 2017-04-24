@@ -43,7 +43,6 @@ import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
-import org.apache.spark.scheduler.SparkListenerApplicationEnd;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
@@ -128,7 +127,7 @@ public class SparkInterpreter extends Interpreter {
   private static File outputDir;          // class outputdir for scala 2.11
   private Object classServer;      // classserver for scala 2.11
   private JavaSparkContext jsc;
-
+  private boolean enableSupportedVersionCheck;
 
   public SparkInterpreter(Properties property) {
     super(property);
@@ -247,7 +246,7 @@ public class SparkInterpreter extends Interpreter {
    */
   private boolean hiveClassesArePresent() {
     try {
-      this.getClass().forName("org.apache.spark.sql.hive.HiveSessionState");
+      this.getClass().forName("org.apache.spark.sql.hive.execution.InsertIntoHiveTable");
       this.getClass().forName("org.apache.hadoop.hive.conf.HiveConf");
       return true;
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
@@ -609,6 +608,9 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
+            property.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+
     // set properties and do login before creating any spark stuff for secured cluster
     if (isYarnMode()) {
       System.setProperty("SPARK_YARN_MODE", "true");
@@ -997,10 +999,19 @@ public class SparkInterpreter extends Interpreter {
     if (sparkUrl != null) {
       return sparkUrl;
     }
-    Option<SparkUI> sparkUiOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
-    SparkUI sparkUi = sparkUiOption.get();
-    String sparkWebUrl = sparkUi.appUIAddress();
-    return sparkWebUrl;
+
+    if (sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0)) {
+      Option<String> uiWebUrlOption = (Option<String>) Utils.invokeMethod(sc, "uiWebUrl");
+      if (uiWebUrlOption.isDefined()) {
+        return uiWebUrlOption.get();
+      }
+    } else {
+      Option<SparkUI> sparkUIOption = (Option<SparkUI>) Utils.invokeMethod(sc, "ui");
+      if (sparkUIOption.isDefined()) {
+        return (String) Utils.invokeMethod(sparkUIOption.get(), "appUIAddress");
+      }
+    }
+    return null;
   }
 
   private Results.Result interpret(String line) {
@@ -1057,7 +1068,8 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     if (completer == null) {
       logger.warn("Can't find completer");
       return new LinkedList<>();
@@ -1079,7 +1091,7 @@ public class SparkInterpreter extends Interpreter {
     List<InterpreterCompletion> completions = new LinkedList<>();
 
     for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate));
+      completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
     }
 
     return completions;
@@ -1153,12 +1165,16 @@ public class SparkInterpreter extends Interpreter {
     return obj;
   }
 
+  boolean isUnsupportedSparkVersion() {
+    return enableSupportedVersionCheck  && sparkVersion.isUnsupportedVersion();
+  }
+
   /**
    * Interpret a single line.
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
-    if (sparkVersion.isUnsupportedVersion()) {
+    if (isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }

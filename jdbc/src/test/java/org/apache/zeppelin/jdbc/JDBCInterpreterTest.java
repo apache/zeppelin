@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -254,6 +255,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResult.message().get(1).getType());
+    assertTrue(interpreterResult.message().get(1).getData().contains("alert-warning"));
   }
 
   @Test
@@ -293,9 +296,9 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 1);
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3, null);
 
-    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ");
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ", CompletionType.keyword.name());
 
     assertEquals(1, completionList.size());
     assertEquals(true, completionList.contains(correctCompletionKeyword));
@@ -336,18 +339,18 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
      * 'jdbc1' interpreter has user('dbuser')/password('dbpassword') property
      * 'jdbc2' interpreter doesn't have user/password property
      * 'user1' doesn't have Credential information.
-     * 'user2' has 'jdbc2' Credential information that is same with database account.
+     * 'user2' has 'jdbc2' Credential information that is 'user2Id' / 'user2Pw' as id and password
      */
 
     JDBCInterpreter jdbc1 = new JDBCInterpreter(getDBProperty("dbuser", "dbpassword"));
-    JDBCInterpreter jdbc2 = new JDBCInterpreter(getDBProperty(null, null));
+    JDBCInterpreter jdbc2 = new JDBCInterpreter(getDBProperty("", ""));
 
     AuthenticationInfo user1Credential = getUserAuth("user1", null, null, null);
-    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "dbuser", "dbpassword");
+    AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "user2Id","user2Pw");
 
     // user1 runs jdbc1
     jdbc1.open();
-    InterpreterContext ctx1 = new InterpreterContext("", "1", "jdbc.jdbc1", "", "", user1Credential,
+    InterpreterContext ctx1 = new InterpreterContext("", "1", "jdbc1", "", "", user1Credential,
       null, null, null, null, null, null);
     jdbc1.interpret("", ctx1);
 
@@ -358,7 +361,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // user1 runs jdbc2
     jdbc2.open();
-    InterpreterContext ctx2 = new InterpreterContext("", "1", "jdbc.jdbc2", "", "", user1Credential,
+    InterpreterContext ctx2 = new InterpreterContext("", "1", "jdbc2", "", "", user1Credential,
       null, null, null, null, null, null);
     jdbc2.interpret("", ctx2);
 
@@ -369,7 +372,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // user2 runs jdbc1
     jdbc1.open();
-    InterpreterContext ctx3 = new InterpreterContext("", "1", "jdbc.jdbc1", "", "", user2Credential,
+    InterpreterContext ctx3 = new InterpreterContext("", "1", "jdbc1", "", "", user2Credential,
       null, null, null, null, null, null);
     jdbc1.interpret("", ctx3);
 
@@ -380,13 +383,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // user2 runs jdbc2
     jdbc2.open();
-    InterpreterContext ctx4 = new InterpreterContext("", "1", "jdbc.jdbc2", "", "", user2Credential,
+    InterpreterContext ctx4 = new InterpreterContext("", "1", "jdbc2", "", "", user2Credential,
       null, null, null, null, null, null);
     jdbc2.interpret("", ctx4);
 
     JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
-    assertNull(user2JDBC2Conf.getPropertyMap("default").get("user"));
-    assertNull(user2JDBC2Conf.getPropertyMap("default").get("password"));
+    assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("default").get("user"));
+    assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("default").get("password"));
     jdbc2.close();
   }
 
@@ -451,5 +454,33 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("@TESTVARIABLE\n2\n", interpreterResult.message().get(0).getData());
+  }
+
+  @Test
+  public void testExcludingComments() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "/* ; */\n" +
+        "-- /* comment\n" +
+        "--select * from test_table\n" +
+        "select * from test_table; /* some comment ; */\n" +
+        "/*\n" +
+        "select * from test_table;\n" +
+        "*/\n" +
+        "-- a ; b\n" +
+        "select * from test_table WHERE ID = ';--';\n" +
+        "select * from test_table WHERE ID = '/*' -- test";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(3, interpreterResult.message().size());
   }
 }

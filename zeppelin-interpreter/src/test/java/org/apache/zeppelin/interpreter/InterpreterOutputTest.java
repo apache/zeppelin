@@ -171,13 +171,15 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     // truncate text
     out.write("%text hello\nworld\n");
     assertEquals("hello", new String(out.getOutputAt(0).toByteArray()));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("Truncated"));
+    out.getOutputAt(1).flush();
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("truncated"));
 
     // truncate table
     out = new InterpreterOutput(this);
     out.write("%table key\tvalue\nhello\t100\nworld\t200\n");
     assertEquals("key\tvalue", new String(out.getOutputAt(0).toByteArray()));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("Truncated"));
+    out.getOutputAt(1).flush();
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("truncated"));
 
     // does not truncate html
     out = new InterpreterOutput(this);

@@ -12,30 +12,30 @@
  * limitations under the License.
  */
 
-import TableData from './tabledata.js';
+import TableData from './tabledata.js'
 
-describe('TableData build', function() {
-  var td;
+describe('TableData build', function () {
+  let td
 
-  beforeEach(function() {
-    console.log(TableData);
-    td = new TableData();
-  });
+  beforeEach(function () {
+    console.log(TableData)
+    td = new TableData()
+  })
 
-  it('should initialize the default value', function() {
-    expect(td.columns.length).toBe(0);
-    expect(td.rows.length).toBe(0);
-    expect(td.comment).toBe('');
-  });
+  it('should initialize the default value', function () {
+    expect(td.columns.length).toBe(0)
+    expect(td.rows.length).toBe(0)
+    expect(td.comment).toBe('')
+  })
 
-  it('should able to create Tabledata from paragraph result', function() {
+  it('should able to create Tabledata from paragraph result', function () {
     td.loadParagraphResult({
       type: 'TABLE',
       msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
-    });
+    })
 
-    expect(td.columns.length).toBe(2);
-    expect(td.rows.length).toBe(2);
-    expect(td.comment).toBe('hello');
-  });
-});
+    expect(td.columns.length).toBe(2)
+    expect(td.rows.length).toBe(2)
+    expect(td.comment).toBe('hello')
+  })
+})

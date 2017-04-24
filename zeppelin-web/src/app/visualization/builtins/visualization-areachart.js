@@ -12,30 +12,29 @@
  * limitations under the License.
  */
 
-import Nvd3ChartVisualization from './visualization-nvd3chart';
-import PivotTransformation from '../../tabledata/pivot';
+import Nvd3ChartVisualization from './visualization-nvd3chart'
+import PivotTransformation from '../../tabledata/pivot'
 
 /**
  * Visualize data in area chart
  */
 export default class AreachartVisualization extends Nvd3ChartVisualization {
-  constructor(targetEl, config) {
-    super(targetEl, config);
+  constructor (targetEl, config) {
+    super(targetEl, config)
 
-    this.pivot = new PivotTransformation(config);
-    this.xLables = [];
-  };
+    this.pivot = new PivotTransformation(config)
+  }
 
-  type() {
-    return 'stackedAreaChart';
-  };
+  type () {
+    return 'stackedAreaChart'
+  }
 
-  getTransformation() {
-    return this.pivot;
-  };
+  getTransformation () {
+    return this.pivot
+  }
 
-  render(pivot) {
-    var d3Data = this.d3DataFromPivot(
+  render (pivot) {
+    let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
       pivot.keys,
@@ -43,37 +42,36 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
       pivot.values,
       false,
       true,
-      false);
+      false)
 
-    this.xLabels = d3Data.xLabels;
-    super.render(d3Data);
-  };
+    this.xLabels = d3Data.xLabels
+    super.render(d3Data)
+  }
 
   /**
    * Set new config
    */
-  setConfig(config) {
-    super.setConfig(config);
-    this.pivot.setConfig(config);
-  };
+  setConfig (config) {
+    super.setConfig(config)
+    this.pivot.setConfig(config)
+  }
 
-  configureChart(chart) {
-    var self = this;
-    chart.xAxis.tickFormat(function(d) {return self.xAxisTickFormat(d, self.xLabels);});
-    chart.yAxis.tickFormat(function(d) {return self.yAxisTickFormat(d);});
-    chart.yAxis.axisLabelDistance(50);
-    chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+  configureChart (chart) {
+    let self = this
+    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels) })
+    chart.yAxis.tickFormat(function (d) { return self.yAxisTickFormat(d) })
+    chart.yAxis.axisLabelDistance(50)
+    chart.useInteractiveGuideline(true) // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 
-    this.chart.style(this.config.style || 'stack');
+    this.chart.style(this.config.style || 'stack')
 
-    var self = this;
-    this.chart.dispatch.on('stateChange', function(s) {
-      self.config.style = s.style;
+    this.chart.dispatch.on('stateChange', function (s) {
+      self.config.style = s.style
 
       // give some time to animation finish
-      setTimeout(function() {
-        self.emitConfig(self.config);
-      }, 500);
-    });
-  };
+      setTimeout(function () {
+        self.emitConfig(self.config)
+      }, 500)
+    })
+  }
 }

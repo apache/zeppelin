@@ -16,13 +16,13 @@ limitations under the License.
   <span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
       <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;"
-         tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
+         tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
         <span class="fa fa-tasks"></span>
         {{paragraph.runtimeInfos.jobUrl.label}}
       </a>
     </span>
     <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1">
-      <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
+      <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
             data-toggle="dropdown" type="button">
         <span class="fa fa-tasks"></span>
         {{paragraph.runtimeInfos.jobUrl.label}}S
@@ -44,18 +44,18 @@ limitations under the License.
 
   <!-- Run / Cancel button -->
   <span ng-if="!revisionView">
-    <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
+    <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" uib-tooltip="Run this paragraph (Shift+Enter)"
           ng-click="runParagraphFromButton(getEditorValue())"
           ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top"
-          tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
+          uib-tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
           ng-click="cancelParagraph(paragraph)"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.length == 1">
       <a href="{{paragraph.runtimeInfos.jobUrl[0]}}" target="_blank"><span class="fa fa-tasks"></span> Spark job </a>
     </span>
     <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.length > 1">
-      <span class="fa fa-tasks" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
+      <span class="fa fa-tasks" style="cursor:pointer;color:#3071A9" tooltip-placement="top" uib-tooltip="Run this paragraph (Shift+Enter)"
           data-toggle="dropdown"
           type="button">  Spark Jobs
       </span>
@@ -66,10 +66,10 @@ limitations under the License.
       </ul>
     </span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
-          tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"
+          uib-tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"
           ng-click="toggleEditor(paragraph)"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer" tooltip-placement="top"
-          tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
+          uib-tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
           ng-click="toggleOutput(paragraph)"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
@@ -84,7 +84,7 @@ limitations under the License.
               ngclipboard-error="clipError($event)"
               data-clipboard-text="{{paragraph.id}}"
               tooltip-placement="top"
-              tooltip="{{tooltip}}">
+              uib-tooltip="{{tooltip}}">
             <span>{{paragraph.id}}</span>
           </a>
         </li>
@@ -96,7 +96,7 @@ limitations under the License.
           <form style="display:inline; float:right">
             <input type="checkbox"
                    style="width:16px; margin-right:20px"
-                   tooltip-placement="top" tooltip="Even if you uncheck this, still can run the paragraph by pressing Enter"
+                   tooltip-placement="top" uib-tooltip="Even if you uncheck this, still can run the paragraph by pressing Enter"
                    ng-checked="{{paragraph.config.runOnSelectionChange}}"
                    ng-click="turnOnAutoRun(paragraph)"/>
           </form>

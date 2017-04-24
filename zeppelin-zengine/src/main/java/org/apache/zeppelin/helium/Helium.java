@@ -242,6 +242,22 @@ public class Helium {
     }
   }
 
+  public List<HeliumPackageSearchResult> getAllEnabledPackages() {
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
+    List<HeliumPackageSearchResult> enabledPackages = new ArrayList<>();
+
+    for (List<HeliumPackageSearchResult> versionedPackages : allPackages.values()) {
+      for (HeliumPackageSearchResult psr : versionedPackages) {
+        if (psr.isEnabled()) {
+          enabledPackages.add(psr);
+          break;
+        }
+      }
+    }
+
+    return enabledPackages;
+  }
+
   public List<HeliumPackageSearchResult> getSinglePackageInfo(String packageName) {
     Map<String, List<HeliumPackageSearchResult>> result = getAllPackageInfo(false, packageName);
 
@@ -281,8 +297,8 @@ public class Helium {
     return null;
   }
 
-  public File recreateBundle() throws IOException {
-    return bundleFactory.buildBundle(getBundlePackagesToBundle(), true);
+  public File getBundle(HeliumPackage pkg, boolean rebuild) throws IOException {
+    return bundleFactory.buildPackage(pkg, rebuild, true);
   }
 
   public void enable(String name, String artifact) throws IOException {
@@ -293,14 +309,13 @@ public class Helium {
       return;
     }
 
-    // enable package
-    heliumConf.enablePackage(name, artifact);
-
     // if package is visualization, rebuild bundle
     if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildBundle(getBundlePackagesToBundle());
+      bundleFactory.buildPackage(pkgInfo.getPkg(), true, true);
     }
 
+    // update conf and save
+    heliumConf.enablePackage(name, artifact);
     save();
   }
 
@@ -311,13 +326,8 @@ public class Helium {
       return;
     }
 
+    // update conf and save
     heliumConf.disablePackage(name);
-
-    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
-    if (pkgInfo == null || HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
-      bundleFactory.buildBundle(getBundlePackagesToBundle());
-    }
-
     save();
   }
 
@@ -445,7 +455,7 @@ public class Helium {
     heliumConf.setBundleDisplayOrder(orderedPackageList);
 
     // if package is visualization, rebuild buildBundle
-    bundleFactory.buildBundle(getBundlePackagesToBundle());
+    bundleFactory.buildAllPackages(getBundlePackagesToBundle());
 
     save();
   }

@@ -141,8 +141,8 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
             List<String> rows = parseSQLOutput(message.getData());
             result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
             if (rows.size() >= (maxResult + 1)) {
-              result2.add(InterpreterResult.Type.HTML,
-                  "<font color=red>Results are limited by " + maxResult + ".</font>");
+              result2.add(ResultMessages.getExceedsLimitRowsMessage(maxResult,
+                  ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT));
             }
           } else {
             result2.add(message.getType(), message.getData());
@@ -227,6 +227,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
         return null;
       }
     }
+  }
+
+  @Override
+  public void cancel(InterpreterContext context) {
+    sparkInterpreter.cancel(context);
   }
 
   @Override
