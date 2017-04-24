@@ -18,32 +18,38 @@
 package org.apache.zeppelin.cluster.yarn;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.Token;
+import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.zeppelin.cluster.ApplicationCallbackHandler;
 import org.apache.zeppelin.cluster.ClusterManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 
 /**
  *
  */
-public class Client implements ClusterManager {
+public class Client extends ClusterManager {
   private static final Logger logger = LoggerFactory.getLogger(Client.class);
-
-  private final ZeppelinConfiguration zeppelinConfiguration;
-  private final ApplicationCallbackHandler applicationHandler;
+  private static final ScheduledExecutorService scheduledExecutorService =
+      Executors.newScheduledThreadPool(1);
 
   private Configuration configuration;
   private YarnClient yarnClient;
@@ -53,16 +59,15 @@ public class Client implements ClusterManager {
    * `id` is a unique key to figure out Application
    */
   private Map<String, ApplicationId> idApplicationIdMap;
+  private Map<ApplicationId, YarnApplicationState> appStatusMap;
 
   public Client(ZeppelinConfiguration zeppelinConfiguration,
       ApplicationCallbackHandler applicationHandler) {
-    this.zeppelinConfiguration = zeppelinConfiguration;
-    this.applicationHandler = applicationHandler;
+    super(zeppelinConfiguration, applicationHandler);
 
     this.initialized = false;
   }
 
-  @Override
   public synchronized void start() {
     if (!initialized) { // it will help when calling it multiple times from different threads
       logger.info("Start to initialize yarn client");
@@ -74,32 +79,35 @@ public class Client implements ClusterManager {
       closeAllApplications();
 
       this.idApplicationIdMap = new ConcurrentHashMap<>();
+
+      scheduledExecutorService
+          .scheduleAtFixedRate(new ApplicationMonitor(), 1, 1, TimeUnit.SECONDS);
+
       this.initialized = true;
     }
   }
 
-  @Override
   public synchronized void stop() {
     if (initialized) {
       logger.info("Stop yarn client");
 
       closeAllApplications();
 
+      scheduledExecutorService.shutdown();
+
       this.yarnClient.stop();
       this.initialized = false;
     }
   }
 
-  @Override
   public Interpreter createInterpreter(String id, InterpreterSetting interpreterSetting)
       throws InterpreterException {
     if (!initialized) {
       start();
     }
-    return null;
+    return new RemoteInterpreter();
   }
 
-  @Override
   public void releaseResource(String id) {
     if (!initialized) {
       start();
@@ -154,10 +162,66 @@ public class Client implements ClusterManager {
 
     @Override
     public void run() {
+      ArrayList<String> removedIds = new ArrayList<>();
       for (Map.Entry<String, ApplicationId> entry : idApplicationIdMap.entrySet()) {
         String id = entry.getKey();
         ApplicationId applicationId = entry.getValue();
+        try {
+          ApplicationReport applicationReport = yarnClient.getApplicationReport(applicationId);
+          YarnApplicationState curState = applicationReport.getYarnApplicationState();
+          YarnApplicationState oldState = appStatusMap.get(applicationId);
+          switch (curState) {
+            case NEW:
+            case NEW_SAVING:
+            case SUBMITTED:
+            case ACCEPTED:
+              if (null == oldState) {
+                logger.info("new application added. Id: {}, applicationId: {}", id, applicationId);
+              }
+              appStatusMap.put(applicationId, curState);
+              break;
+            case RUNNING:
+              if (!YarnApplicationState.RUNNING.equals(oldState)) {
+                logger.info("id {} started with applicationId {}", id, applicationId);
+                appStatusMap.put(applicationId, curState);
+                applicationCallbackHandler
+                    .onStarted(applicationReport.getHost(), applicationReport.getRpcPort());
+              }
+              break;
+            case FINISHED:
+              if (!YarnApplicationState.FINISHED.equals(oldState)) {
+                logger.info("id {}, applicationId {} finished with final Status {}", id,
+                    applicationId, applicationReport.getFinalApplicationStatus());
+                applicationCallbackHandler.onTerminated(id);
+                removedIds.add(id);
+              }
+              break;
+            case FAILED:
+              if (!YarnApplicationState.FAILED.equals(oldState)) {
+                logger
+                    .info("id {}, applicationId {} failed with final Status {}", id, applicationId,
+                        applicationReport.getFinalApplicationStatus());
+                applicationCallbackHandler.onTerminated(id);
+                removedIds.add(id);
+              }
+              break;
+            case KILLED:
+              if (!YarnApplicationState.KILLED.equals(oldState)) {
+                logger
+                    .info("id {}, applicationId {} killed with final Status {}", id, applicationId,
+                        applicationReport.getFinalApplicationStatus());
+                applicationCallbackHandler.onTerminated(id);
+                removedIds.add(id);
+              }
+              break;
+          }
+        } catch (YarnException | IOException e) {
+          logger.debug("Error occurs while fetching status of {}", applicationId, e);
+        }
 
+        for (String removedId : removedIds) {
+          idApplicationIdMap.remove(removedId);
+        }
       }
     }
   }
