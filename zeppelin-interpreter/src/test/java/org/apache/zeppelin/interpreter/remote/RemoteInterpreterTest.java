@@ -58,7 +58,7 @@ public class RemoteInterpreterTest {
   private static final String INTERPRETER_SCRIPT =
           System.getProperty("os.name").startsWith("Windows") ?
                   "../bin/interpreter.cmd" :
-                  "bin/interpreter.sh";
+                  "../bin/interpreter.sh";
 
   private InterpreterGroup intpGroup;
   private HashMap<String, String> env;
