@@ -353,74 +353,68 @@ public class JDBCInterpreter extends Interpreter {
     } else {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
 
+      final String connectionUrl = appendProxyUserToURL(url, user, propertyKey);
+
       JDBCSecurityImpl.createSecureConfiguration(property, authType);
       switch (authType) {
           case KERBEROS:
-            if (user == null || "false".equalsIgnoreCase(
-              property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
-              connection = getConnectionFromPool(url, user, propertyKey, properties);
+            if (url.trim().startsWith("jdbc:hive")) {
+              connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
             } else {
-              if (url.trim().startsWith("jdbc:hive")) {
-                StringBuilder connectionUrl = new StringBuilder(url);
-                appendProxyUserToURL(connectionUrl, user);
-                connection = getConnectionFromPool(connectionUrl.toString(),
-                        user, propertyKey, properties);
-              } else {
-                UserGroupInformation ugi = null;
-                try {
-                  ugi = UserGroupInformation.createProxyUser(
-                          user, UserGroupInformation.getCurrentUser());
-                } catch (Exception e) {
-                  logger.error("Error in getCurrentUser", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
-                }
+              UserGroupInformation ugi = null;
+              try {
+                ugi = UserGroupInformation.createProxyUser(
+                    user, UserGroupInformation.getCurrentUser());
+              } catch (Exception e) {
+                logger.error("Error in getCurrentUser", e);
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(e.getMessage()).append("\n");
+                stringBuilder.append(e.getCause());
+                throw new InterpreterException(stringBuilder.toString());
+              }
 
-                final String poolKey = propertyKey;
-                try {
-                  connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
-                    @Override
-                    public Connection run() throws Exception {
-                      return getConnectionFromPool(url, user, poolKey, properties);
-                    }
-                  });
-                } catch (Exception e) {
-                  logger.error("Error in doAs", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
-                }
+              final String poolKey = propertyKey;
+              try {
+                connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
+                  @Override
+                  public Connection run() throws Exception {
+                    return getConnectionFromPool(connectionUrl, user, poolKey, properties);
+                  }
+                });
+              } catch (Exception e) {
+                logger.error("Error in doAs", e);
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(e.getMessage()).append("\n");
+                stringBuilder.append(e.getCause());
+                throw new InterpreterException(stringBuilder.toString());
               }
             }
             break;
 
           default:
-            StringBuilder connectionUrl = new StringBuilder(url);
-            appendProxyUserToURL(connectionUrl, user);
-            connection = getConnectionFromPool(connectionUrl.toString(),
-                user, propertyKey, properties);
+            connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
       }
     }
 
     return connection;
   }
 
-  private void appendProxyUserToURL(StringBuilder connectionUrl, String user) {
-    if (connectionUrl.toString().trim().startsWith("jdbc:hive")) {
+  private String appendProxyUserToURL(String url, String user, String propertyKey) {
+    StringBuilder connectionUrl = new StringBuilder(url);
+
+    if (user != null && !user.equals("anonymous") &&
+        basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
+
       Integer lastIndexOfUrl = connectionUrl.indexOf("?");
       if (lastIndexOfUrl == -1) {
         lastIndexOfUrl = connectionUrl.length();
       }
-
-      if (user != null && !user.equals("anonymous") &&
-          !"false".equalsIgnoreCase(property.getProperty("hive.proxy.user"))) {
-        logger.info("Using hive proxy user as :" + user);
-        connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
-      }
+      logger.info("Using hive proxy user as :" + user);
+      connectionUrl.insert(lastIndexOfUrl, ";" +
+          basePropretiesMap.get(propertyKey).getProperty("proxy.user.property") + "=" + user + ";");
     }
+
+    return connectionUrl.toString();
   }
 
   private String getPassword(Properties properties) throws IOException {
