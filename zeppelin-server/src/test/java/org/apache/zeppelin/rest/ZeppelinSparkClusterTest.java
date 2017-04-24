@@ -275,6 +275,27 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
                 assertEquals("[Row(len=u'3')]\n", p.getResult().message().get(0).getData());
+
+                // test exception
+                p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+                config = p.getConfig();
+                config.put("enabled", true);
+                p.setConfig(config);
+                /**
+                 %pyspark
+                 a=1
+
+                 print(a2)
+                 */
+                p.setText("%pyspark a=1\n\nprint(a2)");
+                p.setAuthenticationInfo(anonymous);
+                note.run(p.getId());
+                waitForFinish(p);
+                assertEquals(Status.ERROR, p.getStatus());
+                assertTrue(p.getResult().message().get(0).getData()
+                    .contains("Fail to execute line 3: print(a2)"));
+                assertTrue(p.getResult().message().get(0).getData()
+                    .contains("name 'a2' is not defined"));
             }
             if (sparkVersion >= 20) {
                 // run SparkSession test
