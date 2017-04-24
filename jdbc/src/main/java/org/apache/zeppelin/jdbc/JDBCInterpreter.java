@@ -409,7 +409,9 @@ public class JDBCInterpreter extends Interpreter {
       if (lastIndexOfUrl == -1) {
         lastIndexOfUrl = connectionUrl.length();
       }
-      logger.info("Using hive proxy user as :" + user);
+      logger.info("Using proxy user as :" + user);
+      logger.info("Using proxy property for user as :" +
+          basePropretiesMap.get(propertyKey).getProperty("proxy.user.property"));
       connectionUrl.insert(lastIndexOfUrl, ";" +
           basePropretiesMap.get(propertyKey).getProperty("proxy.user.property") + "=" + user + ";");
     }
