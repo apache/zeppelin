@@ -36,6 +36,7 @@ export default class Visualization {
    */
   render (tableData) {
     // override this
+    throw new Error('Visualization.render() should be overrided');
   }
 
   /**
