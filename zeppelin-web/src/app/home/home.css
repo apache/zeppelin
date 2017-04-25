@@ -295,7 +295,7 @@ a.navbar-brand:hover {
 #notebook-list {
   position: relative;
   overflow: hidden;
-  display: inline;
+  display: inline-block;
 }
 
 @media (min-width: 768px) {
