@@ -15,28 +15,40 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.integration;
+package org.apache.zeppelin.server;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
-public class ParagraphLifecycleIT extends AbstractTestRestApi {
+public class ParagraphLifecycleTest {
 	private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
 
 	private static final String JOB_IN_PROGRESS = "job in progress";
@@ -52,16 +64,37 @@ public class ParagraphLifecycleIT extends AbstractTestRestApi {
 
 	@BeforeClass
 	public static void init() throws Exception {
-		AbstractTestRestApi.startUp();
+		File zeppelinDir = new File(System.getProperty("java.io.tmpdir")
+									+ "/ZeppelinLTest_"
+									+ System.currentTimeMillis());
+		File localRepoDir = new File(zeppelinDir, "local-repo");
+		File confDir = new File(zeppelinDir, "conf");
+		confDir.mkdirs();
+
+		registerConfDir(confDir.getAbsolutePath());
+
+		ZeppelinServer.notebook = createMockNotebook(localRepoDir.getAbsolutePath());
 	}
 
-	@AfterClass
-	public static void destroy() throws Exception {
-		AbstractTestRestApi.shutDown();
+	private static void registerConfDir(String confPath) {
+		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confPath);
+	}
+
+	private static Notebook createMockNotebook(String localRepoPath) throws Exception {
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+		DependencyResolver depResolver = new DependencyResolver(localRepoPath);
+		InterpreterSettingManager interpreterSettingManager =
+				new InterpreterSettingManager(conf, depResolver, new InterpreterOption(false));
+		SearchService search = mock(SearchService.class);
+		NotebookRepo notebookRepo = new VFSNotebookRepo(conf);
+		NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
+
+		return new Notebook(conf, notebookRepo, null, null, interpreterSettingManager, null, search,
+				notebookAuthorization, null);
 	}
 
 	@Before
-	public void prepareRunnerWithMockParagraph() throws IOException {
+	public void prepareRunnerWithMockParagraph() throws Exception {
 		note = ZeppelinServer.notebook.createNote(AuthenticationInfo.ANONYMOUS);
 		mockParagraph = new GuidedParagraph(note, msgFromParagraph, msgToParagraph);
 		note.addParagraph(mockParagraph);
