@@ -11,7 +11,7 @@
         "description": "Python directory. It is set to python by default.(assume python is in your $PATH)"
       },
       "zeppelin.python.maxResult": {
-        "envName": null,
+        "envName": "ZEPPELIN_PYTHON_MAXRESULT",
         "propertyName": "zeppelin.python.maxResult",
         "defaultValue": "1000",
         "description": "Max number of dataframe rows to display."

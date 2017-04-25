@@ -96,6 +96,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   public PythonInterpreter(Properties property) {
     super(property);
+    this.maxResult = Integer.parseInt(property.getProperty(MAX_RESULT));
     try {
       File scriptFile = File.createTempFile("zeppelin_python-", ".py", new File("/tmp"));
       scriptPath = scriptFile.getAbsolutePath();
