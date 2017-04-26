@@ -39,7 +39,8 @@ def r = HTTP.get(
   headers: [
     'Accept':'application/json',
     //'Authorization:' : g.getProperty('search_auth'),
-  ] 
+  ],
+  ssl : g.getProperty('search_ssl') // assume groovy interpreter property search_ssl = HTTP.getNaiveSSLContext()
 )
 //check response code
 if( r.response.code==200 ) {
@@ -76,41 +77,62 @@ g.table(
 
 * `g.angular(String name)`
 
-Returns angular object by name. Look up notebook scope first and then global scope.
+   Returns angular object by name. Look up notebook scope first and then global scope.
 
 
 * `g.angularBind(String name, Object value)`
-
-Assign a new `value` into angular object `name`
+ 
+   Assign a new `value` into angular object `name`
 
 
 * `java.util.Properties g.getProperties()`
 
-returns all properties defined for this interpreter
+   returns all properties defined for this interpreter
 
 
 * `String g.getProperty('PROPERTY_NAME')` 
-```groovy 
-g.PROPERTY_NAME
-g.'PROPERTY_NAME'
-g['PROPERTY_NAME']
-g.getProperties().getProperty('PROPERTY_NAME')
-```
+   ```groovy 
+   g.PROPERTY_NAME
+   g.'PROPERTY_NAME'
+   g['PROPERTY_NAME']
+   g.getProperties().getProperty('PROPERTY_NAME')
+   ```
 
-All above the accessor to named property defined in groovy interpreter.
-In this case with name `PROPERTY_NAME`
+   All above the accessor to named property defined in groovy interpreter.
+   In this case with name `PROPERTY_NAME`
 
 
 * `groovy.xml.MarkupBuilder g.html()`
 
-Starts or continues rendering of `%angular` to output and returns [groovy.xml.MarkupBuilder](http://groovy-lang.org/processing-xml.html#_markupbuilder)
-MarkupBuilder is usefull to generate html (xml)
+   Starts or continues rendering of `%angular` to output and returns [groovy.xml.MarkupBuilder](http://groovy-lang.org/processing-xml.html#_markupbuilder)
+   MarkupBuilder is usefull to generate html (xml)
 
 * `void g.table(obj)`
 
-starts or continues rendering table rows.
+   starts or continues rendering table rows.
 
-obj:  List(rows) of List(columns) where first line is a header 
+   obj:  List(rows) of List(columns) where first line is a header 
 
 
+* `g.input(name, value )`
 
+   Creates `text` input with value specified. The parameter `value` is optional.
+   
+* `g.select(name, default, Map<Object, String> options)`
+
+   Creates `select` input with defined options. The parameter `default` is optional.
+
+   ```g.select('sex', 'm', ['m':'man', 'w':'woman'])```
+   
+* `g.checkbox(name, Collection checked, Map<Object, String> options)`
+
+   Creates `checkbox` input.
+   
+* `g.get(name, default)`
+
+   Returns interpreter-based variable. Visibility depends on interpreter scope. The parameter `default` is optional.
+
+* `g.put(name, value)`
+
+   Stores new value into interpreter-based variable. Visibility depends on interpreter scope.
+   
