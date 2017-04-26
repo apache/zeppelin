@@ -610,7 +610,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     let session = editor.getSession()
     let dirtyText = session.getValue()
     $scope.dirtyText = dirtyText
-    $scope.startSaveTimer()
+    if ($scope.dirtyText != $scope.originalText) {
+      $scope.startSaveTimer();
+    }
     setParagraphMode(session, dirtyText, editor.getCursorPosition())
   }
 
@@ -1241,23 +1243,28 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.updateParagraph = function (oldPara, newPara, updateCallback) {
-     // 1. get status, refreshed
+     // 1. can't update on revision view
+    if (!!$scope.revisionView) {
+      return;
+    }
+
+     // 2. get status, refreshed
     const statusChanged = (newPara.status !== oldPara.status)
     const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
        isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
        newPara.status === ParagraphStatus.ERROR ||
        (newPara.status === ParagraphStatus.FINISHED && statusChanged)
 
-     // 2. update texts managed by $scope
+     // 3. update texts managed by $scope
     $scope.updateAllScopeTexts(oldPara, newPara)
 
-     // 3. execute callback to update result
+     // 4. execute callback to update result
     updateCallback()
 
-     // 4. update remaining paragraph objects
+     // 5. update remaining paragraph objects
     $scope.updateParagraphObjectWhenUpdated(newPara)
 
-     // 5. handle scroll down by key properly if new paragraph is added
+     // 6. handle scroll down by key properly if new paragraph is added
     if (statusChanged || resultRefreshed) {
        // when last paragraph runs, zeppelin automatically appends new paragraph.
        // this broadcast will focus to the newly inserted paragraph
