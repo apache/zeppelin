@@ -367,10 +367,7 @@ public class JDBCInterpreter extends Interpreter {
                     user, UserGroupInformation.getCurrentUser());
               } catch (Exception e) {
                 logger.error("Error in getCurrentUser", e);
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(e.getMessage()).append("\n");
-                stringBuilder.append(e.getCause());
-                throw new InterpreterException(stringBuilder.toString());
+                throw new InterpreterException("Error in getCurrentUser", e);
               }
 
               final String poolKey = propertyKey;
@@ -383,10 +380,7 @@ public class JDBCInterpreter extends Interpreter {
                 });
               } catch (Exception e) {
                 logger.error("Error in doAs", e);
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(e.getMessage()).append("\n");
-                stringBuilder.append(e.getCause());
-                throw new InterpreterException(stringBuilder.toString());
+                throw new InterpreterException("Error in doAs", e);
               }
             }
             break;
