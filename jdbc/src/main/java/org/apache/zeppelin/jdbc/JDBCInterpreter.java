@@ -127,6 +127,8 @@ public class JDBCInterpreter extends Interpreter {
   private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
   private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
 
+  private final String JDBC_AUTOCOMMIT = "zeppelin.jdbc.autocommit";
+
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
 
@@ -574,12 +576,13 @@ public class JDBCInterpreter extends Interpreter {
 
   private void executePrecode(Connection connection, String propertyKey) throws SQLException {
     String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
+    boolean commit = Boolean.valueOf(getProperty(String.format(JDBC_AUTOCOMMIT, propertyKey)));
     if (StringUtils.isNotBlank(precode)) {
       precode = StringUtils.trim(precode);
       logger.debug("Run SQL precode '{}'", precode);
       try (Statement statement = connection.createStatement()) {
         statement.execute(precode);
-        if (!connection.getAutoCommit()) {
+        if (!connection.getAutoCommit() && commit) {
           connection.commit();
         }
       }
@@ -593,6 +596,8 @@ public class JDBCInterpreter extends Interpreter {
     ResultSet resultSet = null;
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
+
+    boolean commit = Boolean.valueOf(getProperty(String.format(JDBC_AUTOCOMMIT, propertyKey)));
 
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
 
@@ -655,7 +660,7 @@ public class JDBCInterpreter extends Interpreter {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {
         try {
-          if (!connection.getAutoCommit()) {
+          if (!connection.getAutoCommit() && commit) {
             connection.commit();
           }
           connection.close();

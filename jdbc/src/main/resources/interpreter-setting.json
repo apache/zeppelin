@@ -75,6 +75,12 @@
         "propertyName": "zeppelin.jdbc.principal",
         "defaultValue": "",
         "description": "Kerberos principal"
+      },
+      "zeppelin.jdbc.autocommit": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.autocommit",
+        "defaultValue": "false",
+        "description": "Call connection.commit() after each paragraph execution"
       }
     },
     "editor": {
