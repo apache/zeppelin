@@ -839,14 +839,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   let getEditorSetting = function (paragraph, interpreterName) {
     let deferred = $q.defer()
-    websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
-    $timeout(
-      $scope.$on('editorSetting', function (event, data) {
-        if (paragraph.id === data.paragraphId) {
-          deferred.resolve(data)
-        }
-      }
-      ), 1000)
+    if (!$scope.revisionView) {
+      websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
+      $timeout(
+        $scope.$on('editorSetting', function (event, data) {
+            if (paragraph.id === data.paragraphId) {
+              deferred.resolve(data)
+            }
+          }
+        ), 1000)
+    }
     return deferred.promise
   }
 
