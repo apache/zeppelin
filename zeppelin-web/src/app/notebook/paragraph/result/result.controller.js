@@ -138,6 +138,15 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   // queue for append output
   const textResultQueueForAppend = []
 
+  // prevent body area scrollbar from blocking due to scroll in paragraph results
+  $scope.mouseOver = false
+  $scope.onMouseOver = function() { $scope.mouseOver = true }
+  $scope.onMouseOut = function() { $scope.mouseOver = false }
+  $scope.getPointerEvent = function() {
+    return ($scope.mouseOver) ? {'pointer-events': 'auto' }
+      : {'pointer-events': 'none' }
+  }
+
   $scope.init = function (result, config, paragraph, index) {
     // register helium plugin vis
     let visBundles = heliumService.getVisualizationBundles()

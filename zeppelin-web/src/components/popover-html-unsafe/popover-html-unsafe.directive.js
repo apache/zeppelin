@@ -14,8 +14,8 @@
 
 angular.module('zeppelinWebApp').directive('popoverHtmlUnsafe', popoverHtmlUnsafe)
 
-function popoverHtmlUnsafe ($tooltip) {
+function popoverHtmlUnsafe ($uibTooltip) {
   'ngInject'
 
-  return $tooltip('popoverHtmlUnsafe', 'popover', 'click')
+  return $uibTooltip('popoverHtmlUnsafe', 'popover', 'click')
 }
