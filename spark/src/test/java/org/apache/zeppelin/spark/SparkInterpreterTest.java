@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -55,6 +56,7 @@ public class SparkInterpreterTest {
   static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
   static Map<String, Map<String, String>> paraIdToInfosMap =
       new HashMap<>();
+  static ZeppelinContext z;
 
   /**
    * Get spark version number as a numerical value.
@@ -125,6 +127,7 @@ public class SparkInterpreterTest {
     //ZeppelinContext.setEventClient(RemoteEventClientWrapper)
     //running a dummy to ensure that we dont have any race conditions among tests
     repl.interpret("sc", context);
+    z = repl.getZeppelinContext();
   }
 
   @AfterClass
@@ -326,5 +329,86 @@ public class SparkInterpreterTest {
     assertNotNull(jobUrl);
     assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job?id="));
 
+  }
+
+  @Test
+  public void testAngular() throws InterruptedException {
+    CountWatcher watcher1 = new CountWatcher(context, "watcher_1");
+    z.angularBind("var_1", "value_1", watcher1);
+    assertEquals("value_1", z.angular("var_1"));
+
+    z.angularSet("var_1", "value_2");
+    assertEquals("value_2", z.angular("var_1"));
+    // watcher is called
+    watcher1.waitTill(1, 1000);
+
+    // create the same angular variable, the old one should be removed
+    watcher1.reset();
+    z.angularBind("var_1", "value_3", watcher1);
+    assertEquals("value_3", z.angular("var_1"));
+    z.angularSet("var_1", "value_4");
+    // watcher is called
+    watcher1.waitTill(1, 1000);
+
+    // add the same watcher multiple times, only one watcher is registered
+    watcher1.reset();
+    z.angularWatch("var_1", watcher1);
+    z.angularSet("var_1", "value_2");
+    // watcher is called
+    watcher1.waitTill(1, 1000);
+  }
+
+  private static class CountWatcher extends AngularObjectWatcher {
+
+    private volatile int count = 0;
+
+    public CountWatcher(InterpreterContext context, String watcherId) {
+      super(context, watcherId);
+    }
+
+    @Override
+    public void watch(Object oldObject, Object newObject, InterpreterContext context) {
+      count ++;
+    }
+
+    /**
+     * wait for count change to expectedValue, otherwise fail it.
+     * @param expectedValue
+     */
+    public void waitTill(int expectedValue, int timeout) {
+      double start = System.currentTimeMillis();
+      while ((System.currentTimeMillis() - start) < timeout) {
+        if (count == expectedValue) {
+          return;
+        }
+        try {
+          Thread.sleep(10);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      fail("watcher count is not equal to " + expectedValue);
+    }
+
+    /**
+     * count doesn't change. To verify watcher is not called.
+     */
+    public void notChange(int expectedValue, int timeout) {
+      double start = System.currentTimeMillis();
+      while ((System.currentTimeMillis() - start) < timeout) {
+        if (count != expectedValue) {
+          fail("watcher count is changed to " + count);;
+        }
+        try {
+          Thread.sleep(10);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    public void reset() {
+      count = 0;
+    }
   }
 }

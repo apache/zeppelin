@@ -644,6 +644,26 @@ public class ZeppelinContext {
     angularBind(name, o, null, watcher);
   }
 
+  @ZeppelinApi
+  public void angularSet(String name, Object o) {
+    angularSet(name, o, interpreterContext.getNoteId());
+  }
+
+  @ZeppelinApi
+  public void angularSetGlobal(String name, Object o) {
+    angularSet(name, o, null);
+  }
+
+  private void angularSet(String name, Object o, String noteId) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    AngularObject ao = registry.get(name, noteId, null);
+    if (ao == null) {
+      throw new RuntimeException("No such angular object " + name + ", please create it first " +
+          "via angularBind.");
+    }
+    ao.set(o);
+  }
+
   /**
    * Add watcher into angular variable (local scope)
    * @param name name of the variable
@@ -664,10 +684,22 @@ public class ZeppelinContext {
     angularWatch(name, null, watcher);
   }
 
+  /**
+   * @deprecated  use angularWatch(name, watcherId, func)
+   * @param name
+   * @param func
+   */
+  @Deprecated
   @ZeppelinApi
   public void angularWatch(String name,
       final scala.Function2<Object, Object, Unit> func) {
     angularWatch(name, interpreterContext.getNoteId(), func);
+  }
+
+  @ZeppelinApi
+  public void angularWatch(String name, String watcherId,
+                           final scala.Function2<Object, Object, Unit> func) {
+    angularWatch(name, interpreterContext.getNoteId(), watcherId, func);
   }
 
   @Deprecated
@@ -676,11 +708,25 @@ public class ZeppelinContext {
     angularWatch(name, null, func);
   }
 
+  /**
+   * @deprecated use angularWatch(name, watcherId, func)
+   * @param name
+   * @param func
+   */
+  @Deprecated
   @ZeppelinApi
   public void angularWatch(
       String name,
       final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
     angularWatch(name, interpreterContext.getNoteId(), func);
+  }
+
+  @ZeppelinApi
+  public void angularWatch(
+      String name,
+      String watcherId,
+      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
+    angularWatch(name, interpreterContext.getNoteId(), watcherId, func);
   }
 
   @Deprecated
@@ -757,11 +803,10 @@ public class ZeppelinContext {
   private void angularBind(String name, Object o, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId, null) == null) {
-      registry.add(name, o, noteId, null);
-    } else {
-      registry.get(name, noteId, null).set(o);
+    if (registry.get(name, noteId, null) != null) {
+      registry.remove(name, noteId, null);
     }
+    registry.add(name, o, noteId, null);
   }
 
   /**
@@ -773,13 +818,7 @@ public class ZeppelinContext {
    * @param watcher watcher of the variable
    */
   private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher) {
-    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-
-    if (registry.get(name, noteId, null) == null) {
-      registry.add(name, o, noteId, null);
-    } else {
-      registry.get(name, noteId, null).set(o);
-    }
+    angularBind(name, o, noteId);
     angularWatch(name, watcher);
   }
 
@@ -797,7 +836,7 @@ public class ZeppelinContext {
   }
 
 
-  private void angularWatch(String name, String noteId,
+  private void angularWatch(String name, String noteId, String watcherId,
       final scala.Function2<Object, Object, Unit> func) {
     AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
       @Override
@@ -812,6 +851,7 @@ public class ZeppelinContext {
   private void angularWatch(
       String name,
       String noteId,
+      String watcherId,
       final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
     AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
       @Override
@@ -820,6 +860,7 @@ public class ZeppelinContext {
         func.apply(oldObject, newObject, context);
       }
     };
+    w.setWatcherId(watcherId);
     angularWatch(name, noteId, w);
   }
 
@@ -832,6 +873,18 @@ public class ZeppelinContext {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     if (registry.get(name, noteId, null) != null) {
       registry.get(name, noteId, null).removeWatcher(watcher);
+    }
+  }
+
+  /**
+   * Remove watcher
+   * @param name
+   * @param watcherId
+   */
+  private void angularUnwatch(String name, String noteId, String watcherId) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).removeWatcher(watcherId);
     }
   }
 
