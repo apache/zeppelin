@@ -9,7 +9,8 @@
         "propertyName": "port",
         "defaultValue": "jdbc:postgresql://localhost:5432/",
         "description": "The URL for JDBC.",
-        "widget": "string"
+        "widget": "input",
+        "type": "string"
       }
     },
     "editor": {

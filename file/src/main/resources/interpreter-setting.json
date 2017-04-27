@@ -9,21 +9,24 @@
         "propertyName": "hdfs.url",
         "defaultValue": "http://localhost:50070/webhdfs/v1/",
         "description": "The URL for WebHDFS",
-        "widget": "url"
+        "widget": "input",
+        "type": "url"
       },
       "hdfs.user": {
         "envName": null,
         "propertyName": "hdfs.user",
         "defaultValue": "hdfs",
         "description": "The WebHDFS user",
-        "widget": "string"
+        "widget": "input",
+        "type": "string"
       },
       "hdfs.maxlength": {
         "envName": null,
         "propertyName": "hdfs.maxlength",
         "defaultValue": "1000",
         "description": "Maximum number of lines of results fetched",
-        "widget": "number"
+        "widget": "input",
+        "type": "number"
       }
     },
     "editor": {

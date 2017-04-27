@@ -28,15 +28,14 @@ public class InterpreterPropertyBuilder {
 
   public InterpreterPropertyBuilder add(String name, String defaultValue, String description){
     properties.put(name,
-        new DefaultInterpreterProperty(defaultValue, description, InterpreterPropertyWidget.text));
+        new DefaultInterpreterProperty(defaultValue, description));
     return this;
   }
 
   public InterpreterPropertyBuilder add(String name, String envName, String propertyName,
         String defaultValue, String description){
     properties.put(name,
-            new DefaultInterpreterProperty(envName, propertyName, defaultValue, description,
-                InterpreterPropertyWidget.text));
+            new DefaultInterpreterProperty(envName, propertyName, defaultValue, description));
     return this;
   }
 

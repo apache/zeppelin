@@ -195,7 +195,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.defaultValueByWidget = function (setting) {
-    if (setting.propertyWidget === 'checkbox') {
+    if (setting.propertyWidget.widget === 'checkbox' && setting.propertyWidget.type === 'boolean') {
       setting.propertyValue = false
       return
     }
@@ -429,7 +429,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         properties[key] = {
           value: intpInfo[key].defaultValue,
           description: intpInfo[key].description,
-          widget: intpInfo[key].widget
+          widget: intpInfo[key].widget,
+          type: intpInfo[key].type
         }
       }
     }
@@ -506,7 +507,12 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     let newProperties = {}
 
     for (let p in newSetting.properties) {
-      newProperties[p] = {value: newSetting.properties[p].value, widget: newSetting.properties[p].widget, name: p}
+      newProperties[p] = {
+        value: newSetting.properties[p].value,
+        widget: newSetting.properties[p].widget,
+        type: newSetting.properties[p].type,
+        name: p
+      }
     }
 
     request.properties = newProperties
@@ -576,10 +582,10 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
         return
       }
-
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
         value: $scope.newInterpreterSetting.propertyValue,
-        widget: $scope.newInterpreterSetting.propertyWidget
+        widget: $scope.newInterpreterSetting.propertyWidget.widget,
+        type: $scope.newInterpreterSetting.propertyWidget.type
       }
       emptyNewProperty($scope.newInterpreterSetting)
     } else {
@@ -591,7 +597,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         return
       }
 
-      setting.properties[setting.propertyKey] = {value: setting.propertyValue, widget: setting.propertyWidget}
+      setting.properties[setting.propertyKey] =
+        {value: setting.propertyValue, widget: setting.propertyWidget.widget, type: setting.propertyWidget.type}
 
       emptyNewProperty(setting)
     }

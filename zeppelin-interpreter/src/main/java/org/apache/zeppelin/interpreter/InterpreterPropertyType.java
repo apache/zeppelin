@@ -20,15 +20,17 @@ package org.apache.zeppelin.interpreter;
 /**
  * Widgets of interpreter properties
  */
-public enum InterpreterPropertyWidget {
-  TEXTAREA("textarea"),
-  INPUT("input"),
+public enum InterpreterPropertyType {
+
+  STRING("string"),
+  NUMBER("number"),
+  URL("url"),
   PASSWORD("password"),
-  CHECKBOX("checkbox");
+  BOOLEAN("boolean");
 
   private String value;
 
-  InterpreterPropertyWidget(String value) {
+  InterpreterPropertyType(String value) {
     this.value = value;
   }
 
@@ -36,13 +38,12 @@ public enum InterpreterPropertyWidget {
     return value;
   }
 
-  public static InterpreterPropertyWidget byValue(String value) {
-    for (InterpreterPropertyWidget e : values()) {
+  public static InterpreterPropertyType byValue(String value) {
+    for (InterpreterPropertyType e : values()) {
       if (e.getValue().equals(value)) {
         return e;
       }
     }
     return null;
   }
-
 }

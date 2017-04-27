@@ -9,21 +9,24 @@
         "propertyName": "geode.locator.host",
         "defaultValue": "localhost",
         "description": "The Geode Locator Host.",
-        "widget": "string"
+        "widget": "input",
+        "type": "string"
       },
       "geode.locator.port": {
         "envName": null,
         "propertyName": "geode.locator.port",
         "defaultValue": "10334",
         "description": "The Geode Locator Port.",
-        "widget": "number"
+        "widget": "input",
+        "type": "number"
       },
       "geode.max.result": {
         "envName": null,
         "propertyName": "geode.max.result",
         "defaultValue": "1000",
         "description": "Max number of OQL result to display.",
-        "widget": "number"
+        "widget": "input",
+        "type": "number"
       }
     },
     "editor": {

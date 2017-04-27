@@ -77,12 +77,14 @@ The role of registered interpreters, settings and interpreters group are describ
         "spark.executor.memory": {
           "defaultValue": "1g",
           "description": "Executor memory per worker instance. ex) 512m, 32g",
-          "widget": "text
+          "widget": "input",
+          "type": "string"
         },
         "spark.cores.max": {
           "defaultValue": "",
           "description": "Total number of cores to use. Empty value uses all available core.",
-          "widget": "text"
+          "widget": "inmput",
+          "type": "number"
         },
       },
       "path": "/zeppelin/interpreter/spark"
@@ -95,7 +97,8 @@ The role of registered interpreters, settings and interpreters group are describ
         "zeppelin.spark.maxResult": {
           "defaultValue": "1000",
           "description": "Max number of Spark SQL result to display.",
-          "widget": "text"
+          "widget": "input",
+          "type": "number"
         }
       },
       "path": "/zeppelin/interpreter/spark"
@@ -159,12 +162,14 @@ The role of registered interpreters, settings and interpreters group are describ
         "spark.cores.max": {
           "name": "",
           "value": "spark.cores.max",
-          "widget": "text"
+          "widget": "input",
+          "type": "number"
         },
         "spark.executor.memory": {
           "name": "",
           "value": "1g",
-          "widget": "text"
+          "widget": "input",
+          "type": "string"
         }
       },
       "interpreterGroup": [
@@ -229,7 +234,8 @@ The role of registered interpreters, settings and interpreters group are describ
       "propname": {
         "name": "propname",
         "value": "propvalue",
-        "widget": "text"
+        "widget": "textarea",
+        "type": "string"
       }
     },
     "interpreterGroup": [
@@ -288,7 +294,8 @@ The role of registered interpreters, settings and interpreters group are describ
     "propname": {
       "name": "propname",
       "value": "propvalue",
-      "widget": "text"
+      "widget": "textarea",
+      "type": "string"
   },
   "interpreterGroup": [
     {
@@ -323,7 +330,8 @@ The role of registered interpreters, settings and interpreters group are describ
       "propname": {
         "name": "propname",
         "value": "propvalue",
-        "widget": "text"
+        "widget": "textarea",
+        "type": "string"
     },
     "interpreterGroup": [
       {
@@ -377,7 +385,8 @@ The role of registered interpreters, settings and interpreters group are describ
     "propname": {
       "name": "propname",
       "value": "Otherpropvalue",
-      "widget": "text"
+      "widget": "textarea",
+      "type": "string"
   },
   "interpreterGroup": [
     {
@@ -412,7 +421,8 @@ The role of registered interpreters, settings and interpreters group are describ
       "propname": {
         "name": "propname",
         "value": "Otherpropvalue",
-        "widget": "text"
+        "widget": "textarea",
+        "type": "string"
     },
     "interpreterGroup": [
       {
@@ -594,7 +604,19 @@ The role of registered interpreters, settings and interpreters group are describ
           <pre>
 {
   "status": "OK",
-  "body": ["text", "password"]
+  "body": [
+    {
+      "id": "textarea",
+      "widget": "textarea",
+      "type": "string"
+    },
+    {
+      "id": "string",
+      "widget": "input",
+      "type": "string"
+    },
+    ...
+  ]
 }            
           </pre>
         </td>

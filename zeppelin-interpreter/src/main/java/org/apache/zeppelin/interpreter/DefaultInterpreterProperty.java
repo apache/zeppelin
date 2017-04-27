@@ -21,24 +21,37 @@ package org.apache.zeppelin.interpreter;
  * Property for registered interpreter
  */
 public class DefaultInterpreterProperty {
-  String envName;
-  String propertyName;
-  Object defaultValue;
-  String description;
-  InterpreterPropertyWidget widget;
+  private String envName;
+  private String propertyName;
+  private Object defaultValue;
+  private String description;
+  private String widget;
+  private String type;
 
   public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
-                                String description, InterpreterPropertyWidget widget) {
+                                String description, String widget,
+                                String type) {
     this.envName = envName;
     this.propertyName = propertyName;
     this.defaultValue = defaultValue;
     this.description = description;
     this.widget = widget;
+    this.type = type;
   }
 
   public DefaultInterpreterProperty(Object defaultValue, String description,
-      InterpreterPropertyWidget widget) {
-    this(null, null, defaultValue, description, widget);
+      String widget, String type) {
+    this(null, null, defaultValue, description, widget, type);
+  }
+
+  public DefaultInterpreterProperty(Object defaultValue, String description) {
+    this(null, null, defaultValue, description, InterpreterPropertyWidget.TEXTAREA.getValue(),
+        InterpreterPropertyType.STRING.getValue());
+  }
+
+  public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue) {
+    this(envName, propertyName, defaultValue, null, InterpreterPropertyWidget.TEXTAREA.getValue(),
+        InterpreterPropertyType.STRING.getValue());
   }
 
   public String getEnvName() {
@@ -73,12 +86,20 @@ public class DefaultInterpreterProperty {
     this.description = description;
   }
 
-  public InterpreterPropertyWidget getWidget() {
+  public String getWidget() {
     return widget;
   }
 
-  public void setWidget(InterpreterPropertyWidget widget) {
+  public void setWidget(String widget) {
     this.widget = widget;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 
   public int hashCode() {
@@ -110,6 +131,6 @@ public class DefaultInterpreterProperty {
   @Override
   public String toString() {
     return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " +
-            "type=%s}", envName, propertyName, defaultValue, description, widget);
+            "widget=%s, type=%s}", envName, propertyName, defaultValue, description, widget, type);
   }
 }

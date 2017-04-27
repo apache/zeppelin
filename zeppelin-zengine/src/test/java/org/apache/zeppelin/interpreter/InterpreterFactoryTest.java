@@ -103,9 +103,9 @@ public class InterpreterFactoryTest {
         Maps.<String, DefaultInterpreterProperty>newHashMap(), "mock1", null);
     Map<String, InterpreterProperty> intp1Properties = new HashMap<String, InterpreterProperty>();
     intp1Properties.put("PROPERTY_1",
-        new InterpreterProperty("PROPERTY_1", "VALUE_1", InterpreterPropertyWidget.text));
+        new InterpreterProperty("PROPERTY_1", "VALUE_1"));
     intp1Properties.put("property_2",
-        new InterpreterProperty("property_2", "value_2", InterpreterPropertyWidget.text));
+        new InterpreterProperty("property_2", "value_2"));
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
 
     ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
@@ -162,9 +162,8 @@ public class InterpreterFactoryTest {
         Maps.<String, DefaultInterpreterProperty>newHashMap(), "mock1", null);
     Map<String, InterpreterProperty> intp1Properties = new HashMap<String, InterpreterProperty>();
     intp1Properties.put("PROPERTY_1",
-        new InterpreterProperty("PROPERTY_1", "VALUE_1", InterpreterPropertyWidget.text));
-    intp1Properties.put("property_2", new InterpreterProperty("property_2", "value_2",
-        InterpreterPropertyWidget.text));
+        new InterpreterProperty("PROPERTY_1", "VALUE_1"));
+    intp1Properties.put("property_2", new InterpreterProperty("property_2", "value_2"));
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
@@ -201,9 +200,9 @@ public class InterpreterFactoryTest {
         Maps.<String, DefaultInterpreterProperty>newHashMap(), "mock1", null);
     Map<String, InterpreterProperty> intp1Properties = new HashMap<String, InterpreterProperty>();
     intp1Properties.put("PROPERTY_1",
-        new InterpreterProperty("PROPERTY_1", "VALUE_1", InterpreterPropertyWidget.text));
+        new InterpreterProperty("PROPERTY_1", "VALUE_1"));
     intp1Properties.put("property_2",
-        new InterpreterProperty("property_2", "value_2", InterpreterPropertyWidget.text));
+        new InterpreterProperty("property_2", "value_2"));
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
@@ -248,9 +247,9 @@ public class InterpreterFactoryTest {
         Maps.<String, DefaultInterpreterProperty>newHashMap(), "mock1", null);
     Map<String, InterpreterProperty> intp1Properties = new HashMap<String, InterpreterProperty>();
     intp1Properties.put("PROPERTY_1",
-        new InterpreterProperty("PROPERTY_1", "VALUE_1", InterpreterPropertyWidget.text));
+        new InterpreterProperty("PROPERTY_1", "VALUE_1"));
     intp1Properties.put("property_2",
-        new InterpreterProperty("property_2", "value_2", InterpreterPropertyWidget.text));
+        new InterpreterProperty("property_2", "value_2"));
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
     factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
     List<InterpreterSetting> all = interpreterSettingManager.get();
@@ -339,8 +338,8 @@ public class InterpreterFactoryTest {
 
     // check if interpreter instance is saved as Properties in conf/interpreter.json file
     Map<String, InterpreterProperty> properties = new HashMap<String, InterpreterProperty>();
-    properties.put("key1", new InterpreterProperty("key1", "value1", InterpreterPropertyWidget.text));
-    properties.put("key2", new InterpreterProperty("key2", "value2", InterpreterPropertyWidget.text));
+    properties.put("key1", new InterpreterProperty("key1", "value1"));
+    properties.put("key2", new InterpreterProperty("key2", "value2"));
 
     interpreterSettingManager.createNewSetting("newMock", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), properties);
 

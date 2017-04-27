@@ -34,24 +34,24 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.zeppelin.interpreter.InterpreterPropertyWidget;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
-import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.RemoteRepository;
-
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
+import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.utils.InterpreterPropertyWidgetUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.repository.RemoteRepository;
+
+import com.google.gson.Gson;
 
 /**
  * Interpreter Rest API
@@ -255,7 +255,7 @@ public class InterpreterRestApi {
   @GET
   @Path("getmetainfos/{settingId}")
   public Response getMetaInfo(@Context HttpServletRequest req,
-                              @PathParam("settingId") String settingId) {
+      @PathParam("settingId") String settingId) {
     String propName = req.getParameter("propName");
     if (propName == null) {
       return new JsonResponse<>(Status.BAD_REQUEST).build();
@@ -300,6 +300,8 @@ public class InterpreterRestApi {
   @GET
   @Path("property/widgets")
   public Response listInterpreterPropertyWidgets() {
-    return new JsonResponse<>(Status.OK, InterpreterPropertyWidget.values()).build();
+    return new JsonResponse<>(Status.OK, InterpreterPropertyWidgetUtils.getAvailableWidgets()).build();
   }
+
+
 }

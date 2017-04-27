@@ -400,21 +400,29 @@ limitations under the License.
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
             <td style="vertical-align: middle;">{{key}}</td>
-            <td style="vertical-align: middle;" ng-switch on="setting.properties[key].widget">
-              <span ng-switch-default editable-textarea="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+            <td style="vertical-align: middle;">
+              <span ng-if="setting.properties[key].widget === 'textarea' && setting.properties[key].type === 'string'"
+                    editable-textarea="setting.properties[key].value" e-form="valueform" e-msd-elastic>
                  {{setting.properties[key].value | breakFilter}}
               </span>
-              <span ng-switch-when="string" editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+              <span ng-if="setting.properties[key].widget === 'input' && setting.properties[key].type === 'string'"
+                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
                 {{setting.properties[key].value}}
               </span>
-              <span ng-switch-when="number" editable-text="setting.properties[key].value" e-widget-number e-form="valueform" e-msd-elastic>
+              <span ng-if="setting.properties[key].widget === 'input' && setting.properties[key].type === 'number'"
+                    editable-text="setting.properties[key].value" e-widget-number e-form="valueform" e-msd-elastic>
                 {{setting.properties[key].value}}
               </span>
-              <a ng-switch-when="url" ng-href="{{setting.properties[key].value}}" editable-text="setting.properties[key].value" e-label="setting.properties[key].value" e-form="valueform" e-msd-elastic>{{setting.properties[key].value}}</a>
-              <span ng-switch-when="password" editable-password="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+              <span ng-if="setting.properties[key].widget === 'input' && setting.properties[key].type === 'url'"
+                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                <a ng-href="{{setting.properties[key].value}}">{{setting.properties[key].value}}</a>
+              </span>
+              <span ng-if="setting.properties[key].widget === 'password' && setting.properties[key].type === 'password'"
+                    editable-password="setting.properties[key].value" e-form="valueform" e-msd-elastic>
                 {{setting.properties[key].value ? '***' : ''}}
               </span>
-              <span ng-switch-when="checkbox" editable-checkbox="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+              <span ng-if="setting.properties[key].widget === 'checkbox' && setting.properties[key].type === 'boolean'"
+                    editable-checkbox="setting.properties[key].value" e-form="valueform" e-msd-elastic>
                 {{setting.properties[key].value}}
               </span>
             </td>
@@ -430,7 +438,7 @@ limitations under the License.
                      pu-elastic-input pu-elastic-input-minwidth="180px" />
             </td>
 
-            <td style="vertical-align: middle;" ng-switch on="setting.propertyWidget">
+            <td style="vertical-align: middle;" ng-switch on="setting.propertyWidget.id">
               <textarea ng-switch-default msd-elastic ng-model="setting.propertyValue"></textarea>
               <input ng-switch-when="string" type="text" msd-elastic ng-model="setting.propertyValue"/>
               <input ng-switch-when="number" type="text" msd-elastic ng-model="setting.propertyValue" widget-number />
@@ -440,8 +448,9 @@ limitations under the License.
             </td>
             <td style="vertical-align: middle;">
               <select ng-model="setting.propertyWidget" ng-init="setting.propertyWidget=interpreterPropertyWidgets[0]"
-                      ng-options="item for item in interpreterPropertyWidgets" ng-change="defaultValueByWidget(setting)">
+                      ng-options="item.id for item in interpreterPropertyWidgets" ng-change="defaultValueByWidget(setting)">
               </select>
+
               <button class="btn btn-default btn-sm fa fa-plus"
                       ng-click="addNewInterpreterProperty(setting.id)">
               </button>
