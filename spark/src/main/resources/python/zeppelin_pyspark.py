@@ -24,6 +24,13 @@ from pyspark.context import SparkContext
 import ast
 import warnings
 
+import base64
+from io import BytesIO
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
+
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
@@ -46,12 +53,42 @@ class PyZeppelinContext(dict):
     self.z = zc
     self._displayhook = lambda *args: None
 
-  def show(self, obj):
+
+  def show(self, obj, **kwargs):
     from pyspark.sql import DataFrame
+
     if isinstance(obj, DataFrame):
       print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
+    elif hasattr(obj, '__name__') and obj.__name__ == "matplotlib.pyplot":
+      self.show_matplotlib(obj, **kwargs)
+    elif hasattr(obj, '__call__'):
+      obj() #error reporting
     else:
       print(str(obj))
+
+  def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
+                        **kwargs):
+    """Matplotlib show function
+    """
+    if fmt == "png":
+      img = BytesIO()
+      p.savefig(img, format=fmt)
+      img_str = b"data:image/png;base64,"
+      img_str += base64.b64encode(img.getvalue().strip())
+      img_tag = "<img src={img} style='width={width};height:{height}'>"
+      # Decoding is necessary for Python 3 compability
+      img_str = img_str.decode("ascii")
+      img_str = img_tag.format(img=img_str, width=width, height=height)
+    elif fmt == "svg":
+      img = StringIO()
+      p.savefig(img, format=fmt)
+      img_str = img.getvalue()
+    else:
+      raise ValueError("fmt must be 'png' or 'svg'")
+
+    html = "%html <div style='width:{width};height:{height}'>{img}<div>"
+    print(html.format(width=width, height=height, img=img_str))
+    img.close()
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):
