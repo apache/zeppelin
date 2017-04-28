@@ -30,7 +30,7 @@ import java.util.Properties;
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
  */
-public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
+public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   private LivySparkInterpreter sparkInterpreter;
 

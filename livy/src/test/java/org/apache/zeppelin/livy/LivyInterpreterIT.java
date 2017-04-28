@@ -556,7 +556,7 @@ public class LivyInterpreterIT {
     }
   }
 
-  private boolean isSpark2(BaseLivyInterprereter interpreter, InterpreterContext context) {
+  private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
     InterpreterResult result = null;
     if (interpreter instanceof LivySparkRInterpreter) {
       result = interpreter.interpret("sparkR.session()", context);
