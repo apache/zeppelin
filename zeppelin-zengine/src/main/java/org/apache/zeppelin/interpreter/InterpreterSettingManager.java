@@ -455,11 +455,9 @@ public class InterpreterSettingManager {
 
   private List<String> getNoteInterpreterSettingBinding(String noteId) {
     LinkedList<String> bindings = new LinkedList<>();
-    synchronized (interpreterSettings) {
-      List<String> settingIds = interpreterBindings.get(noteId);
-      if (settingIds != null) {
-        bindings.addAll(settingIds);
-      }
+    List<String> settingIds = interpreterBindings.get(noteId);
+    if (settingIds != null) {
+      bindings.addAll(settingIds);
     }
     return bindings;
   }
@@ -888,14 +886,12 @@ public class InterpreterSettingManager {
   }
 
   public void removeNoteInterpreterSettingBinding(String user, String noteId) {
-    synchronized (interpreterSettings) {
       List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
           interpreterBindings.remove(noteId) :
           Collections.<String>emptyList());
       for (String settingId : settingIds) {
         this.removeInterpretersForNote(get(settingId), user, noteId);
       }
-    }
   }
 
   /**
