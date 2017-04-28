@@ -171,16 +171,6 @@ public class NotebookAuthorization {
     return returnUser;
   }
 
-  private Set<String> validateUser(Set<String> users) {
-    Set<String> returnUser = new HashSet<>();
-    for (String user : users) {
-      if (!user.trim().isEmpty()) {
-        returnUser.add(user.trim());
-      }
-    }
-    return returnUser;
-  }
-
   public void setOwners(String noteId, Set<String> entities) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     entities = validateUser(entities);

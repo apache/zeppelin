@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -187,7 +188,7 @@ public class HdfsNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
     return null;
   }
 
@@ -195,6 +196,22 @@ public class HdfsNotebookRepo implements NotebookRepo {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     // Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+      throws IOException {
+    return null;
+  }
+
+  @Override
+  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+    return null;
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+
   }
 
 }

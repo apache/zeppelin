@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-scalding_2.10</artifactId>
+  <artifactId>zeppelin-scalding_2.11</artifactId>
   <packaging>jar</packaging>
   <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Scalding interpreter</name>

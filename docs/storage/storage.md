@@ -33,6 +33,7 @@ There are few notebook storage systems available for a use out of the box:
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
+  * storage using HDFS - `HdfsNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -245,8 +246,29 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 </property>
 ```
 
-</br>
-## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
+
+ ## Notebook Storage in Hdfs <a name="HDFS"></a>
+ 
+ To enable your notebooks to be stored on HDFS - uncomment the next property in `zeppelin-site.xml` in order to use HdfsNotebookRepo class:
+ 
+ ```
+ <property>
+   <name>zeppelin.notebook.storage</name>
+   <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
+   <description>notebook persistence layer implementation</description>
+ </property>
+ ```
+ 
+ and replace the notebook directory property below by an HDFS location as follows :
+ <property>
+   <name>zeppelin.notebook.dir</name>
+   <value>/tmp/notebook</value>
+   <description>path or URI for notebook persist</description>
+ </property>
+ 
+ </br>
+ 
+ ## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 
