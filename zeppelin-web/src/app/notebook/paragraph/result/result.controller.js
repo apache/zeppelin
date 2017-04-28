@@ -191,8 +191,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     $scope.resizeRenderTimeout = $timeout(function () {
       renderResult($scope.type)
     }, 500)
-  });
-  
+  })
+
   $scope.$on('updateResult', function (event, result, newConfig, paragraphRef, index) {
     if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
       return
