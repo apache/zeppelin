@@ -362,7 +362,7 @@ public class JDBCInterpreter extends Interpreter {
                 property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
               connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
             } else {
-              if (url.trim().startsWith("jdbc:hive")) {
+              if (basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
                 connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
