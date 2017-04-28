@@ -359,9 +359,6 @@ public class ZeppelinServer extends Application {
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
     contexts.addHandler(webApp);
 
-    webApp.addFilter(new FilterHolder(ShiroFilter.class), "/*",
-        EnumSet.allOf(DispatcherType.class));
-
     webApp.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
