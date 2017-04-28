@@ -843,11 +843,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
       $timeout(
         $scope.$on('editorSetting', function (event, data) {
-            if (paragraph.id === data.paragraphId) {
-              deferred.resolve(data)
-            }
+          if (paragraph.id === data.paragraphId) {
+            deferred.resolve(data)
           }
-        ), 1000)
+        }
+      ), 1000)
     }
     return deferred.promise
   }
