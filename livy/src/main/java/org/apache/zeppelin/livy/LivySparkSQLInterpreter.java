@@ -30,7 +30,7 @@ import java.util.Properties;
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
  */
-public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
+public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   public static final String ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE =
       "zeppelin.livy.spark.sql.field.truncate";
