@@ -139,6 +139,12 @@
   <value>org.apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
 -->
 
 <!-- For versioning your local notebook storage using Git repository
