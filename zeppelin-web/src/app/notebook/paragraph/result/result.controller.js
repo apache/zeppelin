@@ -184,15 +184,6 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     $timeout(retry)
   }
 
-  angular.element($window).bind('resize', function() {
-    if ($scope.resizeRenderTimeout) {
-      $timeout.cancel($scope.resizeRenderTimeout)
-    }
-    $scope.resizeRenderTimeout = $timeout(function () {
-      renderResult($scope.type)
-    }, 500)
-  })
-
   $scope.$on('updateResult', function (event, result, newConfig, paragraphRef, index) {
     if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
       return
@@ -549,9 +540,6 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           builtInViz.instance.render(transformed)
           builtInViz.instance.renderSetting(visualizationSettingTargetEl)
           builtInViz.instance.activate()
-          angular.element(window).resize(() => {
-            builtInViz.instance.resize()
-          })
         } catch (err) {
           console.error('Graph drawing error %o', err)
         }
