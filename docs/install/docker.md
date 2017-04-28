@@ -23,14 +23,45 @@ limitations under the License.
 
 <div id="toc"></div>
 
-## Overview 
-This document contains instructions about making docker containers for Zeppelin. It mainly provides guidance into how to create, publish and run docker images for zeppelin releases.
-
 ## Quick Start
-### Installing Docker
+
 You need to [install docker](https://docs.docker.com/engine/installation/) on your machine.
 
-### Creating and Publishing Zeppelin docker image 
+### Official Docker Images
+
+#### Running Official Docker Images
+
+```bash
+$ docker run -it --name zeppelin --rm -p 8080:8080 -p 7077:7077 zeppelin:tag
+```
+
+Supported tags and respective `Dockerfile` links
+
+* `alpine-0.6.2_java`
+* `alpine-0.6.2_r` (has R related packages based on `alpine_java` images)
+* `alpine-0.6.2_python` (has python related packages based on `alpine_java` images)
+
+Since alpine linux doesn't have graphical device, some function may not work (e.g `plot` in R) 
+
+#### Creating Official Dockerfiles
+
+Currently, zeppelin supports alpine linux docker images
+
+```bash
+$ scripts/docker/zeppelin-bin-all/create-dockerfile.sh -h 
+
+USAGE: ./create-dockerfile.sh version linux platform
+* version: 0.6.2 (released zeppelin binary version)
+* linux: [alpine]
+* platform: [java, python, r]
+
+# for example
+$ ./create-dockerfile.sh 0.6.2 alpine java
+```
+
+### Custom Docker Images
+
+#### Creating and Publishing Zeppelin docker image 
 * In order to be able to create and/or publish an image, you need to set the **DockerHub** credentials `DOCKER_USERNAME, DOCKER_PASSWORD, DOCKER_EMAIL` variables as environment variables.
  
 * To create an image for some release use :
@@ -38,7 +69,7 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 * To publish the created image use :
 `publish_release.sh <release-version> <git-tag>`
 
-### Running a Zeppelin  docker image 
+#### Running a Zeppelin docker image 
 
 * To start Zeppelin, you need to pull the zeppelin release image: 
 ```
@@ -64,7 +95,6 @@ docker run -p 7077:7077 -p 8080:8080 --privileged=true -v $PWD/logs:/logs -v $PW
 -d ${DOCKER_USERNAME}/zeppelin-release:<release-version> \
 /usr/local/zeppelin/bin/zeppelin.sh
 ```
-
 
 * Zeppelin will run at `http://localhost:8080`.
 
