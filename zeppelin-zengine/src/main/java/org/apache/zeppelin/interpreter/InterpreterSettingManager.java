@@ -886,16 +886,16 @@ public class InterpreterSettingManager {
   }
 
   public void removeNoteInterpreterSettingBinding(String user, String noteId) throws IOException {
-      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
-          interpreterBindings.remove(noteId) :
+    List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
+        interpreterBindings.remove(noteId) :
           Collections.<String>emptyList());
-      for (String settingId : settingIds) {
-        InterpreterSetting setting = get(settingId);
-        if (setting != null) {
-          this.removeInterpretersForNote(setting, user, noteId);
-        }
+    for (String settingId : settingIds) {
+      InterpreterSetting setting = get(settingId);
+      if (setting != null) {
+        this.removeInterpretersForNote(setting, user, noteId);
       }
-      saveToFile();
+    }
+    saveToFile();
   }
 
   /**
