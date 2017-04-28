@@ -58,7 +58,7 @@ export default class Nvd3ChartVisualization extends Visualization {
       .duration(animationDuration)
       .call(this.chart)
     d3.select('#' + this.targetEl[0].id + ' svg').style.height = height + 'px'
-    nv.utils.windowResize(this.chart.update);
+    nv.utils.windowResize(this.chart.update)
   }
 
   type () {
