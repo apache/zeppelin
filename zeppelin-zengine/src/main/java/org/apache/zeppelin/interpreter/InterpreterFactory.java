@@ -82,6 +82,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.user.properties.UserProperties;
 
 /**
  * Manage interpreters.
@@ -165,6 +166,16 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup(user, noteId);
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = (Properties) interpreterSetting.getProperties();
+    UserProperties userProperties =
+            new UserProperties(true, conf.getUserPropertiesPath());
+    if (logger.isDebugEnabled()) {
+      logger.debug("username = " + user);
+      logger.debug("user properties path = " + conf.getUserPropertiesPath());
+      for (String key: userProperties.get(user).keySet()) {
+        logger.debug(key + "=" + userProperties.get(key));
+      }
+    }
+    properties = InterpreterUtils.substitute(properties, userProperties.get(user));
     // if interpreters are already there, wait until they're being removed
     synchronized (interpreterGroup) {
       long interpreterRemovalWaitStart = System.nanoTime();

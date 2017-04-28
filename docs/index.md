@@ -144,6 +144,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Interpreter Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
   * [Interpreter User Impersonation](./manual/userimpersonation.html) when you want to run interpreter as end user
   * [Interpreter Execution Hooks](./manual/interpreterexechooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
+  * [Override Interpreter Settings](./manual/interpreteroverride.html) when a user wants to override Interpreter Settings
 * Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
 
 ####Display System
