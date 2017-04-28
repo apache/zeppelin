@@ -610,8 +610,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     let session = editor.getSession()
     let dirtyText = session.getValue()
     $scope.dirtyText = dirtyText
-    if ($scope.dirtyText != $scope.originalText) {
-      $scope.startSaveTimer();
+    if ($scope.dirtyText !== $scope.originalText) {
+      $scope.startSaveTimer()
     }
     setParagraphMode(session, dirtyText, editor.getCursorPosition())
   }
@@ -1244,8 +1244,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.updateParagraph = function (oldPara, newPara, updateCallback) {
      // 1. can't update on revision view
-    if (!!$scope.revisionView) {
-      return;
+    if ($scope.revisionView === true) {
+      return
     }
 
      // 2. get status, refreshed

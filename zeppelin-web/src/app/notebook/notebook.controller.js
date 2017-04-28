@@ -483,20 +483,23 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.$on('addParagraph', function (event, paragraph, index) {
-    if ($scope.paragraphUrl) {
+    if ($scope.paragraphUrl || $scope.revisionView === true) {
       return
     }
     addPara(paragraph, index)
   })
 
   $scope.$on('removeParagraph', function (event, paragraphId) {
-    if ($scope.paragraphUrl) {
+    if ($scope.paragraphUrl || $scope.revisionView === true) {
       return
     }
     removePara(paragraphId)
   })
 
   $scope.$on('moveParagraph', function (event, paragraphId, newIdx) {
+    if ($scope.revisionView === true) {
+      return
+    }
     let removedPara = removePara(paragraphId)
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx)
@@ -958,6 +961,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   })
 
   $scope.$on('insertParagraph', function (event, paragraphId, position) {
+    if ($scope.revisionView === true) {
+      return
+    }
     let newIndex = -1
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
