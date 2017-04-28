@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.util.Properties;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -168,6 +170,79 @@ public class RemoteInterpreterTest {
 
     assertFalse(process.isRunning());
 
+  }
+
+  @Test
+  public void testExistsRemoteInterperterCall() throws TTransportException, IOException, InterruptedException {
+    String intpGroupName = "mockIntp";
+    String host = "127.0.0.1";
+    int port = 20000;
+
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    ApplicationEventListener appListener = mock(ApplicationEventListener.class);
+    RemoteInterpreter remoteintp = new RemoteInterpreter(
+            new Properties(),
+            "note",
+            MockInterpreterA.class.getName(),
+            host,
+            port,
+            "fakerepo",
+            10 * 1000,
+            10,
+            listener,
+            appListener,
+            "anonymous",
+            false);
+
+    RemoteInterpreterRunningProcess existsIntpProcess = new RemoteInterpreterRunningProcess(
+            10 * 1000, listener, appListener, host, port);
+
+    InterpreterGroup remoteInterpreterGroup = new InterpreterGroup(intpGroupName);
+
+    remoteInterpreterGroup.setRemoteInterpreterProcess(existsIntpProcess);
+    remoteInterpreterGroup.put("note", new LinkedList<Interpreter>());
+    remoteInterpreterGroup.get("note").add(remoteintp);
+
+    existsIntpProcess.start("anonymous", false);
+
+    RemoteInterpreterServer server = new RemoteInterpreterServer(port);
+
+    remoteInterpreterGroup.put(intpGroupName, new LinkedList<Interpreter>());
+    remoteInterpreterGroup.get(intpGroupName).add(remoteintp);
+    remoteintp.setInterpreterGroup(remoteInterpreterGroup);
+    remoteInterpreterGroup.setRemoteInterpreterProcess(existsIntpProcess);
+
+    server.start();
+    boolean running = false;
+    long startTime = System.currentTimeMillis();
+    while (System.currentTimeMillis() - startTime < 10 * 1000) {
+      if (server.isRunning()) {
+        running = true;
+        break;
+      } else {
+        Thread.sleep(200);
+      }
+    }
+
+    existsIntpProcess.reference(remoteInterpreterGroup, "anonymous", false);
+
+    InterpreterResult ret = remoteintp.interpret("10",
+      new InterpreterContext(
+        "noteId",
+        "id",
+        null,
+        "title",
+        "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("pool1"),
+        new LinkedList<InterpreterContextRunner>(), null));
+
+    assertTrue(ret.message().get(0).getData().equals("10"));
+    assertTrue(remoteInterpreterGroup.getRemoteInterpreterProcess().getHost().equals(host));
+    assertTrue(remoteInterpreterGroup.getRemoteInterpreterProcess().getPort() == port);
   }
 
   @Test
@@ -757,7 +832,7 @@ public class RemoteInterpreterTest {
   @Test
   public void should_push_local_angular_repo_to_remote() throws Exception {
     //Given
-    final Client client = Mockito.mock(Client.class);
+    final Client client = mock(Client.class);
     final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
         MockInterpreterA.class.getName(), "runner", "path", "localRepo", env, 10 * 1000, null,
         null, "anonymous", false);
