@@ -1331,7 +1331,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         $scope.$emit('moveFocusToPreviousParagraph', paragraphId)
       } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
-        $scope.$emit('moveFocusToNextParagraph', paragraphId)
+        // $timeout stops chaining effect of focus propogation
+        $timeout(() => $scope.$emit('moveFocusToNextParagraph', paragraphId))
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue())
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c

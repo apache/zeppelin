@@ -901,14 +901,18 @@ public class InterpreterSettingManager {
     saveToFile();
   }
 
-  public void removeNoteInterpreterSettingBinding(String user, String noteId) {
+  public void removeNoteInterpreterSettingBinding(String user, String noteId) throws IOException {
     synchronized (interpreterSettings) {
       List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
           interpreterBindings.remove(noteId) :
           Collections.<String>emptyList());
       for (String settingId : settingIds) {
-        this.removeInterpretersForNote(get(settingId), user, noteId);
+        InterpreterSetting setting = get(settingId);
+        if (setting != null) {
+          this.removeInterpretersForNote(setting, user, noteId);
+        }
       }
+      saveToFile();
     }
   }
 

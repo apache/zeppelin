@@ -400,17 +400,18 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(DEFAULT_PRECODE, "SET @testVariable=1");
+    properties.setProperty(DEFAULT_PRECODE, "create table test_precode (id int); insert into test_precode values (1);");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
+    jdbcInterpreter.executePrecode(interpreterContext);
 
-    String sqlQuery = "select @testVariable";
+    String sqlQuery = "select *from test_precode";
 
     InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("@TESTVARIABLE\n1\n", interpreterResult.message().get(0).getData());
+    assertEquals("ID\n1\n", interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -420,13 +421,15 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(DEFAULT_PRECODE, "incorrect command");
+    properties.setProperty(DEFAULT_PRECODE, "select 1");
+    properties.setProperty("incorrect.driver", "org.h2.Driver");
+    properties.setProperty("incorrect.url", getJdbcConnection());
+    properties.setProperty("incorrect.user", "");
+    properties.setProperty("incorrect.password", "");
+    properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "incorrect"), "incorrect command");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
-
-    String sqlQuery = "select 1";
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+    InterpreterResult interpreterResult = jdbcInterpreter.executePrecode(interpreterContext);
 
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
@@ -439,17 +442,18 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("anotherPrefix.url", getJdbcConnection());
     properties.setProperty("anotherPrefix.user", "");
     properties.setProperty("anotherPrefix.password", "");
-    properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "anotherPrefix"), "SET @testVariable=2");
+    properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "anotherPrefix"), "create table test_precode_2 (id int); insert into test_precode_2 values (2);");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
+    jdbcInterpreter.executePrecode(interpreterContext);
 
-    String sqlQuery = "(anotherPrefix) select @testVariable";
+    String sqlQuery = "(anotherPrefix) select *from test_precode_2";
 
     InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("@TESTVARIABLE\n2\n", interpreterResult.message().get(0).getData());
+    assertEquals("ID\n2\n", interpreterResult.message().get(0).getData());
   }
 
   @Test

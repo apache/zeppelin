@@ -68,7 +68,8 @@ InsertLiveReloadPlugin.prototype.apply = function apply(compiler) {
  */
 var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test';
-var isProd = ENV === 'build';
+var isProd = ENV.startsWith('build')
+var isCI = ENV === 'build:ci'
 
 module.exports = function makeWebpackConfig () {
   /**
@@ -139,6 +140,11 @@ module.exports = function makeWebpackConfig () {
   config.module = {
     preLoaders: [],
     loaders: [{
+      // headroom 0.9.3 doesn't work with webpack
+      // https://github.com/WickyNilliams/headroom.js/issues/213#issuecomment-281106943
+      test: require.resolve('headroom.js'),
+      loader: 'imports-loader?this=>window,define=>false,exports=>false'
+    }, {
       // JS LOADER
       // Reference: https://github.com/babel/babel-loader
       // Transpile .js files using babel-loader
@@ -231,7 +237,8 @@ module.exports = function makeWebpackConfig () {
         'process.env': {
           HELIUM_BUNDLE_DEV: process.env.HELIUM_BUNDLE_DEV,
           SERVER_PORT: serverPort,
-          WEB_PORT: webPort
+          WEB_PORT: webPort,
+          BUILD_CI: (isCI) ? JSON.stringify(true) : JSON.stringify(false)
         }
       })
     )
