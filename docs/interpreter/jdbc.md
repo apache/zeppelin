@@ -538,7 +538,7 @@ When Zeppelin server is running with authentication enabled, then the interprete
 
 To enable this set following:
   - `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
-  - `{propertyKey}.proxy.user.property` as `hive.server2.proxy.user`
+  - `${prefix}.proxy.user.property` as `hive.server2.proxy.user`
   Example configuration
 
   *Properties*

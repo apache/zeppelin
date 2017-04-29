@@ -413,6 +413,9 @@ public class JDBCInterpreter extends Interpreter {
           basePropretiesMap.get(propertyKey).getProperty("proxy.user.property"));
       connectionUrl.insert(lastIndexOfUrl, ";" +
           basePropretiesMap.get(propertyKey).getProperty("proxy.user.property") + "=" + user + ";");
+    } else if (user != null && !user.equals("anonymous") && url.contains("hive")) {
+      logger.warn("User impersonation for hive has changed please refer: http://zeppelin.apache" +
+          ".org/docs/latest/interpreter/jdbc.html#apache-hive");
     }
 
     return connectionUrl.toString();
