@@ -508,11 +508,9 @@ Here are some examples you can refer to. Including the below connectors, you can
   </tr>
   <tr>
     <td>default.proxy.user.property</td>
-    <td>hive.server2.proxy.user</td>
+    <td>Example value: hive.server2.proxy.user</td>
   </tr>
 </table>
-
-Connection to Hive JDBC with a proxy user can be disabled with `hive.proxy.user` property (set to true by default)
 
 [Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
 [Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
@@ -540,7 +538,19 @@ When Zeppelin server is running with authentication enabled, then the interprete
 
 To enable this set following:
   - `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
-  - `default.proxy.user.property` as `hive.server2.proxy.user`
+  - `{propertyKey}.proxy.user.property` as `hive.server2.proxy.user`
+  Example configuration
+
+  *Properties*
+
+  | name                      | value                                                                                             |
+  |:------------------------- |:--------------------------------------------------------------------------------------------------|
+  | hive.driver               | org.apache.hive.jdbc.HiveDriver                                                                   |
+  | hive.password             |                                                                                                   |
+  | hive.url                  | jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2 |
+  | hive.proxy.user.property  | hive.proxy.user.property                                                                          |
+  | zeppelin.jdbc.auth.type   | SIMPLE                                                                                            |
+
 
 
 ### Apache Phoenix
