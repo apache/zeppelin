@@ -78,6 +78,7 @@
     <module>scio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
+    <module>zeppelin-cluster/yarn</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-distribution</module>
   </modules>
@@ -1116,13 +1117,6 @@
         </plugin>
         </plugins>
       </build>
-    </profile>
-
-    <profile>
-      <id>yarn</id>
-      <modules>
-        <module>zeppelin-cluster/yarn</module>
-      </modules>
     </profile>
   </profiles>
 
