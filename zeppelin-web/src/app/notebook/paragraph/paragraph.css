@@ -557,3 +557,7 @@ table.table-striped {
 .markdown-body h4 {
   font-size: 16px;
 }
+
+.network-labels {
+  margin: 0.2em;
+}
