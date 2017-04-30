@@ -154,10 +154,13 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]//a[@ng-click='navbar.logout()']")).click();
-    ZeppelinITUtils.sleep(500, false);
-    driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
-    ZeppelinITUtils.sleep(5000, false);
+    ZeppelinITUtils.sleep(2000, false);
+    if (driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"))
+        .isDisplayed()) {
+      driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
+    }
     driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
+    ZeppelinITUtils.sleep(500, false);
   }
 
   //  @Test
