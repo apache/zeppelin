@@ -179,7 +179,8 @@ public class InterpreterSettingManager {
             widget = InterpreterPropertyWidget.byValue(fields.get("widget")).getValue();
             type = InterpreterPropertyType.byValue(fields.get("type")).getValue();
           } catch (Exception e) {
-            logger.warn("Incorrect widget or type of property {} in settings {}", key, setting.getId());
+            logger.warn("Incorrect widget or type of property {} in settings {}", key,
+                setting.getId());
           }
           properties.put(key, new InterpreterProperty(key, fields.get("value"), widget, type));
         }

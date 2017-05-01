@@ -45,8 +45,8 @@ import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.apache.zeppelin.utils.InterpreterPropertyWidgetUtils;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -300,8 +300,8 @@ public class InterpreterRestApi {
   @GET
   @Path("property/widgets")
   public Response listInterpreterPropertyWidgets() {
-    return new JsonResponse<>(Status.OK, InterpreterPropertyWidgetUtils.getAvailableWidgets()).build();
+    return new JsonResponse<>(Status.OK, InterpreterPropertyWidgetUtils.getAvailableWidgets())
+        .build();
   }
-
 
 }

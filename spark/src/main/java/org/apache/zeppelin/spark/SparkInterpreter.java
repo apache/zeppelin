@@ -532,7 +532,8 @@ public class SparkInterpreter extends Interpreter {
     File pysparkPath;
     if (null == pysparkBasePath) {
       pysparkBasePath =
-          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../").getValue().toString();
+          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../")
+              .getValue().toString();
       pysparkPath = new File(pysparkBasePath,
           "interpreter" + File.separator + "spark" + File.separator + "pyspark");
     } else {
@@ -583,7 +584,8 @@ public class SparkInterpreter extends Interpreter {
     File sparkRPath;
     if (null == sparkRBasePath) {
       sparkRBasePath =
-              new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../").getValue().toString();
+          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../")
+              .getValue().toString();
       sparkRPath = new File(sparkRBasePath,
               "interpreter" + File.separator + "spark" + File.separator + "R");
     } else {
