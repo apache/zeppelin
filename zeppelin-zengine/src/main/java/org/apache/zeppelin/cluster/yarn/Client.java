@@ -17,41 +17,54 @@
 
 package org.apache.zeppelin.cluster.yarn;
 
-import com.google.common.base.Joiner;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
+import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
+import org.apache.hadoop.yarn.api.records.Priority;
+import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.Token;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.client.api.YarnClientApplication;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.zeppelin.cluster.ApplicationCallbackHandler;
 import org.apache.zeppelin.cluster.ClusterManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 
 /**
  *
@@ -59,14 +72,14 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 public class Client extends ClusterManager {
 
   private static final Logger logger = LoggerFactory.getLogger(Client.class);
-  private static final ScheduledExecutorService scheduledExecutorService =
+  public static final ScheduledExecutorService scheduledExecutorService =
       Executors.newScheduledThreadPool(1);
 
   private Configuration configuration;
   private YarnClient yarnClient;
   private boolean started;
 
-  private String interpreterLibDir;
+  private List<java.nio.file.Path> interpreterRelatedPaths;
 
   /**
    * `id` is a unique key to figure out Application
@@ -74,9 +87,8 @@ public class Client extends ClusterManager {
   private Map<String, ApplicationId> idApplicationIdMap;
   private Map<ApplicationId, YarnApplicationState> appStatusMap;
 
-  public Client(ZeppelinConfiguration zeppelinConfiguration,
-      ApplicationCallbackHandler applicationHandler) {
-    super(zeppelinConfiguration, applicationHandler);
+  public Client(ZeppelinConfiguration zeppelinConfiguration) {
+    super(zeppelinConfiguration);
 
     this.started = false;
   }
@@ -93,18 +105,10 @@ public class Client extends ClusterManager {
 
       this.idApplicationIdMap = new ConcurrentHashMap<>();
 
-      this.scheduledExecutorService
-          .scheduleAtFixedRate(new ApplicationMonitor(), 1, 1, TimeUnit.SECONDS);
-
-      this.interpreterLibDir = Joiner.on(Path.SEPARATOR).join(new String[] {
-          zeppelinConfiguration.getBasePath(), "zeppelin-interpreter", "target"
-      });
-
-      try {
-        Files.newDirectoryStream(Paths.get(zeppelinConfiguration.getBasePath(), "zeppelin-interpreter", "target"),"*.jar");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      this.interpreterRelatedPaths = Lists.newArrayList(
+          Paths.get(zeppelinConfiguration.getBasePath(), "zeppelin-interpreter", "target"),
+          Paths.get(zeppelinConfiguration.getBasePath(), "zeppelin-interpreter", "target", "lib"),
+          Paths.get(zeppelinConfiguration.getBasePath(), "lib", "interpreter"));
 
       this.started = true;
     }
@@ -126,8 +130,7 @@ public class Client extends ClusterManager {
   @Override
   public RemoteInterpreterProcess createInterpreter(String id,
       InterpreterSetting interpreterSetting, int connectTimeout,
-      RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener)
+      RemoteInterpreterProcessListener listener, ApplicationEventListener appListener)
       throws InterpreterException {
     if (!started) {
       start();
@@ -143,12 +146,63 @@ public class Client extends ClusterManager {
       appContext.setKeepContainersAcrossApplicationAttempts(false);
       appContext.setApplicationName(interpreterSetting.getName());
 
+      Map<String, String> env = Maps.newHashMap();
+
+      ArrayList<String> classpathStrings = Lists
+          .newArrayList(configuration.getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH));
+      classpathStrings.add(0, "./*");
+      classpathStrings.add(0, ApplicationConstants.Environment.CLASSPATH.$$());
+
+      String classpathEnv =
+          Joiner.on(ApplicationConstants.CLASS_PATH_SEPARATOR).join(classpathStrings);
+
+      logger.debug("classpath: {}", classpathEnv);
+
+      env.put("CLASSPATH", classpathEnv);
+
       Map<String, LocalResource> localResources = new HashMap<>();
 
       FileSystem fileSystem = FileSystem.get(configuration);
 
-      String interpreterDir = getInterpreterRelativeDir(interpreterSetting.getGroup());
-      String interpreterLib = getInterpreterRelativeDir("lib");
+      java.nio.file.Path interpreterDir = getInterpreterRelativePath(interpreterSetting.getGroup());
+      List<java.nio.file.Path> interpreterPaths = getPathsFromDirPath(interpreterDir);
+      for (java.nio.file.Path p : interpreterRelatedPaths) {
+        interpreterPaths.addAll(getPathsFromDirPath(p));
+      }
+
+      addLocalResource(fileSystem, String.valueOf(applicationId.getId()), localResources,
+          interpreterPaths);
+
+      List<String> vargs = Lists.newArrayList();
+
+      vargs.add(ApplicationConstants.Environment.JAVA_HOME.$$() + "/bin/java");
+
+      vargs.add("-Xmx1024m");
+
+      vargs.add(RemoteInterpreterServer.class.getName());
+
+      vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/interpreter.stdout");
+      vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/interpreter.stderr");
+
+      String command = Joiner.on(" ").join(vargs);
+      logger.debug("command: {}", command);
+
+      List<String> commands = Lists.newArrayList(command);
+
+      ContainerLaunchContext amContainer =
+          ContainerLaunchContext.newInstance(localResources, env, commands, null, null, null);
+
+      Resource capability = Resource.newInstance(1024, 1);
+      appContext.setResource(capability);
+
+      appContext.setAMContainerSpec(amContainer);
+
+      Priority pri = Priority.newInstance(0);
+      appContext.setPriority(pri);
+
+      appContext.setQueue("default");
+
+      appContext.setApplicationType("ZEPPELIN INTERPRETER");
 
       return new RemoteInterpreterYarnProcess(connectTimeout, listener, appListener, yarnClient,
           appContext);
@@ -157,9 +211,8 @@ public class Client extends ClusterManager {
     }
   }
 
-  private String getInterpreterRelativeDir(String dirName) {
-    return Joiner.on(Path.SEPARATOR).join(
-        new String[]{zeppelinConfiguration.getInterpreterDir(), dirName});
+  private java.nio.file.Path getInterpreterRelativePath(String dirName) {
+    return Paths.get(zeppelinConfiguration.getInterpreterDir(), dirName);
   }
 
   public void releaseResource(String id) {
@@ -212,71 +265,43 @@ public class Client extends ClusterManager {
     }
   }
 
-  private class ApplicationMonitor implements Runnable {
+  private List<java.nio.file.Path> getPathsFromDirPath(java.nio.file.Path dirPath) {
+    if (null == dirPath || Files.notExists(dirPath) || Files.isDirectory(dirPath)) {
+      return Lists.newArrayList();
+    }
 
-    @Override
-    public void run() {
-      ArrayList<String> removedIds = new ArrayList<>();
-      for (Map.Entry<String, ApplicationId> entry : idApplicationIdMap.entrySet()) {
-        String id = entry.getKey();
-        ApplicationId applicationId = entry.getValue();
-        try {
-          ApplicationReport applicationReport = yarnClient.getApplicationReport(applicationId);
-          YarnApplicationState curState = applicationReport.getYarnApplicationState();
-          YarnApplicationState oldState = appStatusMap.get(applicationId);
-          switch (curState) {
-              case NEW:
-              case NEW_SAVING:
-              case SUBMITTED:
-              case ACCEPTED:
-                if (null == oldState) {
-                  logger.info("new application added. Id: {}, applicationId: {}", id,
-                      applicationId);
-                }
-                appStatusMap.put(applicationId, curState);
-                break;
-              case RUNNING:
-                if (!YarnApplicationState.RUNNING.equals(oldState)) {
-                  logger.info("id {} started with applicationId {}", id, applicationId);
-                  appStatusMap.put(applicationId, curState);
-                  applicationCallbackHandler
-                      .onStarted(applicationReport.getHost(), applicationReport.getRpcPort());
-                }
-                break;
-              case FINISHED:
-                if (!YarnApplicationState.FINISHED.equals(oldState)) {
-                  logger.info("id {}, applicationId {} finished with final Status {}", id,
-                      applicationId, applicationReport.getFinalApplicationStatus());
-                  applicationCallbackHandler.onTerminated(id);
-                  removedIds.add(id);
-                }
-                break;
-              case FAILED:
-                if (!YarnApplicationState.FAILED.equals(oldState)) {
-                  logger
-                      .info("id {}, applicationId {} failed with final Status {}", id,
-                          applicationId, applicationReport.getFinalApplicationStatus());
-                  applicationCallbackHandler.onTerminated(id);
-                  removedIds.add(id);
-                }
-                break;
-              case KILLED:
-                if (!YarnApplicationState.KILLED.equals(oldState)) {
-                  logger
-                      .info("id {}, applicationId {} killed with final Status {}", id,
-                          applicationId, applicationReport.getFinalApplicationStatus());
-                  applicationCallbackHandler.onTerminated(id);
-                  removedIds.add(id);
-                }
-                break;
-          }
-        } catch (YarnException | IOException e) {
-          logger.debug("Error occurs while fetching status of {}", applicationId, e);
-        }
+    try {
+      DirectoryStream<java.nio.file.Path> directoryStream =
+          Files.newDirectoryStream(dirPath, new DirectoryStream.Filter<java.nio.file.Path>() {
+            @Override
+            public boolean accept(java.nio.file.Path entry) throws IOException {
+              return entry.endsWith(".jar");
+            }
+          });
+      return Lists.newArrayList(directoryStream);
+    } catch (IOException e) {
+      logger.error("Cannot read directory: {}", dirPath.toString(), e);
+      return Lists.newArrayList();
+    }
+  }
 
-        for (String removedId : removedIds) {
-          idApplicationIdMap.remove(removedId);
+  private void addLocalResource(FileSystem fs, String appId,
+      Map<String, LocalResource> localResourceMap, List<java.nio.file.Path> paths) {
+    for (java.nio.file.Path path : paths) {
+      String resourcePath = appId + Path.SEPARATOR + path.getFileName().toString();
+      Path dst = new Path(fs.getHomeDirectory(), resourcePath);
+      try {
+        if (Files.exists(path) && fs.exists(dst)) {
+          fs.copyFromLocalFile(new Path(path.toUri()), dst);
+          FileStatus fileStatus = fs.getFileStatus(dst);
+          LocalResource resource = LocalResource
+              .newInstance(ConverterUtils.getYarnUrlFromPath(dst), LocalResourceType.FILE,
+                  LocalResourceVisibility.APPLICATION, fileStatus.getLen(),
+                  fileStatus.getModificationTime());
+          localResourceMap.put(path.getFileName().toString(), resource);
         }
+      } catch (IOException e) {
+        logger.error("Error while copying resources into hdfs", e);
       }
     }
   }
