@@ -76,9 +76,3 @@ REM
 REM set ZEPPELINHUB_API_ADDRESS	       REM Refers to the address of the ZeppelinHub service in use
 REM set ZEPPELINHUB_API_TOKEN          REM Refers to the Zeppelin instance token of the user
 REM set ZEPPELINHUB_USER_KEY           REM Optional, when using Zeppelin with authentication.
-
-REM Hadoop for Windows - This is a fix for spark/hadoop requiring winutils.exe -  see https://issues.apache.org/jira/browse/ZEPPELIN-2438
-REM
-if not exist "%HADOOP_HOME%" (
-    set HADOOP_HOME=%~dp0\..\interpreter\spark\winutils
-)

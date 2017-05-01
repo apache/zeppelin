@@ -80,10 +80,8 @@
         <exclude>interpreter.json</exclude>
         <exclude>notebook-authorization.json</exclude>
         <exclude>shiro.ini</exclude>
-        <!--
         <exclude>zeppelin-env.cmd</exclude>
- 		-->
-         <exclude>zeppelin-env.sh</exclude>
+        <exclude>zeppelin-env.sh</exclude>
         <exclude>zeppelin-site.xml</exclude>
       </excludes>
     </fileSet>
