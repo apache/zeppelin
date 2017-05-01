@@ -97,7 +97,6 @@ public class ZeppelinServer extends Application {
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private UserProperties userProperties;
-  
   private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
@@ -399,7 +398,7 @@ public class ZeppelinServer extends Application {
 
     CredentialRestApi credentialApi = new CredentialRestApi(credentials);
     singletons.add(credentialApi);
-    
+
     PropertyRestApi propertyApi = new PropertyRestApi(userProperties);
     singletons.add(propertyApi);
 

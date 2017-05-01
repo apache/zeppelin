@@ -49,7 +49,7 @@ If the user using the interpreter has not specified a value for max_rows, then t
 <hr>
 
 
- * Specify the property at user level 
+ * Specify the property at user level
 
 ```
 The user can set property by going to the Properties menu and adding a new property.

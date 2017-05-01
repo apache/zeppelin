@@ -116,8 +116,7 @@ public class PropertyRestApi {
     }
     return new JsonResponse(Status.OK).build();
   }
-  
-  
+
   /**
    * Remove Entity of User Properties entity REST API
    * @param

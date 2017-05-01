@@ -42,7 +42,7 @@ public class InterpreterUtils {
 
   /**
    * Substitute variable in the Interpreter properties with values in the config
-   * If the property value is ${name,defaultValue}, 
+   * If the property value is ${name,defaultValue},
    * then the property value will be set to config.get("name").
    * If config.get("name") does not exist, then the property value will be set to defaultValue.
    * If the property value does not start with ${, then property value will be unchanged.
