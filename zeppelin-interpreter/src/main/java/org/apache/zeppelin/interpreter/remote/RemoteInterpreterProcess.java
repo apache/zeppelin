@@ -48,7 +48,7 @@ public abstract class RemoteInterpreterProcess {
         connectTimeout);
   }
 
-  RemoteInterpreterProcess(RemoteInterpreterEventPoller remoteInterpreterEventPoller,
+  protected RemoteInterpreterProcess(RemoteInterpreterEventPoller remoteInterpreterEventPoller,
                            int connectTimeout) {
     this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     referenceCount = new AtomicInteger(0);

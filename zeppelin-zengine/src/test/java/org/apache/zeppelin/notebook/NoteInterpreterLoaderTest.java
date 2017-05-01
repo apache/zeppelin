@@ -64,7 +64,7 @@ public class NoteInterpreterLoaderTest {
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
 
     ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, Maps.<String, Object>newHashMap()));

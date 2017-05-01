@@ -92,7 +92,7 @@ public class NotebookTest implements JobListenerFactory{
 
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(false));
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
 
     ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
@@ -259,7 +259,7 @@ public class NotebookTest implements JobListenerFactory{
 
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager),
+        new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null),
         interpreterSettingManager, null, null, null, null);
 
     assertEquals(1, notebook2.getAllNotes().size());

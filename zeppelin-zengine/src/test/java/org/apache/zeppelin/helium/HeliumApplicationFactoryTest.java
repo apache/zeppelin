@@ -85,7 +85,7 @@ public class HeliumApplicationFactoryTest implements JobListenerFactory {
     heliumAppFactory = new HeliumApplicationFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
-    factory = new InterpreterFactory(conf, null, null, heliumAppFactory, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, heliumAppFactory, depResolver, false, interpreterSettingManager, null);
     HashMap<String, String> env = new HashMap<>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
     factory.setEnv(env);

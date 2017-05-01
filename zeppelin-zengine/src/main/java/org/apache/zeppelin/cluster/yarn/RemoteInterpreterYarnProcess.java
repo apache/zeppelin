@@ -19,6 +19,8 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
+import static org.apache.hadoop.yarn.api.records.YarnApplicationState.*;
+
 /**
  *
  */
@@ -115,7 +117,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               oldState = curState;
               break;
             case RUNNING:
-              if (!YarnApplicationState.RUNNING.equals(oldState)) {
+              if (!RUNNING.equals(oldState)) {
                 String host = applicationReport.getHost();
                 int port = applicationReport.getRpcPort();
                 logger
@@ -128,7 +130,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               }
               break;
             case FINISHED:
-              if (!YarnApplicationState.FINISHED.equals(oldState)) {
+              if (!FINISHED.equals(oldState)) {
                 logger.info("applicationId {} finished with final Status {}", applicationId,
                     applicationReport.getFinalApplicationStatus());
                 setRunning(false);
@@ -136,7 +138,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               }
               break;
             case FAILED:
-              if (!YarnApplicationState.FAILED.equals(oldState)) {
+              if (!FAILED.equals(oldState)) {
                 logger.info("id {}, applicationId {} failed with final Status {}", applicationId,
                     applicationReport.getFinalApplicationStatus());
                 setRunning(false);
@@ -144,7 +146,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               }
               break;
             case KILLED:
-              if (!YarnApplicationState.KILLED.equals(oldState)) {
+              if (!KILLED.equals(oldState)) {
                 logger.info("applicationId {} killed with final Status {}", applicationId,
                     applicationReport.getFinalApplicationStatus());
                 setRunning(false);

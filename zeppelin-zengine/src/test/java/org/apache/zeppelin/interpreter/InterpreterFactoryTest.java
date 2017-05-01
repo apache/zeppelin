@@ -82,7 +82,7 @@ public class InterpreterFactoryTest {
     schedulerFactory = new SchedulerFactory();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
     context = new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null);
 
     ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -150,7 +150,7 @@ public class InterpreterFactoryTest {
     intp1Properties.put("PROPERTY_1", "VALUE_1");
     intp1Properties.put("property_2", "value_2");
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
@@ -187,7 +187,7 @@ public class InterpreterFactoryTest {
     intp1Properties.put("PROPERTY_1", "VALUE_1");
     intp1Properties.put("property_2", "value_2");
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
@@ -232,7 +232,7 @@ public class InterpreterFactoryTest {
     intp1Properties.put("PROPERTY_1", "VALUE_1");
     intp1Properties.put("property_2", "value_2");
     interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(true), intp1Properties);
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
     List<InterpreterSetting> all = interpreterSettingManager.get();
     InterpreterSetting mock1Setting = null;
     for (InterpreterSetting setting : all) {
@@ -341,7 +341,7 @@ public class InterpreterFactoryTest {
   @Test
   public void testInterpreterAliases() throws IOException, RepositoryException {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     final InterpreterInfo info2 = new InterpreterInfo("className2", "name1", true, null);
     interpreterSettingManager.add("group1", new ArrayList<InterpreterInfo>() {{
@@ -366,7 +366,7 @@ public class InterpreterFactoryTest {
   @Test
   public void testMultiUser() throws IOException, RepositoryException {
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, true, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, true, interpreterSettingManager, null);
     final InterpreterInfo info1 = new InterpreterInfo("className1", "name1", true, null);
     interpreterSettingManager.add("group1", new ArrayList<InterpreterInfo>(){{
       add(info1);

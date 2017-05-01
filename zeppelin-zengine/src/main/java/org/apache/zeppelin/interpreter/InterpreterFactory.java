@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.zeppelin.cluster.ClusterManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -64,6 +65,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener appEventListener;
 
+  private final ClusterManager clusterManager;
+
   private boolean shiroEnabled;
 
   private Map<String, String> env = new HashMap<>();
@@ -74,7 +77,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appEventListener, DependencyResolver depResolver,
-      boolean shiroEnabled, InterpreterSettingManager interpreterSettingManager)
+      boolean shiroEnabled, InterpreterSettingManager interpreterSettingManager,
+      ClusterManager clusterManager)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -85,6 +89,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     this.interpreterSettingManager = interpreterSettingManager;
     //TODO(jl): Fix it not to use InterpreterGroupFactory
     interpreterSettingManager.setInterpreterGroupFactory(this);
+
+    this.clusterManager = clusterManager;
 
     logger.info("shiroEnabled: {}", shiroEnabled);
   }
@@ -178,6 +184,13 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
       logger.info("Interpreter {} {} created", interpreter.getClassName(), interpreter.hashCode());
+
+      //Testing only
+      int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+      interpreterGroup.setRemoteInterpreterProcess(clusterManager
+          .createInterpreter("uniq", interpreterSetting, connectTimeout,
+              remoteInterpreterProcessListener, appEventListener));
+
       interpreter.setInterpreterGroup(interpreterGroup);
     }
   }

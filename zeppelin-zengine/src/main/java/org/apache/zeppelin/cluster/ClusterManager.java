@@ -29,12 +29,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
  */
 public abstract class ClusterManager {
   protected final ZeppelinConfiguration zeppelinConfiguration;
-  protected final ApplicationCallbackHandler applicationCallbackHandler;
 
-  protected ClusterManager(ZeppelinConfiguration zeppelinConfiguration,
-      ApplicationCallbackHandler applicationCallbackHandler) {
+  protected ClusterManager(ZeppelinConfiguration zeppelinConfiguration) {
     this.zeppelinConfiguration = zeppelinConfiguration;
-    this.applicationCallbackHandler = applicationCallbackHandler;
   }
 
   /**
