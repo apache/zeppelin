@@ -540,6 +540,9 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           builtInViz.instance.render(transformed)
           builtInViz.instance.renderSetting(visualizationSettingTargetEl)
           builtInViz.instance.activate()
+          angular.element(window).resize(() => {
+            builtInViz.instance.resize()
+          })
         } catch (err) {
           console.error('Graph drawing error %o', err)
         }
