@@ -51,6 +51,10 @@
   border-color: #ccc;
 }
 
+.revisionTooltip {
+  z-index: 10003;
+}
+
 .caretSeparator {
   height: 22px;
   line-height: 9px;
@@ -312,7 +316,6 @@
   min-width: 150px;
   max-width: 50%;
 }
-
 
 .inactivelink {
   color: darkgrey;
