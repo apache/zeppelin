@@ -1592,8 +1592,15 @@ public class NotebookServer extends WebSocketServlet
         userAndRoles, fromMessage.principal, "write")) {
       return null;
     }
+    Map<String, Object> config;
+    if (fromMessage.get("config") != null) {
+      config = (Map<String, Object>) fromMessage.get("config");
+    } else {
+      config = new HashMap<>();
+    }
 
     Paragraph newPara = note.insertNewParagraph(index, subject);
+    newPara.setConfig(config);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
 

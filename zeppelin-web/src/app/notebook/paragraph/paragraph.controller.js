@@ -126,6 +126,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.chart = {}
     $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain']
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    $scope.fontSizeOption = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     $scope.paragraphFocused = false
     if (newParagraph.focus) {
       $scope.paragraphFocused = true
@@ -144,6 +145,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
     if (!config.colWidth) {
       config.colWidth = 12
+    }
+
+    if (!config.fontSize) {
+      config.fontSize = 9
     }
 
     if (config.enabled === undefined) {
@@ -583,6 +588,17 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     commitParagraph(paragraph)
   }
 
+  $scope.changeFontSize = function (paragraph, fontSize) {
+    if ($scope.editor) {
+      $scope.editor.setOptions({
+        fontSize: fontSize + 'pt'
+      })
+      autoAdjustEditorHeight($scope.editor)
+      paragraph.config.fontSize = fontSize
+      commitParagraph(paragraph)
+    }
+  }
+
   $scope.toggleOutput = function (paragraph) {
     paragraph.config.tableHide = !paragraph.config.tableHide
     commitParagraph(paragraph)
@@ -712,6 +728,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         langTools.textCompleter])
 
       $scope.editor.setOptions({
+        fontSize: $scope.paragraph.config.fontSize + 'pt',
         enableBasicAutocompletion: true,
         enableSnippets: false,
         enableLiveAutocompletion: false
@@ -1221,6 +1238,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.paragraph.title = newPara.title
     $scope.paragraph.lineNumbers = newPara.lineNumbers
     $scope.paragraph.status = newPara.status
+    $scope.paragraph.fontSize = newPara.fontSize
     if (newPara.status !== ParagraphStatus.RUNNING) {
       $scope.paragraph.results = newPara.results
     }
