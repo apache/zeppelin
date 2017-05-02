@@ -25,7 +25,7 @@ limitations under the License.
 
 ## Main home
 
-The first time you connect to Zeppelin, you'll land at the main page similar to the below screen capture.
+The first time you connect to Zeppelin ([default installations start on http://localhost:8080](http://localhost:8080/)), you'll land at the main page similar to the below screen capture.
 
 <img src="../assets/themes/zeppelin/img/ui-img/homepage.png" />
 
