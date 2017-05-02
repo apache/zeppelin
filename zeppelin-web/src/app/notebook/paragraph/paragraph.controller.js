@@ -589,6 +589,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.changeFontSize = function (paragraph, fontSize) {
+    angular.element('.navbar-right.open').removeClass('open')
     if ($scope.editor) {
       $scope.editor.setOptions({
         fontSize: fontSize + 'pt'
