@@ -477,6 +477,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  public String getHome() {
+    return getString(ConfVars.ZEPPELIN_HOME);
+  }
+
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
   }

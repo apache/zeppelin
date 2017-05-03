@@ -186,10 +186,12 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       logger.info("Interpreter {} {} created", interpreter.getClassName(), interpreter.hashCode());
 
       //Testing only
-      int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-      interpreterGroup.setRemoteInterpreterProcess(clusterManager
-          .createInterpreter("uniq", interpreterSetting, connectTimeout,
-              remoteInterpreterProcessListener, appEventListener));
+      if (null == interpreterGroup.getRemoteInterpreterProcess()) {
+        int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+        interpreterGroup.setRemoteInterpreterProcess(clusterManager
+            .createInterpreter("uniq", interpreterSetting, connectTimeout,
+                remoteInterpreterProcessListener, appEventListener));
+      }
 
       interpreter.setInterpreterGroup(interpreterGroup);
     }

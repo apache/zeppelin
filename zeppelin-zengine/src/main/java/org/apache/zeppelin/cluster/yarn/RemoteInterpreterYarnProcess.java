@@ -1,6 +1,7 @@
 package org.apache.zeppelin.cluster.yarn;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +20,10 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
-import static org.apache.hadoop.yarn.api.records.YarnApplicationState.*;
+import static org.apache.hadoop.yarn.api.records.YarnApplicationState.FAILED;
+import static org.apache.hadoop.yarn.api.records.YarnApplicationState.FINISHED;
+import static org.apache.hadoop.yarn.api.records.YarnApplicationState.KILLED;
+import static org.apache.hadoop.yarn.api.records.YarnApplicationState.RUNNING;
 
 /**
  *
@@ -30,8 +34,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
   private final YarnClient yarnClient;
   private final ApplicationSubmissionContext appContext;
-  private final ApplicationId applicationId;
 
+  private ApplicationId applicationId;
   private boolean isRunning = false;
   private ScheduledFuture monitor;
   private YarnApplicationState oldState;
@@ -45,7 +49,6 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
     super(new RemoteInterpreterEventPoller(listener, appListener), connectTimeout);
     this.yarnClient = yarnClient;
     this.appContext = appContext;
-    this.applicationId = appContext.getApplicationId();
   }
 
   @Override
@@ -72,10 +75,14 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
     }
     try {
+      this.applicationId = appContext.getApplicationId();
       yarnClient.submitApplication(appContext);
       monitor = Client.scheduledExecutorService
           .scheduleAtFixedRate(new ApplicationMonitor(), 1, 1, TimeUnit.SECONDS);
       while (!isRunning()) {
+        if (oldState == FINISHED || oldState == FAILED || oldState == KILLED) {
+          throw new YarnException("Failed to initialize yarn application: " + applicationId);
+        }
         Thread.sleep(500);
         logger.debug("Waiting until connected");
       }
@@ -87,6 +94,14 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
   @Override
   public void stop() {
     isRunning = false;
+    if (null != oldState && oldState != FINISHED && oldState != FAILED && oldState != KILLED) {
+      try {
+        yarnClient.killApplication(applicationId);
+      } catch (YarnException | IOException e) {
+        logger.debug("error while killing application: {}", applicationId);
+      }
+    }
+    oldState = null;
     monitor.cancel(false);
   }
 
@@ -133,7 +148,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               if (!FINISHED.equals(oldState)) {
                 logger.info("applicationId {} finished with final Status {}", applicationId,
                     applicationReport.getFinalApplicationStatus());
-                setRunning(false);
+                oldState = FINISHED;
+                stop();
                 //TODO(jl): Handle it!!
               }
               break;
@@ -141,7 +157,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               if (!FAILED.equals(oldState)) {
                 logger.info("id {}, applicationId {} failed with final Status {}", applicationId,
                     applicationReport.getFinalApplicationStatus());
-                setRunning(false);
+                oldState = FAILED;
+                stop();
                 //TODO(jl): Handle it!!
               }
               break;
@@ -149,7 +166,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               if (!KILLED.equals(oldState)) {
                 logger.info("applicationId {} killed with final Status {}", applicationId,
                     applicationReport.getFinalApplicationStatus());
-                setRunning(false);
+                oldState = KILLED;
+                stop();
                 //TODO(jl): Handle it!!
               }
               break;

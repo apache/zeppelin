@@ -115,7 +115,7 @@ public class RemoteInterpreterServer
   private int callbackPort;
   private String host;
   private int port;
-  private TThreadPoolServer server;
+  protected TThreadPoolServer server;
 
   RemoteInterpreterEventClient eventClient = new RemoteInterpreterEventClient();
   private DependencyResolver depLoader;
@@ -228,7 +228,7 @@ public class RemoteInterpreterServer
 
 
   public static void main(String[] args)
-      throws TTransportException, InterruptedException, IOException {
+      throws TTransportException, InterruptedException, Exception {
     String callbackHost = null;
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     if (args.length > 0) {

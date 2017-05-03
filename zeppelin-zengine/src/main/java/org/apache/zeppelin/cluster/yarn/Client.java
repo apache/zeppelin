@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -64,7 +63,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 
 /**
  *
@@ -106,9 +104,12 @@ public class Client extends ClusterManager {
       this.idApplicationIdMap = new ConcurrentHashMap<>();
 
       this.interpreterRelatedPaths = Lists.newArrayList(
-          Paths.get(zeppelinConfiguration.getBasePath(), "zeppelin-interpreter", "target"),
-          Paths.get(zeppelinConfiguration.getBasePath(), "zeppelin-interpreter", "target", "lib"),
-          Paths.get(zeppelinConfiguration.getBasePath(), "lib", "interpreter"));
+          Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target")
+              .toAbsolutePath(),
+          Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target", "lib")
+              .toAbsolutePath(),
+          Paths.get(zeppelinConfiguration.getHome(), "lib", "interpreter").toAbsolutePath(),
+          Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target"));
 
       this.started = true;
     }
@@ -148,10 +149,12 @@ public class Client extends ClusterManager {
 
       Map<String, String> env = Maps.newHashMap();
 
-      ArrayList<String> classpathStrings = Lists
-          .newArrayList(configuration.getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH));
+      ArrayList<String> classpathStrings = Lists.newArrayList(configuration
+          .getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH,
+              YarnConfiguration.DEFAULT_YARN_CROSS_PLATFORM_APPLICATION_CLASSPATH));
       classpathStrings.add(0, "./*");
       classpathStrings.add(0, ApplicationConstants.Environment.CLASSPATH.$$());
+      classpathStrings.add("${SPARK_HOME}/jars/*");
 
       String classpathEnv =
           Joiner.on(ApplicationConstants.CLASS_PATH_SEPARATOR).join(classpathStrings);
@@ -159,6 +162,7 @@ public class Client extends ClusterManager {
       logger.debug("classpath: {}", classpathEnv);
 
       env.put("CLASSPATH", classpathEnv);
+      env.put("SPARK_HOME", "/Users/jl/local/src/spark-2.1.0-bin-hadoop2.7");
 
       Map<String, LocalResource> localResources = new HashMap<>();
 
@@ -166,6 +170,10 @@ public class Client extends ClusterManager {
 
       java.nio.file.Path interpreterDir = getInterpreterRelativePath(interpreterSetting.getGroup());
       List<java.nio.file.Path> interpreterPaths = getPathsFromDirPath(interpreterDir);
+      /*if (interpreterSetting.getGroup().equals("spark")) {
+        interpreterDir = getInterpreterRelativePath("spark/dep");
+        interpreterPaths.addAll(getPathsFromDirPath(interpreterDir));
+      }*/
       for (java.nio.file.Path p : interpreterRelatedPaths) {
         interpreterPaths.addAll(getPathsFromDirPath(p));
       }
@@ -179,7 +187,7 @@ public class Client extends ClusterManager {
 
       vargs.add("-Xmx1024m");
 
-      vargs.add(RemoteInterpreterServer.class.getName());
+      vargs.add(YarnRemoteInterpreterServer.class.getName());
 
       vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/interpreter.stdout");
       vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/interpreter.stderr");
@@ -266,7 +274,7 @@ public class Client extends ClusterManager {
   }
 
   private List<java.nio.file.Path> getPathsFromDirPath(java.nio.file.Path dirPath) {
-    if (null == dirPath || Files.notExists(dirPath) || Files.isDirectory(dirPath)) {
+    if (null == dirPath || Files.notExists(dirPath) || !Files.isDirectory(dirPath)) {
       return Lists.newArrayList();
     }
 
@@ -275,7 +283,8 @@ public class Client extends ClusterManager {
           Files.newDirectoryStream(dirPath, new DirectoryStream.Filter<java.nio.file.Path>() {
             @Override
             public boolean accept(java.nio.file.Path entry) throws IOException {
-              return entry.endsWith(".jar");
+              String filename = entry.toString();
+              return filename.endsWith(".jar") || filename.endsWith(".zip");
             }
           });
       return Lists.newArrayList(directoryStream);
@@ -291,14 +300,19 @@ public class Client extends ClusterManager {
       String resourcePath = appId + Path.SEPARATOR + path.getFileName().toString();
       Path dst = new Path(fs.getHomeDirectory(), resourcePath);
       try {
-        if (Files.exists(path) && fs.exists(dst)) {
+        if (Files.exists(path) && !fs.exists(dst)) {
           fs.copyFromLocalFile(new Path(path.toUri()), dst);
           FileStatus fileStatus = fs.getFileStatus(dst);
+          LocalResourceType localResourceType = LocalResourceType.FILE;
+          String filename = path.getFileName().toString();
+          if (filename.endsWith(".zip")) {
+            localResourceType = LocalResourceType.ARCHIVE;
+          }
           LocalResource resource = LocalResource
-              .newInstance(ConverterUtils.getYarnUrlFromPath(dst), LocalResourceType.FILE,
+              .newInstance(ConverterUtils.getYarnUrlFromPath(dst), localResourceType,
                   LocalResourceVisibility.APPLICATION, fileStatus.getLen(),
                   fileStatus.getModificationTime());
-          localResourceMap.put(path.getFileName().toString(), resource);
+          localResourceMap.put(filename, resource);
         }
       } catch (IOException e) {
         logger.error("Error while copying resources into hdfs", e);
