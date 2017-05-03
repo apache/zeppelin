@@ -171,6 +171,79 @@ public class RemoteInterpreterTest {
   }
 
   @Test
+  public void testExecuteIncorrectPrecode() throws TTransportException, IOException {
+    Properties p = new Properties();
+    p.put("zeppelin.MockInterpreterA.precode", "fail test");
+    intpGroup.put("note", new LinkedList<Interpreter>());
+
+    RemoteInterpreter intpA = createMockInterpreterA(p);
+
+    intpGroup.get("note").add(intpA);
+
+    intpA.setInterpreterGroup(intpGroup);
+
+    RemoteInterpreterProcess process = intpA.getInterpreterProcess();
+
+    intpA.open();
+    
+    InterpreterResult result = intpA.interpret("1",
+        new InterpreterContext(
+            "note",
+            "id",
+            null,
+            "title",
+            "text",
+            new AuthenticationInfo(),
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
+            new LinkedList<InterpreterContextRunner>(), null));
+
+
+
+    intpA.close();
+    assertEquals(Code.ERROR, result.code());
+  }
+
+  @Test
+  public void testExecuteCorrectPrecode() throws TTransportException, IOException {
+    Properties p = new Properties();
+    p.put("zeppelin.MockInterpreterA.precode", "2");
+    intpGroup.put("note", new LinkedList<Interpreter>());
+
+    RemoteInterpreter intpA = createMockInterpreterA(p);
+
+    intpGroup.get("note").add(intpA);
+
+    intpA.setInterpreterGroup(intpGroup);
+
+    RemoteInterpreterProcess process = intpA.getInterpreterProcess();
+
+    intpA.open();
+
+    InterpreterResult result = intpA.interpret("1",
+        new InterpreterContext(
+            "note",
+            "id",
+            null,
+            "title",
+            "text",
+            new AuthenticationInfo(),
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
+            new LinkedList<InterpreterContextRunner>(), null));
+
+
+
+    intpA.close();
+    assertEquals(Code.SUCCESS, result.code());
+    assertEquals("1", result.message().get(0).getData());
+  }
+
+  @Test
   public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
     Properties p = new Properties();
 

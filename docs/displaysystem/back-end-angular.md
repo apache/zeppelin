@@ -112,7 +112,7 @@ import AngularElem._
 ### Display Element
 ```scala
 // automatically convert to string and print with %angular display system directive in front.
-<div><div>.display
+<div></div>.display
 ```
 ### Event Handler
 ```scala

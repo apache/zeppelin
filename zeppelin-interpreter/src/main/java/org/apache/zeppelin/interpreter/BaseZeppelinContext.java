@@ -15,104 +15,60 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark;
+package org.apache.zeppelin.interpreter;
 
-import static scala.collection.JavaConversions.asJavaCollection;
-import static scala.collection.JavaConversions.asJavaIterable;
-import static scala.collection.JavaConversions.collectionAsScalaIterable;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
-import org.apache.spark.SparkContext;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.catalyst.expressions.Attribute;
-import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.annotation.Experimental;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
-import org.apache.zeppelin.interpreter.RemoteWorksController;
-import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
-import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 
-import scala.Tuple2;
-import scala.Unit;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Spark context for zeppelin.
+ * Base class for ZeppelinContext
  */
-public class ZeppelinContext {
-  // Map interpreter class name (to be used by hook registry) from
-  // given replName in parapgraph
-  private static final Map<String, String> interpreterClassMap;
+public abstract class BaseZeppelinContext {
+
+
+  protected InterpreterContext interpreterContext;
+  protected int maxResult;
+  protected InterpreterHookRegistry hooks;
+  protected GUI gui;
+
   private static RemoteEventClientWrapper eventClient;
-  static {
-    interpreterClassMap = new HashMap<>();
-    interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
-    interpreterClassMap.put("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter");
-    interpreterClassMap.put("dep", "org.apache.zeppelin.spark.DepInterpreter");
-    interpreterClassMap.put("pyspark", "org.apache.zeppelin.spark.PySparkInterpreter");
-  }
-  
-  private SparkDependencyResolver dep;
-  private InterpreterContext interpreterContext;
-  private int maxResult;
-  private List<Class> supportedClasses;
-  private InterpreterHookRegistry hooks;
-  
-  public ZeppelinContext(SparkContext sc, SQLContext sql,
-      InterpreterContext interpreterContext,
-      SparkDependencyResolver dep,
-      InterpreterHookRegistry hooks,
-      int maxResult) {
-    this.sc = sc;
-    this.sqlContext = sql;
-    this.interpreterContext = interpreterContext;
-    this.dep = dep;
+
+  public BaseZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     this.hooks = hooks;
     this.maxResult = maxResult;
-    this.supportedClasses = new ArrayList<>();
-    try {
-      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.Dataset"));
-    } catch (ClassNotFoundException e) {
-    }
-
-    try {
-      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.DataFrame"));
-    } catch (ClassNotFoundException e) {
-    }
-
-    try {
-      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.SchemaRDD"));
-    } catch (ClassNotFoundException e) {
-    }
-
-    if (supportedClasses.isEmpty()) {
-      throw new InterpreterException("Can not road Dataset/DataFrame/SchemaRDD class");
-    }
   }
 
-  public SparkContext sc;
-  public SQLContext sqlContext;
-  private GUI gui;
+  // Map interpreter class name (to be used by hook registry) from
+  // given replName in parapgraph
+  public abstract Map<String, String> getInterpreterClassMap();
+
+  public abstract List<Class> getSupportedClasses();
+
+  public int getMaxResult() {
+    return this.maxResult;
+  }
+
+  /**
+   * subclasses should implement this method to display specific data type
+   * @param obj
+   * @return
+   */
+  protected abstract String showData(Object obj);
 
   /**
    * @deprecated use z.textbox instead
@@ -143,49 +99,24 @@ public class ZeppelinContext {
     return gui.textbox(name, defaultValue);
   }
 
-  @ZeppelinApi
-  public Object select(String name, scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return select(name, "", options);
+  public Object select(String name, Object defaultValue, ParamOption[] paramOptions) {
+    return gui.select(name, defaultValue, paramOptions);
   }
 
   @ZeppelinApi
-  public Object select(String name, Object defaultValue,
-      scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return gui.select(name, defaultValue, tuplesToParamOptions(options));
-  }
-
-  @ZeppelinApi
-  public scala.collection.Seq<Object> checkbox(String name,
-      scala.collection.Iterable<Tuple2<Object, String>> options) {
-    List<Object> allChecked = new LinkedList<>();
-    for (Tuple2<Object, String> option : asJavaIterable(options)) {
-      allChecked.add(option._1());
+  public Collection<Object> checkbox(String name, ParamOption[] options) {
+    List<Object> defaultValues = new LinkedList<>();
+    for (ParamOption option : options) {
+      defaultValues.add(option.getValue());
     }
-    return checkbox(name, collectionAsScalaIterable(allChecked), options);
+    return checkbox(name, defaultValues, options);
   }
 
   @ZeppelinApi
-  public scala.collection.Seq<Object> checkbox(String name,
-      scala.collection.Iterable<Object> defaultChecked,
-      scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return scala.collection.JavaConversions.asScalaBuffer(
-        gui.checkbox(name, asJavaCollection(defaultChecked),
-            tuplesToParamOptions(options))).toSeq();
-  }
-
-  private ParamOption[] tuplesToParamOptions(
-      scala.collection.Iterable<Tuple2<Object, String>> options) {
-    int n = options.size();
-    ParamOption[] paramOptions = new ParamOption[n];
-    Iterator<Tuple2<Object, String>> it = asJavaIterable(options).iterator();
-
-    int i = 0;
-    while (it.hasNext()) {
-      Tuple2<Object, String> valueAndDisplayValue = it.next();
-      paramOptions[i++] = new ParamOption(valueAndDisplayValue._1(), valueAndDisplayValue._2());
-    }
-
-    return paramOptions;
+  public Collection<Object> checkbox(String name,
+                                     List<Object> defaultValues,
+                                     ParamOption[] options) {
+    return gui.checkbox(name, defaultValues, options);
   }
 
   public void setGui(GUI o) {
@@ -208,8 +139,9 @@ public class ZeppelinContext {
   }
 
   /**
-   * show DataFrame or SchemaRDD
-   * @param o DataFrame or SchemaRDD object
+   * display special types of objects for interpreter.
+   * Each interpreter can has its own supported classes.
+   * @param o object
    */
   @ZeppelinApi
   public void show(Object o) {
@@ -217,16 +149,17 @@ public class ZeppelinContext {
   }
 
   /**
-   * show DataFrame or SchemaRDD
-   * @param o DataFrame or SchemaRDD object
+   * display special types of objects for interpreter.
+   * Each interpreter can has its own supported classes.
+   * @param o object
    * @param maxResult maximum number of rows to display
    */
 
   @ZeppelinApi
   public void show(Object o, int maxResult) {
     try {
-      if (supportedClasses.contains(o.getClass())) {
-        interpreterContext.out.write(showDF(sc, interpreterContext, o, maxResult));
+      if (isSupportedObject(o)) {
+        interpreterContext.out.write(showData(o));
       } else {
         interpreterContext.out.write(o.toString());
       }
@@ -235,93 +168,13 @@ public class ZeppelinContext {
     }
   }
 
-  public static String showDF(ZeppelinContext z, Object df) {
-    return showDF(z.sc, z.interpreterContext, df, z.maxResult);
-  }
-
-  public static String showDF(SparkContext sc,
-      InterpreterContext interpreterContext,
-      Object df, int maxResult) {
-    Object[] rows = null;
-    Method take;
-    String jobGroup = Utils.buildJobGroupId(interpreterContext);
-    sc.setJobGroup(jobGroup, "Zeppelin", false);
-
-    try {
-      // convert it to DataFrame if it is Dataset, as we will iterate all the records
-      // and assume it is type Row.
-      if (df.getClass().getCanonicalName().equals("org.apache.spark.sql.Dataset")) {
-        Method convertToDFMethod = df.getClass().getMethod("toDF");
-        df = convertToDFMethod.invoke(df);
+  private boolean isSupportedObject(Object obj) {
+    for (Class supportedClass : getSupportedClasses()) {
+      if (supportedClass.isInstance(obj)) {
+        return true;
       }
-      take = df.getClass().getMethod("take", int.class);
-      rows = (Object[]) take.invoke(df, maxResult + 1);
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
-      sc.clearJobGroup();
-      throw new InterpreterException(e);
     }
-
-    List<Attribute> columns = null;
-    // get field names
-    try {
-      // Use reflection because of classname returned by queryExecution changes from
-      // Spark <1.5.2 org.apache.spark.sql.SQLContext$QueryExecution
-      // Spark 1.6.0> org.apache.spark.sql.hive.HiveContext$QueryExecution
-      Object qe = df.getClass().getMethod("queryExecution").invoke(df);
-      Object a = qe.getClass().getMethod("analyzed").invoke(qe);
-      scala.collection.Seq seq = (scala.collection.Seq) a.getClass().getMethod("output").invoke(a);
-
-      columns = (List<Attribute>) scala.collection.JavaConverters.seqAsJavaListConverter(seq)
-                                                                 .asJava();
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
-    StringBuilder msg = new StringBuilder();
-    msg.append("%table ");
-    for (Attribute col : columns) {
-      msg.append(col.name() + "\t");
-    }
-    String trim = msg.toString().trim();
-    msg = new StringBuilder(trim);
-    msg.append("\n");
-
-    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
-    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
-    // NullType, NumericType, ShortType, StringType, StructType
-
-    try {
-      for (int r = 0; r < maxResult && r < rows.length; r++) {
-        Object row = rows[r];
-        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
-        Method apply = row.getClass().getMethod("apply", int.class);
-
-        for (int i = 0; i < columns.size(); i++) {
-          if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg.append(apply.invoke(row, i).toString());
-          } else {
-            msg.append("null");
-          }
-          if (i != columns.size() - 1) {
-            msg.append("\t");
-          }
-        }
-        msg.append("\n");
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
-    if (rows.length > maxResult) {
-      msg.append("\n");
-      msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult,
-          SparkSqlInterpreter.MAX_RESULTS));
-    }
-    sc.clearJobGroup();
-    return msg.toString();
+    return false;
   }
 
   /**
@@ -664,31 +517,7 @@ public class ZeppelinContext {
     angularWatch(name, null, watcher);
   }
 
-  @ZeppelinApi
-  public void angularWatch(String name,
-      final scala.Function2<Object, Object, Unit> func) {
-    angularWatch(name, interpreterContext.getNoteId(), func);
-  }
 
-  @Deprecated
-  public void angularWatchGlobal(String name,
-      final scala.Function2<Object, Object, Unit> func) {
-    angularWatch(name, null, func);
-  }
-
-  @ZeppelinApi
-  public void angularWatch(
-      String name,
-      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
-    angularWatch(name, interpreterContext.getNoteId(), func);
-  }
-
-  @Deprecated
-  public void angularWatchGlobal(
-      String name,
-      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
-    angularWatch(name, null, func);
-  }
 
   /**
    * Remove watcher from angular variable (local)
@@ -788,39 +617,12 @@ public class ZeppelinContext {
    * @param name name of the variable
    * @param watcher watcher
    */
-  private void angularWatch(String name, String noteId, AngularObjectWatcher watcher) {
+  public void angularWatch(String name, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
     if (registry.get(name, noteId, null) != null) {
       registry.get(name, noteId, null).addWatcher(watcher);
     }
-  }
-
-
-  private void angularWatch(String name, String noteId,
-      final scala.Function2<Object, Object, Unit> func) {
-    AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
-      @Override
-      public void watch(Object oldObject, Object newObject,
-          InterpreterContext context) {
-        func.apply(newObject, newObject);
-      }
-    };
-    angularWatch(name, noteId, w);
-  }
-
-  private void angularWatch(
-      String name,
-      String noteId,
-      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
-    AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
-      @Override
-      public void watch(Object oldObject, Object newObject,
-          InterpreterContext context) {
-        func.apply(oldObject, newObject, context);
-      }
-    };
-    angularWatch(name, noteId, w);
   }
 
   /**
@@ -860,16 +662,16 @@ public class ZeppelinContext {
    * @param replName if replName is a valid className, return that instead.
    */
   public String getClassNameFromReplName(String replName) {
-    for (String name : interpreterClassMap.values()) {
+    for (String name : getInterpreterClassMap().keySet()) {
       if (replName.equals(name)) {
         return replName;
       }
     }
-    
+
     if (replName.contains("spark.")) {
       replName = replName.replace("spark.", "");
     }
-    return interpreterClassMap.get(replName);
+    return getInterpreterClassMap().get(replName);
   }
 
   /**
@@ -1012,8 +814,8 @@ public class ZeppelinContext {
    */
   @ZeppelinApi
   public void setEventClient(RemoteEventClientWrapper eventClient) {
-    if (ZeppelinContext.eventClient == null) {
-      ZeppelinContext.eventClient = eventClient;
+    if (BaseZeppelinContext.eventClient == null) {
+      BaseZeppelinContext.eventClient = eventClient;
     }
   }
 }
