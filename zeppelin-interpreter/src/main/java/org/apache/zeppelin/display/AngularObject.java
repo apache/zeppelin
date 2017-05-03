@@ -175,7 +175,6 @@ public class AngularObject<T> {
       emit();
     }
     LOGGER.debug("Update angular object: " + name + " with value: " + o);
-    final Logger logger = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
       ws.addAll(watchers);
@@ -187,9 +186,10 @@ public class AngularObject<T> {
         @Override
         public void run() {
           try {
+            LOGGER.debug("Watcher of angular object {} is invoked.", name);
             w.watch(before, after);
           } catch (Exception e) {
-            logger.error("Exception on watch", e);
+            LOGGER.error("Exception on watch", e);
           }
         }
       });

@@ -23,9 +23,9 @@ import org.apache.zeppelin.interpreter.InterpreterContext
 /**
   * Represents ng-model with angular object
   */
-abstract class AbstractAngularModel(name: String) {
-  val context = InterpreterContext.get
-  val registry = context.getAngularObjectRegistry
+abstract class AbstractAngularModel(val name: String) {
+  @transient val context = InterpreterContext.get
+  @transient val registry = context.getAngularObjectRegistry
 
 
   /**
