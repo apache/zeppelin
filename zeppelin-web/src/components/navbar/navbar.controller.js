@@ -150,4 +150,16 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
       })
     })
   }
+
+  $scope.calculateTooltipPlacement = function (note) {
+    if (note !== undefined && note.name !== undefined) {
+      let length = note.name.length
+      if (length < 2) {
+        return 'top-left'
+      } else if (length > 7) {
+        return 'top-right'
+      }
+    }
+    return 'top'
+  }
 }

@@ -320,3 +320,14 @@
   pointer-events: none;
 }
 
+/** required to pin, unpin `noteAction` */
+.noteAction.headroom {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  transition: all .2s ease-in-out;
+}
+.noteAction.headroom--unpinned { top: -100px; }
+.noteAction.headroom--pinned { top: 50px; /** `noteAction` top */ }
+

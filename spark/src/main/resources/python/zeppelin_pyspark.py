@@ -21,15 +21,7 @@ from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
-from pyspark.rdd import RDD
-from pyspark.files import SparkFiles
-from pyspark.storagelevel import StorageLevel
-from pyspark.accumulators import Accumulator, AccumulatorParam
-from pyspark.broadcast import Broadcast
-from pyspark.serializers import MarshalSerializer, PickleSerializer
-import warnings
 import ast
-import traceback
 import warnings
 
 # for back compatibility
@@ -57,7 +49,7 @@ class PyZeppelinContext(dict):
   def show(self, obj):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
-      print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
+      print(self.z.showData(obj._jdf))
     else:
       print(str(obj))
 
@@ -231,19 +223,12 @@ class PySparkCompletion:
       result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
       self.interpreterObject.setStatementsFinished(result, False)
 
-
-output = Logger()
-sys.stdout = output
-sys.stderr = output
-
 client = GatewayClient(port=int(sys.argv[1]))
 sparkVersion = SparkVersion(int(sys.argv[2]))
-
 if sparkVersion.isSpark2():
   from pyspark.sql import SparkSession
 else:
   from pyspark.sql import SchemaRDD
-
 
 if sparkVersion.isAutoConvertEnabled():
   gateway = JavaGateway(client, auto_convert = True)
@@ -257,6 +242,9 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
+output = Logger()
+sys.stdout = output
+sys.stderr = output
 intp.onPythonScriptInitialized(os.getpid())
 
 jsc = intp.getJavaSparkContext()
@@ -310,7 +298,6 @@ while True :
   try:
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
-    final_code = []
     
     # Get post-execute hooks
     try:
@@ -328,22 +315,11 @@ while True :
       if hook:
         nhooks += 1
 
-    for s in stmts:
-      if s == None:
-        continue
-
-      # skip comment
-      s_stripped = s.strip()
-      if len(s_stripped) == 0 or s_stripped.startswith("#"):
-        continue
-
-      final_code.append(s)
-
-    if final_code:
+    if stmts:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
       sc.setJobGroup(jobGroup, "Zeppelin")
-      code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
+      code = compile('\n'.join(stmts), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
       to_run_hooks = []
       if (nhooks > 0):
         to_run_hooks = code.body[-nhooks:]
@@ -365,10 +341,23 @@ while True :
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
           exec(code, _zcUserQueryNameSpace)
-      except:
-        raise Exception(traceback.format_exc())
 
-    intp.setStatementsFinished("", False)
+        intp.setStatementsFinished("", False)
+      except Py4JJavaError:
+        # raise it to outside try except
+        raise
+      except:
+        exception = traceback.format_exc()
+        m = re.search("File \"<stdin>\", line (\d+).*", exception)
+        if m:
+          line_no = int(m.group(1))
+          intp.setStatementsFinished(
+            "Fail to execute line {}: {}\n".format(line_no, stmts[line_no - 1]) + exception, True)
+        else:
+          intp.setStatementsFinished(exception, True)
+    else:
+      intp.setStatementsFinished("", False)
+
   except Py4JJavaError:
     excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
     innerErrorStart = excInnerError.find("Py4JJavaError:")
