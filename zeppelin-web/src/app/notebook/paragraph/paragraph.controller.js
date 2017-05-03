@@ -629,9 +629,18 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.editor.getSession().setUseWrapMode(true)
       $scope.editor.setTheme('ace/theme/chrome')
       $scope.editor.setReadOnly($scope.isRunning($scope.paragraph))
+
       if ($scope.paragraphFocused) {
+        let prefix = '%' + getInterpreterName($scope.paragraph.text)
+        let paragraphText = $scope.paragraph.text ? $scope.paragraph.text.trim() : ''
+
         $scope.editor.focus()
         $scope.goToEnd($scope.editor)
+        if (prefix === paragraphText) {
+          $timeout(function () {
+            $scope.editor.gotoLine(2, 0)
+          }, 0)
+        }
       }
 
       autoAdjustEditorHeight(_editor)
@@ -1331,7 +1340,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         $scope.$emit('moveFocusToPreviousParagraph', paragraphId)
       } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
-        $scope.$emit('moveFocusToNextParagraph', paragraphId)
+        // $timeout stops chaining effect of focus propogation
+        $timeout(() => $scope.$emit('moveFocusToNextParagraph', paragraphId))
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue())
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c

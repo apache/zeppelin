@@ -63,7 +63,7 @@ import py4j.GatewayServer;
  *
  */
 public class PySparkInterpreter extends Interpreter implements ExecuteResultHandler {
-  Logger logger = LoggerFactory.getLogger(PySparkInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreter.class);
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
   private int port;
@@ -106,7 +106,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       throw new InterpreterException(e);
     }
 
-    logger.info("File {} created", scriptPath);
+    LOGGER.info("File {} created", scriptPath);
   }
 
   @Override
@@ -131,7 +131,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             try {
               urlList.add(f.toURI().toURL());
             } catch (MalformedURLException e) {
-              logger.error("Error", e);
+              LOGGER.error("Error", e);
             }
           }
         }
@@ -148,7 +148,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             try {
               urlList.add(f.toURI().toURL());
             } catch (MalformedURLException e) {
-              logger.error("Error", e);
+              LOGGER.error("Error", e);
             }
           }
         }
@@ -162,7 +162,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       Thread.currentThread().setContextClassLoader(newCl);
       createGatewayServerAndStartScript();
     } catch (Exception e) {
-      logger.error("Error", e);
+      LOGGER.error("Error", e);
       throw new InterpreterException(e);
     } finally {
       Thread.currentThread().setContextClassLoader(oldCl);
@@ -217,7 +217,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
-    outputStream = new InterpreterOutputStream(logger);
+    outputStream = new InterpreterOutputStream(LOGGER);
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
@@ -313,6 +313,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   public void setStatementsFinished(String out, boolean error) {
     synchronized (statementFinishedNotifier) {
+      LOGGER.debug("Setting python statement output: " + out + ", error: " + error);
       statementOutput = out;
       statementError = error;
       statementFinishedNotifier.notify();
@@ -325,12 +326,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   public void onPythonScriptInitialized(long pid) {
     pythonPid = pid;
     synchronized (pythonScriptInitializeNotifier) {
+      LOGGER.debug("onPythonScriptInitialized is called");
       pythonScriptInitialized = true;
       pythonScriptInitializeNotifier.notifyAll();
     }
   }
 
   public void appendOutput(String message) throws IOException {
+    LOGGER.debug("Output from python process: " + message);
     outputStream.getInterpreterOutput().write(message);
   }
 
@@ -358,6 +361,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         try {
           pythonScriptInitializeNotifier.wait(1000);
         } catch (InterruptedException e) {
+          e.printStackTrace();
         }
       }
     }
@@ -391,7 +395,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
     String jobGroup = Utils.buildJobGroupId(context);
-    ZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
+    SparkZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
     __zeppelin__.setInterpreterContext(context);
     __zeppelin__.setGui(context.getGui());
     pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
@@ -426,10 +430,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   public void interrupt() throws IOException {
     if (pythonPid > -1) {
-      logger.info("Sending SIGINT signal to PID : " + pythonPid);
+      LOGGER.info("Sending SIGINT signal to PID : " + pythonPid);
       Runtime.getRuntime().exec("kill -SIGINT " + pythonPid);
     } else {
-      logger.warn("Non UNIX/Linux system, close the interpreter");
+      LOGGER.warn("Non UNIX/Linux system, close the interpreter");
       close();
     }
   }
@@ -441,7 +445,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     try {
       interrupt();
     } catch (IOException e) {
-      logger.error("Error", e);
+      LOGGER.error("Error", e);
     }
   }
 
@@ -486,13 +490,13 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         && pythonscriptRunning) {
         try {
           if (System.currentTimeMillis() - startTime > MAX_TIMEOUT_SEC * 1000) {
-            logger.error("pyspark completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
+            LOGGER.error("pyspark completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
             break;
           }
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
           // not working
-          logger.info("wait drop");
+          LOGGER.info("wait drop");
           return new LinkedList<>();
         }
       }
@@ -527,7 +531,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       completionScriptText = text.substring(0, cursor);
     }
     catch (Exception e) {
-      logger.error(e.toString());
+      LOGGER.error(e.toString());
       return null;
     }
     completionEndPosition = completionScriptText.length();
@@ -576,7 +580,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return spark;
   }
 
-  public ZeppelinContext getZeppelinContext() {
+  public SparkZeppelinContext getZeppelinContext() {
     SparkInterpreter sparkIntp = getSparkInterpreter();
     if (sparkIntp != null) {
       return getSparkInterpreter().getZeppelinContext();
@@ -637,12 +641,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void onProcessComplete(int exitValue) {
     pythonscriptRunning = false;
-    logger.info("python process terminated. exit code " + exitValue);
+    LOGGER.info("python process terminated. exit code " + exitValue);
   }
 
   @Override
   public void onProcessFailed(ExecuteException e) {
     pythonscriptRunning = false;
-    logger.error("python process failed", e);
+    LOGGER.error("python process failed", e);
   }
 }

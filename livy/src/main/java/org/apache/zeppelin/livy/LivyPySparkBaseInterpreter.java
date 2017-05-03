@@ -23,7 +23,7 @@ import java.util.Properties;
 /**
  * Base class for PySpark Interpreter
  */
-public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterprereter {
+public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
 
   public LivyPySparkBaseInterpreter(Properties property) {
     super(property);

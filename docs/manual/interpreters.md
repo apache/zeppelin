@@ -113,3 +113,11 @@ interpreter.start()
 The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter process is listening as shown in the image below:
 
 <img src="../assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="450px">
+
+## Precode
+
+Snippet of code (language of interpreter) that executes after initialization of the interpreter depends on [Binding mode](#interpreter-binding-mode). To configure add parameter with class of interpreter (`zeppelin.<ClassName>.precode`) except JDBCInterpreter ([JDBC precode](../interpreter/jdbc.md#usage-precode)). 
+
+<img src="../assets/themes/zeppelin/img/screenshots/interpreter_precode.png" width="800px">
+
+ 

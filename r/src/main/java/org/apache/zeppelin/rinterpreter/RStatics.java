@@ -25,7 +25,7 @@ package org.apache.zeppelin.rinterpreter;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.spark.ZeppelinContext;
+import org.apache.zeppelin.spark.SparkZeppelinContext;
 
 /**
  * RStatics provides static class methods that can be accessed through the SparkR bridge
@@ -33,7 +33,7 @@ import org.apache.zeppelin.spark.ZeppelinContext;
  */
 public class RStatics {
   private static SparkContext sc = null;
-  private static ZeppelinContext z = null;
+  private static SparkZeppelinContext z = null;
   private static SQLContext sql = null;
   private static RContext rCon = null;
 
@@ -42,7 +42,7 @@ public class RStatics {
     return sc;
   }
 
-  public static ZeppelinContext setZ(ZeppelinContext newZ) {
+  public static SparkZeppelinContext setZ(SparkZeppelinContext newZ) {
     z = newZ;
     return z;
   }

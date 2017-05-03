@@ -146,7 +146,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * Manage your [notebook permission](../security/notebook_authorization.html).
  * For more informations, go to **More** -> **Security** section.
 
-#### Other useful informations ...
+#### Other useful information ...
  * Learn how [Display System](../displaysystem/basicdisplaysystem.html) works.
  * Use [Service Manager](#start-apache-zeppelin-with-a-service-manager) to start Zeppelin.
  * If you're using previous version please see [Upgrade Zeppelin version](./upgrade.html).

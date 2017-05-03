@@ -28,7 +28,7 @@ import java.io.IOException;
  * Can be used to channel output from interpreters.
  */
 public class InterpreterOutputStream extends LogOutputStream {
-  public static Logger logger;
+  private Logger logger;
   InterpreterOutput interpreterOutput;
   boolean ignoreLeadingNewLinesFromScalaReporter = false;
 
