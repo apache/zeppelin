@@ -28,7 +28,7 @@ import org.apache.zeppelin.interpreter._
 import org.apache.zeppelin.rinterpreter.rscala.RClient._
 import org.apache.zeppelin.rinterpreter.rscala._
 import org.apache.zeppelin.scheduler._
-import org.apache.zeppelin.spark.{SparkInterpreter, ZeppelinContext}
+import org.apache.zeppelin.spark.{SparkInterpreter, SparkZeppelinContext}
 import org.slf4j._
 
 import scala.collection.JavaConversions._
@@ -45,7 +45,7 @@ private[rinterpreter] class RContext(private val sockets: ScalaSockets,
   val backend: RBackendHelper = RBackendHelper()
   private var sc: Option[SparkContext] = None
   private var sql: Option[SQLContext] = None
-  private var z: Option[ZeppelinContext] = None
+  private var z: Option[SparkZeppelinContext] = None
 
   val rPkgMatrix = collection.mutable.HashMap[String,Boolean]()
 
@@ -126,7 +126,7 @@ private[rinterpreter] class RContext(private val sockets: ScalaSockets,
     check whether SPARK_HOME is set properly.""", e)
   }
 
-  private def initializeSparkR(sc : SparkContext, sql : SQLContext, z : ZeppelinContext) : Unit = synchronized {
+  private def initializeSparkR(sc : SparkContext, sql : SQLContext, z : SparkZeppelinContext) : Unit = synchronized {
 
     logger.trace("Getting a handle to the JavaSparkContext")
 

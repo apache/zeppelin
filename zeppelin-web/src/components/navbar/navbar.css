@@ -12,21 +12,32 @@
  * limitations under the License.
  */
 
-#searchTermId {  
+#searchTermId {
   min-width: 200px;
 }
 
 
 @media (min-width: 795px) and (max-width: 830px) {
-  input#searchTermId {  
+  input#searchTermId {
     width: 170px;
     min-width: 170px;
   }
 }
 
 @media (min-width: 768px) and (max-width: 794px) {
-  input#searchTermId {  
+  input#searchTermId {
     width: 140px;
     min-width: 140px;
   }
 }
+
+/** required to pin, unpin `navbar-fixed-top` */
+.navbar-fixed-top.headroom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: all .2s ease-in-out;
+}
+.navbar-fixed-top.headroom--unpinned { top: -100px; }
+.navbar-fixed-top.headroom--pinned { top: 0; /** `navbar` top */ }

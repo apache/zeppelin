@@ -126,7 +126,7 @@ public class SparkSqlInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
 
-    String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
+    String msg = getSparkInterpreter().getZeppelinContext().showData(rdd);
     sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
   }

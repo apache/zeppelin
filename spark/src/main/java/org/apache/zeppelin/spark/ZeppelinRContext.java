@@ -27,7 +27,7 @@ import org.apache.spark.sql.SQLContext;
 public class ZeppelinRContext {
   private static SparkContext sparkContext;
   private static SQLContext sqlContext;
-  private static ZeppelinContext zeppelinContext;
+  private static SparkZeppelinContext zeppelinContext;
   private static Object sparkSession;
   private static JavaSparkContext javaSparkContext;
 
@@ -35,7 +35,7 @@ public class ZeppelinRContext {
     ZeppelinRContext.sparkContext = sparkContext;
   }
 
-  public static void setZeppelinContext(ZeppelinContext zeppelinContext) {
+  public static void setZeppelinContext(SparkZeppelinContext zeppelinContext) {
     ZeppelinRContext.zeppelinContext = zeppelinContext;
   }
 
@@ -55,7 +55,7 @@ public class ZeppelinRContext {
     return sqlContext;
   }
 
-  public static ZeppelinContext getZeppelinContext() {
+  public static SparkZeppelinContext getZeppelinContext() {
     return zeppelinContext;
   }
 
