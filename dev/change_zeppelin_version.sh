@@ -57,6 +57,7 @@ mvn versions:set -DnewVersion="${TO_VERSION}" -DgenerateBackupPoms=false > /dev/
 sed -i '' 's/-'"${FROM_VERSION}"'.jar",/-'"${TO_VERSION}"'.jar",/g' zeppelin-examples/zeppelin-example-clock/zeppelin-example-clock.json
 sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/tabledata/package.json
 sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/visualization/package.json
+sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/spell/package.json
 
 # When preparing new dev version from release tag, doesn't need to change docs version
 if is_dev_version "${FROM_VERSION}" || ! is_dev_version "${TO_VERSION}"; then
