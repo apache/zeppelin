@@ -460,11 +460,9 @@ public class InterpreterSettingManager {
 
   private List<String> getNoteInterpreterSettingBinding(String noteId) {
     LinkedList<String> bindings = new LinkedList<>();
-    synchronized (interpreterSettings) {
-      List<String> settingIds = interpreterBindings.get(noteId);
-      if (settingIds != null) {
-        bindings.addAll(settingIds);
-      }
+    List<String> settingIds = interpreterBindings.get(noteId);
+    if (settingIds != null) {
+      bindings.addAll(settingIds);
     }
     return bindings;
   }
@@ -893,18 +891,16 @@ public class InterpreterSettingManager {
   }
 
   public void removeNoteInterpreterSettingBinding(String user, String noteId) throws IOException {
-    synchronized (interpreterSettings) {
-      List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
-          interpreterBindings.remove(noteId) :
-          Collections.<String>emptyList());
+    List<String> settingIds = interpreterBindings.remove(noteId);
+    if (settingIds != null) {
       for (String settingId : settingIds) {
         InterpreterSetting setting = get(settingId);
         if (setting != null) {
           this.removeInterpretersForNote(setting, user, noteId);
         }
       }
-      saveToFile();
     }
+    saveToFile();
   }
 
   /**
