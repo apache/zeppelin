@@ -514,6 +514,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
   }
 
+  public String getJettyName() {
+    return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
+  }
+
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
     Map<String, String> configurations = new HashMap<>();
@@ -668,7 +672,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname",
         "org.apache.zeppelin.search.LuceneSearch"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false);
-    ;
+    ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
+    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null);
 
     private String varName;
     @SuppressWarnings("rawtypes")
