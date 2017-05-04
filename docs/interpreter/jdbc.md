@@ -534,7 +534,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 [Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
 ##### Impersonation
-When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a notebooks.
+When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a notebook.
 
 To enable this set following:
 
@@ -542,9 +542,7 @@ To enable this set following:
   - `${prefix}.proxy.user.property` as `hive.server2.proxy.user`
 
 
-  Example configuration
-
-##### Properties
+##### Sample configuration
 <table class="table-configuration">
   <tr>
     <th>Name</th>
