@@ -671,7 +671,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         "org.apache.zeppelin.web.DefaultWebSecurity"),
     ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname",
         "org.apache.zeppelin.search.LuceneSearch"),
-    ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false);
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null);
 
