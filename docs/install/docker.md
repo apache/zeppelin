@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Apache Zeppelin Releases Docker Images
+# Docker Image for Apache Zeppelin Releases 
 
 <div id="toc"></div>
 
@@ -34,7 +34,7 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 ### Running docker image
 
 ```
-docker run -p 8080:8080 --name zeppelin zeppelin:<release-version> 
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:<release-version> 
 ```
 
 * Zeppelin will run at `http://localhost:8080`.
@@ -42,20 +42,20 @@ docker run -p 8080:8080 --name zeppelin zeppelin:<release-version>
 If you want to specify `logs` and `notebook` dir, 
 
 ```
-docker run -p 8080:8080 \
+docker run -p 8080:8080 --rm \
 -v $PWD/logs:/logs \
 -v $PWD/notebook:/notebook \
 -e ZEPPELIN_LOG_DIR='/logs' \
 -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
---name zeppelin zeppelin:<release-version> # e.g '0.7.1'
+--name zeppelin apache/zeppelin:<release-version> # e.g '0.7.1'
 ```
 
 ### Building dockerfile locally
 
 ```
 cd $ZEPPELIN_HOME
-cd scripts/docker/zeppelin
+cd scripts/docker/zeppelin/bin
 
-./create-dockerfile.sh <release-version>   # e.g '0.7.1'
+docker build -t my-zeppelin:my-tag ./
 ```
 
