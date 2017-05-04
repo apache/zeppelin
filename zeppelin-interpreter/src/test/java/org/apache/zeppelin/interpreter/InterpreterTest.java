@@ -19,7 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
@@ -31,7 +30,37 @@ public class InterpreterTest {
   public void testDefaultProperty() {
     Properties p = new Properties();
     p.put("p1", "v1");
-    MockInterpreterA intp = new MockInterpreterA(p);
+    Interpreter intp = new Interpreter(p) {
+      @Override
+      public void open() {
+
+      }
+
+      @Override
+      public void close() {
+
+      }
+
+      @Override
+      public InterpreterResult interpret(String st, InterpreterContext context) {
+        return null;
+      }
+
+      @Override
+      public void cancel(InterpreterContext context) {
+
+      }
+
+      @Override
+      public FormType getFormType() {
+        return null;
+      }
+
+      @Override
+      public int getProgress(InterpreterContext context) {
+        return 0;
+      }
+    };
 
     assertEquals(1, intp.getProperty().size());
     assertEquals("v1", intp.getProperty().get("p1"));
@@ -42,7 +71,37 @@ public class InterpreterTest {
   public void testOverriddenProperty() {
     Properties p = new Properties();
     p.put("p1", "v1");
-    MockInterpreterA intp = new MockInterpreterA(p);
+    Interpreter intp = new Interpreter(p) {
+      @Override
+      public void open() {
+
+      }
+
+      @Override
+      public void close() {
+
+      }
+
+      @Override
+      public InterpreterResult interpret(String st, InterpreterContext context) {
+        return null;
+      }
+
+      @Override
+      public void cancel(InterpreterContext context) {
+
+      }
+
+      @Override
+      public FormType getFormType() {
+        return null;
+      }
+
+      @Override
+      public int getProgress(InterpreterContext context) {
+        return 0;
+      }
+    };
     Properties overriddenProperty = new Properties();
     overriddenProperty.put("p1", "v2");
     intp.setProperty(overriddenProperty);
@@ -74,7 +133,37 @@ public class InterpreterTest {
     Properties p = new Properties();
     p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
         " #{authenticationInfo}");
-    MockInterpreterA intp = new MockInterpreterA(p);
+    Interpreter intp = new Interpreter(p) {
+      @Override
+      public void open() {
+
+      }
+
+      @Override
+      public void close() {
+
+      }
+
+      @Override
+      public InterpreterResult interpret(String st, InterpreterContext context) {
+        return null;
+      }
+
+      @Override
+      public void cancel(InterpreterContext context) {
+
+      }
+
+      @Override
+      public FormType getFormType() {
+        return null;
+      }
+
+      @Override
+      public int getProgress(InterpreterContext context) {
+        return 0;
+      }
+    };
     intp.setUserName(user);
     String actual = intp.getProperty("p1");
     InterpreterContext.remove();
