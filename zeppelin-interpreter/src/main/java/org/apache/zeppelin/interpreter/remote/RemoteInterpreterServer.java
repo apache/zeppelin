@@ -79,6 +79,8 @@ public class RemoteInterpreterServer
   private Map<String, Object> remoteWorksResponsePool;
   private ZeppelinRemoteWorksController remoteWorksController;
 
+  private final long DEFAULT_SHUTDOWN_TIMEOUT = 2000;
+
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
 
@@ -98,7 +100,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void shutdown() throws TException {
-    eventClient.waitForEventQueueBecomesEmpty();
+    eventClient.waitForEventQueueBecomesEmpty(DEFAULT_SHUTDOWN_TIMEOUT);
     if (interpreterGroup != null) {
       interpreterGroup.close();
     }
@@ -110,7 +112,8 @@ public class RemoteInterpreterServer
     // this case, need to force kill the process
 
     long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < 2000 && server.isServing()) {
+    while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
+        server.isServing()) {
       try {
         Thread.sleep(300);
       } catch (InterruptedException e) {

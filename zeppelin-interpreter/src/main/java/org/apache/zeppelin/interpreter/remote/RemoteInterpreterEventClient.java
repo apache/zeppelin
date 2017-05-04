@@ -330,15 +330,18 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   /**
    * Wait for eventQueue becomes empty
    */
-  public void waitForEventQueueBecomesEmpty() {
+  public void waitForEventQueueBecomesEmpty(long atMost) {
+    long startTime = System.currentTimeMillis();
     synchronized (eventQueue) {
-      while (!eventQueue.isEmpty()) {
+      while (!eventQueue.isEmpty() && (System.currentTimeMillis() - startTime) < atMost) {
         try {
           eventQueue.wait(100);
         } catch (InterruptedException e) {
           // ignore exception
         }
       }
+      if (!eventQueue.isEmpty())
+        eventQueue.clear();
     }
   }
 }
