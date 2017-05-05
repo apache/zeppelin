@@ -56,6 +56,10 @@ Two binary packages are available on the [Apache Zeppelin Download Page](http://
 
   Unpack and follow [install additional interpreters](../manual/interpreterinstallation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
 
+### Additional Installation Requirements ###
+
+On Windows the Zeppelin Spark interpreter may require the additional installation of the Microsoft Visual C++ Runtime (specifically mvscr100.dll). You may download the corresponding runtime from https://www.microsoft.com/en-US/download/details.aspx?id=14632 (x64) or https://www.microsoft.com/en-US/download/details.aspx?id=5555 (x86).
+
 ## Starting Apache Zeppelin
 
 #### Starting Apache Zeppelin from the Command Line
