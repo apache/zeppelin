@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import moment from 'moment'
+
 import TableData from '../../../tabledata/tabledata'
 import TableVisualization from '../../../visualization/builtins/visualization-table'
 import BarchartVisualization from '../../../visualization/builtins/visualization-barchart'

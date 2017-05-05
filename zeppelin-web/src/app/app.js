@@ -18,6 +18,9 @@
 import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
 
+import 'angular-ui-grid/ui-grid.css'
+import uiGrid from 'angular-ui-grid'
+
 const requiredModules = [
   'ngCookies',
   'ngAnimate',
@@ -37,6 +40,7 @@ const requiredModules = [
   'focus-if',
   'ngResource',
   'ngclipboard',
+  uiGrid,
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.

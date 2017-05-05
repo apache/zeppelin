@@ -14,7 +14,6 @@
 
 import Visualization from '../visualization'
 import PassthroughTransformation from '../../tabledata/passthrough'
-import HandsonHelper from '../../handsontable/handsonHelper'
 
 /**
  * Visualize data in table format
@@ -22,39 +21,31 @@ import HandsonHelper from '../../handsontable/handsonHelper'
 export default class TableVisualization extends Visualization {
   constructor (targetEl, config) {
     super(targetEl, config)
-    console.log('Init table viz')
     targetEl.addClass('table')
     this.passthrough = new PassthroughTransformation(config)
   }
 
   refresh () {
-    this.hot.render()
   }
 
   render (tableData) {
-    let height = this.targetEl.height()
-    let container = this.targetEl.css('height', height).get(0)
-    let resultRows = tableData.rows
-    let columnNames = _.pluck(tableData.columns, 'name')
+    const height = this.targetEl.height()
+    const container = this.targetEl.css('height', height).get(0)
+
+    const rows = tableData.rows
+    const columnNames = tableData.columns.map(c => c.name)
+
     // eslint-disable-next-line prefer-spread
-    let columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
-      return {type: 'text'}
-    })
+    // let columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
+    //   return {type: 'text'}
+    // })
 
-    if (this.hot) {
-      this.hot.destroy()
-    }
-
-    let handsonHelper = new HandsonHelper()
-    this.hot = new Handsontable(container, handsonHelper.getHandsonTableConfig(
-      columns, columnNames, resultRows))
-    this.hot.validateCells(null)
+    console.log(container)
+    console.log(rows)
+    console.log(columnNames)
   }
 
   destroy () {
-    if (this.hot) {
-      this.hot.destroy()
-    }
   }
 
   getTransformation () {
