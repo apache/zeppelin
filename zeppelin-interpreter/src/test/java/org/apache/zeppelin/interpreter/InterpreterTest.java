@@ -73,37 +73,7 @@ public class InterpreterTest {
     Properties p = new Properties();
     p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
         " #{authenticationInfo}");
-    Interpreter intp = new Interpreter(p) {
-      @Override
-      public void open() {
-
-      }
-
-      @Override
-      public void close() {
-
-      }
-
-      @Override
-      public InterpreterResult interpret(String st, InterpreterContext context) {
-        return null;
-      }
-
-      @Override
-      public void cancel(InterpreterContext context) {
-
-      }
-
-      @Override
-      public FormType getFormType() {
-        return null;
-      }
-
-      @Override
-      public int getProgress(InterpreterContext context) {
-        return 0;
-      }
-    };
+    Interpreter intp = new DummyInterpreter(p);
     intp.setUserName(user);
     String actual = intp.getProperty("p1");
     InterpreterContext.remove();
