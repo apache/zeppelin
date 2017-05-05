@@ -41,6 +41,12 @@ const requiredModules = [
   'ngResource',
   'ngclipboard',
   uiGrid,
+  'ui.grid.exporter',
+  'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.selection',
+  'ui.grid.cellNav', 'ui.grid.pinning',
+  'ui.grid.grouping',
+  'ui.grid.emptyBaseLayer', 'ui.grid.autoResize',
+  'ui.grid.resizeColumns', 'ui.grid.moveColumns',
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.

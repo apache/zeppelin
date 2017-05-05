@@ -21,28 +21,59 @@ import PassthroughTransformation from '../../tabledata/passthrough'
 export default class TableVisualization extends Visualization {
   constructor (targetEl, config) {
     super(targetEl, config)
-    targetEl.addClass('table')
     this.passthrough = new PassthroughTransformation(config)
   }
 
   refresh () {
   }
 
-  render (tableData) {
-    const height = this.targetEl.height()
-    const container = this.targetEl.css('height', height).get(0)
-
+  createGridOptions(tableData) {
     const rows = tableData.rows
     const columnNames = tableData.columns.map(c => c.name)
 
-    // eslint-disable-next-line prefer-spread
-    // let columns = Array.apply(null, Array(tableData.columns.length)).map(function () {
-    //   return {type: 'text'}
-    // })
+    const gridData = rows.map(r => {
+      return columnNames.reduce((acc, colName, index) => {
+        acc[colName] = r[index]
+        return acc
+      }, {})
+    })
 
-    console.log(container)
-    console.log(rows)
-    console.log(columnNames)
+    return {
+      data: gridData,
+      modifierKeysToMultiSelectCells: true,
+      enableFiltering: true,
+      exporterMenuCsv: false,
+      columnDefs: columnNames.map(colName => {
+        return {
+          name: colName,
+        }
+      }),
+      enableGridMenu: true,
+    }
+  }
+
+  render (tableData) {
+    // angular doesn't allow `-` in scope variable name
+    const gridElemId = `${this.targetEl[0].id}_grid`.replace('-', '_')
+
+    let gridElem = document.getElementById(gridElemId)
+
+    const gridOptions = this.createGridOptions(tableData)
+
+    this.targetEl.scope()[gridElemId] = gridOptions
+
+    if (!gridElem) {
+      gridElem = angular.element(
+        `<div id="${gridElemId}" ui-grid="${gridElemId}" 
+              ui-grid-edit ui-grid-row-edit ui-grid-selection 
+              ui-grid-cellNav ui-grid-pinning
+              ui-grid-empty-base-layer ui-grid-auto-resize
+              ui-grid-resize-columns ui-grid-move-columns
+              ui-grid-exporter></div>`
+      )
+      gridElem = this._compile(gridElem)(this.targetEl.scope())
+      this.targetEl.append(gridElem)
+    }
   }
 
   destroy () {
