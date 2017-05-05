@@ -3,7 +3,7 @@ package org.apache.zeppelin.interpreter;
 import java.util.Properties;
 
 /**
- * Created by jl on 06/05/2017.
+ *
  */
 public class DummyInterpreter extends Interpreter {
 
