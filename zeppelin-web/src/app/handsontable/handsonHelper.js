@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 
+const CLASS_COLUMN_MENU_CONTENT = 'columnMenuContent'
+const CLASS_COLUMN_MENU_BUTTON = 'columnMenuButton'
+
 /**
  * HandsonHelper class
  */
@@ -76,7 +79,7 @@ export default class HandsonHelper {
 
   _addButtonMenuEvent (button, menu) {
     Handsontable.Dom.addEvent(button, 'click', function (event) {
-      let changeTypeMenu
+      let columnMenuContent
       let position
       let removeMenu
 
@@ -85,10 +88,10 @@ export default class HandsonHelper {
       event.preventDefault()
       event.stopImmediatePropagation()
 
-      changeTypeMenu = document.querySelectorAll('.changeTypeMenu')
+      columnMenuContent = document.querySelectorAll(`.${CLASS_COLUMN_MENU_CONTENT}`)
 
-      for (let i = 0, len = changeTypeMenu.length; i < len; i++) {
-        changeTypeMenu[i].style.display = 'none'
+      for (let i = 0, len = columnMenuContent.length; i < len; i++) {
+        columnMenuContent[i].style.display = 'none'
       }
       menu.style.display = 'block'
       position = button.getBoundingClientRect()
@@ -111,7 +114,7 @@ export default class HandsonHelper {
     let types = ['text', 'numeric', 'date']
     let item
 
-    menu.className = 'changeTypeMenu'
+    menu.className = CLASS_COLUMN_MENU_CONTENT
 
     for (let i = 0, len = types.length; i < len; i++) {
       item = document.createElement('LI')
@@ -136,7 +139,7 @@ export default class HandsonHelper {
     let button = document.createElement('BUTTON')
 
     button.innerHTML = '\u25BC'
-    button.className = 'changeType'
+    button.className = CLASS_COLUMN_MENU_BUTTON
 
     return button
   }

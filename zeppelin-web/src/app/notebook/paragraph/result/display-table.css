@@ -53,7 +53,7 @@
   line-height: 2;
 }
 
-.changeType {
+.columnMenuButton {
   border: 1px solid #bbb;
   color: #bbb;
   background: #eee;
@@ -65,17 +65,17 @@
   margin: 3px 3px 0 0;
 }
 
-.changeType:hover {
+.columnMenuButton:hover {
   border: 1px solid #777;
   color: #777;
   cursor: pointer;
 }
 
-.changeType.pressed {
+.columnMenuButton.pressed {
   background-color: #999;
 }
 
-.changeTypeMenu {
+.columnMenuContent {
   position: absolute;
   border: 1px solid #ccc;
   margin-top: 22px;
@@ -87,7 +87,7 @@
   z-index: 10;
 }
 
-.changeTypeMenu li {
+.columnMenuContent li {
   text-align: left;
   list-style: none;
   padding: 2px 20px;
@@ -95,14 +95,14 @@
   margin-bottom: 0;
 }
 
-.changeTypeMenu li.active:before {
+.columnMenuContent li.active:before {
   font-size: 12px;
   content: "\2714";
   margin-left: -15px;
   margin-right: 3px;
 }
 
-.changeTypeMenu li:hover {
+.columnMenuContent li:hover {
   background: #eee;
 }
 
