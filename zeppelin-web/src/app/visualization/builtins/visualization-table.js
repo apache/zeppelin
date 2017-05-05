@@ -51,4 +51,22 @@ export default class TableVisualization extends Visualization {
   getTransformation () {
     return this.passthrough
   }
+
+  getSetting (chart) {
+    let self = this
+    let configObj = self.config
+
+    return {
+      template: `
+        <div>
+            Hello
+        </div>`,
+      scope: {
+        config: configObj,
+        save: function () {
+          self.emitConfig(configObj)
+        }
+      }
+    }
+  }
 }
