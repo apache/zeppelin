@@ -142,19 +142,11 @@ public class RemoteInterpreter extends Interpreter {
   private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
     Map<String, String> env = new HashMap<>();
     for (Object key : property.keySet()) {
-      if (isEnvString((String) key)) {
+      if (RemoteInterpreterUtils.isEnvString((String) key)) {
         env.put((String) key, property.getProperty((String) key));
       }
     }
     return env;
-  }
-
-  static boolean isEnvString(String key) {
-    if (key == null || key.length() == 0) {
-      return false;
-    }
-
-    return key.matches("^[A-Z_0-9]*");
   }
 
   @Override
