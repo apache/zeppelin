@@ -30,37 +30,7 @@ public class InterpreterTest {
   public void testDefaultProperty() {
     Properties p = new Properties();
     p.put("p1", "v1");
-    Interpreter intp = new Interpreter(p) {
-      @Override
-      public void open() {
-
-      }
-
-      @Override
-      public void close() {
-
-      }
-
-      @Override
-      public InterpreterResult interpret(String st, InterpreterContext context) {
-        return null;
-      }
-
-      @Override
-      public void cancel(InterpreterContext context) {
-
-      }
-
-      @Override
-      public FormType getFormType() {
-        return null;
-      }
-
-      @Override
-      public int getProgress(InterpreterContext context) {
-        return 0;
-      }
-    };
+    Interpreter intp = new DummyInterpreter(p);
 
     assertEquals(1, intp.getProperty().size());
     assertEquals("v1", intp.getProperty().get("p1"));
@@ -71,37 +41,7 @@ public class InterpreterTest {
   public void testOverriddenProperty() {
     Properties p = new Properties();
     p.put("p1", "v1");
-    Interpreter intp = new Interpreter(p) {
-      @Override
-      public void open() {
-
-      }
-
-      @Override
-      public void close() {
-
-      }
-
-      @Override
-      public InterpreterResult interpret(String st, InterpreterContext context) {
-        return null;
-      }
-
-      @Override
-      public void cancel(InterpreterContext context) {
-
-      }
-
-      @Override
-      public FormType getFormType() {
-        return null;
-      }
-
-      @Override
-      public int getProgress(InterpreterContext context) {
-        return 0;
-      }
-    };
+    Interpreter intp = new DummyInterpreter(p);
     Properties overriddenProperty = new Properties();
     overriddenProperty.put("p1", "v2");
     intp.setProperty(overriddenProperty);
