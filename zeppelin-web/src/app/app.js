@@ -45,8 +45,10 @@ const requiredModules = [
   'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.selection',
   'ui.grid.cellNav', 'ui.grid.pinning',
   'ui.grid.grouping',
-  'ui.grid.emptyBaseLayer', 'ui.grid.autoResize',
+  'ui.grid.emptyBaseLayer',
+  'ui.grid.autoResize',
   'ui.grid.resizeColumns', 'ui.grid.moveColumns',
+  'ui.grid.pagination',
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.

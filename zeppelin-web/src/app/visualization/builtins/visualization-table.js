@@ -15,6 +15,45 @@
 import Visualization from '../visualization'
 import PassthroughTransformation from '../../tabledata/passthrough'
 
+import {
+  Widget, ValueType,
+  isInputWidget, isOptionWidget, isCheckboxWidget,
+  isTextareaWidget, isBtnGroupWidget,
+  initializeTableConfig,
+} from './visualization-util'
+
+const SETTING_TEMPLATE = require('./visualization-table-setting.html')
+
+const TABLE_OPTION_SPECS = [
+  {
+    name: 'showGridFooter',
+    valueType: ValueType.BOOLEAN,
+    defaultValue: false,
+    widget: Widget.CHECKBOX,
+    description: '',
+  },
+  {
+    name: 'showColumnFooter',
+    valueType: ValueType.BOOLEAN,
+    defaultValue: true,
+    widget: Widget.CHECKBOX,
+    description: '',
+  },
+  {
+    name: 'showPagination',
+    valueType: ValueType.BOOLEAN,
+    defaultValue: true,
+    widget: Widget.CHECKBOX,
+    description: 'hello',
+  },
+  { name: 'useFilter',
+    valueType: ValueType.BOOLEAN,
+    defaultValue: false,
+    widget: Widget.CHECKBOX,
+    description: '',
+  },
+]
+
 /**
  * Visualize data in table format
  */
@@ -22,12 +61,11 @@ export default class TableVisualization extends Visualization {
   constructor (targetEl, config) {
     super(targetEl, config)
     this.passthrough = new PassthroughTransformation(config)
+
+    initializeTableConfig(config, TABLE_OPTION_SPECS)
   }
 
-  refresh () {
-  }
-
-  createGridOptions(tableData) {
+  createGridOptions(tableData, onRegisterApiCallback, config) {
     const rows = tableData.rows
     const columnNames = tableData.columns.map(c => c.name)
 
@@ -38,41 +76,110 @@ export default class TableVisualization extends Visualization {
       }, {})
     })
 
-    return {
+    const gridOptions = {
       data: gridData,
-      modifierKeysToMultiSelectCells: true,
-      enableFiltering: true,
-      exporterMenuCsv: false,
-      columnDefs: columnNames.map(colName => {
-        return {
-          name: colName,
-        }
-      }),
       enableGridMenu: true,
+      modifierKeysToMultiSelectCells: true,
+      exporterMenuCsv: true,
+      exporterMenuPdf: false,
+      flatEntityAccess: true,
+      fastWatch: true,
+      paginationPageSizes: [25, 50, 100, 250, 1000],
+      paginationPageSize: 50,
+      enableGroupHeaderSelection: true,
+      treeRowHeaderAlwaysVisible: false,
+      columnDefs: columnNames.map(colName => {
+        return { name: colName, }
+      }),
+      rowEditWaitInterval: -1, /** disable saveRow event */
+      onRegisterApi: onRegisterApiCallback,
+    }
+
+    this.setGridOptions(gridOptions, config)
+
+    return gridOptions
+  }
+
+  getGridElemId() {
+    // angular doesn't allow `-` in scope variable name
+    const gridElemId = `${this.targetEl[0].id}_grid`.replace('-', '_')
+    return gridElemId
+  }
+
+  getGridApiId() {
+    // angular doesn't allow `-` in scope variable name
+    const gridApiId = `${this.targetEl[0].id}_gridApi`.replace('-', '_')
+    return gridApiId
+  }
+
+  refresh() {
+    const gridElemId = this.getGridElemId()
+    const gridElem = angular.element(`#${gridElemId}`)
+
+    if (gridElem) {
+      gridElem.css('height', this.targetEl.height() - 10)
     }
   }
 
-  render (tableData) {
-    // angular doesn't allow `-` in scope variable name
-    const gridElemId = `${this.targetEl[0].id}_grid`.replace('-', '_')
+  refreshGrid() {
+    const gridElemId = this.getGridElemId()
+    const gridElem = angular.element(`#${gridElemId}`)
 
+    if (gridElem) {
+      const scope = this.targetEl.scope()
+      const gridApiId = this.getGridApiId()
+      scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.ALL)
+    }
+  }
+
+  setGridOptions(gridOptions, config) {
+    const {
+      showGridFooter, showColumnFooter,
+      useFilter, showPagination, } = config.tableOptionValue
+
+    gridOptions.showGridFooter = showGridFooter
+    gridOptions.showColumnFooter = showColumnFooter
+    gridOptions.enableFiltering = useFilter
+
+    gridOptions.enablePaginationControls = showPagination
+  }
+
+  render (tableData) {
+    const gridElemId = this.getGridElemId()
     let gridElem = document.getElementById(gridElemId)
 
-    const gridOptions = this.createGridOptions(tableData)
-
-    this.targetEl.scope()[gridElemId] = gridOptions
+    const config = this.config
 
     if (!gridElem) {
+      // create, compile and append grid elem
       gridElem = angular.element(
-        `<div id="${gridElemId}" ui-grid="${gridElemId}" 
-              ui-grid-edit ui-grid-row-edit ui-grid-selection 
+        `<div id="${gridElemId}" ui-grid="${gridElemId}"
+              ui-grid-edit ui-grid-row-edit 
+              ui-grid-pagination ui-grid-selection
               ui-grid-cellNav ui-grid-pinning
-              ui-grid-empty-base-layer ui-grid-auto-resize
+              ui-grid-empty-base-layer
               ui-grid-resize-columns ui-grid-move-columns
-              ui-grid-exporter></div>`
-      )
+              ui-grid-grouping
+              ui-grid-exporter></div>`)
+
+      gridElem.css('height', this.targetEl.height() - 10)
       gridElem = this._compile(gridElem)(this.targetEl.scope())
       this.targetEl.append(gridElem)
+
+      const scope = this.targetEl.scope()
+
+      // set gridApi for this elem
+      const gridApiId = this.getGridApiId()
+      const onRegisterApiCallback = (gridApi) => { scope[gridApiId] = gridApi }
+
+      // set gridOptions for this elem
+      const gridOptions = this.createGridOptions(tableData, onRegisterApiCallback, config)
+      this.targetEl.scope()[gridElemId] = gridOptions
+    } else {
+      // don't need to update gridOptions.data since it's synchronized by paragraph execution
+      const scope = this.targetEl.scope()
+      this.setGridOptions(scope[gridElemId], config)
+      this.refreshGrid()
     }
   }
 
@@ -84,18 +191,21 @@ export default class TableVisualization extends Visualization {
   }
 
   getSetting (chart) {
-    let self = this
-    let configObj = self.config
+    const self = this
+    const configObj = self.config
 
     return {
-      template: `
-        <div>
-            Hello
-        </div>`,
+      template: SETTING_TEMPLATE,
       scope: {
         config: configObj,
-        save: function () {
-          self.emitConfig(configObj)
+        tableOptionSpecs: TABLE_OPTION_SPECS,
+        isInputWidget: isInputWidget,
+        isOptionWidget: isOptionWidget,
+        isCheckboxWidget: isCheckboxWidget,
+        isTextareaWidget: isTextareaWidget,
+        isBtnGroupWidget: isBtnGroupWidget,
+        tableOptionChanged: () => {
+          this.emitConfig(configObj)
         }
       }
     }

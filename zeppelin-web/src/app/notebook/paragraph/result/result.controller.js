@@ -31,7 +31,8 @@ angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl)
 
 function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
                     $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
-                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
+                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService,
+                    uiGridConstants) {
   'ngInject'
 
   /**
@@ -529,6 +530,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           }
           builtInViz.instance._emitter = emitter
           builtInViz.instance._compile = $compile
+          builtInViz.instance._uiGridConstants = uiGridConstants
+
           builtInViz.instance._createNewScope = createNewScope
           builtInViz.instance._templateRequest = $templateRequest
           const transformation = builtInViz.instance.getTransformation()
