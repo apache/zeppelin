@@ -21,3 +21,7 @@
   padding: 5px;
   background-color: #f3f3f3;
 }
+
+.ui-grid-menu {
+  overflow: auto; /** enable scrollbar in column menu */
+}
