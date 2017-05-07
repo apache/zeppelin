@@ -34,9 +34,9 @@ export function initializeTableConfig(config, tableOptionSpecs) {
   // should remove `$$hashKey` using angular.toJson
   const newSpecHash = JSON.stringify(JSON.parse(angular.toJson(tableOptionSpecs)))
   const previousSpecHash = config.tableOptionSpecHash
-  // check whether spec is updated or not
-  if (typeof previousSpecHash === 'undefined' ||(previousSpecHash !== newSpecHash)) {
 
+  // check whether spec is updated or not
+  if (typeof previousSpecHash === 'undefined' || (previousSpecHash !== newSpecHash)) {
     specsUpdated = true
     config.tableOptionSpecHash = newSpecHash
     config.initialized = true

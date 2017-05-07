@@ -30,6 +30,7 @@ const TABLE_OPTION_SPECS = [
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
+    // eslint-disable-next-line max-len
     description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_showgridfooter">gridOptions.showGridFooter</a>',
   },
   {
@@ -37,6 +38,7 @@ const TABLE_OPTION_SPECS = [
     valueType: ValueType.BOOLEAN,
     defaultValue: true,
     widget: Widget.CHECKBOX,
+    // eslint-disable-next-line max-len
     description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_showcolumnfooter">gridOptions.showColumnFooter</a>',
   },
   {
@@ -44,12 +46,14 @@ const TABLE_OPTION_SPECS = [
     valueType: ValueType.BOOLEAN,
     defaultValue: true,
     widget: Widget.CHECKBOX,
+    // eslint-disable-next-line max-len
     description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_enablepaginationcontrols">gridOptions.enablePaginationControls</a>',
   },
   { name: 'useFilter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
+    // eslint-disable-next-line max-len
     description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_enablefiltering">gridOptions.enableFiltering</a>',
   },
 ]
@@ -84,8 +88,6 @@ export default class TableVisualization extends Visualization {
       exporterMenuPdf: false,
       flatEntityAccess: true,
       fastWatch: true,
-      paginationPageSizes: [25, 50, 100, 250, 1000],
-      paginationPageSize: 50,
       enableGroupHeaderSelection: true,
       treeRowHeaderAlwaysVisible: false,
       columnDefs: columnNames.map(colName => {
@@ -141,7 +143,12 @@ export default class TableVisualization extends Visualization {
     gridOptions.showColumnFooter = showColumnFooter
     gridOptions.enableFiltering = useFilter
 
+    gridOptions.enablePagination = showPagination
     gridOptions.enablePaginationControls = showPagination
+    if (showPagination) {
+      gridOptions.paginationPageSizes = [25, 50, 100, 250, 1000]
+      gridOptions.paginationPageSize = 50
+    }
   }
 
   render (tableData) {
