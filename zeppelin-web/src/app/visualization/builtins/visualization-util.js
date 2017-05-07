@@ -21,13 +21,16 @@ export function isTextareaWidget (spec) { return spec.widget === Widget.TEXTAREA
 export function isBtnGroupWidget (spec) { return spec.widget === Widget.BTN_GROUP }
 
 export function resetTableOptionConfig(config) {
-  delete config.tableOptionSpec
+  delete config.tableOptionSpecHash
+  delete config.tableGridState
+  delete config.tableOptionValue
   return config
 }
 
 export function initializeTableConfig(config, tableOptionSpecs) {
   if (typeof config === 'undefined') { config = {} }
   if (typeof config.tableOptionValue === 'undefined') { config.tableOptionValue = {} }
+  if (typeof config.tableGridState === 'undefined') { config.tableGridState = {} }
 
   let specsUpdated = false
 
@@ -40,6 +43,7 @@ export function initializeTableConfig(config, tableOptionSpecs) {
     specsUpdated = true
     config.tableOptionSpecHash = newSpecHash
     config.initialized = true
+    config.tableGridState = {}
   }
 
   // reset all persisted option values if spec is updated

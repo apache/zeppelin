@@ -127,9 +127,6 @@ export default class TableVisualization extends Visualization {
       onRegisterApi: onRegisterApiCallback,
     }
 
-    this.setDynamicGridOptions(gridOptions, config)
-    this.addColumnMenus(gridOptions)
-
     return gridOptions
   }
 
@@ -159,7 +156,7 @@ export default class TableVisualization extends Visualization {
     const gridElem = angular.element(`#${gridElemId}`)
 
     if (gridElem) {
-      const scope = this.targetEl.scope()
+      const scope = this.getScope()
       const gridApiId = this.getGridApiId()
       scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.ALL)
     }
@@ -170,7 +167,7 @@ export default class TableVisualization extends Visualization {
     const gridElem = angular.element(`#${gridElemId}`)
 
     if (gridElem) {
-      const scope = this.targetEl.scope()
+      const scope = this.getScope()
       const gridApiId = this.getGridApiId()
       scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.COLUMN)
     }
@@ -231,6 +228,7 @@ export default class TableVisualization extends Visualization {
     gridOptions.enablePaginationControls = showPagination
     gridOptions.paginationPageSize = defaultPaginationSize
     gridOptions.paginationPageSizes = availablePaginationSizes
+    console.warn(availablePaginationSizes)
   }
 
   render (tableData) {
@@ -252,10 +250,9 @@ export default class TableVisualization extends Visualization {
               ui-grid-exporter></div>`)
 
       gridElem.css('height', this.targetEl.height() - 10)
-      gridElem = this._compile(gridElem)(this.targetEl.scope())
+      const scope = this.getScope()
+      gridElem = this._compile(gridElem)(scope)
       this.targetEl.append(gridElem)
-
-      const scope = this.targetEl.scope()
 
       // set gridApi for this elem
       const gridApiId = this.getGridApiId()
@@ -263,13 +260,19 @@ export default class TableVisualization extends Visualization {
 
       // set gridOptions for this elem
       const gridOptions = this.createGridOptions(tableData, onRegisterApiCallback, config)
-      this.targetEl.scope()[gridElemId] = gridOptions
+      this.setDynamicGridOptions(gridOptions, config)
+      console.warn('create')
+      this.addColumnMenus(gridOptions)
+      scope[gridElemId] = gridOptions
     } else {
       // don't need to update gridOptions.data since it's synchronized by paragraph execution
-      const scope = this.targetEl.scope()
-      this.setDynamicGridOptions(scope[gridElemId], config)
+      const gridOptions = this.getGridOptions()
+      this.setDynamicGridOptions(gridOptions, config)
+      console.warn('update')
       this.refreshGrid()
     }
+
+    // restore grid state (e.g selection, ...)
   }
 
   destroy () {
@@ -279,13 +282,36 @@ export default class TableVisualization extends Visualization {
     return this.passthrough
   }
 
+  getScope() {
+    const scope = this.targetEl.scope()
+    return scope
+  }
+
+  getGridOptions() {
+    const scope = this.getScope()
+    const gridElemId = this.getGridElemId()
+    return scope[gridElemId]
+  }
+
+  getGridApi() {
+    const scope = this.targetEl.scope()
+    const gridApiId = this.getGridApiId()
+    return scope[gridApiId]
+  }
+
+  persistConfig(config) {
+    // const gridApi = this.getGridApi()
+    // config.tableGridState = gridApi.saveState.save();
+    this.emitConfig(config)
+  }
+
   getSetting (chart) {
     const self = this
     const configObj = self.config
 
     if (configObj.initialized) {
       configObj.initialized = false
-      self.emitConfig(configObj)
+      self.persistConfig(configObj)
     }
 
     return {
@@ -298,23 +324,23 @@ export default class TableVisualization extends Visualization {
         isCheckboxWidget: isCheckboxWidget,
         isTextareaWidget: isTextareaWidget,
         isBtnGroupWidget: isBtnGroupWidget,
-        tableOptionChanged: () => {
-          this.emitConfig(configObj)
+        tableOptionValueChanged: () => {
+          self.persistConfig(configObj)
         },
         saveTableOption: () => {
-          this.emitConfig(configObj)
+          self.persistConfig(configObj)
         },
         resetTableOption: () => {
           resetTableOptionConfig(configObj)
           initializeTableConfig(configObj, TABLE_OPTION_SPECS)
-          this.emitConfig(configObj)
+          self.persistConfig(configObj)
         },
-        optionWidgetOnKeyDown: (event, optSpec) => {
+        tableWidgetOnKeyDown: (event, optSpec) => {
           const code = event.keyCode || event.which
           if (code === 13 && isInputWidget(optSpec)) {
-            self.emitConfig(configObj)
+            self.persistConfig(configObj)
           } else if (code === 13 && event.shiftKey && isTextareaWidget(optSpec)) {
-            self.emitConfig(configObj)
+            self.persistConfig(configObj)
           }
 
           event.stopPropagation() /** avoid to conflict with paragraph shortcuts */

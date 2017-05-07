@@ -51,13 +51,13 @@ limitations under the License.
                class="input-group">
             <input type="text" class="form-control input-sm"
                    style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
-                   ng-keydown="optionWidgetOnKeyDown($event, optSpec)"
+                   ng-keydown="tableWidgetOnKeyDown($event, optSpec)"
                    data-ng-model="config.tableOptionValue[optSpec.name]" />
           </div>
           <div class="btn-group"
                ng-if="isOptionWidget(optSpec)">
             <select class="form-control input-sm"
-                    ng-change="tableOptionChange(optSpec)"
+                    ng-change="tableOptionValueChanged(optSpec)"
                     data-ng-model="config.tableOptionValue[optSpec.name]"
                     data-ng-options="optionValue for optionValue in optSpec.optionValues"
                     style="font-weight: 400; font-size: 12px;">
@@ -67,14 +67,14 @@ limitations under the License.
           <div ng-if="isCheckboxWidget(optSpec)">
             <input type="checkbox"
                    ng-keydown="parameterOnKeyDown($event, optSpec)"
-                   ng-click="tableOptionChanged(optSpec)"
+                   ng-click="tableOptionValueChanged(optSpec)"
                    data-ng-model="config.tableOptionValue[optSpec.name]"
                    data-ng-checked="config.tableOptionValue[optSpec.name]" />
           </div>
 
           <div ng-if="isTextareaWidget(optSpec)">
             <textarea class="form-control" rows="3"
-                      ng-keydown="optionWidgetOnKeyDown($event, optSpec)"
+                      ng-keydown="tableWidgetOnKeyDown($event, optSpec)"
                       data-ng-model="config.tableOptionValue[optSpec.name]"
                       style="font-weight: 400; font-size: 12px;">
             </textarea>
