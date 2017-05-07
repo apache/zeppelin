@@ -536,6 +536,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           // ui-grid related
           $templateCache.put('ui-grid/ui-grid-filter', TableGridFilterTemplate)
           builtInViz.instance._uiGridConstants = uiGridConstants
+          builtInViz.instance._timeout = $timeout
 
           builtInViz.instance._createNewScope = createNewScope
           builtInViz.instance._templateRequest = $templateRequest

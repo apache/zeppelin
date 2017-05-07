@@ -92,6 +92,7 @@ export default class TableVisualization extends Visualization {
   constructor (targetEl, config) {
     super(targetEl, config)
     this.passthrough = new PassthroughTransformation(config)
+    this.emitTimeout = null
 
     initializeTableConfig(config, TABLE_OPTION_SPECS)
   }
@@ -330,9 +331,20 @@ export default class TableVisualization extends Visualization {
   }
 
   persistConfigWithGridState(config) {
-    const gridApi = this.getGridApi()
-    config.tableGridState = gridApi.saveState.save()
-    this.emitConfig(config)
+    // use timeout to avoid recursive emitting
+    if (this.emitTimeout) {
+       // if there is already a timeout in process cancel it
+      this._timeout.cancel(this.emitTimeout)
+    }
+
+    const self = this // closure
+
+    this.emitTimeout = this._timeout(() => {
+      const gridApi = self.getGridApi()
+      config.tableGridState = gridApi.saveState.save()
+      self.emitConfig(config)
+      self.emitTimeout = null
+    }, 500)
   }
 
   persistConfig(config) {
