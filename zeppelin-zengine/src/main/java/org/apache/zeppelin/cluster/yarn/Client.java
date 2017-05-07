@@ -129,9 +129,9 @@ public class Client extends ClusterManager {
   }
 
   @Override
-  public RemoteInterpreterProcess createInterpreter(String id,
-      InterpreterSetting interpreterSetting, int connectTimeout,
-      RemoteInterpreterProcessListener listener, ApplicationEventListener appListener)
+  public RemoteInterpreterProcess createInterpreter(String id, String name, String groupName,
+      int connectTimeout, RemoteInterpreterProcessListener listener,
+      ApplicationEventListener appListener)
       throws InterpreterException {
     if (!started) {
       start();
@@ -145,7 +145,7 @@ public class Client extends ClusterManager {
       ApplicationId applicationId = appContext.getApplicationId();
 
       appContext.setKeepContainersAcrossApplicationAttempts(false);
-      appContext.setApplicationName(interpreterSetting.getName());
+      appContext.setApplicationName(name);
 
       Map<String, String> env = Maps.newHashMap();
 
@@ -168,7 +168,7 @@ public class Client extends ClusterManager {
 
       FileSystem fileSystem = FileSystem.get(configuration);
 
-      java.nio.file.Path interpreterDir = getInterpreterRelativePath(interpreterSetting.getGroup());
+      java.nio.file.Path interpreterDir = getInterpreterRelativePath(groupName);
       List<java.nio.file.Path> interpreterPaths = getPathsFromDirPath(interpreterDir);
       /*if (interpreterSetting.getGroup().equals("spark")) {
         interpreterDir = getInterpreterRelativePath("spark/dep");

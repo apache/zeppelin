@@ -44,9 +44,8 @@ public abstract class ClusterManager {
    */
   public abstract void stop();
 
-  public abstract RemoteInterpreterProcess createInterpreter(String id,
-      InterpreterSetting interpreterSetting, int connectTimeout,
-      RemoteInterpreterProcessListener listener,
+  public abstract RemoteInterpreterProcess createInterpreter(String id, String name,
+      String groupName, int connectTimeout, RemoteInterpreterProcessListener listener,
       ApplicationEventListener appListener)
       throws InterpreterException;
 

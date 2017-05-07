@@ -668,7 +668,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
-    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null);
+    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
+    ZEPPELIN_CLUSTER_DEFAULT("zeppelin.cluster.default", "local");
 
     private String varName;
     @SuppressWarnings("rawtypes")
