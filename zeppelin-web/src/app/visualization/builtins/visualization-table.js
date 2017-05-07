@@ -25,6 +25,15 @@ import {
 
 const SETTING_TEMPLATE = require('./visualization-table-setting.html')
 
+const TableColumnType = {
+  STRING: 'string',
+  BOOLEAN: 'boolean',
+  NUMBER: 'number',
+  DATE: 'date',
+  OBJECT: 'object',
+  NUMBER_STR: 'numberStr',
+}
+
 const TABLE_OPTION_SPECS = [
   {
     name: 'showGridFooter',
@@ -109,13 +118,17 @@ export default class TableVisualization extends Visualization {
       enableGroupHeaderSelection: true,
       treeRowHeaderAlwaysVisible: false,
       columnDefs: columnNames.map(colName => {
-        return { name: colName, }
+        return {
+          name: colName,
+          type: TableColumnType.STRING,
+        }
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
       onRegisterApi: onRegisterApiCallback,
     }
 
-    this.setGridOptions(gridOptions, config)
+    this.setDynamicGridOptions(gridOptions, config)
+    this.addColumnMenus(gridOptions)
 
     return gridOptions
   }
@@ -152,7 +165,50 @@ export default class TableVisualization extends Visualization {
     }
   }
 
-  setGridOptions(gridOptions, config) {
+  addColumnMenus(gridOptions) {
+    if (!gridOptions || !gridOptions.columnDefs) { return }
+
+    // use closure to get table context in the `action` func
+    const self = this
+
+    // SHOULD use `function() { ... }` syntax for each action to get `this`
+    gridOptions.columnDefs.map(colDef => {
+      colDef.menuItems = [
+        {
+          title: 'Type: String',
+          action: function() {
+            this.context.col.colDef.type = TableColumnType.STRING
+            self.refreshGrid()
+          },
+          active: function() {
+            return this.context.col.colDef.type === TableColumnType.STRING
+          },
+        },
+        {
+          title: 'Type: Number',
+          action: function() {
+            this.context.col.colDef.type = TableColumnType.NUMBER
+            self.refreshGrid()
+          },
+          active: function() {
+            return this.context.col.colDef.type === TableColumnType.NUMBER
+          },
+        },
+        {
+          title: 'Type: Date',
+          action: function() {
+            this.context.col.colDef.type = TableColumnType.DATE
+            self.refreshGrid()
+          },
+          active: function() {
+            return this.context.col.colDef.type === TableColumnType.DATE
+          },
+        },
+      ]
+    })
+  }
+
+  setDynamicGridOptions(gridOptions, config) {
     // parse based on their type definitions
     const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue)
 
@@ -206,7 +262,7 @@ export default class TableVisualization extends Visualization {
     } else {
       // don't need to update gridOptions.data since it's synchronized by paragraph execution
       const scope = this.targetEl.scope()
-      this.setGridOptions(scope[gridElemId], config)
+      this.setDynamicGridOptions(scope[gridElemId], config)
       this.refreshGrid()
     }
   }
