@@ -19,7 +19,7 @@ import {
   Widget, ValueType,
   isInputWidget, isOptionWidget, isCheckboxWidget,
   isTextareaWidget, isBtnGroupWidget,
-  initializeTableConfig,
+  initializeTableConfig, resetTableOptionConfig,
 } from './visualization-util'
 
 const SETTING_TEMPLATE = require('./visualization-table-setting.html')
@@ -205,6 +205,11 @@ export default class TableVisualization extends Visualization {
         isTextareaWidget: isTextareaWidget,
         isBtnGroupWidget: isBtnGroupWidget,
         tableOptionChanged: () => {
+          this.emitConfig(configObj)
+        },
+        resetTableOption: () => {
+          resetTableOptionConfig(configObj)
+          initializeTableConfig(configObj, TABLE_OPTION_SPECS)
           this.emitConfig(configObj)
         }
       }

@@ -20,6 +20,11 @@ export function isCheckboxWidget (spec) { return spec.widget === Widget.CHECKBOX
 export function isTextareaWidget (spec) { return spec.widget === Widget.TEXTAREA }
 export function isBtnGroupWidget (spec) { return spec.widget === Widget.BTN_GROUP }
 
+export function resetTableOptionConfig(config) {
+  delete config.tableOptionSpec
+  return config
+}
+
 export function initializeTableConfig(config, tableOptionSpecs) {
   if (typeof config === 'undefined') { config = {} }
   if (typeof config.tableOptionValue === 'undefined') { config.tableOptionValue = {} }

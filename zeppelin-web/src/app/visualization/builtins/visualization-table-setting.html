@@ -14,10 +14,19 @@ limitations under the License.
 
 <div class="panel panel-default" style="margin-top: 10px; margin-bottom: 11px;">
   <div class="panel-heading" style="padding: 6px 12px 6px 12px; font-size: 13px;">
-    Table Option
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Table Options</span>
+    <span style="float: right;">
+       <div class="btn-group" role="group" aria-label="...">
+         <div type="button" ng-click="resetTableOption()"
+              class="btn btn-default" style="padding: 2px 5px 2px 5px;">
+           <i class="fa fa-trash-o" aria-hidden="true"></i>
+         </div>
+       </div>
+    </span>
+    <div style="clear: both;"></div> <!-- to fix previous span which has float: right -->
   </div>
 
-  <div class="panel-body" style="padding: 8px; margin-top: 3px;">
+  <div class="panel-body" style="padding: 8px 12px; margin-top: 3px;">
     <table class="table table-striped">
       <tr>
         <th style="font-size: 12px; font-style: italic">Name</th>
