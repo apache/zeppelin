@@ -165,11 +165,19 @@ export default class TableVisualization extends Visualization {
     }
   }
 
+  refreshGridColumn() {
+    const gridElemId = this.getGridElemId()
+    const gridElem = angular.element(`#${gridElemId}`)
+
+    if (gridElem) {
+      const scope = this.targetEl.scope()
+      const gridApiId = this.getGridApiId()
+      scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.COLUMN)
+    }
+  }
+
   addColumnMenus(gridOptions) {
     if (!gridOptions || !gridOptions.columnDefs) { return }
-
-    // use closure to get table context in the `action` func
-    const self = this
 
     // SHOULD use `function() { ... }` syntax for each action to get `this`
     gridOptions.columnDefs.map(colDef => {
@@ -178,7 +186,6 @@ export default class TableVisualization extends Visualization {
           title: 'Type: String',
           action: function() {
             this.context.col.colDef.type = TableColumnType.STRING
-            self.refreshGrid()
           },
           active: function() {
             return this.context.col.colDef.type === TableColumnType.STRING
@@ -188,7 +195,6 @@ export default class TableVisualization extends Visualization {
           title: 'Type: Number',
           action: function() {
             this.context.col.colDef.type = TableColumnType.NUMBER
-            self.refreshGrid()
           },
           active: function() {
             return this.context.col.colDef.type === TableColumnType.NUMBER
@@ -198,7 +204,6 @@ export default class TableVisualization extends Visualization {
           title: 'Type: Date',
           action: function() {
             this.context.col.colDef.type = TableColumnType.DATE
-            self.refreshGrid()
           },
           active: function() {
             return this.context.col.colDef.type === TableColumnType.DATE
