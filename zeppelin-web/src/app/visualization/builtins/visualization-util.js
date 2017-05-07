@@ -22,17 +22,17 @@ export function isBtnGroupWidget (spec) { return spec.widget === Widget.BTN_GROU
 
 export function resetTableOptionConfig(config) {
   delete config.tableOptionSpecHash
+  config.tableOptionSpecHash = {}
   delete config.tableGridState
+  config.tableGridState = {}
   delete config.tableOptionValue
+  config.tableOptionValue = {}
   return config
 }
 
 export function initializeTableConfig(config, tableOptionSpecs) {
-  if (typeof config === 'undefined') { config = {} }
   if (typeof config.tableOptionValue === 'undefined') { config.tableOptionValue = {} }
   if (typeof config.tableGridState === 'undefined') { config.tableGridState = {} }
-
-  let specsUpdated = false
 
   // should remove `$$hashKey` using angular.toJson
   const newSpecHash = JSON.stringify(JSON.parse(angular.toJson(tableOptionSpecs)))
@@ -40,20 +40,16 @@ export function initializeTableConfig(config, tableOptionSpecs) {
 
   // check whether spec is updated or not
   if (typeof previousSpecHash === 'undefined' || (previousSpecHash !== newSpecHash)) {
-    specsUpdated = true
+    resetTableOptionConfig(config)
+
     config.tableOptionSpecHash = newSpecHash
     config.initialized = true
-    config.tableGridState = {}
-  }
 
-  // reset all persisted option values if spec is updated
-  if (specsUpdated) {
-    config.tableOptionValue = {}
+    // reset all persisted option values if spec is updated
     for (let i = 0; i < tableOptionSpecs.length; i++) {
       const option = tableOptionSpecs[i]
       config.tableOptionValue[option.name] = option.defaultValue
     }
-    config.initialized = true
   }
 
   return config

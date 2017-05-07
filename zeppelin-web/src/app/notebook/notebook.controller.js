@@ -228,7 +228,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.$on('listRevisionHistory', function (event, data) {
-    console.log('received list of revisions %o', data)
+    console.debug('received list of revisions %o', data)
     $scope.noteRevisions = data.revisionList
     $scope.noteRevisions.splice(0, 0, {
       id: 'Head',

@@ -27,10 +27,12 @@ import {
 } from '../../../spell'
 import { ParagraphStatus, } from '../paragraph.status'
 
+const TableGridFilterTemplate = require('../../../visualization/builtins/visualization-table-grid-filter.html')
+
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl)
 
 function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
-                    $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
+                    $timeout, $compile, $http, $q, $templateCache, $templateRequest, $sce, websocketMsgSrv,
                     baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService,
                     uiGridConstants) {
   'ngInject'
@@ -530,6 +532,9 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           }
           builtInViz.instance._emitter = emitter
           builtInViz.instance._compile = $compile
+
+          // ui-grid related
+          $templateCache.put('ui-grid/ui-grid-filter', TableGridFilterTemplate)
           builtInViz.instance._uiGridConstants = uiGridConstants
 
           builtInViz.instance._createNewScope = createNewScope
@@ -651,7 +656,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         }
       }
     }
-    console.log('getVizConfig', config)
+    console.debug('getVizConfig', config)
     return config
   }
 
@@ -680,7 +685,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       newConfig.graph.values = newConfig.graph.commonSetting.pivot.values
       delete newConfig.graph.commonSetting.pivot
     }
-    console.log('committVizConfig', newConfig)
+    console.debug('committVizConfig', newConfig)
     let newParams = angular.copy(paragraph.settings.params)
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
   }

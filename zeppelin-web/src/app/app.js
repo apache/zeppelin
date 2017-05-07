@@ -49,6 +49,7 @@ const requiredModules = [
   'ui.grid.autoResize',
   'ui.grid.resizeColumns', 'ui.grid.moveColumns',
   'ui.grid.pagination',
+  'ui.grid.saveState',
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.
