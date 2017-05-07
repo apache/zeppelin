@@ -20,6 +20,7 @@ import {
   isInputWidget, isOptionWidget, isCheckboxWidget,
   isTextareaWidget, isBtnGroupWidget,
   initializeTableConfig, resetTableOptionConfig,
+  parseTableOption,
 } from './visualization-util'
 
 const SETTING_TEMPLATE = require('./visualization-table-setting.html')
@@ -49,12 +50,29 @@ const TABLE_OPTION_SPECS = [
     // eslint-disable-next-line max-len
     description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_enablepaginationcontrols">gridOptions.enablePaginationControls</a>',
   },
-  { name: 'useFilter',
+  {
+    name: 'useFilter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
     // eslint-disable-next-line max-len
     description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_enablefiltering">gridOptions.enableFiltering</a>',
+  },
+  {
+    name: 'defaultPaginationSize',
+    valueType: ValueType.INT,
+    defaultValue: 50,
+    widget: Widget.INPUT,
+    // eslint-disable-next-line max-len
+    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_paginationpagesize">gridOptions.paginationPageSize</a>',
+  },
+  {
+    name: 'availablePaginationSizes',
+    valueType: ValueType.JSON,
+    defaultValue: '[25, 50, 100, 250, 1000]', // JSON's defaultValue should be string type
+    widget: Widget.TEXTAREA,
+    // eslint-disable-next-line max-len
+    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_paginationpagesizes">gridOptions.paginationPageSizes</a>',
   },
 ]
 
@@ -135,9 +153,14 @@ export default class TableVisualization extends Visualization {
   }
 
   setGridOptions(gridOptions, config) {
+    // parse based on their type definitions
+    const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue)
+
     const {
       showGridFooter, showColumnFooter,
-      useFilter, showPagination, } = config.tableOptionValue
+      useFilter, showPagination,
+      defaultPaginationSize, availablePaginationSizes,
+    } = parsed
 
     gridOptions.showGridFooter = showGridFooter
     gridOptions.showColumnFooter = showColumnFooter
@@ -145,10 +168,8 @@ export default class TableVisualization extends Visualization {
 
     gridOptions.enablePagination = showPagination
     gridOptions.enablePaginationControls = showPagination
-    if (showPagination) {
-      gridOptions.paginationPageSizes = [25, 50, 100, 250, 1000]
-      gridOptions.paginationPageSize = 50
-    }
+    gridOptions.paginationPageSize = defaultPaginationSize
+    gridOptions.paginationPageSizes = availablePaginationSizes
   }
 
   render (tableData) {
@@ -219,10 +240,23 @@ export default class TableVisualization extends Visualization {
         tableOptionChanged: () => {
           this.emitConfig(configObj)
         },
+        saveTableOption: () => {
+          this.emitConfig(configObj)
+        },
         resetTableOption: () => {
           resetTableOptionConfig(configObj)
           initializeTableConfig(configObj, TABLE_OPTION_SPECS)
           this.emitConfig(configObj)
+        },
+        optionWidgetOnKeyDown: (event, optSpec) => {
+          const code = event.keyCode || event.which
+          if (code === 13 && isInputWidget(optSpec)) {
+            self.emitConfig(configObj)
+          } else if (code === 13 && event.shiftKey && isTextareaWidget(optSpec)) {
+            self.emitConfig(configObj)
+          }
+
+          event.stopPropagation() /** avoid to conflict with paragraph shortcuts */
         }
       }
     }

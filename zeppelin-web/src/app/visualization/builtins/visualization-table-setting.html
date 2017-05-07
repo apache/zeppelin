@@ -17,6 +17,10 @@ limitations under the License.
     <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Table Options</span>
     <span style="float: right;">
        <div class="btn-group" role="group" aria-label="...">
+        <div type="button" ng-click="saveTableOption()"
+             class="btn btn-default" style="padding: 2px 5px 2px 5px;">
+          <i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </div>
          <div type="button" ng-click="resetTableOption()"
               class="btn btn-default" style="padding: 2px 5px 2px 5px;">
            <i class="fa fa-trash-o" aria-hidden="true"></i>
@@ -47,7 +51,8 @@ limitations under the License.
                class="input-group">
             <input type="text" class="form-control input-sm"
                    style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
-                   data-ng-model="config.parameter[config.chart.current][optSpec.name]" />
+                   ng-keydown="optionWidgetOnKeyDown($event, optSpec)"
+                   data-ng-model="config.tableOptionValue[optSpec.name]" />
           </div>
           <div class="btn-group"
                ng-if="isOptionWidget(optSpec)">
@@ -69,6 +74,7 @@ limitations under the License.
 
           <div ng-if="isTextareaWidget(optSpec)">
             <textarea class="form-control" rows="3"
+                      ng-keydown="optionWidgetOnKeyDown($event, optSpec)"
                       data-ng-model="config.tableOptionValue[optSpec.name]"
                       style="font-weight: 400; font-size: 12px;">
             </textarea>

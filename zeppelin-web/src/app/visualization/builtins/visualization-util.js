@@ -54,3 +54,37 @@ export function initializeTableConfig(config, tableOptionSpecs) {
 
   return config
 }
+
+export function parseTableOption(specs, persistedTableOption) {
+  /** copy original params */
+  const parsed = JSON.parse(JSON.stringify(persistedTableOption))
+
+  for (let i = 0; i < specs.length; i++) {
+    const s = specs[i]
+    const name = s.name
+
+    if (s.valueType === ValueType.INT &&
+      typeof parsed[name] !== 'number') {
+      try { parsed[name] = parseInt(parsed[name]) } catch (error) { parsed[name] = s.defaultValue }
+    } else if (s.valueType === ValueType.FLOAT &&
+      typeof parsed[name] !== 'number') {
+      try { parsed[name] = parseFloat(parsed[name]) } catch (error) { parsed[name] = s.defaultValue }
+    } else if (s.valueType === ValueType.BOOLEAN) {
+      if (parsed[name] === 'false') {
+        parsed[name] = false
+      } else if (parsed[name] === 'true') {
+        parsed[name] = true
+      } else if (typeof parsed[name] !== 'boolean') {
+        parsed[name] = s.defaultValue
+      }
+    } else if (s.valueType === ValueType.JSON) {
+      if (parsed[name] !== null && typeof parsed[name] !== 'object') {
+        try { parsed[name] = JSON.parse(parsed[name]) } catch (error) { parsed[name] = s.defaultValue }
+      } else if (parsed[name] === null) {
+        parsed[name] = s.defaultValue
+      }
+    }
+  }
+
+  return parsed
+}
