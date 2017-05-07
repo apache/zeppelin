@@ -194,6 +194,11 @@ export default class TableVisualization extends Visualization {
     const self = this
     const configObj = self.config
 
+    if (configObj.initialized) {
+      configObj.initialized = false
+      self.emitConfig(configObj)
+    }
+
     return {
       template: SETTING_TEMPLATE,
       scope: {

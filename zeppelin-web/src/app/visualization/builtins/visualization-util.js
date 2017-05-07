@@ -31,22 +31,25 @@ export function initializeTableConfig(config, tableOptionSpecs) {
 
   let specsUpdated = false
 
+  // should remove `$$hashKey` using angular.toJson
+  const newSpecHash = JSON.stringify(JSON.parse(angular.toJson(tableOptionSpecs)))
+  const previousSpecHash = config.tableOptionSpecHash
   // check whether spec is updated or not
-  const newSpec = tableOptionSpecs
-  const previousSpecs = config.tableOptionSpec
-  if (typeof previousSpecs === 'undefined' ||
-    (JSON.stringify(previousSpecs) !== JSON.stringify(newSpec))) {
+  if (typeof previousSpecHash === 'undefined' ||(previousSpecHash !== newSpecHash)) {
+
     specsUpdated = true
-    config.tableOptionSpec = newSpec
+    config.tableOptionSpecHash = newSpecHash
+    config.initialized = true
   }
 
   // reset all persisted option values if spec is updated
   if (specsUpdated) {
     config.tableOptionValue = {}
-    for (let i = 0; i < newSpec.length; i++) {
-      const option = newSpec[i]
+    for (let i = 0; i < tableOptionSpecs.length; i++) {
+      const option = tableOptionSpecs[i]
       config.tableOptionValue[option.name] = option.defaultValue
     }
+    config.initialized = true
   }
 
   return config
