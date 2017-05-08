@@ -55,7 +55,6 @@ function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
       payload = angular.fromJson(event.data)
     }
 
-    console.debug('Receive Json << %o', event.data)
     console.log('Receive << %o, %o', payload.op, payload)
 
     let op = payload.op
