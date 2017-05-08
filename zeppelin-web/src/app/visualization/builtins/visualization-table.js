@@ -288,8 +288,8 @@ export default class TableVisualization extends Visualization {
         gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.selection.on.rowSelectionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.selection.on.rowSelectionChangedBatch(scope, () => { self.persistConfigWithGridState(self.config) })
+        // gridApi.selection.on.rowSelectionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
+        // gridApi.selection.on.rowSelectionChangedBatch(scope, () => { self.persistConfigWithGridState(self.config) })
       }
       gridOptions.onRegisterApi = onRegisterApiCallback
     } else {
@@ -340,12 +340,18 @@ export default class TableVisualization extends Visualization {
     return scope[gridApiId]
   }
 
-  persistConfigWithGridState(config) {
+  persistConfigImmediatelyWithGridState(config) {
+    this.persistConfigWithGridState(config, 0)
+  }
+
+  persistConfigWithGridState(config, millis) {
     // use timeout to avoid recursive emitting
     if (this.emitTimeout) {
        // if there is already a timeout in process cancel it
       this._timeout.cancel(this.emitTimeout)
     }
+
+    if (typeof millis === 'undefined') { millis = 3000 }
 
     const self = this // closure
 
@@ -358,7 +364,7 @@ export default class TableVisualization extends Visualization {
       console.warn(gridOptions.columnDefs)
 
       self.emitTimeout = null // reset timeout
-    }, 2000)
+    }, millis)
   }
 
   persistConfig(config) {
@@ -374,6 +380,7 @@ export default class TableVisualization extends Visualization {
       self.persistConfig(configObj) // should persist w/o state
     }
 
+    // should use `persistConfigImmediatelyWithGridState` in the `setting` panel
     return {
       template: SETTING_TEMPLATE,
       scope: {
@@ -385,22 +392,22 @@ export default class TableVisualization extends Visualization {
         isTextareaWidget: isTextareaWidget,
         isBtnGroupWidget: isBtnGroupWidget,
         tableOptionValueChanged: () => {
-          self.persistConfigWithGridState(configObj)
+          self.persistConfigImmediatelyWithGridState(configObj)
         },
         saveTableOption: () => {
-          self.persistConfigWithGridState(configObj)
+          self.persistConfigImmediatelyWithGridState(configObj)
         },
         resetTableOption: () => {
           resetTableOptionConfig(configObj)
           initializeTableConfig(configObj, TABLE_OPTION_SPECS)
-          self.persistConfigWithGridState(configObj)
+          self.persistConfigImmediatelyWithGridState(configObj)
         },
         tableWidgetOnKeyDown: (event, optSpec) => {
           const code = event.keyCode || event.which
           if (code === 13 && isInputWidget(optSpec)) {
-            self.persistConfigWithGridState(configObj)
+            self.persistConfigImmediatelyWithGridState(configObj)
           } else if (code === 13 && event.shiftKey && isTextareaWidget(optSpec)) {
-            self.persistConfigWithGridState(configObj)
+            self.persistConfigImmediatelyWithGridState(configObj)
           }
 
           event.stopPropagation() /** avoid to conflict with paragraph shortcuts */
