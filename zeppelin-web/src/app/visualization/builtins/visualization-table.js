@@ -93,6 +93,7 @@ export default class TableVisualization extends Visualization {
     super(targetEl, config)
     this.passthrough = new PassthroughTransformation(config)
     this.emitTimeout = null
+    this.isRestoring = false
 
     initializeTableConfig(config, TABLE_OPTION_SPECS)
   }
@@ -136,7 +137,7 @@ export default class TableVisualization extends Visualization {
       saveVisible: true, // column visibility
       saveTreeView: true,
       saveFilter: true,
-      saveSelection: true,
+      saveSelection: false,
     }
 
     return gridOptions
@@ -277,17 +278,22 @@ export default class TableVisualization extends Visualization {
       const gridApiId = this.getGridApiId()
       const onRegisterApiCallback = (gridApi) => {
         scope[gridApiId] = gridApi
+        // should restore state before registering APIs
+
         // register callbacks for change evens
         // should persist `self.config` instead `config` (closure issue)
         gridApi.core.on.columnVisibilityChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.colMovable.on.columnPositionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.core.on.sortChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.core.on.filterChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.grouping.on.aggregationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config) })
+
+        // pagination doesn't follow usual life-cycle in ui-grid v4.0.4
+        // gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
+        // TBD: do we need to propagate row selection?
         // gridApi.selection.on.rowSelectionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         // gridApi.selection.on.rowSelectionChangedBatch(scope, () => { self.persistConfigWithGridState(self.config) })
       }
@@ -299,12 +305,14 @@ export default class TableVisualization extends Visualization {
       this.refreshGrid()
     }
 
-    if (config.tableGridState) {
-      this.restoreGridState(config.tableGridState)
-    }
+    this.restoreGridState(config.tableGridState)
   }
 
   restoreGridState(gridState) {
+    if (!gridState) { return }
+
+    // should set isRestoring to avoid that changed* events are triggered while restoring
+    this.isRestoring = true
     const gridApi = this.getGridApi()
 
     // restore grid state when gridApi is available
@@ -312,7 +320,7 @@ export default class TableVisualization extends Visualization {
       setTimeout(() => this.restoreGridState(gridState), 100)
     } else {
       gridApi.saveState.restore(this.getScope(), gridState)
-      this.refreshGrid()
+      this.isRestoring = false
     }
   }
 
@@ -345,13 +353,14 @@ export default class TableVisualization extends Visualization {
   }
 
   persistConfigWithGridState(config, millis) {
+    if (this.isRestoring) { return }
     // use timeout to avoid recursive emitting
     if (this.emitTimeout) {
        // if there is already a timeout in process cancel it
       this._timeout.cancel(this.emitTimeout)
     }
 
-    if (typeof millis === 'undefined') { millis = 3000 }
+    if (typeof millis === 'undefined') { millis = 1000 }
 
     const self = this // closure
 

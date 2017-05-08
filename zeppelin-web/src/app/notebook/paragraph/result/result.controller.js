@@ -624,13 +624,12 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     let newConfig = angular.copy($scope.config)
     if (newConfig.graph.optionOpen) {
       newConfig.graph.optionOpen = false
-      // should commit only when it's going to be closed
-      // otherwise graph, table will be re-rendered
-      let newParams = angular.copy(paragraph.settings.params)
-      commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
     } else {
       newConfig.graph.optionOpen = true
     }
+
+    let newParams = angular.copy(paragraph.settings.params)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
   }
 
   const getVizConfig = function (vizId) {
