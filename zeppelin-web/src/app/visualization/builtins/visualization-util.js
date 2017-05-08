@@ -14,6 +14,17 @@ export const ValueType = {
   JSON: 'JSON',
 }
 
+export const TableColumnType = {
+  STRING: 'string',
+  BOOLEAN: 'boolean',
+  NUMBER: 'number',
+  DATE: 'date',
+  OBJECT: 'object',
+  NUMBER_STR: 'numberStr',
+}
+
+export const DefaultTableColumnType = TableColumnType.STRING
+
 export function isInputWidget (spec) { return spec.widget === Widget.INPUT }
 export function isOptionWidget (spec) { return spec.widget === Widget.OPTION }
 export function isCheckboxWidget (spec) { return spec.widget === Widget.CHECKBOX }
@@ -23,8 +34,6 @@ export function isBtnGroupWidget (spec) { return spec.widget === Widget.BTN_GROU
 export function resetTableOptionConfig(config) {
   delete config.tableOptionSpecHash
   config.tableOptionSpecHash = {}
-  delete config.tableGridState
-  config.tableGridState = {}
   delete config.tableOptionValue
   config.tableOptionValue = {}
   return config
@@ -33,6 +42,7 @@ export function resetTableOptionConfig(config) {
 export function initializeTableConfig(config, tableOptionSpecs) {
   if (typeof config.tableOptionValue === 'undefined') { config.tableOptionValue = {} }
   if (typeof config.tableGridState === 'undefined') { config.tableGridState = {} }
+  if (typeof config.tableColumnTypeState === 'undefined') { config.tableColumnTypeState = {} }
 
   // should remove `$$hashKey` using angular.toJson
   const newSpecHash = JSON.stringify(JSON.parse(angular.toJson(tableOptionSpecs)))
@@ -87,4 +97,59 @@ export function parseTableOption(specs, persistedTableOption) {
   }
 
   return parsed
+}
+
+export function isColumnNameUpdated(prevColumnNames, newColumnNames) {
+  if (typeof prevColumnNames === 'undefined') { return true }
+
+  let columnNameUpdated = false
+
+  for (let prevColName in prevColumnNames) {
+    if (!newColumnNames[prevColName]) {
+      return true
+    }
+  }
+
+  if (!columnNameUpdated) {
+    for (let newColName in newColumnNames) {
+      if (!prevColumnNames[newColName]) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+export function updateColumnTypeState(columns, config, columnDefs) {
+  const columnTypeState = config.tableColumnTypeState
+
+  if (!columnTypeState) { return }
+
+  // compare objects because order might be changed
+  const prevColumnNames = columnTypeState.names || {}
+  const newColumnNames = columns.reduce((acc, c) => {
+    const prevColumnType = prevColumnNames[c.name]
+
+    // use previous column type if exists
+    if (prevColumnType) {
+      acc[c.name] = prevColumnType
+    } else {
+      acc[c.name] = DefaultTableColumnType
+    }
+    return acc
+  }, {})
+
+  let columnNameUpdated = isColumnNameUpdated(prevColumnNames, newColumnNames)
+
+  if (columnNameUpdated) {
+    columnTypeState.names = newColumnNames
+    columnTypeState.updated = true
+  }
+
+  // update `columnDefs[n].type`
+  for (let i = 0; i < columnDefs.length; i++) {
+    const colName = columnDefs[i].name
+    columnDefs[i].type = columnTypeState.names[colName]
+  }
 }

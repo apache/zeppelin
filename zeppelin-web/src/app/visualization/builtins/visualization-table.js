@@ -20,19 +20,11 @@ import {
   isInputWidget, isOptionWidget, isCheckboxWidget,
   isTextareaWidget, isBtnGroupWidget,
   initializeTableConfig, resetTableOptionConfig,
+  DefaultTableColumnType, TableColumnType, updateColumnTypeState,
   parseTableOption,
 } from './visualization-util'
 
 const SETTING_TEMPLATE = require('./visualization-table-setting.html')
-
-const TableColumnType = {
-  STRING: 'string',
-  BOOLEAN: 'boolean',
-  NUMBER: 'number',
-  DATE: 'date',
-  OBJECT: 'object',
-  NUMBER_STR: 'numberStr',
-}
 
 const TABLE_OPTION_SPECS = [
   {
@@ -123,7 +115,7 @@ export default class TableVisualization extends Visualization {
       columnDefs: columnNames.map(colName => {
         return {
           name: colName,
-          type: TableColumnType.STRING,
+          type: DefaultTableColumnType,
         }
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
@@ -175,19 +167,22 @@ export default class TableVisualization extends Visualization {
     }
   }
 
-  refreshGridColumn() {
-    const gridElemId = this.getGridElemId()
-    const gridElem = angular.element(`#${gridElemId}`)
+  updateColDefType(colDef, type) {
+    if (type === colDef.type) { return }
 
-    if (gridElem) {
-      const scope = this.getScope()
-      const gridApiId = this.getGridApiId()
-      scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.COLUMN)
+    colDef.type = type
+    const colName = colDef.name
+    const config = this.config
+    if (config.tableColumnTypeState.names && config.tableColumnTypeState.names[colName]) {
+      config.tableColumnTypeState.names[colName] = type
+      this.persistConfigWithGridState(this.config)
     }
   }
 
   addColumnMenus(gridOptions) {
     if (!gridOptions || !gridOptions.columnDefs) { return }
+
+    const self = this // for closure
 
     // SHOULD use `function() { ... }` syntax for each action to get `this`
     gridOptions.columnDefs.map(colDef => {
@@ -195,7 +190,7 @@ export default class TableVisualization extends Visualization {
         {
           title: 'Type: String',
           action: function() {
-            this.context.col.colDef.type = TableColumnType.STRING
+            self.updateColDefType(this.context.col.colDef, TableColumnType.STRING)
           },
           active: function() {
             return this.context.col.colDef.type === TableColumnType.STRING
@@ -204,7 +199,7 @@ export default class TableVisualization extends Visualization {
         {
           title: 'Type: Number',
           action: function() {
-            this.context.col.colDef.type = TableColumnType.NUMBER
+            self.updateColDefType(this.context.col.colDef, TableColumnType.NUMBER)
           },
           active: function() {
             return this.context.col.colDef.type === TableColumnType.NUMBER
@@ -213,7 +208,7 @@ export default class TableVisualization extends Visualization {
         {
           title: 'Type: Date',
           action: function() {
-            this.context.col.colDef.type = TableColumnType.DATE
+            self.updateColDefType(this.context.col.colDef, TableColumnType.DATE)
           },
           active: function() {
             return this.context.col.colDef.type === TableColumnType.DATE
@@ -305,6 +300,9 @@ export default class TableVisualization extends Visualization {
       this.refreshGrid()
     }
 
+    const columnDefs = this.getGridOptions().columnDefs
+    updateColumnTypeState(tableData.columns, config, columnDefs)
+    // SHOULD restore grid state after columnDefs are updated
     this.restoreGridState(config.tableGridState)
   }
 
@@ -369,9 +367,6 @@ export default class TableVisualization extends Visualization {
       config.tableGridState = gridApi.saveState.save()
       self.emitConfig(config)
 
-      const gridOptions = self.getGridOptions()
-      console.warn(gridOptions.columnDefs)
-
       self.emitTimeout = null // reset timeout
     }, millis)
   }
@@ -381,12 +376,17 @@ export default class TableVisualization extends Visualization {
   }
 
   getSetting (chart) {
-    const self = this
+    const self = this // for closure in scope
     const configObj = self.config
 
+    // emit config if it's updated in `render`
     if (configObj.initialized) {
       configObj.initialized = false
-      self.persistConfig(configObj) // should persist w/o state
+      this.persistConfig(configObj) // should persist w/o state
+    } else if (configObj.tableColumnTypeState &&
+      configObj.tableColumnTypeState.updated) {
+      configObj.tableColumnTypeState.updated = false
+      this.persistConfig(configObj) // should persist w/o state
     }
 
     // should use `persistConfigImmediatelyWithGridState` in the `setting` panel
