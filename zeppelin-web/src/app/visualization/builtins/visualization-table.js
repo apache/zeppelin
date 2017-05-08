@@ -117,6 +117,7 @@ export default class TableVisualization extends Visualization {
       flatEntityAccess: true,
       fastWatch: false,
       enableGroupHeaderSelection: true,
+      enableSelectionBatchEvent: true,
       treeRowHeaderAlwaysVisible: false,
       columnDefs: columnNames.map(colName => {
         return {
@@ -131,8 +132,11 @@ export default class TableVisualization extends Visualization {
       savePinning: true,
       saveGrouping: true,
       saveGroupingExpandedStates: true,
-      saveFilter: true, // too slow
-      saveSelection: false, // unstable in ui-grid 4.0.3
+      saveOrder: true, // column order
+      saveVisible: true, // column visibility
+      saveTreeView: true,
+      saveFilter: true,
+      saveSelection: true,
     }
 
     return gridOptions
@@ -275,11 +279,17 @@ export default class TableVisualization extends Visualization {
         scope[gridApiId] = gridApi
         // register callbacks for change evens
         // should persist `self.config` instead `config` (closure issue)
+        gridApi.core.on.columnVisibilityChanged(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.colMovable.on.columnPositionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.core.on.sortChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.core.on.filterChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.grouping.on.aggregationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.selection.on.rowSelectionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.selection.on.rowSelectionChangedBatch(scope, () => { self.persistConfigWithGridState(self.config) })
       }
       gridOptions.onRegisterApi = onRegisterApiCallback
     } else {
@@ -343,8 +353,12 @@ export default class TableVisualization extends Visualization {
       const gridApi = self.getGridApi()
       config.tableGridState = gridApi.saveState.save()
       self.emitConfig(config)
-      self.emitTimeout = null
-    }, 500)
+
+      const gridOptions = self.getGridOptions()
+      console.warn(gridOptions.columnDefs)
+
+      self.emitTimeout = null // reset timeout
+    }, 2000)
   }
 
   persistConfig(config) {
