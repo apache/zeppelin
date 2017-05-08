@@ -19,7 +19,7 @@ import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
 
 import 'angular-ui-grid/ui-grid.css'
-import uiGrid from 'angular-ui-grid'
+import 'angular-ui-grid'
 
 const requiredModules = [
   'ngCookies',
@@ -40,7 +40,7 @@ const requiredModules = [
   'focus-if',
   'ngResource',
   'ngclipboard',
-  uiGrid,
+  'ui.grid',
   'ui.grid.exporter',
   'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.selection',
   'ui.grid.cellNav', 'ui.grid.pinning',

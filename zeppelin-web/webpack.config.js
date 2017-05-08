@@ -230,7 +230,6 @@ module.exports = function makeWebpackConfig () {
         template: './src/index.html',
         inject: 'body'
       }),
-
       // Reference: https://webpack.github.io/docs/list-of-plugins.html#defineplugin
       new webpack.DefinePlugin({
         'process.env': {

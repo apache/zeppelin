@@ -18,7 +18,6 @@
     "dev:helium": "HELIUM_BUNDLE_DEV=true webpack-dev-server --hot",
     "dev:watch": "grunt watch-webpack-dev",
     "dev": "npm-run-all --parallel dev:server lint:watch dev:watch",
-    "pretest": "npm install karma-phantomjs-launcher babel-polyfill",
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
@@ -76,6 +75,7 @@
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "~1.0.2",
     "karma-sourcemap-loader": "^0.3.7",
+    "karma-phantomjs-launcher": "^1.0.4",
     "karma-webpack": "^1.8.1",
     "load-grunt-tasks": "^0.4.0",
     "ng-annotate-loader": "^0.2.0",
