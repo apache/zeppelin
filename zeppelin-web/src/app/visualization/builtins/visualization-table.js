@@ -347,28 +347,15 @@ export default class TableVisualization extends Visualization {
   }
 
   persistConfigImmediatelyWithGridState(config) {
-    this.persistConfigWithGridState(config, 0)
+    this.persistConfigWithGridState(config)
   }
 
-  persistConfigWithGridState(config, millis) {
+  persistConfigWithGridState(config) {
     if (this.isRestoring) { return }
-    // use timeout to avoid recursive emitting
-    if (this.emitTimeout) {
-       // if there is already a timeout in process cancel it
-      this._timeout.cancel(this.emitTimeout)
-    }
 
-    if (typeof millis === 'undefined') { millis = 1000 }
-
-    const self = this // closure
-
-    this.emitTimeout = this._timeout(() => {
-      const gridApi = self.getGridApi()
-      config.tableGridState = gridApi.saveState.save()
-      self.emitConfig(config)
-
-      self.emitTimeout = null // reset timeout
-    }, millis)
+    const gridApi = this.getGridApi()
+    config.tableGridState = gridApi.saveState.save()
+    this.emitConfig(config)
   }
 
   persistConfig(config) {
@@ -389,7 +376,6 @@ export default class TableVisualization extends Visualization {
       this.persistConfig(configObj) // should persist w/o state
     }
 
-    // should use `persistConfigImmediatelyWithGridState` in the `setting` panel
     return {
       template: SETTING_TEMPLATE,
       scope: {
@@ -401,22 +387,22 @@ export default class TableVisualization extends Visualization {
         isTextareaWidget: isTextareaWidget,
         isBtnGroupWidget: isBtnGroupWidget,
         tableOptionValueChanged: () => {
-          self.persistConfigImmediatelyWithGridState(configObj)
+          self.persistConfigWithGridState(configObj)
         },
         saveTableOption: () => {
-          self.persistConfigImmediatelyWithGridState(configObj)
+          self.persistConfigWithGridState(configObj)
         },
         resetTableOption: () => {
           resetTableOptionConfig(configObj)
           initializeTableConfig(configObj, TABLE_OPTION_SPECS)
-          self.persistConfigImmediatelyWithGridState(configObj)
+          self.persistConfigWithGridState(configObj)
         },
         tableWidgetOnKeyDown: (event, optSpec) => {
           const code = event.keyCode || event.which
           if (code === 13 && isInputWidget(optSpec)) {
-            self.persistConfigImmediatelyWithGridState(configObj)
+            self.persistConfigWithGridState(configObj)
           } else if (code === 13 && event.shiftKey && isTextareaWidget(optSpec)) {
-            self.persistConfigImmediatelyWithGridState(configObj)
+            self.persistConfigWithGridState(configObj)
           }
 
           event.stopPropagation() /** avoid to conflict with paragraph shortcuts */
