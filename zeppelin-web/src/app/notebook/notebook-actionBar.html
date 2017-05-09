@@ -11,7 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="noteAction" ng-show="note.id && !paragraphUrl">
+<headroom class="noteAction"
+          ng-show="note.id && !paragraphUrl">
   <h3>
     <div style="float: left; width: auto; max-width: 40%"
       ng-controller="ElasticInputCtrl as input">
@@ -130,6 +131,8 @@ limitations under the License.
                         ng-hide="viewOnly"
                         ng-click="checkpointNote(note.checkpoint.message)"
                         style="margin-left: 4px;"
+                        tooltip-append-to-body="true"
+                        tooltip-class="revisionTooltip"
                         tooltip-placement="bottom" uib-tooltip="Commit this note">Commit
                 </button>
               </div>
@@ -274,4 +277,4 @@ limitations under the License.
       </span>
     </div>
   </h3>
-</div>
+</headroom>

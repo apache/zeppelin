@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -179,10 +178,6 @@ public class JDBCInterpreter extends Interpreter {
     }
     logger.debug("JDBC PropretiesMap: {}", basePropretiesMap);
 
-    if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
-      JDBCSecurityImpl.createSecureConfiguration(property);
-    }
-
     setMaxLineResults();
   }
 
@@ -332,9 +327,6 @@ public class JDBCInterpreter extends Interpreter {
 
     if (!getJDBCConfiguration(user).isConnectionInDBDriverPool(propertyKey)) {
       createConnectionPool(url, user, propertyKey, properties);
-      try (Connection connection = DriverManager.getConnection(jdbcDriver)) {
-        executePrecode(connection, propertyKey);
-      }
     }
     return DriverManager.getConnection(jdbcDriver);
   }
@@ -358,36 +350,25 @@ public class JDBCInterpreter extends Interpreter {
     } else {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
 
+      final String connectionUrl = appendProxyUserToURL(url, user, propertyKey);
+
+      JDBCSecurityImpl.createSecureConfiguration(property, authType);
       switch (authType) {
           case KERBEROS:
             if (user == null || "false".equalsIgnoreCase(
-              property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
-              connection = getConnectionFromPool(url, user, propertyKey, properties);
+                property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
+              connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
             } else {
-              if (url.trim().startsWith("jdbc:hive")) {
-                StringBuilder connectionUrl = new StringBuilder(url);
-                Integer lastIndexOfUrl = connectionUrl.indexOf("?");
-                if (lastIndexOfUrl == -1) {
-                  lastIndexOfUrl = connectionUrl.length();
-                }
-                boolean hasProxyUser = property.containsKey("hive.proxy.user");
-                if (!hasProxyUser || !property.getProperty("hive.proxy.user").equals("false")){
-                  logger.debug("Using hive proxy user");
-                  connectionUrl.insert(lastIndexOfUrl, ";hive.server2.proxy.user=" + user + ";");
-                }
-                connection = getConnectionFromPool(connectionUrl.toString(),
-                        user, propertyKey, properties);
+              if (basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
+                connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
               } else {
                 UserGroupInformation ugi = null;
                 try {
                   ugi = UserGroupInformation.createProxyUser(
-                          user, UserGroupInformation.getCurrentUser());
+                      user, UserGroupInformation.getCurrentUser());
                 } catch (Exception e) {
                   logger.error("Error in getCurrentUser", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
+                  throw new InterpreterException("Error in getCurrentUser", e);
                 }
 
                 final String poolKey = propertyKey;
@@ -395,26 +376,46 @@ public class JDBCInterpreter extends Interpreter {
                   connection = ugi.doAs(new PrivilegedExceptionAction<Connection>() {
                     @Override
                     public Connection run() throws Exception {
-                      return getConnectionFromPool(url, user, poolKey, properties);
+                      return getConnectionFromPool(connectionUrl, user, poolKey, properties);
                     }
                   });
                 } catch (Exception e) {
                   logger.error("Error in doAs", e);
-                  StringBuilder stringBuilder = new StringBuilder();
-                  stringBuilder.append(e.getMessage()).append("\n");
-                  stringBuilder.append(e.getCause());
-                  throw new InterpreterException(stringBuilder.toString());
+                  throw new InterpreterException("Error in doAs", e);
                 }
               }
             }
             break;
 
           default:
-            connection = getConnectionFromPool(url, user, propertyKey, properties);
+            connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
       }
     }
 
     return connection;
+  }
+
+  private String appendProxyUserToURL(String url, String user, String propertyKey) {
+    StringBuilder connectionUrl = new StringBuilder(url);
+
+    if (user != null && !user.equals("anonymous") &&
+        basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
+
+      Integer lastIndexOfUrl = connectionUrl.indexOf("?");
+      if (lastIndexOfUrl == -1) {
+        lastIndexOfUrl = connectionUrl.length();
+      }
+      logger.info("Using proxy user as :" + user);
+      logger.info("Using proxy property for user as :" +
+          basePropretiesMap.get(propertyKey).getProperty("proxy.user.property"));
+      connectionUrl.insert(lastIndexOfUrl, ";" +
+          basePropretiesMap.get(propertyKey).getProperty("proxy.user.property") + "=" + user + ";");
+    } else if (user != null && !user.equals("anonymous") && url.contains("hive")) {
+      logger.warn("User impersonation for hive has changed please refer: http://zeppelin.apache" +
+          ".org/docs/latest/interpreter/jdbc.html#apache-hive");
+    }
+
+    return connectionUrl.toString();
   }
 
   private String getPassword(Properties properties) throws IOException {
@@ -572,18 +573,19 @@ public class JDBCInterpreter extends Interpreter {
     return queries;
   }
 
-  private void executePrecode(Connection connection, String propertyKey) throws SQLException {
-    String precode = getProperty(String.format(PRECODE_KEY_TEMPLATE, propertyKey));
-    if (StringUtils.isNotBlank(precode)) {
-      precode = StringUtils.trim(precode);
-      logger.debug("Run SQL precode '{}'", precode);
-      try (Statement statement = connection.createStatement()) {
-        statement.execute(precode);
-        if (!connection.getAutoCommit()) {
-          connection.commit();
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+    InterpreterResult interpreterResult = null;
+    for (String propertyKey : basePropretiesMap.keySet()) {
+      String precode = getProperty(String.format("%s.precode", propertyKey));
+      if (StringUtils.isNotBlank(precode)) {
+        interpreterResult = executeSql(propertyKey, precode, interpreterContext);
+        if (interpreterResult.code() != Code.SUCCESS) {
+          break;
         }
       }
     }
+
+    return interpreterResult;
   }
 
   private InterpreterResult executeSql(String propertyKey, String sql,

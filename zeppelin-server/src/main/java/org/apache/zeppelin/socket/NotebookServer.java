@@ -1742,10 +1742,10 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
-    // if it's the last paragraph and empty, let's add a new one
+    // if it's the last paragraph and not empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (!(p.getText().trim().equals(p.getMagic()) ||
-        Strings.isNullOrEmpty(p.getText())) &&
+    if (!(Strings.isNullOrEmpty(p.getText()) ||
+        p.getText().trim().equals(p.getMagic())) &&
         isTheLastParagraph) {
       Paragraph newPara = note.addNewParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);

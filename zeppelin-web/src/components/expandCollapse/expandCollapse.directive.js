@@ -30,6 +30,15 @@ function expandCollapse () {
             }
           })
         }
+
+        let target = event.target
+
+        // add note
+        if (target.classList !== undefined && target.classList.contains('fa-plus') &&
+          target.tagName.toLowerCase() === 'i') {
+          return
+        }
+
         event.stopPropagation()
       })
     }

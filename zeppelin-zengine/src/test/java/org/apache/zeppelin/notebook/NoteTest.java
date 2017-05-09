@@ -217,4 +217,20 @@ public class NoteTest {
 
     assertEquals("getName should return same as getId when name is empty", note.getId(), note.getName());
   }
+
+  @Test
+  public void personalizedModeReturnDifferentParagraphInstancePerUser() {
+    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+
+    String user1 = "user1";
+    String user2 = "user2";
+    note.setPersonalizedMode(true);
+    note.addNewParagraph(new AuthenticationInfo(user1));
+    Paragraph baseParagraph = note.getParagraphs().get(0);
+    Paragraph user1Paragraph = baseParagraph.getUserParagraph(user1);
+    Paragraph user2Paragraph = baseParagraph.getUserParagraph(user2);
+    assertNotEquals(System.identityHashCode(baseParagraph), System.identityHashCode(user1Paragraph));
+    assertNotEquals(System.identityHashCode(baseParagraph), System.identityHashCode(user2Paragraph));
+    assertNotEquals(System.identityHashCode(user1Paragraph), System.identityHashCode(user2Paragraph));
+  }
 }

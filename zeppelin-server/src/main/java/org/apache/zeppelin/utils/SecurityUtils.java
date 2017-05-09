@@ -60,11 +60,13 @@ public class SecurityUtils {
 
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
       throws UnknownHostException, URISyntaxException {
-    if (sourceHost == null || sourceHost.isEmpty()) {
-      return false;
+
+    String sourceUriHost = "";
+
+    if (sourceHost != null && !sourceHost.isEmpty()) {
+      sourceUriHost = new URI(sourceHost).getHost();
+      sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase();
     }
-    String sourceUriHost = new URI(sourceHost).getHost();
-    sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase();
 
     sourceUriHost = sourceUriHost.toLowerCase();
     String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase();

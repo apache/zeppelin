@@ -93,7 +93,7 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
-              <arguments>run build</arguments>
+              <arguments>${web.build.command}</arguments>
             </configuration>
           </execution>
 
@@ -153,6 +153,24 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>web-dist</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <web.build.command>run build:dist</web.build.command>
+      </properties>
+    </profile>
+    <profile>
+      <id>web-ci</id>
+      <properties>
+        <web.build.command>run build:ci</web.build.command>
+      </properties>
+    </profile>
+  </profiles>
 
 
 </project>

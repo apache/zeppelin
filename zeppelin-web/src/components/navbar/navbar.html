@@ -10,7 +10,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="navbar navbar-inverse navbar-fixed-top" style="display: none;" role="navigation" ng-class="{'displayNavBar': !asIframe}">
+<headroom class="navbar navbar-inverse navbar-fixed-top"
+          style="display: none;" role="navigation"
+          ng-class="{'displayNavBar': !asIframe}">
   <div class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
@@ -33,13 +35,13 @@ limitations under the License.
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <div ng-if="!query.q || query.q === ''">
-              <li ng-repeat="note in navbar.notes.root.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by note.id"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+              <li ng-repeat="node in navbar.notes.root.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by node.id"
+                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
             </div>
             <div ng-if="query.q">
-              <li ng-repeat="note in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering track by note.id"
-                  ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+              <li ng-repeat="node in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering track by node.id"
+                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
               </li>
             </div>
             </div>
@@ -109,7 +111,7 @@ limitations under the License.
       </ul>
     </div>
   </div>
-</div>
+</headroom>
 <div id="aboutModal" class="modal fade" role="dialog"
      tabindex="-1">
   <div class="modal-dialog">
