@@ -117,21 +117,16 @@ public class HDFSCommand {
 
 
   public String runCommand(Op op, String path, Arg[] args) throws  Exception {
-    return runCommand(op, path, null, null, null, args);
+    return runCommand(op, path, null, null, args);
   }
 
-  public String runCommand(Op op, String path, FileObject argFile, Arg[] args) throws  Exception {
-    return runCommand(op, path, null, null, argFile, args);
-  }
-
-  public String runCommand(Op op, String path, FileObject noteDir, String charsetName,
-                           Arg[] args) throws Exception {
-    return runCommand(op, path, noteDir, charsetName, null, args);
+  public String runCommand(Op op, String path, byte[] argFile, Arg[] args) throws  Exception {
+    return runCommand(op, path, null, argFile, args);
   }
 
   // The operator that runs all commands
-  public String runCommand(Op op, String path, FileObject noteDir, String charsetName,
-                           FileObject argFile, Arg[] args) throws Exception {
+  public String runCommand(Op op, String path, FileObject noteDir,
+                           byte[] argFile, Arg[] args) throws Exception {
 
     // Check arguments
     String error = checkArgs(op, path, args);
@@ -166,29 +161,16 @@ public class HDFSCommand {
     // Connect and get response string
     URL hdfsUrl = uri.toURL();
     HttpURLConnection con = (HttpURLConnection) hdfsUrl.openConnection();
-    FileObject noteJson;
-    OutputStream out = null;
 
     if (op.cmd == HttpType.GET) {
       con.setRequestMethod("GET");
-      con.setFollowRedirects(true);
-
-      if ("OPEN".equals(op.op)) {
-        noteJson = noteDir.resolveFile("note.json", NameScope.CHILD);
-        out = noteJson.getContent().getOutputStream(false);
-      }
+      con.setInstanceFollowRedirects(true);
 
       String result = getReceivedResponse(con, HttpType.GET, hdfsUrl);
-
-      if ("OPEN".equals(op.op)) {
-        out.write(result.getBytes());
-        out.close();
-      }
-
       return result;
     } else if (op.cmd == HttpType.PUT) {
       con.setRequestMethod("PUT");
-      con.setFollowRedirects(false);
+      con.setInstanceFollowRedirects(false);
       int responseCode = con.getResponseCode();
       String result = getReceivedResponse(con, HttpType.PUT, hdfsUrl);
 
@@ -199,30 +181,13 @@ public class HDFSCommand {
         hdfsUrl = new URL(location);
         con = (HttpURLConnection) hdfsUrl.openConnection();
 
-        File file = new File(argFile.getURL().toURI());
-        FileInputStream fi = new FileInputStream(file);
-
         con.setRequestMethod("PUT");
         con.setRequestProperty("Content-Type", "application/octet-stream");
         con.setRequestProperty("Transfer-Encoding", "chunked");
         con.setDoOutput(true);
 
         DataOutputStream outputStream = new DataOutputStream(con.getOutputStream());
-
-        int bytesAvailable = fi.available();
-        int maxBufferSize = 1024;
-        int bufferSize = Math.min(bytesAvailable, maxBufferSize);
-        byte[] buffer = new byte[bufferSize];
-
-        int bytesRead = fi.read(buffer, 0, bufferSize);
-        while (bytesRead > 0) {
-          outputStream.write(buffer, 0, bufferSize);
-          bytesAvailable = fi.available();
-          bufferSize = Math.min(bytesAvailable, maxBufferSize);
-          bytesRead = fi.read(buffer, 0, bufferSize);
-        }
-
-        fi.close();
+        outputStream.write(argFile);
         outputStream.flush();
 
         result = getReceivedResponse(con, HttpType.PUT, hdfsUrl);
