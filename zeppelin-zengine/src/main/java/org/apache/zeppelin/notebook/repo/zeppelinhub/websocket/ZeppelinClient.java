@@ -84,6 +84,20 @@ public class ZeppelinClient {
       "RUN_PARAGRAPH",
       "CANCEL_PARAGRAPH"));
 
+  private static final Set<String> actionable = new  HashSet<String>(Arrays.asList(
+      // running events
+      "ANGULAR_OBJECT_UPDATE",
+      "PROGRESS",
+      "NOTE",
+      "PARAGRAPH",
+      "PARAGRAPH_UPDATE_OUTPUT",
+      "PARAGRAPH_APPEND_OUTPUT",
+      "PARAGRAPH_CLEAR_OUTPUT",
+      "PARAGRAPH_REMOVE",
+      // run or stop events
+      "RUN_PARAGRAPH",
+      "CANCEL_PARAGRAPH"));
+
   public static ZeppelinClient initialize(String zeppelinUrl, String token, 
       ZeppelinConfiguration conf) {
     if (instance == null) {
@@ -152,7 +166,7 @@ public class ZeppelinClient {
           }
         }
       }
-    }, 5000);
+    }, 10000);
   }
 
   public void stop() {
