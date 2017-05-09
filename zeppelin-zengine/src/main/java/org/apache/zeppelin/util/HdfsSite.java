@@ -17,98 +17,171 @@
 
 package org.apache.zeppelin.util;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.file.HDFSCommand;
+import org.apache.zeppelin.file.HDFSFileInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_MAXLENGTH;
+import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_URL;
 
 /**
  * Class to create / move / delete / write to / read from HDFS filessytem
  */
 public class HdfsSite {
   private static Logger logger = LoggerFactory.getLogger(HdfsSite.class);
+  public static final String HDFS_NOTEBOOK_DIR = "hdfs.notebook.dir";
+  static final String NOTE_JSON = "note.json";
+  static final String NOTE_JSON_TEMP = "_note.json";
 
-  /**
-   * @param hadoopConfDir core-site.xml and hdfs-site.xml location.
-   *                      A null value will default th storage to the local filesystem
-   * @throws URISyntaxException
-   */
-  public HdfsSite(String hadoopConfDir) throws URISyntaxException {
-    logger.info("hadoopConfDir:" + hadoopConfDir);
-    if (!StringUtils.isBlank(hadoopConfDir)) {
-      final Path coreSite = new Path(hadoopConfDir, "core-site.xml");
-      conf.addResource(coreSite);
-      final Path hdfsSite = new Path(hadoopConfDir, "hdfs-site.xml");
-      conf.addResource(hdfsSite);
-      logger.info("fs.defaultFS:" + conf.get("fs.defaultFS"));
+  ZeppelinConfiguration conf;
+  boolean enableWebHDFS = true;
+  String hdfsUrl = null;
+  String hdfsUser = null;
+  int hdfsMaxLength = 0;
+  String hdfsNotebookDir = null;
+  HDFSCommand hdfsCmd = null;
+
+
+  public HdfsSite(ZeppelinConfiguration conf) throws URISyntaxException {
+    this.conf = conf;
+    this.hdfsUrl = conf.getString(HDFS_URL, HDFS_URL, "http://localhost:50070/webhdfs/v1/");
+    this.hdfsMaxLength = conf.getInt(HDFS_URL, HDFS_MAXLENGTH, 100000);
+    this.hdfsNotebookDir = removeProtocol(conf.getString(HDFS_URL, HDFS_NOTEBOOK_DIR, "/tmp"));
+    this.hdfsUser = System.getenv("HADOOP_USER_NAME");
+    if (this.hdfsUser == null) {
+      this.hdfsUser = System.getenv("LOGNAME");
+    }
+    if (this.hdfsUser == null) {
+
+      this.enableWebHDFS = false;
+    } else {
+      this.hdfsCmd = new HDFSCommand(hdfsUrl, hdfsUser, logger, this.hdfsMaxLength);
+      this.enableWebHDFS = checkWebHDFS();
     }
   }
 
-  protected Configuration conf = new Configuration();
+  public String removeProtocol(String hdfsUrl) {
+    String newUrl = hdfsUrl.replaceAll("/$", "");
+    if (newUrl.startsWith("hdfs://")) {
+      return "/" + newUrl.replaceAll("^hdfs://", "").split("/", 2)[1];
+    } else {
+      return newUrl;
+    }
+  }
 
-  /**
-   * @param directory Folder to list files
-   * @return list of files available in this directory
-   * @throws IOException
-   */
-  public Path[] listFiles(Path directory) throws IOException {
-    FileSystem fs = null;
+  private boolean checkWebHDFS() {
+    boolean ret = true;
+
+    HDFSFileInterpreter.OneFileStatus fileStatus;
+    Gson gson = new Gson();
     try {
-      fs = FileSystem.get(conf);
-      FileStatus[] statuses = fs.listStatus(directory);
-      List<Path> paths = new LinkedList<>();
-      for (FileStatus status : statuses) {
-        paths.add(status.getPath());
+      String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, "/", null);
+      fileStatus = gson.fromJson(notebookStatus, HDFSFileInterpreter.OneFileStatus.class);
+      long modificationTime = fileStatus.modificationTime;
+    } catch (Exception e) {
+      logger.info("disabled webHDFS. Please check webhdfs configurations");
+      ret = false;
+    } finally {
+      return ret;
+    }
+  }
+
+
+  public String[] listFiles() throws IOException {
+    listFiles(this.hdfsNotebookDir);
+  }
+
+  public String[] listFiles(String directory) throws IOException {
+    List<String> hdfsNotebook = new ArrayList<String>();
+    Gson gson = new Gson();
+    String hdfsDirStatus;
+
+    try {
+      sp
+          hdfsDirStatus = this.hdfsCmd.runCommand(this.hdfsCmd.listStatus, directory, null);
+      if (hdfsDirStatus != null) {
+        HDFSFileInterpreter.AllFileStatus allFiles = gson.fromJson(hdfsDirStatus, HDFSFileInterpreter.AllFileStatus.class);
+        if (allFiles != null && allFiles.FileStatuses != null
+            && allFiles.FileStatuses.FileStatus != null) {
+          for (HDFSFileInterpreter.OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
+            if ("DIRECTORY".equals(fs.type) && fs.pathSuffix.startsWith("_") == false) {
+              hdfsNotebook.add(fs.pathSuffix);
+              logger.info("read a notebook from HDFS: " + fs.pathSuffix);
+            }
+          }
+        }
       }
-      return paths.toArray(new Path[0]);
-    } finally {
-      if (fs != null)
-        fs.close();
+    } catch (Exception e) {
+      logger.error("exception occurred during getting notebook from hdfs : ", e);
+    }
+    hdfsNotebook.toArray(new String[0]);
+  }
+
+  public void delete(String noteId) throws IOException {
+    String noteDir = this.hdfsNotebookDir + "/" + noteId;
+    logger.debug("remove noteDir: " + noteDir);
+
+    HDFSCommand.Arg recursive = this.hdfsCmd.new Arg("recursive", "true");
+    HDFSCommand.Arg[] args = {recursive};
+
+    try {
+      this.hdfsCmd.runCommand(this.hdfsCmd.deleteFile, noteDir, args);
+    } catch (Exception e) {
+      logger.error("Exception: ", e);
+      throw new IOException(e.getCause());
     }
   }
 
-  /**
-   * @param path Absolute apth without scheme
-   * @throws IOException
-   */
-  public void delete(Path path) throws IOException {
-    FileSystem fs = null;
+  public void mkdirs(String noteId) throws IOException {
+    String noteDir = this.hdfsNotebookDir + "/" + noteId;
     try {
-      fs = FileSystem.get(conf);
-      fs.delete(path, true);
-    } finally {
-      if (fs != null)
-        fs.close();
+      this.hdfsCmd.runCommand(this.hdfsCmd.makeDirectory, noteDir, null);
+    } catch (Exception e) {
+      logger.error("Exception: ", e);
+      throw new IOException(e.getCause());
     }
   }
 
-  /**
-   * @param path Absolute path without scheme
-   * @throws IOException
-   */
-  public void mkdirs(Path path) throws IOException {
-    FileSystem fs = null;
+  private void uploadNoteToHDFS(String noteId) throws IOException {
+    String localNotebook = super.getRootDir() + "/" + noteId + "/" + NOTE_JSON;
+    FileObject localNote = super.getRootDir().resolveFile(noteId + "/" + NOTE_JSON);
+    String noteDir = this.hdfsNotebookDir + "/" + noteId;
+    String notebook = noteDir + "/" + NOTE_JSON;
+    String newNotebook = noteDir + "/" + NOTE_JSON_TEMP;
+    logger.debug("localNotebook: {}\tnotebook: {}", localNotebook, notebook);
+
     try {
-      fs = FileSystem.get(conf);
-      fs.mkdirs(path);
-    } finally {
-      if (fs != null)
-        fs.close();
+      this.hdfsCmd.runCommand(this.hdfsCmd.makeDirectory, noteDir, null);
+      this.hdfsCmd.runCommand(this.hdfsCmd.createWriteFile, newNotebook, localNote, null);
+      this.hdfsCmd.runCommand(this.hdfsCmd.deleteFile, notebook, null);
+      Arg dest = this.hdfsCmd.new Arg("destination", notebook);
+      Arg[] renameArgs = {dest};
+      this.hdfsCmd.runCommand(this.hdfsCmd.renameFile, newNotebook, renameArgs);
+    } catch (Exception e) {
+      logger.error("Exception: ", e);
+      throw new IOException(e.getCause());
     }
   }
+
 
   /**
    * @param content data to write
    * @param path    absolute path without scheme
    * @throws IOException
    */
-  public void writeFile(byte[] content, Path path) throws IOException {
+  public void writeFile(byte[] content, String noteId) throws IOException {
     FileSystem fs = null;
     FSDataOutputStream fout = null;
     try {
