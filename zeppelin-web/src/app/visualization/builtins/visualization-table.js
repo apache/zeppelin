@@ -28,7 +28,13 @@ const SETTING_TEMPLATE = require('./visualization-table-setting.html')
 
 const TABLE_OPTION_SPECS = [
   {
-    name: 'showGridFooter',
+    name: 'useFilter',
+    valueType: ValueType.BOOLEAN,
+    defaultValue: false,
+    widget: Widget.CHECKBOX,
+  },
+  {
+    name: 'showPagination',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
@@ -40,13 +46,7 @@ const TABLE_OPTION_SPECS = [
     widget: Widget.CHECKBOX,
   },
   {
-    name: 'showPagination',
-    valueType: ValueType.BOOLEAN,
-    defaultValue: true,
-    widget: Widget.CHECKBOX,
-  },
-  {
-    name: 'useFilter',
+    name: 'showGridFooter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
@@ -245,7 +245,8 @@ export default class TableVisualization extends Visualization {
       gridElem = angular.element(
         `<div id="${gridElemId}" ui-grid="${gridElemId}"
               ui-grid-edit ui-grid-row-edit 
-              ui-grid-pagination ui-grid-selection
+              ui-grid-pagination 
+              ui-grid-selection
               ui-grid-cellNav ui-grid-pinning
               ui-grid-empty-base-layer
               ui-grid-resize-columns ui-grid-move-columns
