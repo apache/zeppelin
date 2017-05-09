@@ -92,4 +92,4 @@ if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_PID_DIR}")
 fi
 
-exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:${ZEPPELIN_CLASSPATH} $ZEPPELIN_SERVER "$@"
+exec $ZEPPELIN_RUNNER -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5000 $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:${ZEPPELIN_CLASSPATH} $ZEPPELIN_SERVER "$@"
