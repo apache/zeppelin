@@ -46,12 +46,6 @@ const TABLE_OPTION_SPECS = [
     widget: Widget.CHECKBOX,
   },
   {
-    name: 'useSelection',
-    valueType: ValueType.BOOLEAN,
-    defaultValue: false,
-    widget: Widget.CHECKBOX,
-  },
-  {
     name: 'useFilter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
@@ -217,7 +211,7 @@ export default class TableVisualization extends Visualization {
 
     const {
       showGridFooter, showColumnFooter,
-      useSelection, useFilter, showPagination,
+      useFilter, showPagination,
       defaultPaginationSize, availablePaginationSizes,
     } = parsed
 
@@ -230,11 +224,13 @@ export default class TableVisualization extends Visualization {
     gridOptions.paginationPageSize = defaultPaginationSize
     gridOptions.paginationPageSizes = availablePaginationSizes
 
-    gridOptions.enableRowSelection = useSelection
-    gridOptions.enableSelectAll = useSelection
-    gridOptions.enableRowHeaderSelection = useSelection
-    gridOptions.enableGroupHeaderSelection = useSelection
-    gridOptions.enableSelectionBatchEvent = useSelection
+    // selection can't be rendered dynamically in ui-grid 4.0.4
+    gridOptions.enableRowSelection = false
+    gridOptions.enableRowHeaderSelection = false
+    gridOptions.enableFullRowSelection = false
+    gridOptions.enableSelectAll = false
+    gridOptions.enableGroupHeaderSelection = false
+    gridOptions.enableSelectionBatchEvent = false
   }
 
   render (tableData) {
