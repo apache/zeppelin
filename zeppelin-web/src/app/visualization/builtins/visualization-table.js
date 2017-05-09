@@ -32,42 +32,42 @@ const TABLE_OPTION_SPECS = [
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
-    // eslint-disable-next-line max-len
   },
   {
     name: 'showColumnFooter',
     valueType: ValueType.BOOLEAN,
-    defaultValue: true,
+    defaultValue: false,
     widget: Widget.CHECKBOX,
-    // eslint-disable-next-line max-len
   },
   {
     name: 'showPagination',
     valueType: ValueType.BOOLEAN,
     defaultValue: true,
     widget: Widget.CHECKBOX,
-    // eslint-disable-next-line max-len
+  },
+  {
+    name: 'useSelection',
+    valueType: ValueType.BOOLEAN,
+    defaultValue: false,
+    widget: Widget.CHECKBOX,
   },
   {
     name: 'useFilter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
-    // eslint-disable-next-line max-len
   },
   {
     name: 'defaultPaginationSize',
     valueType: ValueType.INT,
     defaultValue: 50,
     widget: Widget.INPUT,
-    // eslint-disable-next-line max-len
   },
   {
     name: 'availablePaginationSizes',
     valueType: ValueType.JSON,
-    defaultValue: '[25, 50, 100, 250, 1000]', // JSON's defaultValue should be string type
+    defaultValue: '[25, 50, 100, 250, 1000]', // defaultValue for JSON type should be string
     widget: Widget.TEXTAREA,
-    // eslint-disable-next-line max-len
   },
 ]
 
@@ -103,9 +103,8 @@ export default class TableVisualization extends Visualization {
       exporterMenuPdf: false,
       flatEntityAccess: true,
       fastWatch: false,
-      enableGroupHeaderSelection: true,
-      enableSelectionBatchEvent: true,
       treeRowHeaderAlwaysVisible: false,
+
       columnDefs: columnNames.map(colName => {
         return {
           name: colName,
@@ -218,7 +217,7 @@ export default class TableVisualization extends Visualization {
 
     const {
       showGridFooter, showColumnFooter,
-      useFilter, showPagination,
+      useSelection, useFilter, showPagination,
       defaultPaginationSize, availablePaginationSizes,
     } = parsed
 
@@ -230,6 +229,12 @@ export default class TableVisualization extends Visualization {
     gridOptions.enablePaginationControls = showPagination
     gridOptions.paginationPageSize = defaultPaginationSize
     gridOptions.paginationPageSizes = availablePaginationSizes
+
+    gridOptions.enableRowSelection = useSelection
+    gridOptions.enableSelectAll = useSelection
+    gridOptions.enableRowHeaderSelection = useSelection
+    gridOptions.enableGroupHeaderSelection = useSelection
+    gridOptions.enableSelectionBatchEvent = useSelection
   }
 
   render (tableData) {
