@@ -44,7 +44,7 @@
   word-wrap: break-word !important;
 }
 
-.paragraph table {
+.paragraph table:not(.markdown-body table) {
   margin-bottom: 0;
 }
 
