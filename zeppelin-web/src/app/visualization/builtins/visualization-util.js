@@ -50,6 +50,9 @@ export function resetTableOptionConfig(config) {
   config.tableOptionSpecHash = {}
   delete config.tableOptionValue
   config.tableOptionValue = {}
+  delete config.tableColumnTypeState.names
+  config.tableColumnTypeState.names = {}
+  config.updated = false
   return config
 }
 
