@@ -33,7 +33,6 @@ const TABLE_OPTION_SPECS = [
     defaultValue: false,
     widget: Widget.CHECKBOX,
     // eslint-disable-next-line max-len
-    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_showgridfooter">gridOptions.showGridFooter</a>',
   },
   {
     name: 'showColumnFooter',
@@ -41,7 +40,6 @@ const TABLE_OPTION_SPECS = [
     defaultValue: true,
     widget: Widget.CHECKBOX,
     // eslint-disable-next-line max-len
-    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_showcolumnfooter">gridOptions.showColumnFooter</a>',
   },
   {
     name: 'showPagination',
@@ -49,7 +47,6 @@ const TABLE_OPTION_SPECS = [
     defaultValue: true,
     widget: Widget.CHECKBOX,
     // eslint-disable-next-line max-len
-    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_enablepaginationcontrols">gridOptions.enablePaginationControls</a>',
   },
   {
     name: 'useFilter',
@@ -57,7 +54,6 @@ const TABLE_OPTION_SPECS = [
     defaultValue: false,
     widget: Widget.CHECKBOX,
     // eslint-disable-next-line max-len
-    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.class:GridOptions#properties_enablefiltering">gridOptions.enableFiltering</a>',
   },
   {
     name: 'defaultPaginationSize',
@@ -65,7 +61,6 @@ const TABLE_OPTION_SPECS = [
     defaultValue: 50,
     widget: Widget.INPUT,
     // eslint-disable-next-line max-len
-    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_paginationpagesize">gridOptions.paginationPageSize</a>',
   },
   {
     name: 'availablePaginationSizes',
@@ -73,7 +68,6 @@ const TABLE_OPTION_SPECS = [
     defaultValue: '[25, 50, 100, 250, 1000]', // JSON's defaultValue should be string type
     widget: Widget.TEXTAREA,
     // eslint-disable-next-line max-len
-    description: '<a href="http://ui-grid.info/docs/#/api/ui.grid.pagination.api:GridOptions#properties_paginationpagesizes">gridOptions.paginationPageSizes</a>',
   },
 ]
 

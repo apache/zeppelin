@@ -35,7 +35,6 @@ limitations under the License.
       <tr>
         <th style="font-size: 12px; font-style: italic">Name</th>
         <th style="font-size: 12px; font-style: italic">Type</th>
-        <th style="font-size: 12px; font-style: italic">Description</th>
         <th style="font-size: 12px; font-style: italic">Value</th>
       </tr>
       <tr>
@@ -44,8 +43,6 @@ limitations under the License.
       <tr data-ng-repeat="optSpec in tableOptionSpecs">
         <td style="font-weight: 400; vertical-align: middle;">{{optSpec.name}}</td>
         <td style="font-weight: 400; vertical-align: middle;">{{optSpec.valueType}}</td>
-        <td ng-bind-html="optSpec.description"
-            style="font-weight: 400; vertical-align: middle;"></td>
         <td>
           <div ng-if="isInputWidget(optSpec)"
                class="input-group">
