@@ -36,6 +36,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_URL;
+
 /**
  *
  */
@@ -44,28 +46,36 @@ public class HdfsNotebookRepo implements NotebookRepo {
   private static Logger logger = LoggerFactory.getLogger(HdfsNotebookRepo.class);
   private HdfsSite hdfsSite;
   private ZeppelinConfiguration conf;
-  private Path rootDir;
+  private String rootDir;
 
 
   public HdfsNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    String hadoopConfDir = System.getenv("HADOOP_CONF_DIR");
-    // if HADOOP_CONF_DIR is not defined, the local filesystem will be used instead of HDFS
     try {
-      rootDir = new Path(conf.getNotebookDir());
-      hdfsSite = new HdfsSite(hadoopConfDir);
+      rootDir = removeProtocol(conf.getNotebookDir());
+      hdfsSite = new HdfsSite(conf);
       hdfsSite.mkdirs(rootDir);
     } catch (URISyntaxException e) {
       throw new IOException(e);
     }
   }
 
+  public String removeProtocol(String hdfsUrl) {
+    String newUrl = hdfsUrl.replaceAll("/$", "");
+    if (newUrl.startsWith("hdfs://")) {
+      return "/" + newUrl.replaceAll("^hdfs://", "").split("/", 2)[1];
+    } else {
+      return newUrl;
+    }
+  }
+
+
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    Path[] children = hdfsSite.listFiles(rootDir);
-    List<NoteInfo> infos = new LinkedList<NoteInfo>();
-    for (Path child : children) {
-      String fileName = child.getName();
+    String[] children = hdfsSite.listFiles(rootDir);
+    List<NoteInfo> infos = new LinkedList<>();
+    for (String child : children) {
+      String fileName = child;
       if (fileName.startsWith(".")
           || fileName.startsWith("#")
           || fileName.startsWith("~")) {
@@ -73,7 +83,7 @@ public class HdfsNotebookRepo implements NotebookRepo {
         continue;
       }
 
-      if (!hdfsSite.isDirectory(child)) {
+      if (!hdfsSite.isDirectory(rootDir + "/" + child)) {
         // currently single note is saved like, [NOTE_ID]/note.json.
         // so it must be a directory
         continue;
@@ -82,7 +92,7 @@ public class HdfsNotebookRepo implements NotebookRepo {
       NoteInfo info = null;
 
       try {
-        info = getNoteInfo(child);
+        info = getNoteInfo(rootDir + "/" + child);
         if (info != null) {
           infos.add(info);
         }
@@ -94,14 +104,14 @@ public class HdfsNotebookRepo implements NotebookRepo {
     return infos;
   }
 
-  private Note getNote(Path noteDir) throws IOException {
+  private Note getNote(String noteDir) throws IOException {
     if (!hdfsSite.isDirectory(noteDir)) {
-      throw new IOException(noteDir.getName() + " is not a directory");
+      throw new IOException(noteDir + " is not a directory");
     }
 
-    Path noteJson = new Path(noteDir, "note.json");
+    String noteJson = noteDir + "/" + "note.json";
     if (!hdfsSite.exists(noteJson)) {
-      throw new IOException(noteJson.getName() + " not found");
+      throw new IOException(noteJson + " not found");
     }
 
     GsonBuilder gsonBuilder = new GsonBuilder();
@@ -119,22 +129,21 @@ public class HdfsNotebookRepo implements NotebookRepo {
         p.setStatus(Status.ABORT);
       }
     }
-
     return note;
   }
 
-  private NoteInfo getNoteInfo(Path noteDir) throws IOException {
+  private NoteInfo getNoteInfo(String noteDir) throws IOException {
     Note note = getNote(noteDir);
     return new NoteInfo(note);
   }
 
   @Override
   public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    Path path = new Path(rootDir, noteId);
+    String path = rootDir + "/" + noteId;
     return getNote(path);
   }
 
-  protected Path getRootDir() throws IOException {
+  protected String getRootDir() throws IOException {
     if (!hdfsSite.exists(rootDir)) {
       throw new IOException("Root path does not exists");
     }
@@ -152,38 +161,37 @@ public class HdfsNotebookRepo implements NotebookRepo {
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
 
-    Path noteDir = new Path(rootDir, note.getId());
+    String noteDir = rootDir + "/" + note.getId();
 
     if (!hdfsSite.exists(noteDir)) {
       hdfsSite.mkdirs(noteDir);
     }
     if (!hdfsSite.isDirectory(noteDir)) {
-      throw new IOException(noteDir.getName() + " is not a directory");
+      throw new IOException(noteDir + " is not a directory");
     }
 
-    Path noteJson = new Path(noteDir, "note.json");
+    String noteJson = noteDir + "/" + "note.json";
     hdfsSite.writeFile(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)), noteJson);
   }
 
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
-    Path noteDir = new Path(rootDir, noteId);
+    String noteDir = rootDir + "/" + noteId;
 
     if (!hdfsSite.exists(noteDir)) {
-      throw new IOException("Can not remove " + noteDir.getName());
+      throw new IOException("Can not remove " + noteDir);
     }
     hdfsSite.delete(noteDir);
   }
 
   @Override
   public void close() {
-    //no-op
+    
   }
 
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // Auto-generated method stub
     return null;
   }
 
@@ -194,7 +202,6 @@ public class HdfsNotebookRepo implements NotebookRepo {
 
   @Override
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
     return null;
   }
 
@@ -213,5 +220,4 @@ public class HdfsNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
 
   }
-
 }

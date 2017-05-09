@@ -33,9 +33,9 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  *
  */
 public class HDFSFileInterpreter extends FileInterpreter {
-  static final String HDFS_URL = "hdfs.url";
-  static final String HDFS_USER = "hdfs.user";
-  static final String HDFS_MAXLENGTH = "hdfs.maxlength";
+  public static final String HDFS_URL = "hdfs.url";
+  public static final String HDFS_USER = "hdfs.user";
+  public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
   Exception exceptionOnConnect = null;
   HDFSCommand cmd = null;

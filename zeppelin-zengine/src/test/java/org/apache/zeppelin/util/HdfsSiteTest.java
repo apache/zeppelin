@@ -18,6 +18,7 @@
 package org.apache.zeppelin.util;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,26 +46,23 @@ public class HdfsSiteTest {
   @Test
   public void rootPath() {
     try {
-      HdfsSite hdfsSite = new HdfsSite(null);
-      hdfsSite.mkdirs(new Path("/tmp/coucou"));
-      Path[] paths = hdfsSite.listFiles(new Path("/tmp"));
-      for (Path path : paths) {
+      HdfsSite hdfsSite = new HdfsSite(new ZeppelinConfiguration());
+      hdfsSite.mkdirs("/tmp/coucou");
+      String[] paths = hdfsSite.listFiles("/tmp");
+      for (String path : paths) {
         System.out.println(path);
       }
-      hdfsSite.delete(new Path("/tmp/coucou"));
-      paths = hdfsSite.listFiles(new Path("/tmp"));
-      for (Path path : paths) {
+      hdfsSite.delete("/tmp/coucou");
+      paths = hdfsSite.listFiles("/tmp");
+      for (String path : paths) {
         System.out.println(path);
       }
-      hdfsSite.writeFile("This is mmy file content".getBytes("UTF-8"), new Path("/tmp/coucou.txt"));
-      hdfsSite.rename(new Path("/tmp/coucou.txt"), new Path("/tmp/coucou2.txt"));
-      String read = new String(hdfsSite.readFile(new Path("/tmp/coucou2.txt")), "UTF-8");
+      hdfsSite.writeFile("This is mmy file content".getBytes("UTF-8"), "/tmp/coucou.txt");
+      hdfsSite.rename("/tmp/coucou.txt", "/tmp/coucou2.txt");
+      String read = new String(hdfsSite.readFile("/tmp/coucou2.txt"), "UTF-8");
       System.out.println(read);
-      System.out.println(""+ hdfsSite.exists(new Path("/tmp/coucou2.txt")));
-      hdfsSite.delete(new Path("/tmp/coucou2.txt"));
-
-
-
+      System.out.println(""+ hdfsSite.exists("/tmp/coucou2.txt"));
+      hdfsSite.delete("/tmp/coucou2.txt");
     } catch (URISyntaxException | IOException e) {
       e.printStackTrace();
       assert(false);
