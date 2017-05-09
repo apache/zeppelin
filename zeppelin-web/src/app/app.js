@@ -37,6 +37,7 @@ const requiredModules = [
   'focus-if',
   'ngResource',
   'ngclipboard',
+  'angularViewportWatch'
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.
