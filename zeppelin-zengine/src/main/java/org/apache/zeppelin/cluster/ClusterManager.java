@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
  *
  */
 public abstract class ClusterManager {
+
   protected final ZeppelinConfiguration zeppelinConfiguration;
 
   protected ClusterManager(ZeppelinConfiguration zeppelinConfiguration) {
@@ -47,7 +48,8 @@ public abstract class ClusterManager {
   public abstract void stop();
 
   public abstract RemoteInterpreterProcess createInterpreter(String id, String name,
-      String groupName, Map<String, String> env, Properties properties, int connectTimeout, RemoteInterpreterProcessListener listener,
+      String groupName, Map<String, String> env, Properties properties, int connectTimeout,
+      RemoteInterpreterProcessListener listener,
       ApplicationEventListener appListener)
       throws InterpreterException;
 

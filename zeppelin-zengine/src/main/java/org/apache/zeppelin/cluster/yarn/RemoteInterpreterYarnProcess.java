@@ -302,8 +302,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
   }
 
   private int convertSparkMemoryFormat(String memoryFormat) {
-    int memory = Integer.valueOf(memoryFormat.substring(0, memoryFormat.length() -1));
-    String unit = "" + memoryFormat.charAt(memoryFormat.length() -1);
+    int memory = Integer.valueOf(memoryFormat.substring(0, memoryFormat.length() - 1));
+    String unit = "" + memoryFormat.charAt(memoryFormat.length() - 1);
 
     switch (unit) {
         case "k":
