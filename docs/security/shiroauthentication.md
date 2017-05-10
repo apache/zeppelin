@@ -85,7 +85,7 @@ ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
-ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+ldapRealm.contextFactory.authenticationMechanism = simple
 ```
 
 also define roles/groups that you want to have in system, like below;
@@ -134,7 +134,7 @@ ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
-ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+ldapRealm.contextFactory.authenticationMechanism = simple
 ```
 
 ### PAM
