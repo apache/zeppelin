@@ -42,6 +42,26 @@ public class Constants {
 
   public static final String ZEPPELIN_CLUSTER_MANAGER_LOCAL = "local";
 
+  public static final String ZEPPELIN_YARN_VCORES_KEY = "zeppelin.yarn.vcores";
+
+  public static final String ZEPPELIN_YARN_VCORES_DEFAULT = "1";
+
+  public static final String ZEPPELIN_YARN_MEMORY_KEY = "zeppelin.yarn.memory";
+
+  public static final String ZEPPELIN_YARN_MEMORY_DEFAULT = "1024";
+
+  public static final String ZEPPELIN_YARN_QUEUE_KEY = "zeppelin.yarn.queue";
+
+  public static final String ZEPPELIN_YARN_QUEUE_DEFAULT = "default";
+
+  public static final String ZEPPELIN_YARN_APPLICATION_TYPE_KEY = "zeppelin.yarn.application.type";
+
+  public static final String ZEPPELIN_YARN_APPLICATION_TYPE_DEFAULT = "ZEPPELIN INTERPRETER";
+
+  public static final String ZEPPELIN_YARN_PRIORITY_KEY = "zeppelin.yarn.priority";
+
+  public static final String ZEPPELIN_YARN_PRIORITY_DEFAULT = "0";
+
   public static final String ZEPPELIN_YARN_PROPERTY_KEY_PREFIX = "zeppelin.yarn.";
 
   public static final Map<String, TimeUnit> TIME_SUFFIXES;

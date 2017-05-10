@@ -188,7 +188,7 @@ public class RemoteInterpreter extends Interpreter {
           switch (clusterManagerKey) {
               case Constants.ZEPPELIN_CLUSTER_MANAGER_YARN:
                 remoteProcess = clusterManager
-                    .createInterpreter("uniq", interpreterGroupName, group, connectTimeout,
+                    .createInterpreter(sessionKey, interpreterGroupName, group, env, property, connectTimeout,
                         remoteInterpreterProcessListener, applicationEventListener);
                 break;
               case Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL:

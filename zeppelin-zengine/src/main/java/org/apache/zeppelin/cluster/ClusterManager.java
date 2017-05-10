@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.cluster;
 
+import java.util.Map;
+import java.util.Properties;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -45,7 +47,7 @@ public abstract class ClusterManager {
   public abstract void stop();
 
   public abstract RemoteInterpreterProcess createInterpreter(String id, String name,
-      String groupName, int connectTimeout, RemoteInterpreterProcessListener listener,
+      String groupName, Map<String, String> env, Properties properties, int connectTimeout, RemoteInterpreterProcessListener listener,
       ApplicationEventListener appListener)
       throws InterpreterException;
 
