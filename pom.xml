@@ -61,7 +61,7 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
-    <!--module>livy</module-->
+    <module>livy</module>
     <module>hbase</module>
     <module>pig</module>
     <module>jdbc</module>

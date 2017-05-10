@@ -141,12 +141,6 @@
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>
-  <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
-</property>
-
-<property>
   <name>zeppelin.notebook.azure.connectionString</name>
   <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
   <description>Azure account credentials</description>

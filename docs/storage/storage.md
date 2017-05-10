@@ -246,8 +246,9 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 </property>
 ```
 
+</br>
 
- ## Notebook Storage in Hdfs <a name="HDFS"></a>
+## Notebook Storage in Hdfs <a name="HDFS"></a>
  
  To enable your notebooks to be stored on HDFS - uncomment the next property in `zeppelin-site.xml` in order to use HdfsNotebookRepo class:
  
@@ -259,16 +260,19 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
  </property>
  ```
  
- and replace the notebook directory property below by an HDFS location as follows :
- <property>
+ and replace the notebook directory property below by an absolute HDFS location as follows :
+ ```
+  <property>
    <name>zeppelin.notebook.dir</name>
-   <value>/tmp/notebook</value>
+   <value>hdfs://localhost:9000/tmp/notebook</value>
    <description>path or URI for notebook persist</description>
  </property>
+```
  
  </br>
+  
  
- ## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
+## Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 

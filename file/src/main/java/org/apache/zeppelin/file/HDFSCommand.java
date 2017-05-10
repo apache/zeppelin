@@ -18,8 +18,6 @@
 
 package org.apache.zeppelin.file;
 
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.NameScope;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.UriBuilder;
@@ -117,17 +115,10 @@ public class HDFSCommand {
 
 
   public String runCommand(Op op, String path, Arg[] args) throws  Exception {
-    return runCommand(op, path, null, null, args);
+    return runCommand(op, path, null, args);
   }
 
   public String runCommand(Op op, String path, byte[] argFile, Arg[] args) throws  Exception {
-    return runCommand(op, path, null, argFile, args);
-  }
-
-  // The operator that runs all commands
-  public String runCommand(Op op, String path, FileObject noteDir,
-                           byte[] argFile, Arg[] args) throws Exception {
-
     // Check arguments
     String error = checkArgs(op, path, args);
     if (error != null) {
