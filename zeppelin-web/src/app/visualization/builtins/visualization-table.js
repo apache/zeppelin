@@ -32,18 +32,21 @@ const TABLE_OPTION_SPECS = [
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
+    description: 'Enable filter for columns',
   },
   {
     name: 'showPagination',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
+    description: 'Enable pagination for better navigation',
   },
   {
     name: 'showAggregationFooter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
+    description: 'Enable a footer for displaying aggregation values',
   },
 ]
 
@@ -77,8 +80,6 @@ export default class TableVisualization extends Visualization {
       modifierKeysToMultiSelectCells: true,
       exporterMenuCsv: true,
       exporterMenuPdf: false,
-      paginationPageSize: 50,
-      paginationPageSizes: [25, 50, 100, 250, 1000],
       flatEntityAccess: true,
       fastWatch: false,
       treeRowHeaderAlwaysVisible: false,
@@ -193,10 +194,7 @@ export default class TableVisualization extends Visualization {
     // parse based on their type definitions
     const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue)
 
-    const {
-      showAggregationFooter,
-      useFilter, showPagination,
-    } = parsed
+    const { showAggregationFooter, useFilter, showPagination, } = parsed
 
     gridOptions.showGridFooter = false
     gridOptions.showColumnFooter = showAggregationFooter
@@ -204,6 +202,11 @@ export default class TableVisualization extends Visualization {
 
     gridOptions.enablePagination = showPagination
     gridOptions.enablePaginationControls = showPagination
+
+    if (showPagination) {
+      gridOptions.paginationPageSize = 50
+      gridOptions.paginationPageSizes = [25, 50, 100, 250, 1000]
+    }
 
     // selection can't be rendered dynamically in ui-grid 4.0.4
     gridOptions.enableRowSelection = false
