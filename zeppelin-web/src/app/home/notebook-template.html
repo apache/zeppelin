@@ -58,14 +58,12 @@ limitations under the License.
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
         <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'"></i> {{getNoteName(node)}}
       </a>
-      <a ng-if="!node.isTrash" style="text-decoration: none;">
-        <a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;"
-           ng-controller="NotenameCtrl as notenamectrl" ng-click="notenamectrl.getInterpreterSettings()" data-path="{{node.id}}">
-          <i style="margin-left: 10px;"
-             class="fa fa-plus notebook-list-btn" ng-show="showFolderButton"
-             tooltip-placement="bottom" uib-tooltip="Create new note">
-          </i>
-        </a>
+      <a ng-if="!node.isTrash" href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;"
+         ng-controller="NotenameCtrl as notenamectrl" ng-click="notenamectrl.getInterpreterSettings()" data-path="{{node.id}}">
+        <i style="margin-left: 10px;"
+           class="fa fa-plus notebook-list-btn" ng-show="showFolderButton"
+           tooltip-placement="bottom" uib-tooltip="Create new note">
+        </i>
       </a>
       <a ng-if="!node.isTrash" style="text-decoration: none;">
         <i class="fa fa-pencil notebook-list-btn" ng-show="showFolderButton" ng-click="renameFolder(node)"
@@ -92,7 +90,7 @@ limitations under the License.
     </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
+        <li ng-repeat="node in node.children | orderBy:node:false:noteComparator" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
       </ul>
     </div>
   </div>
@@ -116,7 +114,7 @@ limitations under the License.
     </div>
     <div ng-if="!node.hidden">
       <ul style="list-style-type: none; padding-left:15px;">
-        <li ng-repeat="node in node.children" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
+        <li ng-repeat="node in node.children | orderBy:node:false:noteComparator" ng-include="'app/home/notebook-template.html'" ng-class="'note_folder_renderer'"></li>
       </ul>
     </div>
   </div>

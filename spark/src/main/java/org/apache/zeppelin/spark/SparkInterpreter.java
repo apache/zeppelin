@@ -47,15 +47,8 @@ import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
-import org.apache.zeppelin.interpreter.InterpreterProperty;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
@@ -95,7 +88,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 public class SparkInterpreter extends Interpreter {
   public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
-  private ZeppelinContext z;
+  private SparkZeppelinContext z;
   private SparkILoop interpreter;
   /**
    * intp - org.apache.spark.repl.SparkIMain (scala 2.10)
@@ -179,7 +172,7 @@ public class SparkInterpreter extends Interpreter {
         String noteId = Utils.getNoteId(jobGroupId);
         String paragraphId = Utils.getParagraphId(jobGroupId);
         if (jobUrl != null && noteId != null && paragraphId != null) {
-          RemoteEventClientWrapper eventClient = ZeppelinContext.getEventClient();
+          RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
           infos.put("jobUrl", jobUrl);
           infos.put("label", "SPARK JOB");
@@ -876,7 +869,7 @@ public class SparkInterpreter extends Interpreter {
       
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
 
-      z = new ZeppelinContext(sc, sqlc, null, dep, hooks,
+      z = new SparkZeppelinContext(sc, sqlc, hooks,
               Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -895,7 +888,7 @@ public class SparkInterpreter extends Interpreter {
       }
 
       interpret("@transient val z = "
-              + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
+              + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.SparkZeppelinContext]");
       interpret("@transient val sc = "
               + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
       interpret("@transient val sqlc = "
@@ -1474,7 +1467,7 @@ public class SparkInterpreter extends Interpreter {
       SparkInterpreter.class.getName() + this.hashCode());
   }
 
-  public ZeppelinContext getZeppelinContext() {
+  public SparkZeppelinContext getZeppelinContext() {
     return z;
   }
 

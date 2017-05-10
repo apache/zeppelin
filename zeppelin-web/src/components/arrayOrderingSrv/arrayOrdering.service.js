@@ -33,4 +33,30 @@ function arrayOrderingSrv (TRASH_FOLDER_ID) {
       return note.name
     }
   }
+
+  this.noteComparator = function (v1, v2) {
+    let note1 = v1.value
+    let note2 = v2.value
+
+    if (note1.id === TRASH_FOLDER_ID) {
+      return 1
+    }
+
+    if (note2.id === TRASH_FOLDER_ID) {
+      return -1
+    }
+
+    if (note1.children === undefined && note2.children !== undefined) {
+      return 1
+    }
+
+    if (note1.children !== undefined && note2.children === undefined) {
+      return -1
+    }
+
+    let noteName1 = arrayOrderingSrv.getNoteName(note1)
+    let noteName2 = arrayOrderingSrv.getNoteName(note2)
+
+    return noteName1.localeCompare(noteName2)
+  }
 }

@@ -70,7 +70,7 @@ For multi-selection, you can create a checkbox form using `${checkbox:formName=d
 
 <img src="../assets/themes/zeppelin/img/screenshots/form_checkbox.png">
 
-Besides, you can specify the delimiter using `${checkbox(delimiter):formName=...}`:
+You can specify the delimiter using `${checkbox(delimiter):formName=...}`:
 
 <img src="../assets/themes/zeppelin/img/screenshots/form_checkbox_delimiter.png">
 
@@ -84,9 +84,9 @@ Even if you uncheck this option, still you can run it by pressing `Enter`.
 
 ## Creates Programmatically
 
-Some language backend uses programmatic way to create form. For example [ZeppelinContext](../interpreter/spark.html#zeppelincontext) provides form creation API
+Some language backends can programmatically create forms. For example [ZeppelinContext](../interpreter/spark.html#zeppelincontext) provides a form creation API
 
-Here're some examples.
+Here are some examples:
 
 ### Text input form
 <div class="codetabs">

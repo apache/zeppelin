@@ -236,8 +236,13 @@ public class InterpreterSettingManager {
     if (!Files.exists(interpreterBindingPath)) {
       Files.createFile(interpreterBindingPath);
 
-      Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
-      Files.setPosixFilePermissions(interpreterBindingPath, permissions);
+      try {
+        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+        Files.setPosixFilePermissions(interpreterBindingPath, permissions);
+      } catch (UnsupportedOperationException e) {
+        // File system does not support Posix file permissions (likely windows) - continue anyway.
+        logger.warn("unable to setPosixFilePermissions on '{}'.", interpreterBindingPath);
+      };
     }
 
     FileOutputStream fos = new FileOutputStream(interpreterBindingPath.toFile(), false);
@@ -887,14 +892,18 @@ public class InterpreterSettingManager {
     saveToFile();
   }
 
-  public void removeNoteInterpreterSettingBinding(String user, String noteId) {
+  public void removeNoteInterpreterSettingBinding(String user, String noteId) throws IOException {
     synchronized (interpreterSettings) {
       List<String> settingIds = (interpreterBindings.containsKey(noteId) ?
           interpreterBindings.remove(noteId) :
           Collections.<String>emptyList());
       for (String settingId : settingIds) {
-        this.removeInterpretersForNote(get(settingId), user, noteId);
+        InterpreterSetting setting = get(settingId);
+        if (setting != null) {
+          this.removeInterpretersForNote(setting, user, noteId);
+        }
       }
+      saveToFile();
     }
   }
 

@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -57,9 +56,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Base class for livy interpreters.
  */
-public abstract class BaseLivyInterprereter extends Interpreter {
+public abstract class BaseLivyInterpreter extends Interpreter {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterprereter.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterpreter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
   private static String SESSION_NOT_FOUND_PATTERN = "\"Session '\\d+' not found.\"";
 
@@ -68,7 +67,6 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private int sessionCreationTimeout;
   private int pullStatusInterval;
   protected boolean displayAppInfo;
-  private AtomicBoolean sessionExpired = new AtomicBoolean(false);
   protected LivyVersion livyVersion;
   private RestTemplate restTemplate;
 
@@ -77,7 +75,7 @@ public abstract class BaseLivyInterprereter extends Interpreter {
   private ConcurrentHashMap<String, Integer> paragraphId2StmtProgressMap =
       new ConcurrentHashMap<>();
 
-  public BaseLivyInterprereter(Properties property) {
+  public BaseLivyInterpreter(Properties property) {
     super(property);
     this.livyURL = property.getProperty("zeppelin.livy.url");
     this.displayAppInfo = Boolean.parseBoolean(

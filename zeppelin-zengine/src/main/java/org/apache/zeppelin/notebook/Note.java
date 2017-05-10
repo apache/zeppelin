@@ -353,7 +353,6 @@ public class Note implements Serializable, ParagraphJobListener {
   private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
-    p.addUser(p, p.getUser());
     setParagraphMagic(p, index);
     return p;
   }

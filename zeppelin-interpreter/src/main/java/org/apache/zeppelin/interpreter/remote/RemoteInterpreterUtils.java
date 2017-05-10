@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,5 +71,13 @@ public class RemoteInterpreterUtils {
       settingId = intpGrpId.substring(0, indexOfColon);
     }
     return settingId;
+  }
+
+  public static boolean isEnvString(String key) {
+    if (key == null || key.length() == 0) {
+      return false;
+    }
+
+    return key.matches("^[A-Z_0-9]*");
   }
 }
