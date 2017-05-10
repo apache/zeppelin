@@ -96,7 +96,8 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     sparkInterpreter.populateSparkWebUrl(context);
-    sqlc = getSparkInterpreter().getSQLContext();
+    sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
+    sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
       sc.setLocalProperty("spark.scheduler.pool", "fair");
@@ -126,7 +127,7 @@ public class SparkSqlInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
 
-    String msg = getSparkInterpreter().getZeppelinContext().showData(rdd);
+    String msg = sparkInterpreter.getZeppelinContext().showData(rdd);
     sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
   }
