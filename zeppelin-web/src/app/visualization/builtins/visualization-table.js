@@ -46,7 +46,7 @@ const TABLE_OPTION_SPECS = [
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
-    description: 'Enable a footer for displaying aggregation values',
+    description: 'Enable a footer for displaying aggregated values',
   },
 ]
 

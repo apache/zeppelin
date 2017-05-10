@@ -40,7 +40,9 @@ limitations under the License.
       </tr>
 
       <tr data-ng-repeat="optSpec in tableOptionSpecs">
-        <td style="font-weight: 400; vertical-align: middle;">{{optSpec.name}}</td>
+        <td style="font-weight: 400; vertical-align: middle;">
+          <span uib-tooltip="{{optSpec.description}}" tooltip-placement="right">{{optSpec.name}}</span>
+        </td>
         <td>
           <div ng-if="isInputWidget(optSpec)"
                class="input-group">
