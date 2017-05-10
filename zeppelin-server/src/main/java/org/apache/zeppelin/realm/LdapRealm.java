@@ -78,22 +78,24 @@ import javax.naming.ldap.PagedResultsControl;
  * <p>Sample config for <tt>shiro.ini</tt>:
  * 
  * <p>[main] 
- * ldapRealm=org.apache.zeppelin.realm.LdapRealm
- * ldapRealm.contextFactory=$ldapGroupContextFactory
- * ldapRealm.contextFactory.authenticationMechanism=simple
- * ldapRealm.contextFactory.url=ldap://localhost:33389
- * ldapRealm.userDnTemplate=uid={0},ou=people,dc=hadoop,dc=apache,dc=org
+ * ldapRealm = org.apache.zeppelin.realm.LdapRealm
+ * ldapRealm.contextFactory.url = ldap://localhost:33389
+ * ldapRealm.contextFactory.authenticationMechanism = simple
+ * ldapRealm.contextFactory.systemUsername = uid=guest,ou=people,dc=hadoop,dc=
+ * apache,dc=org
+ * ldapRealm.contextFactory.systemPassword = S{ALIAS=ldcSystemPassword}
+ * ldapRealm.userDnTemplate = uid={0},ou=people,dc=hadoop,dc=apache,dc=org
  * # Ability to set ldap paging Size if needed default is 100
  * ldapRealm.pagingSize = 200
- * ldapRealm.authorizationEnabled=true
- * ldapRealm.contextFactory.systemAuthenticationMechanism=simple
- * ldapRealm.searchBase=dc=hadoop,dc=apache,dc=org
+ * ldapRealm.authorizationEnabled = true
+ * ldapRealm.searchBase = dc=hadoop,dc=apache,dc=org
  * ldapRealm.userSearchBase = dc=hadoop,dc=apache,dc=org
  * ldapRealm.groupSearchBase = ou=groups,dc=hadoop,dc=apache,dc=org
- * ldapRealm.groupObjectClass=groupofnames
+ * ldapRealm.userObjectClass = person
+ * ldapRealm.groupObjectClass = groupofnames
  * # Allow userSearchAttribute to be customized
  * ldapRealm.userSearchAttributeName = sAMAccountName
- * ldapRealm.memberAttribute=member
+ * ldapRealm.memberAttribute = member
  * # force usernames returned from ldap to lowercase useful for AD
  * ldapRealm.userLowerCase = true 
  * # ability set searchScopes subtree (default), one, base
@@ -101,10 +103,6 @@ import javax.naming.ldap.PagedResultsControl;
  * ldapRealm.groupSearchScope = subtree;
  * ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,
  * dc=org
- * ldapRealm.contextFactory.systemUsername=uid=guest,ou=people,dc=hadoop,dc=
- * apache,dc=org 
- * ldapRealm.contextFactory.systemPassword=S{ALIAS=ldcSystemPassword} [urls]
- * **=authcBasic
  * # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
  * ldapRealm.groupSearchEnableMatchingRuleInChain = true
  *
@@ -115,6 +113,9 @@ import javax.naming.ldap.PagedResultsControl;
  * <p>ldapRealm.permissionsByRole=\ user_role = *:ToDoItemsJdo:*:*,\
  * *:ToDoItem:*:*; \ self-install_role = *:ToDoItemsFixturesService:install:* ;
  * \ admin_role = *
+ * 
+ * <p>[urls]
+ * **=authcBasic
  * 
  * <p>securityManager.realms = $ldapRealm
  * 
