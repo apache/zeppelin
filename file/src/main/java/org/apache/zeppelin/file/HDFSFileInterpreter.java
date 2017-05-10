@@ -33,9 +33,9 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  *
  */
 public class HDFSFileInterpreter extends FileInterpreter {
-  static final String HDFS_URL = "hdfs.url";
-  static final String HDFS_USER = "hdfs.user";
-  static final String HDFS_MAXLENGTH = "hdfs.maxlength";
+  public static final String HDFS_URL = "hdfs.url";
+  public static final String HDFS_USER = "hdfs.user";
+  public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
   Exception exceptionOnConnect = null;
   HDFSCommand cmd = null;
@@ -214,8 +214,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
           AllFileStatus allFiles = gson.fromJson(sfs, AllFileStatus.class);
 
           if (allFiles != null &&
-                  allFiles.FileStatuses != null &&
-                  allFiles.FileStatuses.FileStatus != null)
+              allFiles.FileStatuses != null &&
+              allFiles.FileStatuses.FileStatus != null)
           {
             for (OneFileStatus fs : allFiles.FileStatuses.FileStatus)
               all = all + listOne(path, fs) + '\n';
@@ -250,7 +250,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
@@ -294,8 +294,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
           AllFileStatus allFiles = gson.fromJson(fileStatusString, AllFileStatus.class);
 
           if (allFiles != null &&
-                  allFiles.FileStatuses != null &&
-                  allFiles.FileStatuses.FileStatus != null)
+              allFiles.FileStatuses != null &&
+              allFiles.FileStatuses.FileStatus != null)
           {
             for (OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
               if (fs.pathSuffix.contains(unfinished)) {
