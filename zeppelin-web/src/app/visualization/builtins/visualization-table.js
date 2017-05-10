@@ -40,28 +40,10 @@ const TABLE_OPTION_SPECS = [
     widget: Widget.CHECKBOX,
   },
   {
-    name: 'showColumnFooter',
+    name: 'showAggregationFooter',
     valueType: ValueType.BOOLEAN,
     defaultValue: false,
     widget: Widget.CHECKBOX,
-  },
-  {
-    name: 'showGridFooter',
-    valueType: ValueType.BOOLEAN,
-    defaultValue: false,
-    widget: Widget.CHECKBOX,
-  },
-  {
-    name: 'defaultPaginationSize',
-    valueType: ValueType.INT,
-    defaultValue: 50,
-    widget: Widget.INPUT,
-  },
-  {
-    name: 'availablePaginationSizes',
-    valueType: ValueType.JSON,
-    defaultValue: '[25, 50, 100, 250, 1000]', // defaultValue for JSON type should be string
-    widget: Widget.TEXTAREA,
   },
 ]
 
@@ -95,6 +77,8 @@ export default class TableVisualization extends Visualization {
       modifierKeysToMultiSelectCells: true,
       exporterMenuCsv: true,
       exporterMenuPdf: false,
+      paginationPageSize: 50,
+      paginationPageSizes: [25, 50, 100, 250, 1000],
       flatEntityAccess: true,
       fastWatch: false,
       treeRowHeaderAlwaysVisible: false,
@@ -210,19 +194,16 @@ export default class TableVisualization extends Visualization {
     const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue)
 
     const {
-      showGridFooter, showColumnFooter,
+      showAggregationFooter,
       useFilter, showPagination,
-      defaultPaginationSize, availablePaginationSizes,
     } = parsed
 
-    gridOptions.showGridFooter = showGridFooter
-    gridOptions.showColumnFooter = showColumnFooter
+    gridOptions.showGridFooter = false
+    gridOptions.showColumnFooter = showAggregationFooter
     gridOptions.enableFiltering = useFilter
 
     gridOptions.enablePagination = showPagination
     gridOptions.enablePaginationControls = showPagination
-    gridOptions.paginationPageSize = defaultPaginationSize
-    gridOptions.paginationPageSizes = availablePaginationSizes
 
     // selection can't be rendered dynamically in ui-grid 4.0.4
     gridOptions.enableRowSelection = false
