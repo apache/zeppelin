@@ -38,9 +38,8 @@ public class JDBCSecurityImpl {
   /***
    * @param properties
    */
-  public static void createSecureConfiguration(Properties properties) {
-    AuthenticationMethod authType = getAuthtype(properties);
-
+  public static void createSecureConfiguration(Properties properties,
+      AuthenticationMethod authType) {
     switch (authType) {
         case KERBEROS:
           Configuration conf = new

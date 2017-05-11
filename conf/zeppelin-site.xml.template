@@ -369,4 +369,12 @@
   <description>Enable directory listings on server.</description>
 </property>
 
+<!--
+<property>
+    <name>zeppelin.server.jetty.name</name>
+    <value>Jetty(7.6.0.v20120127)</value>
+    <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
+</property>
+-->
+
 </configuration>

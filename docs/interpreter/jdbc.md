@@ -171,7 +171,7 @@ There are more JDBC interpreter properties you can specify like below.
   </tr>
   <tr>
       <td>zeppelin.jdbc.auth.kerberos.proxy.enable</td>
-      <td>When auth type is Kerberos, enable/disable Kerberos proxy with the login user to get the connection. Default value is true.</td>
+      <td>When auth type is Kerberos, enable/disable Kerberos proxy with the login user to get the connection. Default value is true.</td>
   </tr>
   <tr>
     <td>default.jceks.file</td>
@@ -202,7 +202,7 @@ To bind the interpreters created in the interpreter setting page, click the gear
 
 <img src="../assets/themes/zeppelin/img/docs-img/click_interpreter_binding_button.png" width="600px" />
 
-Select(blue) or deselect(white) the interpreter buttons depending on your use cases. 
+Select(blue) or deselect(white) the interpreter buttons depending on your use cases.
 If you need to use more than one interpreter in the notebook, activate several buttons.
 Don't forget to click `Save` button, or you will face `Interpreter *** is not found` error.
 
@@ -285,7 +285,7 @@ An example settings of interpreter for the two data sources, each of which has i
 </table>
 
 ##### Usage
-Test of execution *precode* for each data source. 
+Test of execution *precode* for each data source.
 
 ```sql
 %jdbc
@@ -480,7 +480,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 [Maven Repository: com.amazonaws:aws-java-sdk-redshift](https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-redshift)
 
-### Apache Hive 
+### Apache Hive
 
 <img src="../assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
 
@@ -507,11 +507,10 @@ Here are some examples you can refer to. Including the below connectors, you can
     <td>hive_password</td>
   </tr>
   <tr>
-    <td>hive.proxy.user</td>
-    <td>true or false</td>
+    <td>default.proxy.user.property</td>
+    <td>Example value: hive.server2.proxy.user</td>
+  </tr>
 </table>
-
-Connection to Hive JDBC with a proxy user can be disabled with `hive.proxy.user` property (set to true by default)
 
 [Apache Hive 1 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
 [Apache Hive 2 JDBC Driver Docs](https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-JDBC)
@@ -533,6 +532,44 @@ Connection to Hive JDBC with a proxy user can be disabled with `hive.proxy.user`
 </table>
 
 [Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
+
+##### Impersonation
+When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a notebook.
+
+To enable this set following:
+
+  - `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
+  - `${prefix}.proxy.user.property` as `hive.server2.proxy.user`
+
+
+##### Sample configuration
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>hive.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>hive.password</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>hive.url</td>
+    <td>jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</td>
+  </tr>
+  <tr>
+    <td>hive.proxy.user.property</td>
+    <td>hive.server2.proxy.user</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>SIMPLE</td>
+  </tr>
+</table>
+
 
 ### Apache Phoenix
 
