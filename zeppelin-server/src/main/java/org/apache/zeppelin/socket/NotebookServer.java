@@ -1690,10 +1690,10 @@ public class NotebookServer extends WebSocketServlet
     p.setErrorMessage((String) fromMessage.get("errorMessage"));
     p.setStatusWithoutNotification(status);
 
-    // set dateStarted and dateFinished
+    // Spell uses ISO 8601 formatted string generated from moment
     String dateStarted = (String) fromMessage.get("dateStarted");
     String dateFinished = (String) fromMessage.get("dateFinished");
-    SimpleDateFormat df = new SimpleDateFormat("MMM D, YYYY h:MM:ss aaa");
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
     try {
       p.setDateStarted(df.parse(dateStarted));

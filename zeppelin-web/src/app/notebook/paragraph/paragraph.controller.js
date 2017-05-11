@@ -290,7 +290,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.spellTransaction.paragraphText = paragraphText
 
     if (!propagated) {
-      $scope.spellTransaction.startedAt = $scope.getFormattedParagraphTime()
+      $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime()
     }
   }
 
@@ -318,7 +318,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     const paragraphText = $scope.spellTransaction.paragraphText
 
     if (!propagated) {
-      $scope.paragraph.dateStarted = $scope.spellTransaction.startedAt
       $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
     }
 
@@ -1001,7 +1000,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.getFormattedParagraphTime = () => {
-    return moment().format('MMM D, YYYY h:MM:ss A')
+    return moment()
   }
 
   $scope.getExecutionTime = function (pdata) {
