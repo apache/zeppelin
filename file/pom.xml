@@ -33,7 +33,6 @@
 
   <properties>
     <!--library versions-->
-    <ws.rsapi.version>2.0</ws.rsapi.version>
     <jersey.common.version>2.22.2</jersey.common.version>
 
     <!--plugin versions-->
@@ -46,12 +45,6 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>${ws.rsapi.version}</version>
     </dependency>
 
     <dependency>
