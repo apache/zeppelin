@@ -19,15 +19,9 @@ package org.apache.zeppelin.socket;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
@@ -1695,6 +1689,23 @@ public class NotebookServer extends WebSocketServlet
     p.setResult(fromMessage.get("results"));
     p.setErrorMessage((String) fromMessage.get("errorMessage"));
     p.setStatusWithoutNotification(status);
+
+    // set dateStarted and dateFinished
+    String dateStarted = (String) fromMessage.get("dateStarted");
+    String dateFinished = (String) fromMessage.get("dateFinished");
+    SimpleDateFormat df = new SimpleDateFormat("MMM D, YYYY h:MM:ss aaa");
+
+    try {
+      p.setDateStarted(df.parse(dateStarted));
+    } catch (ParseException e) {
+      LOG.error("Failed parse dateStarted", e);
+    }
+
+    try {
+      p.setDateFinished(df.parse(dateFinished));
+    } catch (ParseException e) {
+      LOG.error("Failed parse dateFinished", e);
+    }
 
     addNewParagraphIfLastParagraphIsExecuted(note, p);
     if (!persistNoteWithAuthInfo(conn, note, p)) {

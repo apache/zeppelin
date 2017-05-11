@@ -251,12 +251,15 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.propagateSpellResult = function (paragraphId, paragraphTitle,
                                          paragraphText, paragraphResults,
                                          paragraphStatus, paragraphErrorMessage,
-                                         paragraphConfig, paragraphSettingsParam) {
+                                         paragraphConfig, paragraphSettingsParam,
+                                         paragraphDateStarted, paragraphDateFinished) {
     websocketMsgSrv.paragraphExecutedBySpell(
       paragraphId, paragraphTitle,
       paragraphText, paragraphResults,
       paragraphStatus, paragraphErrorMessage,
-      paragraphConfig, paragraphSettingsParam)
+      paragraphConfig, paragraphSettingsParam,
+      paragraphDateStarted, paragraphDateFinished
+    )
   }
 
   $scope.handleSpellError = function (paragraphText, error,
@@ -267,10 +270,15 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     console.error('Failed to execute interpret() in spell\n', error)
 
     if (!propagated) {
+      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
+    }
+
+    if (!propagated) {
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
         paragraphText, [], $scope.paragraph.status, errorMessage,
-        $scope.paragraph.config, $scope.paragraph.settings.params)
+        $scope.paragraph.config, $scope.paragraph.settings.params,
+        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished)
     }
   }
 
@@ -280,6 +288,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.spellTransaction.propagated = propagated
     $scope.spellTransaction.resultsMsg = resultsMsg
     $scope.spellTransaction.paragraphText = paragraphText
+
+    if (!propagated) {
+      $scope.spellTransaction.startedAt = $scope.getFormattedParagraphTime()
+    }
   }
 
   /**
@@ -306,11 +318,17 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     const paragraphText = $scope.spellTransaction.paragraphText
 
     if (!propagated) {
+      $scope.paragraph.dateStarted = $scope.spellTransaction.startedAt
+      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
+    }
+
+    if (!propagated) {
       const propagable = SpellResult.createPropagable(resultsMsg)
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
         paragraphText, propagable, status, '',
-        $scope.paragraph.config, $scope.paragraph.settings.params)
+        $scope.paragraph.config, $scope.paragraph.settings.params,
+        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished)
     }
   }
 
@@ -980,6 +998,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.getProgress = function () {
     return $scope.currentProgress || 0
+  }
+
+  $scope.getFormattedParagraphTime = () => {
+    return moment().format('MMM D, YYYY h:MM:ss A')
   }
 
   $scope.getExecutionTime = function (pdata) {
