@@ -288,10 +288,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.spellTransaction.propagated = propagated
     $scope.spellTransaction.resultsMsg = resultsMsg
     $scope.spellTransaction.paragraphText = paragraphText
-
-    if (!propagated) {
-      $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime()
-    }
   }
 
   /**
@@ -344,6 +340,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       const splited = paragraphText.split(magic)
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '')
+
+      if (!propagated) {
+        $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime()
+      }
 
       // handle actual result message in promise
       heliumService.executeSpell(magic, textWithoutMagic)
