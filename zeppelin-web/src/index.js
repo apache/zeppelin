@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+import 'angular-viewport-watch/angular-viewport-watch.js'
 import './app/app.js'
 import './app/app.controller.js'
 import './app/home/home.controller.js'
