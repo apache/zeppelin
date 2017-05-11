@@ -1000,7 +1000,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.getFormattedParagraphTime = () => {
-    return moment()
+    return moment().toISOString()
   }
 
   $scope.getExecutionTime = function (pdata) {
