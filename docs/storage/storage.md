@@ -258,13 +258,32 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
    <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
    <description>notebook persistence layer implementation</description>
  </property>
+
+  <property>
+    <name>hdfs.url</name>
+    <value>http://localhost:50070/webhdfs/v1/</value>
+    <description>HDFS url</description>
+  </property>
+  
+  <property>
+    <name>hdfs.user</name>
+    <value>hdfs</value>
+    <description>HDFS user</description>
+  </property>
+  
+  <property>
+    <name>hdfs.maxlength</name>
+    <value>1000</value>
+    <description>Maximum number of lines of results fetched</description>
+  </property>
+  
  ```
  
  and replace the notebook directory property below by an absolute HDFS location as follows :
  ```
   <property>
    <name>zeppelin.notebook.dir</name>
-   <value>hdfs://localhost:9000/tmp/notebook</value>
+   <value>/tmp/notebook</value>
    <description>path or URI for notebook persist</description>
  </property>
 ```
