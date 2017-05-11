@@ -18,6 +18,9 @@
 
 package org.apache.zeppelin.file;
 
+/**
+ * Class that hosts HDFS file statuses
+ */
 public class HDFSStatus {
   /**
    * Status of one file
