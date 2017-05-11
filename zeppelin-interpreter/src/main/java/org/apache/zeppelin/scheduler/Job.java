@@ -81,17 +81,13 @@ public abstract class Job {
   private transient JobListener listener;
   private long progressUpdateIntervalMs;
 
-  public static SimpleDateFormat getJobDateFormatter() {
-    return new SimpleDateFormat("yyyyMMdd-HHmmss");
-  }
-
   public Job(String jobName, JobListener listener, long progressUpdateIntervalMs) {
     this.jobName = jobName;
     this.listener = listener;
     this.progressUpdateIntervalMs = progressUpdateIntervalMs;
 
     dateCreated = new Date();
-    SimpleDateFormat dateFormat = getJobDateFormatter();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
     id = dateFormat.format(dateCreated) + "_" + super.hashCode();
 
     setStatus(Status.READY);
@@ -263,8 +259,8 @@ public abstract class Job {
     return dateStarted;
   }
 
-  public synchronized void setDateStarted(Date startedAt) {
-    dateStarted = startedAt;
+  public synchronized void setDateStarted(Date finishedAt) {
+    dateFinished = finishedAt;
   }
 
   public synchronized Date getDateFinished() {
