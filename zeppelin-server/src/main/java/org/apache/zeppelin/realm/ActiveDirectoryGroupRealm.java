@@ -202,6 +202,9 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   }
 
   protected AuthenticationInfo buildAuthenticationInfo(String username, char[] password) {
+    if (this.principalSuffix != null && username.indexOf('@') > 1) {
+      username = username.split("@")[0];
+    }
     return new SimpleAuthenticationInfo(username, password, getName());
   }
 
