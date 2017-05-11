@@ -165,6 +165,9 @@ public class InterpreterSettingManager {
 
       for (String k : infoSaving.interpreterSettings.keySet()) {
         InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
+
+        setting.convertFlatPropertiesToPropertiesWithWidgets();
+
         List<InterpreterInfo> infos = setting.getInterpreterInfos();
 
         // Convert json StringMap to Properties

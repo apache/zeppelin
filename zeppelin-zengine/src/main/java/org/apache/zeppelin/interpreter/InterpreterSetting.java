@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.StringMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -409,5 +411,30 @@ public class InterpreterSetting {
 
   public void clearNoteIdAndParaMap() {
     runtimeInfosToBeCleared = null;
+  }
+
+  // For backward compatibility of interpreter.json format after ZEPPELIN-2403
+  public void convertFlatPropertiesToPropertiesWithWidgets() {
+    StringMap newProperties = new StringMap();
+    if (properties != null && properties instanceof StringMap) {
+      StringMap p = (StringMap) properties;
+
+      for (Object o : p.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
+        if (!(entry.getValue() instanceof StringMap)) {
+          StringMap newProperty = new StringMap();
+          newProperty.put("name", entry.getKey());
+          newProperty.put("value", entry.getValue());
+          newProperty.put("widget", InterpreterPropertyWidget.TEXTAREA.getValue());
+          newProperty.put("type", InterpreterPropertyType.STRING.getValue());
+          newProperties.put(entry.getKey().toString(), newProperty);
+        } else {
+          // already converted
+          return;
+        }
+      }
+
+      this.properties = newProperties;
+    }
   }
 }
