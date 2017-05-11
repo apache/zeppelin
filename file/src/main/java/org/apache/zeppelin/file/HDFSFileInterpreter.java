@@ -53,72 +53,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
     super(property);
     prepare();
   }
-
-  /**
-   * Status of one file
-   *
-   * matches returned JSON
-   */
-  public class OneFileStatus {
-    public long accessTime;
-    public int blockSize;
-    public int childrenNum;
-    public int fileId;
-    public String group;
-    public long length;
-    public long modificationTime;
-    public String owner;
-    public String pathSuffix;
-    public String permission;
-    public int replication;
-    public int storagePolicy;
-    public String type;
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("\nAccessTime = ").append(accessTime);
-      sb.append("\nBlockSize = ").append(blockSize);
-      sb.append("\nChildrenNum = ").append(childrenNum);
-      sb.append("\nFileId = ").append(fileId);
-      sb.append("\nGroup = ").append(group);
-      sb.append("\nLength = ").append(length);
-      sb.append("\nModificationTime = ").append(modificationTime);
-      sb.append("\nOwner = ").append(owner);
-      sb.append("\nPathSuffix = ").append(pathSuffix);
-      sb.append("\nPermission = ").append(permission);
-      sb.append("\nReplication = ").append(replication);
-      sb.append("\nStoragePolicy = ").append(storagePolicy);
-      sb.append("\nType = ").append(type);
-      return sb.toString();
-    }
-  }
-
-  /**
-   * Status of one file
-   *
-   * matches returned JSON
-   */
-  public class SingleFileStatus {
-    public OneFileStatus FileStatus;
-  }
-
-  /**
-   * Status of all files in a directory
-   *
-   * matches returned JSON
-   */
-  public class MultiFileStatus {
-    public OneFileStatus[] FileStatus;
-  }
-
-  /**
-   * Status of all files in a directory
-   *
-   * matches returned JSON
-   */
-  public class AllFileStatus {
-    public MultiFileStatus FileStatuses;
-  }
-
+  
   // tests whether we're able to connect to HDFS
 
   private void testConnection() {
@@ -144,7 +79,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
     return cmd.runCommand(cmd.listStatus, path, null);
   }
 
-  private String listPermission(OneFileStatus fs){
+  private String listPermission(HDFSStatus.OneFileStatus fs){
     StringBuilder sb = new StringBuilder();
     sb.append(fs.type.equalsIgnoreCase("Directory") ? 'd' : '-');
     int p = Integer.parseInt(fs.permission, 16);
@@ -159,10 +94,10 @@ public class HDFSFileInterpreter extends FileInterpreter {
     sb.append(((p & 0x1)   == 0) ? '-' : 'x');
     return sb.toString();
   }
-  private String listDate(OneFileStatus fs) {
+  private String listDate(HDFSStatus.OneFileStatus fs) {
     return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(fs.modificationTime));
   }
-  private String listOne(String path, OneFileStatus fs) {
+  private String listOne(String path, HDFSStatus.OneFileStatus fs) {
     if (args.flags.contains(new Character('l'))) {
       StringBuilder sb = new StringBuilder();
       sb.append(listPermission(fs) + "\t");
@@ -192,7 +127,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   public String listFile(String filePath) {
     try {
       String str = cmd.runCommand(cmd.getFileStatus, filePath, null);
-      SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
+      HDFSStatus.SingleFileStatus sfs = gson.fromJson(str, HDFSStatus.SingleFileStatus.class);
       if (sfs != null) {
         return listOne(filePath, sfs.FileStatus);
       }
@@ -211,13 +146,13 @@ public class HDFSFileInterpreter extends FileInterpreter {
       if (isDirectory(path)) {
         String sfs = listDir(path);
         if (sfs != null) {
-          AllFileStatus allFiles = gson.fromJson(sfs, AllFileStatus.class);
+          HDFSStatus.AllFileStatus allFiles = gson.fromJson(sfs, HDFSStatus.AllFileStatus.class);
 
           if (allFiles != null &&
               allFiles.FileStatuses != null &&
               allFiles.FileStatuses.FileStatus != null)
           {
-            for (OneFileStatus fs : allFiles.FileStatuses.FileStatus)
+            for (HDFSStatus.OneFileStatus fs : allFiles.FileStatuses.FileStatus)
               all = all + listOne(path, fs) + '\n';
           }
         }
@@ -237,7 +172,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       return ret;
     try {
       String str = cmd.runCommand(cmd.getFileStatus, path, null);
-      SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
+      HDFSStatus.SingleFileStatus sfs = gson.fromJson(str, HDFSStatus.SingleFileStatus.class);
       if (sfs != null)
         return sfs.FileStatus.type.equals("DIRECTORY");
     } catch (Exception e) {
@@ -291,13 +226,14 @@ public class HDFSFileInterpreter extends FileInterpreter {
       try {
         String fileStatusString = listDir(globalPath);
         if (fileStatusString != null) {
-          AllFileStatus allFiles = gson.fromJson(fileStatusString, AllFileStatus.class);
+          HDFSStatus.AllFileStatus allFiles = gson.fromJson(fileStatusString,
+              HDFSStatus.AllFileStatus.class);
 
           if (allFiles != null &&
               allFiles.FileStatuses != null &&
               allFiles.FileStatuses.FileStatus != null)
           {
-            for (OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
+            for (HDFSStatus.OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
               if (fs.pathSuffix.contains(unfinished)) {
 
                 //only suggest the text after the last .

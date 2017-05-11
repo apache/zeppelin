@@ -20,7 +20,7 @@ package org.apache.zeppelin.util;
 import com.google.gson.Gson;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.file.HDFSCommand;
-import org.apache.zeppelin.file.HDFSFileInterpreter;
+import org.apache.zeppelin.file.HDFSStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +29,15 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_MAXLENGTH;
-import static org.apache.zeppelin.file.HDFSFileInterpreter.HDFS_URL;
 
 /**
  * Class to create / move / delete / write to / read from HDFS filessytem
  */
 public class HdfsSite {
+  public static final String HDFS_URL = "hdfs.url";
+  public static final String HDFS_USER = "hdfs.user";
+  public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
+
   private static Logger logger = LoggerFactory.getLogger(HdfsSite.class);
   public static final String HDFS_NOTEBOOK_DIR = "hdfs.notebook.dir";
   static final String NOTE_JSON = "note.json";
@@ -68,11 +70,11 @@ public class HdfsSite {
 
   public boolean exists(String path) {
     boolean ret = false;
-    HDFSFileInterpreter.SingleFileStatus fileStatus;
+    HDFSStatus.SingleFileStatus fileStatus;
     Gson gson = new Gson();
     try {
       String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, path, null);
-      fileStatus = gson.fromJson(notebookStatus, HDFSFileInterpreter.SingleFileStatus.class);
+      fileStatus = gson.fromJson(notebookStatus, HDFSStatus.SingleFileStatus.class);
       ret = fileStatus.FileStatus.modificationTime > 0;
     } catch (Exception e) {
       logger.info("disabled webHDFS. Please check webhdfs configurations");
@@ -91,11 +93,11 @@ public class HdfsSite {
     try {
       hdfsDirStatus = this.hdfsCmd.runCommand(this.hdfsCmd.listStatus, directory, null);
       if (hdfsDirStatus != null) {
-        HDFSFileInterpreter.AllFileStatus allFiles = gson.fromJson(hdfsDirStatus,
-            HDFSFileInterpreter.AllFileStatus.class);
+        HDFSStatus.AllFileStatus allFiles = gson.fromJson(hdfsDirStatus,
+            HDFSStatus.AllFileStatus.class);
         if (allFiles != null && allFiles.FileStatuses != null
             && allFiles.FileStatuses.FileStatus != null) {
-          for (HDFSFileInterpreter.OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
+          for (HDFSStatus.OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
             if ("DIRECTORY".equals(fs.type) && fs.pathSuffix.startsWith("_") == false) {
               hdfsNotebook.add(fs.pathSuffix);
               logger.info("read a notebook from HDFS: " + fs.pathSuffix);
@@ -159,11 +161,11 @@ public class HdfsSite {
 
   public boolean isDirectory(String path) throws IOException {
     boolean ret = false;
-    HDFSFileInterpreter.SingleFileStatus fileStatus;
+    HDFSStatus.SingleFileStatus fileStatus;
     Gson gson = new Gson();
     try {
       String notebookStatus = this.hdfsCmd.runCommand(this.hdfsCmd.getFileStatus, path, null);
-      fileStatus = gson.fromJson(notebookStatus, HDFSFileInterpreter.SingleFileStatus.class);
+      fileStatus = gson.fromJson(notebookStatus, HDFSStatus.SingleFileStatus.class);
       ret = fileStatus.FileStatus.type.equals("DIRECTORY");
     } catch (Exception e) {
       logger.info("disabled webHDFS. Please check webhdfs configurations");
