@@ -338,8 +338,8 @@ public class InterpreterFactoryTest {
 
     // check if interpreter instance is saved as Properties in conf/interpreter.json file
     Map<String, InterpreterProperty> properties = new HashMap<String, InterpreterProperty>();
-    properties.put("key1", new InterpreterProperty("key1", "value1"));
-    properties.put("key2", new InterpreterProperty("key2", "value2"));
+    properties.put("key1", new InterpreterProperty("key1", "value1", "widget1", "type1"));
+    properties.put("key2", new InterpreterProperty("key2", "value2", "widget2", "type2"));
 
     interpreterSettingManager.createNewSetting("newMock", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), properties);
 
