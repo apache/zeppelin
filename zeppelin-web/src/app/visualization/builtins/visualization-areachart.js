@@ -23,6 +23,12 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config)
 
     this.pivot = new PivotTransformation(config)
+
+    try {
+     this.config.rotate = {degree: config.rotate.degree}
+    } catch (e) {
+     this.config.rotate = {degree: '-45'}
+    }
   }
 
   type () {
@@ -70,29 +76,46 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
       switch (type) {
         case 'default':
           self.chart._options['showXAxis'] = true
-          self.chart._options['margin'] = {bottom: 50, left: 60}
+          self.chart._options['margin'] = {bottom: 50}
           self.chart.xAxis.rotateLabels(0)
           configObj.xLabelStatus = 'default'
           break
         case 'rotate':
           self.chart._options['showXAxis'] = true
-          self.chart._options['margin'] = {bottom: 140, left: 100}
-          self.chart.xAxis.rotateLabels(-45)
+          self.chart._options['margin'] = {bottom: 140}
+          self.chart.xAxis.rotateLabels(configObj.rotate.degree)
           configObj.xLabelStatus = 'rotate'
           break
         case 'hide':
           self.chart._options['showXAxis'] = false
-          self.chart._options['margin'] = {bottom: 50, left: 60}
+          self.chart._options['margin'] = {bottom: 50}
           d3.select('#' + self.targetEl[0].id + '> svg').select('g.nv-axis.nv-x').selectAll('*').remove()
           configObj.xLabelStatus = 'hide'
           break
       }
+      self.emitConfig(configObj)
     }
 
     self.config.isXLabelStatus = function(type) {
       if (configObj.xLabelStatus === type) {
         return true
       } else {
+        return false
+      }
+    }
+
+    self.config.setDegree = function(type) {
+      configObj.rotate.degree = type
+      self.chart.xAxis.rotateLabels(type)
+      self.emitConfig(configObj)
+    }
+
+    self.config.isDegreeEmpty = function() {
+      if (configObj.rotate.degree.length > 0) {
+        return true
+      } else {
+        configObj.rotate.degree = '-45'
+        self.emitConfig(configObj)
         return false
       }
     }
@@ -117,39 +140,16 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
       configObj.changeXLabel('default')
     }
 
+    if (typeof (configObj.rotate.degree) === 'undefined' || configObj.rotate.degree === '') {
+      configObj.rotate.degree = '-45'
+      self.emitConfig(configObj)
+    }
+
     return {
-      template: `<div>
-          xAxis :
-      </div>
-
-      <div class='btn-group'>
-        <button type="button"
-              class="xLabel btn btn-default btn-sm"
-              ng-class="{'active' : this.config.isXLabelStatus('default')}"
-              ng-click="save('default')" >
-            Default
-        </button>
-
-        <button type="button"
-              class="btn btn-default btn-sm"
-              ng-class="{'active' : this.config.isXLabelStatus('rotate')}"
-              ng-click="save('rotate')" >
-            Rotate
-        </button>
-
-        <button type="button"
-              class="btn btn-default btn-sm"
-              ng-class="{'active' : this.config.isXLabelStatus('hide')}"
-              ng-click="save('hide')" >
-            Hide
-        </button>
-      </div>`,
+      template: `<ng-include src="'app/visualization/builtins/visualization-dispayXAxis.html'">
+        </ng-include>`,
       scope: {
-        config: configObj,
-        save: function(type) {
-          configObj.changeXLabel(type)
-          self.emitConfig(configObj)
-        }
+        config: configObj
       }
     }
   }
