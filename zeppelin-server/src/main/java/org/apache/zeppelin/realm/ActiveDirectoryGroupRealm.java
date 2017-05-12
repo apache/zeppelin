@@ -186,7 +186,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     LdapContext ctx = null;
     try {
       String userPrincipalName = upToken.getUsername();
-      if (userPrincipalName == null) {
+      if (!isValidPrincipalName(userPrincipalName)) {
         return null;
       }
       if (this.principalSuffix != null && userPrincipalName.indexOf('@') < 0) {
@@ -199,6 +199,20 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     }
 
     return buildAuthenticationInfo(upToken.getUsername(), upToken.getPassword());
+  }
+
+  private Boolean isValidPrincipalName(String userPrincipalName) {
+    if (userPrincipalName != null) {
+      if (StringUtils.isNotEmpty(userPrincipalName) && userPrincipalName.contains("@")) {
+        String userPrincipalWithoutDomain = userPrincipalName.split("@")[0].trim();
+        if (StringUtils.isNotEmpty(userPrincipalWithoutDomain)) {
+          return true;
+        }
+      } else if (StringUtils.isNotEmpty(userPrincipalName)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected AuthenticationInfo buildAuthenticationInfo(String username, char[] password) {
