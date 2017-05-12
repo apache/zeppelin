@@ -21,6 +21,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -117,8 +118,11 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
     this.interpreterLibPaths = Lists.newArrayList(
         Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target"),
         Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target", "lib"),
+        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target"),
+        Paths.get(zeppelinConfiguration.getHome(), "conf", "yarn", "log4j.properties"),
         Paths.get(zeppelinConfiguration.getHome(), "lib", "interpreter"),
-        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target"));
+        Paths.get(zeppelinConfiguration.getHome(), "lib",
+            "zeppelin-zengine-0.8.0-SNAPSHOT.jar"));
   }
 
   @Override
@@ -161,6 +165,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
               YarnConfiguration.DEFAULT_YARN_CROSS_PLATFORM_APPLICATION_CLASSPATH));
       classpathStrings.add(0, "./*");
       classpathStrings.add(0, ApplicationConstants.Environment.CLASSPATH.$$());
+      classpathStrings.add("./log4j.properties");
+      classpathStrings.add(System.getenv("HADOOP_CONF_DIR"));
 
       // For Spark
       if (isSparkHomeSet()) {
@@ -192,6 +198,12 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         interpreterPaths.addAll(getPathsFromDirPath(p));
       }
 
+      Map<String, String> systemEnv = System.getenv();
+      if (systemEnv.containsKey("HADOOP_CONF_DIR")) {
+        interpreterDir = Paths.get(systemEnv.get("HADOOP_CONF_DIR"));
+        interpreterPaths.addAll(getPathsFromDirPath(interpreterDir));
+      }
+
       addLocalResource(fileSystem, String.valueOf(applicationId.getId()), localResources,
           interpreterPaths);
 
@@ -219,7 +231,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         if (master.contains("yarn") && (master.contains("client") || deployMode
             .contains("client")) && properties.containsKey("spark.yarn.am.memory")) {
           memory = convertSparkMemoryFormat(properties.getProperty("spark.yarn.am.memory"));
-        } else {
+        } else if (properties.containsKey("spark.driver.memory")) {
           memory = convertSparkMemoryFormat(properties.getProperty("spark.driver.memory"));
         }
 
@@ -229,6 +241,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       }
 
       vargs.add("-Xmx" + memory + "m");
+
+      vargs.add("-Dlog4j.configuration=log4j.properties");
 
       vargs.add(YarnRemoteInterpreterServer.class.getName());
 

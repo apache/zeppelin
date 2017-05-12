@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
@@ -40,16 +41,20 @@ public class YarnUtils {
 
   public static final Logger logger = LoggerFactory.getLogger(YarnUtils.class);
 
-  static List<Path> getPathsFromDirPath(java.nio.file.Path dirPath) {
-    if (null == dirPath || Files.notExists(dirPath) || !Files.isDirectory(dirPath)) {
+  static List<Path> getPathsFromDirPath(Path dirPath) {
+    if (null == dirPath || Files.notExists(dirPath)) {
       return Lists.newArrayList();
+    }
+
+    if (Files.isRegularFile(dirPath)) {
+      return Collections.singletonList(dirPath);
     }
 
     try {
       DirectoryStream<Path> directoryStream =
-          Files.newDirectoryStream(dirPath, new DirectoryStream.Filter<java.nio.file.Path>() {
+          Files.newDirectoryStream(dirPath, new DirectoryStream.Filter<Path>() {
             @Override
-            public boolean accept(java.nio.file.Path entry) throws IOException {
+            public boolean accept(Path entry) throws IOException {
               String filename = entry.toString();
               return filename.endsWith(".jar") || filename.endsWith(".zip");
             }
@@ -62,10 +67,11 @@ public class YarnUtils {
   }
 
   static void addLocalResource(FileSystem fs, String appId,
-      Map<String, LocalResource> localResourceMap, List<java.nio.file.Path> paths) {
-    for (java.nio.file.Path path : paths) {
+      Map<String, LocalResource> localResourceMap, List<Path> paths) {
+    String resourceDirPath = appId + org.apache.hadoop.fs.Path.SEPARATOR;
+    for (Path path : paths) {
       String resourcePath =
-          appId + org.apache.hadoop.fs.Path.SEPARATOR + path.getFileName().toString();
+          resourceDirPath + path.getFileName().toString();
       org.apache.hadoop.fs.Path dst = new org.apache.hadoop.fs.Path(fs.getHomeDirectory(),
           resourcePath);
       try {
@@ -86,6 +92,11 @@ public class YarnUtils {
       } catch (IOException e) {
         logger.error("Error while copying resources into hdfs", e);
       }
+    }
+    try {
+      fs.deleteOnExit(new org.apache.hadoop.fs.Path(resourceDirPath));
+    } catch (IOException e) {
+      logger.error("Error while removing {}", resourceDirPath, e);
     }
   }
 }
