@@ -101,6 +101,8 @@ public class JDBCInterpreter extends Interpreter {
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
+  static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
+  static final String DEFAULT_COMPLETER_TTL = "120";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
@@ -128,6 +130,7 @@ public class JDBCInterpreter extends Interpreter {
 
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
+  private final HashMap<String, SqlCompleter> sqlCompletersMap;
 
   private int maxLineResults;
 
@@ -135,6 +138,7 @@ public class JDBCInterpreter extends Interpreter {
     super(property);
     jdbcUserConfigurationsMap = new HashMap<>();
     basePropretiesMap = new HashMap<>();
+    sqlCompletersMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
   }
 
@@ -188,12 +192,20 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  private SqlCompleter createSqlCompleter(Connection jdbcConnection, String propertyKey) {
+  private SqlCompleter createOrUpdateSqlCompleter(SqlCompleter sqlCompleter, Connection connection,
+      String propertyKey, String buf, int cursor) {
     String schemaFiltersKey = String.format("%s.%s", propertyKey, COMPLETER_SCHEMA_FILTERS_KEY);
-    String filters = getProperty(schemaFiltersKey);
-    SqlCompleter completer = new SqlCompleter();
-    completer.initFromConnection(jdbcConnection, filters);
-    return completer;
+    String sqlCompleterTtlKey = String.format("%s.%s", propertyKey, COMPLETER_TTL_KEY);
+    String schemaFiltersString = getProperty(schemaFiltersKey);
+    int ttlInSeconds = Integer.valueOf(
+        StringUtils.defaultIfEmpty(getProperty(sqlCompleterTtlKey), DEFAULT_COMPLETER_TTL)
+    );
+    if (sqlCompleter == null) {
+      sqlCompleter = new SqlCompleter(ttlInSeconds);
+    }
+
+    sqlCompleter.createOrUpdateFromConnection(connection, schemaFiltersString, buf, cursor);
+    return sqlCompleter;
   }
 
   private void initStatementMap() {
@@ -787,6 +799,10 @@ public class JDBCInterpreter extends Interpreter {
       InterpreterContext interpreterContext) {
     List<InterpreterCompletion> candidates = new ArrayList<>();
     String propertyKey = getPropertyKey(buf);
+    String sqlCompleterKey =
+        String.format("%s.%s", interpreterContext.getAuthenticationInfo().getUser(), propertyKey);
+    SqlCompleter sqlCompleter = sqlCompletersMap.get(sqlCompleterKey);
+
     Connection connection = null;
     try {
       if (interpreterContext != null) {
@@ -796,11 +812,9 @@ public class JDBCInterpreter extends Interpreter {
       logger.warn("SQLCompleter will created without use connection");
     }
 
-    SqlCompleter sqlCompleter = createSqlCompleter(connection, propertyKey);
-
-    if (sqlCompleter != null) {
-      sqlCompleter.complete(buf, cursor - 1, candidates);
-    }
+    sqlCompleter = createOrUpdateSqlCompleter(sqlCompleter, connection, propertyKey, buf, cursor);
+    sqlCompletersMap.put(sqlCompleterKey, sqlCompleter);
+    sqlCompleter.complete(buf, cursor, candidates);
 
     return candidates;
   }
