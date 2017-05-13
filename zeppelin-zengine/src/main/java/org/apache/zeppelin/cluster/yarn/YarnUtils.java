@@ -55,8 +55,7 @@ public class YarnUtils {
           Files.newDirectoryStream(dirPath, new DirectoryStream.Filter<Path>() {
             @Override
             public boolean accept(Path entry) throws IOException {
-              String filename = entry.toString();
-              return filename.endsWith(".jar") || filename.endsWith(".zip");
+              return Files.isRegularFile(entry);
             }
           });
       return Lists.newArrayList(directoryStream);
@@ -80,9 +79,6 @@ public class YarnUtils {
           FileStatus fileStatus = fs.getFileStatus(dst);
           LocalResourceType localResourceType = LocalResourceType.FILE;
           String filename = path.getFileName().toString();
-          if (filename.endsWith(".zip")) {
-            localResourceType = LocalResourceType.ARCHIVE;
-          }
           LocalResource resource = LocalResource
               .newInstance(ConverterUtils.getYarnUrlFromPath(dst), localResourceType,
                   LocalResourceVisibility.APPLICATION, fileStatus.getLen(),
@@ -93,10 +89,12 @@ public class YarnUtils {
         logger.error("Error while copying resources into hdfs", e);
       }
     }
+/*
     try {
       fs.deleteOnExit(new org.apache.hadoop.fs.Path(resourceDirPath));
     } catch (IOException e) {
       logger.error("Error while removing {}", resourceDirPath, e);
     }
+*/
   }
 }

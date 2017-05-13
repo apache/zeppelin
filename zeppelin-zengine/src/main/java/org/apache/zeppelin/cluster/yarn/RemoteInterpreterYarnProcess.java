@@ -20,6 +20,7 @@ package org.apache.zeppelin.cluster.yarn;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +34,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
@@ -168,11 +171,6 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       classpathStrings.add("./log4j.properties");
       classpathStrings.add(System.getenv("HADOOP_CONF_DIR"));
 
-      // For Spark
-      if (isSparkHomeSet()) {
-        classpathStrings.add("${SPARK_HOME}/jars/*");
-      }
-
       String classpathEnv =
           Joiner.on(ApplicationConstants.CLASS_PATH_SEPARATOR).join(classpathStrings);
 
@@ -180,6 +178,10 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
       env.putAll(this.env);
       env.put("CLASSPATH", classpathEnv);
+
+      if (isHadoopConfSet()) {
+        env.put("HADOOP_CONF_DIR", System.getenv("HADOOP_CONF_DIR"));
+      }
 
       Map<String, LocalResource> localResources = new HashMap<>();
 
@@ -193,6 +195,47 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         interpreterDir = getInterpreterRelativePath("spark/dep");
         interpreterPaths.addAll(getPathsFromDirPath(interpreterDir));
       }
+
+      // For spark
+      if (isSparkHomeSet()) {
+        // For pyspark
+        interpreterDir = Paths.get(this.env.get("SPARK_HOME"), "python", "lib");
+        List<Path> pythonLibPath = getPathsFromDirPath(interpreterDir);
+        interpreterPaths.addAll(pythonLibPath);
+
+        // Set PYSPARK_ARCHIVES_PATH
+        List<String> pythonLibPaths = new ArrayList<>();
+        for (Path p : pythonLibPath) {
+          String pathFilenameString = p.getFileName().toString();
+          if (pathFilenameString.endsWith(".zip")) {
+            pythonLibPaths.add(pathFilenameString);
+          }
+        }
+        env.put("PYSPARK_ARCHIVES_PATH", Joiner.on(",").join(pythonLibPaths));
+
+        Path jarsArchive = Files.createTempFile("spark_jars", ".zip");
+        try (ZipOutputStream jarsStream = new ZipOutputStream(
+            new FileOutputStream(jarsArchive.toFile()))) {
+          jarsStream.setLevel(0);
+
+          interpreterDir = Paths.get(this.env.get("SPARK_HOME"), "jars");
+          List<Path> jarPaths = getPathsFromDirPath(interpreterDir);
+          for (Path p : jarPaths) {
+            jarsStream.putNextEntry(new ZipEntry(p.getFileName().toString()));
+            Files.copy(p, jarsStream);
+            jarsStream.closeEntry();
+          }
+
+          interpreterPaths.addAll(jarPaths);
+        }
+
+        String dstPath = "hdfs:///.zeppelin/spark_jars.zip";
+        fileSystem.copyFromLocalFile(new org.apache.hadoop.fs.Path(jarsArchive.toUri()),
+            new org.apache.hadoop.fs.Path(dstPath));
+        Files.deleteIfExists(jarsArchive);
+        properties.setProperty("spark.yarn.archive", dstPath);
+      }
+
 
       for (Path p : interpreterLibPaths) {
         interpreterPaths.addAll(getPathsFromDirPath(p));
@@ -313,6 +356,10 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
   private boolean isSparkHomeSet() {
     return this.env.containsKey("SPARK_HOME");
+  }
+
+  private boolean isHadoopConfSet() {
+    return this.env.containsKey("HADOOP_CONF_DIR");
   }
 
   private int convertSparkMemoryFormat(String memoryFormat) {
