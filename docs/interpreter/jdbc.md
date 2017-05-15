@@ -131,7 +131,7 @@ The JDBC interpreter properties are defined by default like below.
   <tr>
     <td>default.completer.ttlInSeconds</td>
     <td>120</td>
-    <td>Time to live sql completer in seconds</td>
+    <td>Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)</td>
   </tr>
 </table>
 
