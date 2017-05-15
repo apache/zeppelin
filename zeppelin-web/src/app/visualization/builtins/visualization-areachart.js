@@ -25,9 +25,9 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
     this.pivot = new PivotTransformation(config)
 
     try {
-     this.config.rotate = {degree: config.rotate.degree}
+      this.config.rotate = {degree: config.rotate.degree}
     } catch (e) {
-     this.config.rotate = {degree: '-45'}
+      this.config.rotate = {degree: '-45'}
     }
   }
 
@@ -146,8 +146,7 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
     }
 
     return {
-      template: `<ng-include src="'app/visualization/builtins/visualization-dispayXAxis.html'">
-        </ng-include>`,
+      template: 'app/visualization/builtins/visualization-displayXAxis.html',
       scope: {
         config: configObj
       }

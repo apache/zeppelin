@@ -528,6 +528,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           builtInViz.instance._emitter = emitter
           builtInViz.instance._compile = $compile
           builtInViz.instance._createNewScope = createNewScope
+          builtInViz.instance._templateRequest = $templateRequest
           const transformation = builtInViz.instance.getTransformation()
           transformation._emitter = emitter
           transformation._templateRequest = $templateRequest
@@ -538,6 +539,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           const transformed = transformation.transform(tableData)
           transformation.renderSetting(transformationSettingTargetEl)
           builtInViz.instance.render(transformed)
+          console.log('sora error check', visualizationSettingTargetEl)
           builtInViz.instance.renderSetting(visualizationSettingTargetEl)
           builtInViz.instance.activate()
           angular.element(window).resize(() => {

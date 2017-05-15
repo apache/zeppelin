@@ -25,9 +25,9 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     this.pivot = new PivotTransformation(config)
 
     try {
-     this.config.rotate = {degree: config.rotate.degree}
+      this.config.rotate = {degree: config.rotate.degree}
     } catch (e) {
-     this.config.rotate = {degree: '-45'}
+      this.config.rotate = {degree: '-45'}
     }
   }
 
@@ -164,7 +164,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
           zoom
         </label>
       </div>
-      <ng-include src="'app/visualization/builtins/visualization-dispayXAxis.html'">
+      <ng-include src="'app/visualization/builtins/visualization-displayXAxis.html'">
       </ng-include>`,
       scope: {
         config: configObj,
