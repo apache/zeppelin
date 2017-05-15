@@ -693,6 +693,10 @@ a.anchorjs-link:hover { text-decoration: none; }
   border-bottom-right-radius: 3px;
 }
 
+.hide-last-boundaries.pagination:only-of-type {
+  display: none;
+}
+
 /* For what's new section */
 .new {
   background: rgba(226, 233, 239, 0.4);
