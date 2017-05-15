@@ -307,7 +307,7 @@ public class SqlCompleter {
         if (keywordCompleter == null || keywordCompleter.getCompleter() == null
             || keywordCompleter.isExpired()) {
           keywords = getSqlKeywordsCompletions(databaseMetaData);
-          keywordCompleter = new CachedCompleter(new StringsCompleter(keywords), 0);
+          initKeywords(keywords);
         }
         if (cursorArgument.needLoadSchemas() &&
             (schemasCompleter == null || schemasCompleter.getCompleter() == null
@@ -318,20 +318,15 @@ public class SqlCompleter {
           if (schemas.size() == 0) {
             schemas.addAll(catalogs);
           }
-          if (!schemas.isEmpty()) {
-            schemasCompleter = new CachedCompleter(
-                new StringsCompleter(new TreeSet<>(schemas)), ttlInSeconds);
-          }
+
+          initSchemas(schemas);
         }
 
         CachedCompleter tablesCompleter = tablesCompleters.get(cursorArgument.getSchema());
         if (cursorArgument.needLoadTables() &&
             (tablesCompleter == null || tablesCompleter.isExpired())) {
           fillTableNames(cursorArgument.getSchema(), databaseMetaData, tables);
-          if (!tables.isEmpty()) {
-            tablesCompleters.put(cursorArgument.getSchema(), new CachedCompleter(
-                new StringsCompleter(new TreeSet<>(tables)), ttlInSeconds));
-          }
+          initTables(cursorArgument.getSchema(), tables);
         }
 
         String schemaTable =
@@ -342,10 +337,7 @@ public class SqlCompleter {
             (columnsCompleter == null || columnsCompleter.isExpired())) {
           fillColumnNames(cursorArgument.getSchema(), cursorArgument.getTable(), databaseMetaData,
               columns);
-          if (!columns.isEmpty()) {
-            columnsCompleters.put(schemaTable,
-                new CachedCompleter(new StringsCompleter(columns), ttlInSeconds));
-          }
+          initColumns(schemaTable, columns);
         }
 
         logger.info("Completer initialized with " + schemas.size() + " schemas, " +
@@ -354,6 +346,35 @@ public class SqlCompleter {
 
     } catch (SQLException | IOException e) {
       logger.error("Failed to update the metadata completions", e);
+    }
+  }
+
+
+
+  public void initKeywords(Set<String> keywords) {
+    if (keywords != null && !keywords.isEmpty()) {
+      keywordCompleter = new CachedCompleter(new StringsCompleter(keywords), 0);
+    }
+  }
+
+  public void initSchemas(Set<String> schemas) {
+    if (schemas != null && !schemas.isEmpty()) {
+      schemasCompleter = new CachedCompleter(
+          new StringsCompleter(new TreeSet<>(schemas)), ttlInSeconds);
+    }
+  }
+
+  public void initTables(String schema, Set<String> tables) {
+    if (tables != null && !tables.isEmpty()) {
+      tablesCompleters.put(schema, new CachedCompleter(
+          new StringsCompleter(new TreeSet<>(tables)), ttlInSeconds));
+    }
+  }
+
+  public void initColumns(String schemaTable, Set<String> columns) {
+    if (columns != null && !columns.isEmpty()) {
+      columnsCompleters.put(schemaTable,
+          new CachedCompleter(new StringsCompleter(columns), ttlInSeconds));
     }
   }
 
@@ -432,7 +453,6 @@ public class SqlCompleter {
    */
   public int completeName(String buffer, int cursor, List<InterpreterCompletion> candidates,
                           Map<String, String> aliases) {
-
     CursorArgument cursorArgument = parseCursorArgument(buffer, cursor);
 
     // find schema and table name if they are
@@ -496,22 +516,24 @@ public class SqlCompleter {
 
   private CursorArgument parseCursorArgument(String buffer, int cursor) {
     CursorArgument result = new CursorArgument();
-    String buf = buffer.substring(0, cursor);
-    if (StringUtils.isNotEmpty(buf)) {
-      ArgumentList argumentList = sqlDelimiter.delimit(buf, cursor);
-      String cursorArgument = argumentList.getCursorArgument();
-      if (cursorArgument != null) {
-        int pointPos1 = cursorArgument.indexOf('.');
-        int pointPos2 = cursorArgument.indexOf('.', pointPos1 + 1);
-        if (pointPos1 > -1) {
-          result.setSchema(cursorArgument.substring(0, pointPos1).trim());
-          if (pointPos2 > -1) {
-            result.setTable(cursorArgument.substring(pointPos1 + 1, pointPos2));
-            result.setColumn(cursorArgument.substring(pointPos2 + 1));
-            result.setCursorPosition(cursor - pointPos2 - 1);
-          } else {
-            result.setTable(cursorArgument.substring(pointPos1 + 1));
-            result.setCursorPosition(cursor - pointPos1 - 1);
+    if (buffer != null && buffer.length() >= cursor) {
+      String buf = buffer.substring(0, cursor);
+      if (StringUtils.isNotBlank(buf)) {
+        ArgumentList argumentList = sqlDelimiter.delimit(buf, cursor);
+        String cursorArgument = argumentList.getCursorArgument();
+        if (cursorArgument != null) {
+          int pointPos1 = cursorArgument.indexOf('.');
+          int pointPos2 = cursorArgument.indexOf('.', pointPos1 + 1);
+          if (pointPos1 > -1) {
+            result.setSchema(cursorArgument.substring(0, pointPos1).trim());
+            if (pointPos2 > -1) {
+              result.setTable(cursorArgument.substring(pointPos1 + 1, pointPos2));
+              result.setColumn(cursorArgument.substring(pointPos2 + 1));
+              result.setCursorPosition(cursor - pointPos2 - 1);
+            } else {
+              result.setTable(cursorArgument.substring(pointPos1 + 1));
+              result.setCursorPosition(cursor - pointPos1 - 1);
+            }
           }
         }
       }
