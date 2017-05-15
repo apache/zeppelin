@@ -31,4 +31,8 @@ public class InterpreterException extends RuntimeException {
     super(m);
   }
 
+  public InterpreterException(String msg, Throwable t) {
+    super(msg, t);
+  }
+
 }

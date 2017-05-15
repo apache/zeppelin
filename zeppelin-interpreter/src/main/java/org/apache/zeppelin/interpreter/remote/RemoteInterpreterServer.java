@@ -218,7 +218,7 @@ public class RemoteInterpreterServer
 
   private void setSystemProperty(Properties properties) {
     for (Object key : properties.keySet()) {
-      if (!RemoteInterpreter.isEnvString((String) key)) {
+      if (!RemoteInterpreterUtils.isEnvString((String) key)) {
         String value = properties.getProperty((String) key);
         if (value == null || value.isEmpty()) {
           System.clearProperty((String) key);

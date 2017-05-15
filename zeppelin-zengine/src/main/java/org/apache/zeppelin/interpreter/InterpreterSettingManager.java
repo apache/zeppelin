@@ -236,8 +236,13 @@ public class InterpreterSettingManager {
     if (!Files.exists(interpreterBindingPath)) {
       Files.createFile(interpreterBindingPath);
 
-      Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
-      Files.setPosixFilePermissions(interpreterBindingPath, permissions);
+      try {
+        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+        Files.setPosixFilePermissions(interpreterBindingPath, permissions);
+      } catch (UnsupportedOperationException e) {
+        // File system does not support Posix file permissions (likely windows) - continue anyway.
+        logger.warn("unable to setPosixFilePermissions on '{}'.", interpreterBindingPath);
+      };
     }
 
     FileOutputStream fos = new FileOutputStream(interpreterBindingPath.toFile(), false);

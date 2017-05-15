@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 
+// import globally uses css here
+import 'github-markdown-css/github-markdown.css'
+
 import './app/app.js'
 import './app/app.controller.js'
 import './app/home/home.controller.js'

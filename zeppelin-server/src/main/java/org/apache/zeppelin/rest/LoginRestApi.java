@@ -74,9 +74,10 @@ public class LoginRestApi {
       try {
         UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
         //      token.setRememberMe(true);
-        currentUser.login(token);
+
         currentUser.getSession().stop();
         currentUser.getSession(true);
+        currentUser.login(token);
 
         HashSet<String> roles = SecurityUtils.getRoles();
         String principal = SecurityUtils.getPrincipal();
