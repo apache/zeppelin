@@ -28,6 +28,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
@@ -192,20 +195,44 @@ public class JDBCInterpreter extends Interpreter {
     }
   }
 
-  private SqlCompleter createOrUpdateSqlCompleter(SqlCompleter sqlCompleter, Connection connection,
-      String propertyKey, String buf, int cursor) {
+  private SqlCompleter createOrUpdateSqlCompleter(SqlCompleter sqlCompleter,
+      final Connection connection, String propertyKey, final String buf, final int cursor) {
     String schemaFiltersKey = String.format("%s.%s", propertyKey, COMPLETER_SCHEMA_FILTERS_KEY);
     String sqlCompleterTtlKey = String.format("%s.%s", propertyKey, COMPLETER_TTL_KEY);
-    String schemaFiltersString = getProperty(schemaFiltersKey);
+    final String schemaFiltersString = getProperty(schemaFiltersKey);
     int ttlInSeconds = Integer.valueOf(
         StringUtils.defaultIfEmpty(getProperty(sqlCompleterTtlKey), DEFAULT_COMPLETER_TTL)
     );
+    final SqlCompleter completer;
     if (sqlCompleter == null) {
-      sqlCompleter = new SqlCompleter(ttlInSeconds);
+      completer = new SqlCompleter(ttlInSeconds);
+    } else {
+      completer = sqlCompleter;
     }
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
+    executorService.execute(new Runnable() {
+      @Override
+      public void run() {
+        completer.createOrUpdateFromConnection(connection, schemaFiltersString, buf, cursor);
+      }
+    });
 
-    sqlCompleter.createOrUpdateFromConnection(connection, schemaFiltersString, buf, cursor);
-    return sqlCompleter;
+    executorService.shutdown();
+
+    try {
+      // protection to release connection
+      executorService.awaitTermination(3, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      logger.warn("Completion timeout", e);
+      if (connection != null) {
+        try {
+          connection.close();
+        } catch (SQLException e1) {
+          logger.warn("Error close connection", e1);
+        }
+      }
+    }
+    return completer;
   }
 
   private void initStatementMap() {
