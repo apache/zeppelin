@@ -539,7 +539,6 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           const transformed = transformation.transform(tableData)
           transformation.renderSetting(transformationSettingTargetEl)
           builtInViz.instance.render(transformed)
-          console.log('sora error check', visualizationSettingTargetEl)
           builtInViz.instance.renderSetting(visualizationSettingTargetEl)
           builtInViz.instance.activate()
           angular.element(window).resize(() => {
