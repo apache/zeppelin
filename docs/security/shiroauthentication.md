@@ -135,15 +135,18 @@ ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+ldapRealm.contextFactory.systemUsername = cn=admin,dc=COMPANY,dc=COM
+ldapRealm.contextFactory.systemPassword = bindPassword
+securityManager.realms = $ldapRealm
 ```
 
 ### PAM
-[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication 
+[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
 moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
 either reuse one of these services or create your own for Zeppelin. Activiting PAM authentication requires two parameters:
  1. realm: The Shiro realm being used
  2. service: The service configured under `/etc/pam.d/` to be used. The name here needs to be the same as the file name under `/etc/pam.d/`
- 
+
 ```
 [main]
  pamRealm=org.apache.zeppelin.realm.PamRealm
@@ -188,4 +191,3 @@ If you want to grant this permission to other users, you can change **roles[ ]**
 ## Other authentication methods
 
 - [HTTP Basic Authentication using NGINX](./authentication.html)
-

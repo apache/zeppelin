@@ -44,6 +44,9 @@ user3 = password4, role2
 #ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 #ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 #ldapRealm.contextFactory.authenticationMechanism = SIMPLE
+#ldapRealm.contextFactory.systemUsername = cn=admin,dc=COMPANY,dc=COM
+#ldapRealm.contextFactory.systemPassword = bindPassword
+#securityManager.realms = $ldapRealm
 
 ### A sample PAM configuration
 #pamRealm=org.apache.zeppelin.realm.PamRealm
