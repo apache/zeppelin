@@ -88,9 +88,20 @@ export default class TableVisualization extends Visualization {
         return {
           name: colName,
           type: DefaultTableColumnType,
+          cellTemplate: `
+            <div ng-if="!grid.getCellValue(row, col).startsWith('%html')"
+                 class="ui-grid-cell-contents">
+              {{grid.getCellValue(row, col)}}
+            </div>
+            <div ng-if="grid.getCellValue(row, col).startsWith('%html')"
+                 ng-bind-html="grid.getCellValue(row, col).split('%html')[1]"
+                 class="ui-grid-cell-contents">
+            </div>
+          `,
         }
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
+      enableRowHashing: true,
       saveFocus: false,
       saveScroll: false,
       saveSort: true,
