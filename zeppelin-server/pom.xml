@@ -114,6 +114,27 @@
     </dependency>
 
     <dependency>
+      <groupId>io.buji</groupId>
+      <artifactId>buji-pac4j</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-oidc</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>libpam4j</artifactId>
       <version>${libpam4j.version}</version>
@@ -487,7 +508,7 @@
         </dependencies>
       </dependencyManagement>
     </profile>
-    
+
     <profile>
       <id>using-source-tree</id>
       <activation>

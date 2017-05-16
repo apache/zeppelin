@@ -55,6 +55,30 @@ user3 = password4, role2
 #zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
 #securityManager.realms = $zeppelinHubRealm
 
+### A sample for configuring OIDC Pac4J managed login(i.e. Keycloak)
+#oidcConfig = org.pac4j.oidc.config.OidcConfiguration
+#oidcConfig.discoveryURI = <your instance>/realms/<your realm>/.well-known/openid-configuration
+#oidcConfig.clientId = <your client name>
+#oidcConfig.secret = <your secret>
+#oidcConfig.clientAuthenticationMethodAsString = client_secret_basic
+#oidcClient = org.pac4j.oidc.client.OidcClient
+#oidcClient.configuration = $oidcConfig
+#clients = org.pac4j.core.client.Clients
+#clients.callbackUrl = http://<zeppelin ip>:8080/api/callback
+#clients.clients = $oidcClient
+#requireRoleAdmin = org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer
+#requireRoleAdmin.elements = <your role>
+#config = org.pac4j.core.config.Config
+#config.clients = $clients
+#config.authorizers = admin:$requireRoleAdmin
+#pac4jRealm = io.buji.pac4j.realm.Pac4jRealm
+#pac4jSubjectFactory = io.buji.pac4j.subject.Pac4jSubjectFactory
+#securityManager.subjectFactory = $pac4jSubjectFactory
+#oidcSecurityFilter = io.buji.pac4j.filter.SecurityFilter
+#oidcSecurityFilter.config = $config
+#oidcSecurityFilter.clients = oidcClient
+
+
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
 ### If caching of user is required then uncomment below lines
@@ -82,5 +106,6 @@ admin = *
 #/api/interpreter/** = authc, roles[admin]
 #/api/configurations/** = authc, roles[admin]
 #/api/credential/** = authc, roles[admin]
+#/api/callback = callbackFilter
 #/** = anon
 /** = authc

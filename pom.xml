@@ -105,7 +105,9 @@
     <commons.io.version>2.4</commons.io.version>
     <commons.collections.version>3.2.1</commons.collections.version>
     <commons.logging.version>1.1.1</commons.logging.version>
-    <shiro.version>1.2.3</shiro.version>
+    <shiro.version>1.3.2</shiro.version>
+    <pac4j.version>1.9.8</pac4j.version>
+    <buji.version>2.2.0</buji.version>
 
     <!-- test library versions -->
     <junit.version>4.12</junit.version>
@@ -250,6 +252,23 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-config-core</artifactId>
         <version>${shiro.version}</version>
+      </dependency>
+
+      <!-- OpenId Connect -->
+      <dependency>
+        <groupId>io.buji</groupId>
+        <artifactId>buji-pac4j</artifactId>
+        <version>${buji.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-core</artifactId>
+        <version>${pac4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-oidc</artifactId>
+        <version>${pac4j.version}</version>
       </dependency>
 
       <!-- Test libraries -->
