@@ -180,7 +180,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
-    ArrayList<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    List<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
     assertEquals(4, multipleSqlArray.size());
     assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
     assertEquals("select * from test_table", multipleSqlArray.get(1));
@@ -196,7 +196,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
-    ArrayList<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    List<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
     assertEquals(2, multipleSqlArray.size());
     assertEquals("select '\\n', ';'", multipleSqlArray.get(0));
     assertEquals("select replace('A\\;B', '\\', 'text')", multipleSqlArray.get(1));
