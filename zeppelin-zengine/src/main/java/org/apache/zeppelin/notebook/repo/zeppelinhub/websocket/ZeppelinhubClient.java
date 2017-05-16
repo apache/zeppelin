@@ -220,12 +220,12 @@ public class ZeppelinhubClient {
       return;
     }
     switch (op) {
-        case RUN_NOTEBOOK:
-          runAllParagraph(hubMsg.meta.get("noteId"), msg);
-          break;
-        default:
-          LOG.debug("Received {} from ZeppelinHub, not handled", op);
-          break;
+      case RUN_NOTEBOOK:
+        runAllParagraph(hubMsg.meta.get("noteId"), msg);
+        break;
+      default:
+        LOG.debug("Received {} from ZeppelinHub, not handled", op);
+        break;
     }
   }
 
