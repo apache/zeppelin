@@ -499,7 +499,7 @@ public class JDBCInterpreter extends Interpreter {
     StringBuilder query = new StringBuilder();
     char character;
 
-    Boolean antiSlash = false;
+    Boolean backslash = false;
     Boolean multiLineComment = false;
     Boolean singleLineComment = false;
     Boolean quoteString = false;
@@ -507,6 +507,12 @@ public class JDBCInterpreter extends Interpreter {
 
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
+
+      if (backslash) {
+        query.append(character);
+        backslash = false;
+        continue;
+      }
 
       if ((singleLineComment && (character == '\n' || item == sql.length() - 1))
           || (multiLineComment && character == '/' && sql.charAt(item - 1) == '*')) {
@@ -523,13 +529,11 @@ public class JDBCInterpreter extends Interpreter {
       }
 
       if (character == '\\') {
-        antiSlash = true;
+        backslash = true;
       }
 
       if (character == '\'') {
-        if (antiSlash) {
-          antiSlash = false;
-        } else if (quoteString) {
+        if (quoteString) {
           quoteString = false;
         } else if (!doubleQuoteString) {
           quoteString = true;
@@ -537,9 +541,7 @@ public class JDBCInterpreter extends Interpreter {
       }
 
       if (character == '"') {
-        if (antiSlash) {
-          antiSlash = false;
-        } else if (doubleQuoteString) {
+        if (doubleQuoteString) {
           doubleQuoteString = false;
         } else if (!quoteString) {
           doubleQuoteString = true;
@@ -559,7 +561,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
-      if (character == ';' && !antiSlash && !quoteString && !doubleQuoteString) {
+      if (character == ';' && !backslash && !quoteString && !doubleQuoteString) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
@@ -597,7 +599,6 @@ public class JDBCInterpreter extends Interpreter {
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
-
     try {
       connection = getConnection(propertyKey, interpreterContext);
       if (connection == null) {

@@ -189,6 +189,20 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testSqlQueryWithBackslash() throws SQLException, IOException {
+    String sqlQuery = "select '\\n', ';';" +
+        "select replace('A\\;B', '\\', 'text')";
+
+    Properties properties = new Properties();
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+    ArrayList<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    assertEquals(2, multipleSqlArray.size());
+    assertEquals("select '\\n', ';'", multipleSqlArray.get(0));
+    assertEquals("select replace('A\\;B', '\\', 'text')", multipleSqlArray.get(1));
+  }
+
+  @Test
   public void testSelectMultipleQuries() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
