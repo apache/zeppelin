@@ -566,12 +566,16 @@ public class Note implements Serializable, ParagraphJobListener {
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+    authenticationInfo.setUser(cronExecutingUser);
+    runAll(authenticationInfo);
+  }
+
+  public void runAll(AuthenticationInfo authenticationInfo) {
     for (Paragraph p : getParagraphs()) {
       if (!p.isEnabled()) {
         continue;
       }
-      AuthenticationInfo authenticationInfo = new AuthenticationInfo();
-      authenticationInfo.setUser(cronExecutingUser);
       p.setAuthenticationInfo(authenticationInfo);
       run(p.getId());
     }

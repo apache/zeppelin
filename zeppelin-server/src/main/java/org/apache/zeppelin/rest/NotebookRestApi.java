@@ -603,17 +603,17 @@ public class NotebookRestApi {
       throws IOException, IllegalArgumentException {
     LOG.info("run note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     checkIfNoteIsNotNull(note);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot run job for this note");
 
     try {
-      note.runAll();
+      note.runAll(subject);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       return new JsonResponse<>(Status.PRECONDITION_FAILED,
           ex.getMessage() + "- Not selected or Invalid Interpreter bind").build();
     }
-
     return new JsonResponse<>(Status.OK).build();
   }
 
