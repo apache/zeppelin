@@ -164,7 +164,8 @@ public class RemoteInterpreterServer
           interpreterGroup.put(noteId, interpreters);
         }
 
-        interpreters.add(new LazyOpenInterpreter(repl));
+        interpreters.add(new LazyOpenInterpreter(
+            new ClassloaderInterpreter(repl, Thread.currentThread().getContextClassLoader())));
       }
 
       logger.info("Instantiate interpreter {}", className);
