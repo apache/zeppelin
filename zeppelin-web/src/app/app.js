@@ -17,6 +17,7 @@
 
 import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
+import 'angular-viewport-watch/angular-viewport-watch.js'
 
 const requiredModules = [
   'ngCookies',

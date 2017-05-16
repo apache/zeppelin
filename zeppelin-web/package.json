@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "angular-viewport-watch": "github:shahata/angular-viewport-watch",
+    "github-markdown-css": "2.6.0",
     "grunt-angular-templates": "^0.5.7",
     "grunt-dom-munger": "^3.4.0",
     "headroom.js": "^0.9.3"
