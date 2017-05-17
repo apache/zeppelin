@@ -241,7 +241,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
-    return this.sparkInterpreter.getProgress(context);
+    if (this.sparkInterpreter != null) {
+      return this.sparkInterpreter.getProgress(context);
+    } else {
+      return 0;
+    }
   }
 
   @Override
