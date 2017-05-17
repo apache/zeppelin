@@ -52,11 +52,9 @@ matrix:
     # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
     # NotebookTest                 - https://issues.apache.org/jira/browse/ZEPPELIN-2471
     # ZeppelinRestApiTest          - https://issues.apache.org/jira/browse/ZEPPELIN-2473
-    # SecurityRestApiTest          - https://issues.apache.org/jira/browse/ZEPPELIN-2545
-    # NotebookSecurityRestApiTest  - https://issues.apache.org/jira/browse/ZEPPELIN-2546
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumBundleFactoryTest.java,**/HeliumApplicationFactoryTest.java,**/NotebookTest.java,**/ZeppelinRestApiTest.java,**/SecurityRestApiTest.java,**/NotebookSecurityRestApiTest.java -DfailIfNoTests=false"
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumBundleFactoryTest.java,**/HeliumApplicationFactoryTest.java,**/NotebookTest.java,**/ZeppelinRestApiTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for 1.6.3
     - jdk: "oraclejdk7"
