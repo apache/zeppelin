@@ -332,8 +332,8 @@ public class LivyInterpreterIT {
     sqlInterpreter.setInterpreterGroup(interpreterGroup);
     sqlInterpreter.open();
 
-    LivyVersion livyVersion = sqlInterpreter.livyVersion;
-    assertTrue(livyVersion!=null);
+    int r = sqlInterpreter.getProgress(context);
+    assertTrue(r == 0);
   }
 
   @Test
