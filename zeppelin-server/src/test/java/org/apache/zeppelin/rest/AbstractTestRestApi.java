@@ -429,13 +429,19 @@ public abstract class AbstractTestRestApi {
     LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
     Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
     Header[] setCookieHeaders = postMethod.getResponseHeaders("Set-Cookie");
+    String jsessionId = null;
     for (Header setCookie : setCookieHeaders) {
       java.util.regex.Matcher matcher = pattern.matcher(setCookie.toString());
       if (matcher.find()) {
-        return matcher.group(1);
+        jsessionId = matcher.group(1);
       }
     }
-    return StringUtils.EMPTY;
+
+    if (jsessionId != null) {
+      return jsessionId;
+    } else {
+      return StringUtils.EMPTY;
+    }
   }
 
   protected static boolean userAndPasswordAreNotBlank(String user, String pwd) {
