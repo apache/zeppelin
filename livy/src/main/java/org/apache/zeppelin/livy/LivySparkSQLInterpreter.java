@@ -61,6 +61,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   @Override
   public void open() {
     this.sparkInterpreter = getSparkInterpreter();
+    this.livyVersion = this.sparkInterpreter.livyVersion;
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {

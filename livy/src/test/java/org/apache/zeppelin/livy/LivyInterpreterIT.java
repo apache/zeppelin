@@ -313,6 +313,28 @@ public class LivyInterpreterIT {
     }
   }
 
+  @Test
+  public void testSparkSQLLivyVersion() throws LivyException {
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+            "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    final LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+    sqlInterpreter.open();
+
+    LivyVersion livyVersion = sqlInterpreter.livyVersion;
+    assertTrue(livyVersion!=null);
+  }
 
   @Test
   public void testSparkSQLCancellation() {
