@@ -28,7 +28,7 @@
 
 /** disable alternative color for even lows in a table */
 .ui-grid-row:nth-child(even) .ui-grid-cell {
-  background-color: #f6f6f6 !important;
+  background-color: white !important;
 }
 
 /** support `height: auto` for cells */
