@@ -16,7 +16,6 @@
   min-width: 200px;
 }
 
-
 @media (min-width: 795px) and (max-width: 830px) {
   input#searchTermId {
     width: 170px;
@@ -34,6 +33,19 @@
 /* ------------------------------------------- */
 /* Navbar
 /* ------------------------------------------- */
+
+.navbar-title {
+  font-family: 'Patua One', cursive;
+  font-size: 25px;
+  color: white;
+  margin-top: 6px;
+  margin-right: 25px;
+  display: inline-block;
+}
+
+.navbar-menu {
+  font-weight: 300;
+}
 
 /** required to pin, unpin `navbar-fixed-top` */
 .navbar-fixed-top.headroom {

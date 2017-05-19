@@ -20,15 +20,22 @@ limitations under the License.
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+      <!-- title -->
       <a class="navbar-brand" href="#/">
-        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin" /> Zeppelin
+        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="Zeppelin" />
+      </a>
+      <a class="" href="#/">
+        <span class="navbar-title">Zeppelin</span>
       </a>
     </div>
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
       <ul class="nav navbar-nav" ng-if="ticket">
+        <!-- menu: Notebook -->
         <li class="dropdown notebook-list-dropdown" uib-dropdown>
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" uib-dropdown-toggle>Notebook <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" uib-dropdown-toggle>
+            <span class="navbar-menu">Notebook</span>
+            <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             <li ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
@@ -47,7 +54,12 @@ limitations under the License.
             </div>
           </ul>
         </li>
-        <li><a href="#/jobmanager">Job</a></li>
+        <!-- menu: Job -->
+        <li>
+          <a href="#/jobmanager">
+            <span class="navbar-menu">Job</span>
+          </a>
+        </li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
