@@ -125,6 +125,8 @@
               <target>
                 <unzip src="${project.build.directory}/../../interpreter/python/py4j-${python.py4j.version}.zip"
                        dest="${project.build.directory}/../../interpreter/python"/>
+                <zip destfile="${project.build.directory}/../../interpreter/python/py4j-${python.py4j.version}-src.zip"
+                     basedir="${project.build.directory}/../../interpreter/python/py4j-${python.py4j.version}/src"/>
               </target>
             </configuration>
             <goals>

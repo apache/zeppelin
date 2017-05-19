@@ -30,11 +30,14 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class ClientFactory extends BasePooledObjectFactory<Client>{
+  private final Logger logger = LoggerFactory.getLogger(ClientFactory.class);
   private String host;
   private int port;
   Map<Client, TSocket> clientSocketMap = new HashMap<>();
@@ -46,6 +49,7 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
 
   @Override
   public Client create() throws Exception {
+    logger.info("Create. host: {}, port: {}", host, port);
     TSocket transport = new TSocket(host, port);
     try {
       transport.open();

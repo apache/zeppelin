@@ -18,6 +18,7 @@
 package org.apache.zeppelin.cluster.yarn;
 
 import com.google.common.collect.Lists;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -79,9 +80,12 @@ public class YarnUtils {
           FileStatus fileStatus = fs.getFileStatus(dst);
           LocalResourceType localResourceType = LocalResourceType.FILE;
           String filename = path.getFileName().toString();
+          if (filename.endsWith(".py")) {
+            filename = "python" + File.separator + filename;
+          }
           LocalResource resource = LocalResource
               .newInstance(ConverterUtils.getYarnUrlFromPath(dst), localResourceType,
-                  LocalResourceVisibility.APPLICATION, fileStatus.getLen(),
+                  LocalResourceVisibility.PUBLIC, fileStatus.getLen(),
                   fileStatus.getModificationTime());
           localResourceMap.put(filename, resource);
         }

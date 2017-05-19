@@ -113,6 +113,13 @@ public abstract class RemoteInterpreterProcess {
       clientPool.invalidateObject(client);
     } catch (Exception e) {
       logger.warn("exception occurred during releasing thrift client", e);
+    } finally {
+      clientPool.clear();
+      clientPool.close();
+
+      logger.info("releaseBrokenClient. Host: {}, port: {}", getHost(), getPort());
+      clientPool = new GenericObjectPool<>(new ClientFactory(getHost(), getPort()));
+      clientPool.setTestOnBorrow(true);
     }
   }
 

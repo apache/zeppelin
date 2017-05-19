@@ -36,7 +36,7 @@
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.22.2</jersey.version>
-    <hadoop-common.version>2.6.0</hadoop-common.version>
+    <hadoop-common.version>2.7.3</hadoop-common.version>
     <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.0.1</javax.ws.rsapi.version>

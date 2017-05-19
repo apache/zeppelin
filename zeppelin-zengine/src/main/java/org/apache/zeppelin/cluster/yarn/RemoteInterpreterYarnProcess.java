@@ -20,6 +20,7 @@ package org.apache.zeppelin.cluster.yarn;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,6 +40,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
+import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -122,10 +124,12 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target"),
         Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target", "lib"),
         Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target"),
+        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target", "lib"),
         Paths.get(zeppelinConfiguration.getHome(), "conf", "yarn", "log4j.properties"),
         Paths.get(zeppelinConfiguration.getHome(), "lib", "interpreter"),
         Paths.get(zeppelinConfiguration.getHome(), "lib",
-            "zeppelin-zengine-0.8.0-SNAPSHOT.jar"));
+            "zeppelin-zengine-0.8.0-SNAPSHOT.jar"),
+        Paths.get(zeppelinConfiguration.getHome(), "lib", "zengine"));
   }
 
   @Override
@@ -190,16 +194,10 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       Path interpreterDir = getInterpreterRelativePath(group);
       List<Path> interpreterPaths = getPathsFromDirPath(interpreterDir);
 
-      // For spark
-      if (isSparkInterpreter() && !isSparkHomeSet()) {
-        interpreterDir = getInterpreterRelativePath("spark/dep");
-        interpreterPaths.addAll(getPathsFromDirPath(interpreterDir));
-      }
-
-      // For spark
-      if (isSparkHomeSet()) {
+      if (isSparkInterpreter()) {
         // For pyspark
-        interpreterDir = Paths.get(this.env.get("SPARK_HOME"), "python", "lib");
+        interpreterDir = isSparkHomeSet() ? Paths.get(this.env.get("SPARK_HOME"), "python", "lib")
+            : getInterpreterRelativePath(group, "pyspark");
         List<Path> pythonLibPath = getPathsFromDirPath(interpreterDir);
         interpreterPaths.addAll(pythonLibPath);
 
@@ -213,29 +211,72 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         }
         env.put("PYSPARK_ARCHIVES_PATH", Joiner.on(",").join(pythonLibPaths));
 
-        Path jarsArchive = Files.createTempFile("spark_jars", ".zip");
-        try (ZipOutputStream jarsStream = new ZipOutputStream(
-            new FileOutputStream(jarsArchive.toFile()))) {
-          jarsStream.setLevel(0);
+        interpreterDir = isSparkHomeSet() ? Paths.get(this.env.get("SPARK_HOME"), "jars")
+            : getInterpreterRelativePath(group, "dep");
+        List<Path> jarPaths = getPathsFromDirPath(interpreterDir);
+        interpreterPaths.addAll(jarPaths);
 
-          interpreterDir = Paths.get(this.env.get("SPARK_HOME"), "jars");
-          List<Path> jarPaths = getPathsFromDirPath(interpreterDir);
-          for (Path p : jarPaths) {
-            jarsStream.putNextEntry(new ZipEntry(p.getFileName().toString()));
-            Files.copy(p, jarsStream);
-            jarsStream.closeEntry();
+        String dstPath = "hdfs:///user/" + userName + "/.zeppelin/spark_" + name + "_jars.zip";
+        if (!fileSystem.exists(new org.apache.hadoop.fs.Path(dstPath))) {
+          Path jarsArchive = Files.createTempFile("spark_jars", ".zip");
+          try (ZipOutputStream jarsStream = new ZipOutputStream(
+              new FileOutputStream(jarsArchive.toFile()))) {
+            jarsStream.setLevel(0);
+
+            for (Path p : jarPaths) {
+              jarsStream.putNextEntry(new ZipEntry(p.getFileName().toString()));
+              Files.copy(p, jarsStream);
+              jarsStream.closeEntry();
+            }
           }
 
-          interpreterPaths.addAll(jarPaths);
+          fileSystem.copyFromLocalFile(new org.apache.hadoop.fs.Path(jarsArchive.toUri()),
+              new org.apache.hadoop.fs.Path(dstPath));
+          Files.deleteIfExists(jarsArchive);
         }
-
-        String dstPath = "hdfs:///.zeppelin/spark_jars.zip";
-        fileSystem.copyFromLocalFile(new org.apache.hadoop.fs.Path(jarsArchive.toUri()),
-            new org.apache.hadoop.fs.Path(dstPath));
-        Files.deleteIfExists(jarsArchive);
         properties.setProperty("spark.yarn.archive", dstPath);
+      } else if (isPythonInterpreter()) {
+        interpreterDir = getInterpreterRelativePath(group);
+        List<Path> pythonLibPath = getPathsFromDirPath(interpreterDir);
+        interpreterPaths.addAll(pythonLibPath);
+
+        // set PYTHONPATH
+        List<String> pythonLibPaths = new ArrayList<>();
+        for (Path p : pythonLibPath) {
+          String pathFilenameString = p.getFileName().toString();
+          if (pathFilenameString.endsWith(".zip")) {
+            pythonLibPaths.add(Environment.PWD.$$() + File.separator + pathFilenameString);
+          }
+        }
+        env.put("PYTHONPATH", Joiner.on(File.pathSeparator).join(pythonLibPaths));
       }
 
+      // For pyspark and python
+      List<Path> zeppelinPythonLibPaths = getPathsFromDirPath(
+          getInterpreterRelativePath("lib", "python"));
+      interpreterPaths.addAll(zeppelinPythonLibPaths);
+      List<String> distributedZeppelinPythonLibPaths = Lists.newArrayList();
+      for (Path p : zeppelinPythonLibPaths) {
+        if (p.getFileName().toString().endsWith(".py")) {
+          distributedZeppelinPythonLibPaths.add(
+              "python" + File.separator + p.getFileName().toString());
+        }
+      }
+
+      if (isSparkInterpreter()) {
+        String pyFiles =
+            (env.containsKey("PYSPARK_ARCHIVES_PATH") ? env.get("PYSPARK_ARCHIVES_PATH") + "," : "")
+                + Joiner.on(",").join(distributedZeppelinPythonLibPaths);
+        properties.setProperty("spark.submit.pyFiles", pyFiles);
+      } else if (isPythonInterpreter()) {
+        List<String> pwdDistributedZeppelinPythonLibPaths = Lists.newArrayList();
+        for (String p : distributedZeppelinPythonLibPaths) {
+          pwdDistributedZeppelinPythonLibPaths.add(Environment.PWD.$$() + File.separator + p);
+        }
+        String path = env.get("PYTHONPATH") + File.pathSeparator + Joiner.on(File.pathSeparator)
+            .join(pwdDistributedZeppelinPythonLibPaths);
+        env.put("PYTHONPATH", "./" + File.pathSeparator + "./python" + File.pathSeparator + path);
+      }
 
       for (Path p : interpreterLibPaths) {
         interpreterPaths.addAll(getPathsFromDirPath(p));
@@ -354,6 +395,10 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
     return "spark".equals(group);
   }
 
+  private boolean isPythonInterpreter() {
+    return "python".equals(group);
+  }
+
   private boolean isSparkHomeSet() {
     return this.env.containsKey("SPARK_HOME");
   }
@@ -380,12 +425,13 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
     }
   }
 
-  private Path getInterpreterRelativePath(String dirName) {
-    return Paths.get(zeppelinConfiguration.getInterpreterDir(), dirName);
+  private Path getInterpreterRelativePath(String... dirNames) {
+    return Paths.get(zeppelinConfiguration.getInterpreterDir(), dirNames);
   }
 
   @Override
   public void stop() {
+    logger.info("called stop");
     isRunning = false;
     if (null != oldState && oldState != FINISHED && oldState != FAILED && oldState != KILLED) {
       try {
@@ -420,8 +466,11 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
             case NEW_SAVING:
             case SUBMITTED:
             case ACCEPTED:
-              if (null == oldState) {
+              if (null == oldState || !oldState.equals(curState)) {
                 logger.info("new application added. applicationId: {}", applicationId);
+                setRunning(false);
+                setHost("N/A");
+                setPort(-1);
               }
               oldState = curState;
               break;
