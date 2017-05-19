@@ -109,6 +109,9 @@ import javax.naming.ldap.PagedResultsControl;
  * <p># optional mapping from physical groups to logical application roles
  * ldapRealm.rolesByGroup = \ LDN_USERS: user_role,\ NYK_USERS: user_role,\
  * HKG_USERS: user_role,\ GLOBAL_ADMIN: admin_role,\ DEMOS: self-install_role
+ *
+ * <p># optional list of roles that are allowed to authenticate
+ * ldapRealm.allowedRolesForAuthentication = admin_role,user_role
  * 
  * <p>ldapRealm.permissionsByRole=\ user_role = *:ToDoItemsJdo:*:*,\
  * *:ToDoItem:*:*; \ self-install_role = *:ToDoItemsFixturesService:install:* ;
@@ -176,6 +179,7 @@ public class LdapRealm extends JndiLdapRealm {
   private String memberAttributeValueSuffix = "";
 
   private final Map<String, String> rolesByGroup = new LinkedHashMap<String, String>();
+  private final List<String> allowedRolesForAuthentication = new ArrayList<String>();
   private final Map<String, List<String>> permissionsByRole = 
       new LinkedHashMap<String, List<String>>();
 
@@ -200,6 +204,29 @@ public class LdapRealm extends JndiLdapRealm {
     } catch (org.apache.shiro.authc.AuthenticationException ae) {
       throw ae;
     }
+  }
+
+  /**
+   * This overrides the implementation of queryForAuthenticationInfo inside JndiLdapRealm.
+   * In addition to calling the super method for authentication it also tries to validate
+   * if this user has atleast one of the allowed roles for authentication. In case the property
+   * allowedRolesForAuthentication is empty this check always returns true.
+   *
+   * @param token the submitted authentication token that triggered the authentication attempt.
+   * @param ldapContextFactory factory used to retrieve LDAP connections.
+   * @return AuthenticationInfo instance representing the authenticated user's information.
+   * @throws NamingException if any LDAP errors occur.
+   */
+  @Override
+  protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
+                                                          LdapContextFactory ldapContextFactory)
+      throws NamingException {
+    AuthenticationInfo info = super.queryForAuthenticationInfo(token, ldapContextFactory);
+    // Credentials were verified. Verify that the principal has all allowedRulesForAuthentication
+    if (!hasAllowedAuthenticationRules(info.getPrincipals(), ldapContextFactory)) {
+      throw new NamingException("Principal does not have any of the allowedRolesForAuthentication");
+    }
+    return info;
   }
 
   /**
@@ -229,6 +256,23 @@ public class LdapRealm extends JndiLdapRealm {
     Set<String> stringPermissions = permsFor(roleNames);
     simpleAuthorizationInfo.setStringPermissions(stringPermissions);
     return simpleAuthorizationInfo;
+  }
+
+  private boolean hasAllowedAuthenticationRules(PrincipalCollection principals,
+                                                final LdapContextFactory ldapContextFactory)
+      throws NamingException {
+    boolean allowed = allowedRolesForAuthentication.isEmpty();
+    if (!allowed) {
+      Set<String> roles = getRoles(principals, ldapContextFactory);
+      for (String allowedRole: allowedRolesForAuthentication) {
+        if (roles.contains(allowedRole)) {
+          log.debug("Allowed role for user [" + allowedRole + "] found.");
+          allowed = true;
+          break;
+        }
+      }
+    }
+    return allowed;
   }
 
   private Set<String> getRoles(PrincipalCollection principals, 
@@ -522,6 +566,10 @@ public class LdapRealm extends JndiLdapRealm {
     String suffix = template.substring(prefix.length() + MEMBER_SUBSTITUTION_TOKEN.length());
     this.memberAttributeValuePrefix = prefix;
     this.memberAttributeValueSuffix = suffix;
+  }
+
+  public void setAllowedRolesForAuthentication(List<String> allowedRolesForAuthencation) {
+    this.allowedRolesForAuthentication.addAll(allowedRolesForAuthencation);
   }
 
   public void setRolesByGroup(Map<String, String> rolesByGroup) {
