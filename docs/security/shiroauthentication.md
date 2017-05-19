@@ -128,6 +128,10 @@ Change the following values in the Shiro.ini file, and uncomment the line:
 
 ### LDAP
 
+Two options exist for configuring an LDAP Realm. The simpler to use is the LdapGroupRealm. How ever it has limited 
+flexibility with mapping of ldap groups to users and for authorization for user groups. A sample configuration file for
+this realm is given below.
+
 ```
 ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
@@ -136,6 +140,46 @@ ldapRealm.contextFactory.url = ldap://ldap.test.com:389
 ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 ldapRealm.contextFactory.authenticationMechanism = simple
 ```
+
+The other more flexible option is to use the LdapRealm. It allows for mapping of ldapgroups to roles and also allows for
+ role/group based authentication into the zeppelin server. Sample configuration for this realm is given below.
+ ```
+[main] 
+ldapRealm=org.apache.zeppelin.realm.LdapRealm
+
+ldapRealm.contextFactory.authenticationMechanism=simple
+ldapRealm.contextFactory.url=ldap://localhost:33389
+ldapRealm.userDnTemplate=uid={0},ou=people,dc=hadoop,dc=apache,dc=org
+# Ability to set ldap paging Size if needed default is 100
+ldapRealm.pagingSize = 200
+ldapRealm.authorizationEnabled=true
+ldapRealm.contextFactory.systemAuthenticationMechanism=simple
+ldapRealm.searchBase=dc=hadoop,dc=apache,dc=org
+ldapRealm.userSearchBase = dc=hadoop,dc=apache,dc=org
+ldapRealm.groupSearchBase = ou=groups,dc=hadoop,dc=apache,dc=org
+ldapRealm.groupObjectClass=groupofnames
+# Allow userSearchAttribute to be customized
+ldapRealm.userSearchAttributeName = sAMAccountName
+ldapRealm.memberAttribute=member
+# force usernames returned from ldap to lowercase useful for AD
+ldapRealm.userLowerCase = true 
+# ability set searchScopes subtree (default), one, base
+ldapRealm.userSearchScope = subtree;
+ldapRealm.groupSearchScope = subtree;
+ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,dc=org
+ldapRealm.contextFactory.systemUsername=uid=guest,ou=people,dc=hadoop,dc=apache,dc=org 
+ldapRealm.contextFactory.systemPassword=S{ALIAS=ldcSystemPassword}
+# enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
+ldapRealm.groupSearchEnableMatchingRuleInChain = true
+# optional mapping from physical groups to logical application roles
+ldapRealm.rolesByGroup = LDN_USERS: user_role, NYK_USERS: user_role, HKG_USERS: user_role, GLOBAL_ADMIN: admin_role
+# optional list of roles that are allowed to authenticate. Incase not present all groups are allowed to authenticate (login). 
+# This changes nothing for url specific permissions that will continue to work as specified in [urls].
+ldapRealm.allowedRolesForAuthentication = admin_role,user_role
+ldapRealm.permissionsByRole= user_role = *:ToDoItemsJdo:*:*, *:ToDoItem:*:*; admin_role = *
+securityManager.sessionManager = $sessionManager
+securityManager.realms = $ldapRealm
+ ```
 
 ### PAM
 [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication 
