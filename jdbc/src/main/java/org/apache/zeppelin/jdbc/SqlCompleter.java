@@ -289,13 +289,13 @@ public class SqlCompleter {
    */
   public void createOrUpdateFromConnection(Connection connection, String schemaFiltersString,
       String buffer, int cursor) {
-    if (schemaFiltersString == null) {
-      schemaFiltersString = StringUtils.EMPTY;
-    }
-    List<String> schemaFilters = Arrays.asList(schemaFiltersString.split(","));
-    CursorArgument cursorArgument = parseCursorArgument(buffer, cursor);
-
     try (Connection c = connection) {
+      if (schemaFiltersString == null) {
+        schemaFiltersString = StringUtils.EMPTY;
+      }
+      List<String> schemaFilters = Arrays.asList(schemaFiltersString.split(","));
+      CursorArgument cursorArgument = parseCursorArgument(buffer, cursor);
+
       Set<String> tables = new HashSet<>();
       Set<String> columns = new HashSet<>();
       Set<String> schemas = new HashSet<>();
