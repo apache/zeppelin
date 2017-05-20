@@ -35,6 +35,8 @@ limitations under the License.
     </div>
   </div>
 
+  <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
+
   <div>
     <div ng-if="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
       <code-editor
@@ -62,8 +64,6 @@ limitations under the License.
          ng-bind="paragraph.errorMessage">
     </div>
   </div>
-
-  <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
 
   <div ng-if="!asIframe" class="paragraphFooter">
     <div ng-show="!paragraph.config.tableHide && !viewOnly"

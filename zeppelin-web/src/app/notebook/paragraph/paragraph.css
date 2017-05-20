@@ -113,7 +113,6 @@
   display: none;
   float: right;
   color: #999;
-  margin-top: -9px;
   margin-right: 0;
   position: absolute;
   clear: both;
@@ -178,15 +177,8 @@
   background: rgba(255,255,255,0.85);
   float: right;
   color: #999;
-  margin-top: 1px;
-  margin-right: 5px;
-  position: absolute;
-  clear: both;
-  right: 15px;
-  top: 16px;
-  text-align: right;
   font-size: 12px;
-  padding: 4px;
+  margin-bottom: 3px;
 }
 
 .paragraph .control li {
