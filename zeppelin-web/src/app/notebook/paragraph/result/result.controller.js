@@ -157,7 +157,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         icon: $sce.trustAsHtml(vis.icon)
       })
       builtInVisualizations[vis.id] = {
-        class: vis.classrenderResult
+        class: vis.class
       };
     });
 
