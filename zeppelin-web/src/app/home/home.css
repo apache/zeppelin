@@ -244,14 +244,6 @@ body .navbar {
   border-color: #357ebd;
 }
 
-.username {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
-  display: inline-block;
-}
-
 .server-connected {
   padding-top: 12px;
   color: #00CC00;

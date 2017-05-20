@@ -61,7 +61,6 @@
   }
 }
 
-
 /** required to pin, unpin `navbar-fixed-top` */
 .navbar-fixed-top.headroom {
   position: fixed;
@@ -96,7 +95,6 @@
 .navbar-inverse .navbar-nav > li > a:focus {
   color: #fff;
   background: rgba(0, 0, 0, 0.2);
-
 }
 
 .navbar-inverse .navbar-toggle {
@@ -162,6 +160,17 @@ a.navbar-brand:hover {
   .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
     border-color: #3071A9;
   }
+}
+
+/* Username */
+
+.username {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  display: inline-block;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* About Dialog */
