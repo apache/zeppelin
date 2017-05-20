@@ -12,24 +12,6 @@
  * limitations under the License.
  */
 
-#searchTermId {
-  min-width: 200px;
-}
-
-@media (min-width: 795px) and (max-width: 830px) {
-  input#searchTermId {
-    width: 170px;
-    min-width: 170px;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 794px) {
-  input#searchTermId {
-    width: 140px;
-    min-width: 140px;
-  }
-}
-
 /* ------------------------------------------- */
 /* Navbar
 /* ------------------------------------------- */
@@ -38,14 +20,47 @@
   font-family: 'Patua One', cursive;
   font-size: 25px;
   color: white;
-  margin-top: 6px;
-  margin-right: 25px;
+  margin-top: 7px;
+  margin-right: 20px;
   display: inline-block;
 }
 
 .navbar-menu {
   font-weight: 300;
+  font-size: 16px;
 }
+
+.navbar-inverse .navbar-nav > li > a {
+  padding-top: 16px;
+}
+
+.navbar-logo {
+  padding-right: 10px;
+}
+
+.navbar-search {
+  font-size: 14px;
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#navbar-search {
+  min-width: 170px;
+}
+
+@media (min-width: 795px) and (max-width: 830px) {
+  #navbar-search {
+    width: 150px;
+    min-width: 150px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 794px) {
+  #navbar-search {
+    width: 130px;
+    min-width: 130px;
+  }
+}
+
 
 /** required to pin, unpin `navbar-fixed-top` */
 .navbar-fixed-top.headroom {
