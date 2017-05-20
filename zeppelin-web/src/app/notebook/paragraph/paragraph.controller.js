@@ -840,8 +840,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   }
 
-  const handleFocus = function (value, isDigestPass) {
-    $scope.paragraphFocused = value
+  const handleFocus = function (focused, isDigestPass) {
+    $scope.paragraphFocused = focused
+    $scope.editor.setHighlightActiveLine(focused) // highlight active line
+
     if (isDigestPass === false || isDigestPass === undefined) {
       // Protect against error in case digest is already running
       $timeout(function () {

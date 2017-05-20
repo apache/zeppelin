@@ -362,8 +362,20 @@ table.table-shortcut {
   direction: ltr;
 }
 
+/** set highlight line color */
+#main .ace-chrome .ace_marker-layer .ace_active-line {
+  background: rgba(230, 224, 21, 0.08);
+}
+
+/** hide not focused cursors */
 .ace_hidden-cursors {
   opacity: 0;
+}
+
+/** set cursor color */
+#main .emacs-mode .ace_cursor {
+  background: #C0C0C0!important;
+  border: none !important;
 }
 
 .ace_text-input, .ace_gutter, .ace_layer,
@@ -374,11 +386,6 @@ table.table-shortcut {
 
 .ace_text-input.ace_composition {
  opacity: 0 !important;
-}
-
-#main .emacs-mode .ace_cursor {
-  background: #C0C0C0!important;
-  border: none !important;
 }
 
 /*
