@@ -33,8 +33,9 @@ limitations under the License.
       <ul class="nav navbar-nav" ng-if="ticket">
         <!-- menu: Notebook -->
         <li class="dropdown notebook-list-dropdown" uib-dropdown>
-          <a href="#" class="navbar-menu dropdown-toggle" data-toggle="dropdown" uib-dropdown-toggle>
-            <span class="">Notebook</span>
+          <a href="#" class="navbar-menu navbar-menu-notebook dropdown-toggle"
+             data-toggle="dropdown" uib-dropdown-toggle>
+            <span>Notebook</span>
             <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             <li ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()"><i class="fa fa-plus"></i> Create new note</a></li>
@@ -56,8 +57,8 @@ limitations under the License.
         </li>
         <!-- menu: Job -->
         <li>
-          <a class="navbar-menu" href="#/jobmanager">
-            <span class="">Job</span>
+          <a class="navbar-menu navbar-menu-job" href="#/jobmanager">
+            <span>Job</span>
           </a>
         </li>
       </ul>

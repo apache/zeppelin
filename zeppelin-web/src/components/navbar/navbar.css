@@ -30,6 +30,14 @@
   font-size: 16px;
 }
 
+.navbar-inverse .navbar-nav > li > a.navbar-menu-notebook:focus {
+  background-color: transparent;
+}
+
+.navbar-inverse .navbar-nav > li > a.navbar-menu-notebook:hover{
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
 .navbar-inverse .navbar-nav > li > a {
   padding-top: 16px;
 }
