@@ -13,7 +13,10 @@ limitations under the License.
 -->
 
 <div class="editor"
-     ui-ace="{
+     ui-ace="{ advanced: {
+                 highlightActiveLine: true,
+                 highlightGutterLine: false,
+               },
                onLoad : onLoad,
                require : ['ace/ext/language_tools']
              }"
