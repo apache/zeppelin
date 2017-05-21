@@ -25,33 +25,34 @@ limitations under the License.
       </div>
 
       <!-- modal-body -->
-      <div class="modal-body">
+      <div class="modal-body modal-body-import">
         <div class="form-group">
-          <label for="noteImportName">Import AS</label>
-          <input placeholder="Insert Note Name" type="text" class="form-control" id="noteImportName"
+          <label for="noteImportName">Import As</label>
+          <input class="form-control note-name-input" id="noteImportName"
+                 placeholder="Insert Note Name" type="text"
                  ng-model="note.noteImportName" />
-        </div>
-        <div class="form-group">
-          <label for="fileSizeLimit">JSON file size cannot exceed {{maxLimit}} MB</label>
         </div>
 
         <div class="form-group" ng-show="note.errorText">
           <div class="alert alert-danger">{{note.errorText}}</div>
         </div>
 
-        <div class="form-group slide-left" ng-show="note.step1">
-          <div class="display-inline">
+        <label>JSON file size cannot exceed {{maxLimit}} MB</label>
+
+        <div class="form-group slide-left import-btn-image-group" ng-show="note.step1">
+          <div class="import-btn-image">
             <a class="fa fa-cloud-upload import-file-upload" ng-click="uploadFile()">
-              <p>Choose a JSON here</p>
+              <p class="modal-body-import-desc">Select JSON File </p>
             </a>
           </div>
           <div style="display: none">
-            <input placeholder="Note name" type="file" class="form-control" id="noteImportFile"
+            <input class="form-control note-name-input" id="noteImportFile"
+                   placeholder="Note name" type="file"
                    ng-model="note.importFile" onchange="angular.element(this).scope().importFile(this)" />
           </div>
-          <div class="display-inline">
+          <div class="import-btn-image">
             <a href="javascript:void(0);" ng-click="uploadURL()" class="fa fa-link">
-              <p>Add from URL</p>
+              <p class="modal-body-import-desc">Add from URL</p>
             </a>
           </div>
         </div>
@@ -64,17 +65,15 @@ limitations under the License.
         </div>
 
       </div>
-      <div class="modal-footer">
-        <div ng-show="note.step2">
-          <button type="button" id="importBackButton"
-                  class="btn btn-default"
-                  ng-click="noteimportctrl.importBack()">Back
-          </button>
-          <button type="button" id="importNoteButton"
-                  class="btn btn-default"
-                  ng-click="noteimportctrl.importNote()">Import Note
-          </button>
-        </div>
+      <div class="modal-footer modal-footer-import" ng-show="note.step2">
+        <button type="button" id="importBackButton"
+                class="btn btn-default"
+                ng-click="noteimportctrl.importBack()">Back
+        </button>
+        <button type="button" id="importNoteButton"
+                class="btn btn-default"
+                ng-click="noteimportctrl.importNote()">Import Note
+        </button>
       </div>
     </div>
   </div>

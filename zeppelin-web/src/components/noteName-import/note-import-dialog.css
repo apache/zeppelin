@@ -15,3 +15,56 @@
   font-size: 20px;
   font-weight: 300;
 }
+
+.modal-body-import .note-name-input {
+  margin-left: 7px;
+  margin-right: 7px;
+}
+
+.modal-body-import label {
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.modal-body-import {
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.modal-body-import .import-btn-image-group {
+  margin-top: 4px;
+}
+
+.modal-body-import .import-btn-image a {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 5px;
+  color: #7c828e;
+  cursor: pointer;
+  display: block;
+  float: left;
+  font-size: 98px;
+  text-align: center;
+  text-decoration: none;
+  height: 240px;
+  padding-top: 60px;
+  margin: 0 10px 0px 10px;
+  width: 264px;
+}
+
+.modal-body-import .import-btn-image a:hover {
+  background: #eee;
+}
+
+.modal-body-import .modal-body-import-desc {
+  font-size: 15px;
+  font-weight: 400;
+  margin-top: 30px;
+  color: black;
+  font-family: 'Roboto', sans-serif;
+}
+
+.modal-footer-import {
+  min-height: 65px;
+}

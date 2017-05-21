@@ -455,40 +455,6 @@ This part should be removed when new version of bootstrap handles this issue.
   z-index: 10003 !important;
 }
 
-#noteImportModal .modal-body {
-  min-height: 420px;
-  overflow: hidden;
-}
-
-#noteImportModal .modal-footer {
-  min-height: 65px;
-}
-
-#noteImportModal .display-inline a {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  color: #999;
-  cursor: pointer;
-  display: block;
-  float: left;
-  font-size: 98px;
-  height: 240px;
-  margin: 0 10px 16px;
-  padding-top: 60px;
-  text-align: center;
-  text-decoration: none;
-  width: 264px;
-}
-
-#noteImportModal .display-inline a:hover {
-  background: #eee;
-}
-
-#noteImportModal .display-inline a p {
-  font-size: 14px;
-}
-
 /* ------------------------------------------- */
 /* Slide Top
 /* ------------------------------------------- */
