@@ -28,9 +28,15 @@ limitations under the License.
       <!-- modal body-->
       <div class="modal-body">
         <div class="form-group">
-          <label for="noteName">Note Name</label> <input
-          placeholder="Note name" type="text" class="form-control"
-          id="noteName" ng-model="note.notename" ng-enter="notenamectrl.handleNameEnter()"/><br/>
+          <!-- note name -->
+          <div>
+            <label for="noteName">Note Name</label>
+            <input placeholder="Note name" type="text" class="form-control"
+                   id="noteName" ng-model="note.notename"
+                   ng-enter="notenamectrl.handleNameEnter()" />
+            <br/>
+          </div>
+          <!-- default interpreter -->
           <div ng-show="!notenamectrl.clone">
             <label for="defaultInterpreter">Default Interpreter </label>
             <select ng-model="note.defaultInterpreter"
@@ -40,7 +46,7 @@ limitations under the License.
                     ng-options="option.name for option in interpreterSettings">
             </select>
           </div>
-        </div>
+        </div> <!-- end: form-group -->
         Use '/' to create folders. Example: /NoteDirA/Note1
       </div>
       <div class="modal-footer">
