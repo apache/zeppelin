@@ -35,15 +35,14 @@ limitations under the License.
                    class="form-control note-name-create-input"
                    id="noteName" ng-model="note.notename"
                    ng-enter="notenamectrl.handleNameEnter()" />
-            <br/>
           </div>
           <!-- default interpreter -->
-          <div ng-show="!notenamectrl.clone">
-            <label for="defaultInterpreter">Default Interpreter </label>
-            <select ng-model="note.defaultInterpreter"
-                    class="selectpicker"
+          <div class="btn-group default-interpreter-select" ng-show="!notenamectrl.clone">
+            <label for="defaultInterpreter">Default Interpreter</label>
+            <select id="defaultInterpreter"
                     name="defaultInterpreter"
-                    id="defaultInterpreter"
+                    class="form-control"
+                    ng-model="note.defaultInterpreter"
                     ng-options="option.name for option in interpreterSettings">
             </select>
           </div>

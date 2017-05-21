@@ -26,6 +26,10 @@
 }
 
 .note-name-desc-panel {
-  margin-top: 10px;
+  margin-top: 20px;
   margin-bottom: 4px;
+}
+
+.default-interpreter-select {
+  margin-top: 12px;
 }
