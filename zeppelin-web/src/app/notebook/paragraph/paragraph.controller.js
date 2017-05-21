@@ -647,10 +647,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers)
       $scope.editor.setShowFoldWidgets(false)
       $scope.editor.setHighlightActiveLine(false)
-      $scope.editor.setHighlightGutterLine(false)
       $scope.editor.getSession().setUseWrapMode(true)
       $scope.editor.setTheme('ace/theme/chrome')
       $scope.editor.setReadOnly($scope.isRunning($scope.paragraph))
+      $scope.editor.setHighlightActiveLine($scope.paragraphFocused)
 
       if ($scope.paragraphFocused) {
         let prefix = '%' + getInterpreterName($scope.paragraph.text)
@@ -853,8 +853,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   }
 
-  const handleFocus = function (value, isDigestPass) {
-    $scope.paragraphFocused = value
+  const handleFocus = function (focused, isDigestPass) {
+    $scope.paragraphFocused = focused
+
+    if ($scope.editor) { $scope.editor.setHighlightActiveLine(focused) }
+
     if (isDigestPass === false || isDigestPass === undefined) {
       // Protect against error in case digest is already running
       $timeout(function () {
