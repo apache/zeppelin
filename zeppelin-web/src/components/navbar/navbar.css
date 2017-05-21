@@ -41,3 +41,51 @@
 }
 .navbar-fixed-top.headroom--unpinned { top: -100px; }
 .navbar-fixed-top.headroom--pinned { top: 0; /** `navbar` top */ }
+
+/* About Dialog */
+
+.modal-header-about {
+  background-color: #3071a9;
+  border: 2px solid #3071a9;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.modal-header-about > .close {
+  color: #cfcfcf;
+  opacity: 1;
+}
+
+.modal-header-about > .modal-title {
+  font-weight: 300;
+  font-size: 20px;
+  color: #e8e8e8;
+}
+
+.modal-body-about-version {
+  font-weight: 500;
+}
+
+.modal-body-about {
+  height: 250px;
+  padding: 50px;
+}
+
+.modal-body-about .logo {
+  padding-top: 30px;
+}
+
+.modal-body-about .logo img {
+  width: 95%;
+}
+
+.modal-body-about .content {
+  text-align: center;
+}
+
+.modal-body-about .content h3 {
+  font-family: 'Patua One';
+  color: #3071A9;
+  font-size: 30px;
+  margin: 0 auto;
+}
