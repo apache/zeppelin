@@ -75,7 +75,8 @@ public class ZeppelinRestApi {
       return new JsonResponse<>(Response.Status.OK).build();
     } else {
       return new JsonResponse<>(Response.Status.NOT_ACCEPTABLE,
-          "Not a valid LOG level").build();
+          "Please check LOG level specified. Valid values: DEBUG, ERROR, FATAL, "
+              + "INFO, TRACE, WARN").build();
     }
   }
 }
