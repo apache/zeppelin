@@ -1,0 +1,17 @@
+.modal-header-import {
+  background-color: #3071a9;
+  border: 2px solid #3071a9;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.modal-header-import .close {
+  color: #cfcfcf;
+  opacity: 1;
+}
+
+.modal-header-import .modal-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 300;
+}
