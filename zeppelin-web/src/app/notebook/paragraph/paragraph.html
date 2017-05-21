@@ -16,7 +16,7 @@ limitations under the License.
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
   <div>
-    <div ng-show="paragraph.config.title"
+    <div ng-if="paragraph.config.title"
          id="{{paragraph.id}}_title"
          ng-controller="ElasticInputCtrl as input"
          class="title">
