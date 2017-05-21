@@ -824,28 +824,3 @@ This part should be removed when new version of bootstrap handles this issue.
 .bootstrap-dialog.type-primary .modal-header {
   background: #3071a9;
 }
-
-/* About Zeppelin */
-.about {
-  height: 200px;
-  padding: 25px;
-}
-
-.about .logo {
-  padding-top: 30px;
-}
-
-.about .logo img {
-  width: 95%;
-}
-
-.about .content {
-  text-align: center;
-}
-
-.about .content h3 {
-  font-family: 'Patua One';
-  color: #3071A9;
-  font-size: 30px;
-  margin: 0 auto;
-}

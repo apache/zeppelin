@@ -41,3 +41,29 @@
 }
 .navbar-fixed-top.headroom--unpinned { top: -100px; }
 .navbar-fixed-top.headroom--pinned { top: 0; /** `navbar` top */ }
+
+
+/* About Dialog */
+.about {
+  height: 200px;
+  padding: 25px;
+}
+
+.about .logo {
+  padding-top: 30px;
+}
+
+.about .logo img {
+  width: 95%;
+}
+
+.about .content {
+  text-align: center;
+}
+
+.about .content h3 {
+  font-family: 'Patua One';
+  color: #3071A9;
+  font-size: 30px;
+  margin: 0 auto;
+}
