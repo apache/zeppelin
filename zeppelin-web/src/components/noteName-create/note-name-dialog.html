@@ -11,17 +11,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div id="noteNameModal" class="modal fade" role="dialog" modalvisible previsiblecallback="notenamectrl.preVisible"
+<div id="noteNameModal" class="modal fade" role="dialog"
+     modalvisible previsiblecallback="notenamectrl.preVisible"
      targetinput="noteName" tabindex="-1">
   <div class="modal-dialog">
 
-    <!-- Modal content-->
+    <!-- modal content-->
     <div class="modal-content" id="NotenameCtrl">
-      <div class="modal-header">
+      <!-- modal header -->
+      <div class="modal-header modal-header-note-name">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title" ng-show="!notenamectrl.clone">Create new note</h4>
-        <h4 class="modal-title" ng-show="notenamectrl.clone">Clone note</h4>
+        <h4 class="modal-title" ng-show="!notenamectrl.clone">Create New Note</h4>
+        <h4 class="modal-title" ng-show="notenamectrl.clone">Clone Note</h4>
       </div>
+
+      <!-- modal body-->
       <div class="modal-body">
         <div class="form-group">
           <label for="noteName">Note Name</label> <input

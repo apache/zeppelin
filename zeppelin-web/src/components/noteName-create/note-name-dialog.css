@@ -1,0 +1,17 @@
+.modal-header-note-name {
+  background-color: #3071a9;
+  border: 2px solid #3071a9;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.modal-header-note-name > .modal-title {
+  font-weight: 300;
+  font-size: 20px;
+  color: white;
+}
+
+.modal-header-note-name > .close {
+  color: #cfcfcf;
+  opacity: 1;
+}
