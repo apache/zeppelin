@@ -36,7 +36,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
-
 import org.apache.spark.SecurityManager;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.repl.SparkILoop;
@@ -44,9 +43,12 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.SparkListenerJobStart;
+import org.apache.spark.scheduler.StageInfo;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.spark.ui.jobs.UIData.JobUIData;
+import org.apache.spark.ui.jobs.UIData.StageUIData;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
@@ -58,6 +60,7 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +91,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 public class SparkInterpreter extends Interpreter {
   public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
-  private SparkZeppelinContext z;
+  private static SparkZeppelinContext z;
   private SparkILoop interpreter;
   /**
    * intp - org.apache.spark.repl.SparkIMain (scala 2.10)
@@ -162,6 +165,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   static JobProgressListener setupListeners(SparkContext context) {
+    final SparkZeppelinContext ctx = z;
     JobProgressListener pl = new JobProgressListener(context.getConf()) {
       @Override
       public synchronized void onJobStart(SparkListenerJobStart jobStart) {
@@ -171,6 +175,8 @@ public class SparkInterpreter extends Interpreter {
         String jobUrl = getJobUrl(jobId);
         String noteId = Utils.getNoteId(jobGroupId);
         String paragraphId = Utils.getParagraphId(jobGroupId);
+        populateUserInfoInStages(ctx, jobId);
+          
         if (jobUrl != null && noteId != null && paragraphId != null) {
           RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
@@ -179,6 +185,32 @@ public class SparkInterpreter extends Interpreter {
           infos.put("tooltip", "View in Spark web UI");
           if (eventClient != null) {
             eventClient.onParaInfosReceived(noteId, paragraphId, infos);
+          }
+        }
+      }
+
+      private void populateUserInfoInStages(final SparkZeppelinContext ctx, int jobId) {
+        Option<JobUIData> jobUIDataOption = this.jobIdToData().get(jobId);
+        JobUIData jobUIData = jobUIDataOption.get();
+        Seq<Object> stageIds = jobUIData.stageIds();
+        Iterator<Object> iterator = stageIds.iterator();
+        while (iterator.hasNext()) {
+          Object stageId = iterator.next();
+          StageInfo info = stageIdToInfo().getOrElse(stageId, null);
+          Option<StageUIData> stageData = stageIdToData().get(
+              new Tuple2<Object, Object>(info.stageId(), info.attemptId()));
+          StageUIData stageUIData = stageData.get();
+          if (stageUIData != null) {
+            Option<String> description = stageUIData.description();
+            String desc = description.get();
+            InterpreterContext interpreterContext = ctx.getInterpreterContext();
+            AuthenticationInfo authenticationInfo = interpreterContext.getAuthenticationInfo();
+            String user = "";
+            if (authenticationInfo != null) {
+              user = authenticationInfo.getUser();
+            }
+            String newDesc = desc + ":" + user;
+            stageUIData.description_$eq(new Some<String>(newDesc));
           }
         }
       }
