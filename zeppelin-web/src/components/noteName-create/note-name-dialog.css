@@ -1,0 +1,49 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.modal-header-note-name {
+  background-color: #3071a9;
+  border: 2px solid #3071a9;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.modal-header-note-name > .modal-title {
+  font-weight: 300;
+  font-size: 20px;
+  color: white;
+}
+
+.modal-header-note-name > .close {
+  color: #cfcfcf;
+  opacity: 1;
+}
+
+.modal-body-note-name label {
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.note-name-create-input {
+  margin-top: 5px;
+}
+
+.note-name-desc-panel {
+  margin-top: 20px;
+  margin-bottom: 4px;
+}
+
+.default-interpreter-select {
+  margin-top: 12px;
+}
