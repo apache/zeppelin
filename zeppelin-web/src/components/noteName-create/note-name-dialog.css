@@ -15,3 +15,12 @@
   color: #cfcfcf;
   opacity: 1;
 }
+
+.modal-body-note-name label {
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.note-name-create-input {
+  margin-top: 5px;
+}

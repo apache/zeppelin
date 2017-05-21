@@ -26,12 +26,13 @@ limitations under the License.
       </div>
 
       <!-- modal body-->
-      <div class="modal-body">
+      <div class="modal-body modal-body-note-name">
         <div class="form-group">
           <!-- note name -->
           <div>
             <label for="noteName">Note Name</label>
-            <input placeholder="Note name" type="text" class="form-control"
+            <input placeholder="Insert Note Name" type="text"
+                   class="form-control note-name-create-input"
                    id="noteName" ng-model="note.notename"
                    ng-enter="notenamectrl.handleNameEnter()" />
             <br/>
@@ -47,7 +48,7 @@ limitations under the License.
             </select>
           </div>
         </div> <!-- end: form-group -->
-        Use '/' to create folders. Example: /NoteDirA/Note1
+        <div>Use '/' to create folders. Example: /NoteDirA/Note1</div>
       </div>
       <div class="modal-footer">
         <button type="button" id="createNoteButton"
