@@ -17,6 +17,7 @@
 
 import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
+import 'angular-viewport-watch/angular-viewport-watch.js'
 
 import 'angular-ui-grid/ui-grid.css'
 import 'angular-ui-grid'
@@ -40,6 +41,7 @@ const requiredModules = [
   'focus-if',
   'ngResource',
   'ngclipboard',
+  'angularViewportWatch',
   'ui.grid',
   'ui.grid.exporter',
   'ui.grid.edit', 'ui.grid.rowEdit',
