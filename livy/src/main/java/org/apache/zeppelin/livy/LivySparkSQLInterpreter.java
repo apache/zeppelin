@@ -240,6 +240,15 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   }
 
   @Override
+  public int getProgress(InterpreterContext context) {
+    if (this.sparkInterpreter != null) {
+      return this.sparkInterpreter.getProgress(context);
+    } else {
+      return 0;
+    }
+  }
+
+  @Override
   protected String extractAppId() throws LivyException {
     // it wont' be called because it would delegate to LivySparkInterpreter
     throw new UnsupportedOperationException();

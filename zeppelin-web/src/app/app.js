@@ -19,6 +19,9 @@ import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
 import 'angular-viewport-watch/angular-viewport-watch.js'
 
+import 'angular-ui-grid/ui-grid.css'
+import 'angular-ui-grid'
+
 const requiredModules = [
   'ngCookies',
   'ngAnimate',
@@ -39,6 +42,16 @@ const requiredModules = [
   'ngResource',
   'ngclipboard',
   'angularViewportWatch'
+  'ui.grid',
+  'ui.grid.exporter',
+  'ui.grid.edit', 'ui.grid.rowEdit',
+  'ui.grid.selection',
+  'ui.grid.cellNav', 'ui.grid.pinning',
+  'ui.grid.grouping',
+  'ui.grid.emptyBaseLayer',
+  'ui.grid.resizeColumns', 'ui.grid.moveColumns',
+  'ui.grid.pagination',
+  'ui.grid.saveState',
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.

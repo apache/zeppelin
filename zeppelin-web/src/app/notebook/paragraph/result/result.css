@@ -13,10 +13,10 @@
  */
 
 .result-chart-selector {
-    margin-bottom: 10px;
-    position: relative;
-    display: inline-block;
-    vertical-align: middle;
+  margin-bottom: 10px;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .result-chart-selector button {
@@ -45,4 +45,15 @@
   padding: 15px;
   border: 1px solid transparent;
   border-radius: 4px;
+}
+
+
+.input-rotate {
+  width: 30px;
+  height: 20px;
+  line-height: 10px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px !important;
+  font-weight: 400;
+  text-align: center;
 }
