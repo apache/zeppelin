@@ -229,7 +229,8 @@ public class InterpreterOutput extends OutputStream {
               return;
             }
           }
-          // not a defined display system, probably a spell type
+          // not a defined display system, probably a spell type.
+          logger.info("Found unknown displaySystem:[" + displaySystem + "] - We will consider it is a SPELL and will return SPELL as result type.");
           setType(InterpreterResult.Type.SPELL);
           buffer.write(displaySystem.getBytes());
           flushBuffer = true;
