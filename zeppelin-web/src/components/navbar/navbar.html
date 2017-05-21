@@ -112,19 +112,19 @@ limitations under the License.
     </div>
   </div>
 </headroom>
-<div id="aboutModal" class="modal fade" role="dialog"
-     tabindex="-1">
-  <div class="modal-dialog">
 
-    <!-- Modal content-->
-    <div class="modal-content" id="NoteImportCtrl" ng-init="NoteImportInit">
-      <div class="modal-header">
+<!-- about dialog -->
+<div id="aboutModal" class="modal fade" role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- about dialog header -->
+      <div class="modal-header modal-header-about">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
         <h4 class="modal-title">About Zeppelin</h4>
       </div>
-      <div class="modal-body">
 
-        <div class="row about">
+      <!-- about dialog body -->
+      <div class="modal-body modal-body-about">
           <div class="hidden-xs col-sm-4 logo">
             <img src="assets/images/zepLogo.png" alt="Apache Zeppelin" title="Apache Zeppelin" />
           </div>
@@ -132,13 +132,12 @@ limitations under the License.
             <h3>Apache Zeppelin</h3>
             <br/>
             <span id="i18n-14">Version</span>
-            {{zeppelinVersion}}
+            <span class="modal-body-about-version"> {{zeppelinVersion}} </span>
             <br/>
             <br/>
             <a href="http://zeppelin.apache.org/" target="_blank"><span id="i18n-15">Get involved!</span></a>
             <br/>
             <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank"><span id="i18n-16">Licensed under the Apache License, Version 2.0</span></a>
-          </div>
         </div>
 
       </div>
