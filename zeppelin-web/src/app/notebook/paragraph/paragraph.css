@@ -174,11 +174,12 @@
 }
 
 .paragraph .control {
-  background: rgba(255,255,255,0.85);
+  display: inline-block;
   float: right;
+  background: rgba(255,255,255,0.85);
   color: #999;
   font-size: 12px;
-  margin-bottom: 3px;
+  margin-top: 5px;
 }
 
 .paragraph .control li {
@@ -267,8 +268,11 @@ table.table-shortcut {
 */
 
 .paragraph .title {
-  margin: 0;
+  display: inline-block;
+  float: left;
   font-size: 12px;
+  margin-bottom: 7px;
+  min-height: 24px;
 }
 
 .paragraph .title div {
