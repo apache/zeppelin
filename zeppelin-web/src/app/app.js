@@ -41,7 +41,7 @@ const requiredModules = [
   'focus-if',
   'ngResource',
   'ngclipboard',
-  'angularViewportWatch'
+  'angularViewportWatch',
   'ui.grid',
   'ui.grid.exporter',
   'ui.grid.edit', 'ui.grid.rowEdit',
