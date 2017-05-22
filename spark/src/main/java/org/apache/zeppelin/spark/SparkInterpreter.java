@@ -905,14 +905,17 @@ public class SparkInterpreter extends Interpreter {
 
       interpret("import org.apache.spark.SparkContext._");
 
+      if (Utils.isScala2_10()) {
+        // see https://issues.apache.org/jira/browse/SPARK-14146
+        System.setProperty("spark.repl.fallback", "true");
+      }
+
       if (importImplicit()) {
         if (Utils.isSpark2()) {
           interpret("import spark.implicits._");
           interpret("import spark.sql");
           interpret("import org.apache.spark.sql.functions._");
         } else {
-          // see https://issues.apache.org/jira/browse/SPARK-14146
-          System.setProperty("spark.repl.fallback", "true");
           if (sparkVersion.oldSqlContextImplicits()) {
             interpret("import sqlContext._");
           } else {
@@ -1198,23 +1201,14 @@ public class SparkInterpreter extends Interpreter {
     out.setInterpreterOutput(replOutput);
     context.out.clear();
 
-    scala.tools.nsc.interpreter.Results.Result res;
     try {
-      res = interpret(code);
+      scala.tools.nsc.interpreter.Results.Result res = interpret(code);
 
       Code r = getResultCode(res);
 
       if (r == Code.ERROR) {
         return new InterpreterResult(r, "");
-      }
-
-      // make sure code does not finish with comment
-      if (r == Code.INCOMPLETE) {
-        res = interpret(code + "\nprint(\"\")");
-        r = getResultCode(res);
-      }
-
-      if (r == Code.INCOMPLETE) {
+      } else if (r == Code.INCOMPLETE) {
         return new InterpreterResult(r, "Incomplete expression");
       } else {
         putLatestVarInResourcePool(context);
