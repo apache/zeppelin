@@ -499,7 +499,6 @@ public class JDBCInterpreter extends Interpreter {
     StringBuilder query = new StringBuilder();
     char character;
 
-    Boolean backslash = false;
     Boolean multiLineComment = false;
     Boolean singleLineComment = false;
     Boolean quoteString = false;
@@ -507,12 +506,6 @@ public class JDBCInterpreter extends Interpreter {
 
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
-
-      if (backslash) {
-        query.append(character);
-        backslash = false;
-        continue;
-      }
 
       if ((singleLineComment && (character == '\n' || item == sql.length() - 1))
           || (multiLineComment && character == '/' && sql.charAt(item - 1) == '*')) {
@@ -528,10 +521,6 @@ public class JDBCInterpreter extends Interpreter {
         continue;
       }
 
-      if (character == '\\') {
-        backslash = true;
-      }
-
       if (character == '\'') {
         if (quoteString) {
           quoteString = false;
@@ -541,7 +530,7 @@ public class JDBCInterpreter extends Interpreter {
       }
 
       if (character == '"') {
-        if (doubleQuoteString) {
+        if (doubleQuoteString && item > 0) {
           doubleQuoteString = false;
         } else if (!quoteString) {
           doubleQuoteString = true;
@@ -561,7 +550,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
-      if (character == ';' && !backslash && !quoteString && !doubleQuoteString) {
+      if (character == ';' && !quoteString && !doubleQuoteString) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
