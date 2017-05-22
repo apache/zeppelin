@@ -9,7 +9,6 @@
         "propertyName": "elasticsearch.host",
         "defaultValue": "localhost",
         "description": "The host for Elasticsearch",
-        "widget": "input",
         "type": "string"
       },
       "elasticsearch.port": {
@@ -17,7 +16,6 @@
         "propertyName": "elasticsearch.port",
         "defaultValue": "9300",
         "description": "The port for Elasticsearch",
-        "widget": "input",
         "type": "number"
       },
       "elasticsearch.client.type": {
@@ -25,7 +23,6 @@
         "propertyName": "elasticsearch.client.type",
         "defaultValue": "transport",
         "description": "The type of client for Elasticsearch (transport or http)",
-        "widget": "input",
         "type": "string"
       },
       "elasticsearch.cluster.name": {
@@ -33,7 +30,6 @@
         "propertyName": "elasticsearch.cluster.name",
         "defaultValue": "elasticsearch",
         "description": "The cluster name for Elasticsearch",
-        "widget": "input",
         "type": "string"
       },
       "elasticsearch.result.size": {
@@ -41,7 +37,6 @@
         "propertyName": "elasticsearch.result.size",
         "defaultValue": "10",
         "description": "The size of the result set of a search query",
-        "widget": "input",
         "type": "number"
       },
       "elasticsearch.basicauth.username": {
@@ -49,7 +44,6 @@
         "propertyName": "elasticsearch.basicauth.username",
         "defaultValue": "",
         "description": "Username for a basic authentication",
-        "widget": "input",
         "type": "string"
       },
       "elasticsearch.basicauth.password": {
@@ -57,7 +51,6 @@
         "propertyName": "elasticsearch.basicauth.password",
         "defaultValue": "",
         "description": "Password for a basic authentication",
-        "widget": "password",
         "type": "password"
       }
     },

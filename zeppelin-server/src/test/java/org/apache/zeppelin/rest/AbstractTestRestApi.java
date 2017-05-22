@@ -46,7 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
-import org.apache.zeppelin.interpreter.InterpreterPropertyWidget;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
@@ -206,18 +205,14 @@ public abstract class AbstractTestRestApi {
       if ("true".equals(System.getenv("CI"))) {
         // set spark master and other properties
         sparkProperties.put("master",
-            new InterpreterProperty("master", "local[2]", InterpreterPropertyWidget.TEXTAREA.getValue(),
-                InterpreterPropertyType.STRING.getValue()));
+            new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
         sparkProperties.put("spark.cores.max",
-            new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyWidget.TEXTAREA.getValue(),
-                InterpreterPropertyType.STRING.getValue()));
+            new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
         sparkProperties.put("zeppelin.spark.useHiveContext",
-            new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyWidget.CHECKBOX.getValue(),
-                InterpreterPropertyType.BOOLEAN.getValue()));
+            new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
         // set spark home for pyspark
         sparkProperties.put("spark.home",
-            new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyWidget.TEXTAREA.getValue(),
-                InterpreterPropertyType.STRING.getValue()));
+            new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.TEXTAREA.getValue()));
 
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
@@ -228,23 +223,18 @@ public abstract class AbstractTestRestApi {
         if (sparkHome != null) {
           if (System.getenv("SPARK_MASTER") != null) {
             sparkProperties.put("master",
-                new InterpreterProperty("master", System.getenv("SPARK_MASTER"), InterpreterPropertyWidget.TEXTAREA.getValue(),
-                    InterpreterPropertyType.STRING.getValue()));
+                new InterpreterProperty("master", System.getenv("SPARK_MASTER"), InterpreterPropertyType.TEXTAREA.getValue()));
           } else {
             sparkProperties.put("master",
-                new InterpreterProperty("master", "local[2]", InterpreterPropertyWidget.TEXTAREA.getValue(),
-                    InterpreterPropertyType.STRING.getValue()));
+                new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
           }
           sparkProperties.put("spark.cores.max",
-              new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyWidget.TEXTAREA.getValue(),
-                  InterpreterPropertyType.STRING.getValue()));
+              new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
           // set spark home for pyspark
           sparkProperties.put("spark.home",
-              new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyWidget.TEXTAREA.getValue(),
-                  InterpreterPropertyType.STRING.getValue()));
+              new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.TEXTAREA.getValue()));
           sparkProperties.put("zeppelin.spark.useHiveContext",
-              new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyWidget.CHECKBOX.getValue(),
-                  InterpreterPropertyType.BOOLEAN.getValue()));
+              new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
           pySpark = true;
           sparkR = true;
         }

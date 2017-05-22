@@ -87,14 +87,12 @@ So, copying `notebook` and `conf` directory should be enough.
            "spark.executor.memory": {
              "name": "spark.executor.memory",
              "value": "",
-             "widget": "input",
              "type": "string"
             },
            "zeppelin.spark.concurrentSQL": {
              "name": "zeppelin.spark.concurrentSQL", 
              "value": false,
-             "widget": "checkbox",
-             "type": "boolean"
+             "type": "checkbox"
            ...
          }
    ```

@@ -9,7 +9,6 @@
         "propertyName": "zeppelin.bigquery.project_id",
         "defaultValue": " ",
         "description": "Google Project ID",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.bigquery.wait_time": {
@@ -17,7 +16,6 @@
         "propertyName": "zeppelin.bigquery.wait_time",
         "defaultValue": "5000",
         "description": "Query timeout in Milliseconds",
-        "widget": "input",
         "type": "number"
       },
       "zeppelin.bigquery.max_no_of_rows": {
@@ -25,7 +23,6 @@
         "propertyName": "zeppelin.bigquery.max_no_of_rows",
         "defaultValue": "100000",
         "description": "Maximum number of rows to fetch from BigQuery",
-        "widget": "input",
         "type": "number"
       }
     },

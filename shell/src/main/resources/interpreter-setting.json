@@ -9,7 +9,6 @@
         "propertyName": "shell.command.timeout.millisecs",
         "defaultValue": "60000",
         "description": "Shell command time out in millisecs. Default = 60000",
-        "widget": "input",
         "type": "number"
       },
       "zeppelin.shell.auth.type": {
@@ -17,7 +16,6 @@
         "propertyName": "zeppelin.shell.auth.type",
         "defaultValue": "",
         "description": "If auth type is needed, Example: KERBEROS",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.shell.keytab.location": {
@@ -25,7 +23,6 @@
         "propertyName": "zeppelin.shell.keytab.location",
         "defaultValue": "",
         "description": "Kerberos keytab location",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.shell.principal": {
@@ -33,7 +30,6 @@
         "propertyName": "zeppelin.shell.principal",
         "defaultValue": "",
         "description": "Kerberos principal",
-        "widget": "input",
         "type": "string"
       }
     },

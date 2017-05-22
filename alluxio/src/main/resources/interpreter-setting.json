@@ -9,7 +9,6 @@
         "propertyName": "alluxio.master.hostname",
         "defaultValue": "localhost",
         "description": "Alluxio master hostname",
-        "widget": "input",
         "type": "string"
       },
       "alluxio.master.port": {
@@ -17,7 +16,6 @@
         "propertyName": "alluxio.master.port",
         "defaultValue": "19998",
         "description": "Alluxio master port",
-        "widget": "input",
         "type": "number"
       }
     },

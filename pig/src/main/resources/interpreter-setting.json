@@ -9,7 +9,6 @@
         "propertyName": "zeppelin.pig.execType",
         "defaultValue": "mapreduce",
         "description": "local | mapreduce | tez",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.pig.includeJobStats": {
@@ -17,8 +16,7 @@
         "propertyName": "zeppelin.pig.includeJobStats",
         "defaultValue": false,
         "description": "flag to include job stats in output",
-        "widget": "checkbox",
-        "type": "boolean"
+        "type": "checkbox"
       }
     },
     "editor": {
@@ -36,7 +34,6 @@
         "propertyName": "zeppelin.pig.execType",
         "defaultValue": "mapreduce",
         "description": "local | mapreduce | tez",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.pig.maxResult": {
@@ -44,7 +41,6 @@
         "propertyName": "zeppelin.pig.maxResult",
         "defaultValue": "1000",
         "description": "max row number for %pig.query",
-        "widget": "input",
         "type": "number"
       }
     },

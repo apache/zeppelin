@@ -38,6 +38,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
@@ -45,7 +46,6 @@ import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.utils.InterpreterPropertyWidgetUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -295,13 +295,12 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get available widgets for property
+   * Get available types for property
    */
   @GET
-  @Path("property/widgets")
-  public Response listInterpreterPropertyWidgets() {
-    return new JsonResponse<>(Status.OK, InterpreterPropertyWidgetUtils.getAvailableWidgets())
-        .build();
+  @Path("property/types")
+  public Response listInterpreterPropertyTypes() {
+    return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
   }
 
 }

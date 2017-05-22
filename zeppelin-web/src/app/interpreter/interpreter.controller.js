@@ -26,7 +26,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showRepositoryInfo = false
   $scope.searchInterpreter = ''
   $scope._ = _
-  $scope.interpreterPropertyWidgets = []
+  $scope.interpreterPropertyTypes = []
   ngToast.dismiss()
 
   $scope.openPermissions = function () {
@@ -144,16 +144,16 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   let getAvailableInterpreterPropertyWidgets = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/widgets')
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
       .success(function (data, status, headers, config) {
-        $scope.interpreterPropertyWidgets = data.body
+        $scope.interpreterPropertyTypes = data.body
       }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message)
       })
   }
 
   let emptyNewProperty = function(object) {
-    angular.extend(object, {propertyValue: '', propertyKey: '', propertyWidget: $scope.interpreterPropertyWidgets[0]})
+    angular.extend(object, {propertyValue: '', propertyKey: '', propertyType: $scope.interpreterPropertyTypes[0]})
   }
 
   let emptyNewDependency = function (object) {
@@ -194,8 +194,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   }
 
-  $scope.defaultValueByWidget = function (setting) {
-    if (setting.propertyWidget.widget === 'checkbox' && setting.propertyWidget.type === 'boolean') {
+  $scope.defaultValueByType = function (setting) {
+    if (setting.propertyType === 'checkbox') {
       setting.propertyValue = false
       return
     }
@@ -429,7 +429,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         properties[key] = {
           value: intpInfo[key].defaultValue,
           description: intpInfo[key].description,
-          widget: intpInfo[key].widget,
           type: intpInfo[key].type
         }
       }
@@ -509,7 +508,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     for (let p in newSetting.properties) {
       newProperties[p] = {
         value: newSetting.properties[p].value,
-        widget: newSetting.properties[p].widget,
         type: newSetting.properties[p].type,
         name: p
       }
@@ -584,8 +582,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       }
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
         value: $scope.newInterpreterSetting.propertyValue,
-        widget: $scope.newInterpreterSetting.propertyWidget.widget,
-        type: $scope.newInterpreterSetting.propertyWidget.type
+        type: $scope.newInterpreterSetting.propertyType
       }
       emptyNewProperty($scope.newInterpreterSetting)
     } else {
@@ -598,7 +595,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       }
 
       setting.properties[setting.propertyKey] =
-        {value: setting.propertyValue, widget: setting.propertyWidget.widget, type: setting.propertyWidget.type}
+        {value: setting.propertyValue, type: setting.propertyType}
 
       emptyNewProperty(setting)
     }

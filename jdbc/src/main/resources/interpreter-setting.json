@@ -9,7 +9,6 @@
         "propertyName": "default.url",
         "defaultValue": "jdbc:postgresql://localhost:5432/",
         "description": "The URL for JDBC.",
-        "widget": "input",
         "type": "string"
       },
       "default.user": {
@@ -17,7 +16,6 @@
         "propertyName": "default.user",
         "defaultValue": "gpadmin",
         "description": "The JDBC user name",
-        "widget": "input",
         "type": "string"
       },
       "default.password": {
@@ -25,7 +23,6 @@
         "propertyName": "default.password",
         "defaultValue": "",
         "description": "The JDBC user password",
-        "widget": "password",
         "type": "password"
       },
       "default.driver": {
@@ -33,7 +30,6 @@
         "propertyName": "default.driver",
         "defaultValue": "org.postgresql.Driver",
         "description": "JDBC Driver Name",
-        "widget": "input",
         "type": "string"
       },
       "default.completer.schemaFilters": {
@@ -41,23 +37,20 @@
         "propertyName": "default.completer.schemaFilters",
         "defaultValue": "",
         "description": "Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)",
-        "widget": "textarea",
-        "type": "string"
+        "type": "textarea"
       },
       "default.precode": {
         "envName": null,
         "propertyName": "zeppelin.jdbc.precode",
         "defaultValue": "",
         "description": "SQL which executes while opening connection",
-        "widget": "textarea",
-        "type": "string"
+        "type": "textarea"
       },
       "common.max_count": {
         "envName": null,
         "propertyName": "common.max_count",
         "defaultValue": "1000",
         "description": "Max number of SQL result to display.",
-        "widget": "input",
         "type": "number"
       },
       "zeppelin.jdbc.auth.type": {
@@ -65,7 +58,6 @@
         "propertyName": "zeppelin.jdbc.auth.type",
         "defaultValue": "",
         "description": "If auth type is needed, Example: KERBEROS",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.jdbc.concurrent.use": {
@@ -73,15 +65,13 @@
         "propertyName": "zeppelin.jdbc.concurrent.use",
         "defaultValue": true,
         "description": "Use parallel scheduler",
-        "widget": "checkbox",
-        "type": "boolean"
+        "type": "checkbox"
       },
       "zeppelin.jdbc.concurrent.max_connection": {
         "envName": null,
         "propertyName": "zeppelin.jdbc.concurrent.max_connection",
         "defaultValue": "10",
         "description": "Number of concurrent execution",
-        "widget": "input",
         "type": "number"
       },
       "zeppelin.jdbc.keytab.location": {
@@ -89,7 +79,6 @@
         "propertyName": "zeppelin.jdbc.keytab.location",
         "defaultValue": "",
         "description": "Kerberos keytab location",
-        "widget": "input",
         "type": "string"
       },
       "zeppelin.jdbc.principal": {
@@ -97,7 +86,6 @@
         "propertyName": "zeppelin.jdbc.principal",
         "defaultValue": "",
         "description": "Kerberos principal",
-        "widget": "input",
         "type": "string"
       }
     },

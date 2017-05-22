@@ -425,8 +425,7 @@ public class InterpreterSetting {
           StringMap newProperty = new StringMap();
           newProperty.put("name", entry.getKey());
           newProperty.put("value", entry.getValue());
-          newProperty.put("widget", InterpreterPropertyWidget.TEXTAREA.getValue());
-          newProperty.put("type", InterpreterPropertyType.STRING.getValue());
+          newProperty.put("type", InterpreterPropertyType.TEXTAREA.getValue());
           newProperties.put(entry.getKey().toString(), newProperty);
         } else {
           // already converted

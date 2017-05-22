@@ -20,15 +20,13 @@
         "propertyName": "zeppelin.scio.argz",
         "defaultValue": "--runner=InProcessPipelineRunner",
         "description": "Scio interpreter wide arguments",
-        "widget": "textarea",
-        "type": "string"
+        "type": "textarea"
       },
       "zeppelin.scio.maxResult": {
         "envName": "ZEPPELIN_SCIO_MAXRESULT",
         "propertyName": "zeppelin.scio.maxResult",
         "defaultValue": "1000",
         "description": "Max number of SCollection results to display.",
-        "widget": "input",
         "type": "number"
       }
     },

@@ -17,16 +17,20 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Widgets of interpreter properties
+ * Types of interpreter properties
  */
 public enum InterpreterPropertyType {
 
+  TEXTAREA("textarea"),
   STRING("string"),
   NUMBER("number"),
   URL("url"),
   PASSWORD("password"),
-  BOOLEAN("boolean");
+  CHECKBOX("checkbox");
 
   private String value;
 
@@ -45,5 +49,14 @@ public enum InterpreterPropertyType {
       }
     }
     return null;
+  }
+
+  public static List<String> getTypes() {
+    List<String> types = new ArrayList<>();
+    InterpreterPropertyType[] values = values();
+    for (InterpreterPropertyType interpreterPropertyType : values) {
+      types.add(interpreterPropertyType.getValue());
+    }
+    return types;
   }
 }

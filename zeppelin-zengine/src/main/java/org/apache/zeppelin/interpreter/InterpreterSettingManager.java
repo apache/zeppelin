@@ -175,17 +175,14 @@ public class InterpreterSettingManager {
         Map<String, InterpreterProperty> properties = new HashMap();
         for (String key : p.keySet()) {
           StringMap<String> fields = (StringMap<String>) p.get(key);
-          // default 'text'
-          String widget = InterpreterPropertyWidget.TEXTAREA.getValue();
-          String type = InterpreterPropertyType.STRING.getValue();
+          String type = InterpreterPropertyType.TEXTAREA.getValue();
           try {
-            widget = InterpreterPropertyWidget.byValue(fields.get("widget")).getValue();
             type = InterpreterPropertyType.byValue(fields.get("type")).getValue();
           } catch (Exception e) {
-            logger.warn("Incorrect widget or type of property {} in settings {}", key,
+            logger.warn("Incorrect type of property {} in settings {}", key,
                 setting.getId());
           }
-          properties.put(key, new InterpreterProperty(key, fields.get("value"), widget, type));
+          properties.put(key, new InterpreterProperty(key, fields.get("value"), type));
         }
         setting.setProperties(properties);
         
@@ -511,7 +508,7 @@ public class InterpreterSettingManager {
     for (String key : defaultProperties.keySet()) {
       DefaultInterpreterProperty defaultInterpreterProperty = defaultProperties.get(key);
       properties.put(key, new InterpreterProperty(key, defaultInterpreterProperty.getValue(),
-          defaultInterpreterProperty.getWidget(), defaultInterpreterProperty.getType()));
+          defaultInterpreterProperty.getType()));
     }
     return properties;
   }

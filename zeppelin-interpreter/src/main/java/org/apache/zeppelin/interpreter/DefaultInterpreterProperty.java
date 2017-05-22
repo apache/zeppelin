@@ -25,33 +25,33 @@ public class DefaultInterpreterProperty {
   private String propertyName;
   private Object defaultValue;
   private String description;
-  private String widget;
   private String type;
 
   public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
-                                String description, String widget,
-                                String type) {
+                                String description, String type) {
     this.envName = envName;
     this.propertyName = propertyName;
     this.defaultValue = defaultValue;
     this.description = description;
-    this.widget = widget;
     this.type = type;
   }
 
-  public DefaultInterpreterProperty(Object defaultValue, String description,
-      String widget, String type) {
-    this(null, null, defaultValue, description, widget, type);
+  public DefaultInterpreterProperty(Object defaultValue, String description, String type) {
+    this(null, null, defaultValue, description, type);
   }
 
   public DefaultInterpreterProperty(Object defaultValue, String description) {
-    this(null, null, defaultValue, description, InterpreterPropertyWidget.TEXTAREA.getValue(),
-        InterpreterPropertyType.STRING.getValue());
+    this(null, null, defaultValue, description, InterpreterPropertyType.TEXTAREA.getValue());
   }
 
   public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue) {
-    this(envName, propertyName, defaultValue, null, InterpreterPropertyWidget.TEXTAREA.getValue(),
-        InterpreterPropertyType.STRING.getValue());
+    this(envName, propertyName, defaultValue, null, InterpreterPropertyType.TEXTAREA.getValue());
+  }
+
+  public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue,
+      String description) {
+    this(envName, propertyName, defaultValue, description,
+        InterpreterPropertyType.TEXTAREA.getValue());
   }
 
   public String getEnvName() {
@@ -84,14 +84,6 @@ public class DefaultInterpreterProperty {
 
   public void setDescription(String description) {
     this.description = description;
-  }
-
-  public String getWidget() {
-    return widget;
-  }
-
-  public void setWidget(String widget) {
-    this.widget = widget;
   }
 
   public String getType() {
@@ -131,6 +123,6 @@ public class DefaultInterpreterProperty {
   @Override
   public String toString() {
     return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " +
-            "widget=%s, type=%s}", envName, propertyName, defaultValue, description, widget, type);
+            "type=%s}", envName, propertyName, defaultValue, description, type);
   }
 }

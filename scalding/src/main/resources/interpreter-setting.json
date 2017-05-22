@@ -8,14 +8,12 @@
         "envName": null,
         "defaultValue": "--local --repl",
         "description": "Arguments for scalding REPL",
-        "widget": "textarea",
-        "type": "string"
+        "type": "textarea"
       },
       "max.open.instances": {
         "envName": null,
         "defaultValue": "50",
         "description": "Maximum number of open interpreter instances",
-        "widget": "input",
         "type": "number"
       }
     }
