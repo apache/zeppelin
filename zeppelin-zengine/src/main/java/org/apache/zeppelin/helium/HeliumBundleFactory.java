@@ -129,6 +129,7 @@ public class HeliumBundleFactory {
       YarnInstaller yarnInstaller = frontEndPluginFactory.getYarnInstaller(getProxyConfig());
       yarnInstaller.setYarnVersion(YARN_VERSION);
       yarnInstaller.install();
+      yarnCacheDir.mkdirs();
       String yarnCacheDirPath = yarnCacheDir.getAbsolutePath();
       yarnCommand(frontEndPluginFactory, "config set cache-folder " + yarnCacheDirPath);
 
