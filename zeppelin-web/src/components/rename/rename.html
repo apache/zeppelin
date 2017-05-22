@@ -27,7 +27,7 @@ limitations under the License.
         <div class="form-group" ng-class="{'has-error': !isValid}">
           <input type="text" class="form-control"
                  ng-model="params.newName" ng-change="validate()"
-                 ng-keyup="$event.keyCode == 13 && isValid && rename()" />
+                 ng-enter="isValid && rename()" />
         </div>
       </div>
       <div class="modal-footer">
