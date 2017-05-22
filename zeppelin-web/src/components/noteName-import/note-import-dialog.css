@@ -39,6 +39,7 @@
   font-size: 15px;
   font-weight: 400;
   margin-bottom: 10px;
+  margin-top: 15px;
 }
 
 .modal-body-import {
@@ -50,10 +51,16 @@
   margin-top: 4px;
 }
 
+.modal-body-import .import-btn-image {
+  display: inline-block;
+  margin-left: 8px;
+}
+
 .modal-body-import .import-btn-image a {
   background: #fff;
   border: 1px solid #e6e6e6;
-  border-radius: 5px;
+  /*border-radius: 20px;*/
+  border-radius: 20%;
   color: #7c828e;
   cursor: pointer;
   display: block;
@@ -64,7 +71,7 @@
   height: 240px;
   padding-top: 60px;
   margin: 0 10px 0px 10px;
-  width: 264px;
+  width: 250px;
 }
 
 .modal-body-import .import-btn-image a:hover {

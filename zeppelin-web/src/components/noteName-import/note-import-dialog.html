@@ -44,11 +44,11 @@ limitations under the License.
             <a class="fa fa-cloud-upload import-file-upload" ng-click="uploadFile()">
               <p class="modal-body-import-desc">Select JSON File </p>
             </a>
-          </div>
-          <div style="display: none">
-            <input class="form-control note-name-input" id="noteImportFile"
-                   placeholder="Note name" type="file"
-                   ng-model="note.importFile" onchange="angular.element(this).scope().importFile(this)" />
+            <div style="display: none">
+              <input class="form-control note-name-input" id="noteImportFile"
+                     placeholder="Note name" type="file"
+                     ng-model="note.importFile" onchange="angular.element(this).scope().importFile(this)" />
+            </div>
           </div>
           <div class="import-btn-image">
             <a href="javascript:void(0);" ng-click="uploadURL()" class="fa fa-link">
