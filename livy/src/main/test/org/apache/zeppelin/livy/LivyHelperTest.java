@@ -111,4 +111,28 @@ public class LivyHelperTest {
     }
   }
 
+  @Test
+  public void checkInterpretMultilineUnix() {
+    try {
+      InterpreterResult result = livyHelper.interpret("print(1)\nprint(2)", interpreterContext, interpreter.userSessionMap);
+
+      collector.checkThat("check sessionId", InterpreterResult.Code.SUCCESS, CoreMatchers.equalTo(result.code()));
+
+    } catch (Exception e) {
+      collector.addError(e);
+    }
+  }
+
+  @Test
+  public void checkInterpretMultilineWindows() {
+    try {
+      InterpreterResult result = livyHelper.interpret("print(1)\r\nprint(2)", interpreterContext, interpreter.userSessionMap);
+
+      collector.checkThat("check sessionId", InterpreterResult.Code.SUCCESS, CoreMatchers.equalTo(result.code()));
+
+    } catch (Exception e) {
+      collector.addError(e);
+    }
+  }
+
 }
