@@ -818,20 +818,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
           switch (keyCode) {
             case 38:
-              keyBindingEditorFocusAction(ROW_UP)
+              if (!e.shiftKey) { keyBindingEditorFocusAction(ROW_UP) }
               break
             case 80:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_UP)
-              }
+              if (e.ctrlKey && !e.altKey) { keyBindingEditorFocusAction(ROW_UP) }
               break
             case 40:
-              keyBindingEditorFocusAction(ROW_DOWN)
+              if (!e.shiftKey) { keyBindingEditorFocusAction(ROW_DOWN) }
               break
             case 78:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_DOWN)
-              }
+              if (e.ctrlKey && !e.altKey) { keyBindingEditorFocusAction(ROW_DOWN) }
               break
           }
         }
