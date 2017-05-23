@@ -17,10 +17,6 @@
 
 package org.apache.zeppelin.interpreter.mock;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -29,12 +25,18 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-public class MockInterpreter11 extends Interpreter{
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+public class MockInterpreter11 extends Interpreter {
   Map<String, Object> vars = new HashMap<>();
 
   public MockInterpreter11(Properties property) {
     super(property);
   }
+
   boolean open;
 
   @Override
@@ -53,7 +55,7 @@ public class MockInterpreter11 extends Interpreter{
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl11: "+st);
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl11: " + st);
   }
 
   @Override
@@ -72,12 +74,12 @@ public class MockInterpreter11 extends Interpreter{
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_" + this.hashCode());
   }
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext) {
     return null;
   }
 }

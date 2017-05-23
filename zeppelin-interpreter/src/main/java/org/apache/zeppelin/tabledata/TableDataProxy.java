@@ -17,7 +17,6 @@
 package org.apache.zeppelin.tabledata;
 
 import org.apache.zeppelin.resource.Resource;
-import org.apache.zeppelin.resource.ResourcePoolUtils;
 
 import java.util.Iterator;
 

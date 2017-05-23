@@ -14,13 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter;
 
-import org.apache.commons.lang.NullArgumentException;
+package org.apache.zeppelin.interpreter.remote;
 
-/**
- * Created InterpreterGroup
- */
-public interface InterpreterGroupFactory {
-  InterpreterGroup createInterpreterGroup(String interpreterGroupId, InterpreterOption option);
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertTrue;
+
+public class RemoteInterpreterUtilsTest {
+
+  @Test
+  public void testFindRandomAvailablePortOnAllLocalInterfaces() throws IOException {
+    assertTrue(RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces() > 0);
+  }
+
 }

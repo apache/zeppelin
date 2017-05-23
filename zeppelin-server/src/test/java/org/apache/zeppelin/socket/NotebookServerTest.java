@@ -30,6 +30,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
@@ -95,7 +96,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
+  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException, InterruptedException {
     // create a notebook
     Note note1 = notebook.createNote(anonymous);
 
@@ -104,7 +105,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
-        interpreterGroup = setting.getInterpreterGroup("anonymous", "sharedProcess");
+        interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
         break;
       }
     }
@@ -114,6 +115,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
     p1.setText("%md start remote interpreter process");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
+
+    // wait for paragraph finished
+    while(true) {
+      if (p1.getStatus() == Job.Status.FINISHED) {
+        break;
+      }
+      Thread.sleep(100);
+    }
 
     // add angularObject
     interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);

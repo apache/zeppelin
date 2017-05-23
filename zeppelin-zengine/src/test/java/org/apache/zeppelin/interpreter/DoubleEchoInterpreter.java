@@ -15,20 +15,45 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.assertTrue;
+package org.apache.zeppelin.interpreter;
 
-import java.io.IOException;
+import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.junit.Test;
 
-public class RemoteInterpreterUtilsTest {
+public class DoubleEchoInterpreter extends Interpreter {
 
-  @Test
-  public void testFindRandomAvailablePortOnAllLocalInterfaces() throws IOException {
-    assertTrue(RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces() > 0);
+  public DoubleEchoInterpreter(Properties property) {
+    super(property);
   }
 
+  @Override
+  public void open() {
+
+  }
+
+  @Override
+  public void close() {
+
+  }
+
+  @Override
+  public InterpreterResult interpret(String st, InterpreterContext context) {
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, st + "," + st);
+  }
+
+  @Override
+  public void cancel(InterpreterContext context) {
+
+  }
+
+  @Override
+  public FormType getFormType() {
+    return null;
+  }
+
+  @Override
+  public int getProgress(InterpreterContext context) {
+    return 0;
+  }
 }
