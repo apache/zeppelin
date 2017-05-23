@@ -17,6 +17,9 @@ import {
   ParagraphStatus, isParagraphRunning,
 } from './paragraph.status'
 
+import moment from 'moment'
+require('moment-duration-format')
+
 const ParagraphExecutor = {
   SPELL: 'SPELL',
   INTERPRETER: 'INTERPRETER',
@@ -983,19 +986,24 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.getExecutionTime = function (pdata) {
-    let timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted)
+    const end = pdata.dateFinished
+    const start = pdata.dateStarted
+    let timeMs = Date.parse(end) - Date.parse(start)
     if (isNaN(timeMs) || timeMs < 0) {
       if ($scope.isResultOutdated(pdata)) {
         return 'outdated'
       }
       return ''
     }
+
+    const durationFormat = moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]')
+    const endFormat = moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A')
+
     let user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user
-    let desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.'
-    if ($scope.isResultOutdated(pdata)) {
-      desc += ' (outdated)'
-    }
+    let desc = `Took ${durationFormat}. Last updated by ${user} at ${endFormat}.`
+
+    if ($scope.isResultOutdated(pdata)) { desc += ' (outdated)' }
+
     return desc
   }
 
