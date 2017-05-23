@@ -39,7 +39,7 @@ public class HeliumBundleFactoryTest {
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private HeliumBundleFactory hbf;
-  static File nodeInstallationDir = new File(
+  private static File nodeInstallationDir = new File(
       System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_nodeCache");
 
   @BeforeClass

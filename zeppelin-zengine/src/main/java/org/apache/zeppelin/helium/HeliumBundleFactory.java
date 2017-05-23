@@ -29,6 +29,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
@@ -38,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -129,6 +132,7 @@ public class HeliumBundleFactory {
       YarnInstaller yarnInstaller = frontEndPluginFactory.getYarnInstaller(getProxyConfig());
       yarnInstaller.setYarnVersion(YARN_VERSION);
       yarnInstaller.install();
+      yarnCacheDir.mkdirs();
       String yarnCacheDirPath = yarnCacheDir.getAbsolutePath();
       yarnCommand(frontEndPluginFactory, "config set cache-folder " + yarnCacheDirPath);
 
@@ -140,8 +144,43 @@ public class HeliumBundleFactory {
   }
 
   private ProxyConfig getProxyConfig() {
-    List<ProxyConfig.Proxy> proxy = new LinkedList<>();
-    return new ProxyConfig(proxy);
+    List<ProxyConfig.Proxy> proxies = new LinkedList<>();
+
+    String httpProxy = StringUtils.isBlank(System.getenv("http_proxy")) ?
+            System.getenv("HTTP_PROXY") : System.getenv("http_proxy");
+
+    String httpsProxy = StringUtils.isBlank(System.getenv("https_proxy")) ?
+            System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
+
+    try {
+      // Order matters, first tries secure proxy
+      proxies.add(generateProxy("secure", new URI(httpsProxy)));
+      proxies.add(generateProxy("insecure",new URI(httpProxy)));
+    } catch (Exception ex) {
+      logger.error(ex.getMessage(), ex);
+    }
+    return new ProxyConfig(proxies);
+  }
+
+  private ProxyConfig.Proxy generateProxy(String proxyId, URI uri) {
+
+    String protocol = uri.getScheme();
+    String host = uri.getHost();
+    int port = uri.getPort() <= 0 ? 80 : uri.getPort();
+
+    String username = null, password = null;
+    if (uri.getUserInfo() != null) {
+      String[] authority = uri.getUserInfo().split(":");
+      if (authority.length == 2) {
+        username = authority[0];
+        password = authority[1];
+      } else if (authority.length == 1) {
+        username = authority[0];
+      }
+    }
+    String nonProxyHosts = StringUtils.isBlank(System.getenv("no_proxy")) ?
+            System.getenv("NO_PROXY") : System.getenv("no_proxy");
+    return new ProxyConfig.Proxy(proxyId, protocol, host, port, username, password, nonProxyHosts);
   }
 
   public void buildAllPackages(List<HeliumPackage> pkgs) throws IOException {
