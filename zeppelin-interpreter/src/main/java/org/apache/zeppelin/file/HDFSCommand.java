@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.file;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.UriBuilder;
@@ -30,7 +31,6 @@ import java.net.URL;
 
 /**
  * Definition and HTTP invocation methods for all WebHDFS commands
- *
  */
 public class HDFSCommand {
 
@@ -99,8 +99,7 @@ public class HDFSCommand {
         path == null ||
         (op.minArgs > 0 &&
             (args == null ||
-                args.length != op.minArgs)))
-    {
+                args.length != op.minArgs))) {
       String a = "";
       a = (op != null) ? a + op.op + "\n" : a;
       a = (path != null) ? a + path + "\n" : a;
@@ -111,11 +110,11 @@ public class HDFSCommand {
   }
 
 
-  public String runCommand(Op op, String path, Arg[] args) throws  Exception {
+  public String runCommand(Op op, String path, Arg[] args) throws Exception {
     return runCommand(op, path, null, args);
   }
 
-  public String runCommand(Op op, String path, byte[] argFile, Arg[] args) throws  Exception {
+  public String runCommand(Op op, String path, byte[] argFile, Arg[] args) throws Exception {
     // Check arguments
     String error = checkArgs(op, path, args);
     if (error != null) {
@@ -123,31 +122,41 @@ public class HDFSCommand {
       return "ERROR: BAD ARGS";
     }
 
+
     // Build URI
-    UriBuilder builder = UriBuilder
-        .fromPath(url)
-        .path(path)
-        .queryParam("op", op.op);
+    String finalUrl = url;
+    if (url.endsWith("/") && path.startsWith("/"))
+      finalUrl += path.substring(1);
+    else
+      finalUrl += path;
+
+    URIBuilder uriBuilder = new URIBuilder(finalUrl)
+        .addParameter("op", op.op)
+        .addParameter("user", this.user);
 
     if (args != null) {
       boolean isUserName = false;
       for (Arg a : args) {
-        builder = builder.queryParam(a.key, a.value);
+//        builder = builder.queryParam(a.key, a.value);
+        uriBuilder.addParameter(a.key, a.value);
+        //System.out.println("a.key/a.value=" + a.key + "=" + a.value);
         if ("user.name".equals(a.key)) {
           isUserName = true;
         }
       }
       if (!isUserName) {
-        builder = builder.queryParam("user.name", this.user);
+        //builder = builder.queryParam("user.name", this.user);
+        uriBuilder.addParameter("user.name", this.user);
       }
+    } else {
+      // builder = builder.queryParam("user.name", this.user);
+      uriBuilder.addParameter("user.name", this.user);
     }
-    else {
-      builder = builder.queryParam("user.name", this.user);
-    }
-    java.net.URI uri = builder.build();
-
+    java.net.URI uri = uriBuilder.build();
+    // System.out.println("resUrl=" + resUrl);
     // Connect and get response string
     URL hdfsUrl = uri.toURL();
+    // System.out.println("hdfsUrl=" + hdfsUrl.toExternalForm());
     HttpURLConnection con = (HttpURLConnection) hdfsUrl.openConnection();
 
     if (op.cmd == HttpType.GET) {
@@ -188,7 +197,6 @@ public class HDFSCommand {
       con.setInstanceFollowRedirects(false);
       return getReceivedResponse(con, HttpType.DELETE, hdfsUrl);
     }
-
     return null;
   }
 
