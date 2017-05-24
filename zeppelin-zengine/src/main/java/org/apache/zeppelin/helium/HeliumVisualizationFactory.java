@@ -21,6 +21,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
@@ -52,6 +54,7 @@ public class HeliumVisualizationFactory {
   private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
+  private String defaultNodeRegistryUrl;
   private String defaultNpmRegistryUrl;
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
@@ -76,6 +79,7 @@ public class HeliumVisualizationFactory {
       File moduleDownloadPath) throws TaskRunnerException {
     this.workingDirectory = new File(moduleDownloadPath, "vis");
     this.conf = conf;
+    this.defaultNodeRegistryUrl = "https://nodejs.org/dist/";
     this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
     File installDirectory = workingDirectory;
 
@@ -91,11 +95,13 @@ public class HeliumVisualizationFactory {
       return;
     }
     try {
-      NPMInstaller npmInstaller = frontEndPluginFactory.getNPMInstaller(getProxyConfig());
+      NPMInstaller npmInstaller = frontEndPluginFactory
+          .getNPMInstaller(getProxyConfig(isSecure(defaultNpmRegistryUrl)));
       npmInstaller.setNpmVersion(NPM_VERSION);
       npmInstaller.install();
 
-      NodeInstaller nodeInstaller = frontEndPluginFactory.getNodeInstaller(getProxyConfig());
+      NodeInstaller nodeInstaller = frontEndPluginFactory
+          .getNodeInstaller(getProxyConfig(isSecure(defaultNodeRegistryUrl)));
       nodeInstaller.setNodeVersion(NODE_VERSION);
       nodeInstaller.install();
       configureLogger();
@@ -105,10 +111,51 @@ public class HeliumVisualizationFactory {
     }
   }
 
-  private ProxyConfig getProxyConfig() {
-    List<ProxyConfig.Proxy> proxy = new LinkedList<>();
-    return new ProxyConfig(proxy);
+
+  private ProxyConfig getProxyConfig(boolean isSecure) {
+    List<ProxyConfig.Proxy> proxies = new LinkedList<>();
+
+    String httpProxy = StringUtils.isBlank(System.getenv("http_proxy")) ?
+        System.getenv("HTTP_PROXY") : System.getenv("http_proxy");
+
+    String httpsProxy = StringUtils.isBlank(System.getenv("https_proxy")) ?
+        System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
+
+    try {
+      if (isSecure)
+        proxies.add(generateProxy("secure", new URI(httpsProxy)));
+      else proxies.add(generateProxy("insecure", new URI(httpProxy)));
+    } catch (Exception ex) {
+      logger.error(ex.getMessage(), ex);
+    }
+    return new ProxyConfig(proxies);
   }
+
+  private ProxyConfig.Proxy generateProxy(String proxyId, URI uri) {
+
+    String protocol = uri.getScheme();
+    String host = uri.getHost();
+    int port = uri.getPort() <= 0 ? 80 : uri.getPort();
+
+    String username = null, password = null;
+    if (uri.getUserInfo() != null) {
+      String[] authority = uri.getUserInfo().split(":");
+      if (authority.length == 2) {
+        username = authority[0];
+        password = authority[1];
+      } else if (authority.length == 1) {
+        username = authority[0];
+      }
+    }
+    String nonProxyHosts = StringUtils.isBlank(System.getenv("no_proxy")) ?
+        System.getenv("NO_PROXY") : System.getenv("no_proxy");
+    return new ProxyConfig.Proxy(proxyId, protocol, host, port, username, password, nonProxyHosts);
+  }
+
+  private boolean isSecure(String url) {
+    return url.toLowerCase().startsWith("https");
+  }
+
 
   public File bundle(List<HeliumPackage> pkgs) throws IOException {
     return bundle(pkgs, false);
@@ -380,7 +427,8 @@ public class HeliumVisualizationFactory {
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
     installNodeAndNpm();
-    NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(), defaultNpmRegistryUrl);
+    NpmRunner npm = frontEndPluginFactory.getNpmRunner(
+        getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
     npm.execute(args, env);
   }
 

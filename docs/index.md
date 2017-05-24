@@ -172,6 +172,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
+  * [Helium Authorization](./security/helium_authorization.html)
 * Advanced
   * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
   * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
