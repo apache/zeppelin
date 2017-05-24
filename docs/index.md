@@ -173,6 +173,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
+  * [Helium Authorization](./security/helium_authorization.html)
 * Helium Framework (Experimental)
   * [Writing Zeppelin Application](./development/writingzeppelinapplication.html)
   * [Writing Zeppelin Spell](./development/writingzeppelinspell.html)
