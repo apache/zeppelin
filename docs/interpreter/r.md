@@ -44,6 +44,7 @@ To enjoy plots, install additional libraries with:
 + devtools with `R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"`
 + knitr with `R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')"`
 + ggplot2 with `R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"`
++ evaluate with `R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org')"`
 + Other vizualisation librairies: `R -e "install.packages(c('devtools','mplot', 'googleVis'), repos = 'http://cran.us.r-project.org'); require(devtools); install_github('ramnathv/rCharts')"`
 ```
 
