@@ -213,6 +213,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
+    properties.setProperty("default.splitQueries", "true");
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
 
@@ -231,7 +232,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectMultipleQuries() throws SQLException, IOException {
+  public void testSelectMultipleQueries() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -239,6 +240,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
+    properties.setProperty("default.splitQueries", "true");
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
 
@@ -253,6 +255,28 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
     assertEquals("ID\tNAME\n", interpreterResult.message().get(1).getData());
+  }
+
+  @Test
+  public void testDefaultSplitQuries() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select * from test_table;" +
+        "select * from test_table WHERE ID = ';';";
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(1, interpreterResult.message().size());
+
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n", interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -507,6 +531,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
+    properties.setProperty("default.splitQueries", "true");
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
 

@@ -23,6 +23,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -101,6 +102,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
+  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
@@ -587,6 +589,12 @@ public class JDBCInterpreter extends Interpreter {
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
+    boolean splitQuery = false;
+    String splitQueryProperty = getProperty(String.format("%s.%s", propertyKey, SPLIT_QURIES_KEY));
+    if (StringUtils.isNotBlank(splitQueryProperty) && splitQueryProperty.equalsIgnoreCase("true")) {
+      splitQuery = true;
+    }
+
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
     try {
       connection = getConnection(propertyKey, interpreterContext);
@@ -594,9 +602,16 @@ public class JDBCInterpreter extends Interpreter {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      ArrayList<String> multipleSqlArray = splitSqlQueries(sql);
-      for (int i = 0; i < multipleSqlArray.size(); i++) {
-        String sqlToExecute = multipleSqlArray.get(i);
+
+      List<String> sqlArray;
+      if (splitQuery) {
+        sqlArray = splitSqlQueries(sql);
+      } else {
+        sqlArray = Arrays.asList(sql);
+      }
+
+      for (int i = 0; i < sqlArray.size(); i++) {
+        String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
