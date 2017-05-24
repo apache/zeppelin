@@ -164,7 +164,7 @@ public class HeliumBundleFactory {
             System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
 
     try {
-      if(isSecure)
+      if (isSecure)
         proxies.add(generateProxy("secure", new URI(httpsProxy)));
       else proxies.add(generateProxy("insecure", new URI(httpProxy)));
     } catch (Exception ex) {
@@ -662,7 +662,8 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
-    NpmRunner npm = frontEndPluginFactory.getNpmRunner(getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
+    NpmRunner npm = frontEndPluginFactory.getNpmRunner(
+            getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
     npm.execute(args, env);
   }
 
@@ -676,7 +677,8 @@ public class HeliumBundleFactory {
 
   private void yarnCommand(FrontendPluginFactory fpf,
                            String args, Map<String, String> env) throws TaskRunnerException {
-    YarnRunner yarn = fpf.getYarnRunner(getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
+    YarnRunner yarn = fpf.getYarnRunner(
+            getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
     yarn.execute(args, env);
   }
 

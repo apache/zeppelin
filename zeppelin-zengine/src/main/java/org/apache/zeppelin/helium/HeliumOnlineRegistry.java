@@ -119,7 +119,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
 
     try {
       String scheme = new URI(uri).getScheme();
-      if(scheme.toLowerCase().startsWith("https")) {
+      if (scheme.toLowerCase().startsWith("https")) {
         URI httpsProxyUri = new URI(httpsProxy);
         return new HttpHost(httpsProxyUri.getHost(),
                 httpsProxyUri.getPort(), httpsProxyUri.getScheme());
