@@ -58,6 +58,13 @@
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>cloudera</id>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
