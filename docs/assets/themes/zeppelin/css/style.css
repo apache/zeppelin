@@ -5,7 +5,6 @@
 body {
   padding-top: 50px;
   padding-bottom: 20px;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: #4c555a;
   letter-spacing: .2px;
@@ -58,6 +57,7 @@ body {
 
 .jumbotron h1 {
   font-family: 'Patua One', cursive;
+}
 
 .jumbotron h1 {
   font-family: 'Patua One', cursive;
@@ -67,7 +67,6 @@ body {
   font-size: 60%;
   color: #FFF;
 }
-}
 
 .jumbotron small {
   font-size: 60%;
@@ -75,8 +74,8 @@ body {
 }
 
 .navbar-brand {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 .navbar-brand-main img {
@@ -86,10 +85,14 @@ body {
 .navbar {
   background: #3071a9;
   border-bottom: 0px;
-  height: 50px;
+  height: 60px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-inverse .navbar-nav > li > a {
+  padding-top: 19px;
+  font-size: 17px;
+  font-weight: 300;
   color: white;
   background: #3071a9;
 }
@@ -299,7 +302,7 @@ a.anchor {
 
 /* <hn> */
 .content h1, h2, h3, h4, h5, h6 {
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin-top: 3rem;
   margin-bottom: 1rem;
   font-weight: bold;
@@ -605,6 +608,13 @@ a.anchorjs-link:hover { text-decoration: none; }
   }
 }
 
+.navbar-inverse .navbar-brand {
+  color: white;
+  text-decoration: none;
+  font-size: 32px;
+  font-size: 27px;
+}
+
 @media only screen and (max-width: 768px) {
   .navbar .navbar-brand-main {
     padding-bottom: 0;
@@ -623,18 +633,22 @@ and (max-width: 1024px) {
   }
 
   .navbar-fixed-top > .container {
-    width: 800px;
   }
 }
 
 /* master branch docs dropdown menu */
 #menu .dropdown-menu li span {
-  padding: 3px 10px 10px 10px;
-  font-size: 13px;
+  font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 12px 10px 12px 20px;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+#menu .dropdown-menu li a {
+  padding-left: 30px;
 }
 
 #menu .title {
-  padding-bottom: 8px;
   color: #3071a9;
 }
 
