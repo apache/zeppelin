@@ -64,6 +64,8 @@ if not exist "%ZEPPELIN_LOG_DIR%" (
 )
 
 if /I "%INTERPRETER_ID%"=="spark" (
+    call "%bin%\functions.cmd" ADDJARINDIR "%INTERPRETER_DIR%\dep"
+
     if defined SPARK_HOME (
         set SPARK_SUBMIT=%SPARK_HOME%\bin\spark-submit.cmd
         for %%d in ("%ZEPPELIN_HOME%\interpreter\spark\zeppelin-spark*.jar") do (
@@ -87,8 +89,6 @@ if /I "%INTERPRETER_ID%"=="spark" (
             )
             set ZEPPELIN_CLASSPATH=!LOCAL_HADOOP_CLASSPATH!;%ZEPPELIN_CLASSPATH%
         )
-        
-        call "%bin%\functions.cmd" ADDJARINDIR "%INTERPRETER_DIR%\dep"
         
         for %%d in ("%ZEPPELIN_HOME%\interpreter\spark\pyspark\py4j-*-src.zip") do (
             set py4j=%%d
