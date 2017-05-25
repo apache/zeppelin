@@ -170,8 +170,6 @@ a.navbar-brand:hover {
   }
 }
 
-/* Username */
-
 .username {
   white-space: nowrap;
   overflow: hidden;
@@ -180,6 +178,7 @@ a.navbar-brand:hover {
   display: inline-block;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+
 
 /* About Dialog */
 
@@ -228,4 +227,3 @@ a.navbar-brand:hover {
   font-size: 30px;
   margin: 0 auto;
 }
-
