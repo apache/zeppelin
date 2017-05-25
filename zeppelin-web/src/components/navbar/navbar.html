@@ -38,8 +38,13 @@ limitations under the License.
             <span>Notebook</span>
             <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()"><i class="fa fa-plus"></i> Create new note</a></li>
-            <li class="divider"></li>
+            <li ng-controller="NotenameCtrl as notenamectrl">
+              <a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()">
+                <i class="fa fa-plus"></i>
+                Create new note
+              </a>
+            </li>
+            <li class="divider hidden-xs"></li>
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <div ng-if="!query.q || query.q === ''">

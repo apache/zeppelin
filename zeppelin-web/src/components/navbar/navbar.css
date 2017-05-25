@@ -106,7 +106,7 @@
 }
 
 .navbar-inverse .navbar-toggle {
-  border-color: #FFFFFF;
+  border-color: transparent;
 }
 
 .navbar-inverse .navbar-nav > .active > a,
@@ -134,7 +134,7 @@ a.navbar-brand:hover {
 @media (max-width: 767px) {
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
   #notebook-list li a {
-    color: #D3D3D3;
+    color: #ecf0f1;
   }
 
   .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a,
