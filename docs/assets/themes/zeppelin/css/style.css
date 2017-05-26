@@ -644,9 +644,8 @@ a.anchorjs-link:hover { text-decoration: none; }
   vertical-align: bottom;
 }
 
-#menu .navbar-brand-version small {
+#menu .navbar-brand-version {
   font-size: 14px;
-  font-family: 'Open Sans', 'Helvetica Neue', Helvetica;
   color: white;
 }
 
@@ -666,7 +665,8 @@ a.anchorjs-link:hover { text-decoration: none; }
   .jumbotron h1 {
     display: none;
   }
-  .navbar-brand-version small {
+
+  .navbar-brand-version {
     display: none;
     color: white;
   }
