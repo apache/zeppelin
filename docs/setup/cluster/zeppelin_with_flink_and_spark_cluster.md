@@ -1,8 +1,8 @@
 ---
 layout: page
 title: "Install Zeppelin with Flink and Spark in cluster mode"
-description: "Tutorial is valid for Spark 1.6.x and Flink 1.1.2"
-group: tutorial
+description: ""
+group: setup/cluster 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

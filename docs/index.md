@@ -49,9 +49,9 @@ limitations under the License.
 * [Install](./quickstart/install.html) for basic instructions on installing Apache Zeppelin
 * [Tutorial](./quickstart/tutorial.html)
 * [Explore UI](./quickstart/explore_ui.html): basic components of Apache Zeppelin home
-* [Spark with Zeppelin](./quickstart/spark_with_zepplin.html)
-* [SQL with Zeppelin](./quickstart/sql_with_zepplin.html)
-* [Python with Zeppelin](./quickstart/python_with_zepplin.html)
+* [Spark with Zeppelin](./quickstart/spark_with_zeppelin.html)
+* [SQL with Zeppelin](./quickstart/sql_with_zeppelin.html)
+* [Python with Zeppelin](./quickstart/python_with_zeppelin.html)
   
 #### Usage 
 * Dynamic Form 
@@ -88,6 +88,7 @@ limitations under the License.
   * [Spark Cluster Mode: Standalone](./setup/cluster/spark_cluster_mode.html#spark-standalone-mode)
   * [Spark Cluster Mode: YARN](./setup/cluster/spark_cluster_mode.html#spark-on-yarn-mode)
   * [Spark Cluster Mode: Mesos](./setup/cluster/spark_cluster_mode.html#spark-on-mesos-mode)
+  * [Zeppelin with Flink and Spark Cluster](./setup/cluster/zeppelin_with_flink_and_spark_cluster.html)
   * [Zeppelin on CDH](./setup/cluster/cdh.html)
   * [Zeppelin on VM: Vagrant](./setup/cluster/virtual_machine.html)
 * Security: available security support in Apache Zeppelin

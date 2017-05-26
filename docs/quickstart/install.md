@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Quick Start"
+title: "Install"
 description: "This page will help you get started and will guide you through installing Apache Zeppelin and running it in the command line."
-group: install
+group: quickstart
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,13 +19,13 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Quick Start
+# Install 
 
 <div id="toc"></div>
 
 Welcome to Apache Zeppelin! On this page are instructions to help you get started.
 
-## Installation
+## Requirements 
 
 Apache Zeppelin officially supports and is tested on the following environments:
 
