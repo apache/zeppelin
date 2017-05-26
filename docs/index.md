@@ -97,10 +97,11 @@ limitations under the License.
   * [Data Source Authorization](./setup/security/datasource_authorization.html)
   * [Helium Authorization](./security/helium_authorization.html)
 * Notebook Storage: a guide about saving notebooks to external storage
-  * [Git Storage](./setup/storage/storage.html#notebook-setup/storage-in-local-git-repository)
-  * [S3 Storage](./setup/storage/storage.html#notebook-setup/storage-in-s3)
-  * [Azure Storage](./setup/storage/storage.html#notebook-setup/storage-in-azure)
-  * [ZeppelinHub Storage](./setup/storage/storage.html#setup/storage-in-zeppelinhub)
+  * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
+  * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
+  * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
+  * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-torage-in-zeppelinhub)
+  * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 
   * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
   * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
