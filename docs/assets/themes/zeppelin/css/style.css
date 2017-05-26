@@ -264,7 +264,7 @@ body {
 }
 
 .content :first-child {
-  margin-top: 0;
+  margin-top: 20px;
 }
 
 @media screen and (min-width: 64em) {

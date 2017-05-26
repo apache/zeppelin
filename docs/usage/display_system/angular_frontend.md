@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Front-end Angular API in Apache Zeppelin"
+title: "Frontend Angular API in Apache Zeppelin"
 description: "In addition to the back-end API to handle Angular objects binding, Apache Zeppelin exposes a simple AngularJS z object on the front-end side to expose the same capabilities."
-group: display
+group: usage/display_system
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +19,12 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Front-end Angular API in Apache Zeppelin
+# Frontend Angular API in Apache Zeppelin
 
 <div id="toc"></div>
 
 ## Basic Usage
-In addition to the [back-end API](./back-end-angular.html) to handle Angular objects binding, Apache Zeppelin also exposes a simple AngularJS <code>**z**</code> object on the front-end side to expose the same capabilities.
+In addition to the [backend Angular API](./angular_backend.html) to handle Angular objects binding, Apache Zeppelin also exposes a simple AngularJS <code>**z**</code> object on the front-end side to expose the same capabilities.
 This <code>**z**</code> object is accessible in the Angular isolated scope for each paragraph.
 
 
@@ -47,7 +47,7 @@ Bind a value to an angular object and a **mandatory** target paragraph:
 
 ```
 
-<img src="../assets/themes/zeppelin/img/screenshots/z_angularBind.gif" />
+<img src="/assets/themes/zeppelin/img/screenshots/z_angularBind.gif" />
 
 <hr/>
 
@@ -63,7 +63,7 @@ Unbind/remove a value from angular object and a **mandatory** target paragraph:
 
 ```
 
-<img src="../assets/themes/zeppelin/img/screenshots/z_angularUnbind.gif" />
+<img src="/assets/themes/zeppelin/img/screenshots/z_angularUnbind.gif" />
 
 The signature for the **`z.angularBind() / z.angularUnbind()`** functions are:
 
@@ -98,7 +98,7 @@ You can also trigger paragraph execution by calling **`z.runParagraph()`** funct
 
 ```
 
-<img src="../assets/themes/zeppelin/img/screenshots/z_runParagraph.gif" />
+<img src="/assets/themes/zeppelin/img/screenshots/z_runParagraph.gif" />
 
 <br />
 ## Overriding dynamic form with Angular Object
@@ -110,13 +110,13 @@ The idea is to create a custom form using plain HTML/AngularJS code and bind act
 Consequently if you use the **Dynamic Form** syntax in a paragraph and there is a bound Angular object having the same name as the `${formName}`, the Angular object will have higher priority and the **Dynamic Form** will not be displayed. Example: 
  
 
-<img src="../assets/themes/zeppelin/img/screenshots/z_angularJs_overriding_dynamic_form.gif" />
+<img src="/assets/themes/zeppelin/img/screenshots/z_angularJs_overriding_dynamic_form.gif" />
 
 
 <br />
 ## Feature matrix comparison
 
-How does the front-end AngularJS API compares to the [back-end API](./back-end-angular.html) ? Below is a comparison matrix for both APIs:
+How does the front-end AngularJS API compares to the [backend Angular API](./angular_backend.html)? Below is a comparison matrix for both APIs:
 
 <table class="table-configuration">
     <thead>

@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Run zeppelin interpreter process as web front end user"
+title: "Impersonation: run zeppelin interpreter process as web front end user"
 description: "Set up zeppelin interpreter process as web front end user."
-group: manual
+group: usage/interpreter 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Run zeppelin interpreter process as web front end user
+## Impersonation: run zeppelin interpreter process as web frontend user
 
  * Enable shiro auth in shiro.ini
 
@@ -54,8 +54,8 @@ export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c
          <br /><br />
   </div>
   <div class="col-md-12" >
-      <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
-        <img class="img-responsive" src="../assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
+      <a data-lightbox="compiler" href="/assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
+        <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
       </a>
 
   </div>

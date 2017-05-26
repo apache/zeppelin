@@ -1,8 +1,9 @@
 ---
 layout: page
-title: "Dependency Management for Apache Spark Interpreter"
+title: "Dependency Management for Interpreter"
 description: "Include external libraries to Apache Spark Interpreter by setting dependencies in interpreter menu."
-group: manual
+group: usage/interpreter 
+ 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,8 +34,8 @@ When your code requires external library, instead of doing download/copy/restart
 <hr>
 <div class="row">
   <div class="col-md-6">
-    <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png">
-      <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png" />
+    <a data-lightbox="compiler" href="/assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png">
+      <img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/interpreter-dependency-loading.png" />
     </a>
   </div>
   <div class="col-md-6" style="padding-top:30px">
@@ -52,11 +53,11 @@ When your code requires external library, instead of doing download/copy/restart
 <hr>
 <div class="row">
   <div class="col-md-6">
-    <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png">
-      <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png" />
+    <a data-lightbox="compiler" href="/assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png">
+      <img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/interpreter-add-repo1.png" />
     </a>
-    <a data-lightbox="compiler" href="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png">
-      <img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png" />
+    <a data-lightbox="compiler" href="/assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png">
+      <img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/interpreter-add-repo2.png" />
     </a>
   </div>
   <div class="col-md-6" style="padding-top:30px">

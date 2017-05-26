@@ -18,10 +18,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
-<br />
-<div class="row">
+<div class="row" style="margin-top: 0px;">
   <div class="col-sm-6 col-md-6" style="padding-right:0;">
-    <h1 style="color:#4c555a">What is Apache Zeppelin?</h1>
+    <h1 style="color:#4c555a; margin-top: 0px;">What is Apache Zeppelin?</h1>
     <p style="margin-bottom: 0px; margin-top: 20px; font-size: 18px; font-style="font-family: "Roboto", sans-serif;">
       Multi-purpose notebook which supports
     </p>
@@ -37,7 +36,7 @@ limitations under the License.
     <br/>
   </div>
   <div class="col-sm-6 col-md-6" style="padding:0;">
-    <div class="hidden-xs" style="margin-top: 50px;"></div>
+    <div class="hidden-xs" style="margin-top: 60px;"></div>
     <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="./assets/themes/zeppelin/img/notebook.png" />
   </div>
 </div>
@@ -55,7 +54,7 @@ limitations under the License.
   
 #### Usage 
 * Dynamic Form 
-  * [What is Dynamic Form?](./usage/dynamic_form/intro.html): a step by step guide for creating dynamic forms
+  * [What is Dynamic Form](./usage/dynamic_form/intro.html): a step by step guide for creating dynamic forms
 * Display System 
   * [Text Display (`%text`)](./usage/display_system/basic.html#text)
   * [HTML Display (`%html`)](./usage/display_system/basic.html#html)
@@ -66,13 +65,13 @@ limitations under the License.
   * [Overview](./usage/interpreter/overview.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
   * [User Impersonation](./usage/interpreter/user_impersonation.html) when you want to run interpreter as end user
   * [Dependency Management](./usage/interpreter/dependency_management.html) when you include external libraries to interpreter
-  * [Installing Custom Interpreters](./usage/interpreter/installation.html): Install not only community managed interpreters but also 3rd party interpreters
-  * [Execution Hooks](./usage/interpreterexechooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
+  * [Installing Interpreters](./usage/interpreter/installation.html): Install not only community managed interpreters but also 3rd party interpreters
+  * [Execution Hooks](./usage/interpreter/execution_hooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
 * REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./usage/rest_api/interpreter.html)
   * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
   * [Notebook API](./usage/rest_api/notebook.html)
-  * [Notebook Repository API](./usage/rest_api/notebookRepo.html)
+  * [Notebook Repository API](./usage/rest_api/notebook_repository.html)
   * [Configuration API](./usage/rest_api/configuration.html)
   * [Credential API](./usage/rest_api/credential.html)
   * [Helium API](./usage/rest_api/helium.html)

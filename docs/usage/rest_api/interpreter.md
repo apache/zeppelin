@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin Interpreter REST API"
 description: "This page contains Apache Zeppelin Interpreter REST API information."
-group: rest-api
+group: usage/rest_api
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
 
 ## Interpreter REST API List
 
-The role of registered interpreters, settings and interpreters group are described in [here](../manual/interpreters.html).
+The role of registered interpreters, settings and interpreters group are described in [here](../interpreter/overview.html).
 
 ### List of registered interpreters
 

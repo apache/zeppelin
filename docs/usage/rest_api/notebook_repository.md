@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin notebook repository REST API"
 description: "This page contains Apache Zeppelin notebook repository REST API information."
-group: rest-api
+group: usage/rest_api
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

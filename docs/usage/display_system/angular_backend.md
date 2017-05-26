@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Back-end Angular API in Apache Zeppelin"
+title: "Backend Angular API in Apache Zeppelin"
 description: "Apache Zeppelin provides a gateway between your interpreter and your compiled AngularJS view templates. You can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process."
-group: display
+group: usage/display_system
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Back-end Angular API in Apache Zeppelin
+# Backend Angular API in Apache Zeppelin
 
 <div id="toc"></div>
 
@@ -188,7 +188,7 @@ AngularModel("myModel")()
 AngularModel("myModel", "New value")
 ```
 
-<img src="../assets/themes/zeppelin/img/docs-img/basic-usage-angular.png" width="70%">
+<img src="/assets/themes/zeppelin/img/docs-img/basic-usage-angular.png" width="70%">
 
 ### Example: String Converter
 Using below example, you can convert the lowercase string to uppercase.
@@ -211,4 +211,4 @@ val button = <div class="btn btn-success btn-sm">Convert</div>.onClick{() =>
 ```
 {% endraw %}
 
-<img src="../assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">
+<img src="/assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">

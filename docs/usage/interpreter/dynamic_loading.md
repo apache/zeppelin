@@ -2,7 +2,7 @@
 layout: page
 title: "Dynamic Interpreter Loading using REST API"
 description: "Apache Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this page, we will introduce dynamic interpreter loading using REST API."
-group: manual
+group: usage/interpreter 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,19 +24,19 @@ limitations under the License.
 <div id="toc"></div>
 
 Apache Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. This concept actually comes from [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
-Before we start, if you are not familiar with the concept of **Zeppelin interpreter**, you can check out [Overview of Zeppelin interpreter](../manual/interpreters.html) first.
+Before we start, if you are not familiar with the concept of **Zeppelin interpreter**, you can check out [Overview: Zeppelin Interpreter](./overview.html) first.
 
 ## Overview 
 In the past, Zeppelin was loading interpreter binaries from `/interpreter/[interpreter_name]` directory. They were configured by `zeppelin.interpreters` property in `conf/zeppelin-site.xml` or `ZEPPELIN_INTERPRETERS` env variables in `conf/zeppelin-env.sh`. They were loaded on Zeppelin server startup and stayed alive until the server was stopped.
 In order to simplify using 3rd party interpreters, we changed this way to **dynamically** load interpreters from **Maven Repository** using **REST API**. Hopefully, the picture below will help you to understand the process. 
-<center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin_user.png" height="85%" width="85%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/zeppelin_user.png" height="85%" width="85%"></center>
 
 ## Load & Unload Interpreters Using REST API
 
 ### Load 
 You can **load** interpreters located in Maven repository using REST API, like this:
 
-( Maybe, you are unfamiliar with `[interpreter_group_name]` or `[interpreter_name]`. If so, please checkout [Interpreters in Zeppelin](../manual/interpreter.html) again. )
+(Maybe, you are unfamiliar with `[interpreter_group_name]` or `[interpreter_name]`. If so, please checkout [Overview: Zeppelin Interpreter](./overview.html) again.)
 
 ```
 http://[zeppelin-server]:[zeppelin-port]/api/interpreter/load/[interpreter_group_name]/[interpreter_name]
@@ -106,19 +106,19 @@ After loading an interpreter, you can use it by creating and configuring it in Z
 Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Loading**, you can configure and load it **at runtime** !
 
 1. After Zeppelin server up, browse Zeppelin home and click **Interpreter tab**.
-<center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_setting_1.png" height="85%" width="85%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_setting_1.png" height="85%" width="85%"></center>
 
 2. At the **Interpreter** section, click **+Create** button. 
-<center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_setting_2.png" height="85%" width="85%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_setting_2.png" height="85%" width="85%"></center>
  
 3. Then, you can verify the interpreter list that you loaded.
-<center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_setting_3.png" height="85%" width="85%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_setting_3.png" height="85%" width="85%"></center>
 
 4. After choosing an interpreter, you can configure and use it. Don't forget to save it.
 
 5. Create a new notebook in the **Notebook** section, then you can bind the interpreters from your interpreter list. Just drag and drop !
-<center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_binding_1.png" height="85%" width="85%"></center>
-<center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_binding_2.png" height="85%" width="85%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_1.png" height="85%" width="85%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_2.png" height="85%" width="85%"></center>
 
 6. At last, you can use your interpreter !
 

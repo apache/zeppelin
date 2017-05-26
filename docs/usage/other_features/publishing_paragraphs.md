@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "How can you publish your paragraph"
+title: "How can you publish your paragraphs"
 description: "Apache Zeppelin provides a feature for publishing your notebook paragraph results. Using this feature, you can show Zeppelin notebook paragraph results in your own website."
-group: manual
+group: usage/other_features
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# How can you publish your paragraph ?
+# How can you publish your paragraphs?
 
 <div id="toc"></div>
 
@@ -30,10 +30,10 @@ It's very straightforward. Just use `<iframe>` tag in your page.
 A first step to publish your paragraph result is **Copy a Paragraph Link**.
 
   * After running a paragraph in your Zeppelin notebook, click a gear button located on the right side. Then, click **Link this Paragraph** menu like below image.
-<center><img src="../assets/themes/zeppelin/img/docs-img/link-the-paragraph.png" height="100%" width="100%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/link-the-paragraph.png" height="100%" width="100%"></center>
   
   * Just copy the provided link. 
-<center><img src="../assets/themes/zeppelin/img/docs-img/copy-the-link.png" height="100%" width="100%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/copy-the-link.png" height="100%" width="100%"></center>
 
 ## Embed the Paragraph to Your Website
 For publishing the copied paragraph, you may use `<iframe>` tag in your website page.
@@ -44,6 +44,6 @@ For example,
 ```
 
 Finally, you can show off your beautiful visualization results in your website. 
-<center><img src="../assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
 
 > **Note**: To embed the paragraph in a website, Apache Zeppelin needs to be reachable by that website. And please use this feature with caution and in a trusted environment only, as Zeppelin entire Webapp could be accessible by whoever visits your website. 

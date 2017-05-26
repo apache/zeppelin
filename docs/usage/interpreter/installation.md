@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Interpreter Installation in Netinst Binary Package"
+title: "Installing Interpreters"
 description: "Apache Zeppelin provides Interpreter Installation mechanism for whom downloaded Zeppelin netinst binary package, or just want to install another 3rd party interpreters."
-group: manual
+group: usage/interpreter 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Interpreter Installation
+# Installing Interpreters 
 
 <div id="toc"></div>
 
@@ -98,7 +98,7 @@ rm -rf ./interpreter/spark
 ```
 
 <br />
-Once you have installed interpreters, you need to restart Zeppelin. And then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your notebook](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
+Once you have installed interpreters, you need to restart Zeppelin. And then [create interpreter setting](./overview.html#what-is-zeppelin-interpreter) and [bind it with your notebook](./overview.html#what-is-zeppelin-interpreter-setting).
 
 
 ## 3rd party interpreters
@@ -113,7 +113,7 @@ You can also install 3rd party interpreters located in the maven repository by u
 
 The above command will download maven artifact `groupId1:artifact1:version1` and all of its transitive dependencies into `interpreter/interpreter1` directory.
 
-After restart Zeppelin, then [create interpreter setting](../manual/interpreters.html#what-is-zeppelin-interpreter) and [bind it with your note](../manual/interpreters.html#what-is-zeppelin-interpreter-setting).
+After restart Zeppelin, then [create interpreter setting](./overview.html#what-is-zeppelin-interpreter) and [bind it with your note](../overview.html#what-is-interpreter-setting).
 
 #### Install multiple 3rd party interpreters at once
 

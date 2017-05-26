@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Customize Apache Zeppelin homepage"
+title: "Customizing Apache Zeppelin homepage"
 description: "Apache Zeppelin allows you to use one of the notes you create as your Zeppelin Homepage. With that you can brand your Zeppelin installation, adjust the instruction to your users needs and even translate to other languages."
-group: manual
+group: usage/other_features
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Customize Apache Zeppelin homepage
+# Customizing Apache Zeppelin homepage
 
 <div id="toc"></div>
 
@@ -37,8 +37,8 @@ The process for creating your homepage is very simple as shown below:
 ### Create a note using Zeppelin
 Create a new note using Zeppelin,
 you can use ```%md``` interpreter for markdown content or any other interpreter you like.
-You can also use the display system to generate [text](../displaysystem/basicdisplaysystem.html#text), [html](../displaysystem/basicdisplaysystem.html#html), [table](../displaysystem/basicdisplaysystem.html#table) or
-Angular ([backend API](../displaysystem/back-end-angular.html), [frontend API](../displaysystem/front-end-angular.html)).
+You can also use the display system to generate [text](../display_system/basic.html#text), [html](../display_system/basic.html#html), [table](../display_system/basic.html#table) or
+Angular ([backend API](../display_system/angular_backend.html), [frontend API](../display_system/angular_frontend.html)).
 
 Run (shift+Enter) the note and see the output. Optionally, change the note view to report to hide
 the code sections.
@@ -82,7 +82,7 @@ println(
 
 After running the paragraph, you will see output similar to this one:
 
-<img src="../assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
+<img src="/assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
 
 That's it! Voila! You have your note list.
 
