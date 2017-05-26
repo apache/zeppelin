@@ -1,4 +1,4 @@
-/* Move down content because we have a fixed navbar that is 50px tall */
+/* Move down content because we have a fixed navbar that is 60px tall */
 @import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Open+Sans);
 
@@ -90,7 +90,8 @@ body {
 }
 
 .navbar-inverse .navbar-nav > li > a {
-  padding-top: 19px;
+  padding-top: 20px;
+  padding-bottom: 20px;
   font-size: 17px;
   font-weight: 300;
   color: white;
@@ -184,7 +185,8 @@ body {
 }
 
 .navbar-inverse .navbar-toggle {
-  border-color: #265380;
+  margin-top: 12px;
+  border-color: transparent;
 }
 
 .navbar-inverse .navbar-toggle:hover,
@@ -368,7 +370,7 @@ a.anchor {
   padding: 0.8rem;
   margin-top: 0;
   margin-bottom: 1rem;
-  font: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 90%;
   color: #567482;
   word-wrap: normal;
@@ -540,7 +542,7 @@ a.anchor {
 }
 
 .navbar-collapse.collapse {
-  max-height: 50px;
+  max-height: 60px;
 }
 
 .navbar-inverse .navbar-nav a .caret,
@@ -615,12 +617,6 @@ a.anchorjs-link:hover { text-decoration: none; }
   font-size: 27px;
 }
 
-@media only screen and (max-width: 768px) {
-  .navbar .navbar-brand-main {
-    padding-bottom: 0;
-  }
-}
-
 @media only screen
 and (min-width: 768px)
 and (max-width: 1024px) {
@@ -663,7 +659,7 @@ and (max-width: 1024px) {
 }
 
 #menu .navbar-brand-version {
-  margin-right: 50px;
+  margin-right: 60px;
   text-decoration: none !important;
 }
 
@@ -696,8 +692,25 @@ and (max-width: 1024px) {
   }
 }
 
+/* when navigation toggle is enabled due to browser size */
 @media only screen and (max-width: 768px) {
   #menu .title {
-    color: #bbb;
+    text-shadow: 1px 2px #353131;
+    color: white;
+    font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+  }
+
+  .navbar .navbar-brand-main {
+    padding-bottom: 0;
+  }
+
+  .navbar-nav {
+    margin-top: 0px;
+  }
+
+  .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    border-color: #73a0cd;
   }
 }
