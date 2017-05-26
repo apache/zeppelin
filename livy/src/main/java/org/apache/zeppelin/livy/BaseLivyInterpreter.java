@@ -21,9 +21,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.auth.AuthSchemeProvider;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.auth.SPNegoSchemeFactory;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.*;
@@ -38,11 +49,11 @@ import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import javax.net.ssl.SSLContext;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -388,6 +399,11 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
 
   private RestTemplate createRestTemplate() {
+    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
+    String principal = property.getProperty("zeppelin.livy.principal");
+    boolean isSpnegoEnabled = StringUtils.isNotEmpty(keytabLocation) &&
+        StringUtils.isNotEmpty(principal);
+
     HttpClient httpClient = null;
     if (livyURL.startsWith("https:")) {
       String keystoreFile = property.getProperty("zeppelin.livy.ssl.trustStore");
@@ -408,7 +424,37 @@ public abstract class BaseLivyInterpreter extends Interpreter {
             .loadTrustMaterial(trustStore)
             .build();
         SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
-        httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+        HttpClientBuilder httpClientBuilder = HttpClients.custom().setSSLSocketFactory(csf);
+        RequestConfig reqConfig = new RequestConfig() {
+          @Override
+          public boolean isAuthenticationEnabled() {
+            return true;
+          }
+        };
+        httpClientBuilder.setDefaultRequestConfig(reqConfig);
+        Credentials credentials = new Credentials() {
+          @Override
+          public String getPassword() {
+            return null;
+          }
+
+          @Override
+          public Principal getUserPrincipal() {
+            return null;
+          }
+        };
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(AuthScope.ANY, credentials);
+        httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
+        if (isSpnegoEnabled) {
+          Registry<AuthSchemeProvider> authSchemeProviderRegistry =
+              RegistryBuilder.<AuthSchemeProvider>create()
+                  .register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory())
+                  .build();
+          httpClientBuilder.setDefaultAuthSchemeRegistry(authSchemeProviderRegistry);
+        }
+
+        httpClient = httpClientBuilder.build();
       } catch (Exception e) {
         throw new RuntimeException("Failed to create SSL HttpClient", e);
       } finally {
@@ -422,9 +468,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       }
     }
 
-    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
-    String principal = property.getProperty("zeppelin.livy.principal");
-    if (StringUtils.isNotEmpty(keytabLocation) && StringUtils.isNotEmpty(principal)) {
+
+    if (isSpnegoEnabled) {
       if (httpClient == null) {
         return new KerberosRestTemplate(keytabLocation, principal);
       } else {
