@@ -46,13 +46,14 @@ limitations under the License.
 
 #### Quick Start
 
-* [Installation](./install/install.html) for basic instructions on installing Apache Zeppelin
-* [Tutorial: Spark]()
-* [Tutorial: JDBC]()
-* [Tutorial: Python]()
-* [Explore Zeppelin UI](./quickstart/explorezeppelinui.html): basic components of Apache Zeppelin home
+* [Install](./install/install.html) for basic instructions on installing Apache Zeppelin
+* [Tutorial]()
+* [Explore UI](./quickstart/explorezeppelinui.html): basic components of Apache Zeppelin home
+* [Spark with Zeppelin]()
+* [SQL with Zeppelin]()
+* [Python with Zeppelin]()
   
-#### User Guide
+#### Usage 
 * Dynamic Form 
   * [Usage](./manual/dynamicform.html): a step by step guide for creating dynamic forms
 * Display System 
@@ -79,8 +80,9 @@ limitations under the License.
   * [Publishing Paragraphs](./manual/publish.html) results into your external website
   * [Customizing Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
   
-#### Admin Guide
+#### Setup 
 * [How to Build Zeppelin](./install/build.html)
+* [Multi-user Support](./install/build.html)
 * Setup Zeppelin on Cluster 
   * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
   * [Zeppelin on Spark Cluster Mode (YARN via Docker)](./install/spark_cluster_mode.html#spark-on-yarn-mode)
@@ -117,5 +119,4 @@ limitations under the License.
 #### External Resources
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
-  * [StackOverflow tag `apache-zeppelin`](http://stackoverflow.com/questions/tagged/apache-zeppelin)
-  * [Articles]()
+  * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)

@@ -600,17 +600,6 @@ a.anchorjs-link:hover { text-decoration: none; }
   padding-bottom: 3px;
 }
 
-/* Custom, iPhone Retina */
-@media only screen and (max-width: 480px) {
-  .jumbotron h1 {
-    display: none;
-  }
-  .navbar-brand-version small {
-    display: none;
-    color: white;
-  }
-}
-
 .navbar-inverse .navbar-brand {
   color: white;
   text-decoration: none;
@@ -670,6 +659,17 @@ a.anchorjs-link:hover { text-decoration: none; }
 #docs .dropdown-menu li span {
   padding: 3px 10px 10px 10px;
   font-size: 13px;
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width: 480px) {
+  .jumbotron h1 {
+    display: none;
+  }
+  .navbar-brand-version small {
+    display: none;
+    color: white;
+  }
 }
 
 @media only screen and (max-width: 480px) {
