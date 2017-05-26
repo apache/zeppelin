@@ -46,77 +46,107 @@ limitations under the License.
 
 #### Quick Start
 
-* [Install](./install/install.html) for basic instructions on installing Apache Zeppelin
-* [Tutorial]()
-* [Explore UI](./quickstart/explorezeppelinui.html): basic components of Apache Zeppelin home
-* [Spark with Zeppelin]()
-* [SQL with Zeppelin]()
-* [Python with Zeppelin]()
+* [Install](./quickstart/install.html) for basic instructions on installing Apache Zeppelin
+* [Tutorial](./quickstart/tutorial.html)
+* [Explore UI](./quickstart/explore_ui.html): basic components of Apache Zeppelin home
+* [Spark with Zeppelin](./quickstart/spark_with_zepplin.html)
+* [SQL with Zeppelin](./quickstart/sql_with_zepplin.html)
+* [Python with Zeppelin](./quickstart/python_with_zepplin.html)
   
 #### Usage 
 * Dynamic Form 
-  * [Usage](./manual/dynamicform.html): a step by step guide for creating dynamic forms
+  * [What is Dynamic Form?](./usage/dynamic_form/intro.html): a step by step guide for creating dynamic forms
 * Display System 
-  * [Text Display (`%text`)](./displaysystem/basicdisplaysystem.html#text)
-  * [HTML Display (`%html`)](./displaysystem/basicdisplaysystem.html#html)
-  * [Table Display (`%table`)](./displaysystem/basicdisplaysystem.html#table)
-  * [Angular Display using Backend API (`%angular`)](./displaysystem/back-end-angular.html)
-  * [Angular Display using Frontend API (`%angular`)](./displaysystem/front-end-angular.html)
+  * [Text Display (`%text`)](./usage/display_system/basic.html#text)
+  * [HTML Display (`%html`)](./usage/display_system/basic.html#html)
+  * [Table Display (`%table`)](./usage/display_system/basic.html#table)
+  * [Angular Display using Backend API (`%angular`)](./usage/display_system/angular_backend.html)
+  * [Angular Display using Frontend API (`%angular`)](./usage/display_system/angular_frontend.html)
 * Interpreter  
-  * [Overview](./manual/interpreters.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
-  * [User Impersonation](./manual/userimpersonation.html) when you want to run interpreter as end user
-  * [Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
-  * [Installation](./manual/interpreterinstallation.html): Install not only community managed interpreters but also 3rd party interpreters
-  * [Execution Hooks](./manual/interpreterexechooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
+  * [Overview](./usage/interpreter/overview.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
+  * [User Impersonation](./usage/interpreter/user_impersonation.html) when you want to run interpreter as end user
+  * [Dependency Management](./usage/interpreter/dependency_management.html) when you include external libraries to interpreter
+  * [Installing Custom Interpreters](./usage/interpreter/installation.html): Install not only community managed interpreters but also 3rd party interpreters
+  * [Execution Hooks](./usage/interpreterexechooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
 * REST API: available REST API list in Apache Zeppelin
-  * [Zeppelin server API](./rest-api/rest-zeppelin-server.html)
-  * [Interpreter API](./rest-api/rest-interpreter.html)
-  * [Notebook API](./rest-api/rest-notebook.html)
-  * [Notebook Repository API](./rest-api/rest-notebookRepo.html)
-  * [Configuration API](./rest-api/rest-configuration.html)
-  * [Credential API](./rest-api/rest-credential.html)
-  * [Helium API](./rest-api/rest-helium.html)
-* Advanced:
-  * [Publishing Paragraphs](./manual/publish.html) results into your external website
-  * [Customizing Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
+  * [Interpreter API](./usage/rest_api/interpreter.html)
+  * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
+  * [Notebook API](./usage/rest_api/notebook.html)
+  * [Notebook Repository API](./usage/rest_api/notebookRepo.html)
+  * [Configuration API](./usage/rest_api/configuration.html)
+  * [Credential API](./usage/rest_api/credential.html)
+  * [Helium API](./usage/rest_api/helium.html)
+* Other Features:
+  * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
+  * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
   
 #### Setup 
-* [How to Build Zeppelin](./install/build.html)
-* [Multi-user Support](./install/build.html)
+* Basics 
+  * [How to Build Zeppelin](./setup/basics/how_to_build.html)
+  * [Multi-user Support](./setup/basics/multi_user_support.html)
 * Setup Zeppelin on Cluster 
-  * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
-  * [Zeppelin on Spark Cluster Mode (YARN via Docker)](./install/spark_cluster_mode.html#spark-on-yarn-mode)
-  * [Zeppelin on Spark Cluster Mode (Mesos via Docker)](./install/spark_cluster_mode.html#spark-on-mesos-mode)
-  * [Zeppelin on CDH (via Docker)](./install/cdh.html)
-  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
+  * [Spark Cluster Mode: Standalone](./setup/cluster/spark_cluster_mode.html#spark-standalone-mode)
+  * [Spark Cluster Mode: YARN](./setup/cluster/spark_cluster_mode.html#spark-on-yarn-mode)
+  * [Spark Cluster Mode: Mesos](./setup/cluster/spark_cluster_mode.html#spark-on-mesos-mode)
+  * [Zeppelin on CDH](./setup/cluster/cdh.html)
+  * [Zeppelin on VM: Vagrant](./setup/cluster/virtual_machine.html)
 * Security: available security support in Apache Zeppelin
-  * [Authentication for NGINX](./security/authentication.html)
-  * [Shiro Authentication](./security/shiroauthentication.html)
-  * [Notebook Authorization](./security/notebook_authorization.html)
-  * [Data Source Authorization](./security/datasource_authorization.html)
+  * [HTTP Basic Auth using NGINX](./setup/security/authentication_nginx.html)
+  * [Shiro Authentication](./setup/security/shiro_authentication.html)
+  * [Notebook Authorization](./setup/security/notebook_authorization.html)
+  * [Data Source Authorization](./setup/security/datasource_authorization.html)
   * [Helium Authorization](./security/helium_authorization.html)
 * Notebook Storage: a guide about saving notebooks to external storage
-  * [Git Storage](./storage/storage.html#notebook-storage-in-local-git-repository)
-  * [S3 Storage](./storage/storage.html#notebook-storage-in-s3)
-  * [Azure Storage](./storage/storage.html#notebook-storage-in-azure)
-  * [ZeppelinHub Storage](./storage/storage.html#storage-in-zeppelinhub)
-* [Configuration](./install/configuration.html): lists for Apache Zeppelin
-* [Upgrading](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
-* [Trouble Shooting]()
+  * [Git Storage](./setup/storage/storage.html#notebook-setup/storage-in-local-git-repository)
+  * [S3 Storage](./setup/storage/storage.html#notebook-setup/storage-in-s3)
+  * [Azure Storage](./setup/storage/storage.html#notebook-setup/storage-in-azure)
+  * [ZeppelinHub Storage](./setup/storage/storage.html#setup/storage-in-zeppelinhub)
+* Operation 
+  * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
+  * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
+  * [Trouble Shooting](./setup/operation/trouble_shooting.html)
   
 #### Developer Guide
 * Extending Zeppelin
-  * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
-  * [Helium: Overview](./development/writingzeppelinapplication.html)
-  * [Helium: Writing Application](./development/writingzeppelinapplication.html)
-  * [Helium: Writing Spell](./development/writingzeppelinspell.html)
-  * [Helium: Writing Visualization: Basic](./development/writingzeppelinvisualization.html)
-  * [Helium: Writing Visualization: Transformation](./development/writingzeppelinvisualization_transformation.html)
+  * [Writing Zeppelin Interpreter](./development/writing_zeppelin_interpreter.html)
+  * [Helium: Overview](./development/helium/overview.html)
+  * [Helium: Writing Application](./development/helium/writing_application.html)
+  * [Helium: Writing Spell](./development/helium/writing_spell.html)
+  * [Helium: Writing Visualization: Basic](./development/helium/writing_visualization_basic.html)
+  * [Helium: Writing Visualization: Transformation](./development/helium/writing_visualization_transformation.html)
 * Contributing to Zeppelin
-  * [How to Contribute (code)](./development/howtocontribute.html)
-  * [How to Contribute (website)](./development/howtocontributewebsite.html)
+  * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
+  * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
 
 #### External Resources
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
   * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
+  
+#### Available Interpreters 
+  * [Alluxio](./interpreter/alluxio.html)
+  * [Beam](./interpreter/beam.html)
+  * [BigQuery](./interpreter/bigquery.html)
+  * [Cassandra](./interpreter/cassandra.html)
+  * [Elasticsearch](./interpreter/elasticsearch.html)
+  * [flink](./interpreter/flink.html)
+  * [Geode](./interpreter/geode.html)
+  * [Groovy](./interpreter/groovy.html)
+  * [HBase](./interpreter/hbase.html)
+  * [HDFS](./interpreter/hdfs.html)
+  * [Hive](./interpreter/hive.html)
+  * [Ignite](./interpreter/ignite.html)
+  * [JDBC](./interpreter/jdbc.html)
+  * [Kylin](./interpreter/kylin.html)
+  * [Lens](./interpreter/lens.html)
+  * [Livy](./interpreter/livy.html)
+  * [markdown](./interpreter/markdown.html)
+  * [Pig](./interpreter/pig.html)
+  * [Postgresql, HAWQ](./interpreter/postgresql.html)
+  * [Python](./interpreter/python.html)
+  * [R](./interpreter/r.html)
+  * [Scalding](./interpreter/scalding.html)
+  * [Scio](./interpreter/scio.html)
+  * [Shell](./interpreter/Shell.html)
+  * [Spark](./interpreter/spark.html)
+  
