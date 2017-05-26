@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.shell.security.ShellSecurityImpl;
+import org.fusesource.jansi.HtmlAnsiOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +73,7 @@ public class ShellInterpreter extends Interpreter {
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     LOGGER.debug("Run shell command '" + cmd + "'");
     OutputStream outStream = new ByteArrayOutputStream();
-    
+
     CommandLine cmdLine = CommandLine.parse(shell);
     // the Windows CMD shell doesn't handle multiline statements,
     // they need to be delimited by '&&' instead
@@ -85,11 +86,13 @@ public class ShellInterpreter extends Interpreter {
     try {
       DefaultExecutor executor = new DefaultExecutor();
       executor.setStreamHandler(new PumpStreamHandler(
-        contextInterpreter.out, contextInterpreter.out));
+        new HtmlAnsiOutputStream(contextInterpreter.out), contextInterpreter.out));
       executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
+      contextInterpreter.out().write("%html <pre>");
       int exitVal = executor.execute(cmdLine);
-      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 
+      contextInterpreter.out().write("</pre>");
+      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId()
         + " return with exit value: " + exitVal);
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
@@ -100,7 +103,7 @@ public class ShellInterpreter extends Interpreter {
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
         message += "Paragraph received a SIGTERM\n";
-        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId() 
+        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
           + " stopped executing: " + message);
       }
       message += "ExitValue: " + exitValue;
