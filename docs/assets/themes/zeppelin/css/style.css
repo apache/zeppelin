@@ -262,6 +262,7 @@ body {
 .content {
   word-wrap: break-word;
 }
+
 .content :first-child {
   margin-top: 0;
 }
@@ -700,6 +701,11 @@ and (max-width: 1024px) {
     font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 16px;
     font-weight: 300;
+  }
+
+  .content {
+    padding-left: 30px;
+    padding-right: 30px;
   }
 
   .navbar .navbar-brand-main {
