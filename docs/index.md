@@ -20,7 +20,7 @@ limitations under the License.
 {% include JB/setup %}
 <br />
 <div class="row">
-  <div class="col-md-6" style="padding-right:0;">
+  <div class="col-sm-6 col-md-6" style="padding-right:0;">
     <h1 style="color:#4c555a">What is Apache Zeppelin?</h1>
     <p style="margin-bottom: 0px; margin-top: 20px; font-size: 18px; font-style="font-family: "Roboto", sans-serif;">
       Multi-purpose notebook which supports
@@ -36,7 +36,8 @@ limitations under the License.
     </ul>
     <br/>
   </div>
-  <div class="col-md-6" style="padding:0; margin-top: 50px;">
+  <div class="col-sm-6 col-md-6" style="padding:0;">
+    <div class="hidden-xs" style="margin-top: 50px;"></div>
     <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="./assets/themes/zeppelin/img/notebook.png" />
   </div>
 </div>
