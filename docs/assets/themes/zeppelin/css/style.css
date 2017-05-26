@@ -618,21 +618,6 @@ a.anchorjs-link:hover { text-decoration: none; }
   font-size: 27px;
 }
 
-@media only screen
-and (min-width: 768px)
-and (max-width: 1024px) {
-  .navbar-brand-version small {
-    display: none;
-  }
-
-  .navbar-collapse.collapse {
-    padding-right: 0;
-  }
-
-  .navbar-fixed-top > .container {
-  }
-}
-
 /* master branch docs dropdown menu */
 #menu .dropdown-menu li span {
   font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -660,7 +645,7 @@ and (max-width: 1024px) {
 }
 
 #menu .navbar-brand-version {
-  margin-right: 60px;
+  margin-right: 30px;
   text-decoration: none !important;
 }
 
@@ -720,3 +705,19 @@ and (max-width: 1024px) {
     border-color: #73a0cd;
   }
 }
+
+@media only screen and (min-width: 768px) and (max-width: 1024px) {
+
+  .navbar-brand-version {
+    display: none;
+  }
+
+  .navbar-collapse.collapse {
+    padding-right: 0;
+  }
+
+  .navbar-fixed-top > .container {
+    width: auto;
+  }
+}
+

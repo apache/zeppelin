@@ -1,5 +1,5 @@
     <div id="menu" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container">
+      <div class="container navbar-container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
             <span class="sr-only">Toggle navigation</span>
@@ -25,17 +25,17 @@
               <ul class="dropdown-menu">
                 <li class="title"><span>Getting Started</span></li>
                 <li><a href="">Install</a></li>
-                <li role="separator" class="divider"></li>
-                <li class="title"><span>Tutorial</span></li>
-                <li><a href="">Spark</a></li>
-                <li><a href="">JDBC</a></li>
-                <li><a href="">Python</a></li>
+                <li><a href="">Tutorial</a></li>
                 <li><a href="">Explore Zeppelin UI</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="">Spark</a></li>
+                <li><a href="">SQL</a></li>
+                <li><a href="">Python</a></li>
               </ul>
             </li>
 
             <li>
-              <a href="#" data-toggle="dropdown" class="dropdown-toggle">User<b class="caret"></b></a>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Usage<b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li class="title"><span>Dynamic Form</span></li>
                 <li><a href="">Usage</a></li>
@@ -70,8 +70,11 @@
             </li>
 
             <li>
-              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Admin<b class="caret"></b></a>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Setup<b class="caret"></b></a>
               <ul class="dropdown-menu">
+                <li class="title"><span>Basics</span></li>
+                <li><a href="">Multi-user Support</a></li>
+                <li role="separator" class="divider"></li>
                 <li class="title"><span>Setup Zeppelin on Cluster</span></li>
                 <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-standalone-mode">Zeppelin on Spark Cluster Mode (Standalone)</a></li>
                 <li><a href="{{BASE_PATH}}/install/spark_cluster_mode.html#spark-on-yarn-mode">Zeppelin on Spark Cluster Mode (YARN)</a></li>
@@ -105,12 +108,10 @@
                 <li class="title"><span>Interpreters</span></li>
                 <li><a href="{{BASE_PATH}}/manual/interpreters.html">Overview</a></li>
                 <li role="separator" class="divider"></li>
-                <li class="title"><span>Basic</span></li>
                 <li><a href="{{BASE_PATH}}/interpreter/spark.html">Spark</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/jdbc.html">JDBC</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/python.html">Python</a></li>
                 <li role="separator" class="divider"></li>
-                <li class="title"><span>ALL</span></li>
                 <li><a href="{{BASE_PATH}}/interpreter/alluxio.html">Alluxio</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/beam.html">Beam</a></li>
                 <li><a href="{{BASE_PATH}}/interpreter/bigquery.html">BigQuery</a></li>
