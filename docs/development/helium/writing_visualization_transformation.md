@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Transformations for Zeppelin Visualization"
+title: "Transformations in Zeppelin Visualization"
 description: "Description for Transformations"
-group: development
+group: development/helium
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

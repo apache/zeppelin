@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Writing a new Spell"
+title: "Writing a new Helium Spell"
 description: "Spell is a kind of interpreter that runs on browser not on backend. So, technically it's the frontend interpreter. "
-group: development
+group: development/helium
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +34,7 @@ It can provide many benefits.
 
 ## How it works
 
-Helium Spell works like [Helium Visualization](./writingzeppelinvisualization.html).
+Helium Spell works like [Helium Visualization](./writing_visualization_basic.html).
 
 - Every helium packages are loaded from central (online) registry or local registry
 - You can see loaded packages in `/helium` page.
@@ -47,19 +47,19 @@ Helium Spell works like [Helium Visualization](./writingzeppelinvisualization.ht
 
 Find a spell what you want to use in `/helium` package and click `Enable` button.
 
-<img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_registered.png" />
+<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_spell_registered.png" />
 
 ### 2. Using
 
 Spell works like an interpreter. Use the `MAGIC` value to execute spell in a note. (you might need to refresh after enabling)
 For example, Use `%echo` for the Echo Spell.
 
-<img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
+<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
 
 
 ## Write a new Spell
 
-Making a new spell is similar to [Helium Visualization#write-new-visualization](./writingzeppelinvisualization.html#write-new-visualization).
+Making a new spell is similar to [Helium Visualization#write-new-visualization](./writing_visualization_basic.html#write-new-visualization).
 
 - Add framework dependency called zeppelin-spell into `package.json`
 - Write code using framework
@@ -198,7 +198,7 @@ It's automatically created when you publish to npm repository but in local case,
 - Place this file in your local registry directory (default `$ZEPPELIN_HOME/helium`).
 - `type` should be `SPELL`
 - Make sure that `artifact` should be same as your spell directory.
-- You can get information about other fields in [Helium Visualization#3-create-helium-package-file-and-locally-deploy](./writingzeppelinvisualization.html#3-create-helium-package-file-and-locally-deploy).
+- You can get information about other fields in [Helium Visualization#3-create-helium-package-file-and-locally-deploy](./writing_visualization_basic.html#3-create-helium-package-file-and-locally-deploy).
 
 ### 4. Run in dev mode
 

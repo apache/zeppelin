@@ -2,7 +2,7 @@
 layout: page
 title: "Contributing to Apache Zeppelin (Code)"
 description: "How can you contribute to Apache Zeppelin project? This document covers from setting up your develop environment to making a pull request on Github."
-group: development
+group: development/contribution
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Writing a new Visualization"
+title: "Writing a new Helium Visualization: basic"
 description: "Apache Zeppelin Visualization is a pluggable package that can be loaded/unloaded on runtime through Helium framework in Zeppelin. A Visualization is a javascript npm package and user can use them just like any other built-in visualization in a note."
-group: development
+group: development/helium
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ Once Zeppelin loads _Helium package files_ from registries, available packages a
 
 Click 'enable' button.
 
-<img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_visualization_helium_menu.png" />
+<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_visualization_helium_menu.png" />
 
 
 #### 3. Create and load visualization bundle on the fly
@@ -53,7 +53,7 @@ Once a Visualization package is enabled, [HeliumBundleFactory](https://github.co
 Zeppelin shows additional button for loaded Visualizations.
 User can use just like any other built-in visualizations.
 
-<img class="img-responsive" style="width:70%" src="../assets/themes/zeppelin/img/docs-img/writing_visualization_example.png" />
+<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_visualization_example.png" />
 
 
 
@@ -134,8 +134,10 @@ Place this file in your local registry directory (default `./helium`).
 
 ##### type
 
-When you're creating a visualization, 'type' should be 'VISUALIZATION'.
-Check [application](./writingzeppelinapplication.html) type if you're interested in the other types of package.
+When you're creating a visualization, 'type' should be 'VISUALIZATION'. Check these types as well.
+
+- [Helium Application](./writing_application.html)
+- [Helium Spell](./writing_spell.html)
 
 ##### name
 
