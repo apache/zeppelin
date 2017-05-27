@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin on CDH"
 description: "This document will guide you how you can build and configure the environment on CDH with Apache Zeppelin using docker scripts."
-group: install
+group: setup/deployment 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -85,16 +85,16 @@ export SPARK_HOME=[your_spark_home_path]
 
 Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
 
-<img src="../assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
+<img src="/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
 
 ### 5. Run Zeppelin with Spark interpreter
 After running a single paragraph with Spark interpreter in Zeppelin,
 
-<img src="../assets/themes/zeppelin/img/docs-img/zeppelin_with_cdh.png" />
+<img src="/assets/themes/zeppelin/img/docs-img/zeppelin_with_cdh.png" />
 
 <br/>
 
 browse `http://<hostname>:8088/cluster/apps` to check Zeppelin application is running well or not.
 
-<img src="../assets/themes/zeppelin/img/docs-img/cdh_yarn_applications.png" />
+<img src="/assets/themes/zeppelin/img/docs-img/cdh_yarn_applications.png" />
 

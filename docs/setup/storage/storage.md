@@ -2,7 +2,7 @@
 layout: page
 title: "Notebook Storage for Apache Zeppelin"
 description: Apache Zeppelin has a pluggable notebook storage mechanism controlled by zeppelin.notebook.storage configuration option with multiple implementations."
-group: storage
+group: setup/storage
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Shiro Authentication for Apache Zeppelin"
 description: "Apache Shiro is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. This document explains step by step how Shiro can be used for Zeppelin notebook authentication."
-group: security
+group: setup/security
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +55,7 @@ Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 ### 4. Login
 Finally, you can login using one of the below **username/password** combinations.
 
-<center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
 
 ```
 [users]
@@ -231,5 +231,5 @@ If you want to grant this permission to other users, you can change **roles[ ]**
 
 ## Other authentication methods
 
-- [HTTP Basic Authentication using NGINX](./authentication.html)
+- [HTTP Basic Authentication using NGINX](./authentication_nginx.html)
 

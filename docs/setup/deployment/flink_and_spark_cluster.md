@@ -2,7 +2,7 @@
 layout: page
 title: "Install Zeppelin with Flink and Spark in cluster mode"
 description: ""
-group: setup/cluster 
+group: setup/deployment 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,7 +100,7 @@ sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/bin/mvn
 ```
 
 ### Installing Zeppelin
-This provides a quick overview of Zeppelin installation from source, however the reader is encouraged to review the [Zeppelin Installation Guide](../install/install.html)
+This provides a quick overview of Zeppelin installation from source, however the reader is encouraged to review the [Zeppelin Installation Guide](../../quickstart/install.html)
 
 From the command prompt:
 Clone Zeppelin.
@@ -153,7 +153,7 @@ Use `ifconfig` to determine the host machine's IP address. If you are not famili
 
 Open a web-browser on a machine connected to the same network as the host (or in the host operating system if using a virtual machine).  Navigate to http://`yourip`:8080, where yourip is the IP address you found in `ifconfig`.
 
-See the [Zeppelin tutorial](../tutorial/tutorial.html) for basic Zeppelin usage. It is also advised that you take a moment to check out the tutorial notebook that is included with each Zeppelin install, and to familiarize yourself with basic notebook functionality.
+See the [Zeppelin tutorial](../../quickstart/tutorial.html) for basic Zeppelin usage. It is also advised that you take a moment to check out the tutorial notebook that is included with each Zeppelin install, and to familiarize yourself with basic notebook functionality.
 
 ##### Flink Test
 Create a new notebook named "Flink Test" and copy and paste the following code.
@@ -291,7 +291,7 @@ build-target/bin/start-cluster.sh
 
 In a browser, navigate to http://`yourip`:8082 to see the Flink Web-UI.  Click on 'Task Managers' in the left navigation bar. Ensure there is at least one Task Manager present.
 
-<center>![alt text](../assets/themes/zeppelin/img/screenshots/flink-webui.png "The Flink Web-UI")</center>
+<center>![alt text](/assets/themes/zeppelin/img/screenshots/flink-webui.png "The Flink Web-UI")</center>
 
 
 If no task managers are present, restart the Flink cluster with the following commands:
@@ -369,7 +369,7 @@ spark/sbin/start-master.sh --webui-port 8082
 
 Open a browser and navigate to http://`yourip`:8082 to ensure the Spark master is running.
 
-<center>![alt text](../assets/themes/zeppelin/img/screenshots/spark-master-webui1.png "It should look like this...")</center>
+<center>![alt text](/assets/themes/zeppelin/img/screenshots/spark-master-webui1.png "It should look like this...")</center>
 
 Toward the top of the page there will be a *URL*: spark://`yourhost`:7077.  Note this URL, the Spark Master URI, it will be needed in subsequent steps.
 
@@ -416,6 +416,6 @@ You should be able check the Flink and Spark webuis (at something like http://`y
 
 ### Next Steps
 
-Check out the [tutorial](./tutorial.html) for more cool things you can do with your new toy!
+Check out the [tutorial](../../quickstart/tutorial.html) for more cool things you can do with your new toy!
 
 [Join the community](http://zeppelin.apache.org/community.html), ask questions and contribute! Every little bit helps.

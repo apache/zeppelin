@@ -83,13 +83,14 @@ limitations under the License.
 * Basics 
   * [How to Build Zeppelin](./setup/basics/how_to_build.html)
   * [Multi-user Support](./setup/basics/multi_user_support.html)
-* Setup Zeppelin on Cluster 
-  * [Spark Cluster Mode: Standalone](./setup/cluster/spark_cluster_mode.html#spark-standalone-mode)
-  * [Spark Cluster Mode: YARN](./setup/cluster/spark_cluster_mode.html#spark-on-yarn-mode)
-  * [Spark Cluster Mode: Mesos](./setup/cluster/spark_cluster_mode.html#spark-on-mesos-mode)
-  * [Zeppelin with Flink and Spark Cluster](./setup/cluster/zeppelin_with_flink_and_spark_cluster.html)
-  * [Zeppelin on CDH](./setup/cluster/cdh.html)
-  * [Zeppelin on VM: Vagrant](./setup/cluster/virtual_machine.html)
+* Deployment 
+  * [Docker Image for Zeppelin](./setup/deployment/docker.html)
+  * [Spark Cluster Mode: Standalone](./setup/deployment/spark_cluster_mode.html#spark-standalone-mode)
+  * [Spark Cluster Mode: YARN](./setup/deployment/spark_cluster_mode.html#spark-on-yarn-mode)
+  * [Spark Cluster Mode: Mesos](./setup/deployment/spark_cluster_mode.html#spark-on-mesos-mode)
+  * [Zeppelin with Flink and Spark Cluster](./setup/deployment/flink_and_spark_cluster.html)
+  * [Zeppelin on CDH](./setup/deployment/cdh.html)
+  * [Zeppelin on VM: Vagrant](./setup/deployment/virtual_machine.html)
 * Security: available security support in Apache Zeppelin
   * [HTTP Basic Auth using NGINX](./setup/security/authentication_nginx.html)
   * [Shiro Authentication](./setup/security/shiro_authentication.html)
@@ -100,7 +101,7 @@ limitations under the License.
   * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
   * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
-  * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-torage-in-zeppelinhub)
+  * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-storage-in-zeppelinhub)
   * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 
   * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin

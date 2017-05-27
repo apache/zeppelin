@@ -2,7 +2,7 @@
 layout: page
 title: "Manual Zeppelin version upgrade procedure"
 description: "This document will guide you through a procedure of manual upgrade your Apache Zeppelin instance to a newer version. Apache Zeppelin keeps backward compatibility for the notebook file format."
-group: install
+group: setup/operation 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ So, copying `notebook` and `conf` directory should be enough.
 
 1. Copy your `notebook` and `conf` directory into a backup directory
 
-1. Download newer version of Zeppelin and Install. See [Install page](./install.html#installation).
+1. Download newer version of Zeppelin and Install. See [Install Guide](../../quickstart/install.html#install).
 
 1. Copy backup `notebook` and `conf` directory into newer version of Zeppelin `notebook` and `conf` directory
 

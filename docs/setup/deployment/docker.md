@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin Releases Docker Images"
 description: "This document contains instructions about making docker containers for Zeppelin. It mainly provides guidance into how to create, publish and run docker images for zeppelin releases."
-group: install
+group: setup/deployment 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

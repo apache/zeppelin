@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Authentication for NGINX"
+title: "HTTP Basic Auth using NGINX"
 description: "There are multiple ways to enable authentication in Apache Zeppelin. This page describes HTTP basic auth using NGINX."
-group: security
+group: setup/security
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ limitations under the License.
 
 <div id="toc"></div>
 
-[Build in authentication mechanism](./shiroauthentication.html) is recommended way for authentication. In case of you want authenticate using NGINX and [HTTP basic auth](https://en.wikipedia.org/wiki/Basic_access_authentication), please read this document.
+[Build in authentication mechanism](./shiro_authentication.html) is recommended way for authentication. In case of you want authenticate using NGINX and [HTTP basic auth](https://en.wikipedia.org/wiki/Basic_access_authentication), please read this document.
 
 ## HTTP Basic Authentication using NGINX
 
@@ -121,7 +121,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 1. More security consideration
 
 * Using HTTPS connection with Basic Authentication is highly recommended since basic auth without encryption may expose your important credential information over the network.
-* Using [Shiro Security feature built-into Zeppelin](./shiroauthentication.html) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.
+* Using [Shiro Security feature built-into Zeppelin](./shiro_authentication.html) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.
 * It is recommended to isolate direct connection to Zeppelin server from public internet or external services to secure your zeppelin instance from unexpected attack or problems caused by public zone.
 
 ## Another option

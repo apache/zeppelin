@@ -2,7 +2,7 @@
 layout: page
 title: "Install Zeppelin to connect with existing YARN cluster"
 description: "This page describes how to pre-configure a bare metal node, configure Apache Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop."
-group: install
+group: setup/deployment 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin on Vagrant Virtual Machine"
 description: "Apache Zeppelin provides a script for running a virtual machine for development through Vagrant. The script will create a virtual machine with core dependencies pre-installed, required for developing Apache Zeppelin."
-group: install
+group: setup/deployment 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");

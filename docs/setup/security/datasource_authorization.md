@@ -2,7 +2,7 @@
 layout: page
 title: "Data Source Authorization in Apache Zeppelin"
 description: "Apache Zeppelin supports protected data sources. In case of a MySql database, every users can set up their own credentials to access it."
-group: security
+group: setup/security
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,17 +35,17 @@ In this case, you can add your credential information to Apache Zeppelin and use
 ## How to save the credential information?
 You can add new credentials in the dropdown menu for your data source which can be passed to interpreters. 
 
-<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/credential_tab.png" width="180px"/>
+<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/credential_tab.png" width="180px"/>
 
 **Entity** can be the key that distinguishes each credential sets.(We suggest that the convention of the **Entity** is `[Interpreter Group].[Interpreter Name]`.)
-Please see [what is interpreter group](../manual/interpreters.html#what-is-interpreter-group) for the detailed information.
+Please see [what is interpreter group](../../usage/interpreter/overview.html#what-is-interpreter-group) for the detailed information.
 
 Type **Username & Password** for your own credentials. ex) Mysql user & password of the JDBC Interpreter.
 
-<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/add_credential.png" />
+<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/add_credential.png" />
 
 The credentials saved as per users defined in `conf/shiro.ini`.
-If you didn't activate [shiro authentication in Apache Zeppelin](./shiroauthentication.html), your credential information will be saved as `anonymous`.
+If you didn't activate [shiro authentication in Apache Zeppelin](./shiro_authentication.html), your credential information will be saved as `anonymous`.
 All credential information also can be found in `conf/credentials.json`. 
 
 #### JDBC interpreter
@@ -60,5 +60,5 @@ You have to store the password information for users.
 
 ## Please note
 As a first step of data source authentication feature, [ZEPPELIN-828](https://issues.apache.org/jira/browse/ZEPPELIN-828) was proposed and implemented in Pull Request [#860](https://github.com/apache/zeppelin/pull/860).
-Currently, only customized 3rd party interpreters can use this feature. We are planning to apply this mechanism to [the community managed interpreters](../manual/interpreterinstallation.html#available-community-managed-interpreters) in the near future. 
+Currently, only customized 3rd party interpreters can use this feature. We are planning to apply this mechanism to [the community managed interpreters](../../usage/interpreter/installation.html#available-community-managed-interpreters) in the near future. 
 Please keep track [ZEPPELIN-1070](https://issues.apache.org/jira/browse/ZEPPELIN-1070). 

@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Build from Source"
+title: "How to Build Zeppelin from source"
 description: "How to build Zeppelin from source"
-group: install
+group: setup/basics 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Building from Source
+## How to Build Zeppelin from Source
 
 <div id="toc"></div>
 
@@ -82,7 +82,7 @@ You can directly start Zeppelin by running after successful build:
 Check [build-profiles](#build-profiles) section for further build options.
 If you are behind proxy, follow instructions in [Proxy setting](#proxy-setting-optional) section.
 
-If you're interested in contribution, please check [Contributing to Apache Zeppelin (Code)](../development/howtocontribute.html) and [Contributing to Apache Zeppelin (Website)](../../development/contributewebsite.html).
+If you're interested in contribution, please check [Contributing to Apache Zeppelin (Code)](../../development/contribution/how_to_contribute_code.html) and [Contributing to Apache Zeppelin (Website)](../../development/contribution/how_to_contribute_website.html).
 
 ### Build profiles
 

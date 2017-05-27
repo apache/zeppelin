@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin Configuration"
 description: "This page will guide you to configure Apache Zeppelin using either environment variables or Java properties. Also, you can configure SSL for Zeppelin."
-group: install
+group: setup/operation 
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
