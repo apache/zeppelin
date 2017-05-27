@@ -333,7 +333,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
       InterpreterResult result_including_traceback = new InterpreterResult(InterpreterResult.Code.ERROR);
       result_including_traceback.add(stmtInfo.output.evalue);
-      for (int i=0;i<stmtInfo.output.traceback.length;i++)
+      for(int i = 0; i < stmtInfo.output.traceback.length; i++)
         result_including_traceback.add(stmtInfo.output.traceback[i]);
       return result_including_traceback;
     } else if (stmtInfo.isCancelled()) {
