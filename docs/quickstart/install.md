@@ -46,7 +46,7 @@ Apache Zeppelin officially supports and is tested on the following environments:
 
 ### Downloading Binary Package
 
-Two binary packages are available on the [Apache Zeppelin Download Page](http://zeppelin.apache.org/download.html). Only difference between these two binaries is interpreters are included in the package file.
+Two binary packages are available on the [download page](http://zeppelin.apache.org/download.html). Only difference between these two binaries is interpreters are included in the package file.
 
 - #### Package with `all` interpreters.
 
@@ -127,32 +127,32 @@ exec bin/zeppelin-daemon.sh upstart
 Congratulations, you have successfully installed Apache Zeppelin! Here are few steps you might find useful:
 
 #### New to Apache Zeppelin...
- * For an in-depth overview, head to [Explore Apache Zeppelin UI](../quickstart/explore_ui.html).
- * And then, try run [tutorial](http://localhost:8080/#/notebook/2A94M5J1Z) notebook in your Zeppelin.
+ * For an in-depth overview, head to [Explore Zeppelin UI](../quickstart/explore_ui.html).
+ * And then, try run [Tutorial](http://localhost:8080/#/notebook/2A94M5J1Z) notebook in your Zeppelin.
  * And see how to change [configurations](../setup/operation/configuration.html) like port number, etc.
 
-#### Zeppelin with Apache Spark ...
- * To know more about deep integration with [Apache Spark](http://spark.apache.org/), check [Spark Interpreter](../interpreter/spark.html).
+#### Zeppelin with Spark...
+ * Check [Spark support in Zeppelin](./spark_with_zeppelin.html), to know more about deep integration with [Apache Spark](http://spark.apache.org/). 
 
-#### Zeppelin with JDBC data sources ...
- * Check [JDBC Interpreter](../interpreter/jdbc.html) to know more about configure and uses multiple JDBC data sources.
+#### Zeppelin with SQL...
+ * Check [SQL support in Zeppelin](./sql_with_zeppelin.html)
 
-#### Zeppelin with Python ...
- * Check [Python interpreter](../interpreter/python.html) to know more about Matplotlib, Pandas, Conda/Docker environment integration.
+#### Zeppelin with Python...
+ * Check [Python support in Zeppelin](./python_with_zeppelin.html) to know more about Matplotlib, Pandas, Conda/Docker environment integration.
 
 
 #### Multi-user environment ...
- * Turn on [authentication](../setup/security/shiro_authentication.html).
- * Manage your [notebook permission](../setup/security/notebook_authorization.html).
+ * Turn on [Authentication](../setup/security/shiro_authentication.html).
+ * Manage your [Notebook Permission](../setup/security/notebook_authorization.html).
  * For more informations, go to **More** -> **Security** section.
 
 #### Other useful information ...
  * Learn how [Display System](../usage/display_system/basic.html) works.
  * Use [Service Manager](#start-apache-zeppelin-with-a-service-manager) to start Zeppelin.
- * If you're using previous version please see [Upgrade Zeppelin version](../setup/operation/upgrading.html).
+ * If you're using previous version please see [Upgrading](../setup/operation/upgrading.html).
 
 
-## Building Apache Zeppelin from Source
+#### Building Apache Zeppelin from Source
 
 If you want to build from source instead of using binary package, follow the instructions [here](../setup/basics/how_to_build.html).
 
