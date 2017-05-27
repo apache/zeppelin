@@ -88,7 +88,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 public class SparkInterpreter extends Interpreter {
   public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
-  private static SparkZeppelinContext z;
+  private SparkZeppelinContext z;
   private SparkILoop interpreter;
   /**
    * intp - org.apache.spark.repl.SparkIMain (scala 2.10)
