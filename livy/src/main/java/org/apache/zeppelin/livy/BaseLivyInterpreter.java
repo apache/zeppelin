@@ -333,9 +333,10 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
       InterpreterResult result = new InterpreterResult(InterpreterResult.Code.ERROR);
       result.add(stmtInfo.output.evalue);
-      for (int i = 0; i < stmtInfo.output.traceback.length; i++)
-        result.add(stmtInfo.output.traceback[i]);
-      return result;
+      if (stmtInfo.output.traceback != null) {
+        for (int i = 0; i < stmtInfo.output.traceback.length; i++)
+          result.add(stmtInfo.output.traceback[i]);
+      } return result;
     } else if (stmtInfo.isCancelled()) {
       // corner case, output might be null if it is cancelled.
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
