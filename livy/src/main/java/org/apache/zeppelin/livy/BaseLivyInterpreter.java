@@ -331,9 +331,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
-      InterpreterResult result_including_traceback = new InterpreterResult(InterpreterResult.Code.ERROR);
-      result_including_traceback.add(stmtInfo.output.evalue);
-      for(int i = 0; i < stmtInfo.output.traceback.length; i++)
+      InterpreterResult result = new InterpreterResult(InterpreterResult.Code.ERROR);
+      result.add(stmtInfo.output.evalue);
+      for (int i = 0; i < stmtInfo.output.traceback.length; i++)
         result_including_traceback.add(stmtInfo.output.traceback[i]);
       return result_including_traceback;
     } else if (stmtInfo.isCancelled()) {
