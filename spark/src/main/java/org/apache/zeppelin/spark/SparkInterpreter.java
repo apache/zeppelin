@@ -43,12 +43,9 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.SparkListenerJobStart;
-import org.apache.spark.scheduler.StageInfo;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.spark.ui.jobs.UIData.JobUIData;
-import org.apache.spark.ui.jobs.UIData.StageUIData;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
@@ -175,7 +172,6 @@ public class SparkInterpreter extends Interpreter {
         String jobUrl = getJobUrl(jobId);
         String noteId = Utils.getNoteId(jobGroupId);
         String paragraphId = Utils.getParagraphId(jobGroupId);
-        populateUserInfoInStages(ctx, jobId);
           
         if (jobUrl != null && noteId != null && paragraphId != null) {
           RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
@@ -185,32 +181,6 @@ public class SparkInterpreter extends Interpreter {
           infos.put("tooltip", "View in Spark web UI");
           if (eventClient != null) {
             eventClient.onParaInfosReceived(noteId, paragraphId, infos);
-          }
-        }
-      }
-
-      private void populateUserInfoInStages(final SparkZeppelinContext ctx, int jobId) {
-        Option<JobUIData> jobUIDataOption = this.jobIdToData().get(jobId);
-        JobUIData jobUIData = jobUIDataOption.get();
-        Seq<Object> stageIds = jobUIData.stageIds();
-        Iterator<Object> iterator = stageIds.iterator();
-        while (iterator.hasNext()) {
-          Object stageId = iterator.next();
-          StageInfo info = stageIdToInfo().getOrElse(stageId, null);
-          Option<StageUIData> stageData = stageIdToData().get(
-              new Tuple2<Object, Object>(info.stageId(), info.attemptId()));
-          StageUIData stageUIData = stageData.get();
-          if (stageUIData != null) {
-            Option<String> description = stageUIData.description();
-            String desc = description.get();
-            InterpreterContext interpreterContext = ctx.getInterpreterContext();
-            AuthenticationInfo authenticationInfo = interpreterContext.getAuthenticationInfo();
-            String user = "";
-            if (authenticationInfo != null) {
-              user = authenticationInfo.getUser();
-            }
-            String newDesc = desc + ":" + user;
-            stageUIData.description_$eq(new Some<String>(newDesc));
           }
         }
       }
@@ -1214,7 +1184,8 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
-      sc.setJobGroup(Utils.buildJobGroupId(context), "Zeppelin", false);
+      String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+      sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
