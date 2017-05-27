@@ -331,7 +331,11 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, stmtInfo.output.evalue);
+      InterpreterResult result_including_traceback = new InterpreterResult(InterpreterResult.Code.ERROR);
+      result_including_traceback.add(stmtInfo.output.evalue);
+      for (int i=0;i<stmtInfo.output.traceback.length;i++)
+        result_including_traceback.add(stmtInfo.output.traceback[i]);
+      return result_including_traceback;
     } else if (stmtInfo.isCancelled()) {
       // corner case, output might be null if it is cancelled.
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
@@ -632,7 +636,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       public Data data;
       public String ename;
       public String evalue;
-      public Object traceback;
+      public String[] traceback;
       public TableMagic tableMagic;
 
       public boolean isError() {
