@@ -54,7 +54,7 @@ Two binary packages are available on the [Apache Zeppelin Download Page](http://
 
 - #### Package with `net-install` interpreters.
 
-  Unpack and follow [install additional interpreters](../manual/interpreterinstallation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
+  Unpack and follow [install additional interpreters](../usage/interpreter/installation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
 
 ## Starting Apache Zeppelin
 
@@ -127,9 +127,9 @@ exec bin/zeppelin-daemon.sh upstart
 Congratulations, you have successfully installed Apache Zeppelin! Here are few steps you might find useful:
 
 #### New to Apache Zeppelin...
- * For an in-depth overview, head to [Explore Apache Zeppelin UI](../quickstart/explorezeppelinui.html).
+ * For an in-depth overview, head to [Explore Apache Zeppelin UI](../quickstart/explore_ui.html).
  * And then, try run [tutorial](http://localhost:8080/#/notebook/2A94M5J1Z) notebook in your Zeppelin.
- * And see how to change [configurations](./configuration.html) like port number, etc.
+ * And see how to change [configurations](../setup/operation/configuration.html) like port number, etc.
 
 #### Zeppelin with Apache Spark ...
  * To know more about deep integration with [Apache Spark](http://spark.apache.org/), check [Spark Interpreter](../interpreter/spark.html).
@@ -142,17 +142,17 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
 
 
 #### Multi-user environment ...
- * Turn on [authentication](../security/shiroauthentication.html).
- * Manage your [notebook permission](../security/notebook_authorization.html).
+ * Turn on [authentication](../setup/security/shiro_authentication.html).
+ * Manage your [notebook permission](../setup/security/notebook_authorization.html).
  * For more informations, go to **More** -> **Security** section.
 
 #### Other useful information ...
- * Learn how [Display System](../displaysystem/basicdisplaysystem.html) works.
+ * Learn how [Display System](../usage/display_system/basic.html) works.
  * Use [Service Manager](#start-apache-zeppelin-with-a-service-manager) to start Zeppelin.
- * If you're using previous version please see [Upgrade Zeppelin version](./upgrade.html).
+ * If you're using previous version please see [Upgrade Zeppelin version](../setup/operation/upgrading.html).
 
 
 ## Building Apache Zeppelin from Source
 
-If you want to build from source instead of using binary package, follow the instructions [here](./build.html).
+If you want to build from source instead of using binary package, follow the instructions [here](../setup/basics/how_to_build.html).
 
