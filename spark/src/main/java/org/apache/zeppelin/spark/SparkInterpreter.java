@@ -162,7 +162,6 @@ public class SparkInterpreter extends Interpreter {
   }
 
   static JobProgressListener setupListeners(SparkContext context) {
-    final SparkZeppelinContext ctx = z;
     JobProgressListener pl = new JobProgressListener(context.getConf()) {
       @Override
       public synchronized void onJobStart(SparkListenerJobStart jobStart) {
