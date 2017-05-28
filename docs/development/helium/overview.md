@@ -25,3 +25,15 @@ limitations under the License.
 
 ## What is Helium? 
 
+Helium is a plugin system that can extend Zeppelin a lot. 
+For example, you can write [custom display system](./writing_spell.html) or 
+install already published one in [Heliun Online Registry](http://zeppelin.apache.org/helium_packages.html). 
+
+Currently, Helium supports 4 types of package.
+
+- [Helium Visualization](./writing_visualization_basic.html): Adding a new chart type
+- [Helium Spell](./writing_spell.html): Adding new interpreter, display system running on browser
+- [Helium Application](./writing_application.html) 
+- [Helium Interpreter](../writing_zeppelin_interpreter.html): Adding a new custom interpreter
+
+

@@ -205,3 +205,8 @@ You can browse localhost:9000. Everytime refresh your browser, Zeppelin will reb
 
 Once it's done, publish your visualization package using `npm publish`.
 That's it. With in an hour, your visualization will be available in Zeppelin's helium menu.
+
+### See More
+
+Check [Helium Visualization: Transformation](./writing_visualization_transformation.html) for more complex examples.
+
