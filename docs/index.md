@@ -84,7 +84,6 @@ limitations under the License.
   * [How to Build Zeppelin](./setup/basics/how_to_build.html)
   * [Multi-user Support](./setup/basics/multi_user_support.html)
 * Deployment 
-  * [Docker Image for Zeppelin](./setup/deployment/docker.html)
   * [Spark Cluster Mode: Standalone](./setup/deployment/spark_cluster_mode.html#spark-standalone-mode)
   * [Spark Cluster Mode: YARN](./setup/deployment/spark_cluster_mode.html#spark-on-yarn-mode)
   * [Spark Cluster Mode: Mesos](./setup/deployment/spark_cluster_mode.html#spark-on-mesos-mode)
