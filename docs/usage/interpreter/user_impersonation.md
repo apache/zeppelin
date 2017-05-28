@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Impersonation: run zeppelin interpreter process as web front end user"
+title: "Impersonation"
 description: "Set up zeppelin interpreter process as web front end user."
 group: usage/interpreter 
 ---
@@ -19,9 +19,13 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-## Impersonation: run zeppelin interpreter process as web frontend user
+# Impersonation
 
- * Enable shiro auth in shiro.ini
+User impersonation enables to run zeppelin interpreter process as a web frontend user
+
+## Setup
+
+#### 1. Enable Shiro auth in `conf/shiro.ini`
 
 ```
 [users]
@@ -29,7 +33,7 @@ user1 = password1, role1
 user2 = password2, role2
 ```
 
- * Enable password-less ssh for the user you want to impersonate (say user1).
+#### 2. Enable password-less ssh for the user you want to impersonate (say user1).
 
 ```
 adduser user1
@@ -38,21 +42,26 @@ ssh user1@localhost mkdir -p .ssh
 cat ~/.ssh/id_rsa.pub | ssh user1@localhost 'cat >> .ssh/authorized_keys'
 ```
 
-* Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_CMD in zeppelin-env.sh
+Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_CMD in zeppelin-env.sh
 
 ```
 export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c '
 ```
 
 
- * Start zeppelin server.
+#### 4. Restart zeppelin server.
 
-<hr>
+```
+# for OSX, linux
+bin/zeppelin-daemon restart
+
+# for windows
+bin\zeppelin.cmd
+```
+
+#### 5. Configure impersonation for interpreter 
+
 <div class="row">
-  <div class="col-md-12">
-         <b> Screenshot </b>
-         <br /><br />
-  </div>
   <div class="col-md-12" >
       <a data-lightbox="compiler" href="/assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
         <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
@@ -60,16 +69,16 @@ export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c
 
   </div>
 </div>
-<hr>
 
- * Go to interpreter setting page, and enable "User Impersonate" in any of the interpreter (in my example its shell interpreter)
+<br/>
 
- * Test with a simple paragraph
+Go to interpreter setting page, and enable "User Impersonate" in any of the interpreter (in my example its shell interpreter)
+
+#### 6. Test with a simple paragraph
 
 ```
 %sh
 whoami
 ```
-
 
 Note that usage of "User Impersonate" option will enable Spark interpreter to use `--proxy-user` option with current user by default. If you want to disable `--proxy-user` option, then refer to `ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER` variable in `conf/zeppelin-env.sh`
