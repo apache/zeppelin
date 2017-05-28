@@ -46,8 +46,8 @@ limitations under the License.
 #### Quick Start
 
 * [Install](./quickstart/install.html) for basic instructions on installing Apache Zeppelin
-* [Tutorial](./quickstart/tutorial.html)
 * [Explore UI](./quickstart/explore_ui.html): basic components of Apache Zeppelin home
+* [Tutorial](./quickstart/tutorial.html)
 * [Spark with Zeppelin](./quickstart/spark_with_zeppelin.html)
 * [SQL with Zeppelin](./quickstart/sql_with_zeppelin.html)
 * [Python with Zeppelin](./quickstart/python_with_zeppelin.html)

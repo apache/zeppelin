@@ -48,13 +48,12 @@ Apache Zeppelin officially supports and is tested on the following environments:
 
 Two binary packages are available on the [download page](http://zeppelin.apache.org/download.html). Only difference between these two binaries is interpreters are included in the package file.
 
-- #### Package with `all` interpreters.
+- **all interpreter package**: unpack it in a directory of your choice and you're ready to go.
+- **net-install interpreter package**: unpack and follow [install additional interpreters](../usage/interpreter/installation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
+  
+### Building Zeppelin from source
 
-  Just unpack it in a directory of your choice and you're ready to go.
-
-- #### Package with `net-install` interpreters.
-
-  Unpack and follow [install additional interpreters](../usage/interpreter/installation.html) to install interpreters. If you're unsure, just run `./bin/install-interpreter.sh --all` and install all interpreters.
+follow the instructions [How to Build](../setup/basics/how_to_build.html), If you want to build from source instead of using binary package.
 
 ## Starting Apache Zeppelin
 
@@ -80,9 +79,9 @@ After Zeppelin has started successfully, go to [http://localhost:8080](http://lo
 bin/zeppelin-daemon.sh stop
 ```
 
-#### Start Apache Zeppelin with a service manager
+## Start Apache Zeppelin with a service manager
 
-> **Note :** The below description was written based on Ubuntu Linux.
+> **Note :** The below description was written based on Ubuntu.
 
 Apache Zeppelin can be auto-started as a service with an init script, using a service manager like **upstart**.
 
@@ -128,7 +127,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
 
 #### New to Apache Zeppelin...
  * For an in-depth overview, head to [Explore Zeppelin UI](../quickstart/explore_ui.html).
- * And then, try run [Tutorial](http://localhost:8080/#/notebook/2A94M5J1Z) notebook in your Zeppelin.
+ * And then, try run [Tutorial Notebook](http://localhost:8080/#/notebook/2A94M5J1Z) in your Zeppelin.
  * And see how to change [configurations](../setup/operation/configuration.html) like port number, etc.
 
 #### Zeppelin with Spark...
@@ -146,13 +145,4 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * Manage your [Notebook Permission](../setup/security/notebook_authorization.html).
  * For more informations, go to **More** -> **Security** section.
 
-#### Other useful information ...
- * Learn how [Display System](../usage/display_system/basic.html) works.
- * Use [Service Manager](#start-apache-zeppelin-with-a-service-manager) to start Zeppelin.
- * If you're using previous version please see [Upgrading](../setup/operation/upgrading.html).
-
-
-#### Building Apache Zeppelin from Source
-
-If you want to build from source instead of using binary package, follow the instructions [here](../setup/basics/how_to_build.html).
 
