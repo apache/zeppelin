@@ -64,6 +64,7 @@ limitations under the License.
 * Interpreter  
   * [Overview](./usage/interpreter/overview.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
   * [User Impersonation](./usage/interpreter/user_impersonation.html) when you want to run interpreter as end user
+  * [Interpreter Binding Mode](./usage/interpreter/interpreter_binding_mode.html) when you want to manage separate interpreter contexts 
   * [Dependency Management](./usage/interpreter/dependency_management.html) when you include external libraries to interpreter
   * [Installing Interpreters](./usage/interpreter/installation.html): Install not only community managed interpreters but also 3rd party interpreters
   * [Execution Hooks](./usage/interpreter/execution_hooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution

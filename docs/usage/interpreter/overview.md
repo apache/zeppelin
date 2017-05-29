@@ -96,6 +96,8 @@ Each interpreters is belonged to a single group and registered together. All of 
 Each Interpreter Setting can choose one of 'shared', 'scoped', 'isolated' interpreter binding mode.
 In 'shared' mode, every notebook bound to the Interpreter Setting will share the single Interpreter instance. In 'scoped' mode, each notebook will create new Interpreter instance in the same interpreter process. In 'isolated' mode, each notebook will create new Interpreter process.
 
+For more information, check [Interpreter Binding Mode](./interpreter_binding_mode.html).
+
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
 
 

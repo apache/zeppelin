@@ -28,7 +28,7 @@ This page describes about multi-user support. Zeppelin
 - allows multiple users login / logout using [Shiro Authentication](../setup/security/shiro_authentication.html)
 - can manage [Notebook Permission](../setup/security/notebook_authorization.html)
 - provides [impersonation via interpreters](../../usage/interpreter/user_impersonation.html)
-- interpreters have different contexts using [Interpreter Modes]()
-- paragraph in a notebook can be [Personalized]() 
+- interpreters can have different contexts using [Interpreter Binding Mode](../../usage/interpreter/interpreter_binding_mode.html)
+- paragraph in a notebook can be [Personalized](../../usage/other_features/personalized_mode.html) 
 - propagates changes in notebooks through websocket in real-time
 
