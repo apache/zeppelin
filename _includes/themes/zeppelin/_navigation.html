@@ -8,16 +8,15 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/">
-            <img src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin">
-            Apache Zeppelin
+            <img src="/assets/themes/zeppelin/img/zeppelin_logo.png"
+                 style="margin-top: -2px;" width="50" alt="I'm zeppelin">
+            <span style="margin-left: 5px;"> Apache Zeppelin </span>
           </a>
         </div>
         <nav class="navbar-collapse collapse" role="navigation">
           <ul class="nav navbar-nav navbar-right">
-            {% assign pages_list = site.pages %}
-            {% assign group = 'nav-right' %}
-            {% include JB/pages_list %}
-            
+            <li><a href="/helium_packages.html">Quick Start</a></li>
+
             <!-- Download -->
             <li id="docs">
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Download<b class="caret"></b></a>
@@ -44,7 +43,10 @@
             </li>
 
             <li><a href="/helium_packages.html">Helium</a></li>
-            <li><a href="https://github.com/apache/zeppelin">GitHub</a></li>
+
+            {% assign pages_list = site.pages %}
+            {% assign group = 'nav-right' %}
+            {% include JB/pages_list %}
 
             <!-- Apache -->
             <li id="apache">
@@ -65,14 +67,23 @@
 {% if page.title == "Zeppelin" %}
 <div class="jumbotron">
   <div class="container">
-    <h1>Apache Zeppelin</h1>
-    <p>A web-based notebook that enables interactive data analytics. <br/>
-      You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
+    <p style="font-size: 25px; font-weight: 300;">
+      A web-based notebook that enables interactive data analytics for
+      <br/>
+      data-driven, interactive and collaborative documents with SQL, Scala and more.
     </p>
     <div class="border row">
       <div class="col-md-12 col-sm-12 col-xs-12 text-center newBtn">
-        <a href="http://youtu.be/_PQbVH_aO5E" target="_zeppelinVideo" class="btn btn-primary btn-lg bigFingerButton" role="button">Tutorial Video</a>
-        <a href="./download.html" class="btn btn-primary btn-lg bigFingerButton" role="button">GET LATEST ZEPPELIN</a>
+        <a href="http://youtu.be/_PQbVH_aO5E" target="_zeppelinVideo"
+           class="btn btn-primary btn-lg" role="button"
+           style="margin: 5px; font-size: 15px; font-weight: 300; font-family: 'Roboto', sans-serif;">
+          GET STARTED
+        </a>
+        <a href="./download.html" class="btn btn-primary btn-lg"
+           role="button"
+           style="margin: 5px; font-size: 15px; font-weight: 300; font-family: 'Roboto', sans-serif;">
+          DOWNLOAD
+        </a>
       </div>
     </div>
   </div>

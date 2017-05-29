@@ -4,7 +4,6 @@
 
 body {
   padding-top: 50px;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: #4c555a;
   letter-spacing: .2px;
@@ -17,9 +16,10 @@ body {
 }
 
 .jumbotron {
-  background-color: #3071a9;
+  background-color: #4881b3;
   margin-bottom: 0px;
-  padding-top: 28px;
+  padding-top: 60px;
+  padding-bottom: 30px;
 }
 
 .jumbotron h1,
@@ -77,8 +77,8 @@ body {
 }
 
 .navbar-brand {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 .navbar-brand img {
@@ -88,10 +88,15 @@ body {
 .navbar {
   background: #3071a9;
   border-bottom: 0px;
-  height: 50px;
+  height: 60px;
+  -webkit-box-shadow: 0 8px 6px -6px #999;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-inverse .navbar-nav > li > a {
+  padding-top: 19px;
+  font-size: 17px;
+  font-weight: 300;
   color: white;
   background: #3071a9;
 }
@@ -129,7 +134,7 @@ body {
 .navbar-inverse .navbar-brand {
   color: white;
   text-decoration: none;
-  font-size: 32px;
+  font-size: 27px;
 }
 
 .navbar-inverse .navbar-collapse,
@@ -695,8 +700,9 @@ a.anchorjs-link:hover { text-decoration: none; }
 
 /* For what's new section */
 .new {
-  background: rgba(226, 233, 239, 0.4);
+  background: #FBFBFC;
   padding-bottom: 28px;
+  padding-top: 30px;
 }
 
 .new .description {
@@ -708,7 +714,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 .newZeppelin {
   text-align: center;
   font-family: 'Patua One', cursive;
-  font-size: 30px;
+  font-size: 20px;
   padding-bottom: 28px;
   color: #3071a9;
 }
@@ -736,23 +742,10 @@ a.anchorjs-link:hover { text-decoration: none; }
   padding-bottom: 18px;
   padding-right: 9px;
   padding-left: 9px;
-  text-align: justify;
 }
 
 .newBtn .round {
   border-radius: 24px;
-}
-
-.newBtn .btn {
-  padding: 14px 16px;
-  border: 0 none;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #fff !important;
-  width: 190px;
-  margin: 24px 16px
 }
 
 .newBtn .btn:focus, .btn:active:focus, .btn.active:focus {
@@ -760,7 +753,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 }
 
 .newBtn .btn-primary {
-  background: #0099cc;
+  background: #475a60;
   color: #ffffff;
 }
 .newBtn .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
@@ -1137,4 +1130,186 @@ and (max-width: 1024px) {
   .carousel-caption {
     padding-bottom: 60px;
   }
+}
+
+/* Advertisement Section */
+
+.advertise.container .advertise-title {
+  font-family: 'Geomanist Book', sans-serif;
+  font-size: 30px;
+  color: #254356;
+  padding: 15px;
+  text-align: center;
+}
+
+.advertise .panel-content {
+  font-weight: 500;
+  font-size: 14px;
+  max-height: 150px;
+  min-height: 150px;
+  max-width: 240px;
+  min-width: 220px;
+  padding: 15px;
+  color: #475A60;
+  background-color: transparent;
+  border: 1px solid #4881B3;
+}
+
+.advertise .panel-content ._default-text {
+  opacity: 1;
+  position: absolute;
+  font-family: 'Geomanist Book', sans-serif;
+  font-size: 25px;
+  text-align: center;
+  font-weight: 500;
+  -webkit-transition: 0.6s;
+  -moz-transition: 0.6s;
+  -o-transition: 0.6s;
+  transition: 0.6s;
+  -webkit-transition-delay: 0.2s;
+  -moz-transition-delay: 0.2s;
+  -o-transition-delay: 0.2s;
+  transition-delay: 0.2s;
+}
+
+.advertise .panel-content:hover ._default-text {
+  opacity: 0;
+  -webkit-transform: scale(0.3);
+  -moz-transform: scale(0.3);
+  -ms-transform: scale(0.3);
+  -o-transform: scale(0.3);
+  transform: scale(0.3);
+}
+
+.advertise .panel-content ._hover-text {
+  opacity: 0;
+  position: absolute;
+  font-weight: 500;
+  min-height: 130px;
+  max-width: 205px;
+  -webkit-transition: 0.6s;
+  -moz-transition: 0.6s;
+  -o-transition: 0.6s;
+  transition: 0.6s;
+  -webkit-transition-delay: 0.2s;
+  -moz-transition-delay: 0.2s;
+  -o-transition-delay: 0.2s;
+  transition-delay: 0.2s;
+}
+
+.advertise .panel-content:hover ._hover-text {
+  opacity: 1;
+  position: absolute;
+  font-weight: 500;
+  -webkit-transform: translate(0,0);
+  -moz-transform: translate(0,0);
+  -ms-transform: translate(0,0);
+  -o-transform: translate(0,0);
+  transform: translate(0,0);
+  -webkit-transition-delay: .4s;
+  -moz-transition-delay: .4s;
+  -o-transition-delay: .4s;
+  transition-delay: .4s;
+}
+
+.advertise .panel-content:hover:before,
+.advertise .panel-content:hover:after {
+    content: '';
+    position: absolute;
+    top: 0.67em;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    opacity: 0;
+    -webkit-transition: .6s,opacity .6s;
+    -moz-transition: .6s,opacity .6s;
+    -o-transition: .6s,opacity .6s;
+    transition: .6s,opacity .6s;
+}
+
+.advertise .panel-button {
+  position: relative;
+  padding: 8px 15px;
+  z-index: 3;
+  float:right;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  color: #428bca;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  outline: 0;
+  font-weight: bold;
+}
+
+/* Single/Multi User Section*/
+
+.advertise .panel-content-white {
+  position: relative;
+  font-weight: 500;
+  font-size: 14px;
+  max-height: 300px;
+  min-height: 250px;
+  padding: 25px;
+  color: #475A60;
+  background-color: transparent;
+  border: 1px solid #4881B3;
+  max-width: 400px;
+  min-width: 300px;
+}
+
+.advertise .panel-content-white span,
+.advertise .panel-content-blue span {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.underline {
+  display: block;
+  width: 50px;
+  height: 2px;
+  background: inherit;
+}
+
+.advertise .panel-content-white .underline {
+  background: #999;
+}
+
+.advertise .panel-content-white .content-text {
+  display:inline-block;
+  position: relative;
+  font-family: 'Geomanist Book', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  background-color: transparent;
+}
+
+.user-button {
+  position: relative;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  color: inherit;
+  margin-top: 20px;
+  padding: 8px 18px;
+  float: right;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  outline: 0;
+  border: 1px solid #999;
+  z-index: 3;
+  border-radius: 30px;
+  background-color: transparent;
+}
+
+.advertise .panel-content-white .user-button {
+  color: #475A60;
+}
+
+.advertise .panel-content-white .user-button:hover {
+  color: #FFF;
+  text-decoration: none;
+  background-color: #00A7E0;
 }
