@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Spark with Zeppelin 
+# Spark support in Zeppelin 
 
 <div id="toc"></div>
 
@@ -38,7 +38,9 @@ Apache Zeppelin
 
 <br/>
 
-For the further information about Spark support in Zeppelin, please check [Spark interpreter](../interpreter/spark.html)
+For the further information about Spark support in Zeppelin, please check 
+
+- [Spark Interpreter](../interpreter/spark.html)
 
 
 

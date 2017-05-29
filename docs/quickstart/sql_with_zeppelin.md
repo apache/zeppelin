@@ -19,11 +19,44 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# SQL with Zeppelin 
+# SQL support in Zeppelin 
 
 <div id="toc"></div>
 
-Welcome to Apache Zeppelin! On this page are instructions to help you get started.
+<br/>
 
-## Requirements 
+Apache Zeppelin
+
+- provides [JDBC Interpreter](../interpreter/jdbc.html) which allows you can connect any JDBC data sources seamlessly
+  * [Postgres](../interpreter/jdbc.html#postgres)
+  * [MySQL](../interpreter/jdbc.html#mysql) 
+  * [MariaDB](../interpreter/jdbc.html#mariadb)
+  * [AWS Redshift](../interpreter/jdbc.html#redshift) 
+  * [Apache Hive](../interpreter/jdbc.html#hive)
+  * [Apache Phoenix](../interpreter/jdbc.html#apache-phoenix) 
+  * [Apache Drill](../interpreter/jdbc.html#apache-drill)
+  * [Apache Tajo](../interpreter/jdbc.html#apache-tajo)
+  * and so on 
+- [Spark Interpreter](../interpreter/spark.html) supports [SparkSQL](http://spark.apache.org/sql/)
+- [Python Interpreter](../interpreter/python.html) supports [pandasSQL](../interpreter/python.html#sql-over-pandas-dataframes) 
+- can create query result including **UI widgets** using [Dynamic Form](../usage/dynamic_form/intro.html)
+
+    ```sql
+    %sql 
+    select age, count(1) value 
+    from bank 
+    where age < ${maxAge=30} 
+    group by age 
+    order by age
+    ```
+
+<br/>
+
+For the further information about SQL support in Zeppelin, please check 
+
+- [JDBC Interpreter](../interpreter/jdbc.html)
+- [Spark Interpreter](../interpreter/spark.html)
+- [Python Interpreter](../interpreter/python.html)
+
+
 
