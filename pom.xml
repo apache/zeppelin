@@ -78,6 +78,7 @@
     <module>scio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
+    <module>zeppelin-jupyter</module>
     <module>zeppelin-distribution</module>
   </modules>
 
