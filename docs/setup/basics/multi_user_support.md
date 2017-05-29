@@ -23,7 +23,12 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Welcome to Apache Zeppelin! On this page are instructions to help you get started.
+This page describes about multi-user support. Zeppelin
 
-## Requirements 
+- allows multiple users login / logout using [Shiro Authentication](../setup/security/shiro_authentication.html)
+- can manage [Notebook Permission](../setup/security/notebook_authorization.html)
+- provides [impersonation via interpreters](../../usage/interpreter/user_impersonation.html)
+- interpreters have different contexts using [Interpreter Modes]()
+- paragraph in a notebook can be [Personalized]() 
+- propagates changes in notebooks through websocket in real-time
 
