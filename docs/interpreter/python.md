@@ -68,23 +68,36 @@ The interpreter can use all modules already installed (with pip, easy_install...
 
 #### Usage
 
-List your environments
+- get the Conda Infomation: 
 
-```
-%python.conda
-```
+    ```%python.conda info```
+    
+- list the Conda environments: 
 
-Activate an environment
+    ```%python.conda env list```
 
-```
-%python.conda activate [ENVIRONMENT_NAME]
-```
+- create a conda enviornment: 
+    ```%python.conda create --name [ENV NAME]```
+    
+- activate an environment (python interpreter will be restarted): 
 
-Deactivate
+    ```%python.conda activate [ENV NAME]```
 
-```
-%python.conda deactivate
-```
+- deactivate
+
+    ```%python.conda deactivate```
+    
+- get installed package list inside the current environment
+
+    ```%python.conda list```
+    
+- install package
+
+    ```%python.conda install [PACKAGE NAME]```
+  
+- uninstall package
+  
+    ```%python.conda uninstall [PACKAGE NAME]```
 
 ### Docker
 
@@ -92,21 +105,22 @@ Deactivate
 
 #### Usage
 
-Activate an environment
+- activate an environment
 
-```
-%python.docker activate [Repository]
-%python.docker activate [Repository:Tag]
-%python.docker activate [Image Id]
-```
+    ```
+    %python.docker activate [Repository]
+    %python.docker activate [Repository:Tag]
+    %python.docker activate [Image Id]
+    ```
 
-Deactivate
+- deactivate
 
-```
-%python.docker deactivate
-```
+    ```
+    %python.docker deactivate
+    ```
 
-Example
+<br/>
+Here is an example
 
 ```
 # activate latest tensorflow image as a python environment
