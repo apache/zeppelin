@@ -23,7 +23,22 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Welcome to Apache Zeppelin! On this page are instructions to help you get started.
+<br/>
 
-## Requirements 
+Apache Zeppelin
+
+- provides **built-in** Apache Spark integration.
+- with [SparkSQL](http://spark.apache.org/sql/), [PySpark](https://spark.apache.org/docs/latest/api/python/pyspark.html), [SparkR](https://spark.apache.org/docs/latest/sparkr.html)
+- inject automatically [SparkContext](https://spark.apache.org/docs/latest/api/java/org/apache/spark/SparkContext.html) and [SQLContext](https://spark.apache.org/docs/latest/sql-programming-guide.html) 
+- can load dependencies (jars) at runtime using [dependency loader](../interpreter/spark.html#dependencyloading) 
+- is able to cancel job and displaying its progress 
+- works with external spark while supporting [Spark Cluster Mode](../setup/deployment/spark_cluster_mode.html#apache-zeppelin-on-spark-cluster-mode)
+- supports [different context per user / note](../usage/interpreter/interpreter_binding_mode.html) 
+- shares variables among PySpark, SparkR and Spark through [ZeppelinContext](../interpreter/spark.html#zeppelincontext)
+
+<br/>
+
+For the further information about Spark support in Zeppelin, please check [Spark interpreter](../interpreter/spark.html)
+
+
 
