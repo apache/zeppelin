@@ -67,6 +67,10 @@ limitations under the License.
   * [Dependency Management](./usage/interpreter/dependency_management.html) when you include external libraries to interpreter
   * [Installing Interpreters](./usage/interpreter/installation.html): Install not only community managed interpreters but also 3rd party interpreters
   * [Execution Hooks](./usage/interpreter/execution_hooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
+* Other Features:
+  * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
+  * [Personalized Mode](./usage/other_features/personalized_mode.html) 
+  * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
 * REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./usage/rest_api/interpreter.html)
   * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
@@ -75,9 +79,6 @@ limitations under the License.
   * [Configuration API](./usage/rest_api/configuration.html)
   * [Credential API](./usage/rest_api/credential.html)
   * [Helium API](./usage/rest_api/helium.html)
-* Other Features:
-  * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
-  * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
   
 #### Setup 
 * Basics 
