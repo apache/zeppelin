@@ -19,11 +19,25 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Python with Zeppelin 
+# Python support in Zeppelin 
 
 <div id="toc"></div>
 
-Welcome to Apache Zeppelin! On this page are instructions to help you get started.
+<br/>
 
-## Requirements 
+Apache Zeppelin
+
+- supports flexible python environments using [conda](../interpreter/python.html#conda), [docker](../interpreter/python.html#docker)  
+- can query using [PandasSQL](../interpreter/python.html#sql-over-pandas-dataframes)
+- also, provides [PySpark](../interpreter/spark.html)
+- with [matplotlib integration](../interpreter/python.html#matplotlib-integration)
+- can create results including **UI widgets** using [Dynamic Form](../interpreter/python.html#using-zeppelin-dynamic-forms)
+
+<br/>
+
+For the further information about Spark support in Zeppelin, please check 
+
+- [Python Interpreter](../interpreter/python.html)
+
+
 
