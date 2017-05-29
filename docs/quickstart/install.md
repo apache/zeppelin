@@ -130,19 +130,13 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are few s
  * And then, try run [Tutorial Notebook](http://localhost:8080/#/notebook/2A94M5J1Z) in your Zeppelin.
  * And see how to change [configurations](../setup/operation/configuration.html) like port number, etc.
 
-#### Zeppelin with Spark...
- * Check [Spark support in Zeppelin](./spark_with_zeppelin.html), to know more about deep integration with [Apache Spark](http://spark.apache.org/). 
+#### Spark, Python, SQL, and more 
+ * [Spark support in Zeppelin](./spark_with_zeppelin.html), to know more about deep integration with [Apache Spark](http://spark.apache.org/). 
+ * [SQL support in Zeppelin](./sql_with_zeppelin.html) for SQL support
+ * [Python support in Zeppelin](./python_with_zeppelin.html), for Matplotlib, Pandas, Conda/Docker integration.
+ * [All Available Interpreters](../#available-interpreters)
 
-#### Zeppelin with SQL...
- * Check [SQL support in Zeppelin](./sql_with_zeppelin.html)
-
-#### Zeppelin with Python...
- * Check [Python support in Zeppelin](./python_with_zeppelin.html) to know more about Matplotlib, Pandas, Conda/Docker environment integration.
-
-
-#### Multi-user environment ...
- * Turn on [Authentication](../setup/security/shiro_authentication.html).
- * Manage your [Notebook Permission](../setup/security/notebook_authorization.html).
- * For more informations, go to **More** -> **Security** section.
+#### Multi-user support ...
+ * Check [Multi-user support](../setup/basics/multi_user_support.html)
 
 
