@@ -23,7 +23,3 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Welcome to Apache Zeppelin! On this page are instructions to help you get started.
-
-## Requirements 
-
