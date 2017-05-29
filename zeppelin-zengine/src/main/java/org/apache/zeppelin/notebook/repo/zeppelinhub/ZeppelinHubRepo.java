@@ -28,7 +28,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
@@ -64,9 +65,12 @@ public class ZeppelinHubRepo implements NotebookRepo {
   
   private final ZeppelinConfiguration conf;
   
+  private boolean persistOnCommit;
+  
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
+    persistOnCommit = conf.isPersistOnCommit();
     LOG.info("Initializing ZeppelinHub integration module");
 
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
@@ -309,6 +313,11 @@ public class ZeppelinHubRepo implements NotebookRepo {
     repoSetting.value = values;
     repoSetting.name = "Instance";
     settings.add(repoSetting);
+    
+    // add note persist setting
+    repoSetting = NotebookRepoSettingUtils.getNotePersistSettings(persistOnCommit);
+    settings.add(repoSetting);
+    
     return settings;
   }
 
@@ -364,6 +373,12 @@ public class ZeppelinHubRepo implements NotebookRepo {
       }
     }
     changeToken(instanceId, subject.getUser());
+    
+    if (settings.containsKey("Note persistence")) {
+      persistOnCommit = Boolean.getBoolean(settings.get("Note persistence"));
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          persistOnCommit);
+    }
   }
 
   @Override

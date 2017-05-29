@@ -34,6 +34,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,7 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
+  private final boolean saveAndCommit;
 
   /**
    * @param conf
@@ -63,6 +66,7 @@ public class NotebookRepoSync implements NotebookRepo {
   public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
+    saveAndCommit = conf.isPersistOnCommit();
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -181,14 +185,12 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    getRepo(0).save(note, subject);
-    if (getRepoCount() > 1) {
-      try {
-        getRepo(1).save(note, subject);
+    try {
+      for (NotebookRepo repo : repos) {
+        repo.save(note, subject);
       }
-      catch (IOException e) {
-        LOG.info(e.getMessage() + ": Failed to write to secondary storage");
-      }
+    } catch (IOException e) {
+      LOG.warn(e.getMessage() + ": Failed to write to storage");
     }
   }
 
@@ -529,5 +531,9 @@ public class NotebookRepoSync implements NotebookRepo {
       }
     }
     return revisionNote;
+  }
+  
+  public boolean isSaveAndCommitEnabled() {
+    return saveAndCommit;
   }
 }

@@ -316,8 +316,8 @@ public class GitNotebookRepoTest {
     
     // checkpoint revision1
     Revision revision1 = notebookRepo.checkpoint(TEST_NOTE_ID, "set revision: first commit", null);
-    //TODO(khalid): change to EMPTY after rebase
     assertThat(revision1).isNotNull();
+    assertThat(revision1).isNotEqualTo(Revision.EMPTY);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
     
     // add one more paragraph and save
@@ -333,8 +333,8 @@ public class GitNotebookRepoTest {
     
     // checkpoint revision2
     Revision revision2 = notebookRepo.checkpoint(TEST_NOTE_ID, "set revision: second commit", null);
-    //TODO(khalid): change to EMPTY after rebase
     assertThat(revision2).isNotNull();
+    assertThat(revision2).isNotEqualTo(Revision.EMPTY);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
     
     // set note to revision1

@@ -50,6 +50,7 @@
 # export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 # export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
 # export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
+# export ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT   # Persist notes only on commit
 
 #### Spark interpreter configuration ####
 

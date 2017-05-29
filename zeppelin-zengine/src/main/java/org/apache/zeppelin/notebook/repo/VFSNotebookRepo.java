@@ -44,6 +44,8 @@ import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -60,9 +62,11 @@ public class VFSNotebookRepo implements NotebookRepo {
   private FileSystemManager fsManager;
   private URI filesystemRoot;
   private ZeppelinConfiguration conf;
-
+  private boolean persistOnCommit;
+  
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
+    persistOnCommit = conf.isPersistOnCommit();
     setNotebookDirectory(conf.getNotebookDir());
   }
 
@@ -293,6 +297,11 @@ public class VFSNotebookRepo implements NotebookRepo {
     repoSetting.selected = getNotebookDirPath();
 
     settings.add(repoSetting);
+    
+    // add note persist setting
+    repoSetting = NotebookRepoSettingUtils.getNotePersistSettings(persistOnCommit);
+    settings.add(repoSetting);
+    
     return settings;
   }
 
@@ -317,6 +326,12 @@ public class VFSNotebookRepo implements NotebookRepo {
       setNotebookDirectory(newNotebookDirectotyPath);
     } catch (IOException e) {
       LOG.error("Cannot update notebook directory", e);
+    }
+    
+    if (settings.containsKey("Note persistence")) {
+      persistOnCommit = Boolean.getBoolean(settings.get("Note persistence"));
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          persistOnCommit);
     }
   }
 
