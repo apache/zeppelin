@@ -23,6 +23,8 @@ limitations under the License.
 
 <div id="toc"></div>
 
+#### 0. Requirements
+
 If you want to build from source, you must first install the following dependencies:
 
 <table class="table-configuration">
@@ -47,14 +49,13 @@ If you want to build from source, you must first install the following dependenc
 
 If you haven't installed Git and Maven yet, check the [Build requirements](#build-requirements) section and follow the step by step instructions from there.
 
-
-####1. Clone the Apache Zeppelin repository
+#### 1. Clone the Apache Zeppelin repository
 
 ```
 git clone https://github.com/apache/zeppelin.git
 ```
 
-####2. Build source
+#### 2. Build source
 
 
 You can build Zeppelin with following maven command:
@@ -72,7 +73,7 @@ If you're unsure about the options, use the same commands that creates official 
 mvn clean package -DskipTests -Pspark-2.0 -Phadoop-2.4 -Pr -Pscala-2.11
 ```
 
-####3. Done
+#### 3. Done
 You can directly start Zeppelin by running after successful build:
 
 ```bash

@@ -118,6 +118,8 @@ limitations under the License.
   * [Helium: Writing Visualization: Basic](./development/helium/writing_visualization_basic.html)
   * [Helium: Writing Visualization: Transformation](./development/helium/writing_visualization_transformation.html)
 * Contributing to Zeppelin
+  * [How to Build Zeppelin](./setup/basics/how_to_build.html)
+  * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)
   * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
   * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
 
