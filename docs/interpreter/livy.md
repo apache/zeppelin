@@ -197,11 +197,13 @@ hello("livy")
 ```
 
 ## Impersonation
-When Zeppelin server is running with authentication enabled, then this interpreter utilizes Livy’s user impersonation feature i.e. sends extra parameter for creating and running a session ("proxyUser": "${loggedInUser}"). This is particularly useful when multi users are sharing a Notebook server.
-
+When Zeppelin server is running with authentication enabled, 
+then this interpreter utilizes Livy’s user impersonation feature 
+i.e. sends extra parameter for creating and running a session ("proxyUser": "${loggedInUser}"). 
+This is particularly useful when multi users are sharing a Notebook server.
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). You can use both the `text input` and `select form` parameterization features.
 
 ```
 %livy.pyspark

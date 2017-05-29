@@ -57,6 +57,8 @@ For the further information about SQL support in Zeppelin, please check
 - [JDBC Interpreter](../interpreter/jdbc.html)
 - [Spark Interpreter](../interpreter/spark.html)
 - [Python Interpreter](../interpreter/python.html)
+- [IgniteSQL Interpreter](../interpreter/ignite.html#ignite-sql-interpreter) for [Apache Ignite](https://ignite.apache.org/)
+- [Kylin Interpreter](../interpreter/kylin.html) for [Apache Kylin](http://kylin.apache.org/)
 
 
 

@@ -35,6 +35,7 @@ Apache Zeppelin
 - works with external spark while supporting [Spark Cluster Mode](../setup/deployment/spark_cluster_mode.html#apache-zeppelin-on-spark-cluster-mode)
 - supports [different context per user / note](../usage/interpreter/interpreter_binding_mode.html) 
 - shares variables among PySpark, SparkR and Spark through [ZeppelinContext](../interpreter/spark.html#zeppelincontext)
+- has [Livy Interpreter](../interpreter/livy.html)
 
 <br/>
 
