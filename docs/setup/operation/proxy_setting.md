@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Helium Authorization in Apache Zeppelin"
+title: "Proxy Setting in Apache Zeppelin"
 description: "Apache Zeppelin supports Helium plugins which fetch required installer packages from remote registry/repositories"
 group: security
 ---
@@ -19,10 +19,14 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Helium Authorization in Apache Zeppelin
+# Proxy Setting 
 
 <div id="toc"></div>
 
-## How to configure proxies?
+## How to Configure Proxies?
 
-Set **http_proxy** and **https_proxy** env variables to allow connection to npm registry behind a corporate firewall.
+Set `http_proxy` and `https_proxy` env variables. (See [more](https://wiki.archlinux.org/index.php/proxy_settings))
+
+Currently, Proxy is supported only for these features.
+
+- Helium: downloading `helium.json`, installing `npm`, `node`, `yarn`
