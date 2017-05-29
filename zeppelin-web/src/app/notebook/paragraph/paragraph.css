@@ -376,14 +376,8 @@ table.table-shortcut {
   opacity: 0;
 }
 
-/** set cursor color */
-#main .emacs-mode .ace_cursor {
-  background: #C0C0C0!important;
-  border: none !important;
-}
-
 .ace_text-input, .ace_gutter, .ace_layer,
-.emacs-mode, .ace_text-layer, .ace_cursor-layer,
+.ace_text-layer, .ace_cursor-layer,
 .ace_cursor, .ace_scrollbar {
   z-index: auto !important;
 }
