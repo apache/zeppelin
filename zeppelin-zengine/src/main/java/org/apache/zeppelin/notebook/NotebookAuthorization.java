@@ -110,8 +110,13 @@ public class NotebookAuthorization {
     fis.close();
 
     String json = sb.toString();
-    NotebookAuthorizationInfoSaving info = gson.fromJson(json,
-            NotebookAuthorizationInfoSaving.class);
+    NotebookAuthorizationInfoSaving info = null;
+    try {
+      info = gson.fromJson(json, NotebookAuthorizationInfoSaving.class);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+    
     authInfo = info.authInfo;
   }
   
