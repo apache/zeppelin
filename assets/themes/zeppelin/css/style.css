@@ -1,6 +1,7 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 @import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Open+Sans);
+@import url(//fonts.googleapis.com/css?family=Arvo);
 
 body {
   padding-top: 50px;
@@ -700,7 +701,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 
 /* For what's new section */
 .new {
-  background: #FBFBFC;
+  background: rgba(226, 233, 239, 0.4);
   padding-bottom: 28px;
   padding-top: 30px;
 }
@@ -1134,6 +1135,29 @@ and (max-width: 1024px) {
 
 /* Advertisement Section */
 
+.advertise {
+  background: #FFF;
+  padding-bottom: 15px;
+  padding-top: 25px;
+}
+
+.advertise p {
+  padding-bottom: 18px;
+  padding-right: 9px;
+  padding-left: 9px;
+}
+
+.advertise h2 {
+  font-family: "Helvetica";
+  text-align: center;
+  padding-bottom: 16px;
+  font-size: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  letter-spacing: 1px;
+}
+
 .advertise.container .advertise-title {
   font-family: 'Geomanist Book', sans-serif;
   font-size: 30px;
@@ -1145,23 +1169,18 @@ and (max-width: 1024px) {
 .advertise .panel-content {
   font-weight: 500;
   font-size: 14px;
-  max-height: 150px;
-  min-height: 150px;
-  max-width: 240px;
-  min-width: 220px;
+  height: 180px;
+  max-width: 300px;
+  min-width: 240px;
   padding: 15px;
   color: #475A60;
   background-color: transparent;
   border: 1px solid #4881B3;
 }
 
-.advertise .panel-content ._default-text {
+._default-text {
   opacity: 1;
   position: absolute;
-  font-family: 'Geomanist Book', sans-serif;
-  font-size: 25px;
-  text-align: center;
-  font-weight: 500;
   -webkit-transition: 0.6s;
   -moz-transition: 0.6s;
   -o-transition: 0.6s;
@@ -1172,7 +1191,16 @@ and (max-width: 1024px) {
   transition-delay: 0.2s;
 }
 
-.advertise .panel-content:hover ._default-text {
+.advertise .panel-content ._default-text {
+  font-family: 'Arvo', serif;
+  font-size: 25px;
+  text-align: center;
+  font-weight: 500;
+  padding: -5px;
+}
+
+.advertise .panel-content:hover ._default-text,
+.advertise .panel-content-user:hover ._default-text {
   opacity: 0;
   -webkit-transform: scale(0.3);
   -moz-transform: scale(0.3);
@@ -1181,12 +1209,10 @@ and (max-width: 1024px) {
   transform: scale(0.3);
 }
 
-.advertise .panel-content ._hover-text {
+._hover-text {
   opacity: 0;
   position: absolute;
   font-weight: 500;
-  min-height: 130px;
-  max-width: 205px;
   -webkit-transition: 0.6s;
   -moz-transition: 0.6s;
   -o-transition: 0.6s;
@@ -1197,7 +1223,14 @@ and (max-width: 1024px) {
   transition-delay: 0.2s;
 }
 
-.advertise .panel-content:hover ._hover-text {
+.advertise .panel-content ._hover-text {
+  min-width: 215px;
+  max-width: 250px;
+  font-size: 14px;
+}
+
+.advertise .panel-content:hover ._hover-text,
+ .advertise .panel-content-user:hover ._hover-text {
   opacity: 1;
   position: absolute;
   font-weight: 500;
@@ -1213,7 +1246,9 @@ and (max-width: 1024px) {
 }
 
 .advertise .panel-content:hover:before,
-.advertise .panel-content:hover:after {
+.advertise .panel-content:hover:after,
+ .advertise .panel-content-user:hover:before,
+ .advertise .panel-content-user:hover:after {
     content: '';
     position: absolute;
     top: 0.67em;
@@ -1234,7 +1269,7 @@ and (max-width: 1024px) {
   float:right;
   font-size: 14px;
   font-family: 'Roboto', sans-serif;
-  color: #428bca;
+  color: #00A7E0;
   text-decoration: none;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -1243,24 +1278,22 @@ and (max-width: 1024px) {
   font-weight: bold;
 }
 
-/* Single/Multi User Section*/
+/* Single/Multi User Section */
 
-.advertise .panel-content-white {
+.advertise .panel-content-user {
   position: relative;
   font-weight: 500;
   font-size: 14px;
-  max-height: 300px;
-  min-height: 250px;
   padding: 25px;
   color: #475A60;
   background-color: transparent;
-  border: 1px solid #4881B3;
+  border: 1px solid #999;
   max-width: 400px;
   min-width: 300px;
+  height: 270px;
 }
 
-.advertise .panel-content-white span,
-.advertise .panel-content-blue span {
+.advertise .panel-content-user span {
   display: block;
   margin-bottom: 8px;
 }
@@ -1272,17 +1305,20 @@ and (max-width: 1024px) {
   background: inherit;
 }
 
-.advertise .panel-content-white .underline {
+.advertise .panel-content-user .underline {
   background: #999;
 }
 
-.advertise .panel-content-white .content-text {
+.advertise .panel-content-user .content-text {
   display:inline-block;
   position: relative;
   font-family: 'Geomanist Book', sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 500;
+  color: #475A60;
   background-color: transparent;
+  height: 150px;
+
 }
 
 .user-button {
@@ -1290,26 +1326,27 @@ and (max-width: 1024px) {
   font-size: 14px;
   font-family: 'Roboto', sans-serif;
   color: inherit;
-  margin-top: 20px;
-  padding: 8px 18px;
+  margin-top: 10px;
+  padding: 6px 14px;
   float: right;
   text-decoration: none;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
   outline: 0;
-  border: 1px solid #999;
+  border: 1px solid #00A7E0;
   z-index: 3;
   border-radius: 30px;
   background-color: transparent;
 }
 
-.advertise .panel-content-white .user-button {
-  color: #475A60;
+.advertise .panel-content-user .user-button {
+  background-color: #00A7E0;
+  color: #FFF;
 }
 
-.advertise .panel-content-white .user-button:hover {
+.advertise .panel-content-user .user-button:hover {
   color: #FFF;
   text-decoration: none;
-  background-color: #00A7E0;
+  background-color: #0479A2;
 }

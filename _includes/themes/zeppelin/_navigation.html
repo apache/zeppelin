@@ -15,10 +15,10 @@
         </div>
         <nav class="navbar-collapse collapse" role="navigation">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/helium_packages.html">Quick Start</a></li>
+            <li><a href="">Quick Start</a></li>
 
             <!-- Download -->
-            <li id="docs">
+            <li id="download">
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Download<b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="/download.html">Download Zeppelin</a></li>
@@ -44,11 +44,14 @@
 
             <li><a href="/helium_packages.html">Helium</a></li>
 
-            {% assign pages_list = site.pages %}
-            {% assign group = 'nav-right' %}
-            {% include JB/pages_list %}
-
-            <!-- Apache -->
+            <li id="community">
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Community<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="community.html">Contributors</a></li>
+                <li><a href="https://github.com/apache/zeppelin">GitHub</a></li>
+              </ul>
+            </li>
+              <!-- Apache -->
             <li id="apache">
               <a href="#" data-toggle="dropdown" class="dropdown-toggle">Apache<b class="caret"></b></a>
                <ul class="dropdown-menu">
@@ -74,13 +77,11 @@
     </p>
     <div class="border row">
       <div class="col-md-12 col-sm-12 col-xs-12 text-center newBtn">
-        <a href="http://youtu.be/_PQbVH_aO5E" target="_zeppelinVideo"
-           class="btn btn-primary btn-lg" role="button"
+        <a href="" class="btn btn-primary btn-lg" role="button"
            style="margin: 5px; font-size: 15px; font-weight: 300; font-family: 'Roboto', sans-serif;">
           GET STARTED
         </a>
-        <a href="./download.html" class="btn btn-primary btn-lg"
-           role="button"
+        <a href="/download.html" class="btn btn-primary btn-lg" role="button"
            style="margin: 5px; font-size: 15px; font-weight: 300; font-family: 'Roboto', sans-serif;">
           DOWNLOAD
         </a>
@@ -88,5 +89,6 @@
     </div>
   </div>
 </div>
+{% include_relative advertise.md %}
 {% include_relative whats_new.md %}
 {% endif %}
