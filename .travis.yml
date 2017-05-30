@@ -25,7 +25,6 @@ cache:
     - ${HOME}/R
     -  zeppelin-web/node
     -  zeppelin-web/node_modules
-    -  zeppelin-web/bower_components
 
 addons:
   apt:
