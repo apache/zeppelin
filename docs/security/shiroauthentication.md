@@ -138,12 +138,12 @@ ldapRealm.contextFactory.authenticationMechanism = simple
 ```
 
 ### PAM
-[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication 
+[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
 moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
 either reuse one of these services or create your own for Zeppelin. Activiting PAM authentication requires two parameters:
  1. realm: The Shiro realm being used
  2. service: The service configured under `/etc/pam.d/` to be used. The name here needs to be the same as the file name under `/etc/pam.d/`
- 
+
 ```
 [main]
  pamRealm=org.apache.zeppelin.realm.PamRealm
@@ -164,6 +164,40 @@ securityManager.realms = $zeppelinHubRealm
 ```
 
 > Note: ZeppelinHub is not releated to Apache Zeppelin project.
+
+### OpenID Connect
+OpenID Connect enable you to integrate Zeppelin login with several providers(Google, AzureAD, Okta, IdentityServer3 (and 4), MitreID, Keycloak...).
+
+Support is provided by the use of: [Pac4j-oidc](http://www.pac4j.org/docs/clients/openid-connect.html) and [Buji-pac4j](https://github.com/bujiio/buji-pac4j).
+
+Specific configuration is strictly related to the provider, you need to configure the oidcClient to redirect you to the provider login page, handle the redirection back through the callback filter and add a SecurityFilter to check validity of the token.
+More configuration parameters are available through [Buji-pac4j](https://github.com/bujiio/buji-pac4j) documentation.
+
+```
+### A sample for configuring Open ID Connect integration
+oidcConfig = org.pac4j.oidc.config.OidcConfiguration
+oidcConfig.discoveryURI = <your-instance>/realms/<your-realm>/.well-known/openid-configuration
+oidcConfig.clientId = <your client name>
+oidcConfig.secret = <your secret>
+oidcConfig.clientAuthenticationMethodAsString = client_secret_basic
+oidcClient = org.pac4j.oidc.client.OidcClient
+oidcClient.configuration = $oidcConfig
+oidcSecurityFilter = io.buji.pac4j.filter.SecurityFilter
+oidcSecurityFilter.config = $config
+oidcSecurityFilter.clients = oidcClient
+
+clients = org.pac4j.core.client.Clients
+clients.callbackUrl = http://<zeppelin ip>:8080/api/callback
+clients.clients = $oidcClient
+
+callbackFilter = io.buji.pac4j.filter.CallbackFilter
+callbackFilter.defaultUrl = http://<zeppelin ip>:8080
+callbackFilter.config = $config
+
+##add this route to urls
+[urls]
+/api/callback = callbackFilter
+```
 
 ## Secure your Zeppelin information (optional)
 By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin.
@@ -188,4 +222,3 @@ If you want to grant this permission to other users, you can change **roles[ ]**
 ## Other authentication methods
 
 - [HTTP Basic Authentication using NGINX](./authentication.html)
-

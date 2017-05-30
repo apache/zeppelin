@@ -77,6 +77,9 @@ user3 = password4, role2
 #oidcSecurityFilter = io.buji.pac4j.filter.SecurityFilter
 #oidcSecurityFilter.config = $config
 #oidcSecurityFilter.clients = oidcClient
+#callbackFilter = io.buji.pac4j.filter.CallbackFilter
+#callbackFilter.defaultUrl = http://<zeppelin ip>:8080
+#callbackFilter.config = $config
 
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
