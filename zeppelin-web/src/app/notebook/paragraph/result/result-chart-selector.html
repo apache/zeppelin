@@ -22,7 +22,9 @@ limitations under the License.
             ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
             ng-click="switchViz(viz.id)"
             tooltip-placement="bottom" uib-tooltip="{{viz.name ? viz.name : ''}}"
-            ng-bind-html="viz.icon">
+            ng-bind-html="viz.icon"
+            tooltip="{{viz.name}}"
+            tooltip-placement="bottom">
     </button>
   </div>
 
