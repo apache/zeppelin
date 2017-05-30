@@ -16,13 +16,15 @@
 /* Navbar
 /* ------------------------------------------- */
 
-.navbar-title {
+.navbar-brand.navbar-title {
+  margin-top: -3px;
+  margin-right: 20px;
+}
+
+.navbar-title > span {
   font-family: 'Patua One', cursive;
   font-size: 25px;
   color: white;
-  margin-top: 7px;
-  margin-right: 20px;
-  display: inline-block;
 }
 
 .navbar-menu {
@@ -43,6 +45,7 @@
 }
 
 .navbar-logo {
+  display: inline-block;
   padding-right: 10px;
 }
 
