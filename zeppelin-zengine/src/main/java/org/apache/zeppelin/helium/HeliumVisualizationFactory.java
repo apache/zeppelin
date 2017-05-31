@@ -122,9 +122,10 @@ public class HeliumVisualizationFactory {
         System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
 
     try {
-      if (isSecure)
+      if (isSecure && StringUtils.isNotBlank(httpsProxy))
         proxies.add(generateProxy("secure", new URI(httpsProxy)));
-      else proxies.add(generateProxy("insecure", new URI(httpProxy)));
+      else if (!isSecure && StringUtils.isNotBlank(httpsProxy))
+        proxies.add(generateProxy("insecure", new URI(httpProxy)));
     } catch (Exception ex) {
       logger.error(ex.getMessage(), ex);
     }
