@@ -620,6 +620,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
     public static StatementInfo fromJson(String json) {
+      LOGGER.info("json string is like the following");
+      LOGGER.info(json);
       return gson.fromJson(json, StatementInfo.class);
     }
 
@@ -637,7 +639,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       public Data data;
       public String ename;
       public String evalue;
-      public String[] traceback;
+      public Object traceback;
       public TableMagic tableMagic;
 
       public boolean isError() {
