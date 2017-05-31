@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -119,17 +118,18 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
 
     try {
       String scheme = new URI(uri).getScheme();
-      if (scheme.toLowerCase().startsWith("https")) {
+      if (scheme.toLowerCase().startsWith("https") && StringUtils.isNotBlank(httpsProxy)) {
         URI httpsProxyUri = new URI(httpsProxy);
         return new HttpHost(httpsProxyUri.getHost(),
                 httpsProxyUri.getPort(), httpsProxyUri.getScheme());
       }
-      else {
+      else if (scheme.toLowerCase().startsWith("http") && StringUtils.isNotBlank(httpProxy)){
         URI httpProxyUri = new URI(httpProxy);
         return new HttpHost(httpProxyUri.getHost(),
                 httpProxyUri.getPort(), httpProxyUri.getScheme());
       }
-    } catch (URISyntaxException ex) {
+      else return null;
+    } catch (Exception ex) {
       logger.error(ex.getMessage(), ex);
       return null;
     }
