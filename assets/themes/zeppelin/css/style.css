@@ -1350,3 +1350,22 @@ and (max-width: 1024px) {
   text-decoration: none;
   background-color: #0479A2;
 }
+
+.zeppelin {
+  background-image: url('../img/zepLogo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 43%;
+  height: 350px;
+  opacity: 0.8;
+}
+
+.zeppelin2 {
+  background: url('../img/zepLogo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 43%;
+  background-position-y: 40px;
+  height: 355px;
+  opacity: 0.2;
+}
