@@ -16,10 +16,10 @@ limitations under the License.
   <div class="advertise container">
     <h2>Technologies</h2>
     <div class="border row">
-      <div class="border col-md-4 col-sm-4">
+      <div class="border col-md-4 col-sm-4" style="height:200px;">
         <p class="panel-content">
-          <label class="_default-text" style="margin:-10px 0 0 60px;">
-            <img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px">
+          <label class="_default-text" style="margin-top: 20px;">
+            <img src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px">
           </label>
           <label class="_hover-text">
             Spark interpreter group which consists of five interpreters which are Spark, Pyspark, SparkR, Spark SQL, Dependency loader.<br/>
@@ -27,19 +27,19 @@ limitations under the License.
           </label>                     
         </p>
       </div>
-      <div class="border col-md-4 col-sm-4">
+      <div class="border col-md-4 col-sm-4" style="height:200px;">
         <p class="panel-content">
-          <label class="_default-text" style="margin:32px 0 0 80px; font-size:45px;">SQL</label>
+          <label class="_default-text" style="font-size:45px;">SQL</label>
           <label class="_hover-text">
             JDBC interpreter lets you create a JDBC connection to any data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.<br/>
             <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </p>
       </div>
-      <div class="border col-md-4 col-sm-4">
+      <div class="border col-md-4 col-sm-4" style="height:200px;">
         <p class="panel-content">
-          <label class="_default-text" style="margin:25px 0 0 25px;">
-            <img class="img-responsive" src="./assets/themes/zeppelin/img/python-logo-generic.svg" width="200px" style="margin:20px 0 0 5px;">
+          <label class="_default-text" style="margin-top:65px;">
+            <img src="./assets/themes/zeppelin/img/python-logo-generic.svg" width="200px">
           </label>
           <label class="_hover-text">
             Python is supported with Zeppelin. Also integrated Matplotlib with Python & Pyspark interpreter, and Conda is now available in Zeppelin.<br/>
@@ -59,9 +59,9 @@ limitations under the License.
       <h2>Deployments</h2>
       <div class="border col-md-6 col-sm-6">
         <p class="panel-content-user">
-          <label>
-            <span class="glyphicon glyphicon-user" style="margin:0 0 0 150px;font-size:30px;position:relative;"></span>
-            <span style="font-size:30px;margin:5px 0 5px 50px;position:relative;">For Single User</span>            
+          <label style="width: 100%;">
+            <span class="glyphicon glyphicon-user" style="font-size:30px;position:relative;width:100%;text-align:center;"></span>
+            <span class="title-text">Single User</span>            
           </label>
           <label class="content-text">
             Local Spark, 6 Built-in visualizations, Display system, Dynamic form, Multiple backends are supported.<br/>
@@ -71,9 +71,9 @@ limitations under the License.
       </div>
       <div class="border col-md-6 col-sm-6">
         <p class="panel-content-user">
-          <label>
-            <span class="glyphicon glyphicon-cog" style="margin:0 0 0 155px;font-size:33px;position:relative;"></span>
-            <span style="font-size:30px;margin:5px 0 5px 65px;position:relative;">For Multi-User</span>
+          <label style="width: 100%;">
+            <span class="fa fa-users" style="font-size:30px;position:relative;width:100%;text-align:center;"></span>
+            <span class="title-text">Multi-User</span>
           </label>
           <label class="content-text">
             Zeppelin supports Multi-user Support w/ LDAP. Let's configure Zeppelin for your yarn cluster.<br/>

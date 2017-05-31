@@ -34,6 +34,15 @@ body {
   margin-bottom: 28px;
 }
 
+.jumbotron .description {
+ font-size: 26px;
+ font-weight: 300;
+ width:100%;
+ position: relative;
+ margin-top:-180px;
+ text-shadow: 1px 2px #353131
+}
+
 .jumbotron .btn {
   font-size: 16px;
 }
@@ -590,11 +599,11 @@ a.anchorjs-link:hover { text-decoration: none; }
 
 .helium-radio {
   position: absolute;
-  display: none; 
+  display: none;
 }
 
 .helium-radio[disabled] {
-  cursor: not-allowed; 
+  cursor: not-allowed;
 }
 
 .helium-radio + label {
@@ -602,7 +611,7 @@ a.anchorjs-link:hover { text-decoration: none; }
   display: block;
   padding-left: 36px;
   cursor: pointer;
-  vertical-align: middle; 
+  vertical-align: middle;
   font-size: 13px;
   font-weight: 500;
   line-height: 26px;
@@ -610,7 +619,7 @@ a.anchorjs-link:hover { text-decoration: none; }
 .helium-radio + label:hover:before {
   animation-duration: 0.4s;
   animation-fill-mode: both;
-  animation-name: hover-color; 
+  animation-name: hover-color;
 }
 .helium-radio + label:before {
   position: absolute;
@@ -620,39 +629,39 @@ a.anchorjs-link:hover { text-decoration: none; }
   width: 19px;
   height: 19px;
   content: '';
-  border: 1px solid #c0c0c0; 
+  border: 1px solid #c0c0c0;
 }
 .helium-radio + label:after {
   position: absolute;
   display: none;
-  content: ''; 
+  content: '';
 }
 
 .helium-radio[disabled] + label {
   cursor: not-allowed;
-  color: #e4e4e4; 
+  color: #e4e4e4;
 }
 .helium-radio[disabled] + label:hover, .helium-radio[disabled] + label:before, .helium-radio[disabled] + label:after {
-  cursor: not-allowed; 
+  cursor: not-allowed;
 }
 .helium-radio[disabled] + label:hover:before {
   border: 1px solid #e4e4e4;
-  animation-name: none; 
+  animation-name: none;
 }
 .helium-radio[disabled] + label:before {
-  border-color: #e4e4e4; 
+  border-color: #e4e4e4;
 }
 
 .helium-radio:checked + label:before {
-  animation-name: none; 
+  animation-name: none;
 }
 
 .helium-radio:checked + label:after {
-  display: block; 
+  display: block;
 }
 
 .helium-radio + label:before {
-  border-radius: 50%; 
+  border-radius: 50%;
 }
 
 .helium-radio + label:after {
@@ -661,19 +670,19 @@ a.anchorjs-link:hover { text-decoration: none; }
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #3e97eb; 
+  background: #3e97eb;
 }
 
 .helium-radio:checked + label:before {
-  border: 1px solid #3e97eb; 
+  border: 1px solid #3e97eb;
 }
 
 .helium-radio:checked[disabled] + label:before {
-  border: 1px solid #c9e2f9; 
+  border: 1px solid #c9e2f9;
 }
 
 .helium-radio:checked[disabled] + label:after {
-  background: #c9e2f9; 
+  background: #c9e2f9;
 }
 
 /* hide arrows when current page is on first & last */
@@ -882,7 +891,7 @@ a.anchorjs-link:hover { text-decoration: none; }
   color: rgba(0,0,0,.44);
 }
 
-/* Demo img thumbnail */ 
+/* Demo img thumbnail */
 .thumbnail {
   background-color: transparent;
   border: none;
@@ -963,6 +972,40 @@ a.anchorjs-link:hover { text-decoration: none; }
     display: none;
     color: white;
   }
+
+  .jumbotron .description {
+    font-size: 22px;
+  }
+
+  .advertise .panel-content ._hover-text,
+  .advertise .panel-content:hover ._hover-text {
+    width: 90%;
+    font-size: 18px;
+    padding: 10px;
+  }
+}
+
+@media only screen
+and (min-width: 480px)
+and (max-width: 768px) {
+  .advertise .panel-content ._hover-text,
+  .advertise .panel-content:hover ._hover-text {
+    width: 90%;
+    font-size: 22px;
+    padding: 10px;
+  }
+
+  .advertise .panel-content ._default-text {
+    margin-left: 15px;
+  }
+
+  .advertise .panel-button {
+    font-size: 18px;
+  }
+
+  .advertise .panel-content-user .content-text {
+    font-size: 20px;
+  }
 }
 
 @media only screen and (max-width: 768px) {
@@ -1001,7 +1044,13 @@ a.anchorjs-link:hover { text-decoration: none; }
   .blog .container {
     width: 80vw;
   }
+
+  .jumbotron .container .zeppelin2 {
+    margin-top: -30px;
+  }
 }
+
+
 
 @media only screen
 and (min-width: 768px)
@@ -1043,6 +1092,21 @@ and (max-width: 996px) {
   .collapse.in{
     display:block !important;
   }
+
+  .advertise .panel-content ._hover-text,
+  .advertise .panel-content:hover ._hover-text {
+    width: 85%;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .advertise .panel-content-user .content-text {
+    font-size: 14px;
+  }
+
+  .advertise .panel-button {
+    font-size: 14px;
+  }
 }
 
 @media only screen
@@ -1053,6 +1117,9 @@ and (max-width: 1024px) {
   }
   .navbar-collapse.collapse {
     padding-right: 0;
+  }
+  .advertise .panel-button {
+    font-size: 14px;
   }
 }
 
@@ -1095,7 +1162,7 @@ and (max-width: 1024px) {
 
 @media (max-width: 991px) {
   .navbar-inverse .navbar-brand {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .content {
@@ -1169,10 +1236,8 @@ and (max-width: 1024px) {
 .advertise .panel-content {
   font-weight: 500;
   font-size: 14px;
-  height: 180px;
-  max-width: 300px;
-  min-width: 240px;
-  padding: 15px;
+  height: 100%;
+  width: 100%;
   color: #475A60;
   background-color: transparent;
   border: 1px solid #4881B3;
@@ -1181,6 +1246,8 @@ and (max-width: 1024px) {
 ._default-text {
   opacity: 1;
   position: absolute;
+  width: 80%;
+  height: 80%;
   -webkit-transition: 0.6s;
   -moz-transition: 0.6s;
   -o-transition: 0.6s;
@@ -1196,11 +1263,10 @@ and (max-width: 1024px) {
   font-size: 25px;
   text-align: center;
   font-weight: 500;
-  padding: -5px;
+  margin-top: 60px;
 }
 
-.advertise .panel-content:hover ._default-text,
-.advertise .panel-content-user:hover ._default-text {
+.advertise .panel-content:hover ._default-text {
   opacity: 0;
   -webkit-transform: scale(0.3);
   -moz-transform: scale(0.3);
@@ -1211,8 +1277,10 @@ and (max-width: 1024px) {
 
 ._hover-text {
   opacity: 0;
+  font-size: 18px;
   position: absolute;
   font-weight: 500;
+  width: 88%;
   -webkit-transition: 0.6s;
   -moz-transition: 0.6s;
   -o-transition: 0.6s;
@@ -1221,16 +1289,10 @@ and (max-width: 1024px) {
   -moz-transition-delay: 0.2s;
   -o-transition-delay: 0.2s;
   transition-delay: 0.2s;
+  padding: 5px;
 }
 
-.advertise .panel-content ._hover-text {
-  min-width: 215px;
-  max-width: 250px;
-  font-size: 14px;
-}
-
-.advertise .panel-content:hover ._hover-text,
- .advertise .panel-content-user:hover ._hover-text {
+.advertise .panel-content:hover ._hover-text {
   opacity: 1;
   position: absolute;
   font-weight: 500;
@@ -1246,28 +1308,25 @@ and (max-width: 1024px) {
 }
 
 .advertise .panel-content:hover:before,
-.advertise .panel-content:hover:after,
- .advertise .panel-content-user:hover:before,
- .advertise .panel-content-user:hover:after {
-    content: '';
-    position: absolute;
-    top: 0.67em;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    opacity: 0;
-    -webkit-transition: .6s,opacity .6s;
-    -moz-transition: .6s,opacity .6s;
-    -o-transition: .6s,opacity .6s;
-    transition: .6s,opacity .6s;
+.advertise .panel-content:hover:after {
+ content: '';
+ position: absolute;
+ top: 0.67em;
+ left: 0;
+ width: 100%;
+ text-align: center;
+ opacity: 0;
+ -webkit-transition: .6s,opacity .6s;
+ -moz-transition: .6s,opacity .6s;
+ -o-transition: .6s,opacity .6s;
+ transition: .6s,opacity .6s;
 }
 
-.advertise .panel-button {
+.panel-button {
   position: relative;
   padding: 8px 15px;
   z-index: 3;
   float:right;
-  font-size: 14px;
   font-family: 'Roboto', sans-serif;
   color: #00A7E0;
   text-decoration: none;
@@ -1288,14 +1347,20 @@ and (max-width: 1024px) {
   color: #475A60;
   background-color: transparent;
   border: 1px solid #999;
-  max-width: 400px;
-  min-width: 300px;
-  height: 270px;
+  width: 100%;
+  height: 100%;
 }
 
 .advertise .panel-content-user span {
   display: block;
   margin-bottom: 8px;
+}
+
+.advertise .panel-content-user .title-text {
+  font-size: 30px;
+  position: relative;
+  width: 100%;
+  text-align: center;
 }
 
 .underline {
@@ -1309,7 +1374,7 @@ and (max-width: 1024px) {
   background: #999;
 }
 
-.advertise .panel-content-user .content-text {
+.content-text {
   display:inline-block;
   position: relative;
   font-family: 'Geomanist Book', sans-serif;
@@ -1317,8 +1382,7 @@ and (max-width: 1024px) {
   font-weight: 500;
   color: #475A60;
   background-color: transparent;
-  height: 150px;
-
+  height: 100%;
 }
 
 .user-button {
@@ -1343,6 +1407,7 @@ and (max-width: 1024px) {
 .advertise .panel-content-user .user-button {
   background-color: #00A7E0;
   color: #FFF;
+  position: relative;
 }
 
 .advertise .panel-content-user .user-button:hover {
@@ -1356,7 +1421,7 @@ and (max-width: 1024px) {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 43%;
-  height: 350px;
+  height: 265px;
   opacity: 0.8;
 }
 
@@ -1365,7 +1430,6 @@ and (max-width: 1024px) {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 43%;
-  background-position-y: 40px;
-  height: 355px;
+  height: 245px;
   opacity: 0.2;
 }
