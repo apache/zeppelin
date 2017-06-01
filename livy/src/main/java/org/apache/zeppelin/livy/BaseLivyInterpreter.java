@@ -402,7 +402,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   private StatementInfo getStatementInfo(int statementId)
       throws LivyException {
-    logger.info("calling StatementInfo fromJson with id {}", String.valueOf(statementId));
     return StatementInfo.fromJson(
         callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId, "GET"));
   }
@@ -529,7 +528,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   private void closeSession(int sessionId) {
     try {
-      logger.info("calling DELETE with session id {}", String.valueOf(sessionId));
       callRestAPI("/sessions/" + sessionId, "DELETE");
     } catch (Exception e) {
       LOGGER.error(String.format("Error closing session for user with session ID: %s",
@@ -622,15 +620,18 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
     public static StatementInfo fromJson(String json) {
-      LOGGER.info("json string is like the following");
-      LOGGER.info(json);
+      String right_json="";
       try {
         gson.fromJson(json, StatementInfo.class);
+        right_json = json;
       } catch (Exception e) {
-        LOGGER.info("error string is like the following");
-        LOGGER.info(json);
+        if (json.contains("\"traceback\":{}")) {
+          LOGGER.info("traceback type mismatch, replacing the mismatching part ");
+          right_json = json.replace("\"traceback\":{}", "\"traceback\":[]");
+          LOGGER.info("new json string is {}", right_json);
+        }
       }
-      return gson.fromJson(json, StatementInfo.class);
+      return gson.fromJson(right_json, StatementInfo.class);
     }
 
     public boolean isAvailable() {
