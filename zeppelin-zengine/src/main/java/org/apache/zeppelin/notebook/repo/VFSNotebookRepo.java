@@ -40,11 +40,16 @@ import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.typeadapter.DateDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.InterpreterResultMessageDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.InterpreterResultMessageSerializer;
+import org.apache.zeppelin.notebook.typeadapter.ParagraphDeserializer;
+import org.apache.zeppelin.notebook.typeadapter.ParagraphSerializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -167,8 +172,11 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-        .create();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphDeserializer());
+    gsonBuilder.registerTypeAdapter(InterpreterResultMessage.class,
+        new InterpreterResultMessageDeserializer());
+    gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer());
+    Gson gson = gsonBuilder.create();
 
     FileContent content = noteJson.getContent();
     InputStream ins = content.getInputStream();
@@ -228,6 +236,9 @@ public class VFSNotebookRepo implements NotebookRepo {
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer());
+    gsonBuilder.registerTypeAdapter(InterpreterResultMessage.class,
+        new InterpreterResultMessageSerializer());
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
 

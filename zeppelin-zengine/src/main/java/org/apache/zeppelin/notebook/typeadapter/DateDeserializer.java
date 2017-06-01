@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook;
+package org.apache.zeppelin.notebook.typeadapter;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -32,7 +32,7 @@ import java.util.Locale;
 /**
  *  importNote date format deserializer
  */
-public class NotebookImportDeserializer implements JsonDeserializer<Date> {
+public class DateDeserializer implements JsonDeserializer<Date> {
   private static final String[] DATE_FORMATS = new String[] {
     "yyyy-MM-dd'T'HH:mm:ssZ",
     "MMM d, yyyy h:mm:ss a",
