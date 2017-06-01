@@ -639,7 +639,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       public Data data;
       public String ename;
       public String evalue;
-      public Object traceback;
+      public String[] traceback;
       public TableMagic tableMagic;
 
       public boolean isError() {
