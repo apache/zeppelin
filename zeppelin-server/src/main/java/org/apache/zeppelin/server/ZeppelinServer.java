@@ -57,6 +57,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.Util;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -171,7 +172,6 @@ public class ZeppelinServer extends Application {
   public static void main(String[] args) throws InterruptedException {
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
 
@@ -238,6 +238,9 @@ public class ZeppelinServer extends Application {
     final Server server = new Server();
     ServerConnector connector;
 
+    LOG.info("Server Host: " + conf.getServerAddress());
+    LOG.info("Context Path: " + conf.getServerContextPath());
+    LOG.info("Zeppelin Version: " + Util.getVersion());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port " + conf.getServerSslPort());
       HttpConfiguration httpConfig = new HttpConfiguration();
@@ -260,6 +263,7 @@ public class ZeppelinServer extends Application {
               new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
               new HttpConnectionFactory(httpsConfig));
     } else {
+      LOG.info("Server Port: " + conf.getServerPort());
       connector = new ServerConnector(server);
     }
 

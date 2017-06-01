@@ -16,11 +16,10 @@
  */
 package org.apache.zeppelin.conf;
 
-import junit.framework.Assert;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
