@@ -18,12 +18,18 @@
 
 package org.apache.zeppelin.file;
 
-import java.net.URL;
-import java.net.HttpURLConnection;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import javax.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
+
+import javax.ws.rs.core.UriBuilder;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Definition and HTTP invocation methods for all WebHDFS commands
@@ -36,7 +42,8 @@ public class HDFSCommand {
    */
   public enum HttpType {
     GET,
-    PUT
+    PUT,
+    DELETE
   }
 
   /**
@@ -76,6 +83,11 @@ public class HDFSCommand {
   // Define all the commands available
   public Op getFileStatus = new Op("GETFILESTATUS", HttpType.GET, 0);
   public Op listStatus = new Op("LISTSTATUS", HttpType.GET, 0);
+  public Op openFile = new Op("OPEN", HttpType.GET, 0);
+  public Op makeDirectory = new Op("MKDIRS", HttpType.PUT, 0);
+  public Op createWriteFile = new Op("CREATE", HttpType.PUT, 0);
+  public Op deleteFile = new Op("DELETE", HttpType.DELETE, 0);
+  public Op renameFile = new Op("RENAME", HttpType.PUT, 0);
 
   public HDFSCommand(String url, String user, Logger logger, int maxLength) {
     super();
@@ -102,9 +114,11 @@ public class HDFSCommand {
   }
 
 
-  // The operator that runs all commands
-  public String runCommand(Op op, String path, Arg[] args) throws Exception {
+  public String runCommand(Op op, String path, Arg[] args) throws  Exception {
+    return runCommand(op, path, null, args);
+  }
 
+  public String runCommand(Op op, String path, byte[] argFile, Arg[] args) throws  Exception {
     // Check arguments
     String error = checkArgs(op, path, args);
     if (error != null) {
@@ -119,9 +133,19 @@ public class HDFSCommand {
         .queryParam("op", op.op);
 
     if (args != null) {
+      boolean isUserName = false;
       for (Arg a : args) {
         builder = builder.queryParam(a.key, a.value);
+        if ("user.name".equals(a.key)) {
+          isUserName = true;
+        }
       }
+      if (!isUserName) {
+        builder = builder.queryParam("user.name", this.user);
+      }
+    }
+    else {
+      builder = builder.queryParam("user.name", this.user);
     }
     java.net.URI uri = builder.build();
 
@@ -131,26 +155,79 @@ public class HDFSCommand {
 
     if (op.cmd == HttpType.GET) {
       con.setRequestMethod("GET");
+      con.setInstanceFollowRedirects(true);
+
+      String result = getReceivedResponse(con, HttpType.GET, hdfsUrl);
+      return result;
+    } else if (op.cmd == HttpType.PUT) {
+      con.setRequestMethod("PUT");
+      con.setInstanceFollowRedirects(false);
       int responseCode = con.getResponseCode();
-      logger.info("Sending 'GET' request to URL : " + hdfsUrl);
-      logger.info("Response Code : " + responseCode);
+      String result = getReceivedResponse(con, HttpType.PUT, hdfsUrl);
 
-      BufferedReader in = new BufferedReader(
-          new InputStreamReader(con.getInputStream()));
-      String inputLine;
-      StringBuffer response = new StringBuffer();
+      if (responseCode == 307 && ("CREATE".equals(op.op) || "APPEND".equals(op.op))) {
+        String location = con.getHeaderField("Location");
+        logger.debug("Redirect Location: " + location);
 
-      int i = 0;
-      while ((inputLine = in.readLine()) != null) {
-        if (inputLine.length() < maxLength)
-          response.append(inputLine);
-        i++;
-        if (i >= maxLength)
-          break;
+        hdfsUrl = new URL(location);
+        con = (HttpURLConnection) hdfsUrl.openConnection();
+
+        con.setRequestMethod("PUT");
+        con.setRequestProperty("Content-Type", "application/octet-stream");
+        con.setRequestProperty("Transfer-Encoding", "chunked");
+        con.setDoOutput(true);
+
+        DataOutputStream outputStream = new DataOutputStream(con.getOutputStream());
+        outputStream.write(argFile);
+        outputStream.flush();
+
+        result = getReceivedResponse(con, HttpType.PUT, hdfsUrl);
       }
-      in.close();
-      return response.toString();
+
+      return result;
+    } else if (op.cmd == HttpType.DELETE) {
+      con.setRequestMethod("DELETE");
+      con.setDoInput(true);
+      con.setInstanceFollowRedirects(false);
+      return getReceivedResponse(con, HttpType.DELETE, hdfsUrl);
     }
+
     return null;
+  }
+
+  private String getReceivedResponse(HttpURLConnection con,
+                                     HttpType type, URL url) throws IOException {
+    int responseCode = con.getResponseCode();
+
+    BufferedReader in;
+    if (responseCode == 200 || responseCode == 201 || responseCode == 307) {
+      logger.debug("Sending '{}' request to URL : {}", type.toString(), url);
+      logger.debug("Response Code : " + responseCode);
+      logger.debug("response message: " + con.getResponseMessage());
+      in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+    } else {
+      logger.info("Sending '{}' request to URL : {}", type.toString(), url);
+      logger.info("Response Code : " + responseCode);
+      logger.info("response message: " + con.getResponseMessage());
+      in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+    }
+    String inputLine;
+    StringBuffer response = new StringBuffer();
+    int i = 0;
+    while ((inputLine = in.readLine()) != null) {
+      if (inputLine.length() < maxLength) {
+        response.append(inputLine);
+      }
+      i++;
+      if (i >= maxLength) {
+        logger.warn("Input stream's length(" + inputLine.length()
+            + ") is greater than or equal to hdfs.maxlength(" + maxLength
+            + "). Please increase hdfs.maxlength in interpreter setting");
+        break;
+      }
+    }
+    in.close();
+
+    return response.toString();
   }
 }
