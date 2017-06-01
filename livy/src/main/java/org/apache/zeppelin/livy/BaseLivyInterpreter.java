@@ -620,7 +620,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
     public static StatementInfo fromJson(String json) {
-      String right_json="";
+      String right_json = "";
       try {
         gson.fromJson(json, StatementInfo.class);
         right_json = json;
