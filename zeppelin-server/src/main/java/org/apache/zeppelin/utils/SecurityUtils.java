@@ -46,7 +46,7 @@ import com.google.common.collect.Sets;
  */
 public class SecurityUtils {
 
-  private static final String ANONYMOUS = "anonymous";
+  public static final String ANONYMOUS = "anonymous";
   private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
   private static boolean isEnabled = false;
   private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
