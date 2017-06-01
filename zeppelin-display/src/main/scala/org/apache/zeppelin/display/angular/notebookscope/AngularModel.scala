@@ -23,7 +23,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext
 /**
   * Represents ng-model in notebook scope
   */
-class AngularModel(name: String)
+class AngularModel(override val name: String)
   extends org.apache.zeppelin.display.angular.AbstractAngularModel(name) {
 
   def this(name: String, newValue: Any) = {

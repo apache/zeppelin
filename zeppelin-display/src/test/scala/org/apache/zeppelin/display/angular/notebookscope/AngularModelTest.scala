@@ -29,4 +29,6 @@ class AngularModelTest extends AbstractAngularModelTest {
   override def angularModel(name: String, value: Any): AbstractAngularModel = {
     AngularModel(name, value)
   }
+
+  override def angularModelClass = classOf[AngularModel]
 }

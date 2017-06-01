@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.display.angular
 
+import com.google.gson.Gson
 import org.apache.zeppelin.display.{AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
 import org.apache.zeppelin.user.AuthenticationInfo
@@ -42,6 +43,7 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
 
   def angularModel(name: String): AbstractAngularModel
   def angularModel(name: String, value: Any): AbstractAngularModel
+  def angularModelClass: Class[_]
 
   "AngularModel" should "able to create AngularObject" in {
     val registry = InterpreterContext.get().getAngularObjectRegistry
@@ -80,6 +82,13 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
     registrySize should be(0)
   }
 
+  "AngularModel" should "" in {
+    val gson = new Gson()
+    val m1 = angularModel("name")
+    val json = gson.toJson(m1)
+    val m2 = gson.fromJson(json, angularModelClass)
+    m1.name should be(m2.asInstanceOf[AbstractAngularModel].name)
+  }
 
   def registry() = {
     InterpreterContext.get().getAngularObjectRegistry
