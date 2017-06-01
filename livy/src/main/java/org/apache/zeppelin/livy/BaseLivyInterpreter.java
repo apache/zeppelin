@@ -624,6 +624,12 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     public static StatementInfo fromJson(String json) {
       LOGGER.info("json string is like the following");
       LOGGER.info(json);
+      try {
+        gson.fromJson(json, StatementInfo.class);
+      } catch (Exception e) {
+        LOGGER.info("error string is like the following");
+        LOGGER.info(json);
+      }
       return gson.fromJson(json, StatementInfo.class);
     }
 
