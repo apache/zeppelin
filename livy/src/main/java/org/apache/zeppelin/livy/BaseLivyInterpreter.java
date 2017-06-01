@@ -402,7 +402,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   private StatementInfo getStatementInfo(int statementId)
       throws LivyException {
-    logger.info("calling StatementInfo fromJson with id {}",String.valueOf(statementId));
+    logger.info("calling StatementInfo fromJson with id {}", String.valueOf(statementId));
     return StatementInfo.fromJson(
         callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId, "GET"));
   }
@@ -529,7 +529,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   private void closeSession(int sessionId) {
     try {
-      logger.info("calling DELETE with session id {}",String.valueOf(sessionId));
+      logger.info("calling DELETE with session id {}", String.valueOf(sessionId));
       callRestAPI("/sessions/" + sessionId, "DELETE");
     } catch (Exception e) {
       LOGGER.error(String.format("Error closing session for user with session ID: %s",
