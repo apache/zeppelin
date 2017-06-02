@@ -58,6 +58,9 @@ sed -i '' 's/-'"${FROM_VERSION}"'.jar",/-'"${TO_VERSION}"'.jar",/g' zeppelin-exa
 sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/tabledata/package.json
 sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/visualization/package.json
 
+# Change version in Dockerfile
+sed -i '' 's/Z_VERSION="'"${FROM_VERSION}"'"/Z_VERSION="'"${TO_VERSION}"'"/g' scripts/docker/zeppelin/bin/Dockerfile
+
 # When preparing new dev version from release tag, doesn't need to change docs version
 if is_dev_version "${FROM_VERSION}" || ! is_dev_version "${TO_VERSION}"; then
   # When prepare new rc for the maintenance release
