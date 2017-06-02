@@ -22,26 +22,34 @@ function jobManagerFilter () {
     let filterItems = jobItems
 
     if (filterValueInterpreter === undefined) {
-      filterItems = _.filter(filterItems, function (jobItem) {
-        return jobItem.interpreter === undefined ? true : false
+      filterItems = filterItems.filter((jobItem) => {
+        return jobItem.interpreter === undefined
       })
     } else if (filterValueInterpreter !== '*') {
       filterItems = _.where(filterItems, {interpreter: filterValueInterpreter})
     }
 
     if (filterValueNotebookName !== '') {
-      filterItems = _.filter(filterItems, function (jobItem) {
+      filterItems = filterItems.filter((jobItem) => {
         let lowerFilterValue = filterValueNotebookName.toLocaleLowerCase()
         let lowerNotebookName = jobItem.noteName.toLocaleLowerCase()
         return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'))
       })
     }
 
-    filterItems = _.sortBy(filterItems, function (sortItem) {
-      return sortItem.noteName.toLowerCase()
+    filterItems = filterItems.sort((jobItem) => {
+      return jobItem.noteName.toLowerCase()
     })
 
-    return isSortByAsc ? filterItems : filterItems.reverse()
+    filterItems = filterItems.sort((x, y) => {
+      if (isSortByAsc) {
+        return x.unixTimeLastRun - y.unixTimeLastRun
+      } else {
+        return y.unixTimeLastRun - x.unixTimeLastRun
+      }
+    })
+
+    return filterItems
   }
   return filterContext
 }
