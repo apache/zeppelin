@@ -73,14 +73,13 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
   }
 
   $scope.doFiltering = function (jobInfomations, filterConfig) {
-    asyncNotebookJobFilter(jobInfomations, filterConfig).then(
-      function () {
-        // success
-        $scope.isLoadingFilter = false
-      },
-      function () {
-        // failed
-      })
+    asyncNotebookJobFilter(jobInfomations, filterConfig)
+      .then(
+        () => { $scope.isLoadingFilter = false },
+        (error) => {
+          console.error('Failed to search jobs from server', error)
+        }
+      )
   }
 
   $scope.filterValueToName = function (filterValue, maxStringLength) {
@@ -101,27 +100,6 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
   $scope.setFilterValue = function (filterValue) {
     $scope.filterConfig.filterValueInterpreter = filterValue
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
-  }
-
-  $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
-    let RETURN_KEY_CODE = 13
-    $timeout.cancel($scope.dofilterTimeoutObject)
-    $scope.isActiveSearchTimer = true
-    $scope.dofilterTimeoutObject = $timeout(function () {
-      $scope.doFiltering(jobInfomations, filterConfig)
-      $scope.isActiveSearchTimer = false
-    }, 10000)
-    if (keyEvent.which === RETURN_KEY_CODE) {
-      $timeout.cancel($scope.dofilterTimeoutObject)
-      $scope.doFiltering(jobInfomations, filterConfig)
-      $scope.isActiveSearchTimer = false
-    }
-  }
-
-  $scope.doForceFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
-    $timeout.cancel($scope.dofilterTimeoutObject)
-    $scope.doFiltering(jobInfomations, filterConfig)
-    $scope.isActiveSearchTimer = false
   }
 
   $scope.init = function () {

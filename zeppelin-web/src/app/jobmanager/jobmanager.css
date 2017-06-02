@@ -45,6 +45,7 @@
 }
 
 #job-manager-header .job-search-tool .search-input > input {
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   border-radius: 4px;
   font-size: 14px;
   padding-left: 10px;
