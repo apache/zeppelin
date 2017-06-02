@@ -26,13 +26,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
@@ -1176,9 +1180,65 @@ public class SparkInterpreter extends Interpreter {
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(line.split("\n"), context);
+    return interpretAsProxyUser(line.split("\n"), context);
   }
 
+  public InterpreterResult interpretAsProxyUser(String[] lines, InterpreterContext context) {
+    String user = context.getAuthenticationInfo().getUser();
+    if (StringUtils.isBlank(user)) {
+      logger.warn("User is blank, run spark command as 'anonymous'");
+      user = "anonymous";
+    }
+    logger.debug("Running Spark command by user: {}", user);
+
+    if (interpreter == null) {
+      logger.error(
+          "interpreter == null, open may not have been called because max.open.instances reached");
+      return new InterpreterResult(Code.ERROR, "interpreter == null\n"
+          + "open may not have been called because max.open.instances reached");
+    }
+
+    InterpreterResult interpreterResult = new InterpreterResult(Code.ERROR);
+
+    UserGroupInformation currentUser = getCurrentUser();
+    UserGroupInformation proxyUser = null;
+    proxyUser = UserGroupInformation.createProxyUser(user, currentUser);
+    if (currentUser != null && proxyUser != null) {
+      transferUserCredentials(currentUser, proxyUser);
+    }
+    final String[] linesFinal = lines;
+    final InterpreterContext contextFinal = context;
+    PrivilegedExceptionAction<InterpreterResult> action = 
+      new PrivilegedExceptionAction<InterpreterResult>() {
+        public InterpreterResult run() throws Exception {
+          return interpret(linesFinal, contextFinal);
+        }
+      };
+    try {
+      interpreterResult = proxyUser.doAs(action);
+    } catch (Exception e) {
+      logger.error("Error running command with ugi.doAs", e);
+      return new InterpreterResult(Code.ERROR, e.getMessage());
+    }
+    return interpreterResult;
+  }
+
+  private UserGroupInformation getCurrentUser() {
+    UserGroupInformation currentUser = null;
+    try {
+      currentUser = UserGroupInformation.getCurrentUser();
+    } catch (IOException e) {
+      logger.error("Can't get current user from ugi", e);
+    }
+    return currentUser;
+  }
+  
+  private void transferUserCredentials(UserGroupInformation source, UserGroupInformation dest) {
+    for (Token token : source.getTokens()) {
+      dest.addToken(token);
+    }
+  }
+  
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
