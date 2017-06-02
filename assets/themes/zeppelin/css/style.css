@@ -1,7 +1,7 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 @import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Open+Sans);
-@import url(//fonts.googleapis.com/css?family=Arvo);
+@import url(//fonts.googleapis.com/css?family=Titillium+Web);
 
 body {
   padding-top: 50px;
@@ -111,10 +111,13 @@ body {
   background: #3071a9;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover,
-.navbar-inverse .navbar-nav > li > a:focus {
+.navbar-inverse .navbar-nav > li > a:hover{
   color: white !important;
   background: #2C6094 !important;
+  height: 60px;
+}
+
+.navbar-inverse .navbar-nav > li > a:focus {
   height: 60px;
 }
 
@@ -528,6 +531,7 @@ a.anchor {
 .navbar-inverse .navbar-nav > .open > a:focus {
   color: white;
   background: #286090;
+  height: 60px;
 }
 
 a.anchorjs-link:hover { text-decoration: none; }
@@ -1247,7 +1251,7 @@ and (max-width: 1024px) {
 ._default-text {
   opacity: 1;
   position: absolute;
-  width: 80%;
+  width: 90%;
   height: 80%;
   -webkit-transition: 0.6s;
   -moz-transition: 0.6s;
@@ -1260,11 +1264,11 @@ and (max-width: 1024px) {
 }
 
 .advertise .panel-content ._default-text {
-  font-family: 'Arvo', serif;
+  font-family: 'Titillium Web', sans-serif;
   font-size: 25px;
   text-align: center;
   font-weight: 500;
-  margin-top: 60px;
+  margin-top: 55px;
 }
 
 .advertise .panel-content:hover ._default-text {
@@ -1281,6 +1285,7 @@ and (max-width: 1024px) {
   font-size: 18px;
   position: absolute;
   font-weight: 500;
+  margin-left: 5px;
   width: 88%;
   -webkit-transition: 0.6s;
   -moz-transition: 0.6s;

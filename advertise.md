@@ -17,7 +17,7 @@ limitations under the License.
     <h2>Technologies</h2>
     <div class="border row">
       <div class="border col-md-4 col-sm-4" style="height:200px;">
-        <p class="panel-content">
+        <div class="panel-content">
           <label class="_default-text" style="margin-top: 20px;">
             <img src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px">
           </label>
@@ -25,19 +25,19 @@ limitations under the License.
             Spark interpreter group which consists of five interpreters which are Spark, Pyspark, SparkR, Spark SQL, Dependency loader.<br/>
             <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>                     
-        </p>
+        </div>
       </div>
       <div class="border col-md-4 col-sm-4" style="height:200px;">
-        <p class="panel-content">
-          <label class="_default-text" style="font-size:45px;">SQL</label>
+        <div class="panel-content">
+          <label class="_default-text" style="font-size:56px;">SQL</label>
           <label class="_hover-text">
             JDBC interpreter lets you create a JDBC connection to any data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.<br/>
             <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
-        </p>
+        </div>
       </div>
       <div class="border col-md-4 col-sm-4" style="height:200px;">
-        <p class="panel-content">
+        <div class="panel-content">
           <label class="_default-text" style="margin-top:65px;">
             <img src="./assets/themes/zeppelin/img/python-logo-generic.svg" width="200px">
           </label>
@@ -45,7 +45,7 @@ limitations under the License.
             Python is supported with Zeppelin. Also integrated Matplotlib with Python & Pyspark interpreter, and Conda is now available in Zeppelin.<br/>
             <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
-        </p>
+        </div>
       </div>
     </div>
     <div class="col-md-12 col-sm-12 col-xs-12 text-center">
