@@ -109,7 +109,8 @@ public class JupyterUtil {
             // Error
             Error error = (Error) output;
             type = Type.TEXT;
-            result = Joiner.on(lineSeparator).join(new String[]{error.getEname(), error.getEvalue()})
+            result = Joiner.on(lineSeparator)
+                .join(new String[]{error.getEname(), error.getEvalue()});
 
           }
 
