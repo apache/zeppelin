@@ -12,10 +12,12 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp')
-  .controller('JobmanagerCtrl', JobmanagerCtrl)
+import { JobStatus, } from './jobs/job-status'
 
-function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
+angular.module('zeppelinWebApp')
+  .controller('JobManagerCtrl', JobManagerCtrl)
+
+function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
   'ngInject'
 
   ngToast.dismiss()
@@ -24,6 +26,38 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
       $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig)
       resolve($scope.JobInfomationsByFilter)
     })
+  }
+
+  $scope.getJobIconByStatus = function(jobStatus) {
+    if (jobStatus === JobStatus.READY) {
+      return 'fa fa-circle-o'
+    } else if (jobStatus === JobStatus.FINISHED) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.ABORT) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.ERROR) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.PENDING) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.RUNNING) {
+      return 'fa fa-spinner'
+    }
+  }
+
+  $scope.getJobColorByStatus = function(jobStatus) {
+    if (jobStatus === JobStatus.READY) {
+      return 'green'
+    } else if (jobStatus === JobStatus.FINISHED) {
+      return 'green'
+    } else if (jobStatus === JobStatus.ABORT) {
+      return 'orange'
+    } else if (jobStatus === JobStatus.ERROR) {
+      return 'red'
+    } else if (jobStatus === JobStatus.PENDING) {
+      return 'gray'
+    } else if (jobStatus === JobStatus.RUNNING) {
+      return 'blue'
+    }
   }
 
   $scope.doFiltering = function (jobInfomations, filterConfig) {

@@ -1,0 +1,8 @@
+export const JobStatus = {
+  READY: 'READY',
+  FINISHED: 'FINISHED',
+  ABORT: 'ABORT',
+  ERROR: 'ERROR',
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+}
