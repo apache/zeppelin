@@ -20,6 +20,18 @@ angular.module('zeppelinWebApp')
 function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
   'ngInject'
 
+  $scope.pagination = {
+    currentPage: 1,
+    itemsPerPage: 10,
+    maxPageCount: 5,
+  }
+
+  $scope.getJobsInCurrentPage = function(jobs) {
+    const cp = $scope.pagination.currentPage
+    const itp = $scope.pagination.itemsPerPage
+    return jobs.slice((cp - 1) * itp, (cp * itp))
+  }
+
   ngToast.dismiss()
   let asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
     return $q(function (resolve, reject) {

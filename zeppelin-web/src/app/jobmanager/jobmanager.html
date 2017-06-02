@@ -95,7 +95,7 @@ limitations under the License.
     </div>
   </div>
   <div ng-if="JobInfomationsByFilter.length > 0"
-       ng-repeat="notebookJob in JobInfomationsByFilter track by $index"
+       ng-repeat="notebookJob in getJobsInCurrentPage(JobInfomationsByFilter)"
        class="paragraph-col">
     <div ng-include src="'app/jobmanager/jobs/job.html'"
          class="job-space box job-margin"
@@ -106,5 +106,17 @@ limitations under the License.
        class="paragraph-col">
     <div class="job-space box job-margin text-center">No Job found</div>
   </div>
-  <div style="clear:both;height:10px"></div>
+
+  <!-- pagination -->
+  <div class="job-pagination-container">
+    <ul uib-pagination class="pagination-sm"
+        total-items="JobInfomationsByFilter.length"
+        ng-model="pagination.currentPage"
+        items-per-page="pagination.itemsPerPage"
+        boundary-links="true" rotate="false"
+        max-size="pagination.maxPageCount"
+        previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;" last-text="&raquo;"></ul>
+  </div>
+
 </div>

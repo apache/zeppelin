@@ -49,3 +49,9 @@
 .job-desc-icon {
   margin-right: 3px;
 }
+
+.job-pagination-container {
+  text-align: center;
+  margin-top: 50px;
+  padding-bottom: 100px;
+}
