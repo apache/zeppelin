@@ -46,6 +46,18 @@
   font-weight: normal;
 }
 
+.job-search-tool {
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.job-icon-desc-container {
+  display: inline-block;
+  margin-top: 10px;
+  margin-right: 20px;
+  float: right;
+}
+
 .job-desc-icon {
   margin-right: 3px;
 }

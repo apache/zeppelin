@@ -31,7 +31,8 @@ limitations under the License.
   <hr style="margin-top: 10px; margin-bottom: 10px;" />
 
   <div class="row">
-    <div class="col-md-6 text-left">
+    <!-- search tools (input, drop-down, sorting) -->
+    <div class="job-search-tool">
       <div class="form-inline">
         <span class="labelBtn btn-group">
           <button type="button"
@@ -74,10 +75,10 @@ limitations under the License.
         </span>
       </div>
     </div>
-    <div class="col-md-6 text-right" style="padding-top: 6px;">
-      <span ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']"
-            ng-switch="jobStatus"
-            class="job-desc">
+
+    <!-- job icon descriptions -->
+    <div class="job-icon-desc-container">
+      <span ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']">
         <span>
           <i class="job-desc-icon"
             ng-style="{'color': getJobColorByStatus(jobStatus)}"
@@ -85,13 +86,17 @@ limitations under the License.
         </span>
       </span>
     </div>
+
+    <div style="clear: both;"></div>
+
   </div>
 </div>
+
 <div>
   <div class="note-jump"></div>
   <div ng-if="isLoadingFilter === true" class="paragraph-col">
     <div class="job-space box job-margin text-center">
-      <i style="color: blue" class="fa fa-spinner spinAnimation"></i>&nbsp;Loading...
+      <i style="color: blue" class="fa fa-spinner spinAnimation"></i>Loading...
     </div>
   </div>
   <div ng-if="JobInfomationsByFilter.length > 0"
