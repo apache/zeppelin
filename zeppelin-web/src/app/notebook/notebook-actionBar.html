@@ -17,9 +17,9 @@ limitations under the License.
     <div ng-controller="ElasticInputCtrl as input"
          style="float: left; width: auto; max-width: 40%">
       <input type="text" pu-elastic-input
-             ng-if="input.showEditor"
              class="note-title-input" style="min-width: 0px; max-width: 95%;"
              placeholder="Insert New Note Name"
+             ng-if="input.showEditor"
              ng-model="input.value"
              ng-escape="input.showEditor = false" focus-if="input.showEditor"
              ng-blur="updateNoteName(input.value);input.showEditor = false;"

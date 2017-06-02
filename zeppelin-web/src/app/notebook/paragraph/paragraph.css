@@ -180,6 +180,7 @@
   color: #999;
   font-size: 12px;
   margin-top: 5px;
+  margin-bottom: 2px;
 }
 
 .paragraph .control li {
@@ -271,19 +272,23 @@ table.table-shortcut {
   display: inline-block;
   float: left;
   font-size: 12px;
-  margin-bottom: 7px;
-  min-height: 24px;
+  max-height: 22px;
+  width: 70%;
 }
 
 .paragraph .title div {
-  width: 80%;
   font-weight: bold;
   font-family: 'Roboto', sans-serif;
   font-size: 17px !important;
+  width: 97%;
+  display: inline-block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .paragraph .title input {
-  width: 80%;
+  width: 97%;
   height: 24px;
   line-height: 1.42857143;
   color: #555;
@@ -295,8 +300,8 @@ table.table-shortcut {
   font-family: 'Roboto', sans-serif;
   font-size: 17px !important;
   font-weight: bold;
-  padding: 0 2px;
-  margin-left: -3px;
+  padding: 2px 2px;
+  margin-left: 3px;
 }
 
 /*
@@ -325,11 +330,16 @@ table.table-shortcut {
   Ace Text Editor CSS
 */
 
+.paragraph-editor-container {
+  margin-bottom: 3px;
+  margin-top: 10px;
+}
+
 .paragraph .editor {
   width: 100%;
   border-left: 4px solid #DDDDDD;
   background: rgba(255, 255, 255, 0.0);
-  margin: 7px 0 2px 0;
+  margin: 2px 0 2px 0;
 }
 
 .paragraph-text--dirty {

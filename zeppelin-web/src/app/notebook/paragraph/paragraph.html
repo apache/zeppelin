@@ -21,9 +21,9 @@ limitations under the License.
          ng-controller="ElasticInputCtrl as input"
          class="title">
       <input type="text" pu-elastic-input
-             ng-if="input.showEditor"
-             style="min-width: 400px; max-width: 80%;"
+             style="min-width: 0px; max-width: 95%;"
              placeholder="Untitled"
+             ng-if="input.showEditor"
              ng-model="paragraph.title"
              ng-escape="input.showEditor = false; paragraph.title = oldTitle;" focus-if="input.showEditor"
              ng-blur="setTitle(paragraph); input.showEditor = false"
@@ -39,15 +39,15 @@ limitations under the License.
   </div>
 
   <div>
-    <div ng-if="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
+    <div ng-if="!paragraph.config.editorHide && !viewOnly"
+         class="paragraph-editor-container">
       <code-editor
         paragraph-id="paragraph.id"
         paragraph-context="paragraph"
         dirty-text="dirtyText"
         original-text="originalText"
         on-load="aceLoaded"
-        revision-view="revisionView"
-      ></code-editor>
+        revision-view="revisionView"></code-editor>
     </div>
 
     <div ng-include src="'app/notebook/paragraph/paragraph-progressBar.html'"></div>
