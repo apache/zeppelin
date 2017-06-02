@@ -85,11 +85,15 @@ limitations under the License.
            </li>
           </ul>
         </span>
+        <span class="job-counter">
+          <span class="job-counter-label">Total: </span>
+          <span class="job-counter-value">{{JobInfomationsByFilter.length}}</span>
+        </span>
       </div>
     </div>
 
     <!-- job icon descriptions -->
-    <div class="job-icon-desc-container hidden-xs hidden-sm">
+    <div class="job-icon-desc-container hidden-xs hidden-sm hidden-md">
       <span ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']">
         <span style="margin-right: 2px;">
           <i class="job-desc-icon"

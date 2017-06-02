@@ -99,3 +99,19 @@
   margin-top: 50px;
   padding-bottom: 100px;
 }
+
+.job-counter {
+  float: right;
+  clear: both;
+  margin-left: 8px;
+  margin-top: 6px;
+}
+
+.job-counter .job-counter-label {
+  color: gray;
+}
+
+.job-counter .job-counter-value {
+  font-size: 15px;
+  font-weight: bold;
+}
