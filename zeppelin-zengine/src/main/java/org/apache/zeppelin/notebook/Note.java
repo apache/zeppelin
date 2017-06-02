@@ -898,6 +898,11 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public static Note fromJson(String json) {
+    GsonBuilder gsonBuilder = 
+            new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+        .create();
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
     return note;

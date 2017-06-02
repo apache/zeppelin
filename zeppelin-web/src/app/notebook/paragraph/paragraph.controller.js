@@ -254,12 +254,15 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.propagateSpellResult = function (paragraphId, paragraphTitle,
                                          paragraphText, paragraphResults,
                                          paragraphStatus, paragraphErrorMessage,
-                                         paragraphConfig, paragraphSettingsParam) {
+                                         paragraphConfig, paragraphSettingsParam,
+                                         paragraphDateStarted, paragraphDateFinished) {
     websocketMsgSrv.paragraphExecutedBySpell(
       paragraphId, paragraphTitle,
       paragraphText, paragraphResults,
       paragraphStatus, paragraphErrorMessage,
-      paragraphConfig, paragraphSettingsParam)
+      paragraphConfig, paragraphSettingsParam,
+      paragraphDateStarted, paragraphDateFinished
+    )
   }
 
   $scope.handleSpellError = function (paragraphText, error,
@@ -270,10 +273,15 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     console.error('Failed to execute interpret() in spell\n', error)
 
     if (!propagated) {
+      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
+    }
+
+    if (!propagated) {
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
         paragraphText, [], $scope.paragraph.status, errorMessage,
-        $scope.paragraph.config, $scope.paragraph.settings.params)
+        $scope.paragraph.config, $scope.paragraph.settings.params,
+        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished)
     }
   }
 
@@ -309,11 +317,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     const paragraphText = $scope.spellTransaction.paragraphText
 
     if (!propagated) {
+      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
+    }
+
+    if (!propagated) {
       const propagable = SpellResult.createPropagable(resultsMsg)
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
         paragraphText, propagable, status, '',
-        $scope.paragraph.config, $scope.paragraph.settings.params)
+        $scope.paragraph.config, $scope.paragraph.settings.params,
+        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished)
     }
   }
 
@@ -330,6 +343,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       const splited = paragraphText.split(magic)
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '')
+
+      if (!propagated) {
+        $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime()
+      }
 
       // handle actual result message in promise
       heliumService.executeSpell(magic, textWithoutMagic)
@@ -630,10 +647,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers)
       $scope.editor.setShowFoldWidgets(false)
       $scope.editor.setHighlightActiveLine(false)
-      $scope.editor.setHighlightGutterLine(false)
       $scope.editor.getSession().setUseWrapMode(true)
       $scope.editor.setTheme('ace/theme/chrome')
       $scope.editor.setReadOnly($scope.isRunning($scope.paragraph))
+      $scope.editor.setHighlightActiveLine($scope.paragraphFocused)
 
       if ($scope.paragraphFocused) {
         let prefix = '%' + getInterpreterName($scope.paragraph.text)
@@ -818,20 +835,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
           switch (keyCode) {
             case 38:
-              keyBindingEditorFocusAction(ROW_UP)
+              if (!e.shiftKey) { keyBindingEditorFocusAction(ROW_UP) }
               break
             case 80:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_UP)
-              }
+              if (e.ctrlKey && !e.altKey) { keyBindingEditorFocusAction(ROW_UP) }
               break
             case 40:
-              keyBindingEditorFocusAction(ROW_DOWN)
+              if (!e.shiftKey) { keyBindingEditorFocusAction(ROW_DOWN) }
               break
             case 78:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_DOWN)
-              }
+              if (e.ctrlKey && !e.altKey) { keyBindingEditorFocusAction(ROW_DOWN) }
               break
           }
         }
@@ -840,8 +853,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   }
 
-  const handleFocus = function (value, isDigestPass) {
-    $scope.paragraphFocused = value
+  const handleFocus = function (focused, isDigestPass) {
+    $scope.paragraphFocused = focused
+
+    if ($scope.editor) { $scope.editor.setHighlightActiveLine(focused) }
+
     if (isDigestPass === false || isDigestPass === undefined) {
       // Protect against error in case digest is already running
       $timeout(function () {
@@ -983,6 +999,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.getProgress = function () {
     return $scope.currentProgress || 0
+  }
+
+  $scope.getFormattedParagraphTime = () => {
+    return moment().toISOString()
   }
 
   $scope.getExecutionTime = function (pdata) {

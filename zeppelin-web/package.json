@@ -9,8 +9,8 @@
     "clean": "rimraf dist && rimraf .tmp",
     "postinstall": "bower install --silent",
     "prebuild": "npm-run-all clean lint:once",
-    "build:dist": "grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
-    "build:ci": "grunt pre-webpack-ci && webpack && grunt post-webpack-dist",
+    "build:dist": "npm-run-all prebuild && grunt pre-webpack-dist && webpack && grunt post-webpack-dist",
+    "build:ci": "npm-run-all prebuild && grunt pre-webpack-ci && webpack && grunt post-webpack-dist",
     "lint:watch": "esw --watch src",
     "lint:once": "eslint src",
     "predev": "grunt pre-webpack-dev",
@@ -21,6 +21,7 @@
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
+    "angular-viewport-watch": "github:shahata/angular-viewport-watch",
     "github-markdown-css": "2.6.0",
     "angular-ui-grid": "^4.0.4",
     "grunt-angular-templates": "^0.5.7",
