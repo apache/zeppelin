@@ -13,7 +13,7 @@ limitations under the License.
 <headroom tolerance="10" offset="30" class="navbar navbar-inverse navbar-fixed-top"
           style="display: none;" role="navigation"
           ng-class="{'displayNavBar': !asIframe}">
-  <div class="container">
+  <div id="navbar-container" class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
         <span class="icon-bar"></span>
@@ -67,7 +67,7 @@ limitations under the License.
         </li>
       </ul>
 
-      <ul class="nav navbar-nav navbar-right" style="margin-right:5px;">
+      <ul class="nav navbar-nav navbar-right">
         <li class="nav-component" ng-if="ticket">
 
           <form role="search" data-ng-model="navbar.searchForm"
