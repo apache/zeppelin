@@ -16,20 +16,18 @@ limitations under the License.
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
   <div>
-    <div ng-if="paragraph.config.title"
-         id="{{paragraph.id}}_title"
+    <div id="{{paragraph.id}}_title"
+         ng-if="paragraph.config.title"
          ng-controller="ElasticInputCtrl as input"
          class="title">
-      <input type="text"
-             pu-elastic-input
+      <input type="text" pu-elastic-input
+             ng-if="input.showEditor"
              style="min-width: 400px; max-width: 80%;"
              placeholder="Untitled"
              ng-model="paragraph.title"
-             ng-if="input.showEditor"
-             ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
+             ng-escape="input.showEditor = false; paragraph.title = oldTitle;" focus-if="input.showEditor"
              ng-blur="setTitle(paragraph); input.showEditor = false"
-             ng-enter="setTitle(paragraph); input.showEditor = false"
-             focus-if="input.showEditor" />
+             ng-enter="setTitle(paragraph); input.showEditor = false" />
       <div ng-click="input.showEditor = !asIframe && !viewOnly && !revisionView; oldTitle = paragraph.title;"
            ng-show="!input.showEditor"
            ng-bind-html="paragraph.title || 'Untitled'">
