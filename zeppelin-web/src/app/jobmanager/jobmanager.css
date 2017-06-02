@@ -41,7 +41,7 @@
 
 #job-manager-header .job-search-tool .search-input {
   margin-right: 7px;
-  min-width: 230px;
+  min-width: 215px;
 }
 
 #job-manager-header .job-search-tool .search-input > input {
@@ -59,8 +59,9 @@
   margin-right: 5px;
 }
 
-.job-search-tool .date-sort-button {
 
+#job-manager-header .job-search-tool .date-sort-button {
+  min-width: 180px;
 }
 
 .job-search-tool .dropdown-text-desc {
@@ -70,14 +71,15 @@
 }
 
 .job-search-tool .dropdown-text-value {
+  margin-left: 2px;
   font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.job-search-tool .dropdown-list-value {
+.search-tool-dropdown-content > li > a {
   border-bottom: 1px solid #eee;
 }
 
-#search-tool-interpreter-dropdown-content > li:last-child > a {
+.search-tool-dropdown-content > li:last-child > a {
   border-bottom: none;
 }
 

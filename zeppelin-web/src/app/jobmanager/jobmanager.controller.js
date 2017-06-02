@@ -17,6 +17,11 @@ import { JobStatus, } from './jobs/job-status'
 angular.module('zeppelinWebApp')
   .controller('JobManagerCtrl', JobManagerCtrl)
 
+const JobDateSorter = {
+  RECENTLY_UPDATED: 'Recently Update',
+  OLDEST_UPDATED: 'Oldest Updated',
+}
+
 function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
   'ngInject'
 
@@ -24,6 +29,15 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
     currentPage: 1,
     itemsPerPage: 10,
     maxPageCount: 5,
+  }
+
+  $scope.sorter = {
+    AvailableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key] }),
+    currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
+  }
+
+  $scope.setJobDateSorter = function(dateSorter) {
+    $scope.sorter.currentDateSorter = dateSorter
   }
 
   $scope.getJobsInCurrentPage = function(jobs) {
@@ -39,6 +53,12 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
       resolve($scope.JobInfomationsByFilter)
     })
   }
+
+  $scope.$watch('sorter.currentDateSorter', function() {
+    $scope.filterConfig.isSortByAsc =
+      $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED
+    asyncNotebookJobFilter($scope.jobInfomations, $scope.filterConfig)
+  })
 
   $scope.getJobIconByStatus = function(jobStatus) {
     if (jobStatus === JobStatus.READY) {
@@ -110,20 +130,12 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
       isRunningAlwaysTop: true,
       filterValueNotebookName: '',
       filterValueInterpreter: '*',
-      isSortByAsc: true
+      isSortByAsc: $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED,
     }
     $scope.sortTooltipMsg = 'Switch to sort by desc'
     $scope.jobTypeFilter = jobManagerFilter
 
     websocketMsgSrv.getNoteJobsList()
-
-    $scope.$watch('filterConfig.isSortByAsc', function (value) {
-      if (value) {
-        $scope.sortTooltipMsg = 'Switch to sort by desc'
-      } else {
-        $scope.sortTooltipMsg = 'Switch to sort by asc'
-      }
-    })
 
     $scope.$on('$destroy', function () {
       websocketMsgSrv.unsubscribeJobManager()
