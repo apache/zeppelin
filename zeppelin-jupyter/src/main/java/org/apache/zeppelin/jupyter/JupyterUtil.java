@@ -101,8 +101,7 @@ public class JupyterUtil {
                 type = Type.TEXT;
                 result = Joiner.on(lineSeparator).join((List<String>) data.getValue());
               }
-              interpreterResultMessage = new InterpreterResultMessage(type, result[[][j\m\
-              ='p'])
+              interpreterResultMessage = new InterpreterResultMessage(type, result);
             }
           } else if (output instanceof DisplayData) {
 
