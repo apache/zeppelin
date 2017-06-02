@@ -15,29 +15,18 @@ limitations under the License.
 <div class="job" data-ng-init="init(notebookJob)">
   <div>
     <div ng-include src="'app/jobmanager/jobs/job-control.html'"></div>
-    <span
-      class="job-types"
-      ng-switch="notebookJob.noteType">
+    <span class="job-types"
+          ng-switch="notebookJob.noteType">
       <i ng-switch-when="normal" class="icon-doc"></i>
       <i ng-switch-when="cron" class="icon-clock"></i>
       <i ng-switch-default class="icon-question"></i>
     </span>
-    &nbsp;
     <a style="text-decoration: none !important;" ng-href="#/notebook/{{notebookJob.noteId}}">
-      <span>
-       {{notebookJob.noteName}}
-      </span>
-      <span>
-        &nbsp;-&nbsp;
-      </span>
-      <span>
-        <span ng-if="notebookJob.interpreter === undefined" style="color: orange">
-          Interpreter is not set
-        </span>
-        <span ng-if="notebookJob.interpreter !== undefined" style="color: gray">
-          {{notebookJob.interpreter}}
-        </span>
-      </span>
+      <span>{{notebookJob.noteName}} - </span>
+      <span ng-if="notebookJob.interpreter === undefined" style="color: gray;">
+        Interpreter is not set</span>
+      <span ng-if="notebookJob.interpreter !== undefined" style="color: black;">
+        {{notebookJob.interpreter}}</span>
     </a>
     <div ng-include src="'app/jobmanager/jobs/job-progressBar.html'"></div>
   </div>
