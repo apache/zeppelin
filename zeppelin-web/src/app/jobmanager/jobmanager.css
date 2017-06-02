@@ -36,26 +36,54 @@
 
 .job-search-tool {
   display: inline-block;
-  margin-left: 12px;
+  margin-left: 15px;
 }
 
-.job-search-tool .search-input {
-
+#job-manager-header .job-search-tool .search-input {
+  margin-right: 7px;
+  min-width: 230px;
 }
 
-.job-search-tool .interpreter-dropdown {
+#job-manager-header .job-search-tool .search-input > input {
+  border-radius: 4px;
+  font-size: 14px;
+  padding-left: 10px;
+}
 
+#job-manager-header .job-search-tool .dropdown-toggle {
+  border-radius: 3px;
+  float: none;
+  min-width: 150px;
+  text-align: left;
+  margin-right: 5px;
 }
 
 .job-search-tool .date-sort-button {
 
 }
 
+.job-search-tool .dropdown-text-desc {
+  color: gray;
+  font-weight: 400;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.job-search-tool .dropdown-text-value {
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.job-search-tool .dropdown-list-value {
+  border-bottom: 1px solid #eee;
+}
+
+#search-tool-interpreter-dropdown-content > li:last-child > a {
+  border-bottom: none;
+}
 
 .job-icon-desc-container {
   display: inline-block;
   margin-top: 10px;
-  margin-right: 20px;
+  margin-right: 30px;
   float: right;
 }
 

@@ -94,7 +94,7 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
       }
       return $scope.activeInterpreters[index].name
     } else {
-      return 'Interpreter is not set'
+      return 'NONE'
     }
   }
 
