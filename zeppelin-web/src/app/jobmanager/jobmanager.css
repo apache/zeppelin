@@ -22,7 +22,7 @@
   min-height: 32px;
 }
 
-.jobManagerHead {
+.job-manager-header {
   margin: -10px -10px 20px;
   padding: 10px 15px 15px 15px;
   background: white;
@@ -30,26 +30,27 @@
   border-bottom: 1px solid #E5E5E5;
 }
 
-.jobManagerHead .header {
+.job-manager-header .header {
   font-family: 'Roboto', sans-serif;
-}
-
-.job-note-name-query {
-  padding: 6px;
-  height: 25px;
-  width: 200px;
-}
-
-.job-note-name-font-family {
-  font: inherit;
-  font-size: 14px;
-  font-weight: normal;
 }
 
 .job-search-tool {
   display: inline-block;
   margin-left: 12px;
 }
+
+.job-search-tool .search-input {
+
+}
+
+.job-search-tool .interpreter-dropdown {
+
+}
+
+.job-search-tool .date-sort-button {
+
+}
+
 
 .job-icon-desc-container {
   display: inline-block;

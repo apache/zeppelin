@@ -103,16 +103,6 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
   }
 
-  $scope.onChangeRunJobToAlwaysTopToggle = function () {
-    $scope.filterConfig.isRunningAlwaysTop = !$scope.filterConfig.isRunningAlwaysTop
-    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
-  }
-
-  $scope.onChangeSortAsc = function () {
-    $scope.filterConfig.isSortByAsc = !$scope.filterConfig.isSortByAsc
-    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
-  }
-
   $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
     let RETURN_KEY_CODE = 13
     $timeout.cancel($scope.dofilterTimeoutObject)
