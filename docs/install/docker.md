@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Apache Zeppelin Releases Docker Images
+# Docker Image for Apache Zeppelin Releases 
 
 <div id="toc"></div>
 
@@ -27,44 +27,35 @@ limitations under the License.
 This document contains instructions about making docker containers for Zeppelin. It mainly provides guidance into how to create, publish and run docker images for zeppelin releases.
 
 ## Quick Start
+
 ### Installing Docker
 You need to [install docker](https://docs.docker.com/engine/installation/) on your machine.
 
-### Creating and Publishing Zeppelin docker image 
-* In order to be able to create and/or publish an image, you need to set the **DockerHub** credentials `DOCKER_USERNAME, DOCKER_PASSWORD, DOCKER_EMAIL` variables as environment variables.
- 
-* To create an image for some release use :
-`create_release.sh <release-version> <git-tag>`.
-* To publish the created image use :
-`publish_release.sh <release-version> <git-tag>`
-
-### Running a Zeppelin  docker image 
-
-* To start Zeppelin, you need to pull the zeppelin release image: 
-```
-docker pull ${DOCKER_USERNAME}/zeppelin-release:<release-version>
-
-docker run --rm -it -p 7077:7077 -p 8080:8080 ${DOCKER_USERNAME}/zeppelin-release:<release-version> -c bash
-```
-* Then a docker container will start with a Zeppelin release on path :
-`/usr/local/zeppelin/`
-
-* Run zeppelin inside docker:
-```
-/usr/local/zeppelin/bin/zeppelin.sh
-```
-
-* To Run Zeppelin in daemon mode
-Mounting logs and notebooks zeppelin to folders on your host machine
+### Running docker image
 
 ```
-docker run -p 7077:7077 -p 8080:8080 --privileged=true -v $PWD/logs:/logs -v $PWD/notebook:/notebook \
--e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
--e ZEPPELIN_LOG_DIR='/logs' \
--d ${DOCKER_USERNAME}/zeppelin-release:<release-version> \
-/usr/local/zeppelin/bin/zeppelin.sh
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:<release-version> 
 ```
-
 
 * Zeppelin will run at `http://localhost:8080`.
+
+If you want to specify `logs` and `notebook` dir, 
+
+```
+docker run -p 8080:8080 --rm \
+-v $PWD/logs:/logs \
+-v $PWD/notebook:/notebook \
+-e ZEPPELIN_LOG_DIR='/logs' \
+-e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
+--name zeppelin apache/zeppelin:<release-version> # e.g '0.7.2'
+```
+
+### Building dockerfile locally
+
+```
+cd $ZEPPELIN_HOME
+cd scripts/docker/zeppelin/bin
+
+docker build -t my-zeppelin:my-tag ./
+```
 
