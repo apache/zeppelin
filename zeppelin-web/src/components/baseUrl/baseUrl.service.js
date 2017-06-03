@@ -37,9 +37,7 @@ function baseUrlSrv () {
   }
 
   this.getBase = function() {
-    let aa = location.protocol + '//' + location.hostname + ':' +
-    this.getPort() + location.pathname
-    return aa
+    return location.protocol + '//' + location.hostname + ':' + this.getPort() + location.pathname
   }
 
   this.getRestApiBase = function () {
