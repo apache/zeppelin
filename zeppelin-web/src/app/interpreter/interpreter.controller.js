@@ -101,7 +101,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
             timeout: '3000'
           })
           setTimeout(function () {
-            window.location.replace('/')
+            window.location = baseUrlSrv.getBase()
           }, 3000)
         }
         console.log('Error %o %o', status, data.message)
