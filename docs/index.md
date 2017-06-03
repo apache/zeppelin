@@ -161,6 +161,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Azure Storage](./storage/storage.html#notebook-storage-in-azure)
   * [ZeppelinHub Storage](./storage/storage.html#storage-in-zeppelinhub)
 * REST API: available REST API list in Apache Zeppelin
+  * [Zeppelin server API](./rest-api/rest-zeppelin-server.html)
   * [Interpreter API](./rest-api/rest-interpreter.html)
   * [Notebook API](./rest-api/rest-notebook.html)
   * [Notebook Repository API](./rest-api/rest-notebookRepo.html)
@@ -172,6 +173,7 @@ Join to our [Mailing list](https://zeppelin.apache.org/community.html) and repor
   * [Shiro Authentication](./security/shiroauthentication.html)
   * [Notebook Authorization](./security/notebook_authorization.html)
   * [Data Source Authorization](./security/datasource_authorization.html)
+  * [Helium Authorization](./security/helium_authorization.html)
 * Helium Framework (Experimental)
   * [Writing Zeppelin Application](./development/writingzeppelinapplication.html)
   * [Writing Zeppelin Spell](./development/writingzeppelinspell.html)

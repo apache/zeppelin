@@ -469,10 +469,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   let addPara = function (paragraph, index) {
     $scope.note.paragraphs.splice(index, 0, paragraph)
-    _.each($scope.note.paragraphs, function (para) {
+    $scope.note.paragraphs.map(para => {
       if (para.id === paragraph.id) {
         para.focus = true
-        $scope.$broadcast('focusParagraph', para.id, 0, false)
+
+        // we need `$timeout` since angular DOM might not be initialized
+        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, false) })
       }
     })
   }
