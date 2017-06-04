@@ -5,6 +5,7 @@
 
 body {
   padding-top: 50px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: #4c555a;
   letter-spacing: .2px;
@@ -128,7 +129,7 @@ body {
 }
 
 .navbar-inverse .navbar-collapse.in .navbar-nav .dropdown-menu > li > a {
-  color: black !important;
+  color: #333333 !important;
 }
 
 .navbar-inverse .navbar-collapse.in .navbar-nav .divider {
@@ -1080,7 +1081,7 @@ and (max-width: 768px) {
   .navbar-inverse .navbar-collapse.in .navbar-nav .dropdown-menu > li > a {
     color: #FFF !important;
   }
-  
+
   .navbar-inverse .navbar-collapse.in .navbar-nav .divider {
       background: #286090;
   }
@@ -1344,7 +1345,7 @@ and (max-width: 1024px) {
   font-size: 25px;
   text-align: center;
   font-weight: 500;
-  margin-top: 55px;
+  margin-top: 50px;
 }
 
 .advertise .panel-content:hover ._default-text {
