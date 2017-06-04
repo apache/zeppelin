@@ -23,7 +23,7 @@ limitations under the License.
           </label>
           <label class="_hover-text">
             Spark interpreter group which consists of five interpreters which are Spark, Pyspark, SparkR, Spark SQL, Dependency loader.<br/>
-            <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
+            <a href="./docs/0.8.0-SNAPSHOT/quickstart/spark_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>                     
         </div>
       </div>
@@ -32,7 +32,7 @@ limitations under the License.
           <label class="_default-text" style="font-size:56px;">SQL</label>
           <label class="_hover-text">
             JDBC interpreter lets you create a JDBC connection to any data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.<br/>
-            <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
+            <a href="./docs/0.8.0-SNAPSHOT/quickstart/sql_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </div>
       </div>
@@ -43,7 +43,7 @@ limitations under the License.
           </label>
           <label class="_hover-text">
             Python is supported with Zeppelin. Also integrated Matplotlib with Python & Pyspark interpreter, and Conda is now available in Zeppelin.<br/>
-            <a href="" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
+            <a href="./docs/0.8.0-SNAPSHOT/quickstart/python_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </div>
       </div>
@@ -51,7 +51,7 @@ limitations under the License.
     <div class="col-md-12 col-sm-12 col-xs-12 text-center">
       <p style="text-align:center; margin-top: 20px; font-size: 17px; color: gray; font-weight: 200; font-style: italic; padding-bottom: 0;">
         See more details in Zeppelin supports 20+ different interpreters.
-        <a href="./releases/zeppelin-release-0.7.0.html">LEARN MORE <span class="glyphicon glyphicon-chevron-right" style="font-size:15px;"></span></a>
+        <a href="/docs/0.8.0-SNAPSHOT/manual/interpreters.html">LEARN MORE <span class="glyphicon glyphicon-chevron-right" style="font-size:15px;"></span></a>
       </p>
     </div>    
     <hr />
@@ -65,7 +65,7 @@ limitations under the License.
           </label>
           <label class="content-text">
             Local Spark, 6 Built-in visualizations, Display system, Dynamic form, Multiple backends are supported.<br/>
-            <a href="" class="user-button">LEARN MORE</a>
+            <a href="./docs/0.8.0-SNAPSHOT/quickstart/tutorial.html" class="user-button">LEARN MORE</a>
           </label>
         </p>
       </div>
@@ -77,7 +77,7 @@ limitations under the License.
           </label>
           <label class="content-text">
             Zeppelin supports Multi-user Support w/ LDAP. Let's configure Zeppelin for your yarn cluster.<br/>
-            <a href="" class="user-button" style="margin-top:15px">LEARN MORE</a>
+            <a href="./docs/0.8.0-SNAPSHOT/usage/other_features/personalized_mode.html" class="user-button" style="margin-top:15px">LEARN MORE</a>
           </label>                 
         </p>
       </div>
