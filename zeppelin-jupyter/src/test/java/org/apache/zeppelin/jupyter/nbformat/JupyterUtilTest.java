@@ -18,7 +18,6 @@ package org.apache.zeppelin.jupyter.nbformat;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.gson.GsonBuilder;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.apache.zeppelin.jupyter.JupyterUtil;
@@ -44,7 +43,6 @@ public class JupyterUtilTest {
   public void getNote() {
     InputStream resource = getClass().getResourceAsStream("/examples.ipynb");
     Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "python", "md");
-    System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(n));
   }
 
 }

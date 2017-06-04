@@ -20,10 +20,22 @@ import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.zeppelin.jupyter.nbformat.Cell;
 import org.apache.zeppelin.jupyter.nbformat.CodeCell;
 import org.apache.zeppelin.jupyter.nbformat.DisplayData;
@@ -163,7 +175,29 @@ public class JupyterUtil {
         + " style='width=auto;height:auto'/></div>";
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws ParseException, IOException {
+    Options options = new Options();
+    options.addOption("i", true, "Jupyter notebook file");
+    options.addOption("o", true, "Zeppelin note file. Default: note.json");
 
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmd = parser.parse(options, args);
+
+    if (!cmd.hasOption("i")) {
+      new HelpFormatter().printHelp("java " + JupyterUtil.class.getName(), options);
+      System.exit(1);
+    }
+
+    Path jupyterPath = Paths.get(cmd.getOptionValue("i"));
+    Path zeppelinPath = Paths.get(cmd.hasOption("o") ? cmd.getOptionValue("o") : "note.json");
+
+    Note note = new JupyterUtil()
+        .getNote(new BufferedReader(new FileReader(jupyterPath.toFile())), "python", "md");
+
+    try (FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
+      new GsonBuilder().setPrettyPrinting().create()
+          .toJson(note, fw);
+
+    }
   }
 }
