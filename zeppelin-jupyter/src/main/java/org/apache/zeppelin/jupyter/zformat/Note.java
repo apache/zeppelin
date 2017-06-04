@@ -14,20 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.jupyter.nbformat;
+package org.apache.zeppelin.jupyter.zformat;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.Map;
+import java.util.List;
 
 /**
  *
  */
-public class DisplayData extends Output {
+public class Note {
 
-  @SerializedName("data")
-  private Map<String, Object> data;
+  @SerializedName("name")
+  private String name;
 
-  public Map<String, Object> getData() {
-    return data;
+  @SerializedName("paragraphs")
+  private List<Paragraph> paragraphs;
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setParagraphs(List<Paragraph> paragraphs) {
+    this.paragraphs = paragraphs;
   }
 }
+
+
+
+

@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.jupyter.nbformat;
+package org.apache.zeppelin.jupyter.zformat;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.Map;
 
 /**
  *
  */
-public class DisplayData extends Output {
+public class TypeData {
+  public static final String TABLE = "TABLE";
+  public static final String HTML = "HTML";
+  public static final String TEXT = "TEXT";
+
+  public TypeData(String type, String data) {
+    this.type = type;
+    this.data = data;
+  }
+
+  @SerializedName("type")
+  private String type;
 
   @SerializedName("data")
-  private Map<String, Object> data;
-
-  public Map<String, Object> getData() {
-    return data;
-  }
+  private String data;
 }

@@ -36,10 +36,18 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-zengine</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.danilopianini</groupId>
+      <artifactId>gson-extras</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
     <!-- Test -->

@@ -24,9 +24,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.jupyter.nbformat.Cell;
 import org.apache.zeppelin.jupyter.nbformat.CodeCell;
 import org.apache.zeppelin.jupyter.nbformat.DisplayData;
@@ -37,9 +34,10 @@ import org.apache.zeppelin.jupyter.nbformat.Nbformat;
 import org.apache.zeppelin.jupyter.nbformat.Output;
 import org.apache.zeppelin.jupyter.nbformat.RawCell;
 import org.apache.zeppelin.jupyter.nbformat.Stream;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.jupyter.zformat.Note;
+import org.apache.zeppelin.jupyter.zformat.Paragraph;
+import org.apache.zeppelin.jupyter.zformat.Result;
+import org.apache.zeppelin.jupyter.zformat.TypeData;
 
 /**
  *
@@ -70,56 +68,73 @@ public class JupyterUtil {
     return getGson(gsonBuilder).fromJson(in, Nbformat.class);
   }
 
+  public Note getNote(Reader in, String codeReplaced, String markdownReplaced) {
+    return getNote(in, new GsonBuilder(), codeReplaced, markdownReplaced);
+  }
+
+  public Note getNote(Reader in, GsonBuilder gsonBuilder, String codeReplaced,
+      String markdownReplaced) {
+    return getNote(getNbformat(in, gsonBuilder), codeReplaced, markdownReplaced);
+  }
+
   public Note getNote(Nbformat nbformat, String codeReplaced, String markdownReplaced) {
     Note note = new Note();
-    AuthenticationInfo anonymous = new AuthenticationInfo("anonymous", "anonymous");
 
-    note.setName(nbformat.getMetadata().getTitle());
+    String name = nbformat.getMetadata().getTitle();
+    if (null == name) {
+      name = "Note converted from Jupyter";
+    }
+    note.setName(name);
 
     String lineSeparator = System.lineSeparator();
     Paragraph paragraph;
+    List<Paragraph> paragraphs = new ArrayList<>();
     String interpreterName;
-    List<InterpreterResultMessage> interpreterResultMessageList;
-    InterpreterResult.Type type;
+    List<TypeData> typeDataList;
+    String type;
     String result;
 
     for (Cell cell : nbformat.getCells()) {
-      paragraph = note.addNewParagraph(anonymous);
-      interpreterResultMessageList = new ArrayList<>();
+      paragraph = new Paragraph();
+      typeDataList = new ArrayList<>();
 
       if (cell instanceof CodeCell) {
         interpreterName = "%" + codeReplaced;
         for (Output output : ((CodeCell) cell).getOutputs()) {
-          InterpreterResultMessage interpreterResultMessage;
+          TypeData typeData;
           if (output instanceof Stream) {
-            type = Type.TEXT;
+            type = TypeData.TEXT;
             result = Joiner.on(lineSeparator).join(((Stream) output).getText());
-          } else if (output instanceof ExecuteResult) {
-            ExecuteResult executeResult = (ExecuteResult) output;
-            for (Map.Entry<String, Object> data : executeResult.getData().entrySet()) {
-              if (TEXT_PLAIN.equals(data.getKey())) {
-                type = Type.TEXT;
-                result = Joiner.on(lineSeparator).join((List<String>) data.getValue());
+            typeData = new TypeData(type, result);
+            typeDataList.add(typeData);
+          } else if (output instanceof ExecuteResult || output instanceof DisplayData) {
+            Map<String, Object> data =
+                (output instanceof ExecuteResult) ? ((ExecuteResult) output).getData()
+                    : ((DisplayData) output).getData();
+            for (Map.Entry<String, Object> datum : data.entrySet()) {
+              if (TEXT_PLAIN.equals(datum.getKey())) {
+                type = TypeData.TEXT;
+                result = Joiner.on(lineSeparator).join((List<String>) datum.getValue());
+              } else if (IMAGE_PNG.equals(datum.getKey())) {
+                type = TypeData.HTML;
+                result = makeHTML(((String) datum.getValue()).replace("\n", ""));
+              } else {
+                type = TypeData.TEXT;
+                result = datum.getValue().toString();
               }
-              interpreterResultMessage = new InterpreterResultMessage(type, result);
+              typeData = new TypeData(type, result);
+              typeDataList.add(typeData);
             }
-          } else if (output instanceof DisplayData) {
-
           } else {
             // Error
             Error error = (Error) output;
-            type = Type.TEXT;
+            type = TypeData.TEXT;
             result = Joiner.on(lineSeparator)
                 .join(new String[]{error.getEname(), error.getEvalue()});
-
+            typeData = new TypeData(type, result);
+            typeDataList.add(typeData);
           }
-
-          interpreterResultMessage = new InterpreterResultMessage(type, result);
-
-          interpreterResultMessageList.add(interpreterResultMessage);
-
         }
-
       } else if (cell instanceof MarkdownCell) {
         interpreterName = "%" + markdownReplaced;
       } else {
@@ -128,7 +143,12 @@ public class JupyterUtil {
 
       paragraph.setText(
           interpreterName + lineSeparator + Joiner.on(lineSeparator).join(cell.getSource()));
+      paragraph.setResults(new Result(Result.SUCCESS, typeDataList));
+
+      paragraphs.add(paragraph);
     }
+
+    note.setParagraphs(paragraphs);
 
     return note;
   }
@@ -136,6 +156,11 @@ public class JupyterUtil {
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();
+  }
+
+  private String makeHTML(String image) {
+    return "<div style='width:auto;height:auto'><img src=data:image/png;base64," + image
+        + " style='width=auto;height:auto'/></div>";
   }
 
   public static void main(String[] args) {

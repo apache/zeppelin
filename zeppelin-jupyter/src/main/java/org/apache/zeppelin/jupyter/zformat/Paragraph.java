@@ -14,20 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.jupyter.nbformat;
+package org.apache.zeppelin.jupyter.zformat;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
  */
-public class DisplayData extends Output {
+public class Paragraph {
+  public static final String FINISHED = "FINISHED";
 
-  @SerializedName("data")
-  private Map<String, Object> data;
+  @SerializedName("text")
+  private String text;
 
-  public Map<String, Object> getData() {
-    return data;
+  @SerializedName("results")
+  private Result results; // It's a bit weird name
+
+  @SerializedName("id")
+  private String id;
+
+  @SerializedName("status")
+  private String status;
+
+  public Paragraph() {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+    this.id = dateFormat.format(new Date()) + "_" + super.hashCode();
+    this.status = FINISHED;
+  }
+
+  public void setText(String text) {
+    this.text = text;
+  }
+
+  public void setResults(Result results) {
+    this.results = results;
   }
 }
