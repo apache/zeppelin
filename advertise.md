@@ -38,7 +38,7 @@ limitations under the License.
       </div>
       <div class="border col-md-4 col-sm-4" style="height:200px;">
         <div class="panel-content">
-          <label class="_default-text" style="margin-top:65px;">
+          <label class="_default-text" style="margin-top:75px;">
             <img src="./assets/themes/zeppelin/img/python-logo-generic.svg" width="200px">
           </label>
           <label class="_hover-text">
@@ -77,7 +77,7 @@ limitations under the License.
           </label>
           <label class="content-text">
             Zeppelin supports Multi-user Support w/ LDAP. Let's configure Zeppelin for your yarn cluster.<br/>
-            <a href="./docs/0.8.0-SNAPSHOT/usage/other_features/personalized_mode.html" class="user-button" style="margin-top:15px">LEARN MORE</a>
+            <a href="./docs/0.8.0-SNAPSHOT/usage/other_features/personalized_mode.html" class="user-button">LEARN MORE</a>
           </label>                 
         </p>
       </div>

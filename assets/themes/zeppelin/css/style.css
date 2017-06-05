@@ -1008,6 +1008,14 @@ a.anchorjs-link:hover { text-decoration: none; }
     font-size: 18px;
     padding: 10px;
   }
+
+  .advertise .panel-content-user .content-text {
+    font-size: 18px;
+  }
+
+  .advertise .panel-content {
+    margin-top: 10px;
+  }
 }
 
 @media only screen
@@ -1016,7 +1024,7 @@ and (max-width: 768px) {
   .advertise .panel-content ._hover-text,
   .advertise .panel-content:hover ._hover-text {
     width: 90%;
-    font-size: 22px;
+    font-size: 20px;
     padding: 10px;
   }
 
@@ -1030,6 +1038,10 @@ and (max-width: 768px) {
 
   .advertise .panel-content-user .content-text {
     font-size: 20px;
+  }
+
+  .advertise .panel-content {
+    margin-top: 10px;
   }
 }
 
@@ -1200,6 +1212,10 @@ and (max-width: 996px) {
   .advertise .panel-button {
     font-size: 14px;
   }
+
+  .advertise .panel-content {
+    margin-top: 10px;
+  }
 }
 
 @media only screen
@@ -1350,7 +1366,7 @@ and (max-width: 631px) {
 
 .advertise {
   background: #FFF;
-  padding-bottom: 15px;
+  padding-bottom: 35px;
   padding-top: 25px;
 }
 
@@ -1424,6 +1440,7 @@ and (max-width: 631px) {
 ._hover-text {
   opacity: 0;
   font-size: 18px;
+  font-family: 'Geomanist Book', sans-serif;
   position: absolute;
   font-weight: 500;
   margin-left: 5px;
@@ -1436,7 +1453,7 @@ and (max-width: 631px) {
   -moz-transition-delay: 0.2s;
   -o-transition-delay: 0.2s;
   transition-delay: 0.2s;
-  padding: 5px;
+  padding: 10px;
 }
 
 .advertise .panel-content:hover ._hover-text {
@@ -1482,6 +1499,7 @@ and (max-width: 631px) {
   white-space: nowrap;
   outline: 0;
   font-weight: bold;
+  font-size: 14px;
 }
 
 /* Single/Multi User Section */
@@ -1496,6 +1514,7 @@ and (max-width: 631px) {
   border: 1px solid #999;
   width: 100%;
   height: 100%;
+  padding-bottom: 15px;
 }
 
 .advertise .panel-content-user span {
@@ -1525,11 +1544,12 @@ and (max-width: 631px) {
   display:inline-block;
   position: relative;
   font-family: 'Geomanist Book', sans-serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   color: #475A60;
   background-color: transparent;
   height: 100%;
+  letter-spacing: .7px;
 }
 
 .user-button {
@@ -1537,7 +1557,6 @@ and (max-width: 631px) {
   font-size: 14px;
   font-family: 'Roboto', sans-serif;
   color: inherit;
-  margin-top: 10px;
   padding: 6px 14px;
   float: right;
   text-decoration: none;
@@ -1549,6 +1568,7 @@ and (max-width: 631px) {
   z-index: 3;
   border-radius: 30px;
   background-color: transparent;
+  margin-top: 15px;
 }
 
 .advertise .panel-content-user .user-button {
