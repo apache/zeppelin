@@ -1,81 +1,95 @@
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">
-            <img src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin">
-            Apache Zeppelin
-          </a>
-        </div>
-        <nav class="navbar-collapse collapse" role="navigation">
-          <ul class="nav navbar-nav navbar-right">
-            {% assign pages_list = site.pages %}
-            {% assign group = 'nav-right' %}
-            {% include JB/pages_list %}
-
-            <!-- Download -->
-            <li id="docs">
-              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Download<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="/download.html">Download Zeppelin</a></li>
-                <li><a href="/supported_interpreters.html">Supported Interpreters</a></li>
-              </ul>
-            </li>
-
-            <!-- Docs -->
-            <li id="docs">
-              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Docs<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><span><b>Release</b><span></li>
-                <li><a href="/docs/0.7.2">0.7.2</a></li>
-                <li><a href="/docs/0.7.1">0.7.1</a></li>
-                <li><a href="/docs/0.6.2">0.6.2</a></li>
-                <li><a href="/docs/0.6.1">0.6.1</a></li>
-                <li><a href="documentation.html">Older Versions</a></li>
-                <li role="separator" class="divider"></li>
-                <li><span><b>Snapshot</b>&nbsp;(development)<span></li>
-                <li><a href="/docs/0.8.0-SNAPSHOT">0.8.0-SNAPSHOT</a></li>
-              </ul>
-            </li>
-
-            <li><a href="/helium_packages.html">Helium</a></li>
-            <li><a href="https://github.com/apache/zeppelin">GitHub</a></li>
-
-            <!-- Apache -->
-            <li id="apache">
-              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Apache<b class="caret"></b></a>
-               <ul class="dropdown-menu">
-                <li><a href="http://www.apache.org/foundation/how-it-works.html">Apache Software Foundation</a></li>
-                <li><a href="http://www.apache.org/licenses/">Apache License</a></li>
-                <li><a href="http://www.apache.org/foundation/sponsorship.html">Sponsorship</a></li>
-                <li><a href="/assets.html">Assets</a></li>
-                <li><a href="http://www.apache.org/foundation/thanks.html">Thanks</a></li>
-              </ul>
-            </li>
-          </ul>
-        </nav><!--/.navbar-collapse -->
-      </div>
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">
+        <img src="/assets/themes/zeppelin/img/zeppelin_logo.png" style="margin-top: -2px;" width="50" alt="I'm zeppelin">
+          <span style="margin-left: 5px;"> Apache Zeppelin </span>
+      </a>
     </div>
+    <nav class="navbar-collapse collapse" role="navigation">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="/docs/0.8.0-SNAPSHOT/install/install.html">Quick Start</a></li>
+        <!-- Download -->
+        <li class="docs">
+          <a href="#" data-toggle="dropdown" class="dropdown-toggle">Download<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="/download.html">Download Zeppelin</a></li>
+            <li><a href="/supported_interpreters.html">Supported Interpreters</a></li>
+          </ul>
+        </li>
+        <!-- Docs -->
+        <li class="docs">
+          <a href="#" data-toggle="dropdown" class="dropdown-toggle">Docs<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><span><b>Release</b><span></li>
+            <li><a href="/docs/0.7.2">0.7.2</a></li>
+            <li><a href="/docs/0.7.1">0.7.1</a></li>
+            <li><a href="/docs/0.6.2">0.6.2</a></li>
+            <li><a href="/docs/0.6.1">0.6.1</a></li>
+            <li><a href="documentation.html">Older Versions</a></li>
+            <li role="separator" class="divider"></li>
+              <li><span><b>Snapshot&nbsp;(development)</b><span></li>
+            <li><a href="/docs/0.8.0-SNAPSHOT">0.8.0-SNAPSHOT</a></li>
+          </ul>
+        </li>
+
+        <li><a href="/helium_packages.html">Helium</a></li>
+
+        <li class="docs">
+          <a href="#" data-toggle="dropdown" class="dropdown-toggle">Community<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="community.html">Contributors</a></li>
+            <li><a href="https://github.com/apache/zeppelin">GitHub</a></li>
+          </ul>
+        </li>
+          <!-- Apache -->
+        <li class="docs">
+          <a href="#" data-toggle="dropdown" class="dropdown-toggle">Apache<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="http://www.apache.org/foundation/how-it-works.html">Apache Software Foundation</a></li>
+            <li><a href="http://www.apache.org/licenses/">Apache License</a></li>
+            <li><a href="http://www.apache.org/foundation/sponsorship.html">Sponsorship</a></li>
+            <li><a href="/assets.html">Assets</a></li>
+            <li><a href="http://www.apache.org/foundation/thanks.html">Thanks</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav><!--/.navbar-collapse -->
+  </div>
+</div>
 
 {% if page.title == "Zeppelin" %}
 <div class="jumbotron">
-  <div class="container">
-    <h1>Apache Zeppelin</h1>
-    <p>A web-based notebook that enables interactive data analytics. <br/>
-      You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
-    </p>
+  <div class="container" style="margin-top: -45px; padding-bottom: 5px;">
+    <div class="zeppelin">
+        <div class="zeppelin2"></div>
+    </div>
+    <div>
+      <p class="description">
+      A web-based notebook that enables interactive data analytics for
+      data-driven, interactive and collaborative documents with SQL, Scala and more.
+      </p>
+    </div>
     <div class="border row">
       <div class="col-md-12 col-sm-12 col-xs-12 text-center newBtn">
-        <a href="http://youtu.be/_PQbVH_aO5E" target="_zeppelinVideo" class="btn btn-primary btn-lg bigFingerButton" role="button">Tutorial Video</a>
-        <a href="./download.html" class="btn btn-primary btn-lg bigFingerButton" role="button">GET LATEST ZEPPELIN</a>
+        <a href="/docs/0.8.0-SNAPSHOT/install/install.html" class="btn btn-primary btn-lg" role="button"
+           style="margin:5px 5px 5px 35px;font-size:15px;font-weight:300;font-family:'Roboto', sans-serif;">
+          GET STARTED
+        </a>
+        <a href="/download.html" class="btn btn-primary btn-lg" role="button"
+           style="margin:5px 5px 5px 35px;font-size:15px;font-weight:300;font-family:'Roboto', sans-serif;">
+          DOWNLOAD
+        </a>
       </div>
     </div>
   </div>
 </div>
+
 {% include_relative whats_new.md %}
-{% endif %}
+{% endif %}d
