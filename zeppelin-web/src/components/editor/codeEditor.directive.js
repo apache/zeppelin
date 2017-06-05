@@ -31,7 +31,7 @@ function codeEditor ($templateRequest, $compile) {
         editor.attr('id', scope.paragraphId + '_editor')
         element.append(editor)
         $compile(editor)(scope)
-        console.log('codeEditor directive revision view is ' + scope.revisionView)
+        console.debug('codeEditor directive revision view is ' + scope.revisionView)
       })
     }
   }

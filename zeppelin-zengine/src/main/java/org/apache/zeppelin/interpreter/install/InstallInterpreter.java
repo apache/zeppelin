@@ -224,43 +224,43 @@ public class InstallInterpreter {
     for (int i = 0; i < args.length; i++) {
       String arg = args[i].toLowerCase(Locale.US);
       switch (arg) {
-          case "--list":
-          case "-l":
-            installer.list();
-            System.exit(0);
-            break;
-          case "--all":
-          case "-a":
-            all = true;
-            break;
-          case "--name":
-          case "-n":
-            names = args[++i];
-            break;
-          case "--artifact":
-          case "-t":
-            artifacts = args[++i];
-            break;
-          case "--version":
-          case "-v":
-            Util.getVersion();
-            break;
-          case "--proxy-url":
-            proxyUrl = new URL(args[++i]);
-            break;
-          case "--proxy-user":
-            proxyUser = args[++i];
-            break;
-          case "--proxy-password":
-            proxyPassword = args[++i];
-            break;
-          case "--help":
-          case "-h":
-            usage();
-            System.exit(0);
-            break;
-          default:
-            System.out.println("Unknown option " + arg);
+        case "--list":
+        case "-l":
+          installer.list();
+          System.exit(0);
+          break;
+        case "--all":
+        case "-a":
+          all = true;
+          break;
+        case "--name":
+        case "-n":
+          names = args[++i];
+          break;
+        case "--artifact":
+        case "-t":
+          artifacts = args[++i];
+          break;
+        case "--version":
+        case "-v":
+          Util.getVersion();
+          break;
+        case "--proxy-url":
+          proxyUrl = new URL(args[++i]);
+          break;
+        case "--proxy-user":
+          proxyUser = args[++i];
+          break;
+        case "--proxy-password":
+          proxyPassword = args[++i];
+          break;
+        case "--help":
+        case "-h":
+          usage();
+          System.exit(0);
+          break;
+        default:
+          System.out.println("Unknown option " + arg);
       }
     }
 

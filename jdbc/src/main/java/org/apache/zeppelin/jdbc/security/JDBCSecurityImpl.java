@@ -41,20 +41,20 @@ public class JDBCSecurityImpl {
   public static void createSecureConfiguration(Properties properties,
       AuthenticationMethod authType) {
     switch (authType) {
-        case KERBEROS:
-          Configuration conf = new
-              org.apache.hadoop.conf.Configuration();
-          conf.set("hadoop.security.authentication", KERBEROS.toString());
-          UserGroupInformation.setConfiguration(conf);
-          try {
-            UserGroupInformation.loginUserFromKeytab(
-                properties.getProperty("zeppelin.jdbc.principal"),
-                properties.getProperty("zeppelin.jdbc.keytab.location")
-            );
-          } catch (IOException e) {
-            LOGGER.error("Failed to get either keytab location or principal name in the " +
-                "interpreter", e);
-          }
+      case KERBEROS:
+        Configuration conf = new
+            org.apache.hadoop.conf.Configuration();
+        conf.set("hadoop.security.authentication", KERBEROS.toString());
+        UserGroupInformation.setConfiguration(conf);
+        try {
+          UserGroupInformation.loginUserFromKeytab(
+              properties.getProperty("zeppelin.jdbc.principal"),
+              properties.getProperty("zeppelin.jdbc.keytab.location")
+          );
+        } catch (IOException e) {
+          LOGGER.error("Failed to get either keytab location or principal name in the " +
+              "interpreter", e);
+        }
     }
   }
 
