@@ -798,6 +798,7 @@ public class LivyInterpreterIT {
       assertTrue(result.message().size()>1);
     } finally {
       sparkInterpreter.close();
+      pysparkInterpreter.close();
     }
   }
 
