@@ -46,6 +46,12 @@
         "defaultValue": "",
         "description": "SQL which executes while opening connection"
       },
+      "default.splitQueries": {
+        "envName": null,
+        "propertyName": "default.splitQueries",
+        "defaultValue": "false",
+        "description": "Each query is executed apart and returns the result"
+      },
       "common.max_count": {
         "envName": null,
         "propertyName": "common.max_count",
