@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.web;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.CorsFilter;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -51,10 +52,10 @@ public class DefaultWebSecurity implements WebSecurity {
     String shiroIniPath = conf.getShiroPath();
 
     if (!StringUtils.isBlank(shiroIniPath)) {
-      webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
+      webApp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
       SecurityUtils.initSecurityManager(shiroIniPath);
-      webapp.addFilter(org.apache.shiro.web.servlet.ShiroFilte.class, "/api/*", EnumSet.allOf(DispatcherType.class));
-      webapp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+      webApp.addFilter(org.apache.shiro.web.servlet.ShiroFilte.class, "/api/*", EnumSet.allOf(DispatcherType.class));
+      webApp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
     }
 
   }
