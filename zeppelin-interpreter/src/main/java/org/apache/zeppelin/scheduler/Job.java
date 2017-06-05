@@ -259,8 +259,16 @@ public abstract class Job {
     return dateStarted;
   }
 
+  public synchronized void setDateStarted(Date startedAt) {
+    dateStarted = startedAt;
+  }
+
   public synchronized Date getDateFinished() {
     return dateFinished;
+  }
+
+  public synchronized void setDateFinished(Date finishedAt) {
+    dateFinished = finishedAt;
   }
 
   public abstract void setResult(Object results);

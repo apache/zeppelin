@@ -30,12 +30,12 @@ public class CommandLineUtils {
     }
 
     String usage = args[0].toLowerCase(Locale.US);
-    switch (usage){
-        case "--version":
-        case "-v":
-          System.out.println(Util.getVersion());
-          break;
-        default:
+    switch (usage) {
+      case "--version":
+      case "-v":
+        System.out.println(Util.getVersion());
+        break;
+      default:
     }
   }
 }

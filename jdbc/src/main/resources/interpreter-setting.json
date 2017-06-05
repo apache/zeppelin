@@ -22,6 +22,12 @@
         "defaultValue": "",
         "description": "The JDBC user password"
       },
+      "default.completer.ttlInSeconds": {
+        "envName": null,
+        "propertyName": "default.completer.ttlInSeconds",
+        "defaultValue": "120",
+        "description": "Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)"
+      },
       "default.driver": {
         "envName": null,
         "propertyName": "default.driver",

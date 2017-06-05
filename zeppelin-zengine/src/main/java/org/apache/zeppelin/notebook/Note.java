@@ -353,7 +353,6 @@ public class Note implements Serializable, ParagraphJobListener {
   private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
-    p.addUser(p, p.getUser());
     setParagraphMagic(p, index);
     return p;
   }
@@ -589,12 +588,16 @@ public class Note implements Serializable, ParagraphJobListener {
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+    authenticationInfo.setUser(cronExecutingUser);
+    runAll(authenticationInfo);
+  }
+
+  public void runAll(AuthenticationInfo authenticationInfo) {
     for (Paragraph p : getParagraphs()) {
       if (!p.isEnabled()) {
         continue;
       }
-      AuthenticationInfo authenticationInfo = new AuthenticationInfo();
-      authenticationInfo.setUser(cronExecutingUser);
       p.setAuthenticationInfo(authenticationInfo);
       run(p.getId());
     }
@@ -895,6 +898,11 @@ public class Note implements Serializable, ParagraphJobListener {
   }
 
   public static Note fromJson(String json) {
+    GsonBuilder gsonBuilder = 
+            new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+        .create();
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
     return note;

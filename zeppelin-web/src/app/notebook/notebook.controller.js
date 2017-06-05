@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import moment from 'moment'
+
 import { isParagraphRunning, } from './paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl)
@@ -25,7 +27,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   ngToast.dismiss()
 
   $scope.note = null
-  $scope.moment = moment
   $scope.editorToggled = false
   $scope.tableToggled = false
   $scope.viewOnly = false
@@ -41,6 +42,10 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     {name: '12h', value: '0 0 0/12 * * ?'},
     {name: '1d', value: '0 0 0 * * ?'}
   ]
+
+  $scope.formatRevisionDate = function(date) {
+    return moment.unix(date).format('MMMM Do YYYY, h:mm a')
+  }
 
   $scope.interpreterSettings = []
   $scope.interpreterBindings = []
@@ -223,7 +228,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.$on('listRevisionHistory', function (event, data) {
-    console.log('received list of revisions %o', data)
+    console.debug('received list of revisions %o', data)
     $scope.noteRevisions = data.revisionList
     $scope.noteRevisions.splice(0, 0, {
       id: 'Head',
@@ -464,10 +469,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   let addPara = function (paragraph, index) {
     $scope.note.paragraphs.splice(index, 0, paragraph)
-    _.each($scope.note.paragraphs, function (para) {
+    $scope.note.paragraphs.map(para => {
       if (para.id === paragraph.id) {
         para.focus = true
-        $scope.$broadcast('focusParagraph', para.id, 0, false)
+
+        // we need `$timeout` since angular DOM might not be initialized
+        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, false) })
       }
     })
   }
@@ -483,20 +490,23 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.$on('addParagraph', function (event, paragraph, index) {
-    if ($scope.paragraphUrl) {
+    if ($scope.paragraphUrl || $scope.revisionView === true) {
       return
     }
     addPara(paragraph, index)
   })
 
   $scope.$on('removeParagraph', function (event, paragraphId) {
-    if ($scope.paragraphUrl) {
+    if ($scope.paragraphUrl || $scope.revisionView === true) {
       return
     }
     removePara(paragraphId)
   })
 
   $scope.$on('moveParagraph', function (event, paragraphId, newIdx) {
+    if ($scope.revisionView === true) {
+      return
+    }
     let removedPara = removePara(paragraphId)
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx)
@@ -958,6 +968,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   })
 
   $scope.$on('insertParagraph', function (event, paragraphId, position) {
+    if ($scope.revisionView === true) {
+      return
+    }
     let newIndex = -1
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {

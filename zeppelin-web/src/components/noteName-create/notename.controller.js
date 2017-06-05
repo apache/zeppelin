@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import './note-name-dialog.css'
+
 angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl)
 
 function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {

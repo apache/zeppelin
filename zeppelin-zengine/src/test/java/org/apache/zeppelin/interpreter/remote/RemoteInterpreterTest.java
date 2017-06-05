@@ -854,13 +854,13 @@ public class RemoteInterpreterTest {
 
   @Test
   public void testEnvStringPattern() {
-    assertFalse(RemoteInterpreter.isEnvString(null));
-    assertFalse(RemoteInterpreter.isEnvString(""));
-    assertFalse(RemoteInterpreter.isEnvString("abcDEF"));
-    assertFalse(RemoteInterpreter.isEnvString("ABC-DEF"));
-    assertTrue(RemoteInterpreter.isEnvString("ABCDEF"));
-    assertTrue(RemoteInterpreter.isEnvString("ABC_DEF"));
-    assertTrue(RemoteInterpreter.isEnvString("ABC_DEF123"));
+    assertFalse(RemoteInterpreterUtils.isEnvString(null));
+    assertFalse(RemoteInterpreterUtils.isEnvString(""));
+    assertFalse(RemoteInterpreterUtils.isEnvString("abcDEF"));
+    assertFalse(RemoteInterpreterUtils.isEnvString("ABC-DEF"));
+    assertTrue(RemoteInterpreterUtils.isEnvString("ABCDEF"));
+    assertTrue(RemoteInterpreterUtils.isEnvString("ABC_DEF"));
+    assertTrue(RemoteInterpreterUtils.isEnvString("ABC_DEF123"));
   }
 
   @Test

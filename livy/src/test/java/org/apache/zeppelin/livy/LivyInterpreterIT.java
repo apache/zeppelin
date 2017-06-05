@@ -308,6 +308,8 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("tableName"));
+      int r = sqlInterpreter.getProgress(context);
+      assertTrue(r == 0);
     } finally {
       sqlInterpreter.close();
     }

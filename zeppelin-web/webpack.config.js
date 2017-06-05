@@ -165,7 +165,7 @@ module.exports = function makeWebpackConfig () {
       //
       // Reference: https://github.com/webpack/style-loader
       // Use style-loader in development.
-      loader: isTest ? 'null' : ExtractTextPlugin.extract('style-loader', 'css-loader?sourceMap!postcss-loader')
+      loader: ExtractTextPlugin.extract('style-loader', 'css-loader?sourceMap!postcss-loader')
     }, {
       // ASSET LOADER
       // Reference: https://github.com/webpack/file-loader
@@ -215,6 +215,10 @@ module.exports = function makeWebpackConfig () {
    * List: http://webpack.github.io/docs/list-of-plugins.html
    */
   config.plugins = [
+      // Reference: https://github.com/webpack/extract-text-webpack-plugin
+      // Extract css files
+      // Disabled when in test mode or not in build mode
+      new ExtractTextPlugin('[name].[hash].css', {disable: !isProd}),
   ];
 
   // Skip rendering index.html in test mode
@@ -226,12 +230,6 @@ module.exports = function makeWebpackConfig () {
         template: './src/index.html',
         inject: 'body'
       }),
-
-      // Reference: https://github.com/webpack/extract-text-webpack-plugin
-      // Extract css files
-      // Disabled when in test mode or not in build mode
-      new ExtractTextPlugin('[name].[hash].css', {disable: !isProd}),
-
       // Reference: https://webpack.github.io/docs/list-of-plugins.html#defineplugin
       new webpack.DefinePlugin({
         'process.env': {
