@@ -1,0 +1,27 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="ui-grid-filter-container"
+     ng-repeat="colFilter in col.filters"
+     ng-class="{'ui-grid-filter-cancel-button-hidden' : colFilter.disableCancelFilterButton === true }">
+  <div ng-if="colFilter.type !== 'select'">
+    <input type="text" class="input-sm form-control"
+           style="font-size: 14px; font-weight: 500"
+
+           ng-model="colFilter.term"
+           ng-model-options="{ debounce : { 'default' : 300, 'blur' : 0 }}"
+           ng-attr-placeholder="{{colFilter.placeholder || ''}}"
+           aria-label="{{colFilter.ariaLabel || aria.defaultFilterLabel}}" />
+  </div>
+</div>

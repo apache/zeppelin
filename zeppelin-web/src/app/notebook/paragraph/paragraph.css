@@ -52,21 +52,6 @@
   width: 100%;
 }
 
-table.dataTable {
-  margin-top: 0px !important;
-  margin-bottom: 6px !important;
-}
-
-table.dataTable.table-condensed > thead > tr > th {
-  padding-right: 28px;
-}
-
-table.dataTable.table-condensed .sorting:after,
-table.dataTable.table-condensed .sorting_asc:after,
-table.dataTable.table-condensed .sorting_desc:after {
-  right: 12px;
-}
-
 .plainTextContainer {
   font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
   font-size: 12px !important;
@@ -128,7 +113,6 @@ table.dataTable.table-condensed .sorting_desc:after {
   display: none;
   float: right;
   color: #999;
-  margin-top: -9px;
   margin-right: 0;
   position: absolute;
   clear: both;
@@ -190,18 +174,12 @@ table.dataTable.table-condensed .sorting_desc:after {
 }
 
 .paragraph .control {
-  background: rgba(255,255,255,0.85);
+  display: inline-block;
   float: right;
+  background: rgba(255,255,255,0.85);
   color: #999;
-  margin-top: 1px;
-  margin-right: 5px;
-  position: absolute;
-  clear: both;
-  right: 15px;
-  top: 16px;
-  text-align: right;
   font-size: 12px;
-  padding: 4px;
+  margin-top: 5px;
 }
 
 .paragraph .control li {
@@ -290,8 +268,11 @@ table.table-shortcut {
 */
 
 .paragraph .title {
-  margin: 0;
+  display: inline-block;
+  float: left;
   font-size: 12px;
+  margin-bottom: 7px;
+  min-height: 24px;
 }
 
 .paragraph .title div {
@@ -385,8 +366,20 @@ table.table-shortcut {
   direction: ltr;
 }
 
+/** set highlight line color */
+#main .ace-chrome .ace_marker-layer .ace_active-line {
+  background: rgba(114, 127, 222, 0.08);
+}
+
+/** hide not focused cursors */
 .ace_hidden-cursors {
   opacity: 0;
+}
+
+/** set cursor color */
+#main .emacs-mode .ace_cursor {
+  background: #C0C0C0!important;
+  border: none !important;
 }
 
 .ace_text-input, .ace_gutter, .ace_layer,
@@ -397,11 +390,6 @@ table.table-shortcut {
 
 .ace_text-input.ace_composition {
  opacity: 0 !important;
-}
-
-#main .emacs-mode .ace_cursor {
-  background: #C0C0C0!important;
-  border: none !important;
 }
 
 /*
@@ -488,46 +476,6 @@ table.table-shortcut {
 }
 
 /*
-  Handsontable
-*/
-
-.handsontable th {
-  font-weight: bold;
-}
-
-.handsontable th, .handsontable td {
-  border-right: 0px;
-  border-left: 0px !important;
-  padding: 4px;
-}
-
-.handsontable tr:first-child th {
-  text-align: left;
-  border-top: 0px;
-  padding: 4px 0px 0px 0px;
-  border-left: 0px;
-  border-right: 0px;
-  border-bottom: 2px solid #CCC;
-}
-
-.handsontable .columnSorting.ascending::after {
-  content: '\f160';
-  margin-left: 3px;
-  font-size: 12px;
-  font-family: FontAwesome;
-  line-height: 2;
-}
-
-.handsontable .columnSorting.descending::after {
-  content: '\f161';
-  margin-left: 3px;
-  font-size: 12px;
-  margin-left: 3px;
-  font-family: FontAwesome;
-  line-height: 2;
-}
-
-/*
   Pivot CSS
 */
 
@@ -581,54 +529,6 @@ table.table-striped {
   padding-right: 4px !important;
   padding-left: 4px !important;
   width: 20px;
-}
-
-
-.changeType {
-  border: 1px solid #bbb;
-  color: #bbb;
-  background: #eee;
-  border-radius: 2px;
-  padding: 2px;
-  font-size: 9px;
-  float: right;
-  line-height: 9px;
-  margin: 3px 3px 0 0;
-}
-.changeType:hover {
-  border: 1px solid #777;
-  color: #777;
-  cursor: pointer;
-}
-.changeType.pressed {
-  background-color: #999;
-}
-.changeTypeMenu {
-  position: absolute;
-  border: 1px solid #ccc;
-  margin-top: 22px;
-  box-shadow: 0 1px 3px -1px #323232;
-  background: white;
-  padding: 0;
-  font-size: 13px;
-  display: none;
-  z-index: 10;
-}
-.changeTypeMenu li {
-  text-align: left;
-  list-style: none;
-  padding: 2px 20px;
-  cursor: pointer;
-  margin-bottom: 0;
-}
-.changeTypeMenu li.active:before {
-  font-size: 12px;
-  content: "\2714";
-  margin-left: -15px;
-  margin-right: 3px;
-}
-.changeTypeMenu li:hover {
-  background: #eee;
 }
 
 /*

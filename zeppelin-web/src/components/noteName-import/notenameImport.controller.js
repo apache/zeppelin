@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import './note-import-dialog.css'
+
 angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl)
 
 function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {

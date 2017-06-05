@@ -90,7 +90,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     PreparedStatement insertStatement = connection.prepareStatement("insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
     insertStatement.setString(1, null);
     insertStatement.execute();
-    interpreterContext = new InterpreterContext("", "1", null, "", "", new AuthenticationInfo(), null, null, null, null,
+    interpreterContext = new InterpreterContext("", "1", null, "", "", new AuthenticationInfo("testUser"), null, null, null, null,
         null, null);
   }
 
@@ -362,9 +362,9 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3, null);
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3, interpreterContext);
 
-    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select ", "select ", CompletionType.keyword.name());
+    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select", "select", CompletionType.keyword.name());
 
     assertEquals(1, completionList.size());
     assertEquals(true, completionList.contains(correctCompletionKeyword));

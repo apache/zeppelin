@@ -32,12 +32,12 @@ body {
   background: white;
 }
 
-.displayNavBar {
-  display: inline !important;
-}
-
 body.asIframe {
   padding-top: 0;
+}
+
+.displayNavBar {
+  display: inline !important;
 }
 
 body .navbar {
@@ -57,58 +57,6 @@ body .navbar {
   margin-left: 2px;
   cursor: pointer;
   text-decoration: none;
-}
-
-.navbar-inverse {
-  background: #3071a9;
-  color: #fff;
-  border-color: #3071a9;
-  font-size: 18px;
-}
-
-.navbar-inverse .navbar-nav > .open > a,
-.navbar-inverse .navbar-nav > .open > a:hover,
-.navbar-inverse .navbar-nav > .open > a:focus {
-  color: #fff;
-  background: #3071a9;
-}
-
-.navbar-inverse .navbar-toggle:hover,
-.navbar-inverse .navbar-toggle:focus {
-  background: #3071a9;
-}
-
-.navbar-inverse .navbar-nav > li > a:hover,
-.navbar-inverse .navbar-nav > li > a:focus {
-  color: #fff;
-  background: rgba(0, 0, 0, 0.2);
-
-}
-
-.navbar-inverse .navbar-toggle {
-  border-color: #FFFFFF;
-}
-
-.navbar-inverse .navbar-nav > .active > a,
-.navbar-inverse .navbar-nav > .active > a:hover,
-.navbar-inverse .navbar-nav > .active > a:focus {
-  color: #fff;
-  background: #080808;
-}
-
-.navbar-inverse .navbar-nav > li > a {
-  color: #FFFFFF;
-}
-
-.navbar-inverse .navbar-brand {
-  color: #fff;
-  text-decoration: none;
-  font-family: 'Patua One', cursive;
-  font-size: 32px;
-}
-
-a.navbar-brand:hover {
-  color: #fff !important;
 }
 
 /* Css for the Notebook Dropdown */
@@ -248,45 +196,6 @@ a.navbar-brand:hover {
   border-radius:6px 0 6px 6px;
 }
 
-@media (max-width: 767px) {
-  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
-  #notebook-list li a {
-    color: #D3D3D3;
-  }
-
-  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a,
-  #notebook-list li a {
-    padding: 5px 15px 5px 25px;
-    line-height: 20px;
-  }
-
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
-    color: #D3D3D3;
-  }
-
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus,
-  #notebook-list li a:hover {
-    color: #fff;
-    background: transparent;
-  }
-
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a,
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:hover,
-  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
-    color: #fff;
-    background: #080808;
-  }
-
-  .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
-    background: #3071A9;
-  }
-
-  .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
-    border-color: #3071A9;
-  }
-}
-
 #main {
   padding: 10px;
   height: 100%;
@@ -333,14 +242,6 @@ a.navbar-brand:hover {
   color: #fff;
   background-color: #428bca;
   border-color: #357ebd;
-}
-
-.username {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
-  display: inline-block;
 }
 
 .server-connected {
@@ -453,40 +354,6 @@ This part should be removed when new version of bootstrap handles this issue.
 
 .modal-dialog, .modal {
   z-index: 10003 !important;
-}
-
-#noteImportModal .modal-body {
-  min-height: 420px;
-  overflow: hidden;
-}
-
-#noteImportModal .modal-footer {
-  min-height: 65px;
-}
-
-#noteImportModal .display-inline a {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  color: #999;
-  cursor: pointer;
-  display: block;
-  float: left;
-  font-size: 98px;
-  height: 240px;
-  margin: 0 10px 16px;
-  padding-top: 60px;
-  text-align: center;
-  text-decoration: none;
-  width: 264px;
-}
-
-#noteImportModal .display-inline a:hover {
-  background: #eee;
-}
-
-#noteImportModal .display-inline a p {
-  font-size: 14px;
 }
 
 /* ------------------------------------------- */
@@ -823,29 +690,4 @@ This part should be removed when new version of bootstrap handles this issue.
 
 .bootstrap-dialog.type-primary .modal-header {
   background: #3071a9;
-}
-
-/* About Zeppelin */
-.about {
-  height: 200px;
-  padding: 25px;
-}
-
-.about .logo {
-  padding-top: 30px;
-}
-
-.about .logo img {
-  width: 95%;
-}
-
-.about .content {
-  text-align: center;
-}
-
-.about .content h3 {
-  font-family: 'Patua One';
-  color: #3071A9;
-  font-size: 30px;
-  margin: 0 auto;
 }

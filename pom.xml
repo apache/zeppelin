@@ -96,8 +96,8 @@
     <gson-extras.version>0.2.1</gson-extras.version>
     <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
-    <httpcomponents.core.version>4.3.3</httpcomponents.core.version>
-    <httpcomponents.client.version>4.3.6</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.lang.version>2.5</commons.lang.version>
     <commons.configuration.version>1.9</commons.configuration.version>
@@ -134,6 +134,9 @@
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
+
+    <!-- to be able to exclude some tests using command line -->
+    <tests.to.exclude/>
   </properties>
 
   <dependencyManagement>
@@ -555,6 +558,9 @@
           <version>${plugin.surefire.version}</version>
           <configuration combine.children="append">
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+            <excludes>
+              <exclude>${tests.to.exclude}</exclude>
+            </excludes>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
