@@ -1002,29 +1002,30 @@ a.anchorjs-link:hover { text-decoration: none; }
     font-size: 22px;
   }
 
-  .advertise .panel-content ._hover-text,
-  .advertise .panel-content:hover ._hover-text {
+  .tech_deploy .panel-content ._hover-text,
+  .tech_deploy .panel-content:hover ._hover-text {
+
     font-size: 16px;
     padding: 10px;
   }
 
-  .advertise .panel-content-user .content-text {
+  .tech_deploy .panel-content-user .content-text {
     font-size: 16px;
   }
 
-  .advertise .panel-button {
+  .tech_deploy .panel-button {
     font-size: 14px;
   }
 
-  .advertise .panel-content-user .user-button {
+  .tech_deploy .panel-content-user .user-button {
     font-size: 14px;
   }
 
-  .advertise .panel-content {
+  .tech_deploy .panel-content {
     margin-top: 10px;
   }
 
-  .advertise {
+  .tech_deploy {
     padding-left: 30px;
     padding-right: 30px;
   }
@@ -1033,34 +1034,34 @@ a.anchorjs-link:hover { text-decoration: none; }
 @media only screen
 and (min-width: 480px)
 and (max-width: 768px) {
-  .advertise .panel-content ._hover-text,
-  .advertise .panel-content:hover ._hover-text {
+  .tech_deploy .panel-content ._hover-text,
+  .tech_deploy .panel-content:hover ._hover-text {
     width: 90%;
     font-size: 20px;
     padding: 10px;
   }
 
-  .advertise .panel-content ._default-text {
+  .tech_deploy .panel-content ._default-text {
     margin-left: 15px;
   }
 
-  .advertise .panel-button {
+  .tech_deploy .panel-button {
     font-size: 18px;
   }
 
-  .advertise .panel-content-user .user-button {
+  .tech_deploy .panel-content-user .user-button {
     font-size: 18px;
   }
 
-  .advertise .panel-content-user .content-text {
+  .tech_deploy .panel-content-user .content-text {
     font-size: 20px;
   }
 
-  .advertise .panel-content {
+  .tech_deploy .panel-content {
     margin-top: 10px;
   }
 
-  .advertise {
+  .tech_deploy {
     padding-left: 30px;
     padding-right: 30px;
   }
@@ -1197,6 +1198,7 @@ and (max-width: 996px) {
     display:block !important;
   }
 
+<<<<<<< 238bc2315fb310d746bffa994c5c248b91a4fcce
   .navbar-nav .open .dropdown-menu {
     position: static;
     float: none;
@@ -1219,26 +1221,26 @@ and (max-width: 996px) {
     font-size: 15px;
   }
 
-  .advertise .panel-content ._hover-text,
-  .advertise .panel-content:hover ._hover-text {
+  .tech_deploy .panel-content ._hover-text,
+  .tech_deploy .panel-content:hover ._hover-text {
     width: 85%;
     font-size: 14px;
     padding: 10px;
   }
 
-  .advertise .panel-content-user .content-text {
+  .tech_deploy .panel-content-user .content-text {
     font-size: 14px;
   }
 
-  .advertise .panel-button {
+  .tech_deploy .panel-button {
     font-size: 14px;
   }
 
-  .advertise .panel-content-user .user-button {
+  .tech_deploy .panel-content-user .user-button {
     font-size: 14px;
   }
 
-  .advertise .panel-content {
+  .tech_deploy .panel-content {
     margin-top: 10px;
   }
 }
@@ -1367,6 +1369,7 @@ and (max-width: 631px) {
   }
 }
 
+<<<<<<< 238bc2315fb310d746bffa994c5c248b91a4fcce
 .zeppelin {
   background-image: url('../img/zepLogo.png');
   background-repeat: no-repeat;
@@ -1387,21 +1390,21 @@ and (max-width: 631px) {
   opacity: 0.2;
 }
 
-/* Technologies and Deployments Section */
+/* Technologies Section */
 
-.advertise {
+.tech_deploy {
   background: #FFF;
   padding-bottom: 35px;
   padding-top: 25px;
 }
 
-.advertise p {
+.tech_deploy p {
   padding-bottom: 18px;
   padding-right: 9px;
   padding-left: 9px;
 }
 
-.advertise h2 {
+.tech_deploy h2 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-align: center;
   padding-bottom: 16px;
@@ -1412,15 +1415,7 @@ and (max-width: 631px) {
   letter-spacing: 1px;
 }
 
-.advertise.container .advertise-title {
-  font-family: 'Geomanist Book', sans-serif;
-  font-size: 30px;
-  color: #254356;
-  padding: 15px;
-  text-align: center;
-}
-
-.advertise .panel-content {
+.tech_deploy .panel-content {
   font-weight: 500;
   font-size: 14px;
   height: 100%;
@@ -1445,7 +1440,7 @@ and (max-width: 631px) {
   transition-delay: 0.2s;
 }
 
-.advertise .panel-content ._default-text {
+.tech_deploy .panel-content ._default-text {
   font-family: 'Titillium Web', sans-serif;
   font-size: 25px;
   text-align: center;
@@ -1453,7 +1448,7 @@ and (max-width: 631px) {
   margin-top: 50px;
 }
 
-.advertise .panel-content:hover ._default-text {
+.tech_deploy .panel-content:hover ._default-text {
   opacity: 0;
   -webkit-transform: scale(0.3);
   -moz-transform: scale(0.3);
@@ -1481,7 +1476,7 @@ and (max-width: 631px) {
   padding: 10px;
 }
 
-.advertise .panel-content:hover ._hover-text {
+.tech_deploy .panel-content:hover ._hover-text {
   opacity: 1;
   position: absolute;
   font-weight: 500;
@@ -1496,19 +1491,19 @@ and (max-width: 631px) {
   transition-delay: .4s;
 }
 
-.advertise .panel-content:hover:before,
-.advertise .panel-content:hover:after {
-  content: '';
-  position: absolute;
-  top: 0.67em;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  opacity: 0;
-  -webkit-transition: .6s,opacity .6s;
-  -moz-transition: .6s,opacity .6s;
-  -o-transition: .6s,opacity .6s;
-  transition: .6s,opacity .6s;
+.tech_deploy .panel-content:hover:before,
+.tech_deploy .panel-content:hover:after {
+ content: '';
+ position: absolute;
+ top: 0.67em;
+ left: 0;
+ width: 100%;
+ text-align: center;
+ opacity: 0;
+ -webkit-transition: .6s,opacity .6s;
+ -moz-transition: .6s,opacity .6s;
+ -o-transition: .6s,opacity .6s;
+ transition: .6s,opacity .6s;
 }
 
 .panel-button {
@@ -1527,9 +1522,9 @@ and (max-width: 631px) {
   font-size: 14px;
 }
 
-/* Single/Multi User Section */
+/* Deployments Section */
 
-.advertise .panel-content-user {
+.tech_deploy .panel-content-user {
   position: relative;
   font-weight: 500;
   font-size: 14px;
@@ -1542,12 +1537,12 @@ and (max-width: 631px) {
   padding-bottom: 15px;
 }
 
-.advertise .panel-content-user span {
+.tech_deploy .panel-content-user span {
   display: block;
   margin-bottom: 8px;
 }
 
-.advertise .panel-content-user .title-text {
+.tech_deploy .panel-content-user .title-text {
   font-size: 30px;
   position: relative;
   width: 100%;
@@ -1561,7 +1556,7 @@ and (max-width: 631px) {
   background: inherit;
 }
 
-.advertise .panel-content-user .underline {
+.tech_deploy .panel-content-user .underline {
   background: #999;
 }
 
@@ -1596,13 +1591,13 @@ and (max-width: 631px) {
   margin-top: 15px;
 }
 
-.advertise .panel-content-user .user-button {
+.tech_deploy .panel-content-user .user-button {
   background-color: #00A7E0;
   color: #FFF;
   position: relative;
 }
 
-.advertise .panel-content-user .user-button:hover {
+.tech_deploy .panel-content-user .user-button:hover {
   color: #FFF;
   text-decoration: none;
   background-color: #0479A2;
