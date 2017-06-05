@@ -1001,6 +1001,36 @@ a.anchorjs-link:hover { text-decoration: none; }
   .jumbotron .description {
     font-size: 22px;
   }
+
+  .advertise .panel-content ._hover-text,
+  .advertise .panel-content:hover ._hover-text {
+    width: 90%;
+    font-size: 18px;
+    padding: 10px;
+  }
+}
+
+@media only screen
+and (min-width: 480px)
+and (max-width: 768px) {
+  .advertise .panel-content ._hover-text,
+  .advertise .panel-content:hover ._hover-text {
+    width: 90%;
+    font-size: 22px;
+    padding: 10px;
+  }
+
+  .advertise .panel-content ._default-text {
+    margin-left: 15px;
+  }
+
+  .advertise .panel-button {
+    font-size: 18px;
+  }
+
+  .advertise .panel-content-user .content-text {
+    font-size: 20px;
+  }
 }
 
 @media only screen and (max-width: 768px) {
@@ -1119,7 +1149,7 @@ and (max-width: 996px) {
   }
 
   .navbar-collapse.in {
-      overflow-y: auto;
+    overflow-y: auto;
   }
 
   .navbar-inverse .navbar-collapse.in .navbar-nav .dropdown-menu > li > a {
@@ -1127,7 +1157,7 @@ and (max-width: 996px) {
   }
 
   .navbar-inverse .navbar-collapse.in .navbar-nav .divider {
-      background: #286090;
+    background: #286090;
   }
 
   .collapse.in{
@@ -1155,6 +1185,21 @@ and (max-width: 996px) {
     margin-left: -12px;
     font-size: 15px;
   }
+
+  .advertise .panel-content ._hover-text,
+  .advertise .panel-content:hover ._hover-text {
+    width: 85%;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .advertise .panel-content-user .content-text {
+    font-size: 14px;
+  }
+
+  .advertise .panel-button {
+    font-size: 14px;
+  }
 }
 
 @media only screen
@@ -1166,6 +1211,10 @@ and (max-width: 1024px) {
 
   .navbar-collapse.collapse {
     padding-right: 0;
+  }
+
+  .advertise .panel-button {
+    font-size: 14px;
   }
 }
 
@@ -1295,4 +1344,221 @@ and (max-width: 631px) {
   background-position-y: 1px;
   height: 245px;
   opacity: 0.2;
+}
+
+/* Technologies and Deployments Section */
+
+.advertise {
+  background: #FFF;
+  padding-bottom: 15px;
+  padding-top: 25px;
+}
+
+.advertise p {
+  padding-bottom: 18px;
+  padding-right: 9px;
+  padding-left: 9px;
+}
+
+.advertise h2 {
+  font-family: "Helvetica";
+  text-align: center;
+  padding-bottom: 16px;
+  font-size: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: none;
+  letter-spacing: 1px;
+}
+
+.advertise.container .advertise-title {
+  font-family: 'Geomanist Book', sans-serif;
+  font-size: 30px;
+  color: #254356;
+  padding: 15px;
+  text-align: center;
+}
+
+.advertise .panel-content {
+  font-weight: 500;
+  font-size: 14px;
+  height: 100%;
+  width: 100%;
+  color: #475A60;
+  background-color: transparent;
+  border: 1px solid #4881B3;
+}
+
+._default-text {
+  opacity: 1;
+  position: absolute;
+  width: 90%;
+  height: 80%;
+  -webkit-transition: 0.6s;
+  -moz-transition: 0.6s;
+  -o-transition: 0.6s;
+  transition: 0.6s;
+  -webkit-transition-delay: 0.2s;
+  -moz-transition-delay: 0.2s;
+  -o-transition-delay: 0.2s;
+  transition-delay: 0.2s;
+}
+
+.advertise .panel-content ._default-text {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 25px;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 50px;
+}
+
+.advertise .panel-content:hover ._default-text {
+  opacity: 0;
+  -webkit-transform: scale(0.3);
+  -moz-transform: scale(0.3);
+  -ms-transform: scale(0.3);
+  -o-transform: scale(0.3);
+  transform: scale(0.3);
+}
+
+._hover-text {
+  opacity: 0;
+  font-size: 18px;
+  position: absolute;
+  font-weight: 500;
+  margin-left: 5px;
+  width: 88%;
+  -webkit-transition: 0.6s;
+  -moz-transition: 0.6s;
+  -o-transition: 0.6s;
+  transition: 0.6s;
+  -webkit-transition-delay: 0.2s;
+  -moz-transition-delay: 0.2s;
+  -o-transition-delay: 0.2s;
+  transition-delay: 0.2s;
+  padding: 5px;
+}
+
+.advertise .panel-content:hover ._hover-text {
+  opacity: 1;
+  position: absolute;
+  font-weight: 500;
+  -webkit-transform: translate(0,0);
+  -moz-transform: translate(0,0);
+  -ms-transform: translate(0,0);
+  -o-transform: translate(0,0);
+  transform: translate(0,0);
+  -webkit-transition-delay: .4s;
+  -moz-transition-delay: .4s;
+  -o-transition-delay: .4s;
+  transition-delay: .4s;
+}
+
+.advertise .panel-content:hover:before,
+.advertise .panel-content:hover:after {
+  content: '';
+  position: absolute;
+  top: 0.67em;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  -webkit-transition: .6s,opacity .6s;
+  -moz-transition: .6s,opacity .6s;
+  -o-transition: .6s,opacity .6s;
+  transition: .6s,opacity .6s;
+}
+
+.panel-button {
+  position: relative;
+  padding: 8px 15px;
+  z-index: 3;
+  float:right;
+  font-family: 'Roboto', sans-serif;
+  color: #00A7E0;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  outline: 0;
+  font-weight: bold;
+}
+
+/* Single/Multi User Section */
+
+.advertise .panel-content-user {
+  position: relative;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 25px;
+  color: #475A60;
+  background-color: transparent;
+  border: 1px solid #999;
+  width: 100%;
+  height: 100%;
+}
+
+.advertise .panel-content-user span {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.advertise .panel-content-user .title-text {
+  font-size: 30px;
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+
+.underline {
+  display: block;
+  width: 50px;
+  height: 2px;
+  background: inherit;
+}
+
+.advertise .panel-content-user .underline {
+  background: #999;
+}
+
+.content-text {
+  display:inline-block;
+  position: relative;
+  font-family: 'Geomanist Book', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #475A60;
+  background-color: transparent;
+  height: 100%;
+}
+
+.user-button {
+  position: relative;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  color: inherit;
+  margin-top: 10px;
+  padding: 6px 14px;
+  float: right;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  outline: 0;
+  border: 1px solid #00A7E0;
+  z-index: 3;
+  border-radius: 30px;
+  background-color: transparent;
+}
+
+.advertise .panel-content-user .user-button {
+  background-color: #00A7E0;
+  color: #FFF;
+  position: relative;
+}
+
+.advertise .panel-content-user .user-button:hover {
+  color: #FFF;
+  text-decoration: none;
+  background-color: #0479A2;
 }
