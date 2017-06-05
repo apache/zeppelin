@@ -1377,11 +1377,11 @@ and (max-width: 631px) {
 }
 
 .advertise h2 {
-  font-family: "Helvetica";
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-align: center;
   padding-bottom: 16px;
   font-size: 30px;
-  font-weight: 700;
+  font-weight: 300;
   text-transform: uppercase;
   border-bottom: none;
   letter-spacing: 1px;

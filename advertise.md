@@ -60,7 +60,7 @@ limitations under the License.
       <div class="border col-md-6 col-sm-6">
         <p class="panel-content-user">
           <label style="width: 100%;">
-            <span class="glyphicon glyphicon-user" style="font-size:30px;position:relative;width:100%;text-align:center;"></span>
+            <span class="fa fa-user" style="font-size:30px;position:relative;width:100%;text-align:center;"></span>
             <span class="title-text">Single User</span>            
           </label>
           <label class="content-text">
