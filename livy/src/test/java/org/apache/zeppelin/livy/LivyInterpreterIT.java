@@ -763,6 +763,33 @@ public class LivyInterpreterIT {
     }
   }
 
+  @Test
+  public void testLivyTracebackMsg() throws LivyException {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+    InterpreterOutput output = new InterpreterOutput(outputListener);
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+            "title", "text", authInfo, null, null, null, null, null, output);
+    sparkInterpreter.open();
+
+    try {
+      // input some erroneous spark code, check the shown result is more than one line
+      InterpreterResult result = sparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2, 3, 4, 5)).count()", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(result.message().size()>1);
+    } finally {
+      sparkInterpreter.close();
+    }
+  }
+
   private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
     InterpreterResult result = null;
     if (interpreter instanceof LivySparkRInterpreter) {
