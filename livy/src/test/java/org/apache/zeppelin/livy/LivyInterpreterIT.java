@@ -779,13 +779,15 @@ public class LivyInterpreterIT {
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
             "title", "text", authInfo, null, null, null, null, null, output);
     sparkInterpreter.open();
-
+    final LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
+    pysparkInterpreter.open();
     try {
       sparkInterpreter.getLivyVersion();
     } catch (APINotFoundException e) {
       // only livy 0.2 would fail this since it doesn't have /version endpoint
-      // in livy 0.2, most error msg is encapsulated in evalue field
-      InterpreterResult result = sparkInterpreter.interpret("print(a)", context);
+      // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
+      // traceback
+      InterpreterResult result = pysparkInterpreter.interpret("print(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().size()>1);
     }
