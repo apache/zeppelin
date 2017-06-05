@@ -54,7 +54,7 @@ public class DefaultWebSecurity implements WebSecurity {
     if (!StringUtils.isBlank(shiroIniPath)) {
       webApp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
       SecurityUtils.initSecurityManager(shiroIniPath);
-      webApp.addFilter(org.apache.shiro.web.servlet.ShiroFilte.class, "/api/*", EnumSet.allOf(DispatcherType.class));
+      webApp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class));
       webApp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
     }
 
