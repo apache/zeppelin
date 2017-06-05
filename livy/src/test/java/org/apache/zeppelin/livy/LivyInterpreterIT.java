@@ -781,8 +781,17 @@ public class LivyInterpreterIT {
     sparkInterpreter.open();
 
     try {
-      // input some erroneous spark code, check the shown result is more than one line
-      InterpreterResult result = sparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2, 3, 4, 5)).count()", context);
+      sparkInterpreter.getLivyVersion();
+    } catch (APINotFoundException e) {
+      // only livy 0.2 would fail this since it doesn't have /version endpoint
+      // in livy 0.2, most error msg is encapsulated in evalue field
+      InterpreterResult result = sparkInterpreter.interpret("print(a)", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(result.message().size()>1);
+    }
+    try {
+      //for higher livy version , input some erroneous spark code, check the shown result is more than one line
+      InterpreterResult result = sparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().size()>1);
     } finally {
