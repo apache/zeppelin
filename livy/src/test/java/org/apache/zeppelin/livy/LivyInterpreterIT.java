@@ -768,21 +768,16 @@ public class LivyInterpreterIT {
     if (!checkPreCondition()) {
       return;
     }
-    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
-    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
-    LivySparkInterpreter sparkInterpreter = new LivySparkInterpreter(properties);
-    sparkInterpreter.setInterpreterGroup(interpreterGroup);
-    interpreterGroup.get("session_1").add(sparkInterpreter);
+    final LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
             "title", "text", authInfo, null, null, null, null, null, output);
-    sparkInterpreter.open();
-    final LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
     pysparkInterpreter.open();
+
     try {
-      sparkInterpreter.getLivyVersion();
+      pysparkInterpreter.getLivyVersion();
     } catch (APINotFoundException e) {
       // only livy 0.2 would fail this since it doesn't have /version endpoint
       // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
@@ -793,11 +788,10 @@ public class LivyInterpreterIT {
     }
     try {
       //for higher livy version , input some erroneous spark code, check the shown result is more than one line
-      InterpreterResult result = sparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2)).count()", context);
+      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().size()>1);
     } finally {
-      sparkInterpreter.close();
       pysparkInterpreter.close();
     }
   }
