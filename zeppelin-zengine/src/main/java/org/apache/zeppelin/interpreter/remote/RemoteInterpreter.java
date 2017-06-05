@@ -44,6 +44,7 @@ import com.google.gson.reflect.TypeToken;
  * Proxy for Interpreter instance that runs on separate process
  */
 public class RemoteInterpreter extends Interpreter {
+
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
 
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
@@ -186,19 +187,19 @@ public class RemoteInterpreter extends Interpreter {
             clusterManagerKey = Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL;
           }
           switch (clusterManagerKey) {
-              case Constants.ZEPPELIN_CLUSTER_MANAGER_YARN:
-                remoteProcess = clusterManager
-                    .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
-                        connectTimeout, remoteInterpreterProcessListener, applicationEventListener);
-                break;
-              case Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL:
-              default:
-                // Default is local process
-                // create new remote process
-                remoteProcess = new RemoteInterpreterManagedProcess(
-                    interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-                    remoteInterpreterProcessListener, applicationEventListener,
-                    interpreterGroupName);
+            case Constants.ZEPPELIN_CLUSTER_MANAGER_YARN:
+              remoteProcess = clusterManager
+                  .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
+                      connectTimeout, remoteInterpreterProcessListener, applicationEventListener);
+              break;
+            case Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL:
+            default:
+              // Default is local process
+              // create new remote process
+              remoteProcess = new RemoteInterpreterManagedProcess(
+                  interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
+                  remoteInterpreterProcessListener, applicationEventListener,
+                  interpreterGroupName);
           }
         }
 

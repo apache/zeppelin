@@ -412,16 +412,16 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
     String unit = "" + memoryFormat.charAt(memoryFormat.length() - 1);
 
     switch (unit) {
-        case "k":
-          return memory / 1024;
-        case "m":
-          return memory;
-        case "g":
-          return memory * 1024;
-        case "t":
-          return memory * 1024 * 1024;
-        default:
-          return 0;
+      case "k":
+        return memory / 1024;
+      case "m":
+        return memory;
+      case "g":
+        return memory * 1024;
+      case "t":
+        return memory * 1024 * 1024;
+      default:
+        return 0;
     }
   }
 
@@ -462,45 +462,45 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         ApplicationReport applicationReport = yarnClient.getApplicationReport(applicationId);
         YarnApplicationState curState = applicationReport.getYarnApplicationState();
         switch (curState) {
-            case NEW:
-            case NEW_SAVING:
-            case SUBMITTED:
-            case ACCEPTED:
-              if (null == oldState || !oldState.equals(curState)) {
-                logger.info("new application added. applicationId: {}", applicationId);
-                setRunning(false);
-                setHost("N/A");
-                setPort(-1);
-              }
+          case NEW:
+          case NEW_SAVING:
+          case SUBMITTED:
+          case ACCEPTED:
+            if (null == oldState || !oldState.equals(curState)) {
+              logger.info("new application added. applicationId: {}", applicationId);
+              setRunning(false);
+              setHost("N/A");
+              setPort(-1);
+            }
+            oldState = curState;
+            break;
+          case RUNNING:
+            if (!RUNNING.equals(oldState)) {
+              String host = applicationReport.getHost();
+              int port = applicationReport.getRpcPort();
+              logger
+                  .info("applicationId {} started. Host: {}, port: {}", applicationId, host
+                      , port);
               oldState = curState;
-              break;
-            case RUNNING:
-              if (!RUNNING.equals(oldState)) {
-                String host = applicationReport.getHost();
-                int port = applicationReport.getRpcPort();
-                logger
-                    .info("applicationId {} started. Host: {}, port: {}", applicationId, host
-                        , port);
-                oldState = curState;
-                setHost(host);
-                setPort(port);
-                setRunning(true);
-                waitingInitialized.countDown();
-              }
-              break;
-            case FINISHED:
-            case FAILED:
-            case KILLED:
-              if (!curState.equals(oldState)) {
-                logger.info("applicationId {} {} with final Status {}", applicationId,
-                    curState.toString().toLowerCase(),
-                    applicationReport.getFinalApplicationStatus());
-                oldState = curState;
-                waitingInitialized.countDown();
-                stop();
-                //TODO(jl): Handle it!!
-              }
-              break;
+              setHost(host);
+              setPort(port);
+              setRunning(true);
+              waitingInitialized.countDown();
+            }
+            break;
+          case FINISHED:
+          case FAILED:
+          case KILLED:
+            if (!curState.equals(oldState)) {
+              logger.info("applicationId {} {} with final Status {}", applicationId,
+                  curState.toString().toLowerCase(),
+                  applicationReport.getFinalApplicationStatus());
+              oldState = curState;
+              waitingInitialized.countDown();
+              stop();
+              //TODO(jl): Handle it!!
+            }
+            break;
         }
       } catch (YarnException | IOException e) {
         logger.debug("Error occurs while fetching status of {}", applicationId, e);
