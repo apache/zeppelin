@@ -1004,17 +1004,29 @@ a.anchorjs-link:hover { text-decoration: none; }
 
   .advertise .panel-content ._hover-text,
   .advertise .panel-content:hover ._hover-text {
-    width: 90%;
-    font-size: 18px;
+    font-size: 16px;
     padding: 10px;
   }
 
   .advertise .panel-content-user .content-text {
-    font-size: 18px;
+    font-size: 16px;
+  }
+
+  .advertise .panel-button {
+    font-size: 14px;
+  }
+
+  .advertise .panel-content-user .user-button {
+    font-size: 14px;
   }
 
   .advertise .panel-content {
     margin-top: 10px;
+  }
+
+  .advertise {
+    padding-left: 30px;
+    padding-right: 30px;
   }
 }
 
@@ -1036,12 +1048,21 @@ and (max-width: 768px) {
     font-size: 18px;
   }
 
+  .advertise .panel-content-user .user-button {
+    font-size: 18px;
+  }
+
   .advertise .panel-content-user .content-text {
     font-size: 20px;
   }
 
   .advertise .panel-content {
     margin-top: 10px;
+  }
+
+  .advertise {
+    padding-left: 30px;
+    padding-right: 30px;
   }
 }
 
@@ -1210,6 +1231,10 @@ and (max-width: 996px) {
   }
 
   .advertise .panel-button {
+    font-size: 14px;
+  }
+
+  .advertise .panel-content-user .user-button {
     font-size: 14px;
   }
 
