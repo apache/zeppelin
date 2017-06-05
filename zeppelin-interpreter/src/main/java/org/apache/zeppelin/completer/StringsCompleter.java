@@ -61,8 +61,9 @@ public class StringsCompleter implements Completer {
     if (buffer == null) {
       candidates.addAll(strings);
     } else {
-      String bufferTmp = buffer.toUpperCase();
-      for (String match : strings.tailSet(buffer)) {
+      String part = buffer.substring(0, cursor);
+      String bufferTmp = part.toUpperCase();
+      for (String match : strings.tailSet(part)) {
         String matchTmp = match.toUpperCase();
         if (!matchTmp.startsWith(bufferTmp)) {
           break;

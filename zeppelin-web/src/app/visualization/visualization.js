@@ -13,7 +13,7 @@
  */
 
 /**
- * Base class for visualization
+ * Base class for visualization.
  */
 export default class Visualization {
   constructor (targetEl, config) {
@@ -25,17 +25,22 @@ export default class Visualization {
   }
 
   /**
-   * get transformation
+   * Get transformation.
+   * @abstract
+   * @return {Transformation}
    */
   getTransformation () {
     // override this
+    throw new TypeError('Visualization.getTransformation() should be overrided')
   }
 
   /**
-   * Method will be invoked when data or configuration changed
+   * Method will be invoked when data or configuration changed.
+   * @abstract
    */
   render (tableData) {
     // override this
+    throw new TypeError('Visualization.render() should be overrided')
   }
 
   /**
@@ -46,7 +51,7 @@ export default class Visualization {
   }
 
   /**
-   * method will be invoked when visualization need to be destroyed.
+   * Method will be invoked when visualization need to be destroyed.
    * Don't need to destroy this.targetEl.
    */
   destroy () {
@@ -64,7 +69,7 @@ export default class Visualization {
   }
 
   /**
-   * Activate. invoked when visualization is selected
+   * Activate. Invoked when visualization is selected.
    */
   activate () {
     if (!this._active || this._dirty) {
@@ -75,21 +80,21 @@ export default class Visualization {
   }
 
   /**
-   * Activate. invoked when visualization is de selected
+   * Deactivate. Invoked when visualization is de selected.
    */
   deactivate () {
     this._active = false
   }
 
   /**
-   * Is active
+   * Is active.
    */
   isActive () {
     return this._active
   }
 
   /**
-   * When window or paragraph is resized
+   * When window or paragraph is resized.
    */
   resize () {
     if (this.isActive()) {
@@ -100,7 +105,7 @@ export default class Visualization {
   }
 
   /**
-   * Set new config
+   * Set new config.
    */
   setConfig (config) {
     this.config = config
@@ -119,7 +124,7 @@ export default class Visualization {
   }
 
   /**
-   * render setting
+   * Render setting.
    */
   renderSetting (targetEl) {
     let setting = this.getSetting()

@@ -128,6 +128,11 @@ The JDBC interpreter properties are defined by default like below.
     <td></td>
     <td>Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)</td>
   </tr>
+  <tr>
+    <td>default.completer.ttlInSeconds</td>
+    <td>120</td>
+    <td>Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)</td>
+  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
@@ -534,23 +539,41 @@ Here are some examples you can refer to. Including the below connectors, you can
 [Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
 ##### Impersonation
-When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a notebooks.
+When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a notebook.
 
 To enable this set following:
+
   - `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
   - `${prefix}.proxy.user.property` as `hive.server2.proxy.user`
-  Example configuration
 
-  *Properties*
 
-  | name                      | value                                                                                             |
-  |:------------------------- |:--------------------------------------------------------------------------------------------------|
-  | hive.driver               | org.apache.hive.jdbc.HiveDriver                                                                   |
-  | hive.password             |                                                                                                   |
-  | hive.url                  | jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2 |
-  | hive.proxy.user.property  | hive.proxy.user.property                                                                          |
-  | zeppelin.jdbc.auth.type   | SIMPLE                                                                                            |
-
+##### Sample configuration
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>hive.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>hive.password</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>hive.url</td>
+    <td>jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</td>
+  </tr>
+  <tr>
+    <td>hive.proxy.user.property</td>
+    <td>hive.server2.proxy.user</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>SIMPLE</td>
+  </tr>
+</table>
 
 
 ### Apache Phoenix

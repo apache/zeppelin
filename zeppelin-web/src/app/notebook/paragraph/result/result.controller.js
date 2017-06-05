@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import moment from 'moment'
+
 import TableData from '../../../tabledata/tabledata'
 import TableVisualization from '../../../visualization/builtins/visualization-table'
 import BarchartVisualization from '../../../visualization/builtins/visualization-barchart'
@@ -25,11 +27,14 @@ import {
 } from '../../../spell'
 import { ParagraphStatus, } from '../paragraph.status'
 
+const TableGridFilterTemplate = require('../../../visualization/builtins/visualization-table-grid-filter.html')
+
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl)
 
 function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
-                    $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
-                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
+                    $timeout, $compile, $http, $q, $templateCache, $templateRequest, $sce, websocketMsgSrv,
+                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService,
+                    uiGridConstants) {
   'ngInject'
 
   /**
@@ -527,7 +532,14 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           }
           builtInViz.instance._emitter = emitter
           builtInViz.instance._compile = $compile
+
+          // ui-grid related
+          $templateCache.put('ui-grid/ui-grid-filter', TableGridFilterTemplate)
+          builtInViz.instance._uiGridConstants = uiGridConstants
+          builtInViz.instance._timeout = $timeout
+
           builtInViz.instance._createNewScope = createNewScope
+          builtInViz.instance._templateRequest = $templateRequest
           const transformation = builtInViz.instance.getTransformation()
           transformation._emitter = emitter
           transformation._templateRequest = $templateRequest
@@ -615,8 +627,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     } else {
       newConfig.graph.optionOpen = true
     }
-    let newParams = angular.copy(paragraph.settings.params)
 
+    let newParams = angular.copy(paragraph.settings.params)
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
   }
 
@@ -645,7 +657,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         }
       }
     }
-    console.log('getVizConfig', config)
+    console.debug('getVizConfig', config)
     return config
   }
 
@@ -674,7 +686,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       newConfig.graph.values = newConfig.graph.commonSetting.pivot.values
       delete newConfig.graph.commonSetting.pivot
     }
-    console.log('committVizConfig', newConfig)
+    console.debug('committVizConfig', newConfig)
     let newParams = angular.copy(paragraph.settings.params)
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
   }

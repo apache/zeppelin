@@ -100,7 +100,7 @@ export default class AdvancedTransformation extends Transformation {
         },
 
         getAxisTypeAnnotation: (axisSpec) => {
-          let anno = `${axisSpec.axisType}`
+          let anno = ''
 
           let minAxisCount = axisSpec.minAxisCount
           let maxAxisCount = axisSpec.maxAxisCount
@@ -121,7 +121,7 @@ export default class AdvancedTransformation extends Transformation {
           return anno
         },
 
-        getAxisTypeAnnotationColor: (axisSpec) => {
+        getAxisAnnotationColor: (axisSpec) => {
           if (isAggregatorAxis(axisSpec)) {
             return { 'background-color': '#5782bd' }
           } else if (isGroupAxis(axisSpec)) {
