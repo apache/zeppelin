@@ -48,14 +48,14 @@ public class DefaultWebSecurity implements WebSecurity {
   @Override
   public void addSecurityFilter(WebAppContext webApp) {
 
-    webApp.setInitParameter("shiroConfigLocations",
-            new File(conf.getShiroPath()).toURI().toString());
+    String shiroIniPath = conf.getShiroPath();
 
-    SecurityUtils.initSecurityManager(conf.getShiroPath());
-    webApp.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/api/*",
-            EnumSet.allOf(DispatcherType.class));
-
-    webApp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+    if (!StringUtils.isBlank(shiroIniPath)) {
+      webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
+      SecurityUtils.initSecurityManager(shiroIniPath);
+      webapp.addFilter(org.apache.shiro.web.servlet.ShiroFilte.class, "/api/*", EnumSet.allOf(DispatcherType.class));
+      webapp.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+    }
 
   }
 
