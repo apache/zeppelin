@@ -523,7 +523,7 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  public void testPySparkInterpreter() {
+  public void testPySparkInterpreter() throws LivyException {
     if (!checkPreCondition()) {
       return;
     }
@@ -535,6 +535,22 @@ public class LivyInterpreterIT {
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
         "title", "text", authInfo, null, null, null, null, null, output);
     pysparkInterpreter.open();
+
+    //test traceback msg
+    try {
+      pysparkInterpreter.getLivyVersion();
+      //for higher livy version , input some erroneous spark code, check the shown result is more than one line
+      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2)).count()", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(result.message().size()>1);
+    } catch (APINotFoundException e) {
+      // only livy 0.2 can throw this exception since it doesn't have /version endpoint
+      // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
+      // traceback
+      InterpreterResult result = pysparkInterpreter.interpret("print(a)", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(result.message().size()>1);
+    }
 
     try {
       InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
@@ -763,38 +779,6 @@ public class LivyInterpreterIT {
     }
   }
 
-  @Test
-  public void testLivyTracebackMsg() throws LivyException {
-    if (!checkPreCondition()) {
-      return;
-    }
-    final LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
-    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
-    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
-    InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
-            "title", "text", authInfo, null, null, null, null, null, output);
-    pysparkInterpreter.open();
-
-    try {
-      pysparkInterpreter.getLivyVersion();
-    } catch (APINotFoundException e) {
-      // only livy 0.2 would fail this since it doesn't have /version endpoint
-      // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
-      // traceback
-      InterpreterResult result = pysparkInterpreter.interpret("print(a)", context);
-      assertEquals(InterpreterResult.Code.ERROR, result.code());
-      assertTrue(result.message().size()>1);
-    }
-    try {
-      //for higher livy version , input some erroneous spark code, check the shown result is more than one line
-      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2)).count()", context);
-      assertEquals(InterpreterResult.Code.ERROR, result.code());
-      assertTrue(result.message().size()>1);
-    } finally {
-      pysparkInterpreter.close();
-    }
-  }
 
   private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
     InterpreterResult result = null;
