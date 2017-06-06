@@ -22,7 +22,7 @@ limitations under the License.
             <img src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px">
           </label>
           <label class="_hover-text">
-            Spark interpreter group which consists of five interpreters which are Spark, Pyspark, SparkR, Spark SQL, Dependency loader.<br/>
+            Zeppelin supports Spark, PySpark, Spark R, Spark SQL with dependency loader.<br/>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/spark_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>                     
         </div>
@@ -31,7 +31,7 @@ limitations under the License.
         <div class="panel-content">
           <label class="_default-text" style="font-size:56px;">SQL</label>
           <label class="_hover-text">
-            JDBC interpreter lets you create a JDBC connection to any data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.<br/>
+            Zeppelin lets you connect any JDBC data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.<br/>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/sql_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </div>
@@ -42,7 +42,7 @@ limitations under the License.
             <img src="./assets/themes/zeppelin/img/python-logo-generic.svg" width="200px">
           </label>
           <label class="_hover-text">
-            Python is supported with Zeppelin. Also integrated Matplotlib with Python & Pyspark interpreter, and Conda is now available in Zeppelin.<br/>
+            Python is supported with Matplotlib, Conda, Pandas SQL and PySpark integrations.<br/>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/python_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </div>

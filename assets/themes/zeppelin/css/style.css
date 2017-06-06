@@ -1,7 +1,7 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
 @import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Open+Sans);
-@import url(//fonts.googleapis.com/css?family=Titillium+Web);
+@import url(//fonts.googleapis.com/css?family=Raleway:300,400);
 
 body {
   padding-top: 50px;
@@ -1447,10 +1447,10 @@ and (max-width: 631px) {
 }
 
 .tech_deploy .panel-content ._default-text {
-  font-family: 'Titillium Web', sans-serif;
+  font-family: 'Raleway', sans-serif;
   font-size: 25px;
   text-align: center;
-  font-weight: 500;
+  font-weight: 300;
   margin-top: 50px;
 }
 
@@ -1480,6 +1480,7 @@ and (max-width: 631px) {
   -o-transition-delay: 0.2s;
   transition-delay: 0.2s;
   padding: 10px;
+  min-height: 200px;
 }
 
 .tech_deploy .panel-content:hover ._hover-text {
