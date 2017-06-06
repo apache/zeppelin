@@ -13,7 +13,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 <div class="tech_deploy">
-  <div class="section container">
+  <div class="container">
     <h2>Technologies</h2>
     <div class="border row">
       <div class="border col-md-4 col-sm-4" style="height:200px;">
@@ -49,14 +49,14 @@ limitations under the License.
       </div>
     </div>
     <div class="col-md-12 col-sm-12 col-xs-12 text-center">
-      <p style="text-align:center; margin-top: 20px; font-size: 17px; color: gray; font-weight: 200; font-style: italic; padding-bottom: 0;">
+      <p class="bottom-text">
         See more details in Zeppelin supports 20+ different interpreters.
         <a href="/docs/0.8.0-SNAPSHOT/manual/interpreters.html">LEARN MORE <span class="glyphicon glyphicon-chevron-right" style="font-size:15px;"></span></a>
       </p>
     </div>    
     <hr />
     <div class="border row">
-      <h2>Deployments</h2>
+      <h2 style="padding-bottom: 8px;">Deployments</h2>
       <div class="border col-md-6 col-sm-6">
         <p class="panel-content-user">
           <label style="width: 100%;">

@@ -1394,14 +1394,25 @@ and (max-width: 631px) {
 
 .tech_deploy {
   background: #FFF;
-  padding-bottom: 35px;
-  padding-top: 25px;
+  padding-bottom: 40px;
+  padding-top: 22px;
 }
 
 .tech_deploy p {
-  padding-bottom: 18px;
   padding-right: 9px;
   padding-left: 9px;
+  margin-top: 25px;
+  margin-bottom: 30px;
+}
+
+.tech_deploy .bottom-text {
+  padding-right: 9px;
+  padding-left: 9px;
+  text-align: center;
+  font-size: 17px;
+  color: gray;
+  font-weight: 200;
+  font-style: italic;
 }
 
 .tech_deploy .section {
@@ -1413,7 +1424,7 @@ and (max-width: 631px) {
 .tech_deploy h2 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-align: center;
-  padding-bottom: 16px;
+  padding-bottom: 30px;
   font-size: 30px;
   font-weight: 300;
   text-transform: uppercase;
