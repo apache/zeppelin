@@ -50,6 +50,8 @@ const TABLE_OPTION_SPECS = [
   },
 ]
 
+var zeppelin = zeppelin || {};
+
 /**
  * Visualize data in table format
  */

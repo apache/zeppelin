@@ -15,6 +15,8 @@
 import Nvd3ChartVisualization from './visualization-nvd3chart'
 import PivotTransformation from '../../tabledata/pivot'
 
+var zeppelin = zeppelin || {};
+
 /**
  * Visualize data in bar char
  */

@@ -15,6 +15,8 @@
 import Nvd3ChartVisualization from './visualization-nvd3chart'
 import ColumnselectorTransformation from '../../tabledata/columnselector'
 
+var zeppelin = zeppelin || {};
+
 /**
  * Visualize data in scatter char
  */

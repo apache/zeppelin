@@ -14,6 +14,8 @@
 
 import Visualization from '../visualization'
 
+var zeppelin = zeppelin || {};
+
 /**
  * Visualize data in table format
  */
