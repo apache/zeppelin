@@ -540,7 +540,7 @@ public class LivyInterpreterIT {
     try {
       pysparkInterpreter.getLivyVersion();
       //for higher livy version , input some erroneous spark code, check the shown result is more than one line
-      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntaxArray(1, 2)).count()", context);
+      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().size()>1);
     } catch (APINotFoundException e) {
