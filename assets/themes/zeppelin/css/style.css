@@ -1413,7 +1413,7 @@ and (max-width: 631px) {
   color: gray;
   font-weight: 200;
   font-style: italic;
-  padding: 15px;
+  padding-top: 15px;
 }
 
 .tech_deploy .section {
