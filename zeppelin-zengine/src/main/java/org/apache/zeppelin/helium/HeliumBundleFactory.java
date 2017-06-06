@@ -212,29 +212,28 @@ public class HeliumBundleFactory {
     return new File(heliumBundleDirectory, pkgName + "/" + HELIUM_BUNDLE_CACHE);
   }
 
-  public static List<String> unTgz(File tarFile, File directory) throws IOException {
-    List<String> result = new ArrayList<String>();
-    InputStream is = new FileInputStream(tarFile);
-    GzipCompressorInputStream gcis = new GzipCompressorInputStream(is);
-    TarArchiveInputStream in = new TarArchiveInputStream(gcis);
-    TarArchiveEntry entry = in.getNextTarEntry();
-    while (entry != null) {
-      if (entry.isDirectory()) {
+  private static List<String> unTgz(File tarFile, File directory) throws IOException {
+    List<String> result = new ArrayList<>();
+    try (TarArchiveInputStream in = new TarArchiveInputStream(
+            new GzipCompressorInputStream(new FileInputStream(tarFile)))) {
+      TarArchiveEntry entry = in.getNextTarEntry();
+      while (entry != null) {
+        if (entry.isDirectory()) {
+          entry = in.getNextTarEntry();
+          continue;
+        }
+        File curfile = new File(directory, entry.getName());
+        File parent = curfile.getParentFile();
+        if (!parent.exists()) {
+          parent.mkdirs();
+        }
+        OutputStream out = new FileOutputStream(curfile);
+        IOUtils.copy(in, out);
+        out.close();
+        result.add(entry.getName());
         entry = in.getNextTarEntry();
-        continue;
       }
-      File curfile = new File(directory, entry.getName());
-      File parent = curfile.getParentFile();
-      if (!parent.exists()) {
-        parent.mkdirs();
-      }
-      OutputStream out = new FileOutputStream(curfile);
-      IOUtils.copy(in, out);
-      out.close();
-      result.add(entry.getName());
-      entry = in.getNextTarEntry();
     }
-    in.close();
     return result;
   }
 
