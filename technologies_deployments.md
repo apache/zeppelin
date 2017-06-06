@@ -13,7 +13,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 <div class="tech_deploy">
-  <div class="tech_deploy container">
+  <div class="section container">
     <h2>Technologies</h2>
     <div class="border row">
       <div class="border col-md-4 col-sm-4" style="height:200px;">

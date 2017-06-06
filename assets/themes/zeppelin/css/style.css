@@ -1404,6 +1404,12 @@ and (max-width: 631px) {
   padding-left: 9px;
 }
 
+.tech_deploy .section {
+  padding: 25px 15px 35px 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
 .tech_deploy h2 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-align: center;
