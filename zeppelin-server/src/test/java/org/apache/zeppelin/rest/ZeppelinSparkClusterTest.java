@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -92,9 +93,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         note.run(p.getId());
         waitForFinish(p);
         assertEquals(Status.FINISHED, p.getStatus());
-        assertEquals("import java.util.Date\n" +
-            "import java.net.URL\n" +
-            "hello\n", p.getResult().message().get(0).getData());
+        assertEquals(p.getResult().message().size(), 2);
+        assertEquals(p.getResult().message().get(0),
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "hello\n"));
+        assertEquals(p.getResult().message().get(1),
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "import java.util.Date\nimport java.net.URL\n"));
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
 
@@ -138,21 +141,20 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
             assertTrue(p.getResult().message().get(0).getData().contains(
-                    "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+                "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
 
             // test display DataFrame
             p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
             config = p.getConfig();
             config.put("enabled", true);
             p.setConfig(config);
-            p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-                    "z.show(df)");
+            p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\nz.show(df)");
             p.setAuthenticationInfo(anonymous);
             note.run(p.getId());
             waitForFinish(p);
             assertEquals(Status.FINISHED, p.getStatus());
-            assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
-            assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
+            assertEquals(p.getResult().message().get(0),
+                new InterpreterResultMessage(InterpreterResult.Type.TABLE, "_1\t_2\nhello\t20\n"));
 
             // test display DataSet
             if (sparkVersion >= 20) {
@@ -166,8 +168,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
-                assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
+                assertEquals(p.getResult().message().get(0),
+                    new InterpreterResultMessage(InterpreterResult.Type.TABLE, "_1\t_2\nhello\t20\n"));
             }
             ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
         }
@@ -529,12 +531,10 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assert(formIter.next().equals("my_checkbox"));
 
         // check dynamic forms values
-        String[] result = p.getResult().message().get(0).getData().split("\n");
-        assertEquals(4, result.length);
-        assertEquals("default_name", result[0]);
-        assertEquals("1", result[1]);
-        assertEquals("items: Seq[Object] = Buffer(2)", result[2]);
-        assertEquals("2", result[3]);
+        assertEquals(p.getResult().message().get(0),
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "default_name\n1\n2\n"));
+        assertEquals(p.getResult().message().get(1),
+            new InterpreterResultMessage(InterpreterResult.Type.TEXT, "items: Seq[Object] = Buffer(2)\n"));
     }
 
     @Test

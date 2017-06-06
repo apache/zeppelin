@@ -43,6 +43,8 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.hamcrest.CoreMatchers.is;
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
 
@@ -326,5 +328,17 @@ public class SparkInterpreterTest {
     assertNotNull(jobUrl);
     assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job?id="));
 
+  }
+
+  @Test
+  public void define_companion_object_in_different_line() throws IOException {
+    // Companion object has access to class' private members
+    InterpreterResult result = repl.interpret(
+        "class Foo(private val privateMember: Any = null)\n" +
+            "object Foo {\n" +
+            "  def foo = new Foo().privateMember\n" +
+            "}\n",
+        context);
+    assertThat(result.code(), is(Code.SUCCESS));
   }
 }

@@ -22,8 +22,8 @@ import java.io.Serializable;
  * Interpreter result message
  */
 public class InterpreterResultMessage implements Serializable {
-  InterpreterResult.Type type;
-  String data;
+  private final InterpreterResult.Type type;
+  private final String data;
 
   public InterpreterResultMessage(InterpreterResult.Type type, String data) {
     this.type = type;
@@ -36,6 +36,24 @@ public class InterpreterResultMessage implements Serializable {
 
   public String getData() {
     return data;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    InterpreterResultMessage that = (InterpreterResultMessage) o;
+
+    if (type != that.type) return false;
+    return data.equals(that.data);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = type.hashCode();
+    result = 31 * result + data.hashCode();
+    return result;
   }
 
   public String toString() {

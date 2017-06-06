@@ -21,6 +21,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Output Stream integrated with InterpreterOutput.
@@ -29,18 +30,18 @@ import java.io.IOException;
  */
 public class InterpreterOutputStream extends LogOutputStream {
   private Logger logger;
-  InterpreterOutput interpreterOutput;
-  boolean ignoreLeadingNewLinesFromScalaReporter = false;
+  private OutputStream interpreterOutput;
+  private boolean ignoreLeadingNewLinesFromScalaReporter = false;
 
   public InterpreterOutputStream(Logger logger) {
     this.logger = logger;
   }
 
-  public InterpreterOutput getInterpreterOutput() {
+  public OutputStream getInterpreterOutput() {
     return interpreterOutput;
   }
 
-  public void setInterpreterOutput(InterpreterOutput interpreterOutput) {
+  public void setInterpreterOutput(OutputStream interpreterOutput) {
     this.interpreterOutput = interpreterOutput;
   }
 
