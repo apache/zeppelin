@@ -23,6 +23,9 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.util.Util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -57,6 +60,17 @@ public class ZeppelinRestApi {
   @ZeppelinApi
   public Response getVersion() {
     return new JsonResponse<>(Response.Status.OK, "Zeppelin version", Util.getVersion()).build();
+  }
+
+  @GET
+  @Path("git")
+  @ZeppelinApi
+  public Response getGitInfo() {
+    Map<String, String> gitInfo = new HashMap<>();
+    gitInfo.put("commitId", Util.getGitCommitId());
+    gitInfo.put("timestamp", Util.getGitTimestamp());
+
+    return new JsonResponse<>(Response.Status.OK, "Zeppelin Git info", gitInfo).build();
   }
 
   /**
