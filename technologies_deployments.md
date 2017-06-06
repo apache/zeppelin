@@ -22,7 +22,9 @@ limitations under the License.
             <img src="./assets/themes/zeppelin/img/spark_logo.jpg" width="140px">
           </label>
           <label class="_hover-text">
-            Zeppelin supports Spark, PySpark, Spark R, Spark SQL with dependency loader.<br/>
+            <div style="min-height:140px; padding: 20px 10px 10px 10px;">
+              Zeppelin supports Spark, PySpark, Spark R, Spark SQL with dependency loader.
+            </div>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/spark_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>                     
         </div>
@@ -31,7 +33,9 @@ limitations under the License.
         <div class="panel-content">
           <label class="_default-text" style="font-size:56px;">SQL</label>
           <label class="_hover-text">
-            Zeppelin lets you connect any JDBC data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.<br/>
+            <div style="min-height:140px;">
+              Zeppelin lets you connect any JDBC data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.
+            </div>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/sql_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </div>
@@ -42,7 +46,9 @@ limitations under the License.
             <img src="./assets/themes/zeppelin/img/python-logo-generic.svg" width="200px">
           </label>
           <label class="_hover-text">
-            Python is supported with Matplotlib, Conda, Pandas SQL and PySpark integrations.<br/>
+            <div style="min-height:140px; padding: 10px;">
+              Python is supported with Matplotlib, Conda, Pandas SQL and PySpark integrations.
+            </div>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/python_with_zeppelin.html" class="panel-button">USE NOW <span class="glyphicon glyphicon-chevron-right"></span></a>
           </label>
         </div>

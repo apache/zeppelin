@@ -1477,7 +1477,7 @@ and (max-width: 631px) {
 ._hover-text {
   opacity: 0;
   font-size: 18px;
-  font-family: 'Geomanist Book', sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   position: absolute;
   font-weight: 500;
   margin-left: 5px;
@@ -1536,7 +1536,6 @@ and (max-width: 631px) {
   text-transform: uppercase;
   white-space: nowrap;
   outline: 0;
-  font-weight: bold;
   font-size: 14px;
 }
 
@@ -1581,7 +1580,7 @@ and (max-width: 631px) {
 .content-text {
   display:inline-block;
   position: relative;
-  font-family: 'Geomanist Book', sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 18px;
   font-weight: 500;
   color: #475A60;
