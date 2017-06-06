@@ -31,7 +31,7 @@ limitations under the License.
       </div>
       <div class="border col-md-4 col-sm-4" style="height:200px;">
         <div class="panel-content">
-          <label class="_default-text" style="font-size:56px;">SQL</label>
+          <label class="_default-text" style="font-size:45px;">SQL</label>
           <label class="_hover-text">
             <div style="min-height:140px;">
               Zeppelin lets you connect any JDBC data sources seamlessly. Postgresql, Mysql, MariaDB, Redshift, Apache Hive and so on.

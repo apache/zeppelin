@@ -1413,6 +1413,7 @@ and (max-width: 631px) {
   color: gray;
   font-weight: 200;
   font-style: italic;
+  padding: 15px;
 }
 
 .tech_deploy .section {
@@ -1462,7 +1463,7 @@ and (max-width: 631px) {
   font-size: 25px;
   text-align: center;
   font-weight: 300;
-  margin-top: 50px;
+  margin-top: 65px;
 }
 
 .tech_deploy .panel-content:hover ._default-text {
