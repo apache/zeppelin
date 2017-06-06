@@ -333,10 +333,12 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
       InterpreterResult result = new InterpreterResult(InterpreterResult.Code.ERROR);
       result.add(stmtInfo.output.evalue);
+      StringBuilder sb = new StringBuilder();
       if (stmtInfo.output.traceback != null) {
         for (int i = 0; i < stmtInfo.output.traceback.length; i++)
-          result.add(stmtInfo.output.traceback[i]);
+          sb.append(stmtInfo.output.traceback[i]);
       }
+      result.add(sb.toString());
       return result;
     } else if (stmtInfo.isCancelled()) {
       // corner case, output might be null if it is cancelled.
