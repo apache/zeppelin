@@ -336,7 +336,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       if (stmtInfo.output.traceback != null) {
         for (int i = 0; i < stmtInfo.output.traceback.length; i++)
           result.add(stmtInfo.output.traceback[i]);
-      } return result;
+      }
+      return result;
     } else if (stmtInfo.isCancelled()) {
       // corner case, output might be null if it is cancelled.
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
@@ -626,9 +627,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         right_json = json;
       } catch (Exception e) {
         if (json.contains("\"traceback\":{}")) {
-          LOGGER.info("traceback type mismatch, replacing the mismatching part ");
+          LOGGER.debug("traceback type mismatch, replacing the mismatching part ");
           right_json = json.replace("\"traceback\":{}", "\"traceback\":[]");
-          LOGGER.info("new json string is {}", right_json);
+          LOGGER.debug("new json string is {}", right_json);
         }
       }
       return gson.fromJson(right_json, StatementInfo.class);
