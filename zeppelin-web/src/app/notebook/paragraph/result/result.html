@@ -14,6 +14,18 @@ limitations under the License.
 
 <div>
   <div ng-include src="'app/notebook/paragraph/result/result-chart-selector.html'"></div>
+    <div ng-if="type=='TABLE'">
+        <!-- graph setting -->
+        <div class="option lightBold" style="overflow: visible;" ng-show="graphMode!='table'
+                        && config.graph.optionOpen && !asIframe && !viewOnly">
+            <div ng-repeat="viz in builtInTableDataVisualizationList track by $index" 
+            id="trsetting{{id}}_{{viz.id}}" 
+            ng-show="graphMode == viz.id"></div>
+            <div ng-repeat="viz in builtInTableDataVisualizationList track by $index" 
+            id="vizsetting{{id}}_{{viz.id}}" 
+            ng-show="graphMode == viz.id"></div>
+        </div>
+    </div>
   <div
     id="p{{id}}_resize"
     ng-if="!config.helium.activeApp"
@@ -22,18 +34,6 @@ limitations under the License.
        resizable on-resize="resize(width, height);">
 
     <div ng-if="type=='TABLE'">
-      <!-- graph setting -->
-      <div class="option lightBold" style="overflow: visible;"
-           ng-show="graphMode!='table'
-                    && config.graph.optionOpen && !asIframe && !viewOnly">
-        <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-             id="trsetting{{id}}_{{viz.id}}"
-             ng-show="graphMode == viz.id"></div>
-        <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-             id="vizsetting{{id}}_{{viz.id}}"
-             ng-show="graphMode == viz.id"></div>
-      </div>
-
       <!-- graph -->
       <div id="p{{id}}_graph"
            class="graphContainer"
