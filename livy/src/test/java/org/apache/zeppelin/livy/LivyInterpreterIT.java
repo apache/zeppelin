@@ -536,10 +536,10 @@ public class LivyInterpreterIT {
         "title", "text", authInfo, null, null, null, null, null, output);
     pysparkInterpreter.open();
 
-    //test traceback msg
+    // test traceback msg
     try {
       pysparkInterpreter.getLivyVersion();
-      //for livy version >=0.3 , input some erroneous spark code, check the shown result is more than one line
+      // for livy version >=0.3 , input some erroneous spark code, check the shown result is more than one line
       InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().get(0).getData().split("\n").length>1);
