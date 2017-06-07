@@ -32,7 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 
 /**
@@ -79,7 +79,7 @@ public class LoginRestApi {
         currentUser.getSession(true);
         currentUser.login(token);
 
-        HashSet<String> roles = SecurityUtils.getRoles();
+        Set<String> roles = SecurityUtils.getRoles();
         String principal = SecurityUtils.getPrincipal();
         String ticket;
         if ("anonymous".equals(principal))

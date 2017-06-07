@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.realm;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
@@ -33,13 +36,16 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 
 
 /**
  * Created for org.apache.zeppelin.server on 09/06/16.
  */
-public class LdapGroupRealm extends JndiLdapRealm {
+public class LdapGroupRealm extends JndiLdapRealm implements UserLookup {
+    
   private static final Logger LOG = LoggerFactory.getLogger(LdapGroupRealm.class);
 
   public AuthorizationInfo queryForAuthorizationInfo(
@@ -91,4 +97,44 @@ public class LdapGroupRealm extends JndiLdapRealm {
 
     return new HashSet<>();
   }
+  
+  /**
+   * function to extract users from LDAP
+   */
+  @Override
+  public List<String> lookupUsers(String searchText) {
+    List<String> userList = new ArrayList<>();
+    String userDnTemplate = getUserDnTemplate();
+    String userDn[] = userDnTemplate.split(",", 2);
+    String userDnPrefix = userDn[0].split("=")[0];
+    String userDnSuffix = userDn[1];
+    JndiLdapContextFactory CF = (JndiLdapContextFactory) getContextFactory();
+    try {
+      LdapContext ctx = CF.getSystemLdapContext();
+      SearchControls constraints = new SearchControls();
+      constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+      String[] attrIDs = {userDnPrefix};
+      constraints.setReturningAttributes(attrIDs);
+      NamingEnumeration result = ctx.search(userDnSuffix, "(" + userDnPrefix + "=*" + searchText +
+          "*)", constraints);
+      while (result.hasMore()) {
+        Attributes attrs = ((SearchResult) result.next()).getAttributes();
+        if (attrs.get(userDnPrefix) != null) {
+          String currentUser = attrs.get(userDnPrefix).toString();
+          userList.add(currentUser.split(":")[1].trim());
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Error retrieving User list from Ldap Realm", e);
+    }
+    LOG.info("UserList: " + userList);
+    return userList;
+  }
+
+  @Override
+  public Collection<String> lookupRoles(String query) {
+    return Collections.EMPTY_SET;
+  }
+  
+  
 }
