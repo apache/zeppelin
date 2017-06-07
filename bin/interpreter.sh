@@ -188,6 +188,10 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
   fi
 fi
 
+if [[ "${INTERPRETER_ID}" != "spark" ]]; then
+  ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
+fi
+
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
