@@ -19,6 +19,8 @@ package org.apache.zeppelin.helium;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -28,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URL;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +69,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
   public synchronized List<HeliumPackage> getAll() throws IOException {
     HttpClient client = HttpClientBuilder.create()
         .setUserAgent("ApacheZeppelin/" + Util.getVersion())
+        .setProxy(getProxy(uri()))
         .build();
     HttpGet get = new HttpGet(uri());
     HttpResponse response;
@@ -77,7 +80,6 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       logger.error(e.getMessage());
       return readFromCache();
     }
-
 
     if (response.getStatusLine().getStatusCode() != 200) {
       // try read from cache
@@ -104,6 +106,32 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
 
       writeToCache(packageList);
       return packageList;
+    }
+  }
+
+  private HttpHost getProxy(String uri) {
+    String httpProxy = StringUtils.isBlank(System.getenv("http_proxy")) ?
+            System.getenv("HTTP_PROXY") : System.getenv("http_proxy");
+
+    String httpsProxy = StringUtils.isBlank(System.getenv("https_proxy")) ?
+            System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
+
+    try {
+      String scheme = new URI(uri).getScheme();
+      if (scheme.toLowerCase().startsWith("https") && StringUtils.isNotBlank(httpsProxy)) {
+        URI httpsProxyUri = new URI(httpsProxy);
+        return new HttpHost(httpsProxyUri.getHost(),
+                httpsProxyUri.getPort(), httpsProxyUri.getScheme());
+      }
+      else if (scheme.toLowerCase().startsWith("http") && StringUtils.isNotBlank(httpProxy)){
+        URI httpProxyUri = new URI(httpProxy);
+        return new HttpHost(httpProxyUri.getHost(),
+                httpProxyUri.getPort(), httpProxyUri.getScheme());
+      }
+      else return null;
+    } catch (Exception ex) {
+      logger.error(ex.getMessage(), ex);
+      return null;
     }
   }
 

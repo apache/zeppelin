@@ -165,10 +165,6 @@ public class VFSNotebookRepo implements NotebookRepo {
       throw new IOException(noteJson.getName().toString() + " not found");
     }
 
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-        .create();
 
     FileContent content = noteJson.getContent();
     InputStream ins = content.getInputStream();

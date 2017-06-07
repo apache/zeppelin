@@ -21,6 +21,7 @@ import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkRBackend;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -114,7 +115,9 @@ public class SparkRInterpreter extends Interpreter {
     }
 
     String jobGroup = Utils.buildJobGroupId(interpreterContext);
-    sparkInterpreter.getSparkContext().setJobGroup(jobGroup, "Zeppelin", false);
+    String jobDesc = "Started by: " +
+       Utils.getUserName(interpreterContext.getAuthenticationInfo());
+    sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);
 
     String imageWidth = getProperty("zeppelin.R.image.width");
 
@@ -139,10 +142,10 @@ public class SparkRInterpreter extends Interpreter {
     // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
     if (Utils.isSpark2()) {
       setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
-          "\", \"zeppelin sparkR job group description\", TRUE)";
+          "\", \" +" + jobDesc + "\", TRUE)";
     } else if (getSparkInterpreter().getSparkVersion().newerThanEquals(SparkVersion.SPARK_1_5_0)) {
       setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
-          "\", \"zeppelin sparkR job group description\", TRUE)";
+          "\", \"" + jobDesc + "\", TRUE)";
     }
     logger.debug("set JobGroup:" + setJobGroup);
     lines = setJobGroup + "\n" + lines;

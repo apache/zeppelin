@@ -128,6 +128,16 @@ The JDBC interpreter properties are defined by default like below.
     <td></td>
     <td>Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)</td>
   </tr>
+  <tr>
+    <td>default.completer.ttlInSeconds</td>
+    <td>120</td>
+    <td>Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)</td>
+  </tr>
+  <tr>
+    <td>default.splitQueries</td>
+    <td>false</td>
+    <td>Each query is executed apart and returns the result</td>
+  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.

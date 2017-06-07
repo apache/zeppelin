@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import moment from 'moment'
+
 import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl)
