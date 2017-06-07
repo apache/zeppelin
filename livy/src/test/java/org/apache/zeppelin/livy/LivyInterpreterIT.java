@@ -540,7 +540,7 @@ public class LivyInterpreterIT {
     try {
       pysparkInterpreter.getLivyVersion();
       // for livy version >=0.3 , input some erroneous spark code, check the shown result is more than one line
-      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2)).count()", context);
+      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2, 3)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().get(0).getData().split("\n").length>1);
       assertTrue(result.message().get(0).getData().contains("Traceback"));
