@@ -539,17 +539,19 @@ public class LivyInterpreterIT {
     //test traceback msg
     try {
       pysparkInterpreter.getLivyVersion();
-      //for higher livy version , input some erroneous spark code, check the shown result is more than one line
+      //for livy version >=0.3 , input some erroneous spark code, check the shown result is more than one line
       InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
-      assertTrue(result.message().size()>1);
+      assertTrue(result.message().get(0).getData().split("\n").length>1);
+      assertTrue(result.message().get(0).getData().contains("Traceback"));
     } catch (APINotFoundException e) {
       // only livy 0.2 can throw this exception since it doesn't have /version endpoint
       // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
       // traceback
       InterpreterResult result = pysparkInterpreter.interpret("print(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
-      assertTrue(result.message().size()>1);
+      assertTrue(result.message().get(0).getData().split("\n").length>1);
+      assertTrue(result.message().get(0).getData().contains("Traceback"));
     }
 
     try {
