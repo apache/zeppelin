@@ -332,11 +332,13 @@ public abstract class BaseLivyInterpreter extends Interpreter {
                                                        boolean displayAppInfo) {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
       InterpreterResult result = new InterpreterResult(InterpreterResult.Code.ERROR);
-      result.add(stmtInfo.output.evalue);
       StringBuilder sb = new StringBuilder();
+      sb.append(stmtInfo.output.evalue);
+      // in case evalue doesn't have newline char
+      if (!stmtInfo.output.evalue.contains("\n"))
+        sb.append("\n");
       if (stmtInfo.output.traceback != null) {
-        for (int i = 0; i < stmtInfo.output.traceback.length; i++)
-          sb.append(stmtInfo.output.traceback[i]);
+        sb.append(StringUtils.join(stmtInfo.output.traceback));
       }
       result.add(sb.toString());
       return result;
