@@ -57,3 +57,59 @@
   font-weight: 400;
   text-align: center;
 }
+
+/* D3 Graph Configuration */
+marker {
+  fill: #D3D3D3;
+}
+path.link {
+  fill: none;
+  stroke-width: 3px;
+  stroke: #D3D3D3;
+}
+path.textpath {
+ fill: none;
+ stroke: none;
+}
+
+text {
+  font-size: 12px;
+  pointer-events: none;
+}
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
+text.nodeLabel {
+  font-size: 1em;
+  pointer-events: none;
+}
+
+/* D3 Graph Configuration */
+marker {
+  fill: #D3D3D3;
+}
+path.link {
+  fill: none;
+  stroke-width: 3px;
+  stroke: #D3D3D3;
+}
+path.textpath {
+ fill: none;
+ stroke: none;
+}
+
+text {
+  font-size: 12px;
+  pointer-events: none;
+}
+text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
+text.nodeLabel {
+  font-size: 1em;
+  pointer-events: none;
+}
