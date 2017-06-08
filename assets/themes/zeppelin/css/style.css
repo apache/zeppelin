@@ -1440,7 +1440,7 @@ and (max-width: 631px) {
   width: 100%;
   color: #475A60;
   background-color: transparent;
-  border: 1px solid #4881B3;
+  border: 1px solid #999;
 }
 
 ._default-text {
@@ -1553,6 +1553,8 @@ and (max-width: 631px) {
   width: 100%;
   height: 100%;
   padding-bottom: 15px;
+  margin-top: 25px;
+  margin-bottom: 30px;
 }
 
 .tech_deploy .panel-content-user span {
@@ -1562,9 +1564,19 @@ and (max-width: 631px) {
 
 .tech_deploy .panel-content-user .title-text {
   font-size: 30px;
+  display: inline-block;
   position: relative;
-  width: 100%;
+  width: auto;
   text-align: center;
+}
+
+.tech_deploy .panel-content-user .user-icon {
+  font-size: 27px;
+  position: relative;
+  width: auto;
+  text-align: center;
+  display: inline-block;
+  padding-right: 5px;
 }
 
 .underline {

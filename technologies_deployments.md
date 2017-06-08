@@ -64,28 +64,32 @@ limitations under the License.
     <div class="border row">
       <h2 style="padding-bottom: 8px;">Deployments</h2>
       <div class="border col-md-6 col-sm-6">
-        <p class="panel-content-user">
+        <div class="panel-content-user">
           <label style="width: 100%;">
-            <span class="fa fa-user" style="font-size:30px;position:relative;width:100%;text-align:center;"></span>
-            <span class="title-text">Single User</span>            
+            <div style="position:relative;width:100%;text-align:center;">
+              <span class="user-icon fa fa-user"></span>
+              <span class="title-text">Single User</span>
+            </div>
           </label>
           <label class="content-text">
             Local Spark, 6 Built-in visualizations, Display system, Dynamic form, Multiple backends are supported.<br/>
             <a href="./docs/0.8.0-SNAPSHOT/quickstart/tutorial.html" class="user-button">LEARN MORE</a>
           </label>
-        </p>
+        </div>
       </div>
       <div class="border col-md-6 col-sm-6">
-        <p class="panel-content-user">
+        <div class="panel-content-user">
           <label style="width: 100%;">
-            <span class="fa fa-users" style="font-size:30px;position:relative;width:100%;text-align:center;"></span>
-            <span class="title-text">Multi-User</span>
+            <div style="position:relative;width:100%;text-align:center;">
+              <span class="user-icon fa fa-users"></span>
+              <span class="title-text">Multi-User</span>
+            </div>
           </label>
           <label class="content-text">
             Zeppelin supports Multi-user Support w/ LDAP. Let's configure Zeppelin for your yarn cluster.<br/>
             <a href="./docs/0.8.0-SNAPSHOT/usage/other_features/personalized_mode.html" class="user-button">LEARN MORE</a>
           </label>                 
-        </p>
+        </div>
       </div>
     </div>
   </div>
