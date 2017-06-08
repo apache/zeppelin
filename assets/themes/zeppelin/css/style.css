@@ -18,9 +18,9 @@ body {
 }
 
 .jumbotron {
-  background-color: #4881b3;
+  background-color: #438bc9;
   margin-bottom: 0px;
-  padding-top: 60px;
+  padding-top: 30px;
   padding-bottom: 30px;
 }
 
@@ -36,12 +36,11 @@ body {
 }
 
 .jumbotron .description {
- font-size: 26px;
+ font-size: 24px;
  font-weight: 300;
  width:100%;
  position: relative;
- margin-top:-190px;
- text-shadow: 1px 2px #353131
+ text-shadow: 0.5px 0.5px #333;
 }
 
 .jumbotron .btn {
@@ -100,13 +99,11 @@ body {
   background: #3071a9;
   border-bottom: 0px;
   height: 60px;
-  -webkit-box-shadow: 0 8px 6px -6px #999;
-  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-inverse .navbar-nav > li > a {
   padding-top: 19px;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 300;
   color: white;
   background: #3071a9;
@@ -1025,10 +1022,6 @@ a.anchorjs-link:hover { text-decoration: none; }
     width: 80vw;
   }
 
-  .jumbotron .container .zeppelin2 {
-    margin-top: -30px;
-  }
-
   .navbar-inverse .navbar-nav > li > a {
     font-size: 20px;
   }
@@ -1190,8 +1183,19 @@ and (max-width: 1024px) {
 }
 
 .docs .dropdown-menu li span {
-  padding: 3px 10px 10px 10px;
-  font-size: 13px;
+  font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 12px 10px 12px 20px;
+  font-size: 16px;
+  font-weight: 300;
+  color: #3071a9;
+}
+
+.docs .title {
+  color: #3071a9;
+}
+
+.docs .dropdown-menu li a {
+  padding-left: 30px;
 }
 
 /*
@@ -1205,6 +1209,32 @@ and (max-width: 1024px) {
 
   .content {
     padding: 2rem 4rem;
+  }
+}
+
+@media only screen
+and (min-width: 735px)
+and (max-width: 991px) {
+  .container .zeppelin,
+  .container .zeppelin2 {
+    background-size: 56%;
+  }
+}
+
+@media only screen
+and (min-width: 630px)
+and (max-width: 734px) {
+  .container .zeppelin,
+  .container .zeppelin2 {
+    background-size: 67%;
+  }
+}
+
+@media only screen
+and (max-width: 631px) {
+  .container .zeppelin,
+  .container .zeppelin2 {
+    background-size: 80%;
   }
 }
 
@@ -1239,16 +1269,18 @@ and (max-width: 1024px) {
   background-image: url('../img/zepLogo.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 43%;
+  background-size: 45%;
+  background-position-y: 11px;
   height: 265px;
-  opacity: 0.8;
+  opacity: 0.45;
 }
 
 .zeppelin2 {
-  background: url('../img/zepLogo.png');
+  background-image: url('../img/zepLogo.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 43%;
+  background-size: 45%;
+  background-position-y: 1px;
   height: 245px;
-  opacity: 0.2;
+  opacity: 0.15;
 }
