@@ -16,20 +16,18 @@ limitations under the License.
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
   <div>
-    <div ng-if="paragraph.config.title"
-         id="{{paragraph.id}}_title"
+    <div id="{{paragraph.id}}_title"
+         ng-if="paragraph.config.title"
          ng-controller="ElasticInputCtrl as input"
          class="title">
-      <input type="text"
-             pu-elastic-input
-             style="min-width: 400px; max-width: 80%;"
+      <input type="text" pu-elastic-input
+             style="min-width: 0px; max-width: 95%;"
              placeholder="Untitled"
-             ng-model="paragraph.title"
              ng-if="input.showEditor"
-             ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
+             ng-model="paragraph.title"
+             ng-escape="input.showEditor = false; paragraph.title = oldTitle;" focus-if="input.showEditor"
              ng-blur="setTitle(paragraph); input.showEditor = false"
-             ng-enter="setTitle(paragraph); input.showEditor = false"
-             focus-if="input.showEditor" />
+             ng-enter="setTitle(paragraph); input.showEditor = false" />
       <div ng-click="input.showEditor = !asIframe && !viewOnly && !revisionView; oldTitle = paragraph.title;"
            ng-show="!input.showEditor"
            ng-bind-html="paragraph.title || 'Untitled'">
@@ -41,15 +39,15 @@ limitations under the License.
   </div>
 
   <div>
-    <div ng-if="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
+    <div ng-if="!paragraph.config.editorHide && !viewOnly"
+         class="paragraph-editor-container">
       <code-editor
         paragraph-id="paragraph.id"
         paragraph-context="paragraph"
         dirty-text="dirtyText"
         original-text="originalText"
         on-load="aceLoaded"
-        revision-view="revisionView"
-      ></code-editor>
+        revision-view="revisionView"></code-editor>
     </div>
 
     <div ng-include src="'app/notebook/paragraph/paragraph-progressBar.html'"></div>

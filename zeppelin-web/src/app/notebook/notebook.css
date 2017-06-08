@@ -154,7 +154,7 @@
   color: #333333;
 }
 
-.form-control2 {
+.note-title-input {
   height: 40px;
   font-size: 29px;
   line-height: 1.2;
@@ -168,7 +168,7 @@
   margin: 2px 20px 0 14px;
 }
 
-.form-control-static2 {
+.note-title {
   padding-top: 7px;
   margin-right: 15px;
   font-size: 29px;
