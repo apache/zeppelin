@@ -110,7 +110,7 @@ body {
   height: 60px;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover{
+.navbar-inverse .navbar-nav > li > a:hover {
   color: white !important;
   background: #2C6094 !important;
 }
@@ -165,7 +165,8 @@ body {
 }
 
 .navbar-inverse .navbar-toggle:hover,
-.navbar-inverse .navbar-toggle:focus {
+.navbar-inverse .navbar-toggle:focus,
+.navbar-inverse .navbar-toggle.collapsed:hover {
   border-color: #265380;
   background: #265380;
 }
@@ -173,6 +174,12 @@ body {
 .navbar-inverse .navbar-toggle:focus {
   outline-width: 0;
 }
+
+.navbar-inverse .navbar-toggle.collapsed {
+  border-color: #3071A9;
+  background: #3071a9;
+}
+
 
 /* SideMenu */
 
@@ -1125,11 +1132,6 @@ and (max-width: 996px) {
     border: 0;
     box-shadow: none;
     font-size: 16px;
-  }
-
-  .navbar-inverse .navbar-nav > li > a:hover,
-   .navbar-inverse .navbar-nav > li > a:focus {
-    width: 95%;
   }
 
   .docs .dropdown-menu b {
