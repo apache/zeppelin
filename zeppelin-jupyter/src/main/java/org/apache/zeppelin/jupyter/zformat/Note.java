@@ -38,7 +38,3 @@ public class Note {
     this.paragraphs = paragraphs;
   }
 }
-
-
-
-
