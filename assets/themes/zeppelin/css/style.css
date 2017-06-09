@@ -40,7 +40,7 @@ body {
  font-weight: 300;
  width:100%;
  position: relative;
- text-shadow: 0.5px 0.5px #333;
+ text-shadow: 1px 1px #4a4a4a;
 }
 
 .jumbotron .btn {
