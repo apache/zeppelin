@@ -1271,7 +1271,7 @@ and (max-width: 631px) {
   background-image: url('../img/zepLogo.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 45%;
+  background-size: 40%;
   background-position-y: 11px;
   height: 265px;
   opacity: 0.45;
@@ -1281,7 +1281,7 @@ and (max-width: 631px) {
   background-image: url('../img/zepLogo.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 45%;
+  background-size: 40%;
   background-position-y: 1px;
   height: 245px;
   opacity: 0.15;
