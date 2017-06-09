@@ -42,11 +42,11 @@ $(function() {
 
 });
 
-$(function() {
+$(document).click(function (event) {
   // custom navigation click event
-  $(document).click(function (event) {
-    $('.navbar-collapse').collapse('hide');
-  });
+  var clickover = $(event.target);
+  var _opened = $(".navbar-collapse").hasClass("navbar-collapse in");
+  if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+    $("button.navbar-toggle").click();
+  }
 });
-
-
