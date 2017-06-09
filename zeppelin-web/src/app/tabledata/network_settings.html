@@ -1,0 +1,74 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="row">
+  <form>
+    <fieldset class=" col-xs-12">
+      <h4>Force Layout settings</h4>
+      <div class="form-check col-xs-4">
+        <label for="{{$id}}_timeout">Stop Force layout after</label>
+        <div class="input-group">
+          <input type="text" class="form-control" ng-model="config.d3Graph.forceLayout.timeout" id="{{$id}}_timeout" />
+          <span class="input-group-addon">ms</span>
+        </div>
+      </div>
+      <div class="form-check col-xs-4">
+        <div class="form-group">
+          <label for="{{$id}}_charge">Force Layout Charge</label>
+          <input type="text" class="form-control" ng-model="config.d3Graph.forceLayout.charge" id="{{$id}}_charge" />
+        </div>
+      </div>
+      <div class="form-check col-xs-4">
+        <div class="form-group">
+          <label for="{{$id}}_linkDistance">Force Layout Link Distance</label>
+          <input type="text" class="form-control" ng-model="config.d3Graph.forceLayout.linkDistance" id="{{$id}}_linkDistance" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class=" col-xs-12">
+      <h4>Globals</h4>
+      <div class="form-check col-xs-4">
+        <div class="form-group">
+          <label for="{{$id}}_charge">Minimum scale to show node and edge labels</label>
+          <input type="text" class="form-control" ng-model="config.d3Graph.zoom.minScale" id="{{$id}}_minScale" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-group col-xs-12">
+      <h4>Choose node labels</h4>
+      <div ng-if="isEmptyObject(config.properties)">
+      No labels to set
+      </div>
+      <div class="btn-group network-labels network-badge-settings"
+          ng-repeat="(key, value) in config.properties track by key">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{key}}:<i>{{config.properties[key].selected}}</i> <div class="caret"></div>
+        </button>
+        <ul class="dropdown-menu">
+          <li ng-repeat="val in value.keys" ng-click="setNetworkLabel(key, val)">
+            <a><i ng-if="config.properties[key].selected == val" class="glyphicon glyphicon-ok">
+            </i> {{val}}</a>
+          </li>
+        </ul>
+      </div>
+    </fieldset>
+    <fieldset class="form-group col-xs-12">
+      <button type="submit" class="btn btn-primary btn-sm" ng-click="saveConfig()">
+        <span class="glyphicon glyphicon-floppy-disk"></span>
+        Save configuration
+      </button>
+    </fieldset>
+  </form>
+</div>

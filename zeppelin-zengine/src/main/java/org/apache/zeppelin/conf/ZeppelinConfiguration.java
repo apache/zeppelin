@@ -424,8 +424,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_REGISTRY);
   }
 
-  public String getHeliumNpmRegistry() {
-    return getString(ConfVars.ZEPPELIN_HELIUM_NPM_REGISTRY);
+  public String getHeliumNodeInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_NODE_INSTALLER_URL);
+  }
+
+  public String getHeliumNpmInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_NPM_INSTALLER_URL);
+  }
+
+  public String getHeliumYarnInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL);
   }
 
   public String getNotebookAuthorizationPath() {
@@ -643,7 +651,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
-    ZEPPELIN_HELIUM_NPM_REGISTRY("zeppelin.helium.npm.registry", "http://registry.npmjs.org/"),
+    ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
+            "https://nodejs.org/dist/"),
+    ZEPPELIN_HELIUM_NPM_INSTALLER_URL("zeppelin.helium.npm.installer.url",
+            "http://registry.npmjs.org/"),
+    ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL("zeppelin.helium.yarnpkg.installer.url",
+            "https://github.com/yarnpkg/yarn/releases/download/"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),

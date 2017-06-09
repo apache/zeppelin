@@ -36,10 +36,12 @@ function baseUrlSrv () {
       skipTrailingSlash(location.pathname) + '/ws'
   }
 
+  this.getBase = function() {
+    return location.protocol + '//' + location.hostname + ':' + this.getPort() + location.pathname
+  }
+
   this.getRestApiBase = function () {
-    return location.protocol + '//' + location.hostname + ':' +
-      this.getPort() + skipTrailingSlash(location.pathname) +
-      '/api'
+    return skipTrailingSlash(this.getBase()) + '/api'
   }
 
   const skipTrailingSlash = function (path) {

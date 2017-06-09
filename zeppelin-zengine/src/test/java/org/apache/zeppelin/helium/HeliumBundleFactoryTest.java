@@ -119,7 +119,6 @@ public class HeliumBundleFactoryTest {
     assertEquals(lastModified, bundle.lastModified());
   }
 
-
   @Test
   public void bundleLocalPackage() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
