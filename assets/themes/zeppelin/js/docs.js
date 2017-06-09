@@ -40,6 +40,8 @@ $(function() {
 
   $('[data-toggle="tooltip"]').tooltip();
 
+  anchors.remove('.zeppelin-title');
+
 });
 
 $(document).click(function (event) {

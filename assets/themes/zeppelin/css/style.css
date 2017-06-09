@@ -80,6 +80,12 @@ body {
   font-size: 60px;
   line-height: 1.5;
 }
+.jumbotron .zeppelin-title {
+  font-size:40px;
+  text-shadow: 1px 1px #4a4a4a;
+  font-family: 'Patua One', cursive;
+  line-height: 1.5;
+}
 
 .jumbotron small {
   font-size: 60%;
