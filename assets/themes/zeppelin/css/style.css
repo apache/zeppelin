@@ -773,9 +773,9 @@ a.anchorjs-link:hover { text-decoration: none; }
 }
 
 .newBtn .btn-primary {
-  background: #d9e7f4;
+  background: #99d6ea;
   color: #060d14;
-  border-color: #438bc9;
+  border-color: #0086b3;
 }
 .newBtn .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
   background: #ecf3f9;
