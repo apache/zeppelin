@@ -60,42 +60,9 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
 {
   "status": "OK",
   "message": "Zeppelin version",
-  "body": "0.8.0-SNAPSHOT"
-}     
-        </pre>
-      </td>
-    </tr>
-  </table>
-
-### Get Zeppelin git info
-  <table class="table-configuration">
-    <col width="200">
-    <tr>
-      <td>Description</td>
-      <td>This ```GET``` method returns Zeppelin Git info</td>
-    </tr>
-    <tr>
-      <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/git```</td>
-    </tr>
-    <tr>
-      <td>Success code</td>
-      <td>200</td>
-    </tr>
-    <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
-    </tr>
-    <tr>
-      <td> sample JSON response
-      </td>
-      <td>
-        <pre>
-{
-  "status": "OK",
-  "message": "Zeppelin Git Info",
   "body": [
     {
+      "version": "0.8.0-SNAPSHOT",
       "commitId": "abc0123",
       "timestamp": "2017-01-02 03:04:05"
     }
