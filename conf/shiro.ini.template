@@ -18,7 +18,8 @@
 [users]
 # List of users with their password allowed to access Zeppelin.
 # To use a different strategy (LDAP / Database / ...) check the shiro doc at http://shiro.apache.org/configuration.html#Configuration-INISections
-admin = password1, admin
+# To enable admin user, uncomment the following line and set an appropriate password.
+#admin = password1, admin
 user1 = password2, role1, role2
 user2 = password3, role3
 user3 = password4, role2
@@ -73,14 +74,22 @@ role3 = *
 admin = *
 
 [urls]
-# This section is used for url-based security.
-# You can secure interpreter, configuration and credential information by urls. Comment or uncomment the below urls that you want to hide.
+# This section is used for url-based security. For details see the shiro.ini documentation.
+#
+# You can secure interpreter, configuration and credential information by urls.
+# Comment or uncomment the below urls that you want to hide:
 # anon means the access is anonymous.
-# authc means Form based Auth Security
-# To enfore security, comment the line below and uncomment the next one
+# authc means form based auth Security.
+#
+# IMPORTANT: Order matters: URL path expressions are evaluated against an incoming request
+# in the order they are defined and the FIRST MATCH WINS.
+#
+# To allow anonymous access to all but the stated urls,
+# uncomment the line second last line (/** = anon) and comment the last line (/** = authc)
+#
 /api/version = anon
-#/api/interpreter/** = authc, roles[admin]
-#/api/configurations/** = authc, roles[admin]
-#/api/credential/** = authc, roles[admin]
+/api/interpreter/** = authc, roles[admin]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
 #/** = anon
 /** = authc

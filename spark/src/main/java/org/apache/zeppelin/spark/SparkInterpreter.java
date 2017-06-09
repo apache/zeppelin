@@ -36,7 +36,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
-
 import org.apache.spark.SecurityManager;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.repl.SparkILoop;
@@ -58,6 +57,7 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,6 +171,7 @@ public class SparkInterpreter extends Interpreter {
         String jobUrl = getJobUrl(jobId);
         String noteId = Utils.getNoteId(jobGroupId);
         String paragraphId = Utils.getParagraphId(jobGroupId);
+          
         if (jobUrl != null && noteId != null && paragraphId != null) {
           RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
@@ -1182,7 +1183,8 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
-      sc.setJobGroup(Utils.buildJobGroupId(context), "Zeppelin", false);
+      String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+      sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
