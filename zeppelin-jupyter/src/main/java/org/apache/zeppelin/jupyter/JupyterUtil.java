@@ -16,10 +16,6 @@
  */
 package org.apache.zeppelin.jupyter;
 
-import com.google.common.base.Joiner;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -30,12 +26,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.base.Joiner;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
 import org.apache.zeppelin.jupyter.nbformat.Cell;
 import org.apache.zeppelin.jupyter.nbformat.CodeCell;
 import org.apache.zeppelin.jupyter.nbformat.DisplayData;
@@ -68,8 +70,8 @@ public class JupyterUtil {
         .registerSubtype(RawCell.class, "raw");
     this.outputTypeFactory = RuntimeTypeAdapterFactory.of(Output.class, "output_type")
         .registerSubtype(ExecuteResult.class, "execute_result")
-        .registerSubtype(DisplayData.class, "display_data")
-        .registerSubtype(Stream.class, "stream").registerSubtype(Error.class, "error");
+        .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
+        .registerSubtype(Error.class, "error");
   }
 
   public Nbformat getNbformat(Reader in) {
@@ -120,9 +122,9 @@ public class JupyterUtil {
             typeData = new TypeData(type, result);
             typeDataList.add(typeData);
           } else if (output instanceof ExecuteResult || output instanceof DisplayData) {
-            Map<String, Object> data =
-                (output instanceof ExecuteResult) ? ((ExecuteResult) output).getData()
-                    : ((DisplayData) output).getData();
+            Map<String, Object> data = (output instanceof ExecuteResult) ?
+                ((ExecuteResult) output).getData() :
+                ((DisplayData) output).getData();
             for (Map.Entry<String, Object> datum : data.entrySet()) {
               if (TEXT_PLAIN.equals(datum.getKey())) {
                 type = TypeData.TEXT;
@@ -141,8 +143,8 @@ public class JupyterUtil {
             // Error
             Error error = (Error) output;
             type = TypeData.TEXT;
-            result = Joiner.on(lineSeparator)
-                .join(new String[]{error.getEname(), error.getEvalue()});
+            result =
+                Joiner.on(lineSeparator).join(new String[] {error.getEname(), error.getEvalue()});
             typeData = new TypeData(type, result);
             typeDataList.add(typeData);
           }
@@ -191,13 +193,11 @@ public class JupyterUtil {
     Path jupyterPath = Paths.get(cmd.getOptionValue("i"));
     Path zeppelinPath = Paths.get(cmd.hasOption("o") ? cmd.getOptionValue("o") : "note.json");
 
-    Note note = new JupyterUtil()
-        .getNote(new BufferedReader(new FileReader(jupyterPath.toFile())), "python", "md");
-
-    try (FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
-      new GsonBuilder().setPrettyPrinting().create()
-          .toJson(note, fw);
-
+    try (BufferedReader in = new BufferedReader(new FileReader(jupyterPath.toFile()));
+        FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
+      Note note = new JupyterUtil().getNote(in,"python", "md");
+      Gson gson = new GsonBuilder().setPrettyPrinting().create();
+      gson.toJson(note, fw);
     }
   }
 }
