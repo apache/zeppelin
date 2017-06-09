@@ -1031,17 +1031,17 @@ a.anchorjs-link:hover { text-decoration: none; }
   }
 
   .navbar-inverse .navbar-nav > li > a {
-    font-size: 20px;
+    font-size: 15px;
   }
 
   .navbar-nav .open .dropdown-menu {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .docs .dropdown-menu b {
-    text-shadow: 1px 2px #353131;
+    text-shadow: 1px 1px #353131;
     color: #FFF;
-    font-size: 18px;
+    font-size: 15px;
   }
 
   .navbar-collapse.in {
@@ -1132,13 +1132,13 @@ and (max-width: 996px) {
     background-color: transparent;
     border: 0;
     box-shadow: none;
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .docs .dropdown-menu b {
-    text-shadow: 1px 2px #353131;
+    text-shadow: 1px 1px #353131;
     color: #FFF;
-    font-size:18px;
+    font-size: 15px;
   }
 
   .navbar-inverse .navbar-nav > li > a {
@@ -1187,8 +1187,8 @@ and (max-width: 1024px) {
 
 .docs .dropdown-menu li span {
   font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  padding: 12px 10px 12px 20px;
-  font-size: 16px;
+  padding: 12px 10px 12px 15px;
+  font-size: 15px;
   font-weight: 300;
 }
 
