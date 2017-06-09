@@ -314,10 +314,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
     repoSetting.name = "Instance";
     settings.add(repoSetting);
     
-    // add note persist setting
-    repoSetting = NotebookRepoSettingUtils.getNotePersistSettings(persistOnCommit);
-    settings.add(repoSetting);
-    
     return settings;
   }
 
@@ -374,11 +370,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     changeToken(instanceId, subject.getUser());
     
-    if (settings.containsKey("Note persistence")) {
-      persistOnCommit = Boolean.getBoolean(settings.get("Note persistence"));
-      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
-          persistOnCommit);
-    }
   }
 
   @Override

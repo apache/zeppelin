@@ -19,8 +19,6 @@ package org.apache.zeppelin.notebook.repo.settings;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -29,7 +27,7 @@ import com.google.common.collect.Lists;
  *
  */
 public class NotebookRepoSettingUtils {
-  private static final String PERSIST_ON_COMMIT_NAME = "Note Persistence";
+  public static final String PERSIST_ON_COMMIT_NAME = "Note Persistence";
   private static final String PERSIST_ON_COMMIT_OPTION1 = "Persist continuously";
   private static final String PERSIST_ON_COMMIT_OPTION2 = "Persist on note commits";
   
@@ -47,15 +45,4 @@ public class NotebookRepoSettingUtils {
     return repoSetting;
   }
   
-  public static boolean isPersistEnabled(List<NotebookRepoSettingsInfo> settings) {
-    boolean persist = false;
-    for (NotebookRepoSettingsInfo setting: settings) {
-      if (StringUtils.equalsIgnoreCase(setting.name, PERSIST_ON_COMMIT_NAME)) {
-        persist = StringUtils.equalsIgnoreCase(setting.selected, PERSIST_ON_COMMIT_OPTION2) ? 
-            true : false;
-        break;
-      }
-    }
-    return persist; 
-  }
 }

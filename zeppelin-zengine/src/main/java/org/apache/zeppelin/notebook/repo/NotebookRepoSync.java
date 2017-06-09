@@ -34,6 +34,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -57,7 +58,8 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
-  private final boolean saveAndCommit;
+  private boolean saveAndCommit;
+  private static final String settingsName = "Global Settings";
 
   /**
    * @param conf
@@ -133,24 +135,44 @@ public class NotebookRepoSync implements NotebookRepo {
                            .build();
       reposSetting.add(repoWithSettings);
     }
-
+    
+    // add global save and commit setting
+    NotebookRepoSettingsInfo setting = NotebookRepoSettingUtils
+        .getNotePersistSettings(isSaveAndCommitEnabled());
+    repoWithSettings = NotebookRepoWithSettings
+        .builder(settingsName)
+        .className(this.getClass().getName())
+        .settings(Lists.newArrayList(setting))
+        .build();
+    reposSetting.add(repoWithSettings);
+    
     return reposSetting;
   }
 
   public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
                                                      AuthenticationInfo subject) {
     NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
-    for (NotebookRepo repo : repos) {
-      if (repo.getClass().getName().equals(name)) {
-        repo.updateSettings(settings, subject);
-        updatedSettings = NotebookRepoWithSettings
-                            .builder(repo.getClass().getSimpleName())
-                            .className(repo.getClass().getName())
-                            .settings(repo.getSettings(subject))
-                            .build();
-        break;
+    if (this.getClass().getName().equals(name)) {
+      updateSettings(settings, subject);
+      updatedSettings = NotebookRepoWithSettings
+          .builder(settingsName)
+          .className(this.getClass().getName())
+          .settings(getSettings(subject))
+          .build();
+    } else {
+      for (NotebookRepo repo : repos) {
+        if (repo.getClass().getName().equals(name)) {
+          repo.updateSettings(settings, subject);
+          updatedSettings = NotebookRepoWithSettings
+              .builder(repo.getClass().getSimpleName())
+              .className(repo.getClass().getName())
+              .settings(repo.getSettings(subject))
+              .build();
+          break;
+        }
       }
     }
+    
     return updatedSettings;
   }
 
@@ -494,21 +516,21 @@ public class NotebookRepoSync implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    List<NotebookRepoSettingsInfo> repoSettings = Collections.emptyList();
-    try {
-      repoSettings =  getRepo(0).getSettings(subject);
-    } catch (IOException e) {
-      LOG.error("Cannot get notebook repo settings", e);
-    }
+    List<NotebookRepoSettingsInfo> repoSettings = Lists.newArrayList();
+    // save and commit setting
+    NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingUtils
+        .getNotePersistSettings(isSaveAndCommitEnabled());
+    repoSettings.add(repoSetting);
     return repoSettings;
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    try {
-      getRepo(0).updateSettings(settings, subject);
-    } catch (IOException e) {
-      LOG.error("Cannot update notebook repo settings", e);
+    if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
+      saveAndCommit = Boolean
+          .getBoolean(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          saveAndCommit);
     }
   }
 

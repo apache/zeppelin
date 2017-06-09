@@ -297,11 +297,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     repoSetting.selected = getNotebookDirPath();
 
     settings.add(repoSetting);
-    
-    // add note persist setting
-    repoSetting = NotebookRepoSettingUtils.getNotePersistSettings(persistOnCommit);
-    settings.add(repoSetting);
-    
+
     return settings;
   }
 
@@ -328,11 +324,6 @@ public class VFSNotebookRepo implements NotebookRepo {
       LOG.error("Cannot update notebook directory", e);
     }
     
-    if (settings.containsKey("Note persistence")) {
-      persistOnCommit = Boolean.getBoolean(settings.get("Note persistence"));
-      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
-          persistOnCommit);
-    }
   }
 
   @Override
