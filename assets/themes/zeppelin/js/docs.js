@@ -39,4 +39,14 @@ $(function() {
   });
 
   $('[data-toggle="tooltip"]').tooltip();
+
 });
+
+$(function() {
+  // custom navigation click event
+  $(document).click(function (event) {
+    $('.navbar-collapse').collapse('hide');
+  });
+});
+
+
