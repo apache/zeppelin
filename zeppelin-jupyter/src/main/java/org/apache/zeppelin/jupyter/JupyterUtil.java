@@ -43,6 +43,7 @@ import org.apache.zeppelin.jupyter.nbformat.CodeCell;
 import org.apache.zeppelin.jupyter.nbformat.DisplayData;
 import org.apache.zeppelin.jupyter.nbformat.Error;
 import org.apache.zeppelin.jupyter.nbformat.ExecuteResult;
+import org.apache.zeppelin.jupyter.nbformat.HeadingCell;
 import org.apache.zeppelin.jupyter.nbformat.MarkdownCell;
 import org.apache.zeppelin.jupyter.nbformat.Nbformat;
 import org.apache.zeppelin.jupyter.nbformat.Output;
@@ -67,7 +68,7 @@ public class JupyterUtil {
   public JupyterUtil() {
     this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
         .registerSubtype(MarkdownCell.class, "markdown").registerSubtype(CodeCell.class, "code")
-        .registerSubtype(RawCell.class, "raw");
+        .registerSubtype(RawCell.class, "raw").registerSubtype(HeadingCell.class, "heading");
     this.outputTypeFactory = RuntimeTypeAdapterFactory.of(Output.class, "output_type")
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
@@ -149,7 +150,7 @@ public class JupyterUtil {
             typeDataList.add(typeData);
           }
         }
-      } else if (cell instanceof MarkdownCell) {
+      } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
         interpreterName = "%" + markdownReplaced;
       } else {
         interpreterName = "";
@@ -195,7 +196,7 @@ public class JupyterUtil {
 
     try (BufferedReader in = new BufferedReader(new FileReader(jupyterPath.toFile()));
         FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
-      Note note = new JupyterUtil().getNote(in,"python", "md");
+      Note note = new JupyterUtil().getNote(in, "python", "md");
       Gson gson = new GsonBuilder().setPrettyPrinting().create();
       gson.toJson(note, fw);
     }
