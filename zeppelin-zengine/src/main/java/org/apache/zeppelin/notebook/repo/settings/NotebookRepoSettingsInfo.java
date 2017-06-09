@@ -41,4 +41,13 @@ public class NotebookRepoSettingsInfo {
   public List<Map<String, String>> value;
   public String selected;
   public String name;
+  
+  @Override
+  public String toString() {
+    StringBuilder str = new StringBuilder();
+    str.append("NotebookRepoSettingsInfo [ type: ").append(type)
+       .append(", selected: ").append(selected)
+       .append(", name: ").append(name).append(" ]");
+    return str.toString();
+  }
 }

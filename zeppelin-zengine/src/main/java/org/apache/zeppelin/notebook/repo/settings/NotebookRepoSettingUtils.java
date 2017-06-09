@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
  *
  */
 public class NotebookRepoSettingUtils {
-  private static final String PERSIST_ON_COMMIT_NAME = "Note persistence";
+  private static final String PERSIST_ON_COMMIT_NAME = "Note Persistence";
   private static final String PERSIST_ON_COMMIT_OPTION1 = "Persist continuously";
   private static final String PERSIST_ON_COMMIT_OPTION2 = "Persist on note commits";
   

@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -310,6 +311,56 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     vRepoSync.checkpoint(noteId, "checkpoint message 2", anonymous);
     assertThat(gitRepo.revisionHistory(noteId, anonymous).size()).isEqualTo(vCount + 1);
     notebookRepoSync.remove(note.getId(), anonymous);
+  }
+  
+  @Test
+  public void testSaveAndCheckpointViaSettings() throws IOException, SchedulerException {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
+        "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT.getVarName(),
+        "true");
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+
+    NotebookRepoSync repo = new NotebookRepoSync(conf);
+    Notebook notebook = new Notebook(conf, repo, schedulerFactory, factory,
+        interpreterSettingManager, this, search, notebookAuthorization, credentials);
+
+    // one git versioned storage initialized
+    assertThat(repo.getRepoCount()).isEqualTo(1);
+    assertThat(repo.getRepo(0)).isInstanceOf(GitNotebookRepo.class);
+    
+    GitNotebookRepo gitRepo = (GitNotebookRepo) repo.getRepo(0);
+    
+    // settings applied
+    List<NotebookRepoSettingsInfo> settings = gitRepo.getSettings(anonymous);
+    assertThat(settings.size()).isEqualTo(2);
+    assertThat(settings.get(0).name).isEqualTo("Notebook Path");
+    assertThat(settings.get(1).name).isEqualTo("Note Persistence");
+    assertThat(settings.get(1).selected).isEqualTo("true");
+    
+    // no notes
+    assertThat(repo.list(anonymous).size()).isEqualTo(0);
+    // create note
+    Note note = notebook.createNote(anonymous);
+    assertThat(repo.list(anonymous).size()).isEqualTo(1);
+    
+    // first checkpoint
+    
+//    vRepoSync.checkpoint(noteId, note, "checkpoint message", anonymous);
+//    int vCount = gitRepo.revisionHistory(noteId, anonymous).size();
+//    assertThat(vCount).isEqualTo(1);
+//    
+//    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+//    Map<String, Object> config = p.getConfig();
+//    config.put("enabled", true);
+//    p.setConfig(config);
+//    p.setText("%md checkpoint test");
+//    
+    // save and checkpoint again
+//    vRepoSync.save(note, anonymous);
+//    vRepoSync.checkpoint(noteId, note, "checkpoint message 2", anonymous);
+//    assertThat(gitRepo.revisionHistory(noteId, anonymous).size()).isEqualTo(vCount + 1);
+//    notebookRepoSync.remove(note.getId(), anonymous);
   }
   
   @Test
