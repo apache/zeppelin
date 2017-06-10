@@ -376,5 +376,15 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return roleNames;
   }
 
+  public List<String> lookupUsers(String searchText) {
+    List<String> userList = new ArrayList<>();
+    try {
+      LdapContext ctx = getLdapContextFactory().getSystemLdapContext();
+      userList = searchForUserName(searchText, ctx);
+    } catch (Exception e) {
+      log.error("Error retrieving User list from ActiveDirectory Realm", e);
+    }
+    return userList;
+  }
 }
 

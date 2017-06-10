@@ -314,24 +314,15 @@ public class ZeppelinServer extends Application {
 
   private static void setupRestApiContextHandler(WebAppContext webapp,
                                                  ZeppelinConfiguration conf) {
-
     final ServletHolder servletHolder = new ServletHolder(
             new org.glassfish.jersey.servlet.ServletContainer());
-
     servletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
     servletHolder.setName("rest");
     servletHolder.setForcedPath("rest");
-
+    
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(servletHolder, "/api/*");
-
-    String shiroIniPath = conf.getShiroPath();
-    if (!StringUtils.isBlank(shiroIniPath)) {
-      webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
-      SecurityUtils.initSecurityManager(shiroIniPath);
-      webapp.addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class));
-      webapp.addEventListener(new EnvironmentLoaderListener());
-    }
+ 
   }
 
   private static WebAppContext setupWebAppContext(ContextHandlerCollection contexts,
@@ -339,10 +330,10 @@ public class ZeppelinServer extends Application {
 
     WebAppContext webApp = new WebAppContext();
     webApp.setContextPath(conf.getServerContextPath());
+    contexts.addHandler(webApp);
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
     if (warPath.isDirectory()) {
       // Development mode, read from FS
-      // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warPath.getPath());
       webApp.setParentLoaderPriority(true);
     } else {
@@ -353,18 +344,29 @@ public class ZeppelinServer extends Application {
       LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
       webApp.setTempDirectory(warTempDirectory);
     }
-    // Explicit bind to root
+    
+    // Explicitly bind the default servlet to root
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
-    contexts.addHandler(webApp);
-
+    
+    // Add redirecting servlet to support indirect logins
+    webApp.addServlet(new ServletHolder(new IndirectLoginServlet()), "/xlogin");
+    
     webApp.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
 
     webApp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
             Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
+    
+    // Enable shiro security filter
+    String shiroIniPath = conf.getShiroPath();
+    if (!StringUtils.isBlank(shiroIniPath)) {
+      webApp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
+      SecurityUtils.initSecurityManager(shiroIniPath);
+      webApp.addFilter(ShiroFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+      webApp.addEventListener(new EnvironmentLoaderListener());
+    }
 
     return webApp;
-
   }
 
   @Override

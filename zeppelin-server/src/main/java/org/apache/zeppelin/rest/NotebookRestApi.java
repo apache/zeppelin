@@ -123,8 +123,7 @@ public class NotebookRestApi {
    * Check if the current user is not authenticated(anonymous user) or not
    */
   private void checkIfUserIsAnon(String errorMsg) {
-    boolean isAuthenticated = SecurityUtils.isAuthenticated();
-    if (isAuthenticated && SecurityUtils.getPrincipal().equals("anonymous")) {
+    if (SecurityUtils.isAnonymous()) {
       LOG.info("Anonymous user cannot set any permissions for this note.");
       throw new ForbiddenException(errorMsg);
     }
@@ -187,7 +186,7 @@ public class NotebookRestApi {
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
     String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getRoles();
+    Set<String> roles = SecurityUtils.getRoles();
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
@@ -272,7 +271,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response getNoteList() throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    HashSet<String> userAndRoles = SecurityUtils.getRoles();
+    Set<String> userAndRoles = SecurityUtils.getRoles();
     userAndRoles.add(subject.getUser());
     List<Map<String, String>> notesInfo = notebookServer.generateNotesInfo(false, subject,
         userAndRoles);
@@ -913,7 +912,7 @@ public class NotebookRestApi {
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notes for: {}", queryTerm);
     String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getRoles();
+    Set<String> roles = SecurityUtils.getRoles();
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);

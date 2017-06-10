@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -59,12 +60,14 @@ import javax.naming.NamingException;
 import javax.naming.PartialResultException;
 import javax.naming.SizeLimitExceededException;
 import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.PagedResultsControl;
+import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 
 
 /**
@@ -123,7 +126,7 @@ import javax.naming.ldap.PagedResultsControl;
  * <p>securityManager.realms = $ldapRealm
  * 
  */
-public class LdapRealm extends JndiLdapRealm {
+public class LdapRealm extends JndiLdapRealm implements UserLookup {
 
   private static final SearchControls SUBTREE_SCOPE = new SearchControls();
   private static final SearchControls ONELEVEL_SCOPE = new SearchControls();
@@ -925,5 +928,72 @@ public class LdapRealm extends JndiLdapRealm {
       matcher = TEMPLATE_PATTERN.matcher(output);
     }
     return output;
+  }
+  
+  /**
+   * function to extract users from Zeppelin LdapRealm
+   */
+  @Override
+  public List<String> lookupUsers(String searchText) {
+    List<String> userList = new ArrayList<>();
+    if (log.isDebugEnabled()) {
+      log.debug("SearchText: " + searchText);
+    }
+    String userAttribute = getUserSearchAttributeName();
+    String userSearchRealm = getUserSearchBase();
+    String userObjectClass = getUserObjectClass();
+    JndiLdapContextFactory CF = (JndiLdapContextFactory) getContextFactory();
+    try {
+      LdapContext ctx = CF.getSystemLdapContext();
+      SearchControls constraints = new SearchControls();
+      constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+      String[] attrIDs = {userAttribute};
+      constraints.setReturningAttributes(attrIDs);
+      NamingEnumeration result = ctx.search(userSearchRealm, "(&(objectclass=" + 
+            userObjectClass + ")(" 
+            + userAttribute + "=" + searchText + "))", constraints);
+      while (result.hasMore()) {
+        Attributes attrs = ((SearchResult) result.next()).getAttributes();
+        if (attrs.get(userAttribute) != null) {
+          String currentUser;
+          if (getUserLowerCase()) {
+            log.debug("userLowerCase true");
+            currentUser = ((String) attrs.get(userAttribute).get()).toLowerCase();
+          } else {
+            log.debug("userLowerCase false");
+            currentUser = (String) attrs.get(userAttribute).get();            
+          }
+          if (log.isDebugEnabled()) {
+            log.debug("CurrentUser: " + currentUser);
+          }
+          userList.add(currentUser.trim());
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error retrieving User list from Ldap Realm", e);
+    }
+    return userList;
+  }
+  
+  /***
+   * Get user roles from shiro.ini for Zeppelin LdapRealm
+   * @return
+   */
+  @Override
+  public List<String> lookupRoles(String searchText) {
+    List<String> roleList = new ArrayList<>();
+    Map<String, String> roles = getListRoles();
+    if (roles != null) {
+      Iterator it = roles.entrySet().iterator();
+      while (it.hasNext()) {
+        Map.Entry pair = (Map.Entry) it.next();
+        if (log.isDebugEnabled()) {
+          log.debug("RoleKeyValue: " + pair.getKey() + 
+                " = " + pair.getValue());
+        }
+        roleList.add((String) pair.getKey());
+      }
+    }
+    return roleList;
   }
 }
