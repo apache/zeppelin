@@ -114,7 +114,7 @@ public class JupyterUtil {
       typeDataList = new ArrayList<>();
 
       if (cell instanceof CodeCell) {
-        interpreterName = "%" + codeReplaced;
+        interpreterName = codeReplaced;
         for (Output output : ((CodeCell) cell).getOutputs()) {
           TypeData typeData;
           if (output instanceof Stream) {
@@ -151,7 +151,7 @@ public class JupyterUtil {
           }
         }
       } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
-        interpreterName = "%" + markdownReplaced;
+        interpreterName = markdownReplaced;
       } else {
         interpreterName = "";
       }
