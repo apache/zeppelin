@@ -275,7 +275,7 @@ public class HeliumBundleFactory {
       npmCommand(fpf, "pack " + pkg.getArtifact());
       File extracted = new File(heliumBundleDirectory, "package");
       FileUtils.deleteDirectory(extracted);
-      List<String> entries = unTgz(tgz, heliumBundleDirectory);
+      List<String> entries = unTgz(tgz, extracted);
       for (String entry: entries) logger.debug("Extracted " + entry);
       tgz.delete();
       FileUtils.copyDirectory(extracted, bundleDir);
