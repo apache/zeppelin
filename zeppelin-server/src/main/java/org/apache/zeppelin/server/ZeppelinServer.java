@@ -153,7 +153,7 @@ public class ZeppelinServer extends Application {
       this.clusterManager = (ClusterManager) Class
           .forName("org.apache.zeppelin.cluster.yarn.Client")
           .getConstructor(ZeppelinConfiguration.class).newInstance(conf);
-    } catch (Exception e) {
+    } catch (Throwable t) {
       // TODO(jl): To be fixed
       this.clusterManager = null;
     }
