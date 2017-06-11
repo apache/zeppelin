@@ -20,7 +20,6 @@ package org.apache.zeppelin.interpreter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.NullArgumentException;
-import org.apache.zeppelin.cluster.ClusterManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -53,6 +52,7 @@ import java.util.Properties;
  * Manage interpreters.
  */
 public class InterpreterFactory implements InterpreterGroupFactory {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
 
   private Map<String, URLClassLoader> cleanCl =

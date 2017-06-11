@@ -186,8 +186,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       String sparkSubmitJars = getSparkConf().get("spark.jars").replace(",", ":");
 
       if (!"".equals(sparkSubmitJars)) {
-
-
         env.put("PYTHONPATH", env.get("PYTHONPATH") + sparkSubmitJars);
       }
     }

@@ -107,9 +107,5 @@
       <outputDirectory>/lib/node_modules/zeppelin-spell</outputDirectory>
       <directory>../zeppelin-web/src/app/spell</directory>
     </fileSet>
-    <fileSet>
-      <outputDirectory>/lib/zengine</outputDirectory>
-      <directory>../zeppelin-zengine/target/lib</directory>
-    </fileSet>
   </fileSets>
 </assembly>
