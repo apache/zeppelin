@@ -44,11 +44,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-client</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-common</artifactId>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.jackson</groupId>
@@ -92,12 +94,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-api</artifactId>
-      <version>${hadoop.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
@@ -145,6 +148,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
