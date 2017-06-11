@@ -18,50 +18,23 @@
 package org.apache.zeppelin.cluster.yarn;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
-import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
-import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
-import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.hadoop.yarn.api.records.LocalResourceType;
-import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
-import org.apache.hadoop.yarn.api.records.Priority;
-import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.Token;
-import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
-import org.apache.hadoop.yarn.client.api.YarnClientApplication;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.cluster.ClusterManager;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
@@ -83,9 +56,7 @@ public class Client extends ClusterManager {
    */
   private Map<String, ApplicationId> idApplicationIdMap;
 
-  public Client(ZeppelinConfiguration zeppelinConfiguration) {
-    super(zeppelinConfiguration);
-
+  public Client() {
     this.started = false;
   }
 
@@ -121,14 +92,15 @@ public class Client extends ClusterManager {
   @Override
   public RemoteInterpreterProcess createInterpreter(String id, String name, String groupName,
       Map<String, String> env, Properties properties, int connectTimeout,
-      RemoteInterpreterProcessListener listener, ApplicationEventListener appListener)
+      RemoteInterpreterProcessListener listener, ApplicationEventListener appListener,
+      String homeDir, String interpreterDir)
       throws InterpreterException {
     if (!started) {
       start();
     }
 
     return new RemoteInterpreterYarnProcess(connectTimeout, listener, appListener, yarnClient,
-        zeppelinConfiguration, configuration, name, groupName, env, properties);
+        homeDir, interpreterDir, configuration, name, groupName, env, properties);
   }
 
   public void releaseResource(String id) {

@@ -50,6 +50,7 @@ public class RemoteInterpreter extends Interpreter {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener applicationEventListener;
   private Gson gson = new Gson();
+  private String homeDir;
   private String interpreterRunner;
   private String interpreterPath;
   private String localRepoPath;
@@ -72,7 +73,7 @@ public class RemoteInterpreter extends Interpreter {
   /**
    * Remote interpreter and manage interpreter process
    */
-  public RemoteInterpreter(Properties property, String sessionKey, String className,
+  public RemoteInterpreter(Properties property, String sessionKey, String className, String homeDir,
       String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
       int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
@@ -81,6 +82,7 @@ public class RemoteInterpreter extends Interpreter {
     this.sessionKey = sessionKey;
     this.className = className;
     initialized = false;
+    this.homeDir = homeDir;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.localRepoPath = localRepoPath;
@@ -190,7 +192,8 @@ public class RemoteInterpreter extends Interpreter {
             case Constants.ZEPPELIN_CLUSTER_MANAGER_YARN:
               remoteProcess = clusterManager
                   .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
-                      connectTimeout, remoteInterpreterProcessListener, applicationEventListener);
+                      connectTimeout, remoteInterpreterProcessListener, applicationEventListener,
+                      homeDir, interpreterPath);
               break;
             case Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL:
             default:

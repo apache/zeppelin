@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.hadoop.conf.Configuration;
@@ -53,7 +52,6 @@ import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,10 +69,10 @@ import static org.apache.zeppelin.cluster.yarn.YarnUtils.addLocalResource;
 import static org.apache.zeppelin.cluster.yarn.YarnUtils.getPathsFromDirPath;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_APPLICATION_TYPE_DEFAULT;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_APPLICATION_TYPE_KEY;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_PRIORITY_DEFAULT;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_PRIORITY_KEY;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_MEMORY_DEFAULT;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_MEMORY_KEY;
+import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_PRIORITY_DEFAULT;
+import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_PRIORITY_KEY;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_QUEUE_DEFAULT;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_QUEUE_KEY;
 import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_VCORES_DEFAULT;
@@ -88,7 +86,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterYarnProcess.class);
 
   private final YarnClient yarnClient;
-  private final ZeppelinConfiguration zeppelinConfiguration;
+  private final String homeDir;
+  private final String interpreterDir;
   private final Configuration configuration;
   private final String name;
   private final String group;
@@ -107,12 +106,13 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
   private int port = -1;
 
   RemoteInterpreterYarnProcess(int connectTimeout, RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener, YarnClient yarnClient,
-      ZeppelinConfiguration zeppelinConfiguration, Configuration configuration, String name,
-      String group, Map<String, String> env, Properties properties) {
+      ApplicationEventListener appListener, YarnClient yarnClient, String homeDir,
+      String interpreterDir, Configuration configuration, String name, String group,
+      Map<String, String> env, Properties properties) {
     super(new RemoteInterpreterEventPoller(listener, appListener), connectTimeout);
     this.yarnClient = yarnClient;
-    this.zeppelinConfiguration = zeppelinConfiguration;
+    this.homeDir = homeDir;
+    this.interpreterDir = interpreterDir;
     this.configuration = configuration;
     this.name = name;
     this.group = group;
@@ -121,15 +121,14 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
     this.waitingInitialized = new CountDownLatch(1);
     this.interpreterLibPaths = Lists.newArrayList(
-        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target"),
-        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-interpreter", "target", "lib"),
-        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target"),
-        Paths.get(zeppelinConfiguration.getHome(), "zeppelin-zengine", "target", "lib"),
-        Paths.get(zeppelinConfiguration.getHome(), "conf", "yarn", "log4j.properties"),
-        Paths.get(zeppelinConfiguration.getHome(), "lib", "interpreter"),
-        Paths.get(zeppelinConfiguration.getHome(), "lib",
-            "zeppelin-zengine-0.8.0-SNAPSHOT.jar"),
-        Paths.get(zeppelinConfiguration.getHome(), "lib", "zengine"));
+        Paths.get(homeDir, "zeppelin-interpreter", "target"),
+        Paths.get(homeDir, "zeppelin-interpreter", "target", "lib"),
+        Paths.get(homeDir, "zeppelin-zengine", "target"),
+        Paths.get(homeDir, "zeppelin-zengine", "target", "lib"),
+        Paths.get(homeDir, "conf", "yarn", "log4j.properties"),
+        Paths.get(homeDir, "lib", "interpreter"),
+        Paths.get(homeDir, "lib", "zeppelin-zengine-0.8.0-SNAPSHOT.jar"),
+        Paths.get(homeDir, "lib", "zengine"));
   }
 
   @Override
@@ -426,7 +425,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
   }
 
   private Path getInterpreterRelativePath(String... dirNames) {
-    return Paths.get(zeppelinConfiguration.getInterpreterDir(), dirNames);
+    return Paths.get(this.interpreterDir, dirNames);
   }
 
   @Override

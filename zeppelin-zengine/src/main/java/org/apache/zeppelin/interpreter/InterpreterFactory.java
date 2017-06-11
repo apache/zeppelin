@@ -283,7 +283,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
 
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(property, interpreterSessionKey, className,
+        new RemoteInterpreter(property, interpreterSessionKey, className, conf.getHome(),
             interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate,
             conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT), interpreterGroupName,

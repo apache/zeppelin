@@ -53,6 +53,8 @@
 
   <modules>
     <module>zeppelin-interpreter</module>
+    <module>zeppelin-cluster/common</module>
+    <module>zeppelin-cluster/yarn</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>spark-dependencies</module>
@@ -98,6 +100,7 @@
     <gson-extras.version>0.2.1</gson-extras.version>
     <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
+    <hadoop.version>2.7.3</hadoop.version>
     <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
@@ -265,6 +268,38 @@
         <version>${shiro.version}</version>
       </dependency>
 
+      <!-- Apache Hadoop -->
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-api</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-client</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+
       <!-- Test libraries -->
       <dependency>
         <groupId>junit</groupId>
@@ -321,7 +356,6 @@
         <version>${powermock.version}</version>
         <scope>test</scope>
       </dependency>
-
     </dependencies>
   </dependencyManagement>
 

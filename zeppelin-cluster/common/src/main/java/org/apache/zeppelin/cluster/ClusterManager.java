@@ -19,10 +19,9 @@ package org.apache.zeppelin.cluster;
 
 import java.util.Map;
 import java.util.Properties;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
@@ -30,12 +29,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
  *
  */
 public abstract class ClusterManager {
-
-  protected final ZeppelinConfiguration zeppelinConfiguration;
-
-  protected ClusterManager(ZeppelinConfiguration zeppelinConfiguration) {
-    this.zeppelinConfiguration = zeppelinConfiguration;
-  }
 
   /**
    * Can throw `RuntimeException`
@@ -49,8 +42,8 @@ public abstract class ClusterManager {
 
   public abstract RemoteInterpreterProcess createInterpreter(String id, String name,
       String groupName, Map<String, String> env, Properties properties, int connectTimeout,
-      RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener)
+      RemoteInterpreterProcessListener listener, ApplicationEventListener appListener,
+      String homeDir, String interpreterDir)
       throws InterpreterException;
 
   public abstract void releaseResource(String id);
