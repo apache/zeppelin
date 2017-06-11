@@ -61,8 +61,8 @@ public class ZeppelinRestApi {
   public Response getVersion() {
     Map<String, String> versionInfo = new HashMap<>();
     versionInfo.put("version", Util.getVersion());
-    versionInfo.put("commitId", Util.getGitCommitId());
-    versionInfo.put("timestamp", Util.getGitTimestamp());
+    versionInfo.put("git-commit-id", Util.getGitCommitId());
+    versionInfo.put("git-timestamp", Util.getGitTimestamp());
 
     return new JsonResponse<>(Response.Status.OK, "Zeppelin version", versionInfo).build();
   }

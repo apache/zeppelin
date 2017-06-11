@@ -49,12 +49,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
-      <td> 500 </td>
+      <td>Fail code</td>
+      <td>500</td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>sample JSON response</td>
       <td>
         <pre>
 {
@@ -62,12 +61,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   "message": "Zeppelin version",
   "body": [
     {
-      "version": "0.8.0-SNAPSHOT",
-      "commitId": "abc0123",
-      "timestamp": "2017-01-02 03:04:05"
+      "version": "0.8.0",
+      "git-commit-id": "abc0123",
+      "git-timestamp": "2017-01-02 03:04:05"
     }
   ]
-}     
+}
         </pre>
       </td>
     </tr>
@@ -89,29 +88,27 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
-      <td> 406 </td>
+      <td>Fail code</td>
+      <td>406</td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>sample JSON response</td>
       <td>
         <pre>
 {
   "status": "OK"
-}     
+}
         </pre>
       </td>
     </tr>
     <tr>
-      <td> sample error JSON response
-      </td>
+      <td>sample error JSON response</td>
       <td>
         <pre>
 {
   "status":"NOT_ACCEPTABLE",
   "message":"Please check LOG level specified. Valid values: DEBUG, ERROR, FATAL, INFO, TRACE, WARN"
-}     
+}
         </pre>
       </td>
     </tr>
