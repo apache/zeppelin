@@ -27,6 +27,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -86,8 +88,8 @@ public class InterpreterSettingManager {
   private static final Logger logger = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final String SHARED_SESSION = "shared_session";
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
-      "language", (Object) "text",
-      "editOnDblClick", false);
+          "language", (Object) "text",
+          "editOnDblClick", false);
 
   private final ZeppelinConfiguration zeppelinConfiguration;
   private final Path interpreterDirPath;
@@ -120,8 +122,8 @@ public class InterpreterSettingManager {
   private final Gson gson;
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
-      DependencyResolver dependencyResolver, InterpreterOption interpreterOption)
-      throws IOException, RepositoryException {
+                                   DependencyResolver dependencyResolver, InterpreterOption interpreterOption)
+          throws IOException, RepositoryException {
     this.zeppelinConfiguration = zeppelinConfiguration;
     this.interpreterDirPath = Paths.get(zeppelinConfiguration.getInterpreterDir());
     logger.debug("InterpreterRootPath: {}", interpreterDirPath);
@@ -154,14 +156,14 @@ public class InterpreterSettingManager {
   /**
    * Remember this method doesn't keep current connections after being called
    */
-  private void  loadFromFile() {
+  private void loadFromFile() {
     if (!Files.exists(interpreterBindingPath)) {
       // nothing to read
       return;
     }
     InterpreterInfoSaving infoSaving;
     try (BufferedReader json =
-        Files.newBufferedReader(interpreterBindingPath, StandardCharsets.UTF_8)) {
+                 Files.newBufferedReader(interpreterBindingPath, StandardCharsets.UTF_8)) {
       infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
 
       for (String k : infoSaving.interpreterSettings.keySet()) {
@@ -184,10 +186,10 @@ public class InterpreterSettingManager {
 
         // Update transient information from InterpreterSettingRef
         InterpreterSetting interpreterSettingObject =
-            interpreterSettingsRef.get(setting.getGroup());
+                interpreterSettingsRef.get(setting.getGroup());
         if (interpreterSettingObject == null) {
           logger.warn("can't get InterpreterSetting " +
-              "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
+                  "Information From loaded Interpreter Setting Ref - {} ", setting.getGroup());
           continue;
         }
         String depClassPath = interpreterSettingObject.getPath();
@@ -196,7 +198,7 @@ public class InterpreterSettingManager {
         for (InterpreterInfo info : infos) {
           if (info.getEditor() == null) {
             Map<String, Object> editor = getEditorFromSettingByClassName(interpreterSettingObject,
-                info.getClassName());
+                    info.getClassName());
             info.setEditor(editor);
           }
         }
@@ -242,7 +244,8 @@ public class InterpreterSettingManager {
       } catch (UnsupportedOperationException e) {
         // File system does not support Posix file permissions (likely windows) - continue anyway.
         logger.warn("unable to setPosixFilePermissions on '{}'.", interpreterBindingPath);
-      };
+      }
+      ;
     }
 
     FileOutputStream fos = new FileOutputStream(interpreterBindingPath.toFile(), false);
@@ -266,12 +269,12 @@ public class InterpreterSettingManager {
 
     if (Files.exists(interpreterDirPath)) {
       for (Path interpreterDir : Files
-          .newDirectoryStream(interpreterDirPath, new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-              return Files.exists(entry) && Files.isDirectory(entry);
-            }
-          })) {
+              .newDirectoryStream(interpreterDirPath, new Filter<Path>() {
+                @Override
+                public boolean accept(Path entry) throws IOException {
+                  return Files.exists(entry) && Files.isDirectory(entry);
+                }
+              })) {
         String interpreterDirString = interpreterDir.toString();
 
         /**
@@ -290,7 +293,7 @@ public class InterpreterSettingManager {
              * - Support ThreadInterpreter
             */
             URLClassLoader ccl = new URLClassLoader(
-                recursiveBuildLibList(interpreterDir.toFile()), cl);
+                    recursiveBuildLibList(interpreterDir.toFile()), cl);
             for (String className : interpreterClassList) {
               try {
                 // Load classes
@@ -298,10 +301,10 @@ public class InterpreterSettingManager {
                 Set<String> interpreterKeys = Interpreter.registeredInterpreters.keySet();
                 for (String interpreterKey : interpreterKeys) {
                   if (className
-                      .equals(Interpreter.registeredInterpreters.get(interpreterKey)
-                          .getClassName())) {
+                          .equals(Interpreter.registeredInterpreters.get(interpreterKey)
+                                  .getClassName())) {
                     Interpreter.registeredInterpreters.get(interpreterKey)
-                        .setPath(interpreterDirString);
+                            .setPath(interpreterDirString);
                     logger.info("Interpreter " + interpreterKey + " found. class=" + className);
                     cleanCl.put(interpreterDirString, ccl);
                   }
@@ -316,20 +319,20 @@ public class InterpreterSettingManager {
     }
 
     for (RegisteredInterpreter registeredInterpreter : Interpreter.registeredInterpreters
-        .values()) {
+            .values()) {
       logger
-          .debug("Registered: {} -> {}. Properties: {}", registeredInterpreter.getInterpreterKey(),
-              registeredInterpreter.getClassName(), registeredInterpreter.getProperties());
+              .debug("Registered: {} -> {}. Properties: {}", registeredInterpreter.getInterpreterKey(),
+                      registeredInterpreter.getClassName(), registeredInterpreter.getProperties());
     }
 
     // RegisteredInterpreters -> interpreterSettingRef
     InterpreterInfo interpreterInfo;
     for (RegisteredInterpreter r : Interpreter.registeredInterpreters.values()) {
       interpreterInfo =
-          new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
-              r.getEditor());
+              new InterpreterInfo(r.getClassName(), r.getName(), r.isDefaultInterpreter(),
+                      r.getEditor());
       add(r.getGroup(), interpreterInfo, r.getProperties(), defaultOption, r.getPath(),
-          r.getRunner());
+              r.getRunner());
     }
 
     for (String settingId : interpreterSettingsRef.keySet()) {
@@ -364,12 +367,12 @@ public class InterpreterSettingManager {
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
       logger.info("InterpreterSetting group {} : id={}, name={}", setting.getGroup(), settingId,
-          setting.getName());
+              setting.getName());
     }
   }
 
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-      String interpreterJson) throws IOException, RepositoryException {
+                                                  String interpreterJson) throws IOException, RepositoryException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, cl);
 
@@ -381,7 +384,7 @@ public class InterpreterSettingManager {
       try (InputStream inputStream = url.openStream()) {
         logger.debug("Reading {} from {}", interpreterJson, url);
         List<RegisteredInterpreter> registeredInterpreterList =
-            getInterpreterListFromJson(inputStream);
+                getInterpreterListFromJson(inputStream);
         registerInterpreters(registeredInterpreterList, interpreterDir);
       }
     }
@@ -389,13 +392,13 @@ public class InterpreterSettingManager {
   }
 
   private boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson)
-      throws IOException, RepositoryException {
+          throws IOException, RepositoryException {
 
     Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
     if (Files.exists(interpreterJsonPath)) {
       logger.debug("Reading {}", interpreterJsonPath);
       List<RegisteredInterpreter> registeredInterpreterList =
-          getInterpreterListFromJson(interpreterJsonPath);
+              getInterpreterListFromJson(interpreterJsonPath);
       registerInterpreters(registeredInterpreterList, interpreterDir);
       return true;
     }
@@ -403,7 +406,7 @@ public class InterpreterSettingManager {
   }
 
   private List<RegisteredInterpreter> getInterpreterListFromJson(Path filename)
-      throws FileNotFoundException {
+          throws FileNotFoundException {
     return getInterpreterListFromJson(new FileInputStream(filename.toFile()));
   }
 
@@ -414,17 +417,17 @@ public class InterpreterSettingManager {
   }
 
   private void registerInterpreters(List<RegisteredInterpreter> registeredInterpreters,
-      String absolutePath) throws IOException, RepositoryException {
+                                    String absolutePath) throws IOException, RepositoryException {
 
     for (RegisteredInterpreter registeredInterpreter : registeredInterpreters) {
       InterpreterInfo interpreterInfo =
-          new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
-              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
+              new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
+                      registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
       // use defaultOption if it is not specified in interpreter-setting.json
       InterpreterOption option = registeredInterpreter.getOption() == null ? defaultOption :
-          registeredInterpreter.getOption();
+              registeredInterpreter.getOption();
       add(registeredInterpreter.getGroup(), interpreterInfo, registeredInterpreter.getProperties(),
-          option, absolutePath, registeredInterpreter.getRunner());
+              option, absolutePath, registeredInterpreter.getRunner());
     }
 
   }
@@ -476,15 +479,15 @@ public class InterpreterSettingManager {
   private InterpreterSetting createFromInterpreterSettingRef(InterpreterSetting o) {
     // should return immutable objects
     List<InterpreterInfo> infos = (null == o.getInterpreterInfos()) ?
-        new ArrayList<InterpreterInfo>() : new ArrayList<>(o.getInterpreterInfos());
+            new ArrayList<InterpreterInfo>() : new ArrayList<>(o.getInterpreterInfos());
     List<Dependency> deps = (null == o.getDependencies()) ?
-        new ArrayList<Dependency>() : new ArrayList<>(o.getDependencies());
+            new ArrayList<Dependency>() : new ArrayList<>(o.getDependencies());
     Properties props =
-        convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
+            convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
     InterpreterOption option = InterpreterOption.fromInterpreterOption(o.getOption());
 
     InterpreterSetting setting = new InterpreterSetting(o.getName(), o.getName(),
-        infos, props, deps, option, o.getPath(), o.getInterpreterRunner());
+            infos, props, deps, option, o.getPath(), o.getInterpreterRunner());
     setting.setInterpreterGroupFactory(interpreterGroupFactory);
     return setting;
   }
@@ -498,7 +501,7 @@ public class InterpreterSettingManager {
   }
 
   public Map<String, Object> getEditorSetting(Interpreter interpreter, String user, String noteId,
-      String replName) {
+                                              String replName) {
     Map<String, Object> editor = DEFAULT_EDITOR;
     String group = StringUtils.EMPTY;
     try {
@@ -527,7 +530,7 @@ public class InterpreterSettingManager {
   }
 
   public Map<String, Object> getEditorFromSettingByClassName(InterpreterSetting intpSetting,
-      String className) {
+                                                             String className) {
     List<InterpreterInfo> intpInfos = intpSetting.getInterpreterInfos();
     for (InterpreterInfo intpInfo : intpInfos) {
 
@@ -551,7 +554,7 @@ public class InterpreterSettingManager {
           try {
             // dependencies to prevent library conflict
             File localRepoDir = new File(zeppelinConfiguration.getInterpreterLocalRepoPath() + "/" +
-                setting.getId());
+                    setting.getId());
             if (localRepoDir.exists()) {
               try {
                 FileUtils.forceDelete(localRepoDir);
@@ -565,14 +568,14 @@ public class InterpreterSettingManager {
             if (deps != null) {
               for (Dependency d : deps) {
                 File destDir = new File(
-                    zeppelinConfiguration.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+                        zeppelinConfiguration.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
                 if (d.getExclusions() != null) {
                   dependencyResolver.load(d.getGroupArtifactVersion(), d.getExclusions(),
-                      new File(destDir, setting.getId()));
+                          new File(destDir, setting.getId()));
                 } else {
                   dependencyResolver
-                      .load(d.getGroupArtifactVersion(), new File(destDir, setting.getId()));
+                          .load(d.getGroupArtifactVersion(), new File(destDir, setting.getId()));
                 }
               }
             }
@@ -581,9 +584,9 @@ public class InterpreterSettingManager {
             setting.setErrorReason(null);
           } catch (Exception e) {
             logger.error(String.format("Error while downloading repos for interpreter group : %s," +
-                    " go to interpreter setting page click on edit and save it again to make " +
-                    "this interpreter work properly. : %s",
-                setting.getGroup(), e.getLocalizedMessage()), e);
+                            " go to interpreter setting page click on edit and save it again to make " +
+                            "this interpreter work properly. : %s",
+                    setting.getGroup(), e.getLocalizedMessage()), e);
             setting.setErrorReason(e.getLocalizedMessage());
             setting.setStatus(InterpreterSetting.Status.ERROR);
           } finally {
@@ -610,21 +613,21 @@ public class InterpreterSettingManager {
             if (deps != null) {
               for (Dependency d : deps) {
                 File destDir = new File(
-                    zeppelinConfiguration.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+                        zeppelinConfiguration.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
                 int numSplits = d.getGroupArtifactVersion().split(":").length;
                 if (!(numSplits >= 3 && numSplits <= 6)) {
                   dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
-                      new File(destDir, setting.getId()));
+                          new File(destDir, setting.getId()));
                 }
               }
             }
             setting.setStatus(InterpreterSetting.Status.READY);
           } catch (Exception e) {
             logger.error(String.format("Error while copying deps for interpreter group : %s," +
-                    " go to interpreter setting page click on edit and save it again to make " +
-                    "this interpreter work properly.",
-                setting.getGroup()), e);
+                            " go to interpreter setting page click on edit and save it again to make " +
+                            "this interpreter work properly.",
+                    setting.getGroup()), e);
             setting.setErrorReason(e.getLocalizedMessage());
             setting.setStatus(InterpreterSetting.Status.ERROR);
           } finally {
@@ -678,7 +681,7 @@ public class InterpreterSettingManager {
   }
 
   public InterpreterSetting createNewSetting(String name, String group,
-      List<Dependency> dependencies, InterpreterOption option, Properties p) throws IOException {
+                                             List<Dependency> dependencies, InterpreterOption option, Properties p) throws IOException {
     if (name.indexOf(".") >= 0) {
       throw new IOException("'.' is invalid for InterpreterSetting name.");
     }
@@ -696,22 +699,22 @@ public class InterpreterSettingManager {
   }
 
   private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
-      Map<String, InterpreterProperty> interpreterProperties, InterpreterOption option, String path,
-      InterpreterRunner runner)
-      throws InterpreterException, IOException, RepositoryException {
+                                 Map<String, InterpreterProperty> interpreterProperties, InterpreterOption option, String path,
+                                 InterpreterRunner runner)
+          throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
     return add(group, infos, new ArrayList<Dependency>(), option, interpreterProperties, path,
-        runner);
+            runner);
   }
 
   /**
    * @param group InterpreterSetting reference name
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
-      List<Dependency> dependencies, InterpreterOption option,
-      Map<String, InterpreterProperty> interpreterProperties, String path,
-      InterpreterRunner runner) {
+                                List<Dependency> dependencies, InterpreterOption option,
+                                Map<String, InterpreterProperty> interpreterProperties, String path,
+                                InterpreterRunner runner) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
     Preconditions.checkNotNull(dependencies, "dependencies should not be null");
@@ -748,7 +751,7 @@ public class InterpreterSettingManager {
 
         // Append properties
         Map<String, InterpreterProperty> properties =
-            (Map<String, InterpreterProperty>) interpreterSetting.getProperties();
+                (Map<String, InterpreterProperty>) interpreterSetting.getProperties();
         for (String key : interpreterProperties.keySet()) {
           if (!properties.containsKey(key)) {
             properties.put(key, interpreterProperties.get(key));
@@ -757,8 +760,8 @@ public class InterpreterSettingManager {
 
       } else {
         interpreterSetting =
-            new InterpreterSetting(group, null, interpreterInfos, interpreterProperties,
-                dependencies, option, path, runner);
+                new InterpreterSetting(group, null, interpreterInfos, interpreterProperties,
+                        dependencies, option, path, runner);
         interpreterSettingsRef.put(group, interpreterSetting);
       }
     }
@@ -775,14 +778,14 @@ public class InterpreterSettingManager {
    * map interpreter ids into noteId
    *
    * @param noteId note id
-   * @param ids InterpreterSetting id list
+   * @param ids    InterpreterSetting id list
    */
   public void setInterpreters(String user, String noteId, List<String> ids) throws IOException {
     putNoteInterpreterSettingBinding(user, noteId, ids);
   }
 
   private void putNoteInterpreterSettingBinding(String user, String noteId,
-      List<String> settingList) throws IOException {
+                                                List<String> settingList) throws IOException {
     List<String> unBindedSettings = new LinkedList<>();
 
     synchronized (interpreterSettings) {
@@ -805,11 +808,11 @@ public class InterpreterSettingManager {
   }
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting, String user,
-      String noteId) {
+                                        String noteId) {
     //TODO(jl): This is only for hotfix. You should fix it as a beautiful way
     InterpreterOption interpreterOption = interpreterSetting.getOption();
     if (!(InterpreterOption.SHARED.equals(interpreterOption.perNote)
-        && InterpreterOption.SHARED.equals(interpreterOption.perUser))) {
+            && InterpreterOption.SHARED.equals(interpreterOption.perUser))) {
       interpreterSetting.closeAndRemoveInterpreterGroup(noteId, "");
     }
   }
@@ -830,7 +833,7 @@ public class InterpreterSettingManager {
     }
 
     logger.debug("Interpreter session key: {}, for note: {}, user: {}, InterpreterSetting Name: " +
-        "{}", key, noteId, user, setting.getName());
+            "{}", key, noteId, user, setting.getName());
     return key;
   }
 
@@ -880,7 +883,7 @@ public class InterpreterSettingManager {
   }
 
   public void addRepository(String id, String url, boolean snapshot, Authentication auth,
-      Proxy proxy) throws IOException {
+                            Proxy proxy) throws IOException {
     dependencyResolver.addRepo(id, url, snapshot, auth, proxy);
     saveToFile();
   }
@@ -907,7 +910,7 @@ public class InterpreterSettingManager {
    * Change interpreter property and restart
    */
   public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
-      List<Dependency> dependencies) throws IOException {
+                                    List<Dependency> dependencies) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpSetting = interpreterSettings.get(id);
       if (intpSetting != null) {
@@ -943,10 +946,11 @@ public class InterpreterSettingManager {
         intpSetting.setInfos(null);
         copyDependenciesFromLocalPath(intpSetting);
 
-        stopJobAllInterpreter(intpSetting);
         if (user.equals("anonymous")) {
+          stopJobAllInterpreter(intpSetting);
           intpSetting.closeAndRemoveAllInterpreterGroups();
         } else {
+          stopJobAllInterpreter(intpSetting, noteId, user);
           intpSetting.closeAndRemoveInterpreterGroup(noteId, user);
         }
 
@@ -963,19 +967,32 @@ public class InterpreterSettingManager {
   private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
     if (intpSetting != null) {
       for (InterpreterGroup intpGroup : intpSetting.getAllInterpreterGroups()) {
-        for (List<Interpreter> interpreters : intpGroup.values()) {
-          for (Interpreter intp : interpreters) {
-            for (Job job : intp.getScheduler().getJobsRunning()) {
-              job.abort();
-              job.setStatus(Status.ABORT);
-              logger.info("Job " + job.getJobName() + " aborted ");
-            }
-            for (Job job : intp.getScheduler().getJobsWaiting()) {
-              job.abort();
-              job.setStatus(Status.ABORT);
-              logger.info("Job " + job.getJobName() + " aborted ");
-            }
-          }
+        stopJobInterpreter(intpGroup);
+      }
+    }
+  }
+
+  private void stopJobAllInterpreter(InterpreterSetting intpSetting, String noteId, String user) {
+    if (intpSetting != null) {
+      InterpreterGroup intpGroup = intpSetting.getInterpreterGroup(user, noteId);
+      if (intpGroup != null) {
+        stopJobInterpreter(intpGroup);
+      }
+    }
+  }
+
+  private void stopJobInterpreter(InterpreterGroup intpGroup) {
+    for (List<Interpreter> interpreters : intpGroup.values()) {
+      for (Interpreter intp : interpreters) {
+        for (Job job : intp.getScheduler().getJobsRunning()) {
+          job.abort();
+          job.setStatus(Status.ABORT);
+          logger.info("Job " + job.getJobName() + " aborted ");
+        }
+        for (Job job : intp.getScheduler().getJobsWaiting()) {
+          job.abort();
+          job.setStatus(Status.ABORT);
+          logger.info("Job " + job.getJobName() + " aborted ");
         }
       }
     }
@@ -1029,7 +1046,7 @@ public class InterpreterSettingManager {
 
       for (String groupName : interpreterGroupOrderList) {
         List<InterpreterSetting> interpreterSettingList =
-            nameInterpreterSettingMap.remove(groupName);
+                nameInterpreterSettingMap.remove(groupName);
         if (null != interpreterSettingList) {
           for (InterpreterSetting interpreterSetting : interpreterSettingList) {
             orderedSettings.add(interpreterSetting);
