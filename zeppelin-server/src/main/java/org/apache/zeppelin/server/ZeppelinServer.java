@@ -88,7 +88,7 @@ public class ZeppelinServer extends Application {
   public static Helium helium;
 
   private final InterpreterSettingManager interpreterSettingManager;
-  private final ClusterManager clusterManager;
+  private ClusterManager clusterManager;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   private SearchService noteSearchService;
@@ -149,8 +149,14 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
     this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
         new InterpreterOption(true));
-    this.clusterManager = (ClusterManager) Class.forName("org.apache.zeppelin.cluster.yarn.Client")
-        .getConstructor(ZeppelinConfiguration.class).newInstance(conf);
+    try {
+      this.clusterManager = (ClusterManager) Class
+          .forName("org.apache.zeppelin.cluster.yarn.Client")
+          .getConstructor(ZeppelinConfiguration.class).newInstance(conf);
+    } catch (Exception e) {
+      // TODO(jl): To be fixed
+      this.clusterManager = null;
+    }
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
         interpreterSettingManager, clusterManager);
