@@ -527,6 +527,27 @@
         <version>${plugin.deploy.version}</version>
       </plugin>
 
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>2.2.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skipPoms>false</skipPoms>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+        </configuration>
+      </plugin>
+
     <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
