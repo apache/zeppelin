@@ -22,7 +22,7 @@ limitations under the License.
       <div ng-mouseenter="showFolderButton=true" ng-mouseleave="showFolderButton=false">
         <a class="notebook-list-item" href="javascript:void(0)">
           <div ng-if="node.id !== navbar.TRASH_FOLDER_ID">
-            <i style="font-size: 10px; margin-right: 5px;"  class="icon-folder"></i>
+            <i style="font-size: 10px; margin-right: 5px;" class="fa fa-folder"></i>
             <span>{{noteName(node)}}</span>
             <i data-toggle="modal" data-target="#noteNameModal" ng-controller="NotenameCtrl as notenamectrl"
               ng-click="notenamectrl.getInterpreterSettings()" data-path="{{node.id}}"

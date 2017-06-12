@@ -1,0 +1,84 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="panel panel-default" style="margin-top: 10px; margin-bottom: 11px;">
+  <div class="panel-heading" style="padding: 6px 12px 6px 12px; font-size: 13px;">
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Table Options</span>
+    <span style="float: right;">
+       <div class="btn-group" role="group" aria-label="...">
+         <div type="button" ng-click="resetTableOption()"
+              uib-tooltip="Restore the default setting" tooltip-placement="left"
+              class="btn btn-default" style="font-size: 11px; padding: 2px 5px 2px 5px;">
+           <i class="fa fa-undo" aria-hidden="true"></i>
+         </div>
+       </div>
+    </span>
+    <div style="clear: both;"></div> <!-- to fix previous span which has float: right -->
+  </div>
+
+  <div class="panel-body" style="padding: 8px 12px; margin-top: 3px;">
+    <table class="table table-striped">
+      <tr>
+        <th style="font-size: 12px; font-style: italic">Name</th>
+        <th style="font-size: 12px; font-style: italic">Value</th>
+      </tr>
+      <tr>
+      </tr>
+
+      <tr data-ng-repeat="optSpec in tableOptionSpecs">
+        <td style="font-weight: 400; vertical-align: middle;">
+          <span uib-tooltip="{{optSpec.description}}" tooltip-placement="right">
+            {{optSpec.name}}
+            <i class="fa fa-info-circle" style="margin-top: 2px; margin-left: 3px; color: #7b7bbd;" aria-hidden="true"></i>
+          </span>
+        </td>
+        <td>
+          <div ng-if="isInputWidget(optSpec)"
+               class="input-group">
+            <input type="text" class="form-control input-sm"
+                   style="font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
+                   ng-keydown="tableWidgetOnKeyDown($event, optSpec)"
+                   data-ng-model="config.tableOptionValue[optSpec.name]" />
+          </div>
+          <div class="btn-group"
+               ng-if="isOptionWidget(optSpec)">
+            <select class="form-control input-sm"
+                    ng-change="tableOptionValueChanged(optSpec)"
+                    data-ng-model="config.tableOptionValue[optSpec.name]"
+                    data-ng-options="optionValue for optionValue in optSpec.optionValues"
+                    style="font-weight: 400; font-size: 12px;">
+            </select>
+          </div>
+
+          <div ng-if="isCheckboxWidget(optSpec)">
+            <input type="checkbox"
+                   ng-keydown="parameterOnKeyDown($event, optSpec)"
+                   ng-click="tableOptionValueChanged(optSpec)"
+                   data-ng-model="config.tableOptionValue[optSpec.name]"
+                   data-ng-checked="config.tableOptionValue[optSpec.name]" />
+          </div>
+
+          <div ng-if="isTextareaWidget(optSpec)">
+            <textarea class="form-control" rows="3"
+                      ng-keydown="tableWidgetOnKeyDown($event, optSpec)"
+                      data-ng-model="config.tableOptionValue[optSpec.name]"
+                      style="font-weight: 400; font-size: 12px;">
+            </textarea>
+          </div>
+
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

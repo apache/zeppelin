@@ -23,7 +23,6 @@ import java.util._
 
 import org.apache.commons.codec.binary.{Base64, StringUtils}
 import org.apache.zeppelin.interpreter.Interpreter.FormType
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter
 import org.apache.zeppelin.interpreter.{InterpreterContext, _}
 import org.apache.zeppelin.scheduler.Scheduler
 import org.apache.zeppelin.spark.SparkInterpreter

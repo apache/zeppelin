@@ -35,7 +35,7 @@ function resizable () {
           let colStep = window.innerWidth / 12
           elem.off('resizestop')
           let conf = angular.copy(resizableConfig)
-          if (resize.graphType === 'TABLE' || resize.graphType === 'TEXT') {
+          if (resize.graphType === 'TABLE' || resize.graphType === 'NETWORK' || resize.graphType === 'TEXT') {
             conf.grid = [colStep, 10]
             conf.minHeight = 100
           } else {

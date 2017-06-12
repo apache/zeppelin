@@ -39,7 +39,7 @@ public class HeliumBundleFactoryTest {
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private HeliumBundleFactory hbf;
-  static File nodeInstallationDir = new File(
+  private static File nodeInstallationDir = new File(
       System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_nodeCache");
 
   @BeforeClass
@@ -118,7 +118,6 @@ public class HeliumBundleFactoryTest {
     bundle = hbf.buildPackage(pkg, false, true);
     assertEquals(lastModified, bundle.lastModified());
   }
-
 
   @Test
   public void bundleLocalPackage() throws IOException, TaskRunnerException {

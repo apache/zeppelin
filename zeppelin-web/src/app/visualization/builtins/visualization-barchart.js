@@ -23,6 +23,12 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
     super(targetEl, config)
 
     this.pivot = new PivotTransformation(config)
+
+    try {
+      this.config.rotate = {degree: config.rotate.degree}
+    } catch (e) {
+      this.config.rotate = {degree: '-45'}
+    }
   }
 
   type () {
@@ -76,7 +82,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
         case 'rotate':
           self.chart._options['showXAxis'] = true
           self.chart._options['margin'] = {bottom: 140}
-          self.chart.xAxis.rotateLabels(-45)
+          self.chart.xAxis.rotateLabels(configObj.rotate.degree)
           configObj.xLabelStatus = 'rotate'
           break
         case 'hide':
@@ -86,6 +92,7 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
           configObj.xLabelStatus = 'hide'
           break
       }
+      self.emitConfig(configObj)
     }
 
     self.config.isXLabelStatus = function(type) {
@@ -94,6 +101,12 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       } else {
         return false
       }
+    }
+
+    self.config.setDegree = function(type) {
+      configObj.rotate.degree = type
+      self.chart.xAxis.rotateLabels(type)
+      self.emitConfig(configObj)
     }
 
     this.chart.dispatch.on('stateChange', function(s) {
@@ -115,39 +128,15 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
       configObj.changeXLabel('default')
     }
 
+    if (typeof (configObj.rotate.degree) === 'undefined' || configObj.rotate.degree === '') {
+      configObj.rotate.degree = '-45'
+      self.emitConfig(configObj)
+    }
+
     return {
-      template: `<div>
-          xAxis :
-      </div>
-
-      <div class='btn-group'>
-        <button type="button"
-              class="xLabel btn btn-default btn-sm"
-              ng-class="{'active' : this.config.isXLabelStatus('default')}"
-              ng-click="save('default')" >
-            Default
-        </button>
-
-        <button type="button"
-              class="btn btn-default btn-sm"
-              ng-class="{'active' : this.config.isXLabelStatus('rotate')}"
-              ng-click="save('rotate')" >
-            Rotate
-        </button>
-
-        <button type="button"
-              class="btn btn-default btn-sm"
-              ng-class="{'active' : this.config.isXLabelStatus('hide')}"
-              ng-click="save('hide')" >
-            Hide
-        </button>
-      </div>`,
+      template: 'app/visualization/builtins/visualization-displayXAxis.html',
       scope: {
-        config: configObj,
-        save: function(type) {
-          configObj.changeXLabel(type)
-          self.emitConfig(configObj)
-        }
+        config: configObj
       }
     }
   }

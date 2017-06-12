@@ -22,6 +22,12 @@
         "defaultValue": "",
         "description": "The JDBC user password"
       },
+      "default.completer.ttlInSeconds": {
+        "envName": null,
+        "propertyName": "default.completer.ttlInSeconds",
+        "defaultValue": "120",
+        "description": "Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)"
+      },
       "default.driver": {
         "envName": null,
         "propertyName": "default.driver",
@@ -39,6 +45,12 @@
         "propertyName": "zeppelin.jdbc.precode",
         "defaultValue": "",
         "description": "SQL which executes while opening connection"
+      },
+      "default.splitQueries": {
+        "envName": null,
+        "propertyName": "default.splitQueries",
+        "defaultValue": "false",
+        "description": "Each query is executed apart and returns the result"
       },
       "common.max_count": {
         "envName": null,

@@ -23,17 +23,37 @@ limitations under the License.
     resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
     resizable on-resize="resize(width, height);">
 
-    <div ng-if="type=='TABLE'"
+    <div ng-if="type=='TABLE' || type == 'NETWORK'"
          ng-style="getPointerEvent()">
-      <!-- graph setting -->
+      <!-- setting -->
       <div class="option lightBold" style="overflow: visible;"
-           ng-show="graphMode!='table' && config.graph.optionOpen && !asIframe && !viewOnly">
+           ng-show="config.graph.optionOpen && !asIframe && !viewOnly">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="trsetting{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="vizsetting{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>
+      </div>
+
+      <div id="p{{id}}_network_header"
+           ng-if="type == 'NETWORK' && graphMode == 'network' && networkNodes != null">
+         <ul class="list-inline">
+           <li>Nodes <span class="badge">{{networkNodes.count}}</span>:</li>
+           <li ng-repeat="(labelName, labelColor) in networkNodes.labels" style="padding: 0">
+             <span style="background-color: {{labelColor}} !important;" class="label label-default network-badge">
+               {{labelName}}
+             </span>
+           </li>
+         </ul>
+         <ul class="list-inline">
+           <li ng-if="networkRelationships != null">Relationships <span class="badge">{{networkRelationships.count}}</span>:</li>
+           <li ng-repeat="type in networkRelationships.types" style="padding: 0">
+             <span class="label label-default network-badge">
+               {{type}}
+             </span>
+           </li>
+         </ul>
       </div>
 
       <!-- graph -->
@@ -44,6 +64,12 @@ limitations under the License.
              id="p{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id">
         </div>
+      </div>
+
+      <div id="p{{id}}_network_footer"
+           ng-if="type == 'NETWORK' && graphMode == 'network'">
+        <ul class="list-inline">
+        </ul>
       </div>
 
       <div id="{{id}}_comment"

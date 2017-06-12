@@ -18,8 +18,8 @@
 #
 
 usage() {
-  echo "usage) $0 [Old version] [New version]"
-  echo "   ex. $0 0.7.0-SNAPSHOT 0.7.0"
+  echo "usage) $0 [OLD version] [NEW version]"
+  echo "   ex. $0 0.8.0-SNAPSHOT 0.8.0"
   exit 1
 }
 
@@ -57,6 +57,10 @@ mvn versions:set -DnewVersion="${TO_VERSION}" -DgenerateBackupPoms=false > /dev/
 sed -i '' 's/-'"${FROM_VERSION}"'.jar",/-'"${TO_VERSION}"'.jar",/g' zeppelin-examples/zeppelin-example-clock/zeppelin-example-clock.json
 sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/tabledata/package.json
 sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/visualization/package.json
+sed -i '' 's/"version": "'"${FROM_VERSION}"'",/"version": "'"${TO_VERSION}"'",/g' zeppelin-web/src/app/spell/package.json
+
+# Change version in Dockerfile
+sed -i '' 's/Z_VERSION="'"${FROM_VERSION}"'"/Z_VERSION="'"${TO_VERSION}"'"/g' scripts/docker/zeppelin/bin/Dockerfile
 
 # When preparing new dev version from release tag, doesn't need to change docs version
 if is_dev_version "${FROM_VERSION}" || ! is_dev_version "${TO_VERSION}"; then

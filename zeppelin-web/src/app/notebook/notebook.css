@@ -51,6 +51,10 @@
   border-color: #ccc;
 }
 
+.revisionTooltip {
+  z-index: 10003;
+}
+
 .caretSeparator {
   height: 22px;
   line-height: 9px;
@@ -313,7 +317,6 @@
   max-width: 50%;
 }
 
-
 .inactivelink {
   color: darkgrey;
   cursor: default;
@@ -330,4 +333,3 @@
 }
 .noteAction.headroom--unpinned { top: -100px; }
 .noteAction.headroom--pinned { top: 50px; /** `noteAction` top */ }
-
