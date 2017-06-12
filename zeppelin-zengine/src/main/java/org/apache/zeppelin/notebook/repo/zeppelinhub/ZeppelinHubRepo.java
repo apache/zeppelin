@@ -226,7 +226,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(String noteId, Note note, String checkpointMsg,
+      AuthenticationInfo subject)
       throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Revision.EMPTY;

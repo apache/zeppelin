@@ -207,6 +207,13 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
+    if (isSaveAndCommitEnabled()) {
+      return;
+    }
+    saveAll(note, subject);
+  }
+
+  public void saveAll(Note note, AuthenticationInfo subject) throws IOException {
     try {
       for (NotebookRepo repo : repos) {
         repo.save(note, subject);
@@ -215,22 +222,13 @@ public class NotebookRepoSync implements NotebookRepo {
       LOG.warn(e.getMessage() + ": Failed to write to storage");
     }
   }
-
-  /* save note to specific repo (for tests) */
-  void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
-    getRepo(repoIndex).save(note, subject);
-  }
-
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     for (NotebookRepo repo : repos) {
       repo.remove(noteId, subject);
     }
     /* TODO(khalid): handle case when removing from secondary storage fails */
-  }
-
-  void remove(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
-    getRepo(repoIndex).remove(noteId, subject);
   }
 
   /**
@@ -459,8 +457,12 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(String noteId, Note note, String checkpointMsg,
+      AuthenticationInfo subject)
       throws IOException {
+    if (isSaveAndCommitEnabled()) {
+      saveAll(note, subject);
+    }
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
@@ -469,7 +471,7 @@ public class NotebookRepoSync implements NotebookRepo {
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
+        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, note, checkpointMsg, subject));
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
           getRepo(i).getClass().toString(), i, noteId);
@@ -557,5 +559,18 @@ public class NotebookRepoSync implements NotebookRepo {
   
   public boolean isSaveAndCommitEnabled() {
     return saveAndCommit;
+  }
+  
+  // for tests
+  String getSettingsName() {
+    return settingsName;
+  }
+  
+  void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
+    getRepo(repoIndex).save(note, subject);
+  }
+  
+  void remove(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
+    getRepo(repoIndex).remove(noteId, subject);
   }
 }

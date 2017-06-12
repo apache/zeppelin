@@ -267,7 +267,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(String noteId, Note note, String checkpointMsg,
+      AuthenticationInfo subject)
       throws IOException {
     // no-op
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
