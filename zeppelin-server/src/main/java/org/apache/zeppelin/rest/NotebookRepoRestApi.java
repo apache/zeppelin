@@ -87,6 +87,20 @@ public class NotebookRepoRestApi {
   }
 
   /**
+   * Get global settings
+   */
+  @GET
+  @Path("global-settings")
+  @ZeppelinApi
+  public Response getGlobalSettings(){
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    LOG.info("Getting global settings for user {}", subject.getUser());
+    boolean saveAndCommit = noteRepos.isSaveAndCommitEnabled();
+    return new JsonResponse<>(Status.OK, "", 
+        ImmutableMap.of("saveAndCommit", saveAndCommit)).build();
+  }
+  
+  /**
    * Update a specific note repo.
    *
    * @param payload
