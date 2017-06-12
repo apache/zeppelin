@@ -26,14 +26,22 @@ public class TypeData {
   public static final String HTML = "HTML";
   public static final String TEXT = "TEXT";
 
-  public TypeData(String type, String data) {
-    this.type = type;
-    this.data = data;
-  }
-
   @SerializedName("type")
   private String type;
 
   @SerializedName("data")
   private String data;
+
+  public TypeData(String type, String data) {
+    this.type = type;
+    this.data = data;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public String getData() {
+    return data;
+  }
 }

@@ -35,4 +35,12 @@ public class Result {
     this.code = code;
     this.msg = msg;
   }
+
+  public String getCode() {
+    return code;
+  }
+
+  public List<TypeData> getMsg() {
+    return msg;
+  }
 }
