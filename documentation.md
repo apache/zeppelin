@@ -19,8 +19,9 @@ limitations under the License.
 {% include JB/setup %}
 
 
-# Apache Zeppelin Documentation 
+# Apache Zeppelin Documentation
 
+  * [Zeppelin 0.7.0](docs/0.7.0)
   * [Zeppelin 0.6.0](docs/0.6.0)
   * [Zeppelin 0.5.6-incubating](docs/0.5.6-incubating)
   * [Zeppelin 0.5.5-incubating](docs/0.5.5-incubating)
