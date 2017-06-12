@@ -25,7 +25,7 @@ limitations under the License.
 
 <br/>
 
-Apache Zeppelin
+The following guides explain how to use Apache Zeppelin that enables you to write in Python:
 
 - supports flexible python environments using [conda](../interpreter/python.html#conda), [docker](../interpreter/python.html#docker)  
 - can query using [PandasSQL](../interpreter/python.html#sql-over-pandas-dataframes)
