@@ -99,8 +99,7 @@ body {
   background: #3071a9;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover,
-.navbar-inverse .navbar-nav > li > a:focus {
+.navbar-inverse .navbar-nav > li > a:hover {
   color: white !important;
   background: #2C6094 !important;
 }
