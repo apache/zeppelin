@@ -1264,8 +1264,12 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.updateParagraphObjectWhenUpdated = function (newPara) {
     // resize col width
-    if ($scope.paragraph.config.colWidth !== newPara.colWidth) {
-      $rootScope.$broadcast('paragraphResized', $scope.paragraph.id)
+    if ($scope.paragraph.config.colWidth !== newPara.config.colWidth) {
+      $scope.$broadcast('paragraphResized', $scope.paragraph.id)
+    }
+
+    if ($scope.paragraph.config.fontSize !== newPara.config.fontSize) {
+      $rootScope.$broadcast('fontSizeChanged', newPara.config.fontSize)
     }
 
     /** push the rest */
@@ -1532,5 +1536,13 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
 
     $scope.cleanupSpellTransaction()
+  })
+
+  $scope.$on('fontSizeChanged', function (event, fontSize) {
+    if ($scope.editor) {
+      $scope.editor.setOptions({
+        fontSize: fontSize + 'pt'
+      })
+    }
   })
 }
