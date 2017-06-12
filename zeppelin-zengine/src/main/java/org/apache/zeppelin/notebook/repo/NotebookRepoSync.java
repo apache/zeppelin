@@ -530,7 +530,7 @@ public class NotebookRepoSync implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
       saveAndCommit = Boolean
-          .getBoolean(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
+          .valueOf(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
       LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
           saveAndCommit);
     }

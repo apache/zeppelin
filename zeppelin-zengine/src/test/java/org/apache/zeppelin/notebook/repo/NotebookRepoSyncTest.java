@@ -316,7 +316,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   }
   
   @Test
-  public void testSaveAndCommitViaSettings() throws IOException, SchedulerException {
+  public void testPersistAndCommit() throws IOException, SchedulerException {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
         "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT.getVarName(),

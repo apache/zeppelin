@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -77,19 +78,22 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     assertThat(status, is(200));
   }
   
-  @Test public void ThatCanGetNotebookRepositoiesSettings() throws IOException {
+  @Test
+  public void ThatCanGetNotebookRepositoiesSettings() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     assertThat(listOfRepositories.size(), is(not(0)));
   }
 
-  @Test public void reloadRepositories() throws IOException {
+  @Test
+  public void reloadRepositories() throws IOException {
     GetMethod get = httpGet("/notebook-repositories/reload");
     int status = get.getStatusCode();
     get.releaseConnection();
     assertThat(status, is(200)); 
   }
   
-  @Test public void setNewDirectoryForLocalDirectory() throws IOException {
+  @Test
+  public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     String localVfs = StringUtils.EMPTY;
     String className = StringUtils.EMPTY;
@@ -123,6 +127,44 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     
     // go back to normal
     payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"" + localVfs + "\" } }";
+    updateNotebookRepoWithNewSetting(payload);
+  }
+  
+  @Test
+  public void testUpdateSaveAndCommitGlobalSettings() throws IOException {
+    List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
+    String isSaveAndCommit = StringUtils.EMPTY;
+    String settingName = "Global Settings";
+    String className = StringUtils.EMPTY;
+
+    for (int i = 0; i < listOfRepositories.size(); i++) {
+      if (listOfRepositories.get(i).get("name").equals(settingName)) {
+        isSaveAndCommit = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
+        className = (String) listOfRepositories.get(i).get("className");
+        break;
+      }
+    }
+    if (StringUtils.isBlank(isSaveAndCommit)) {
+      return;
+    }
+
+    String payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Persistence\" : \"true\" } }";
+    updateNotebookRepoWithNewSetting(payload);
+    
+    // Verify
+    listOfRepositories = getListOfReposotiry();
+    String updatedSaveAndCommit = StringUtils.EMPTY;
+    for (int i = 0; i < listOfRepositories.size(); i++) {
+      if (listOfRepositories.get(i).get("name").equals(settingName)) {
+        updatedSaveAndCommit = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
+        break;
+      }
+    }
+    assertThat(updatedSaveAndCommit, is("true"));
+    
+    // go back to normal
+    payload = "{ \"name\": \"" + className + "\", \"settings\" : { \""
+        + NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME + "\" : \"false\" } }";
     updateNotebookRepoWithNewSetting(payload);
   }
 }
