@@ -23,12 +23,12 @@ limitations under the License.
 
 <div id="toc"></div>
 
-This page describes about multi-user support. Zeppelin
+This page describes about multi-user support.
 
-- allows multiple users login / logout using [Shiro Authentication](../setup/security/shiro_authentication.html)
-- can manage [Notebook Permission](../setup/security/notebook_authorization.html)
-- provides [impersonation via interpreters](../../usage/interpreter/user_impersonation.html)
-- interpreters can have different contexts using [Interpreter Binding Mode](../../usage/interpreter/interpreter_binding_mode.html)
-- paragraph in a notebook can be [Personalized](../../usage/other_features/personalized_mode.html) 
+- multiple users login / logout using [Shiro Authentication](../setup/security/shiro_authentication.html)
+- managing [Notebook Permission](../setup/security/notebook_authorization.html)
+- how to setup [impersonation for interpreters](../../usage/interpreter/user_impersonation.html)
+- different contexts per user / note using [Interpreter Binding Mode](../../usage/interpreter/interpreter_binding_mode.html)
+- a paragraph in a notebook can be [Personalized](../../usage/other_features/personalized_mode.html) 
 - propagates changes in notebooks through websocket in real-time
 
