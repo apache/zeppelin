@@ -34,14 +34,15 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Notebook repository sync with remote storage
@@ -58,8 +59,6 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
-  private boolean saveAndCommit;
-  private static final String settingsName = "Global Settings";
 
   /**
    * @param conf
@@ -68,7 +67,6 @@ public class NotebookRepoSync implements NotebookRepo {
   public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
-    saveAndCommit = conf.isPersistOnCommit();
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -136,40 +134,21 @@ public class NotebookRepoSync implements NotebookRepo {
       reposSetting.add(repoWithSettings);
     }
     
-    // add global save and commit setting
-    NotebookRepoSettingsInfo setting = NotebookRepoSettingUtils
-        .getNotePersistSettings(isSaveAndCommitEnabled());
-    repoWithSettings = NotebookRepoWithSettings
-        .builder(settingsName)
-        .className(this.getClass().getName())
-        .settings(Lists.newArrayList(setting))
-        .build();
-    reposSetting.add(repoWithSettings);
-    
     return reposSetting;
   }
 
   public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
                                                      AuthenticationInfo subject) {
     NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
-    if (this.getClass().getName().equals(name)) {
-      updateSettings(settings, subject);
-      updatedSettings = NotebookRepoWithSettings
-          .builder(settingsName)
-          .className(this.getClass().getName())
-          .settings(getSettings(subject))
-          .build();
-    } else {
-      for (NotebookRepo repo : repos) {
-        if (repo.getClass().getName().equals(name)) {
-          repo.updateSettings(settings, subject);
-          updatedSettings = NotebookRepoWithSettings
-              .builder(repo.getClass().getSimpleName())
-              .className(repo.getClass().getName())
-              .settings(repo.getSettings(subject))
-              .build();
-          break;
-        }
+    for (NotebookRepo repo : repos) {
+      if (repo.getClass().getName().equals(name)) {
+        repo.updateSettings(settings, subject);
+        updatedSettings = NotebookRepoWithSettings.
+            builder(repo.getClass().getSimpleName()).
+            className(repo.getClass().getName()).
+            settings(repo.getSettings(subject)).
+            build();
+        break;
       }
     }
     
@@ -207,13 +186,6 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    if (isSaveAndCommitEnabled()) {
-      return;
-    }
-    saveAll(note, subject);
-  }
-
-  public void saveAll(Note note, AuthenticationInfo subject) throws IOException {
     try {
       for (NotebookRepo repo : repos) {
         repo.save(note, subject);
@@ -460,9 +432,6 @@ public class NotebookRepoSync implements NotebookRepo {
   public Revision checkpoint(String noteId, Note note, String checkpointMsg,
       AuthenticationInfo subject)
       throws IOException {
-    if (isSaveAndCommitEnabled()) {
-      saveAll(note, subject);
-    }
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
@@ -518,22 +487,12 @@ public class NotebookRepoSync implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    List<NotebookRepoSettingsInfo> repoSettings = Lists.newArrayList();
-    // save and commit setting
-    NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingUtils
-        .getNotePersistSettings(isSaveAndCommitEnabled());
-    repoSettings.add(repoSetting);
-    return repoSettings;
+    return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
-      saveAndCommit = Boolean
-          .valueOf(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
-      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
-          saveAndCommit);
-    }
+    // no global setting yet
   }
 
   @Override
@@ -558,12 +517,25 @@ public class NotebookRepoSync implements NotebookRepo {
   }
   
   public boolean isSaveAndCommitEnabled() {
-    return saveAndCommit;
-  }
-  
-  // for tests
-  String getSettingsName() {
-    return settingsName;
+    // combined saveAndCommit
+    boolean isSaveAndCommit = false;
+    for (NotebookRepo repo: repos) {
+      if (repo instanceof S3NotebookRepo) {
+        if (((S3NotebookRepo) repo).isSaveAndCommitEnabled()) {
+          isSaveAndCommit = true;
+          break;
+        }
+      } else if (repo instanceof ZeppelinHubRepo) {
+        if (((ZeppelinHubRepo) repo).isSaveAndCommitEnabled()) {
+          isSaveAndCommit = true;
+          break;
+        }
+        LOG.info("isSave() is {}, var is {}", ((ZeppelinHubRepo) repo).isSaveAndCommitEnabled(),
+            isSaveAndCommit);
+      }
+    }
+    LOG.info("returning {}", isSaveAndCommit);
+    return isSaveAndCommit;
   }
   
   void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {

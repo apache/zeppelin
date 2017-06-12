@@ -45,4 +45,18 @@ public class NotebookRepoSettingUtils {
     return repoSetting;
   }
   
+  public static boolean requiresReload(NotebookRepoWithSettings repoSetting) {
+    if (repoSetting.isEmpty()) {
+      return false;
+    }
+    boolean reloadRequired = false;
+    for (NotebookRepoSettingsInfo setting: repoSetting.settings) {
+      if (setting.reload) {
+        reloadRequired = setting.reload;
+        break;
+      }
+    }
+    
+    return reloadRequired;
+  }
 }

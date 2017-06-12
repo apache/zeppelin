@@ -41,13 +41,16 @@ public class NotebookRepoSettingsInfo {
   public List<Map<String, String>> value;
   public String selected;
   public String name;
+  public transient boolean reload;
   
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
     str.append("NotebookRepoSettingsInfo [ type: ").append(type)
        .append(", selected: ").append(selected)
-       .append(", name: ").append(name).append(" ]");
+       .append(", name: ").append(name)
+       .append(", reload: ").append(reload)
+       .append(" ]");
     return str.toString();
   }
 }

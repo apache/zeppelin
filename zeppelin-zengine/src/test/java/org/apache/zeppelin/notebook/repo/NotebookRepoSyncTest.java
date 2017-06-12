@@ -38,9 +38,6 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.*;
-import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
-import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
-import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -313,77 +310,6 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     vRepoSync.checkpoint(noteId, null, "checkpoint message 2", anonymous);
     assertThat(gitRepo.revisionHistory(noteId, anonymous).size()).isEqualTo(vCount + 1);
     notebookRepoSync.remove(note.getId(), anonymous);
-  }
-  
-  @Test
-  public void testPersistAndCommit() throws IOException, SchedulerException {
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
-        "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT.getVarName(),
-        "true");
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
-    NotebookRepoSync repo = new NotebookRepoSync(conf);
-    Notebook notebook = new Notebook(conf, repo, schedulerFactory, factory,
-        interpreterSettingManager, this, search, notebookAuthorization, credentials);
-
-    // one git versioned storage initialized
-    assertThat(repo.getRepoCount()).isEqualTo(1);
-    assertThat(repo.getRepo(0)).isInstanceOf(GitNotebookRepo.class);
-    
-    // settings applied
-    List<NotebookRepoWithSettings> settings = repo.getNotebookRepos(anonymous);
-    assertThat(settings.size()).isEqualTo(2);
-    assertThat(settings.get(0).name).isEqualTo("GitNotebookRepo");
-    assertThat(settings.get(1).name).isEqualTo(repo.getSettingsName());
-    assertThat(settings.get(1).settings.get(0).name)
-        .isEqualTo(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME);
-    assertThat(settings.get(1).settings.get(0).selected).isEqualTo("true");
-
-    // no notes in memory
-    assertThat(notebook.getAllNotes().size()).isEqualTo(0);
-    // no notes on disk
-    assertThat(repo.list(anonymous).size()).isEqualTo(0);
-    
-    // create note
-    Note note = notebook.createNote(anonymous);
-    
-    // note added in memory
-    assertThat(notebook.getAllNotes().size()).isEqualTo(1);
-    // still no note on disk
-    assertThat(repo.list(anonymous).size()).isEqualTo(0);
-    
-    // if
-    notebook.checkpointNote(note.getId(), "commit 1", anonymous);
-
-    // then note persisted
-    assertThat(repo.list(anonymous).size()).isEqualTo(1);
-
-    // add paragraph
-    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Map<String, Object> config = p.getConfig();
-    config.put("enabled", true);
-    p.setConfig(config);
-    p.setText("%md checkpoint test");
-    
-    // not persisted yet
-    assertThat(repo.get(note.getId(), anonymous).getParagraphs().size()).isEqualTo(0);
-    
-    // if checkpoint
-    notebook.checkpointNote(note.getId(), "commit 2", anonymous);
-    
-    // then persisted
-    assertThat(repo.get(note.getId(), anonymous).getParagraphs().size()).isEqualTo(1);
-    
-    assertThat(repo.revisionHistory(note.getId(), anonymous).size()).isEqualTo(2);
-
-    // remove note
-    notebook.removeNote(note.getId(), anonymous);
-    assertThat(notebook.getAllNotes().size()).isEqualTo(0);
-    assertThat(repo.list(anonymous).size()).isEqualTo(0);
-    // set property back
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT.getVarName(),
-        "false");
   }
   
   @Test

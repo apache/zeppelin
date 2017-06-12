@@ -130,41 +130,4 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     updateNotebookRepoWithNewSetting(payload);
   }
   
-  @Test
-  public void testUpdateSaveAndCommitGlobalSettings() throws IOException {
-    List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
-    String isSaveAndCommit = StringUtils.EMPTY;
-    String settingName = "Global Settings";
-    String className = StringUtils.EMPTY;
-
-    for (int i = 0; i < listOfRepositories.size(); i++) {
-      if (listOfRepositories.get(i).get("name").equals(settingName)) {
-        isSaveAndCommit = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
-        className = (String) listOfRepositories.get(i).get("className");
-        break;
-      }
-    }
-    if (StringUtils.isBlank(isSaveAndCommit)) {
-      return;
-    }
-
-    String payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Persistence\" : \"true\" } }";
-    updateNotebookRepoWithNewSetting(payload);
-    
-    // Verify
-    listOfRepositories = getListOfReposotiry();
-    String updatedSaveAndCommit = StringUtils.EMPTY;
-    for (int i = 0; i < listOfRepositories.size(); i++) {
-      if (listOfRepositories.get(i).get("name").equals(settingName)) {
-        updatedSaveAndCommit = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
-        break;
-      }
-    }
-    assertThat(updatedSaveAndCommit, is("true"));
-    
-    // go back to normal
-    payload = "{ \"name\": \"" + className + "\", \"settings\" : { \""
-        + NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME + "\" : \"false\" } }";
-    updateNotebookRepoWithNewSetting(payload);
-  }
 }

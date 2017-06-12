@@ -65,12 +65,12 @@ public class ZeppelinHubRepo implements NotebookRepo {
   
   private final ZeppelinConfiguration conf;
   
-  private boolean persistOnCommit;
+  private boolean saveAndCommit;
   
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
-    persistOnCommit = conf.isPersistOnCommit();
+    saveAndCommit = conf.isPersistOnCommit();
     LOG.info("Initializing ZeppelinHub integration module");
 
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
@@ -200,6 +200,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
+    if (isSaveAndCommitEnabled()) {
+      LOG.debug("Save on commit setting for remote repo is enabled, returning without save");
+      return;
+    }
+    doSave(note, subject);
+  }
+
+  public void doSave(Note note, AuthenticationInfo subject) throws IOException {
     if (note == null || !isSubjectValid(subject)) {
       throw new IOException("Zeppelinhub failed to save note");
     }
@@ -208,7 +216,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
     restApiClient.put(token, jsonNote);
   }
-
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
@@ -231,6 +239,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
       throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Revision.EMPTY;
+    }
+    if (isSaveAndCommitEnabled()) {
+      doSave(note, subject);
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
@@ -313,7 +324,13 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
     repoSetting.value = values;
     repoSetting.name = "Instance";
+    repoSetting.reload = !values.isEmpty();
     settings.add(repoSetting);
+    
+    // add save and commit setting
+    NotebookRepoSettingsInfo saveSetting = NotebookRepoSettingUtils
+        .getNotePersistSettings(isSaveAndCommitEnabled());
+    settings.add(saveSetting);
     
     return settings;
   }
@@ -365,12 +382,18 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (settings.containsKey("Instance")) {
       try {
         instanceId = Integer.parseInt(settings.get("Instance"));
+        changeToken(instanceId, subject.getUser());
       } catch (NumberFormatException e) {
         LOG.error("ZeppelinHub Instance Id in not a valid integer", e);
       }
     }
-    changeToken(instanceId, subject.getUser());
-    
+
+    if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
+      saveAndCommit = Boolean
+          .valueOf(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          saveAndCommit);
+    }
   }
 
   @Override
@@ -380,4 +403,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     return null;
   }
 
+  public boolean isSaveAndCommitEnabled() {
+    return saveAndCommit;
+  }
 }

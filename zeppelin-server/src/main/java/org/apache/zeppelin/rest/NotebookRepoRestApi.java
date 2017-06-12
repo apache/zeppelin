@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.rest.message.NotebookRepoSettingsRequest;
 import org.apache.zeppelin.server.JsonResponse;
@@ -92,7 +93,7 @@ public class NotebookRepoRestApi {
   @GET
   @Path("global-settings")
   @ZeppelinApi
-  public Response getGlobalSettings(){
+  public Response getGlobalSettings() {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     LOG.info("Getting global settings for user {}", subject.getUser());
     boolean saveAndCommit = noteRepos.isSaveAndCommitEnabled();
@@ -130,7 +131,7 @@ public class NotebookRepoRestApi {
     LOG.info("User {} is going to change repo setting", subject.getUser());
     NotebookRepoWithSettings updatedSettings =
         noteRepos.updateNotebookRepo(newSettings.name, newSettings.settings, subject);
-    if (!updatedSettings.isEmpty()) {
+    if (NotebookRepoSettingUtils.requiresReload(updatedSettings)) {
       LOG.info("Broadcasting note list to user {}", subject.getUser());
       notebookWsServer.broadcastReloadedNoteList(subject, null);
     }

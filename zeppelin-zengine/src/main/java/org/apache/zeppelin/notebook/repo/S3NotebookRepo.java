@@ -36,6 +36,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -86,12 +87,14 @@ public class S3NotebookRepo implements NotebookRepo {
   private final String user;
   private final boolean useServerSideEncryption;
   private final ZeppelinConfiguration conf;
+  private boolean saveAndCommit;
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     bucketName = conf.getBucketName();
     user = conf.getUser();
     useServerSideEncryption = conf.isS3ServerSideEncryption();
+    saveAndCommit = conf.isPersistOnCommit();
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
@@ -294,13 +297,23 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
-    return Collections.emptyList();
+    List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
+    // add save and commit setting
+    NotebookRepoSettingsInfo saveSetting = NotebookRepoSettingUtils
+        .getNotePersistSettings(isSaveAndCommitEnabled());
+    settings.add(saveSetting);
+    
+    return settings;
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
+      saveAndCommit = Boolean
+          .valueOf(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          saveAndCommit);
+    }
   }
 
   @Override
@@ -308,5 +321,9 @@ public class S3NotebookRepo implements NotebookRepo {
       throws IOException {
     // Auto-generated method stub
     return null;
+  }
+  
+  public boolean isSaveAndCommitEnabled() {
+    return saveAndCommit;
   }
 }
