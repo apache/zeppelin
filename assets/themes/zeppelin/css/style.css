@@ -779,19 +779,19 @@ a.anchorjs-link:hover { text-decoration: none; }
 }
 
 .newBtn .btn-primary {
-  background: #c9e9f3;
-  color: #060d14;
+  background: #0099cc;
+  color: #fff;
   border-color: #0086b3;
 }
 .newBtn .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
-  background: #ecf3f9;
+  background: #33a6cc;
   box-shadow: 0 1px 0 0 rgba(0,0,0,0.1);
   border: 1px solid rgba(0,0,0,0.1);
-  color: #060d14;
+  color: #fff;
   transition: .1s ease-in;
 }
 .newBtn .btn-primary:active, .btn-primary.active {
-  background: #007299;
+  background: #ecf3f9;
   box-shadow: none;
 }
 
