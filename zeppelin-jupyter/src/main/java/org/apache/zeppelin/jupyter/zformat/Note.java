@@ -30,8 +30,16 @@ public class Note {
   @SerializedName("paragraphs")
   private List<Paragraph> paragraphs;
 
+  public String getName() {
+    return name;
+  }
+
   public void setName(String name) {
     this.name = name;
+  }
+
+  public List<Paragraph> getParagraphs() {
+    return paragraphs;
   }
 
   public void setParagraphs(List<Paragraph> paragraphs) {

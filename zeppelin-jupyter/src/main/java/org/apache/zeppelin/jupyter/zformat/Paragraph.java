@@ -44,11 +44,27 @@ public class Paragraph {
     this.status = FINISHED;
   }
 
+  public String getText() {
+    return text;
+  }
+
   public void setText(String text) {
     this.text = text;
   }
 
+  public Result getResults() {
+    return results;
+  }
+
   public void setResults(Result results) {
     this.results = results;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getStatus() {
+    return status;
   }
 }
