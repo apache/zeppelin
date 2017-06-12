@@ -91,9 +91,9 @@ body {
 }
 
 .navbar-inverse .navbar-nav > li > a {
-  padding-top: 20px;
+  padding-top: 18px;
   padding-bottom: 20px;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 300;
   color: white;
   background: #3071a9;
