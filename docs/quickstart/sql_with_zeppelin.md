@@ -25,7 +25,7 @@ limitations under the License.
 
 <br/>
 
-Apache Zeppelin
+The following guides explain how to use Apache Zeppelin that enables you to write in SQL:
 
 - provides [JDBC Interpreter](../interpreter/jdbc.html) which allows you can connect any JDBC data sources seamlessly
   * [Postgres](../interpreter/jdbc.html#postgres)
