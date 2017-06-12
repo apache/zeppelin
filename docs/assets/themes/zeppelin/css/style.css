@@ -87,7 +87,7 @@ body {
   background: #3071a9;
   border-bottom: 0px;
   height: 60px;
-  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-inverse .navbar-nav > li > a {
