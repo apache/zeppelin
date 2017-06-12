@@ -381,6 +381,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     notebook.removeNote(note.getId(), anonymous);
     assertThat(notebook.getAllNotes().size()).isEqualTo(0);
     assertThat(repo.list(anonymous).size()).isEqualTo(0);
+    // set property back
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT.getVarName(),
+        "false");
   }
   
   @Test
