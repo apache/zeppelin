@@ -18,7 +18,7 @@ body {
 }
 
 .jumbotron {
-  background-color: #438bc9;
+  background-color: #447fb1;
   margin-bottom: 0px;
   padding-top: 30px;
   padding-bottom: 30px;
@@ -105,6 +105,7 @@ body {
   background: #3071a9;
   border-bottom: 0px;
   height: 60px;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-inverse .navbar-nav > li > a {
@@ -1280,7 +1281,7 @@ and (max-width: 631px) {
   background-size: 40%;
   background-position-y: 11px;
   height: 265px;
-  opacity: 0.45;
+  opacity: 0.7;
 }
 
 .zeppelin2 {
@@ -1290,5 +1291,5 @@ and (max-width: 631px) {
   background-size: 40%;
   background-position-y: 1px;
   height: 245px;
-  opacity: 0.15;
+  opacity: 0.2;
 }
