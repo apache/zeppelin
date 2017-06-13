@@ -95,7 +95,9 @@ public class ShellInterpreter extends Interpreter {
         + " return with exit value: " + exitVal);
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
-      if (contextInterpreter.out.getCurrentOutput().toString().contains("GSS") && isGSSInit) {
+      if (isGSSInit &&
+          contextInterpreter.out != null &&
+          contextInterpreter.out.getCurrentOutput().toString().contains("GSS")) {
         isGSSInit = false;
         if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
           ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
