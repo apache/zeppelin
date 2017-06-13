@@ -297,6 +297,16 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return userNameList;
   }
 
+  public Map<String, String> getListRoles() {
+    Map<String, String> roles = new HashMap<>();
+    Iterator it = this.groupRolesMap.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry pair = (Map.Entry) it.next();
+      roles.put((String) pair.getValue(), "*");
+    }
+    return roles;
+  }
+
   private Set<String> getRoleNamesForUser(String username, LdapContext ldapContext)
       throws NamingException {
     Set<String> roleNames = new LinkedHashSet<>();
