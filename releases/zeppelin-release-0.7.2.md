@@ -30,7 +30,7 @@ More than 40+ issues have been resolved.
 We encourage to [download](../../download.html) the latest release. Feedback through the [mailing lists](../../community.html) is very welcome.
 
 <br />
-You can visit [issue tracker](https://issues.apache.org/jira/secure/ReleaseNote.jspa?version=12340231&projectId=12316221) for full list of issues have been resolved.
+You can visit [issue tracker](https://issues.apache.org/jira/secure/ReleaseNote.jspa?version=12340231&projectId=12316221) for full list of issues that are resolved.
 
 
 <br />
@@ -38,7 +38,7 @@ You can visit [issue tracker](https://issues.apache.org/jira/secure/ReleaseNote.
 
 This release would not be possible without the following community members' contributions:
 
-Jeff Zhang, 1ambda,  Lee moon soo, Prabhjyot Singh, soralee, AhyoungRyu, Khalid Huseynov, Nelson Costa, Benoy Antony, Christian Fries, CloverHearts, Vipin Rathor, LeiWang, Mina Lee, Jongyoul Lee, sravan, Frank Rosner, Paul Brenner, Elek Márton, Renjith Kamath, Sohaib Iftikhar, William Markito Oliveira, andrea, sergeymazin
+Jeff Zhang, Hoon Park, Lee moon soo, Prabhjyot Singh, soralee, AhyoungRyu, Khalid Huseynov, Nelson Costa, Benoy Antony, Christian Fries, CloverHearts, Vipin Rathor, LeiWang, Mina Lee, Jongyoul Lee, sravan, Frank Rosner, Paul Brenner, Elek Márton, Renjith Kamath, Sohaib Iftikhar, William Markito Oliveira, andrea, sergeymazin
 
 The following people helped verifying this release:
 
