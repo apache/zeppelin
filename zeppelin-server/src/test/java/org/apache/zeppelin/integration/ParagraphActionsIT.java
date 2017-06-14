@@ -262,7 +262,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
     try {
       String xpathToRunOnSelectionChangeCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]";
-      String xpathToDropdownMenu = "(" + (getParagraphXPath(1) + "//select)[2]");
+      String xpathToDropdownMenu = "(" + (getParagraphXPath(1) + "//select)[3]");
       String xpathToResultText = getParagraphXPath(1) + "//div[contains(@id,\"_html\")]";
 
       createNewNote();
@@ -619,7 +619,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy "));
 
-      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[2]"))));
+      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[3]"))));
 
       dropDownMenu.selectByVisibleText("Alice");
       collector.checkThat("After selection in drop down menu, output should display the newly selected option",
@@ -629,7 +629,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       clickAndWait(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]"));
 
-      Select sameDropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[2]"))));
+      Select sameDropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[3]"))));
       sameDropDownMenu.selectByVisibleText("Bob");
       collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run if selecting a different option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -703,7 +703,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
               CoreMatchers.equalTo("Howdy \nHowdy "));
 
-      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[2]"))));
+      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[3]"))));
       dropDownMenu.selectByVisibleText("Apple");
       collector.checkThat("After selection in drop down menu, output should display the new option we selected",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
@@ -712,7 +712,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       clickAndWait(By.xpath(getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]"));
 
-      Select sameDropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[3]"))));
+      Select sameDropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[4]"))));
       sameDropDownMenu.selectByVisibleText("Earth");
       waitForParagraph(1, "FINISHED");
       collector.checkThat("After 'Run on selection change' checkbox is unchecked, the paragraph should not run if selecting a different option",

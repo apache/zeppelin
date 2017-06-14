@@ -50,7 +50,7 @@ public class WebDriverManager {
 
     if (driver == null) {
       try {
-        FirefoxBinary ffox = new FirefoxBinary();
+        FirefoxBinary ffox = new FirefoxBinary(new File("/home/isys.mreshetov/apps/firefox31/firefox"));
         if ("true".equals(System.getenv("TRAVIS"))) {
           ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
           // run with DISPLAY 99
