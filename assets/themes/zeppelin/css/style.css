@@ -20,8 +20,7 @@ body {
 .jumbotron {
   background-color: #447fb1;
   margin-bottom: 0px;
-  padding-top: 30px;
-  padding-bottom: 30px;
+  padding-bottom: 40px;
 }
 
 .jumbotron h1,
@@ -32,7 +31,7 @@ body {
 .jumbotron p {
   font-size: 19px;
   line-height: 1.4;
-  margin-bottom: 28px;
+  margin-bottom: 38px;
 }
 
 .jumbotron .description {
