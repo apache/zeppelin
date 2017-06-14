@@ -106,6 +106,7 @@
     <commons.collections.version>3.2.1</commons.collections.version>
     <commons.logging.version>1.1.1</commons.logging.version>
     <shiro.version>1.2.3</shiro.version>
+    <netty.version>4.0.29.Final</netty.version>
 
     <!-- test library versions -->
     <junit.version>4.12</junit.version>
@@ -253,6 +254,11 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-config-core</artifactId>
         <version>${shiro.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>${netty.version}</version>
       </dependency>
 
       <!-- Test libraries -->

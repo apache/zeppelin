@@ -17,14 +17,32 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.CharsetUtil;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -38,6 +56,24 @@ public class RemoteInterpreterUtils {
       socket.close();
     }
     return port;
+  }
+
+  public static String findAvailableHostname() throws UnknownHostException, SocketException {
+    InetAddress address = InetAddress.getLocalHost();
+    if (address.isLoopbackAddress()) {
+      for (NetworkInterface networkInterface : Collections
+          .list(NetworkInterface.getNetworkInterfaces())) {
+        if (!networkInterface.isLoopback()) {
+          for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+            InetAddress a = interfaceAddress.getAddress();
+            if (a instanceof Inet4Address) {
+              return a.getHostAddress();
+            }
+          }
+        }
+      }
+    }
+    return address.getHostName();
   }
 
   public static boolean checkIfRemoteEndpointAccessible(String host, int port) {
@@ -79,5 +115,43 @@ public class RemoteInterpreterUtils {
     }
 
     return key.matches("^[A-Z_0-9]*");
+  }
+
+  public static void registerInterpreter(String callbackHost, int callbackPort, final String msg) {
+    LOGGER.info("callbackHost: {}, callbackPort: {}, msg: {}", callbackHost, callbackPort, msg);
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
+    try {
+      Bootstrap b = new Bootstrap();
+      b.group(workerGroup);
+      b.channel(NioSocketChannel.class);
+      b.option(ChannelOption.SO_KEEPALIVE, true);
+      b.handler(new ChannelInitializer<SocketChannel>() {
+        @Override
+        public void initChannel(SocketChannel ch) throws Exception {
+          ch.pipeline().addLast(new ChannelInboundHandlerAdapter(){
+            @Override
+            public void channelActive(ChannelHandlerContext ctx) throws Exception {
+              LOGGER.info("Send message {}", msg);
+              ctx.writeAndFlush(Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8));
+            }
+
+            @Override
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+              cause.printStackTrace();
+              ctx.close();
+            }
+          });
+        }
+      });
+
+      ChannelFuture f = b.connect(callbackHost, callbackPort).sync();
+
+      // Wait until the connection is closed.
+      f.channel().closeFuture().sync();
+    } catch (InterruptedException e) {
+      //
+    } finally {
+      workerGroup.shutdownGracefully();
+    }
   }
 }

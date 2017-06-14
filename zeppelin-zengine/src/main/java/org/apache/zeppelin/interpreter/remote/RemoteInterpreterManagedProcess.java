@@ -17,17 +17,38 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.commons.exec.*;
-import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.CharsetUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteResultHandler;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.LogOutputStream;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  * This class manages start / stop of remote interpreter process
@@ -37,16 +58,19 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private static final Logger logger = LoggerFactory.getLogger(
       RemoteInterpreterManagedProcess.class);
   private final String interpreterRunner;
+  private final CountDownLatch hostPortLatch;
 
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   boolean running = false;
+  private String host = null;
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
   private final String interpreterGroupName;
 
   private Map<String, String> env;
+
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
@@ -64,6 +88,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
     this.interpreterGroupName = interpreterGroupName;
+    this.hostPortLatch = new CountDownLatch(1);
   }
 
   RemoteInterpreterManagedProcess(String intpRunner,
@@ -80,6 +105,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
     this.interpreterGroupName = interpreterGroupName;
+    this.hostPortLatch = new CountDownLatch(1);
   }
 
   @Override
@@ -95,8 +121,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   @Override
   public void start(String userName, Boolean isUserImpersonate) {
     // start server process
+    final String callbackHost;
+    final int callbackPort;
     try {
-      port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+      callbackHost = RemoteInterpreterUtils.findAvailableHostname();
+      callbackPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     } catch (IOException e1) {
       throw new InterpreterException(e1);
     }
@@ -104,8 +133,10 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
+    cmdLine.addArgument("-c", false);
+    cmdLine.addArgument(callbackHost, false);
     cmdLine.addArgument("-p", false);
-    cmdLine.addArgument(Integer.toString(port), false);
+    cmdLine.addArgument(Integer.toString(callbackPort), false);
     if (isUserImpersonate && !userName.equals("anonymous")) {
       cmdLine.addArgument("-u", false);
       cmdLine.addArgument(userName, false);
@@ -137,34 +168,68 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       throw new InterpreterException(e);
     }
 
-
-    long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (!running) {
+    // Start netty server to receive hostPort information from RemoteInterpreterServer;
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-          cmdOut.flush();
-        } catch (IOException e) {
-          // nothing to do
-        }
-        throw new InterpreterException(new String(cmdOut.toByteArray()));
-      }
+          ServerBootstrap b = new ServerBootstrap();
+          b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
+              .handler(new LoggingHandler(LogLevel.DEBUG))
+              .childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                public void initChannel(SocketChannel ch) throws Exception {
+                  ch.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
+                    @Override
+                    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                      logger.info("{}", ctx);
+                    }
 
-      try {
-        if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-          break;
-        } else {
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-                    "Thread.sleep", e);
-          }
-        }
-      } catch (Exception e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Remote interpreter not yet accessible at localhost:" + port);
+                    @Override
+                    public void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
+                      logger.info("msg: {}", msg.toString(CharsetUtil.UTF_8));
+                      String[] hostPort = msg.toString(CharsetUtil.UTF_8).split(":");
+                      host = hostPort[0];
+                      port = Integer.parseInt(hostPort[1]);
+                      hostPortLatch.countDown();
+                    }
+
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                      logger.error("Netty error", cause);
+                      ctx.close();
+                    }
+                  });
+                }
+              });
+
+          logger.info("Netty server starts");
+          // Bind and start to accept incoming connections.
+          ChannelFuture f = b.bind(callbackPort).sync();
+
+          // Wait until the server socket is closed.
+          // In this example, this does not happen, but you can do that to gracefully
+          // shut down your server.
+          f.channel().closeFuture().sync();
+        } catch (InterruptedException e) {
+          logger.error("Netty server error while binding", e);
+        } finally {
+          workerGroup.shutdownGracefully();
+          bossGroup.shutdownGracefully();
         }
       }
+    }).start();
+
+    try {
+      hostPortLatch.await(getConnectTimeout(), TimeUnit.MILLISECONDS);
+      // Check if not running
+      if (null == host || -1 == port) {
+        throw new InterpreterException("CAnnot run interpreter");
+      }
+    } catch (InterruptedException e) {
+      logger.error("Remote interpreter is not accessible");
     }
     processOutput.setOutputStream(null);
   }

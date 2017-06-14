@@ -21,11 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -78,8 +78,8 @@ public class RemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testStartStopRemoteInterpreter() throws TException, InterruptedException {
-    RemoteInterpreterServer server = new RemoteInterpreterServer(3678);
+  public void testStartStopRemoteInterpreter() throws TException, InterruptedException, IOException {
+    RemoteInterpreterServer server = new RemoteInterpreterServer(null, 3678);
     server.start();
     boolean running = false;
     long startTime = System.currentTimeMillis();
