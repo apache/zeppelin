@@ -97,7 +97,8 @@ public class ShellInterpreter extends Interpreter {
     } catch (ExecuteException e) {
       if (isGSSInit &&
           contextInterpreter.out != null &&
-          contextInterpreter.out.getCurrentOutput().toString().contains("GSS")) {
+          StringUtils.containsIgnoreCase(contextInterpreter.out.getCurrentOutput().toString(),
+              "GSSException")) {
         isGSSInit = false;
         if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
           ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
