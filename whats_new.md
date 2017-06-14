@@ -17,9 +17,9 @@ limitations under the License.
   <div class="container">
     <h2>What's new in</h2>
     <span class="newZeppelin center-block">Apache Zeppelin 0.7</span>
-    <div class="border row" style="margin-left:0;margin-right:0;">
+    <div class="border row">
       <div class="border col-md-4 col-sm-4">
-        <h4>Pluggable Visualization via Helium</h4>
+        <h4>Pluggable Visualization <br/> via Helium</h4>
         <div class="viz">
           <p>
             Load/unload Javascript 
@@ -55,7 +55,7 @@ limitations under the License.
         </div>
       </div>
       <div class="border col-md-4 col-sm-4">
-        <h4>New Note Mode - Personal Mode</h4>
+        <h4>New Note Mode - <br/> Personal Mode</h4>
         <div class="personal">
         <p>
           Personalize your analysis result by switching the note to Personal Mode. 
@@ -68,7 +68,7 @@ limitations under the License.
         </div>
       </div>
     </div>
-    <div class="border row" style="margin-left:0;margin-right:0;">
+    <div class="border row">
       <div class="border col-md-4 col-sm-4">
         <h4>Support Spark 2.1</h4>
         <p>
