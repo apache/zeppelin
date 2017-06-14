@@ -38,8 +38,8 @@ public class ZeppelinDevServer extends
 
   private DevInterpreter interpreter = null;
   private InterpreterOutput out;
-  public ZeppelinDevServer(int port) throws TException {
-    super(port);
+  public ZeppelinDevServer(int port) throws TException, IOException {
+    super(null, port);
   }
 
   @Override
