@@ -42,7 +42,7 @@ public class RemoteInterpreterServerTest {
 
   @Test
   public void testStartStop() throws InterruptedException, IOException, TException {
-    RemoteInterpreterServer server = new RemoteInterpreterServer(
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
         RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces());
     assertEquals(false, server.isRunning());
 
@@ -90,8 +90,8 @@ public class RemoteInterpreterServerTest {
 
   @Test
   public void testStartStopWithQueuedEvents() throws InterruptedException, IOException, TException {
-    RemoteInterpreterServer server = new RemoteInterpreterServer(
-        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces());
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), true);
     assertEquals(false, server.isRunning());
 
     server.start();

@@ -357,16 +357,16 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
     notebook.refreshCron(note.getId());
-    Thread.sleep(1 * 1000);
+    Thread.sleep(2 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
     notebook.refreshCron(note.getId());
-    Thread.sleep(1000);
+    Thread.sleep(2 * 1000);
     dateFinished = p.getDateFinished();
     assertNotNull(dateFinished);
-    Thread.sleep(1 * 1000);
+    Thread.sleep(2 * 1000);
     assertEquals(dateFinished, p.getDateFinished());
     notebook.removeNote(note.getId(), anonymous);
   }
