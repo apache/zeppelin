@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
@@ -162,8 +164,9 @@ public class InterpreterSettingManager {
     InterpreterInfoSaving infoSaving;
     try (BufferedReader json =
         Files.newBufferedReader(interpreterBindingPath, StandardCharsets.UTF_8)) {
-      infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
-
+      JsonParser jsonParser = new JsonParser();
+      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+      infoSaving = gson.fromJson(jsonObject.toString(), InterpreterInfoSaving.class);
       for (String k : infoSaving.interpreterSettings.keySet()) {
         InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
         List<InterpreterInfo> infos = setting.getInterpreterInfos();
@@ -181,6 +184,9 @@ public class InterpreterSettingManager {
         // enable/disable option on GUI).
         // previously created setting should turn this feature on here.
         setting.getOption().setRemote(true);
+
+        setting.convertPermissionsFromUsersToOwners(
+            jsonObject.getAsJsonObject("interpreterSettings").getAsJsonObject(setting.getId()));
 
         // Update transient information from InterpreterSettingRef
         InterpreterSetting interpreterSettingObject =
