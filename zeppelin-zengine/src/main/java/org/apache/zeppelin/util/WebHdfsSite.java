@@ -19,7 +19,7 @@ package org.apache.zeppelin.util;
 
 import com.google.gson.Gson;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.file.HDFSCommand;
+import org.apache.zeppelin.file.WebHDFSCommand;
 import org.apache.zeppelin.file.HDFSStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +33,12 @@ import java.util.List;
 /**
  * Class to create / move / delete / write to / read from HDFS filessytem
  */
-public class HdfsSite {
+public class WebHdfsSite {
   public static final String HDFS_URL = "hdfs.url";
   public static final String HDFS_USER = "hdfs.user";
   public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
-  private static Logger logger = LoggerFactory.getLogger(HdfsSite.class);
+  private static Logger logger = LoggerFactory.getLogger(WebHdfsSite.class);
   public static final String HDFS_NOTEBOOK_DIR = "hdfs.notebook.dir";
   static final String NOTE_JSON = "note.json";
   static final String NOTE_JSON_TEMP = "_note.json";
@@ -48,10 +48,10 @@ public class HdfsSite {
   String hdfsUrl = null;
   String hdfsUser = null;
   int hdfsMaxLength = 0;
-  HDFSCommand hdfsCmd = null;
+  WebHDFSCommand hdfsCmd = null;
 
 
-  public HdfsSite(ZeppelinConfiguration conf) throws URISyntaxException {
+  public WebHdfsSite(ZeppelinConfiguration conf) throws URISyntaxException {
     this.conf = conf;
     this.hdfsUrl = conf.getString(HDFS_URL, HDFS_URL, "http://localhost:50070/webhdfs/v1/");
     this.hdfsMaxLength = conf.getInt(HDFS_URL, HDFS_MAXLENGTH, 100000);
@@ -63,7 +63,7 @@ public class HdfsSite {
 
       this.enableWebHDFS = false;
     } else {
-      this.hdfsCmd = new HDFSCommand(hdfsUrl, hdfsUser, logger, this.hdfsMaxLength);
+      this.hdfsCmd = new WebHDFSCommand(hdfsUrl, hdfsUser, logger, this.hdfsMaxLength);
       this.enableWebHDFS = exists("/");
     }
   }
@@ -114,8 +114,8 @@ public class HdfsSite {
   public void delete(String path) throws IOException {
     logger.debug("remove : " + path);
 
-    HDFSCommand.Arg recursive = this.hdfsCmd.new Arg("recursive", "true");
-    HDFSCommand.Arg[] args = {recursive};
+    WebHDFSCommand.Arg recursive = this.hdfsCmd.new Arg("recursive", "true");
+    WebHDFSCommand.Arg[] args = {recursive};
 
     try {
       this.hdfsCmd.runCommand(this.hdfsCmd.deleteFile, path, args);
@@ -138,8 +138,8 @@ public class HdfsSite {
 
   public void writeFile(byte[] content, String path) throws IOException {
     try {
-      HDFSCommand.Arg dest = this.hdfsCmd.new Arg("overwrite", "true");
-      HDFSCommand.Arg[] createArgs = {dest};
+      WebHDFSCommand.Arg dest = this.hdfsCmd.new Arg("overwrite", "true");
+      WebHDFSCommand.Arg[] createArgs = {dest};
       this.hdfsCmd.runCommand(this.hdfsCmd.createWriteFile, path, content, createArgs);
     } catch (Exception e) {
       logger.error("Exception: ", e);
@@ -149,8 +149,8 @@ public class HdfsSite {
 
   public void rename(String oldPath, String newPath) throws IOException {
     try {
-      HDFSCommand.Arg dest = this.hdfsCmd.new Arg("destination", newPath);
-      HDFSCommand.Arg[] renameArgs = {dest};
+      WebHDFSCommand.Arg dest = this.hdfsCmd.new Arg("destination", newPath);
+      WebHDFSCommand.Arg[] renameArgs = {dest};
       this.hdfsCmd.runCommand(this.hdfsCmd.renameFile, oldPath, renameArgs);
     } catch (Exception e) {
       logger.error("Exception: ", e);

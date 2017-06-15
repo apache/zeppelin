@@ -27,7 +27,7 @@ import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.HdfsSite;
+import org.apache.zeppelin.util.WebHdfsSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,18 +42,18 @@ import java.util.Map;
  *
  */
 
-public class HdfsNotebookRepo implements NotebookRepo {
-  private static Logger logger = LoggerFactory.getLogger(HdfsNotebookRepo.class);
-  private HdfsSite hdfsSite;
+public class WebHdfsNotebookRepo implements NotebookRepo {
+  private static Logger logger = LoggerFactory.getLogger(WebHdfsNotebookRepo.class);
+  private WebHdfsSite hdfsSite;
   private ZeppelinConfiguration conf;
   private String rootDir;
 
 
-  public HdfsNotebookRepo(ZeppelinConfiguration conf) throws IOException {
+  public WebHdfsNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     try {
       rootDir = removeProtocol(conf.getNotebookDir());
-      hdfsSite = new HdfsSite(conf);
+      hdfsSite = new WebHdfsSite(conf);
       hdfsSite.mkdirs(rootDir);
     } catch (URISyntaxException e) {
       throw new IOException(e);

@@ -32,7 +32,7 @@ import java.net.URL;
 /**
  * Definition and HTTP invocation methods for all WebHDFS commands
  */
-public class HDFSCommand {
+public class WebHDFSCommand {
 
   /**
    * Type of HTTP request
@@ -86,7 +86,7 @@ public class HDFSCommand {
   public Op deleteFile = new Op("DELETE", HttpType.DELETE, 0);
   public Op renameFile = new Op("RENAME", HttpType.PUT, 0);
 
-  public HDFSCommand(String url, String user, Logger logger, int maxLength) {
+  public WebHDFSCommand(String url, String user, Logger logger, int maxLength) {
     super();
     this.url = url;
     this.user = user;

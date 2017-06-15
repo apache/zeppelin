@@ -32,28 +32,28 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  * HDFS implementation of File interpreter for Zeppelin.
  *
  */
-public class HDFSFileInterpreter extends FileInterpreter {
+public class WebHDFSFileInterpreter extends FileInterpreter {
   public static final String HDFS_URL = "hdfs.url";
   public static final String HDFS_USER = "hdfs.user";
   public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
   Exception exceptionOnConnect = null;
-  HDFSCommand cmd = null;
+  WebHDFSCommand cmd = null;
   Gson gson = null;
 
   public void prepare() {
     String userName = getProperty(HDFS_USER);
     String hdfsUrl = getProperty(HDFS_URL);
     int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH));
-    cmd = new HDFSCommand(hdfsUrl, userName, logger, i);
+    cmd = new WebHDFSCommand(hdfsUrl, userName, logger, i);
     gson = new Gson();
   }
 
-  public HDFSFileInterpreter(Properties property){
+  public WebHDFSFileInterpreter(Properties property){
     super(property);
     prepare();
   }
-  
+
   // tests whether we're able to connect to HDFS
 
   private void testConnection() {
