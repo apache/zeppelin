@@ -34,6 +34,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.realm.LdapRealm;
 import org.mortbay.log.Log;
 import org.slf4j.Logger;
@@ -132,6 +133,9 @@ public class SecurityUtils {
           break;
         } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
           allRoles = ((LdapRealm) realm).getListRoles();
+          break;
+        } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
+          allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
         }
       }

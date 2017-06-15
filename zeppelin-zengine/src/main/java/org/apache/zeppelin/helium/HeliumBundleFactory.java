@@ -49,23 +49,23 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
  */
 public class HeliumBundleFactory {
   Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
-  private final String NODE_VERSION = "v6.9.1";
-  private final String NPM_VERSION = "3.10.8";
-  private final String YARN_VERSION = "v0.21.3";
+  private static final String NODE_VERSION = "v6.9.1";
+  private static final String NPM_VERSION = "3.10.8";
+  private static final String YARN_VERSION = "v0.21.3";
   private static final String NPM_PACKAGE_NAME = "npm";
-  public static final String HELIUM_LOCAL_REPO = "helium-bundle";
-  public static final String HELIUM_BUNDLES_DIR = "bundles";
-  public static final String HELIUM_LOCAL_MODULE_DIR = "local_modules";
-  public static final String HELIUM_BUNDLES_SRC_DIR = "src";
-  public static final String HELIUM_BUNDLES_SRC = "load.js";
-  public static final String YARN_CACHE_DIR = "yarn-cache";
-  public static final String PACKAGE_JSON = "package.json";
-  public static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
-  public static final String HELIUM_BUNDLE = "helium.bundle.js";
-  public static final String HELIUM_BUNDLES_VAR = "heliumBundles";
-  private final int FETCH_RETRY_COUNT = 2;
-  private final int FETCH_RETRY_FACTOR_COUNT = 1;
-  private final int FETCH_RETRY_MIN_TIMEOUT = 5000; // Milliseconds
+  protected static final String HELIUM_LOCAL_REPO = "helium-bundle";
+  private static final String HELIUM_BUNDLES_DIR = "bundles";
+  private static final String HELIUM_LOCAL_MODULE_DIR = "local_modules";
+  private static final String HELIUM_BUNDLES_SRC_DIR = "src";
+  private static final String HELIUM_BUNDLES_SRC = "load.js";
+  private static final String YARN_CACHE_DIR = "yarn-cache";
+  private static final String PACKAGE_JSON = "package.json";
+  private static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
+  private static final String HELIUM_BUNDLE = "helium.bundle.js";
+  private static final String HELIUM_BUNDLES_VAR = "heliumBundles";
+  private static final int FETCH_RETRY_COUNT = 2;
+  private static final int FETCH_RETRY_FACTOR_COUNT = 1;
+  private static final int FETCH_RETRY_MIN_TIMEOUT = 5000; // Milliseconds
 
   private final FrontendPluginFactory frontEndPluginFactory;
   private final File nodeInstallationDirectory;
@@ -73,13 +73,12 @@ public class HeliumBundleFactory {
   private final File heliumBundleDirectory;
   private final File heliumLocalModuleDirectory;
   private final File yarnCacheDir;
-  private ZeppelinConfiguration conf;
   private File tabledataModulePath;
   private File visualizationModulePath;
   private File spellModulePath;
-  private String defaultNodeRegistryUrl;
-  private String defaultNpmRegistryUrl;
-  private String defaultYarnRegistryUrl;
+  private String defaultNodeInstallerUrl;
+  private String defaultNpmInstallerUrl;
+  private String defaultYarnInstallerUrl;
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
 
@@ -106,11 +105,9 @@ public class HeliumBundleFactory {
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
     this.yarnCacheDir = new File(heliumLocalRepoDirectory, YARN_CACHE_DIR);
-    this.conf = conf;
-    // To be done in ZEPPELIN-2214: Soft-code installer urls
-    this.defaultNodeRegistryUrl = "https://nodejs.org/dist/";
-    this.defaultNpmRegistryUrl = conf.getHeliumNpmRegistry();
-    this.defaultYarnRegistryUrl = "https://github.com/yarnpkg/yarn/releases/download/";
+    this.defaultNodeInstallerUrl = conf.getHeliumNodeInstallerUrl();
+    this.defaultNpmInstallerUrl = conf.getHeliumNpmInstallerUrl();
+    this.defaultYarnInstallerUrl = conf.getHeliumYarnInstallerUrl();
 
     nodeInstallationDirectory = (nodeInstallationDir == null) ?
         heliumLocalRepoDirectory : nodeInstallationDir;
@@ -127,21 +124,21 @@ public class HeliumBundleFactory {
     }
     try {
       NodeInstaller nodeInstaller = frontEndPluginFactory
-              .getNodeInstaller(getProxyConfig(isSecure(defaultNodeRegistryUrl)));
+              .getNodeInstaller(getProxyConfig(isSecure(defaultNodeInstallerUrl)));
       nodeInstaller.setNodeVersion(NODE_VERSION);
-      nodeInstaller.setNodeDownloadRoot(defaultNodeRegistryUrl);
+      nodeInstaller.setNodeDownloadRoot(defaultNodeInstallerUrl);
       nodeInstaller.install();
 
       NPMInstaller npmInstaller = frontEndPluginFactory
-              .getNPMInstaller(getProxyConfig(isSecure(defaultNpmRegistryUrl)));
+              .getNPMInstaller(getProxyConfig(isSecure(defaultNpmInstallerUrl)));
       npmInstaller.setNpmVersion(NPM_VERSION);
-      npmInstaller.setNpmDownloadRoot(defaultNpmRegistryUrl + "/" + NPM_PACKAGE_NAME + "/-/");
+      npmInstaller.setNpmDownloadRoot(defaultNpmInstallerUrl + "/" + NPM_PACKAGE_NAME + "/-/");
       npmInstaller.install();
 
       YarnInstaller yarnInstaller = frontEndPluginFactory
-              .getYarnInstaller(getProxyConfig(isSecure(defaultYarnRegistryUrl)));
+              .getYarnInstaller(getProxyConfig(isSecure(defaultYarnInstallerUrl)));
       yarnInstaller.setYarnVersion(YARN_VERSION);
-      yarnInstaller.setYarnDownloadRoot(defaultYarnRegistryUrl);
+      yarnInstaller.setYarnDownloadRoot(defaultYarnInstallerUrl);
       yarnInstaller.install();
       yarnCacheDir.mkdirs();
       String yarnCacheDirPath = yarnCacheDir.getAbsolutePath();
@@ -664,7 +661,7 @@ public class HeliumBundleFactory {
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
     NpmRunner npm = frontEndPluginFactory.getNpmRunner(
-            getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
+            getProxyConfig(isSecure(defaultNpmInstallerUrl)), defaultNpmInstallerUrl);
     npm.execute(args, env);
   }
 
@@ -679,7 +676,7 @@ public class HeliumBundleFactory {
   private void yarnCommand(FrontendPluginFactory fpf,
                            String args, Map<String, String> env) throws TaskRunnerException {
     YarnRunner yarn = fpf.getYarnRunner(
-            getProxyConfig(isSecure(defaultNpmRegistryUrl)), defaultNpmRegistryUrl);
+            getProxyConfig(isSecure(defaultNpmInstallerUrl)), defaultNpmInstallerUrl);
     yarn.execute(args, env);
   }
 

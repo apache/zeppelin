@@ -14,9 +14,9 @@
 # limitations under the License.
 FROM centos:centos6
 
-ENV SPARK_PROFILE 1.6
-ENV SPARK_VERSION 1.6.2
-ENV HADOOP_PROFILE 2.3
+ENV SPARK_PROFILE 2.1
+ENV SPARK_VERSION 2.1.1
+ENV HADOOP_PROFILE 2.7
 ENV SPARK_HOME /usr/local/spark
 
 # Update the image with the latest packages
