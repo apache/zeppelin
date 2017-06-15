@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import java.util.concurrent.ScheduledExecutorService;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -50,7 +51,7 @@ public class ShellInterpreter extends Interpreter {
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   ConcurrentHashMap<String, DefaultExecutor> executors;
-  private Boolean isGSSInit = false;
+  ScheduledExecutorService scheduledExecutorService;
 
   public ShellInterpreter(Properties property) {
     super(property);
@@ -61,13 +62,23 @@ public class ShellInterpreter extends Interpreter {
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new ConcurrentHashMap<>();
     if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
-      ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
-      isGSSInit = true;
+      scheduledExecutorService = startKerberosLoginThread();
     }
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    if (scheduledExecutorService != null) {
+      scheduledExecutorService.shutdown();
+    }
+
+    for (String executorKey : executors.keySet()) {
+      DefaultExecutor executor = executors.remove(executorKey);
+      if (executor != null) {
+        executor.getWatchdog().destroyProcess();
+      }
+    }
+  }
 
 
   @Override
@@ -95,49 +106,23 @@ public class ShellInterpreter extends Interpreter {
         + " return with exit value: " + exitVal);
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
-      if (isGSSInit &&
-          contextInterpreter.out != null &&
-          StringUtils.containsIgnoreCase(contextInterpreter.out.getCurrentOutput().toString(),
-              "GSSException")) {
-        isGSSInit = false;
-        if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
-          ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
-          isGSSInit = true;
-        }
-
-        appendSessionExpire(contextInterpreter);
-        return interpret(cmd, contextInterpreter);
-      } else {
-        int exitValue = e.getExitValue();
-        LOGGER.error("Can not run " + cmd, e);
-        Code code = Code.ERROR;
-        String message = outStream.toString();
-        if (exitValue == 143) {
-          code = Code.INCOMPLETE;
-          message += "Paragraph received a SIGTERM\n";
-          LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
-            + " stopped executing: " + message);
-        }
-        message += "ExitValue: " + exitValue;
-        return new InterpreterResult(code, message);
+      int exitValue = e.getExitValue();
+      LOGGER.error("Can not run " + cmd, e);
+      Code code = Code.ERROR;
+      String message = outStream.toString();
+      if (exitValue == 143) {
+        code = Code.INCOMPLETE;
+        message += "Paragraph received a SIGTERM\n";
+        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
+          + " stopped executing: " + message);
       }
+      message += "ExitValue: " + exitValue;
+      return new InterpreterResult(code, message);
     } catch (IOException e) {
       LOGGER.error("Can not run " + cmd, e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
     } finally {
       executors.remove(contextInterpreter.getParagraphId());
-    }
-  }
-
-  private void appendSessionExpire(InterpreterContext contextInterpreter) {
-    String appInfoHtml = "\n\n" +
-      "Previous Keytab session is expired, new Keytab session is created. " +
-      "Will execute this paragraph again!" +
-      "\n\n";
-    try {
-      contextInterpreter.out.getCurrentOutput().write(appInfoHtml);
-    } catch (IOException eIOException) {
-      LOGGER.error("Error writing to currentOutput", eIOException);
     }
   }
 
@@ -170,5 +155,17 @@ public class ShellInterpreter extends Interpreter {
       InterpreterContext interpreterContext) {
     return null;
   }
+
+  @Override
+  protected boolean runKerberosLogin() {
+    try {
+      ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
+    } catch (Exception e) {
+      return false;
+    }
+    return true;
+  }
+
+
 
 }
