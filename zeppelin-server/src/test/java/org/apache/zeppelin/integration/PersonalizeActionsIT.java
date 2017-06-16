@@ -77,7 +77,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
     if (!endToEndTestEnabled()) {
       return;
     }
-
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -172,7 +171,8 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
-      driver.findElement(By.xpath("//*[@id='actionbar']//button[contains(@uib-tooltip, 'Switch to personal mode')]")).click();
+      driver.findElement(By.xpath("//*[@id='actionbar']" +
+          "//button[contains(@uib-tooltip, 'Switch to personal mode')]")).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
 
@@ -216,5 +216,4 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       handleException("Exception in ParagraphActionsIT while testGroupPermission ", e);
     }
   }
-
 }
