@@ -161,7 +161,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      // step1 - (admin) create a note and paragraph & turn on personalize mode
+      // step 1 - (admin) create a note, run a paragraph and turn on personalized mode
       PersonalizeActionsIT personalizeActionsIT = new PersonalizeActionsIT();
       personalizeActionsIT.authenticationUser("admin", "password1");
       createNewNote();
@@ -178,27 +178,24 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       personalizeActionsIT.logoutUser("admin");
 
-      // step 2 : (user1) check turn on personalize mode and 'Before' in resurt of paragraph
+      // step 2 : (user1) make sure it is on personalized mode and 'Before' in result of paragraph
       personalizeActionsIT.authenticationUser("user1", "password2");
       driver.findElement(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]")).click();
-      /*collector.checkThat("The personalized mode enables",
-          driver.findElement(By.xpath("//*[@id='actionbar']//button[contains(@uib-tooltip, 'Switch to personal mode'), " +
-                  "contains(@class, 'btn btn-primary btn-xs ng-scope')]"),
-          CoreMatchers.equalTo("Before"));*/
 
-      LOG.info("sora element check : {}",
-          driver.findElement(By.xpath("//*[@id='actionbar']//button[contains(@uib-tooltip, 'Switch to personal mode'), " +
-              "contains(@class, 'btn btn-primary btn-xs ng-scope')]")));
-
+      collector.checkThat("The personalized mode enables",
+          driver.findElement(By.xpath("//*[@id='actionbar']" +
+              "//button[contains(@class, 'btn btn-default btn-xs ng-scope ng-hide')]")).getAttribute("uib-tooltip"),
+          CoreMatchers.equalTo("Switch to personal mode (owner can change)"));
       waitForParagraph(1, "READY");
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
+
       personalizeActionsIT.logoutUser("user1");
 
-      //step 3 : (admin) change paragraph contents to 'After' and result of paragraph
+      // step 3 : (admin) change paragraph contents to 'After' and check result of paragraph
       personalizeActionsIT.authenticationUser("admin", "password1");
       driver.findElement(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]")).click();
       waitForParagraph(1, "FINISHED");
