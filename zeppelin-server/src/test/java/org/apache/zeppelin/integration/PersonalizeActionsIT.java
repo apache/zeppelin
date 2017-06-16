@@ -160,7 +160,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      // step 1 - (admin) create a note, run a paragraph and turn on personalized mode
+      // step 1 : (admin) create a new note, run a paragraph and turn on personalized mode
       PersonalizeActionsIT personalizeActionsIT = new PersonalizeActionsIT();
       personalizeActionsIT.authenticationUser("admin", "password1");
       createNewNote();
