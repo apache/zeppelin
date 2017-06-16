@@ -71,7 +71,11 @@ public class ShellInterpreter extends KerberosInterpreter {
     for (String executorKey : executors.keySet()) {
       DefaultExecutor executor = executors.remove(executorKey);
       if (executor != null) {
-        executor.getWatchdog().destroyProcess();
+        try {
+          executor.getWatchdog().destroyProcess();
+        } catch (Exception e){
+          LOGGER.error("error destroying executor for paragraphId: " + executorKey, e);
+        }
       }
     }
   }
@@ -126,7 +130,11 @@ public class ShellInterpreter extends KerberosInterpreter {
   public void cancel(InterpreterContext context) {
     DefaultExecutor executor = executors.remove(context.getParagraphId());
     if (executor != null) {
-      executor.getWatchdog().destroyProcess();
+      try {
+        executor.getWatchdog().destroyProcess();
+      } catch (Exception e){
+        LOGGER.error("error destroying executor for paragraphId: " + context.getParagraphId(), e);
+      }
     }
   }
 
@@ -157,6 +165,7 @@ public class ShellInterpreter extends KerberosInterpreter {
     try {
       ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
     } catch (Exception e) {
+      LOGGER.error("Unable to run kinit for zeppelin", e);
       return false;
     }
     return true;

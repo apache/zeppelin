@@ -31,10 +31,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Interpreter wrapper for Kerberos initialization
  *
- * TODO: coming soon
- * Please see,
- * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
- *
  * runKerberosLogin() method you need to implement that determine Zeppelin's behavior.
  * startKerberosLoginThread() needs to be called inside the open() and
  * shutdownExecutorService() inside close().
@@ -101,8 +97,11 @@ public abstract class KerberosInterpreter extends Interpreter {
           scheduledExecutorService
               .schedule(this, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
         } else {
+          kinitFailCount++;
+          logger.info("runKerberosLogin failed for   " + kinitFailCount + "time");
           // schedule another retry at once or close the interpreter if too many times kinit fails
           if (kinitFailCount >= kinitFailThreshold()) {
+            logger.error("runKerberosLogin failed for  max attempts, calling close interpreter.");
             close();
           } else {
             scheduledExecutorService.submit(this);
