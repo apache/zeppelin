@@ -28,6 +28,17 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Interpreter wrapper for Kerberos initialization
+ *
+ * TODO: coming soon
+ * Please see,
+ * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
+ *
+ * runKerberosLogin() method you need to implement that determine Zeppelin's behavior.
+ * startKerberosLoginThread() needs to be called inside the open() and
+ * shutdownExecutorService() inside close().
+ */
 public abstract class KerberosInterpreter extends Interpreter {
 
   Integer kinitFailCount = 0;
