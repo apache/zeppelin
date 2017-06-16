@@ -87,7 +87,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       }
       FileUtils.write(file, authShiro, "UTF-8");
     } catch (IOException e) {
-      LOG.error("Error in AuthenticationIT startUp::", e);
+      LOG.error("Error in PersonalizeActionsIT startUp::", e);
     }
     ZeppelinITUtils.restartZeppelin();
     driver = WebDriverManager.getWebDriver();
@@ -109,7 +109,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
         }
       }
     } catch (IOException e) {
-      LOG.error("Error in AuthenticationIT tearDown::", e);
+      LOG.error("Error in PersonalizeActionsIT tearDown::", e);
     }
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
@@ -155,7 +155,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testGroupPermission() throws Exception {
+  public void testActionPersonalizedMode() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -213,7 +213,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           CoreMatchers.equalTo("Before"));
 
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testGroupPermission ", e);
+      handleException("Exception in ParagraphActionsIT while testActionPersonalizedMode ", e);
     }
   }
 }
