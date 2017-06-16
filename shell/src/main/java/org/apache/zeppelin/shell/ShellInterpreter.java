@@ -171,6 +171,4 @@ public class ShellInterpreter extends KerberosInterpreter {
     return true;
   }
 
-
-
 }

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class KerberosInterpreter extends Interpreter {
 
-  Integer kinitFailCount = 0;
+  private Integer kinitFailCount = 0;
   protected ScheduledExecutorService scheduledExecutorService;
   public static Logger logger = LoggerFactory.getLogger(KerberosInterpreter.class);
 
@@ -93,6 +93,8 @@ public abstract class KerberosInterpreter extends Interpreter {
       public Object call() throws Exception {
 
         if (runKerberosLogin()) {
+          logger.info("Ran runKerberosLogin command successfully.");
+          kinitFailCount = 0;
           // schedule another kinit run with a fixed delay.
           scheduledExecutorService
               .schedule(this, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
