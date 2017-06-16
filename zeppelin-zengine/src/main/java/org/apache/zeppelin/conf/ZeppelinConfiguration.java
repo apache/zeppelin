@@ -21,8 +21,11 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -41,6 +44,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
   private static final long serialVersionUID = 4749305895693848035L;
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
+  private static final Pattern COMMA_DELIMITER = Pattern.compile("\\s*,\\s*");
 
   private static final String HELIUM_PACKAGE_DEFAULT_URL =
       "https://s3.amazonaws.com/helium-package/helium.json";
@@ -506,6 +510,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
   }
 
+  public Set<String> getDefaultOwner() {
+    String values = getString(ConfVars.ZEPPELIN_DEFAULT_OWNER);
+    return new HashSet<>(Arrays.asList(COMMA_DELIMITER.split(values)));
+  }
+
   public String getJettyName() {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
@@ -664,7 +673,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
-    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null);
+    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
+    ZEPPELIN_DEFAULT_OWNER("zeppelin.notebook.owner", "");
 
     private String varName;
     @SuppressWarnings("rawtypes")

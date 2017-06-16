@@ -16,18 +16,20 @@
  */
 package org.apache.zeppelin.conf;
 
-import junit.framework.Assert;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-
-import org.junit.Before;
-import org.junit.Test;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.junit.Before;
+import org.junit.Test;
+
+import junit.framework.Assert;
 
 
 /**
@@ -96,5 +98,16 @@ public class ZeppelinConfigurationTest {
       ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
       boolean isIt = conf.isNotebokPublic();
       assertTrue(isIt);
+    }
+
+    @Test
+    public void getDefaultOwnerTest() throws ConfigurationException {
+        ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/test-zeppelin-site3.xml"));
+        Set<String> actual = conf.getDefaultOwner();
+        Set<String> expect = new HashSet<>();
+        expect.add("admin");
+        expect.add("user1");
+        expect.add("user2");
+        assertEquals(expect, actual);
     }
 }
