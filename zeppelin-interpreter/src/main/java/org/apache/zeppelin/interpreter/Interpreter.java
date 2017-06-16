@@ -27,12 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
@@ -55,8 +49,6 @@ import org.slf4j.LoggerFactory;
  * getFormType(), getScheduler() determine Zeppelin's behavior
  */
 public abstract class Interpreter {
-
-  Integer kinitFailCount = 0;
 
   /**
    * Opens interpreter. You may want to place your initialize routine here.
@@ -493,71 +485,5 @@ public abstract class Interpreter {
       }
     }
     return null;
-  }
-
-  public String getKerberosRefreshInterval() {
-    if (System.getenv("KERBEROS_REFRESH_INTERVAL") == null) {
-      return "1d";
-    } else {
-      return System.getenv("KERBEROS_REFRESH_INTERVAL");
-    }
-  }
-
-  public Integer kinitFailThreshold() {
-    if (System.getenv("KINIT_FAIL_THRESHOLD") == null) {
-      return 5;
-    } else {
-      return new Integer(System.getenv("KINIT_FAIL_THRESHOLD"));
-    }
-  }
-
-  public Long getTimeAsMs(String time) {
-    if (time == null) {
-      logger.error("Cannot convert to time value.", time);
-      time = "1d";
-    }
-
-    Matcher m = Pattern.compile("(-?[0-9]+)([a-z]+)?").matcher(time.toLowerCase());
-    if (!m.matches()) {
-      throw new IllegalArgumentException("Invalid time string: " + time);
-    }
-
-    long val = Long.parseLong(m.group(1));
-    String suffix = m.group(2);
-
-    if (suffix != null && !Constants.TIME_SUFFIXES.containsKey(suffix)) {
-      throw new IllegalArgumentException("Invalid suffix: \"" + suffix + "\"");
-    }
-
-    return TimeUnit.MILLISECONDS.convert(val,
-        suffix != null ? Constants.TIME_SUFFIXES.get(suffix) : TimeUnit.MILLISECONDS);
-  }
-
-  protected abstract boolean runKerberosLogin();
-
-  protected ScheduledExecutorService startKerberosLoginThread() {
-    final ScheduledExecutorService scheduledExecutorService =
-        Executors.newScheduledThreadPool(1);
-
-    scheduledExecutorService.schedule(new Callable() {
-      public Object call() throws Exception {
-
-        if (runKerberosLogin()) {
-          // schedule another kinit run with a fixed delay.
-          scheduledExecutorService
-              .schedule(this, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
-        } else {
-          // schedule another retry at once or fail the livy server if too many times kinit fail
-          if (kinitFailCount >= kinitFailThreshold()) {
-            close();
-          } else {
-            scheduledExecutorService.submit(this);
-          }
-        }
-        return null;
-      }
-    }, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
-
-    return scheduledExecutorService;
   }
 }

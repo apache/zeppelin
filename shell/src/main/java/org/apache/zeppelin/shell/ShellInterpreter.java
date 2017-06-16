@@ -24,15 +24,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import java.util.concurrent.ScheduledExecutorService;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.KerberosInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -45,13 +44,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Shell interpreter for Zeppelin.
  */
-public class ShellInterpreter extends Interpreter {
+public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   ConcurrentHashMap<String, DefaultExecutor> executors;
-  ScheduledExecutorService scheduledExecutorService;
 
   public ShellInterpreter(Properties property) {
     super(property);
@@ -62,15 +60,13 @@ public class ShellInterpreter extends Interpreter {
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new ConcurrentHashMap<>();
     if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
-      scheduledExecutorService = startKerberosLoginThread();
+      startKerberosLoginThread();
     }
   }
 
   @Override
   public void close() {
-    if (scheduledExecutorService != null) {
-      scheduledExecutorService.shutdown();
-    }
+    shutdownExecutorService();
 
     for (String executorKey : executors.keySet()) {
       DefaultExecutor executor = executors.remove(executorKey);
