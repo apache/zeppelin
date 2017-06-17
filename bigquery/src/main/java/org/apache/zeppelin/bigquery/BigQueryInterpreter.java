@@ -247,8 +247,7 @@ public class BigQueryInterpreter extends Interpreter {
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
     String legacySql = getProperty(LEGACY_SQL);
-    boolean useLegacySql = legacySql == null ? true : Boolean
-        .parseBoolean(legacySql);
+    boolean useLegacySql = legacySql == null ? true : Boolean.parseBoolean(legacySql);
     Iterator<GetQueryResultsResponse> pages;
     try {
       pages = run(sql, projId, wTime, maxRows, useLegacySql);
