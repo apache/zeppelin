@@ -127,17 +127,17 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     logger.info("Thrift server for callback will start. Port: {}", callbackPort);
     try {
       callbackServer = new TThreadPoolServer(
-          new TThreadPoolServer.Args(new TServerSocket(callbackPort)).processor(
-              new RemoteInterpreterCallbackService.Processor<>(
-                  new RemoteInterpreterCallbackService.Iface() {
-                    @Override
-                    public void callback(CallbackInfo callbackInfo) throws TException {
-                      logger.info("Registered: {}", callbackInfo);
-                      host = callbackInfo.getHost();
-                      port = callbackInfo.getPort();
-                      hostPortLatch.countDown();
-                    }
-                  })));
+        new TThreadPoolServer.Args(new TServerSocket(callbackPort)).processor(
+          new RemoteInterpreterCallbackService.Processor<>(
+            new RemoteInterpreterCallbackService.Iface() {
+              @Override
+              public void callback(CallbackInfo callbackInfo) throws TException {
+                logger.info("Registered: {}", callbackInfo);
+                host = callbackInfo.getHost();
+                port = callbackInfo.getPort();
+                hostPortLatch.countDown();
+              }
+            })));
       // Start thrift server to receive callbackInfo from RemoteInterpreterServer;
       new Thread(new Runnable() {
         @Override
