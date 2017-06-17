@@ -1237,6 +1237,15 @@ public class NotebookTest implements JobListenerFactory{
     expect.add("user1");
     assertEquals(2, owners.size());
     assertEquals(expect, owners);
+
+    // default owner is empty
+    System.setProperty(ConfVars.ZEPPELIN_DEFAULT_OWNER.getVarName(), "");
+    note = notebook.createNote(subject);
+    owners = notebookAuthorization.getOwners(note.getId());
+    Set<String> expect2 = new HashSet<>();
+    expect2.add("user1");
+    assertEquals(1, owners.size());
+    assertEquals(expect2, owners);
   }
   
   private void delete(File file){
