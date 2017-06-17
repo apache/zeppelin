@@ -17,18 +17,6 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.CharsetUtil;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Inet4Address;
@@ -41,8 +29,16 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 
 /**
  *
@@ -117,41 +113,16 @@ public class RemoteInterpreterUtils {
     return key.matches("^[A-Z_0-9]*");
   }
 
-  public static void registerInterpreter(String callbackHost, int callbackPort, final String msg) {
-    LOGGER.info("callbackHost: {}, callbackPort: {}, msg: {}", callbackHost, callbackPort, msg);
-    EventLoopGroup workerGroup = new NioEventLoopGroup();
-    try {
-      Bootstrap b = new Bootstrap();
-      b.group(workerGroup);
-      b.channel(NioSocketChannel.class);
-      b.option(ChannelOption.SO_KEEPALIVE, true);
-      b.handler(new ChannelInitializer<SocketChannel>() {
-        @Override
-        public void initChannel(SocketChannel ch) throws Exception {
-          ch.pipeline().addLast(new ChannelInboundHandlerAdapter(){
-            @Override
-            public void channelActive(ChannelHandlerContext ctx) throws Exception {
-              LOGGER.info("Send message {}", msg);
-              ctx.writeAndFlush(Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8));
-            }
-
-            @Override
-            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-              cause.printStackTrace();
-              ctx.close();
-            }
-          });
-        }
-      });
-
-      ChannelFuture f = b.connect(callbackHost, callbackPort).sync();
-
-      // Wait until the connection is closed.
-      f.channel().closeFuture().sync();
-    } catch (InterruptedException e) {
-      //
-    } finally {
-      workerGroup.shutdownGracefully();
+  public static void registerInterpreter(String callbackHost, int callbackPort,
+      final CallbackInfo callbackInfo) throws TException {
+    LOGGER.info("callbackHost: {}, callbackPort: {}, callbackInfo: {}", callbackHost, callbackPort,
+        callbackInfo);
+    try (TTransport transport = new TSocket(callbackHost, callbackPort)) {
+      transport.open();
+      TProtocol protocol = new TBinaryProtocol(transport);
+      RemoteInterpreterCallbackService.Client client = new RemoteInterpreterCallbackService.Client(
+          protocol);
+      client.callback(callbackInfo);
     }
   }
 }

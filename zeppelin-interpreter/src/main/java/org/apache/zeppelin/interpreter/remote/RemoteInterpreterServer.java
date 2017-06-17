@@ -69,6 +69,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
+import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
@@ -166,8 +167,18 @@ public class RemoteInterpreterServer
           }
 
           if (!interrupted) {
-            RemoteInterpreterUtils
-                .registerInterpreter(callbackHost, callbackPort, host + ":" + port);
+            CallbackInfo callbackInfo = new CallbackInfo(host, port);
+            try {
+              RemoteInterpreterUtils
+                  .registerInterpreter(callbackHost, callbackPort, callbackInfo);
+            } catch (TException e) {
+              logger.error("Error while registering interpreter: {}", callbackInfo, e);
+              try {
+                shutdown();
+              } catch (TException e1) {
+                logger.warn("Exception occurs while shutting down", e1);
+              }
+            }
           }
         }
       }).start();

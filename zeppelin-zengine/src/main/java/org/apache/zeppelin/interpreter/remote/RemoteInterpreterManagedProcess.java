@@ -17,19 +17,6 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.util.CharsetUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,11 +31,18 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.thrift.TException;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 
 /**
  * This class manages start / stop of remote interpreter process
@@ -58,11 +52,12 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private static final Logger logger = LoggerFactory.getLogger(
       RemoteInterpreterManagedProcess.class);
   private final String interpreterRunner;
-  private final CountDownLatch hostPortLatch;
 
+  private CountDownLatch hostPortLatch;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   boolean running = false;
+  TServer callbackServer;
   private String host = null;
   private int port = -1;
   private final String interpreterDir;
@@ -70,7 +65,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private final String interpreterGroupName;
 
   private Map<String, String> env;
-
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
@@ -130,6 +124,48 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       throw new InterpreterException(e1);
     }
 
+    logger.info("Thrift server for callback will start. Port: {}", callbackPort);
+    try {
+      callbackServer = new TThreadPoolServer(
+          new TThreadPoolServer.Args(new TServerSocket(callbackPort)).processor(
+              new RemoteInterpreterCallbackService.Processor<>(
+                  new RemoteInterpreterCallbackService.Iface() {
+                    @Override
+                    public void callback(CallbackInfo callbackInfo) throws TException {
+                      logger.info("Registered: {}", callbackInfo);
+                      host = callbackInfo.getHost();
+                      port = callbackInfo.getPort();
+                      hostPortLatch.countDown();
+                    }
+                  })));
+      // Start thrift server to receive callbackInfo from RemoteInterpreterServer;
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          callbackServer.serve();
+        }
+      }).start();
+
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        @Override
+        public void run() {
+          if (callbackServer.isServing()) {
+            callbackServer.stop();
+          }
+        }
+      }));
+
+      while (!callbackServer.isServing()) {
+        logger.debug("callbackServer is not serving");
+        Thread.sleep(500);
+      }
+      logger.debug("callbackServer is serving now");
+    } catch (TTransportException e) {
+      logger.error("callback server error.", e);
+    } catch (InterruptedException e) {
+      logger.warn("", e);
+    }
+
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
@@ -168,65 +204,13 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       throw new InterpreterException(e);
     }
 
-    // Start netty server to receive hostPort information from RemoteInterpreterServer;
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-        try {
-          ServerBootstrap b = new ServerBootstrap();
-          b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-              .handler(new LoggingHandler(LogLevel.DEBUG))
-              .childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                  ch.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
-                    @Override
-                    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-                      logger.info("{}", ctx);
-                    }
-
-                    @Override
-                    public void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
-                      logger.info("msg: {}", msg.toString(CharsetUtil.UTF_8));
-                      String[] hostPort = msg.toString(CharsetUtil.UTF_8).split(":");
-                      host = hostPort[0];
-                      port = Integer.parseInt(hostPort[1]);
-                      hostPortLatch.countDown();
-                    }
-
-                    @Override
-                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                      logger.error("Netty error", cause);
-                      ctx.close();
-                    }
-                  });
-                }
-              });
-
-          logger.info("Netty server starts");
-          // Bind and start to accept incoming connections.
-          ChannelFuture f = b.bind(callbackPort).sync();
-
-          // Wait until the server socket is closed.
-          // In this example, this does not happen, but you can do that to gracefully
-          // shut down your server.
-          f.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-          logger.error("Netty server error while binding", e);
-        } finally {
-          workerGroup.shutdownGracefully();
-          bossGroup.shutdownGracefully();
-        }
-      }
-    }).start();
-
     try {
-      hostPortLatch.await(getConnectTimeout(), TimeUnit.MILLISECONDS);
+      hostPortLatch.await(getConnectTimeout() * 2, TimeUnit.MILLISECONDS);
       // Check if not running
       if (null == host || -1 == port) {
-        throw new InterpreterException("CAnnot run interpreter");
+        hostPortLatch = new CountDownLatch(1);
+        callbackServer.stop();
+        throw new InterpreterException("Cannot run interpreter");
       }
     } catch (InterruptedException e) {
       logger.error("Remote interpreter is not accessible");
@@ -235,6 +219,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   public void stop() {
+    if (callbackServer.isServing()) {
+      callbackServer.stop();
+    }
     if (isRunning()) {
       logger.info("kill interpreter process");
       watchdog.destroyProcess();

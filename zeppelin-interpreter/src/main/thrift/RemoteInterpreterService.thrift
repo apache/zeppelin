@@ -88,6 +88,11 @@ struct InterpreterCompletion {
   3: string meta
 }
 
+struct CallbackInfo {
+  1: string host,
+  2: i32 port
+}
+
 service RemoteInterpreterService {
 
   void createInterpreter(1: string intpGroupId, 2: string sessionKey, 3: string className, 4: map<string, string> properties, 5: string userName);
@@ -130,4 +135,8 @@ service RemoteInterpreterService {
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
 
   void onReceivedZeppelinResource(1: string object);
+}
+
+service RemoteInterpreterCallbackService {
+  void callback(1: CallbackInfo callbackInfo);
 }
