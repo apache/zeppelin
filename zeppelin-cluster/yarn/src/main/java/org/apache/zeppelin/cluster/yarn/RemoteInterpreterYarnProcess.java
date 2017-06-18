@@ -123,12 +123,14 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
     this.interpreterLibPaths = Lists.newArrayList(
         Paths.get(homeDir, "zeppelin-interpreter", "target"),
         Paths.get(homeDir, "zeppelin-interpreter", "target", "lib"),
-        Paths.get(homeDir, "zeppelin-zengine", "target"),
-        Paths.get(homeDir, "zeppelin-zengine", "target", "lib"),
+        Paths.get(homeDir, "zeppelin-cluster", "common", "target"),
+        Paths.get(homeDir, "zeppelin-cluster", "common", "target", "lib"),
+        Paths.get(homeDir, "zeppelin-cluster", "yarn", "target"),
+        Paths.get(homeDir, "zeppelin-cluster", "yarn", "target", "lib"),
         Paths.get(homeDir, "conf", "yarn", "log4j.properties"),
         Paths.get(homeDir, "lib", "interpreter"),
-        Paths.get(homeDir, "lib", "zeppelin-zengine-0.8.0-SNAPSHOT.jar"),
-        Paths.get(homeDir, "lib", "zengine"));
+        Paths.get(homeDir, "lib", "cluster", "common"),
+        Paths.get(homeDir, "lib", "cluster", "yarn"));
   }
 
   @Override
@@ -173,6 +175,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       classpathStrings.add(0, ApplicationConstants.Environment.CLASSPATH.$$());
       classpathStrings.add("./log4j.properties");
       classpathStrings.add(System.getenv("HADOOP_CONF_DIR"));
+      classpathStrings.add("`hadoop classpath 2> /dev/null`");
 
       String classpathEnv =
           Joiner.on(ApplicationConstants.CLASS_PATH_SEPARATOR).join(classpathStrings);
