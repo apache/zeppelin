@@ -14,10 +14,10 @@
 # limitations under the License.
 FROM centos:centos6
 
-ENV SPARK_PROFILE 2.0
-ENV SPARK_VERSION 2.0.0
-ENV HADOOP_PROFILE 2.3
-ENV HADOOP_VERSION 2.3.0
+ENV SPARK_PROFILE 2.1
+ENV SPARK_VERSION 2.1.1
+ENV HADOOP_PROFILE 2.7
+ENV HADOOP_VERSION 2.7.0
 
 # Update the image with the latest packages
 RUN yum update -y; yum clean all

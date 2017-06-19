@@ -276,10 +276,13 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   public class PythonInterpretRequest {
     public String statements;
     public String jobGroup;
+    public String jobDescription;
 
-    public PythonInterpretRequest(String statements, String jobGroup) {
+    public PythonInterpretRequest(String statements, String jobGroup,
+        String jobDescription) {
       this.statements = statements;
       this.jobGroup = jobGroup;
+      this.jobDescription = jobDescription;
     }
 
     public String statements() {
@@ -288,6 +291,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     public String jobGroup() {
       return jobGroup;
+    }
+
+    public String jobDescription() {
+      return jobDescription;
     }
   }
 
@@ -395,10 +402,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
     String jobGroup = Utils.buildJobGroupId(context);
+    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     SparkZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
     __zeppelin__.setInterpreterContext(context);
     __zeppelin__.setGui(context.getGui());
-    pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
+    pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup, jobDesc);
     statementOutput = null;
 
     synchronized (statementSetNotifier) {
@@ -476,7 +484,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new LinkedList<>();
     }
 
-    pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "");
+    pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "", "");
     statementOutput = null;
 
     synchronized (statementSetNotifier) {

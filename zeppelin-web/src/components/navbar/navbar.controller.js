@@ -102,7 +102,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
           message: 'Logout Success'
         })
         setTimeout(function () {
-          window.location.replace('/')
+          window.location = baseUrlSrv.getBase()
         }, 1000)
       })
     })

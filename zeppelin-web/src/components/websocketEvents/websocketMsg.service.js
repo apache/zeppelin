@@ -160,9 +160,10 @@ function websocketMsgSrv ($rootScope, websocketEvents) {
     },
 
     paragraphExecutedBySpell: function (paragraphId, paragraphTitle,
-                                       paragraphText, paragraphResultsMsg,
-                                       paragraphStatus, paragraphErrorMessage,
-                                       paragraphConfig, paragraphParams) {
+                                        paragraphText, paragraphResultsMsg,
+                                        paragraphStatus, paragraphErrorMessage,
+                                        paragraphConfig, paragraphParams,
+                                        paragraphDateStarted, paragraphDateFinished) {
       websocketEvents.sendNewEvent({
         op: 'PARAGRAPH_EXECUTED_BY_SPELL',
         data: {
@@ -179,7 +180,9 @@ function websocketMsgSrv ($rootScope, websocketEvents) {
           status: paragraphStatus,
           errorMessage: paragraphErrorMessage,
           config: paragraphConfig,
-          params: paragraphParams
+          params: paragraphParams,
+          dateStarted: paragraphDateStarted,
+          dateFinished: paragraphDateFinished,
         }
       })
     },

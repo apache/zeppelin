@@ -156,7 +156,7 @@ limitations under the License.
                 <strong>{{revision.message}}</strong>
               </span>
               <span class="revisionDate">
-                <em>{{moment.unix(revision.time).format('MMMM Do YYYY, h:mm a')}}</em>
+                <em>{{formatRevisionDate(revision.time)}}</em>
               </span>
             </a>
           </li>

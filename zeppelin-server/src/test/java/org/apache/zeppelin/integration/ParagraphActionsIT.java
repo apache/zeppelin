@@ -253,7 +253,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
     }
-
   }
 
   @Test
@@ -594,6 +593,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               CoreMatchers.equalTo("Howdy "));
 
       Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getParagraphXPath(1) + "//select)[1]"))));
+
       dropDownMenu.selectByVisibleText("Alice");
       collector.checkThat("After selection in drop down menu, output should display the newly selected option",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),

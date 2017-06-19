@@ -21,12 +21,12 @@ function expandCollapse () {
       angular.element(element).click(function (event) {
         if (angular.element(element).find('.expandable:visible').length > 1) {
           angular.element(element).find('.expandable:visible').slideUp('slow')
-          angular.element(element).find('i.icon-folder-alt').toggleClass('icon-folder icon-folder-alt')
+          angular.element(element).find('i.fa-folder-open').toggleClass('fa-folder fa-folder-open')
         } else {
           angular.element(element).find('.expandable').first().slideToggle('200', function () {
             // do not toggle trash folder
             if (angular.element(element).find('.fa-trash-o').length === 0) {
-              angular.element(element).find('i').first().toggleClass('icon-folder icon-folder-alt')
+              angular.element(element).find('i').first().toggleClass('fa-folder fa-folder-open')
             }
           })
         }

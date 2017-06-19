@@ -20,6 +20,9 @@ package org.apache.zeppelin.interpreter.remote;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
@@ -72,5 +75,65 @@ public class RemoteInterpreterServerTest {
     assertEquals(false, running);
   }
 
+  class ShutdownRun implements Runnable {
+    private RemoteInterpreterServer serv = null;
+    public ShutdownRun(RemoteInterpreterServer serv) {
+      this.serv = serv;
+    }
+    @Override
+    public void run() {
+      try {
+        serv.shutdown();
+      } catch (Exception ex) {};
+    }
+  };
+
+  @Test
+  public void testStartStopWithQueuedEvents() throws InterruptedException, IOException, TException {
+    RemoteInterpreterServer server = new RemoteInterpreterServer(
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces());
+    assertEquals(false, server.isRunning());
+
+    server.start();
+    long startTime = System.currentTimeMillis();
+    boolean running = false;
+
+    while (System.currentTimeMillis() - startTime < 10 * 1000) {
+      if (server.isRunning()) {
+        running = true;
+        break;
+      } else {
+        Thread.sleep(200);
+      }
+    }
+
+    assertEquals(true, running);
+    assertEquals(true, RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", server.getPort()));
+
+    //just send an event on the client queue
+    server.eventClient.onAppStatusUpdate("","","","");
+
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+    Runnable task = new ShutdownRun(server);
+
+    executor.schedule(task, 0, TimeUnit.MILLISECONDS);
+
+    while (System.currentTimeMillis() - startTime < 10 * 1000) {
+      if (server.isRunning()) {
+        Thread.sleep(200);
+      } else {
+        running = false;
+        break;
+      }
+    }
+
+    executor.shutdown();
+
+    //cleanup environment for next tests
+    server.shutdown();
+
+    assertEquals(false, running);
+  }
 
 }
