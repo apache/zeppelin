@@ -32,6 +32,8 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +121,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(1000, false);
     pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
     pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
@@ -128,28 +129,27 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   }
 
   private void logoutUser(String userName) throws URISyntaxException {
-    ZeppelinITUtils.sleep(500, false);
-    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]")).click();
-    ZeppelinITUtils.sleep(500, false);
-    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='navbar.logout()']")).click();
-    ZeppelinITUtils.sleep(2000, false);
-    if (driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"))
-        .isDisplayed()) {
+    pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+        userName + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+    pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+        userName + "')]//a[@ng-click='navbar.logout()']"), MAX_BROWSER_TIMEOUT_SEC).click();
+
+    By locator = By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button");
+    WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    if (element.isDisplayed()) {
       driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
     }
     driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
-    ZeppelinITUtils.sleep(500, false);
+    ZeppelinITUtils.sleep(1000, false);
   }
 
   public void setParagraphText(String text) {
     setTextOfParagraph(1, "%md");
-    driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.ARROW_RIGHT);
-    driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.ENTER);
-    driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(Keys.SHIFT + "3");
-    driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea")).sendKeys(" " + text);
-
+    pollingWait(By.xpath(getParagraphXPath(1) + "//textarea"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(Keys.ARROW_RIGHT);
+    pollingWait(By.xpath(getParagraphXPath(1) + "//textarea"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(Keys.ENTER);
+    pollingWait(By.xpath(getParagraphXPath(1) + "//textarea"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(Keys.SHIFT + "3");
+    pollingWait(By.xpath(getParagraphXPath(1) + "//textarea"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(" " + text);
     runParagraph(1);
     waitForParagraph(1, "FINISHED");
   }
@@ -163,25 +163,34 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       // step 1 : (admin) create a new note, run a paragraph and turn on personalized mode
       PersonalizeActionsIT personalizeActionsIT = new PersonalizeActionsIT();
       personalizeActionsIT.authenticationUser("admin", "password1");
-      createNewNote();
-
+      By locator = By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+          " note')]");
+      WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      if (element.isDisplayed()) {
+        createNewNote();
+      }
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
       waitForParagraph(1, "READY");
       setParagraphText("Before");
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
-      driver.findElement(By.xpath("//*[@id='actionbar']" +
-          "//button[contains(@uib-tooltip, 'Switch to personal mode')]")).click();
+      pollingWait(By.xpath("//*[@id='actionbar']" +
+          "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
-
       personalizeActionsIT.logoutUser("admin");
 
       // step 2 : (user1) make sure it is on personalized mode and 'Before' in result of paragraph
       personalizeActionsIT.authenticationUser("user1", "password2");
-      driver.findElement(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]")).click();
-
+      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
+      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      if (element.isDisplayed()) {
+        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+            MAX_BROWSER_TIMEOUT_SEC).click();
+      }
       collector.checkThat("The personalized mode enables",
           driver.findElement(By.xpath("//*[@id='actionbar']" +
               "//button[contains(@class, 'btn btn-default btn-xs ng-scope ng-hide')]")).getAttribute("uib-tooltip"),
@@ -192,12 +201,16 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
-
       personalizeActionsIT.logoutUser("user1");
 
       // step 3 : (admin) change paragraph contents to 'After' and check result of paragraph
       personalizeActionsIT.authenticationUser("admin", "password1");
-      driver.findElement(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]")).click();
+      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
+      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      if (element.isDisplayed()) {
+        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+      }
       waitForParagraph(1, "FINISHED");
       setParagraphText("After");
       collector.checkThat("The output field paragraph contains",
@@ -207,11 +220,15 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       // step 4 : (user1) check whether result is 'Before' or not
       personalizeActionsIT.authenticationUser("user1", "password2");
-      driver.findElement(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]")).click();
+      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
+      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      if (element.isDisplayed()) {
+        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+      }
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
-
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testActionPersonalizedMode ", e);
     }
