@@ -119,15 +119,9 @@ body {
 }
 
 .navbar-inverse .navbar-nav > li > a.active:hover,
-.navbar-inverse .navbar-nav > li > a.active:focus,
-. navbar-inverse .navbar-toggle.collapsed:hover {
+.navbar-inverse .navbar-nav > li > a.active:focus {
   text-decoration: none;
   background: #265380;
-}
-
-.navbar-inverse .navbar-toggle.collapsed {
-  border-color: #3071A9;
-  background: #3071a9;
 }
 
 .navbar-inverse .navbar-nav > li > a.active {
@@ -195,14 +189,19 @@ body {
   border-color: transparent;
 }
 
+.navbar-inverse .navbar-toggle:focus {
+  outline-width: 0;
+}
+
 .navbar-inverse .navbar-toggle:hover,
 .navbar-inverse .navbar-toggle:focus {
   border-color: #265380;
   background: #265380;
 }
 
-.navbar-inverse .navbar-toggle:focus {
-  outline-width: 0;
+.navbar-inverse .navbar-toggle.collapsed {
+  border-color: #3071A9;
+  background: #3071a9;
 }
 
 /* CUSTOMIZE THE CAROUSEL
