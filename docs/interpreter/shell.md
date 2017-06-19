@@ -63,6 +63,7 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
 ## Example
 The following example demonstrates the basic usage of Shell in a Zeppelin notebook.
 
-<img src="../assets/themes/zeppelin/img/docs-img/shell-example.png" />
+<img src="/assets/themes/zeppelin/img/docs-img/shell-example.png" />
 
-If you need further information about **Zeppelin Interpreter Setting** for using Shell interpreter, please read [What is interpreter setting?](../manual/interpreters.html#what-is-interpreter-setting) section first.
+If you need further information about **Zeppelin Interpreter Setting** for using Shell interpreter, 
+please read [What is interpreter setting?](../usage/interpreter/overview.html#what-is-interpreter-setting) section first.

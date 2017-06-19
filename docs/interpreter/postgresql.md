@@ -25,5 +25,6 @@ limitations under the License.
 		
 ## Important Notice		
 		
-
-Postgresql interpreter is deprecated and merged into [JDBC Interpreter](./jdbc.html). You can use it with JDBC Interpreter as same functionality. See [Postgresql setting example](./jdbc.html#postgres) for more detailed information.
+Postgresql interpreter is deprecated and merged into [JDBC Interpreter](./jdbc.html). 
+You can use it with JDBC Interpreter as same functionality. 
+See [Postgresql setting example](./jdbc.html#postgres) for more detailed information.
