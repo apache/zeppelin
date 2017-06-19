@@ -100,7 +100,7 @@ public abstract class KerberosInterpreter extends Interpreter {
               .schedule(this, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
         } else {
           kinitFailCount++;
-          logger.info("runKerberosLogin failed for   " + kinitFailCount + "time");
+          logger.info("runKerberosLogin failed for " + kinitFailCount + " time(s).");
           // schedule another retry at once or close the interpreter if too many times kinit fails
           if (kinitFailCount >= kinitFailThreshold()) {
             logger.error("runKerberosLogin failed for  max attempts, calling close interpreter.");
