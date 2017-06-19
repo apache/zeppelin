@@ -53,7 +53,7 @@ Use this command to launch Apache Zeppelin in a container.
 docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.7.2
 ```
 
-To persist `logs` and `notebook` directories in local machine, Use the [volumn](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
+To persist `logs` and `notebook` directories in local machine, use the [volumn](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
 
 ```bash
 docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.7.2
