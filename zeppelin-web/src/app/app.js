@@ -147,7 +147,6 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
   })
   .constant('TRASH_FOLDER_ID', '~Trash')
 
-
 function auth () {
   let $http = angular.injector(['ng']).get('$http')
   let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv')
@@ -160,25 +159,22 @@ function auth () {
     },
     crossDomain: true
   })
-  var config = {headers:  {
-    "X-Requested-With": "XMLHttpRequest"
-    }
-  }
+  let config = {headers: { 'X-Requested-With': 'XMLHttpRequest' }}
   return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket', config).then(function (response) {
     zeppelinWebApp.run(function ($rootScope) {
       $rootScope.ticket = angular.fromJson(response.data).body
 
       $rootScope.ticket.screenUsername = $rootScope.ticket.principal
-      if ($rootScope.ticket.principal.startsWith("#Pac4j")) {
-        let re = ", name=(.*?),"
+      if ($rootScope.ticket.principal.startsWith('#Pac4j')) {
+        let re = ', name=(.*?),'
         $rootScope.ticket.screenUsername = $rootScope.ticket.principal.match(re)[1]
       }
     })
   }, function (errorResponse) {
     // Handle error case
-    var redirect = errorResponse.headers('Location')
-    if (errorResponse.status == 401 && redirect != undefined) {
-      //handle page redirect
+    let redirect = errorResponse.headers('Location')
+    if (errorResponse.status === 401 && redirect !== undefined) {
+      // Handle page redirect
       window.location.href = redirect
     }
   })
