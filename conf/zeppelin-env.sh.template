@@ -53,6 +53,11 @@
 
 #### Spark interpreter configuration ####
 
+## Kerberos ticket refresh setting
+##
+#export KINIT_FAIL_THRESHOLD                    # (optional) How many times should kinit retry. The default value is 5.
+#export LAUNCH_KERBEROS_REFRESH_INTERVAL        # (optional) The refresh interval for Kerberos ticket. The default value is 1d.
+
 ## Use provided spark installation ##
 ## defining SPARK_HOME makes Zeppelin run spark interpreter process using spark-submit
 ##
