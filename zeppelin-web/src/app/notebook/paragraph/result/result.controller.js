@@ -227,7 +227,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
      * should be made. Also, it was observed that between PENDING
      * and RUNNING states, append-events can be called and we can't
      * miss those, else during the length of paragraph run, few
-     * initial output line/s will be missing. 
+     * initial output line/s will be missing.
      */
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
