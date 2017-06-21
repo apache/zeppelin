@@ -43,6 +43,23 @@ The latest release of Apache Zeppelin is **0.7.2**.
     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.md5),
     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.sha512))
 
+# Using the official docker image 
+
+Make sure that [docker](https://www.docker.com/community-edition) is installed in your local machine.  
+
+Use this command to launch Apache Zeppelin in a container. 
+
+```bash
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.7.2
+```
+
+To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
+
+```bash
+docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.7.2
+```
+
+If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
 
 ## Verify the integrity of the files
 
