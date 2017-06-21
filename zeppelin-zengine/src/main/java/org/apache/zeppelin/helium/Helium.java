@@ -453,10 +453,6 @@ public class Helium {
   public void setVisualizationPackageOrder(List<String> orderedPackageList)
       throws IOException {
     heliumConf.setBundleDisplayOrder(orderedPackageList);
-
-    // if package is visualization, rebuild buildBundle
-    bundleFactory.buildAllPackages(getBundlePackagesToBundle());
-
     save();
   }
 
