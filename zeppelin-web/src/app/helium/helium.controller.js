@@ -50,10 +50,8 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
       })
       .then(defaultPackageConfigs => {
         $scope.defaultPackageConfigs = defaultPackageConfigs
+        return heliumService.getVisualizationPackageOrder()
       })
-
-    // 2. get vis package order
-    heliumService.getVisualizationPackageOrder()
       .then(visPackageOrder => {
         $scope.bundleOrder = visPackageOrder
         $scope.bundleOrderChanged = false
