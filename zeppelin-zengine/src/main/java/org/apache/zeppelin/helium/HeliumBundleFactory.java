@@ -80,7 +80,6 @@ public class HeliumBundleFactory {
   private String defaultNpmInstallerUrl;
   private String defaultYarnInstallerUrl;
   private Gson gson;
-  private boolean nodeAndNpmInstalled = false;
 
   ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
@@ -119,7 +118,9 @@ public class HeliumBundleFactory {
   }
 
   void installNodeAndNpm() throws TaskRunnerException {
-    if (nodeAndNpmInstalled) {
+    File nodeTargetDir = new File(nodeInstallationDirectory, "node");
+    if (nodeTargetDir.exists() && nodeTargetDir.isDirectory()) {
+      logger.info("Skipping Node and NPM install");
       return;
     }
     try {
@@ -145,7 +146,6 @@ public class HeliumBundleFactory {
       yarnCommand(frontEndPluginFactory, "config set cache-folder " + yarnCacheDirPath);
 
       configureLogger();
-      nodeAndNpmInstalled = true;
     } catch (InstallationException e) {
       logger.error(e.getMessage(), e);
     }
