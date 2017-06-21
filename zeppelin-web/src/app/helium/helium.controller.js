@@ -53,9 +53,13 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
         return heliumService.getVisualizationPackageOrder()
       })
       .then(visPackageOrder => {
-        $scope.bundleOrder = visPackageOrder
-        $scope.bundleOrderChanged = false
+        setVisPackageOrder(visPackageOrder)
       })
+  }
+
+  const setVisPackageOrder = function(visPackageOrder) {
+    $scope.bundleOrder = visPackageOrder
+    $scope.bundleOrderChanged = false
   }
 
   let orderPackageByPubDate = function (a, b) {
@@ -132,7 +136,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling')
           heliumService.setVisualizationPackageOrder($scope.bundleOrder)
             .success(function (data, status) {
-              init()
+              setVisPackageOrder($scope.bundleOrder)
               confirm.close()
             })
             .error(function (data, status) {
