@@ -119,7 +119,8 @@ public class HeliumBundleFactory {
 
   void installNodeAndNpm() throws TaskRunnerException {
     File nodeTargetDir = new File(nodeInstallationDirectory, "node");
-    if (nodeTargetDir.exists() && nodeTargetDir.isDirectory()) {
+    File successFile = new File(nodeTargetDir, "_SUCCESS");
+    if (successFile.exists()) {
       logger.info("Skipping Node and NPM install");
       return;
     }
@@ -146,8 +147,13 @@ public class HeliumBundleFactory {
       yarnCommand(frontEndPluginFactory, "config set cache-folder " + yarnCacheDirPath);
 
       configureLogger();
+
+      successFile.createNewFile();
     } catch (InstallationException e) {
       logger.error(e.getMessage(), e);
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+      e.printStackTrace();
     }
   }
 
