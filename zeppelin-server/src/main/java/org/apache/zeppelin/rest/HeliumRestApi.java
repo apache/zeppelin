@@ -305,7 +305,7 @@ public class HeliumRestApi {
   @GET
   @Path("order/visualization")
   public Response getVisualizationPackageOrder() {
-    List<String> order = helium.setVisualizationPackageOrder();
+    List<String> order = helium.getVisualizationPackageOrder();
     return new JsonResponse(Response.Status.OK, order).build();
   }
 
