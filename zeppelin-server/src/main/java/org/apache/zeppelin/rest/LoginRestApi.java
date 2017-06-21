@@ -126,6 +126,8 @@ public class LoginRestApi {
   public Response logout() {
     JsonResponse response;
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
+    TicketContainer.instance.removeTicket(SecurityUtils.getPrincipal());
+    currentUser.getSession().stop();
     currentUser.logout();
     response = new JsonResponse(Response.Status.UNAUTHORIZED, "", "");
     LOG.warn(response.toString());
