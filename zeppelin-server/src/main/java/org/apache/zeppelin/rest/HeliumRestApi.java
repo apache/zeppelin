@@ -211,13 +211,6 @@ public class HeliumRestApi {
   }
 
   @GET
-  @Path("order/visualization")
-  public Response getVisualizationPackageOrder() {
-    List<String> order = helium.setVisualizationPackageOrder();
-    return new JsonResponse(Response.Status.OK, order).build();
-  }
-
-  @GET
   @Path("spell/config/{packageName}")
   public Response getSpellConfigUsingMagic(@PathParam("packageName") String packageName) {
     if (StringUtils.isEmpty(packageName)) {
@@ -307,6 +300,13 @@ public class HeliumRestApi {
     }
 
     return new JsonResponse(Response.Status.OK, packageConfig).build();
+  }
+
+  @GET
+  @Path("order/visualization")
+  public Response getVisualizationPackageOrder() {
+    List<String> order = helium.setVisualizationPackageOrder();
+    return new JsonResponse(Response.Status.OK, order).build();
   }
 
   @POST
