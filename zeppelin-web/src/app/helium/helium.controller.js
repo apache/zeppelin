@@ -133,18 +133,18 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
           confirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling')
           heliumService.setVisualizationPackageOrder($scope.bundleOrder)
-          .success(function (data, status) {
-            init()
-            confirm.close()
-          })
-          .error(function (data, status) {
-            confirm.close()
-            console.log('Failed to save order')
-            BootstrapDialog.show({
-              title: 'Error on saving order ',
-              message: data.message
+            .success(function (data, status) {
+              init()
+              confirm.close()
             })
-          })
+            .error(function (data, status) {
+              confirm.close()
+              console.log('Failed to save order')
+              BootstrapDialog.show({
+                title: 'Error on saving order ',
+                message: data.message
+              })
+            })
           return false
         }
       }
