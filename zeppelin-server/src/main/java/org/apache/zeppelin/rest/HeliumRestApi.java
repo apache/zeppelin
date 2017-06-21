@@ -311,7 +311,7 @@ public class HeliumRestApi {
 
   @POST
   @Path("order/visualization")
-  public Response getVisualizationPackageOrder(String orderedPackageNameList) {
+  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
     List<String> orderedList = gson.fromJson(
         orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
 
