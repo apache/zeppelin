@@ -46,10 +46,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-
-/**
- * Created for org.apache.zeppelin.integration on 13/06/16.
- */
 public class PersonalizeActionsIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(PersonalizeActionsIT.class);
 
@@ -73,7 +69,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   static String originalShiro = "";
 
-
   @BeforeClass
   public static void startUp() {
     if (!endToEndTestEnabled()) {
@@ -94,7 +89,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
     ZeppelinITUtils.restartZeppelin();
     driver = WebDriverManager.getWebDriver();
   }
-
 
   @AfterClass
   public static void tearDown() {
