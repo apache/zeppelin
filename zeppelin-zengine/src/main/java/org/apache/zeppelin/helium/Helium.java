@@ -309,13 +309,21 @@ public class Helium {
       return;
     }
 
-    // if package is visualization, rebuild bundle
+    // if package is bundle, rebuild bundle
     if (HeliumPackage.isBundleType(pkgInfo.getPkg().getType())) {
       bundleFactory.buildPackage(pkgInfo.getPkg(), true, true);
     }
 
-    // update conf and save
+    // set `enable` field
     heliumConf.enablePackage(name, artifact);
+    // set display order
+    if (pkgInfo.getPkg().getType() == HeliumType.VISUALIZATION) {
+      List<String> currentDisplayOrder = heliumConf.getBundleDisplayOrder();
+      if (!currentDisplayOrder.contains(name)) {
+        currentDisplayOrder.add(name);
+      }
+    }
+
     save();
   }
 
@@ -326,8 +334,16 @@ public class Helium {
       return;
     }
 
-    // update conf and save
+    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
+
+    // set `enable` field
     heliumConf.disablePackage(name);
+    if (pkgInfo.getPkg().getType() == HeliumType.VISUALIZATION) {
+      List<String> currentDisplayOrder = heliumConf.getBundleDisplayOrder();
+      if (currentDisplayOrder.contains(name)) {
+        currentDisplayOrder.remove(name);
+      }
+    }
     save();
   }
 
@@ -437,26 +453,13 @@ public class Helium {
    * Get enabled package list in order
    * @return
    */
-  public List<String> setVisualizationPackageOrder() {
-    List orderedPackageList = new LinkedList<>();
-    List<HeliumPackage> packages = getBundlePackagesToBundle();
-
-    for (HeliumPackage pkg : packages) {
-      if (HeliumType.VISUALIZATION == pkg.getType()) {
-        orderedPackageList.add(pkg.getName());
-      }
-    }
-
-    return orderedPackageList;
+  public List<String> getVisualizationPackageOrder() {
+    return heliumConf.getBundleDisplayOrder();
   }
 
   public void setVisualizationPackageOrder(List<String> orderedPackageList)
       throws IOException {
     heliumConf.setBundleDisplayOrder(orderedPackageList);
-
-    // if package is visualization, rebuild buildBundle
-    bundleFactory.buildAllPackages(getBundlePackagesToBundle());
-
     save();
   }
 

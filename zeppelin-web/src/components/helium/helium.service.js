@@ -126,6 +126,7 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
   this.getAllPackageInfo = function () {
     return $http.get(`${baseUrlSrv.getRestApiBase()}/helium/package`)
       .then(function (response, status) {
+        console.warn(Object.keys(response.data.body).length)
         return response.data.body
       })
       .catch(function (error) {
