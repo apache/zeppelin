@@ -59,6 +59,8 @@ To persist `logs` and `notebook` directories, use the [volume](https://docs.dock
 docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.7.2
 ```
 
+If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
+
 ## Verify the integrity of the files
 
 It is essential that you [verify](https://www.apache.org/info/verification.html) the integrity of the downloaded files using the PGP or MD5 signatures. This signature should be matched against the [KEYS](https://www.apache.org/dist/zeppelin/KEYS) file.
