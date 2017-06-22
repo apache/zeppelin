@@ -22,7 +22,7 @@
   min-height: 32px;
 }
 
-.jobManagerHead {
+.job-manager-header {
   margin: -10px -10px 20px;
   padding: 10px 15px 15px 15px;
   background: white;
@@ -30,18 +30,88 @@
   border-bottom: 1px solid #E5E5E5;
 }
 
-.jobManagerHead .header {
+.job-manager-header .header {
   font-family: 'Roboto', sans-serif;
 }
 
-.job-note-name-query {
-  padding: 6px;
-  height: 25px;
-  width: 200px;
+.job-search-tool {
+  display: inline-block;
+  margin-left: 15px;
 }
 
-.job-note-name-font-family {
-  font: inherit;
+#job-manager-header .job-search-tool .search-input {
+  margin-right: 7px;
+  min-width: 215px;
+}
+
+#job-manager-header .job-search-tool .search-input > input {
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  border-radius: 4px;
   font-size: 14px;
-  font-weight: normal;
+  padding-left: 10px;
+}
+
+#job-manager-header .job-search-tool .dropdown-toggle {
+  border-radius: 3px;
+  float: none;
+  min-width: 150px;
+  text-align: left;
+  margin-right: 5px;
+}
+
+
+#job-manager-header .job-search-tool .date-sort-button {
+  min-width: 180px;
+}
+
+.job-search-tool .dropdown-text-desc {
+  color: gray;
+  font-weight: 400;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.job-search-tool .dropdown-text-value {
+  margin-left: 2px;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.search-tool-dropdown-content > li > a {
+  border-bottom: 1px solid #eee;
+}
+
+.search-tool-dropdown-content > li:last-child > a {
+  border-bottom: none;
+}
+
+.job-icon-desc-container {
+  display: inline-block;
+  margin-top: 10px;
+  margin-right: 30px;
+  float: right;
+}
+
+.job-desc-icon {
+  margin-right: 3px;
+}
+
+.job-pagination-container {
+  text-align: center;
+  margin-top: 50px;
+  padding-bottom: 100px;
+}
+
+.job-counter {
+  float: right;
+  clear: both;
+  margin-left: 8px;
+  margin-top: 6px;
+}
+
+.job-counter .job-counter-label {
+  color: gray;
+}
+
+.job-counter .job-counter-value {
+  font-size: 15px;
+  font-weight: bold;
 }
