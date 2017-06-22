@@ -681,6 +681,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
       for (int i = 0; i < sqlArray.size(); i++) {
         String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
+        statement.setFetchSize(getMaxResult());
+
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
         }
