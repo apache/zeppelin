@@ -34,6 +34,8 @@ which in turns enables them to handle very large data sets.
   - MapReduce
   - Tez_Local (Only Tez 0.7 is supported)
   - Tez  (Only Tez 0.7 is supported)
+  - Spark_Local (Only Spark 1.6.x is supported, by default it is Spark 1.6.3)
+  - Spark (Only Spark 1.6.x is supported, by default it is Spark 1.6.3)
 
 ## How to use
 
@@ -55,6 +57,20 @@ which in turns enables them to handle very large data sets.
 
     HADOOP\_CONF\_DIR and TEZ\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
 
+- Spark Local Mode
+    
+    Nothing needs to be done for spark local mode
+    
+- Spark Mode
+    
+    For now, only yarn-client mode is supported.  To enable it, you need to set property SPARK_MASTER to yarn-client
+    and set SPARK_JAR to the spark assembly file uploaded to hdfs.
+        
+### How to choose custom Spark Version
+
+By default, Pig Interpreter would use Spark 1.6.3, if you want to use another Spark Version, 
+you need to rebuild the zeppelin by specifying the custom spark version via -Dpig.spark.version=<custom_spark_version> in the maven build command.
+
 ### How to configure interpreter
 
 At the Interpreters menu, you have to create a new Pig interpreter. Pig interpreter has below properties by default.
@@ -71,7 +87,7 @@ So you can use that to find app running in YARN RM UI.
     <tr>
         <td>zeppelin.pig.execType</td>
         <td>mapreduce</td>
-        <td>Execution mode for pig runtime. local | mapreduce | tez_local | tez </td>
+        <td>Execution mode for pig runtime. local | mapreduce | tez_local | tez | spark_local | spark </td>
     </tr>
     <tr>
         <td>zeppelin.pig.includeJobStats</td>
@@ -92,6 +108,16 @@ So you can use that to find app running in YARN RM UI.
         <td>mapred.job.queue.name</td>
         <td>default</td>
         <td>queue name for mapreduce engine</td>
+    </tr>
+    <tr>
+        <td>SPARK_MASTER</td>
+        <td>local</td>
+        <td>local | yarn-client</td>
+    </tr>
+    <tr>
+        <td>SPARK_JAR</td>
+        <td></td>
+        <td>The spark assembly jar you uploaded to hdfs</td>
     </tr>
 </table>  
 

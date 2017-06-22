@@ -15,6 +15,12 @@
         "propertyName": "zeppelin.pig.includeJobStats",
         "defaultValue": "false",
         "description": "flag to include job stats in output"
+      },
+      "zeppelin.pig.execType": {
+        "envName": "SPARK_MASTER",
+        "propertyName": "SPARK_MASTER",
+        "defaultValue": "local",
+        "description": "local | yarn-client"
       }
     },
     "editor": {
