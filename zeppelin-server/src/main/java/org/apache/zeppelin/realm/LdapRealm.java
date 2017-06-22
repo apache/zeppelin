@@ -101,6 +101,8 @@ import javax.naming.ldap.PagedResultsControl;
  * # ability set searchScopes subtree (default), one, base
  * ldapRealm.userSearchScope = subtree;
  * ldapRealm.groupSearchScope = subtree;
+ * ldapRealm.userSearchFilter = (&(objectclass=person)(sAMAccountName={0}))
+ * ldapRealm.groupSearchFilter = (&(objectclass=groupofnames)(member={0}))
  * ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,
  * dc=org
  * # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
@@ -160,6 +162,7 @@ public class LdapRealm extends JndiLdapRealm {
   private Pattern principalPattern = Pattern.compile(DEFAULT_PRINCIPAL_REGEX);
   private String userDnTemplate = "{0}";
   private String userSearchFilter = null;
+  private String groupSearchFilter = null;
   private String userSearchAttributeTemplate = "{0}";
   private String userSearchScope = "subtree";
   private String groupSearchScope = "subtree";
@@ -356,9 +359,22 @@ public class LdapRealm extends JndiLdapRealm {
               }
             }                
           } else {
+            // Default group search filter
+            String searchFilter = String.format("(objectclass=%1$s)", groupObjectClass);
+
+            // If group search filter is defined in Shiro config, then use it
+            if (groupSearchFilter != null) {
+              Matcher matchedPrincipal = matchPrincipal(userDn);
+              searchFilter = expandTemplate(groupSearchFilter, matchedPrincipal);
+              //searchFilter = String.format("%1$s", groupSearchFilter);
+            }
+            if (log.isDebugEnabled()) {
+              log.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + getGroupSearchBase()
+                    + "|" + searchFilter + "|" + groupSearchScope);
+            }
             searchResultEnum = ldapCtx.search(
                 getGroupSearchBase(),
-                "objectClass=" + groupObjectClass,
+                searchFilter,
                 searchControls);
             while (searchResultEnum != null && searchResultEnum.hasMore()) { 
               // searchResults contains all the groups in search scope
@@ -737,6 +753,14 @@ public class LdapRealm extends JndiLdapRealm {
     this.userSearchFilter = (filter == null ? null : filter.trim());
   }
   
+  public String getGroupSearchFilter() {
+    return groupSearchFilter;
+  }
+
+  public void setGroupSearchFilter(final String filter) {
+    this.groupSearchFilter = (filter == null ? null : filter.trim());
+  }
+
   public boolean getUserLowerCase() {
     return userLowerCase;
   }
