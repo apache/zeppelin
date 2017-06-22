@@ -25,7 +25,7 @@ The latest release of Apache Zeppelin is **0.7.2**.
 
   - 0.7.2 released on Jun 12, 2017 ([release notes](./releases/zeppelin-release-0.7.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.2))
 
-    * Binary package with all interpreters:
+    * Binary package with all interpreters ([Install guide](../../docs/0.7.2/install/install.html)):
     <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.7.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz'">zeppelin-0.7.2-bin-all.tgz</div> (715 MB,
     [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.asc),
     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.md5),
