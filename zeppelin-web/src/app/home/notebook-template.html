@@ -49,6 +49,10 @@ limitations under the License.
          tooltip-placement="bottom" uib-tooltip="Remove note permanently">
       </i>
     </a>
+    <a ng-if="node.fromRecentList">
+      <i class="fa fa-minus notebook-list-btn" aria-hidden="true" ng-show="showNoteButton" ng-click="removeFromRecent(node.id)"
+         tooltip-placement="bottom" uib-tooltip="Remove from recent"></i>
+    </a>
   </div>
 
   <!-- folder -->

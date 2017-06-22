@@ -25,7 +25,7 @@ limitations under the License.
            <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
          <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
            <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
-       <ul id="notebook-names">
+       <ul id="notebook-items">
          <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
          <div ng-if="!query.q || query.q === ''">
            <li ng-repeat="node in home.notes.root.children | orderBy:node:false:home.arrayOrderingSrv.noteComparator track by $index"

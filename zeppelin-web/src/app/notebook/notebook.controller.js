@@ -14,7 +14,7 @@
 
 import moment from 'moment'
 
-import { isParagraphRunning, } from './paragraph/paragraph.status'
+import {isParagraphRunning} from "./paragraph/paragraph.status";
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl)
 
@@ -61,13 +61,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.noteRevisions = []
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
-
-  $scope.$on('setConnectedStatus', function (event, param) {
-    if (connectedOnce && param) {
-      initNotebook()
-    }
-    connectedOnce = true
-  })
 
   $scope.getCronOptionNameFromValue = function (value) {
     if (!value) {

@@ -21,6 +21,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
   ngToast.dismiss()
   let vm = this
   vm.notes = noteListDataFactory
+  vm.recentNotes = [];
   vm.websocketMsgSrv = websocketMsgSrv
   vm.arrayOrderingSrv = arrayOrderingSrv
 
@@ -38,6 +39,9 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
 
   $scope.initHome = function () {
     websocketMsgSrv.getHomeNote()
+    if ($rootScope.ticket !== undefined){
+      websocketMsgSrv.getRecentNotes()
+    }
     vm.noteCustomHome = false
   }
 
@@ -50,6 +54,10 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
     node.hidden = !node.hidden
   }
 
+  $scope.clearRecent = function() {
+    websocketMsgSrv.clearRecent();
+  }
+
   angular.element('#loginModal').on('hidden.bs.modal', function (e) {
     $rootScope.$broadcast('initLoginValues')
   })
@@ -57,6 +65,19 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
   /*
    ** $scope.$on functions below
    */
+
+  $scope.$on('updateRecentList', function(event, recentNotes) {
+    vm.recentNotes = []
+    for (let i = 0; i < recentNotes.length; ++i) {
+      let note = recentNotes[i]
+      note.isTrash = note.name
+        ? note.name.split('/')[0] === TRASH_FOLDER_ID : false
+      note.fromRecentList = true
+      vm.recentNotes.push(note)
+    }
+    vm.recentNotes.reverse()
+    console.log("Recent notes updated")
+  })
 
   $scope.$on('setNoteMenu', function (event, notes) {
     $scope.isReloadingNotes = false
@@ -116,6 +137,10 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
     noteActionSrv.removeNote(noteId, false)
   }
 
+  $scope.removeFromRecent = function (noteId) {
+    noteActionSrv.removeFromRecent(noteId)
+  }
+
   $scope.removeFolder = function (folderId) {
     noteActionSrv.removeFolder(folderId)
   }
@@ -129,7 +154,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
   }
 
   $scope.isFilterNote = function (note) {
-    if (!$scope.query.q) {
+    if (!$scope.query.q || note.fromRecentList) {
       return true
     }
 

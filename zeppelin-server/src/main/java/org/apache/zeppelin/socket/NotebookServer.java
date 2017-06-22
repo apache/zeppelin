@@ -71,6 +71,7 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.users.UsersRepo;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -145,6 +146,10 @@ public class NotebookServer extends WebSocketServlet
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
+  }
+
+  private UsersRepo usersRepo(){
+    return ZeppelinServer.usersRepo;
   }
 
   @Override
@@ -370,6 +375,15 @@ public class NotebookServer extends WebSocketServlet
         case WATCHER:
           switchConnectionToWatcher(conn, messagereceived);
           break;
+        case GET_RECENT_NOTES:
+          sendRecentNotes(messagereceived.principal);
+          break;
+        case REMOVE_FROM_RECENT:
+          removeFromRecent(messagereceived);
+          break;
+        case CLEAR_RECENT:
+          clearRecent(messagereceived.principal);
+          break;
         default:
           break;
       }
@@ -442,6 +456,7 @@ public class NotebookServer extends WebSocketServlet
     synchronized (noteSocketMap) {
       List<NotebookSocket> socketList = noteSocketMap.remove(noteId);
     }
+    usersRepo().removeNoteFromRecent(noteId);
   }
 
   private void removeConnectionFromAllNote(NotebookSocket socket) {
@@ -692,6 +707,23 @@ public class NotebookServer extends WebSocketServlet
     broadcastNoteListExcept(notesInfo, subject);
   }
 
+  public List<Note> getNotes(List<String> noteIds){
+    Notebook notebook = notebook();
+
+    List<Note> notes = new ArrayList<>();
+    for (String id: noteIds){
+      notes.add(notebook.getNote(id));
+    }
+    return notes;
+  }
+
+  private void broadcastRecentNotes(String username){
+    //send first to requesting user
+    sendRecentNotes(username);
+    //to others afterwards
+    broadcastRecentListExcept(username);
+  }
+
   public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject,
       HashSet<String> userAndRoles) {
     List<Map<String, String>> notesInfo = generateNotesInfo(false, subject, userAndRoles);
@@ -723,6 +755,15 @@ public class NotebookServer extends WebSocketServlet
       userAndRoles.add(user);
       notesInfo = generateNotesInfo(false, new AuthenticationInfo(user), userAndRoles);
       multicastToUser(user, new Message(OP.NOTES_INFO).put("notes", notesInfo));
+    }
+  }
+
+  private void broadcastRecentListExcept(String username){
+    for (String user : userConnectedSockets.keySet()) {
+      if (user.equals(username)) {
+        continue;
+      }
+      sendRecentNotes(user);
     }
   }
 
@@ -822,9 +863,19 @@ public class NotebookServer extends WebSocketServlet
       }
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, user, conn);
+
+      usersRepo().putRecentNote(fromMessage.principal, note.getId());
+      sendRecentNotes(fromMessage.principal);
     } else {
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
+  }
+
+  private void sendRecentNotes(String principal){
+    if (principal == null)
+      return;
+    multicastToUser(principal, new Message(OP.RECENT_NOTES_LIST).put("recentNotes",
+        getNotes(usersRepo().getUserInfo(principal).getRecentNotesIds())));
   }
 
   private void sendHomeNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -939,6 +990,7 @@ public class NotebookServer extends WebSocketServlet
       note.persist(subject);
       broadcastNote(note);
       broadcastNoteList(subject, userAndRoles);
+      broadcastRecentNotes(fromMessage.principal);
     }
   }
 
@@ -978,6 +1030,7 @@ public class NotebookServer extends WebSocketServlet
       }
 
       broadcastNoteList(subject, userAndRoles);
+      broadcastRecentNotes(subject.getUser());
     }
   }
 
@@ -1055,6 +1108,7 @@ public class NotebookServer extends WebSocketServlet
     notebook.removeNote(noteId, subject);
     removeNote(noteId);
     broadcastNoteList(subject, userAndRoles);
+    broadcastRecentNotes(subject.getUser());
   }
 
   private void removeFolder(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1081,6 +1135,12 @@ public class NotebookServer extends WebSocketServlet
       removeNote(note.getId());
     }
     broadcastNoteList(subject, userAndRoles);
+    broadcastRecentNotes(subject.getUser());
+  }
+
+  private void removeFromRecent(Message message){
+    usersRepo().removeNoteFromRecent((String) message.get("noteId"));
+    sendRecentNotes(message.principal);
   }
 
   private void moveNoteToTrash(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1322,6 +1382,11 @@ public class NotebookServer extends WebSocketServlet
       Paragraph paragraph = note.getParagraph(paragraphId);
       broadcastParagraph(note, paragraph);
     }
+  }
+
+  private void clearRecent(String user) {
+    usersRepo().clearRecent(user);
+    sendRecentNotes(user);
   }
 
   private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,

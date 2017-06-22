@@ -339,5 +339,20 @@ function websocketMsgSrv ($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'})
     },
 
+    getRecentNotes: function () {
+      websocketEvents.sendNewEvent({op: 'GET_RECENT_NOTES'})
+    },
+
+    removeNoteFromRecent: function (noteId) {
+      websocketEvents.sendNewEvent({
+        op: 'REMOVE_FROM_RECENT',
+        data: {noteId: noteId}
+      })
+    },
+
+    clearRecent: function () {
+      websocketEvents.sendNewEvent({op: 'CLEAR_RECENT'})
+    }
+
   }
 }
