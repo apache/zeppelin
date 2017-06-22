@@ -193,7 +193,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       }
 
       collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
-          headerNames, CoreMatchers.equalTo("Age|Job|Marital|Education|Balance|"));
+          headerNames, CoreMatchers.equalTo("age|job|marital|education|balance|"));
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testSqlSpark", e);
     }
