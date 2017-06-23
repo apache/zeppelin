@@ -68,7 +68,7 @@ The following example demonstrates the basic usage of Shell in a Zeppelin notebo
 If you need further information about **Zeppelin Interpreter Setting** for using Shell interpreter, please read [What is interpreter setting?](../manual/interpreters.html#what-is-interpreter-setting) section first.
 
 
-### Kerberos refresh interval
+## Kerberos refresh interval
 For changing the default behavior of when to renew Kerberos ticket following changes can be made in `conf/zeppelin-env.sh`.
 
 ```
