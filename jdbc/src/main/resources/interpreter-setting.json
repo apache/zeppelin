@@ -42,9 +42,15 @@
       },
       "default.precode": {
         "envName": null,
-        "propertyName": "zeppelin.jdbc.precode",
+        "propertyName": "default.precode",
         "defaultValue": "",
         "description": "SQL which executes while opening connection"
+      },
+      "default.sessionPrecode": {
+        "envName": null,
+        "propertyName": "default.sessionPrecode",
+        "defaultValue": "",
+        "description": "Runs before each run of the paragraph, in the same connection"
       },
       "default.splitQueries": {
         "envName": null,
