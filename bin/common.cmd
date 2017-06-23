@@ -47,6 +47,14 @@ if exist "%ZEPPELIN_CONF_DIR%\zeppelin-env.cmd" (
     call "%ZEPPELIN_CONF_DIR%\zeppelin-env.cmd"
 )
 
+REM Hadoop for Windows - This is a fix for spark/hadoop requiring winutils.exe -  see https://issues.apache.org/jira/browse/ZEPPELIN-2438
+REM
+if not exist "%HADOOP_HOME%" (
+    if exist "%ZEPPELIN_HOME%\interpreter\spark\winutils\bin\winutils.exe" (
+        set HADOOP_HOME=%ZEPPELIN_HOME%\interpreter\spark\winutils
+    )
+)
+
 if not defined ZEPPELIN_CLASSPATH (
     set ZEPPELIN_CLASSPATH="%ZEPPELIN_CONF_DIR%"
 ) else (

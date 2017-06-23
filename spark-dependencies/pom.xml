@@ -62,6 +62,9 @@
     <spark.bin.download.url>
       http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
     </spark.bin.download.url>
+    <hadoop.winutils.bin.download.url>
+      https://github.com/steveloughran/winutils/raw/master/hadoop-2.7.1/bin/winutils.exe
+    </hadoop.winutils.bin.download.url>
     <spark.py4j.version>0.8.2.1</spark.py4j.version>
 
     <!--plugin versions-->
@@ -1023,6 +1026,54 @@
                   <directory>
                     ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
                   </directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- include winutils by default -->
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>download-winutils</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <readTimeOut>60000</readTimeOut>
+              <retries>5</retries>
+              <url>${hadoop.winutils.bin.download.url}</url>
+              <unpack>false</unpack>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <id>copy-winutils</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/../../interpreter/spark/winutils/bin</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>
+                    ${project.build.directory}
+                  </directory>
+                  <includes>
+                    <include>winutils.exe</include>
+                  </includes>
                 </resource>
               </resources>
             </configuration>
