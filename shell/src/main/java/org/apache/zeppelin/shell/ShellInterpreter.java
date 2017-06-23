@@ -30,8 +30,8 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.KerberosInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Shell interpreter for Zeppelin.
  */
-public class ShellInterpreter extends Interpreter {
+public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
@@ -60,12 +60,25 @@ public class ShellInterpreter extends Interpreter {
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new ConcurrentHashMap<>();
     if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
-      ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
+      startKerberosLoginThread();
     }
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    shutdownExecutorService();
+
+    for (String executorKey : executors.keySet()) {
+      DefaultExecutor executor = executors.remove(executorKey);
+      if (executor != null) {
+        try {
+          executor.getWatchdog().destroyProcess();
+        } catch (Exception e){
+          LOGGER.error("error destroying executor for paragraphId: " + executorKey, e);
+        }
+      }
+    }
+  }
 
 
   @Override
@@ -100,7 +113,7 @@ public class ShellInterpreter extends Interpreter {
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
         message += "Paragraph received a SIGTERM\n";
-        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId() 
+        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
           + " stopped executing: " + message);
       }
       message += "ExitValue: " + exitValue;
@@ -117,7 +130,11 @@ public class ShellInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) {
     DefaultExecutor executor = executors.remove(context.getParagraphId());
     if (executor != null) {
-      executor.getWatchdog().destroyProcess();
+      try {
+        executor.getWatchdog().destroyProcess();
+      } catch (Exception e){
+        LOGGER.error("error destroying executor for paragraphId: " + context.getParagraphId(), e);
+      }
     }
   }
 
@@ -141,6 +158,17 @@ public class ShellInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) {
     return null;
+  }
+
+  @Override
+  protected boolean runKerberosLogin() {
+    try {
+      ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
+    } catch (Exception e) {
+      LOGGER.error("Unable to run kinit for zeppelin", e);
+      return false;
+    }
+    return true;
   }
 
 }

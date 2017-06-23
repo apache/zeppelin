@@ -67,3 +67,13 @@ The following example demonstrates the basic usage of Shell in a Zeppelin notebo
 
 If you need further information about **Zeppelin Interpreter Setting** for using Shell interpreter, 
 please read [What is interpreter setting?](../usage/interpreter/overview.html#what-is-interpreter-setting) section first.
+
+## Kerberos refresh interval
+For changing the default behavior of when to renew Kerberos ticket following changes can be made in `conf/zeppelin-env.sh`.
+
+```bash
+# Change Kerberos refresh interval (default value is 1d). Allowed postfix are ms, s, m, min, h, and d.
+export LAUNCH_KERBEROS_REFRESH_INTERVAL=4h
+# Change kinit number retries (default value is 5), which means if the kinit command fails for 5 retries consecutively it will close the interpreter. 
+export KINIT_FAIL_THRESHOLD=10
+```
