@@ -49,6 +49,7 @@ import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.LoginRestApi;
 import org.apache.zeppelin.rest.NotebookRepoRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
+import org.apache.zeppelin.rest.PropertyRestApi;
 import org.apache.zeppelin.rest.SecurityRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -56,6 +57,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.properties.UserProperties;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -93,6 +95,7 @@ public class ZeppelinServer extends Application {
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
+  private UserProperties userProperties;
   private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
@@ -153,6 +156,8 @@ public class ZeppelinServer extends Application {
     this.notebookRepo = new NotebookRepoSync(conf);
     this.noteSearchService = new LuceneSearch();
     this.notebookAuthorization = NotebookAuthorization.init(conf);
+    this.userProperties =
+        new UserProperties(conf.userPropertiesPersist(), conf.getUserPropertiesPath());
     this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
@@ -397,6 +402,9 @@ public class ZeppelinServer extends Application {
 
     CredentialRestApi credentialApi = new CredentialRestApi(credentials);
     singletons.add(credentialApi);
+
+    PropertyRestApi propertyApi = new PropertyRestApi(userProperties);
+    singletons.add(propertyApi);
 
     SecurityRestApi securityApi = new SecurityRestApi();
     singletons.add(securityApi);

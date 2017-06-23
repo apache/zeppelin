@@ -120,6 +120,10 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
         templateUrl: 'app/credential/credential.html',
         controller: 'CredentialCtrl'
       })
+      .when('/property', {
+        templateUrl: 'app/property/property.html',
+        controller: 'PropertyCtrl'
+      })
       .when('/helium', {
         templateUrl: 'app/helium/helium.html',
         controller: 'HeliumCtrl'
