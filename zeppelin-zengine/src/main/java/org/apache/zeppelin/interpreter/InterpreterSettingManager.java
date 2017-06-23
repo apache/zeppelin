@@ -17,9 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -158,7 +155,7 @@ public class InterpreterSettingManager {
   /**
    * Remember this method doesn't keep current connections after being called
    */
-  private void  loadFromFile() {
+  private void loadFromFile() {
     if (!Files.exists(interpreterBindingPath)) {
       // nothing to read
       return;
@@ -261,7 +258,7 @@ public class InterpreterSettingManager {
       } catch (UnsupportedOperationException e) {
         // File system does not support Posix file permissions (likely windows) - continue anyway.
         logger.warn("unable to setPosixFilePermissions on '{}'.", interpreterBindingPath);
-      };
+      }
     }
 
     FileOutputStream fos = new FileOutputStream(interpreterBindingPath.toFile(), false);
