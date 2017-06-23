@@ -37,6 +37,7 @@ public class Input<T> implements Serializable {
   // in future.
   public static final RuntimeTypeAdapterFactory TypeAdapterFactory =
       RuntimeTypeAdapterFactory.of(Input.class, "type")
+        .registerSubtype(Input.class, "Input")
         .registerSubtype(TextBox.class, "TextBox")
         .registerSubtype(Select.class, "Select")
         .registerSubtype(CheckBox.class, "CheckBox")
