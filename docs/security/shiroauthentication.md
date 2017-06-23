@@ -24,9 +24,43 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Overview
-[Apache Shiro](http://shiro.apache.org/) is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. In this documentation, we will explain step by step how Shiro works for Zeppelin notebook authentication.
+[Apache Shiro](http://shiro.apache.org/) is a powerful and easy-to-use Java security framework that performs authentication, authorization, cryptography, and session management. Zeppelin uses Apache Shiro to provide authentication and authorization (AKA access control). This documentation provides detailed steps to configure Shiro to enable authentication to Zeppelin notebook.
 
-When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
+The first step of security is Authentication. After authentication is enabled, upon connection to Apache Zeppelin, it prompts for credentials. 
+
+To enable authentication, you need to configure authc as the authentication method in 
+the URL section of shiro.ini. Ensure that shiro.ini has "/** = authc" line is uncommented
+in the URL section. To disable anonymous access to Zeppelin ensure "/** = anon" is 
+commented out. Once authentication is enabled, the next step of security is to configure
+the source of users. To test Zeppelin authentication, you can use [users] section to 
+define test users who can log in to Zeppelin. 
+
+Zeppelin also supports LDAP or Active Directory as source of users who can authenticate to 
+Zeppelin. So far Zeppelin only supports LDAP bind method to authenticate end users. It does not 
+yet support LDAP Compare to authenticate end users.
+
+To leverage ActiveDirectory as source of users to Zeppelin, enable activeDirectoryRealm
+in [main] section. To use any other LDAP including OpenLdap, use ldapRealm in the 
+[main] section.
+
+Once authentication is configured, you may want to limit who can configure Zeppelin 
+interpreters. To put access control on Zeppelin interpreters and credential UI, 
+uncomment the following lines in [urls] section 
+```
+/api/interpreter/** = authc, roles[admin]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
+```
+The above configuration will limit the ability to configure interpreters, configurations
+and credentials UI to "admin" role. Now the next step is to define who is in "admin" 
+role. To map "admin" role to certain groups in Active Directory or LDAP user 
+activeDirectoryRealm.groupRolesMap or ldapRealm.groupRolesMap property and define the 
+distinguished names of LDAP groups. This gives only defined LDAP groups the ability to 
+configure interpreters, configurations and credential UI features.
+The next step of security could be to put access control on Zeppelin Notes. To enable
+note level access control, you first need to define activeDirectoryRealm.searchBase or 
+ldapRealm.searchBase. The value of this property controls where in LDAP Zeppelin will look
+for users and groups.
 
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
