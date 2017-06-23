@@ -342,17 +342,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
-  private boolean hasPermission(String user, List<String> intpUsers) {
-    if (1 > intpUsers.size()) {
+  private boolean hasPermission(List<String> userAndRoles, List<String> intpUsersAndRoles) {
+    if (1 > intpUsersAndRoles.size()) {
       return true;
     }
-
-    for (String u : intpUsers) {
-      if (user.trim().equals(u.trim())) {
-        return true;
-      }
-    }
-    return false;
+    Set<String> intersection = new HashSet<>(intpUsersAndRoles);
+    intersection.retainAll(userAndRoles);
+    return (intpUsersAndRoles.isEmpty() || (intersection.size() > 0));
   }
 
   public boolean isBlankParagraph() {
@@ -441,12 +437,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean interpreterHasUser(InterpreterSetting intp) {
-    return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
+    return intp.getOption().permissionIsSet() && intp.getOption().getOwners() != null;
   }
 
   private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt) {
-    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUser(),
-        intpOpt.getUsers());
+    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUsersAndRoles(),
+        intpOpt.getOwners());
   }
 
   private InterpreterSetting getInterpreterSettingById(String id) {

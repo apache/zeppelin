@@ -37,7 +37,7 @@ public class InterpreterOption {
 
   boolean isExistingProcess;
   boolean setPermission;
-  List<String> users;
+  List<String> owners;
   boolean isUserImpersonate;
 
   public boolean isExistingProcess() {
@@ -64,8 +64,8 @@ public class InterpreterOption {
     this.setPermission = setPermission;
   }
 
-  public List<String> getUsers() {
-    return users;
+  public List<String> getOwners() {
+    return owners;
   }
 
   public boolean isUserImpersonate() {
@@ -106,8 +106,8 @@ public class InterpreterOption {
     option.perUser = other.perUser;
     option.isExistingProcess = other.isExistingProcess;
     option.setPermission = other.setPermission;
-    option.users = (null == other.users) ?
-        new ArrayList<String>() : new ArrayList<>(other.users);
+    option.owners = (null == other.owners) ?
+        new ArrayList<String>() : new ArrayList<>(other.owners);
 
     return option;
   }

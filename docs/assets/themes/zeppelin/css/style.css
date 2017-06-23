@@ -1,14 +1,14 @@
-/* Move down content because we have a fixed navbar that is 50px tall */
+/* Move down content because we have a fixed navbar that is 60px tall */
 @import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Open+Sans);
 
 body {
   padding-top: 50px;
   padding-bottom: 20px;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.6;
   color: #4c555a;
   letter-spacing: .2px;
+  font-size: 15px;
 }
 
 .jumbotron {
@@ -58,6 +58,7 @@ body {
 
 .jumbotron h1 {
   font-family: 'Patua One', cursive;
+}
 
 .jumbotron h1 {
   font-family: 'Patua One', cursive;
@@ -67,7 +68,6 @@ body {
   font-size: 60%;
   color: #FFF;
 }
-}
 
 .jumbotron small {
   font-size: 60%;
@@ -75,8 +75,8 @@ body {
 }
 
 .navbar-brand {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 .navbar-brand-main img {
@@ -86,16 +86,20 @@ body {
 .navbar {
   background: #3071a9;
   border-bottom: 0px;
-  height: 50px;
+  height: 60px;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-inverse .navbar-nav > li > a {
+  padding-top: 18px;
+  padding-bottom: 20px;
+  font-size: 15px;
+  font-weight: 300;
   color: white;
   background: #3071a9;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover,
-.navbar-inverse .navbar-nav > li > a:focus {
+.navbar-inverse .navbar-nav > li > a:hover {
   color: white !important;
   background: #2C6094 !important;
 }
@@ -181,7 +185,12 @@ body {
 }
 
 .navbar-inverse .navbar-toggle {
-  border-color: #265380;
+  margin-top: 12px;
+  border-color: transparent;
+}
+
+.navbar-inverse .navbar-toggle:focus {
+  outline-width: 0;
 }
 
 .navbar-inverse .navbar-toggle:hover,
@@ -190,8 +199,9 @@ body {
   background: #265380;
 }
 
-.navbar-inverse .navbar-toggle:focus {
-  outline-width: 0;
+.navbar-inverse .navbar-toggle.collapsed {
+  border-color: #3071A9;
+  background: #3071a9;
 }
 
 /* CUSTOMIZE THE CAROUSEL
@@ -257,8 +267,9 @@ body {
 .content {
   word-wrap: break-word;
 }
+
 .content :first-child {
-  margin-top: 0;
+  margin-top: 20px;
 }
 
 @media screen and (min-width: 64em) {
@@ -299,7 +310,7 @@ a.anchor {
 
 /* <hn> */
 .content h1, h2, h3, h4, h5, h6 {
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin-top: 3rem;
   margin-bottom: 1rem;
   font-weight: bold;
@@ -365,7 +376,7 @@ a.anchor {
   padding: 0.8rem;
   margin-top: 0;
   margin-bottom: 1rem;
-  font: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 90%;
   color: #567482;
   word-wrap: normal;
@@ -537,7 +548,7 @@ a.anchor {
 }
 
 .navbar-collapse.collapse {
-  max-height: 50px;
+  max-height: 60px;
 }
 
 .navbar-inverse .navbar-nav a .caret,
@@ -594,47 +605,26 @@ a.anchorjs-link:hover { text-decoration: none; }
   padding-bottom: 3px;
 }
 
-/* Custom, iPhone Retina */
-@media only screen and (max-width: 480px) {
-  .jumbotron h1 {
-    display: none;
-  }
-  .navbar-brand-version small {
-    display: none;
-    color: white;
-  }
-}
-
-@media only screen and (max-width: 768px) {
-  .navbar .navbar-brand-main {
-    padding-bottom: 0;
-  }
-}
-
-@media only screen
-and (min-width: 768px)
-and (max-width: 1024px) {
-  .navbar-brand-version small {
-    display: none;
-  }
-
-  .navbar-collapse.collapse {
-    padding-right: 0;
-  }
-
-  .navbar-fixed-top > .container {
-    width: 800px;
-  }
+.navbar-inverse .navbar-brand {
+  color: white;
+  text-decoration: none;
+  font-size: 32px;
+  font-size: 27px;
 }
 
 /* master branch docs dropdown menu */
 #menu .dropdown-menu li span {
-  padding: 3px 10px 10px 10px;
-  font-size: 13px;
+  font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 12px 10px 12px 20px;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+#menu .dropdown-menu li a {
+  padding-left: 30px;
 }
 
 #menu .title {
-  padding-bottom: 8px;
   color: #3071a9;
 }
 
@@ -649,7 +639,7 @@ and (max-width: 1024px) {
 }
 
 #menu .navbar-brand-version {
-  margin-right: 50px;
+  margin-right: 30px;
   text-decoration: none !important;
 }
 
@@ -659,9 +649,8 @@ and (max-width: 1024px) {
   vertical-align: bottom;
 }
 
-#menu .navbar-brand-version small {
+#menu .navbar-brand-version {
   font-size: 14px;
-  font-family: 'Open Sans', 'Helvetica Neue', Helvetica;
   color: white;
 }
 
@@ -676,14 +665,64 @@ and (max-width: 1024px) {
   font-size: 13px;
 }
 
+/* Custom, iPhone Retina */
+@media only screen and (max-width: 480px) {
+  .jumbotron h1 {
+    display: none;
+  }
+
+  .navbar-brand-version {
+    display: none;
+    color: white;
+  }
+}
+
 @media only screen and (max-width: 480px) {
   #menu .title {
     color: #bbb;
   }
 }
 
+/* when navigation toggle is enabled due to browser size */
 @media only screen and (max-width: 768px) {
   #menu .title {
-    color: #bbb;
+    text-shadow: 1px 2px #353131;
+    color: white;
+    font-family: "Roboto", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+  }
+
+  .content {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  .navbar .navbar-brand-main {
+    padding-bottom: 0;
+  }
+
+  .navbar-nav {
+    margin-top: 0px;
+  }
+
+  .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    border-color: #73a0cd;
   }
 }
+
+@media only screen and (min-width: 768px) and (max-width: 1024px) {
+
+  .navbar-brand-version {
+    display: none;
+  }
+
+  .navbar-collapse.collapse {
+    padding-right: 0;
+  }
+
+  .navbar-fixed-top > .container {
+    width: auto;
+  }
+}
+

@@ -63,7 +63,7 @@ public class InterpreterTest {
         null,
         paragraphTitle,
         paragraphText,
-        new AuthenticationInfo("testUser", "testTicket"),
+        new AuthenticationInfo("testUser", null, "testTicket"),
         null,
         null,
         null,

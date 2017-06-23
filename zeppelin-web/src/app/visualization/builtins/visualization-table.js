@@ -86,6 +86,7 @@ export default class TableVisualization extends Visualization {
 
       columnDefs: columnNames.map(colName => {
         return {
+          displayName: colName,
           name: colName,
           type: DefaultTableColumnType,
           cellTemplate: `
