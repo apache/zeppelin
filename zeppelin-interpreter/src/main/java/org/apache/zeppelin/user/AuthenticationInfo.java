@@ -18,6 +18,10 @@
 
 package org.apache.zeppelin.user;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +32,10 @@ import org.slf4j.LoggerFactory;
 public class AuthenticationInfo {
   private static final Logger LOG = LoggerFactory.getLogger(AuthenticationInfo.class);
   String user;
+  List<String> roles;
   String ticket;
   UserCredentials userCredentials;
-  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous",
+  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", null,
       "anonymous");
 
   public AuthenticationInfo() {}
@@ -44,9 +49,13 @@ public class AuthenticationInfo {
    * @param user
    * @param ticket
    */
-  public AuthenticationInfo(String user, String ticket) {
+  public AuthenticationInfo(String user, String roles, String ticket) {
     this.user = user;
     this.ticket = ticket;
+    if (StringUtils.isNotBlank(roles) && roles.length() > 2) {
+      String[] r = roles.substring(1, roles.length() - 1).split(",");
+      this.roles = Arrays.asList(r);
+    }
   }
 
   public String getUser() {
@@ -55,6 +64,26 @@ public class AuthenticationInfo {
 
   public void setUser(String user) {
     this.user = user;
+  }
+
+  public List<String> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(List<String> roles) {
+    this.roles = roles;
+  }
+
+  public List<String> getUsersAndRoles() {
+    List<String> usersAndRoles = new ArrayList<>();
+    if (roles != null) {
+      usersAndRoles.addAll(roles);
+    }
+    if (user != null) {
+      usersAndRoles.add(user);
+    }
+
+    return usersAndRoles;
   }
 
   public String getTicket() {

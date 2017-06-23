@@ -122,3 +122,6 @@ tramp
 
 # tmp files
 /tmp/
+
+# Git properties
+**/git.properties

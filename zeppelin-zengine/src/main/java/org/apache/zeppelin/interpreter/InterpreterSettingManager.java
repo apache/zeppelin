@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.interpreter;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,6 +74,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 
@@ -161,8 +166,9 @@ public class InterpreterSettingManager {
     InterpreterInfoSaving infoSaving;
     try (BufferedReader json =
         Files.newBufferedReader(interpreterBindingPath, StandardCharsets.UTF_8)) {
-      infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
-
+      JsonParser jsonParser = new JsonParser();
+      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+      infoSaving = gson.fromJson(jsonObject.toString(), InterpreterInfoSaving.class);
       for (String k : infoSaving.interpreterSettings.keySet()) {
         InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
 
@@ -185,12 +191,15 @@ public class InterpreterSettingManager {
           properties.put(key, new InterpreterProperty(key, fields.get("value"), type));
         }
         setting.setProperties(properties);
-        
+
         // Always use separate interpreter process
         // While we decided to turn this feature on always (without providing
         // enable/disable option on GUI).
         // previously created setting should turn this feature on here.
         setting.getOption().setRemote(true);
+
+        setting.convertPermissionsFromUsersToOwners(
+            jsonObject.getAsJsonObject("interpreterSettings").getAsJsonObject(setting.getId()));
 
         // Update transient information from InterpreterSettingRef
         InterpreterSetting interpreterSettingObject =
