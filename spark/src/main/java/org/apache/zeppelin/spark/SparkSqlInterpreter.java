@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.util.CallSite;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -104,7 +105,9 @@ public class SparkSqlInterpreter extends Interpreter {
     } else {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
-
+    String paraText = context.getParagraphText();
+    sc.setCallSite(new CallSite(Utils.getJobShortText(paraText),
+        Utils.getJobLongText(paraText)));
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
     Object rdd = null;
