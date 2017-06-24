@@ -359,7 +359,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
         clickAndWait(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
         String visibleText = newWidth.toString();
         new Select(driver.findElement(By.xpath(getParagraphXPath(1)
-            + "//ul/li/a/form/select[(@ng-model='paragraph.config.colWidth')]"))).selectByVisibleText(visibleText);
+            + "//ul/li/a/select[(@ng-model='paragraph.config.colWidth')]"))).selectByVisibleText(visibleText);
         collector.checkThat("New Width is : " + newWidth,
             driver.findElement(By.xpath("//div[contains(@class,'col-md-" + newWidth + "')]")).isDisplayed(),
             CoreMatchers.equalTo(true));
@@ -368,7 +368,34 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testWidth ", e);
     }
+  }
 
+  @Test
+  public void testFontSize() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+      waitForParagraph(1, "READY");
+      Float height = Float.valueOf(driver.findElement(By.xpath("//div[contains(@class,'ace_content')]"))
+          .getCssValue("height").replace("px", ""));
+      for (Integer newFontSize = 10; newFontSize <= 20; newFontSize++) {
+        clickAndWait(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
+        String visibleText = newFontSize.toString();
+        new Select(driver.findElement(By.xpath(getParagraphXPath(1)
+            + "//ul/li/a/select[(@ng-model='paragraph.config.fontSize')]"))).selectByVisibleText(visibleText);
+        Float newHeight = Float.valueOf(driver.findElement(By.xpath("//div[contains(@class,'ace_content')]"))
+            .getCssValue("height").replace("px", ""));
+        collector.checkThat("New Font size is : " + newFontSize,
+            newHeight > height,
+            CoreMatchers.equalTo(true));
+        height = newHeight;
+      }
+      deleteTestNotebook(driver);
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testFontSize ", e);
+    }
   }
 
   @Test
@@ -396,7 +423,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToShowTitle)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Show title"), CoreMatchers.containsString("Ctrl+"),
+          CoreMatchers.allOf(CoreMatchers.endsWith("Show title"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
               CoreMatchers.containsString("+T")));
 
@@ -408,7 +435,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(xpathToSettingIcon));
       collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
           driver.findElement(By.xpath(xpathToHideTitle)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Hide title"), CoreMatchers.containsString("Ctrl+"),
+          CoreMatchers.allOf(CoreMatchers.endsWith("Hide title"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
               CoreMatchers.containsString("+T")));
 
@@ -462,7 +489,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("Before \"Show line number\" The option panel in paragraph has button labeled ",
           driver.findElement(By.xpath(xpathToShowLineNumberButton)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Show line numbers"), CoreMatchers.containsString("Ctrl+"),
+          CoreMatchers.allOf(CoreMatchers.endsWith("Show line numbers"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
               CoreMatchers.containsString("+M")));
 
@@ -475,7 +502,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']"));
       collector.checkThat("After \"Show line number\" The option panel in paragraph has button labeled ",
           driver.findElement(By.xpath(xpathToHideLineNumberButton)).getText(),
-          CoreMatchers.allOf(CoreMatchers.startsWith("Hide line numbers"), CoreMatchers.containsString("Ctrl+"),
+          CoreMatchers.allOf(CoreMatchers.endsWith("Hide line numbers"), CoreMatchers.containsString("Ctrl+"),
               CoreMatchers.anyOf(CoreMatchers.containsString("Option"), CoreMatchers.containsString("Alt")),
               CoreMatchers.containsString("+M")));
 
