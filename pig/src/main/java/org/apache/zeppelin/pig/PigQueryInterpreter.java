@@ -126,8 +126,9 @@ public class PigQueryInterpreter extends BasePigInterpreter {
     } catch (IOException e) {
       // Extract error in the following order
       // 1. catch FrontendException, FrontendException happens in the query compilation phase.
-      // 2. PigStats, This is execution error
-      // 3. Other errors.
+      // 2. catch ParseException for syntax error
+      // 3. PigStats, This is execution error
+      // 4. Other errors.
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {

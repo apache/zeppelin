@@ -99,6 +99,10 @@ public class PigInterpreter extends BasePigInterpreter {
       listenerMap.put(contextInterpreter.getParagraphId(), scriptListener);
       pigServer.registerScript(tmpFile.getAbsolutePath());
     } catch (IOException e) {
+      // 1. catch FrontendException, FrontendException happens in the query compilation phase.
+      // 2. catch ParseException for syntax error
+      // 3. PigStats, This is execution error
+      // 4. Other errors.
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
@@ -109,7 +113,7 @@ public class PigInterpreter extends BasePigInterpreter {
         }
       }
       if (e.getCause() instanceof ParseException) {
-        return new InterpreterResult(Code.ERROR, e.getMessage());
+        return new InterpreterResult(Code.ERROR, e.getCause().getMessage());
       }
       PigStats stats = PigStats.get();
       if (stats != null) {
