@@ -29,31 +29,39 @@ which in turns enables them to handle very large data sets.
     - No pig alias in the last statement in `%pig.query` (read the examples below).
     - The last statement must be in single line in `%pig.query`
     
-## Supported runtime mode
-  - Local
-  - MapReduce
-  - Tez_Local (Only Tez 0.7 is supported)
-  - Tez  (Only Tez 0.7 is supported)
 
 ## How to use
 
-### How to setup Pig
+### How to setup Pig execution modes.
 
 - Local Mode
 
-    Nothing needs to be done for local mode
+    Set `zeppelin.pig.execType` as `local`.
 
 - MapReduce Mode
 
-    HADOOP\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
+    Set `zeppelin.pig.execType` as `mapreduce`. HADOOP\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
 
 - Tez Local Mode
     
-    Nothing needs to be done for tez local mode
+    Only Tez 0.7 is supported. Set `zeppelin.pig.execType` as `tez_local`.
     
 - Tez Mode
 
-    HADOOP\_CONF\_DIR and TEZ\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
+    Only Tez 0.7 is supported. Set `zeppelin.pig.execType` as `tez`. HADOOP\_CONF\_DIR and TEZ\_CONF\_DIR needs to be specified in `ZEPPELIN_HOME/conf/zeppelin-env.sh`.
+
+- Spark Local Mode
+    
+    Only Spark 1.6.x is supported, by default it is Spark 1.6.3. Set `zeppelin.pig.execType` as `spark_local`.
+    
+- Spark Mode
+    
+    Only Spark 1.6.x is supported, by default it is Spark 1.6.3. Set `zeppelin.pig.execType` as `spark`. For now, only yarn-client mode is supported. To enable it, you need to set property `SPARK_MASTER` to yarn-client and set `SPARK_JAR` to the spark assembly jar.
+        
+### How to choose custom Spark Version
+
+By default, Pig Interpreter would use Spark 1.6.3 built with scala 2.10, if you want to use another spark version or scala version, 
+you need to rebuild Zeppelin by specifying the custom Spark version via -Dpig.spark.version=<custom_spark_version> and scala version via -Dpig.scala.version=<scala_version> in the maven build command.
 
 ### How to configure interpreter
 
@@ -71,7 +79,7 @@ So you can use that to find app running in YARN RM UI.
     <tr>
         <td>zeppelin.pig.execType</td>
         <td>mapreduce</td>
-        <td>Execution mode for pig runtime. local | mapreduce | tez_local | tez </td>
+        <td>Execution mode for pig runtime. local | mapreduce | tez_local | tez | spark_local | spark </td>
     </tr>
     <tr>
         <td>zeppelin.pig.includeJobStats</td>
@@ -92,6 +100,17 @@ So you can use that to find app running in YARN RM UI.
         <td>mapred.job.queue.name</td>
         <td>default</td>
         <td>queue name for mapreduce engine</td>
+    </tr>
+    <tr>
+        <td>SPARK_MASTER</td>
+        <td>local</td>
+        <td>local | yarn-client</td>
+    </tr>
+    <tr>
+        <td>SPARK_JAR</td>
+        <td></td>
+        <td>The spark assembly jar, both jar in local or hdfs is supported. Put it on hdfs could have
+        performance benefit</td>
     </tr>
 </table>  
 
