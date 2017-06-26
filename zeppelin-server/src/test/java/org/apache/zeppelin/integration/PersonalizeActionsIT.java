@@ -114,6 +114,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   }
 
   private void authenticationUser(String userName, String password) {
+    ZeppelinITUtils.sleep(300, false);
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
@@ -249,6 +250,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
+      personalizeActionsIT.logoutUser("user1");
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testSimpleAction ", e);
     }
@@ -326,6 +328,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"),
           CoreMatchers.equalTo("fa fa-bar-chart"));
+      personalizeActionsIT.logoutUser("user1");
 
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testGraphAction ", e);
@@ -422,6 +425,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) +
               "//div[contains(@class, 'ui-grid-cell-contents ng-binding ng-scope')]")).getText(),
           CoreMatchers.equalTo("19"));
+      personalizeActionsIT.logoutUser("user1");
 
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testGraphAction ", e);
