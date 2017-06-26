@@ -128,7 +128,7 @@ Change the following values in the Shiro.ini file, and uncomment the line:
 
 ### LDAP
 
-Two options exist for configuring an LDAP Realm. The simpler to use is the LdapGroupRealm. How ever it has limited 
+Two options exist for configuring an LDAP Realm. The simpler to use is the LdapGroupRealm. How ever it has limited
 flexibility with mapping of ldap groups to users and for authorization for user groups. A sample configuration file for
 this realm is given below.
 
@@ -144,7 +144,7 @@ ldapRealm.contextFactory.authenticationMechanism = simple
 The other more flexible option is to use the LdapRealm. It allows for mapping of ldapgroups to roles and also allows for
  role/group based authentication into the zeppelin server. Sample configuration for this realm is given below.
  ```
-[main] 
+[main]
 ldapRealm=org.apache.zeppelin.realm.LdapRealm
 
 ldapRealm.contextFactory.authenticationMechanism=simple
@@ -162,18 +162,18 @@ ldapRealm.groupObjectClass=groupofnames
 ldapRealm.userSearchAttributeName = sAMAccountName
 ldapRealm.memberAttribute=member
 # force usernames returned from ldap to lowercase useful for AD
-ldapRealm.userLowerCase = true 
+ldapRealm.userLowerCase = true
 # ability set searchScopes subtree (default), one, base
 ldapRealm.userSearchScope = subtree;
 ldapRealm.groupSearchScope = subtree;
 ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,dc=org
-ldapRealm.contextFactory.systemUsername=uid=guest,ou=people,dc=hadoop,dc=apache,dc=org 
+ldapRealm.contextFactory.systemUsername=uid=guest,ou=people,dc=hadoop,dc=apache,dc=org
 ldapRealm.contextFactory.systemPassword=S{ALIAS=ldcSystemPassword}
 # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
 ldapRealm.groupSearchEnableMatchingRuleInChain = true
 # optional mapping from physical groups to logical application roles
 ldapRealm.rolesByGroup = LDN_USERS: user_role, NYK_USERS: user_role, HKG_USERS: user_role, GLOBAL_ADMIN: admin_role
-# optional list of roles that are allowed to authenticate. Incase not present all groups are allowed to authenticate (login). 
+# optional list of roles that are allowed to authenticate. Incase not present all groups are allowed to authenticate (login).
 # This changes nothing for url specific permissions that will continue to work as specified in [urls].
 ldapRealm.allowedRolesForAuthentication = admin_role,user_role
 ldapRealm.permissionsByRole= user_role = *:ToDoItemsJdo:*:*, *:ToDoItem:*:*; admin_role = *
@@ -182,12 +182,12 @@ securityManager.realms = $ldapRealm
  ```
 
 ### PAM
-[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication 
+[PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
 moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
 either reuse one of these services or create your own for Zeppelin. Activiting PAM authentication requires two parameters:
  1. realm: The Shiro realm being used
  2. service: The service configured under `/etc/pam.d/` to be used. The name here needs to be the same as the file name under `/etc/pam.d/`
- 
+
 ```
 [main]
  pamRealm=org.apache.zeppelin.realm.PamRealm
@@ -232,4 +232,3 @@ If you want to grant this permission to other users, you can change **roles[ ]**
 ## Other authentication methods
 
 - [HTTP Basic Authentication using NGINX](./authentication_nginx.html)
-

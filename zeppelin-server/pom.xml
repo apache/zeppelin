@@ -478,7 +478,6 @@
         </dependencies>
       </dependencyManagement>
     </profile>
-    
     <profile>
       <id>using-source-tree</id>
       <activation>
