@@ -110,10 +110,10 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   }
 
   private void authenticationUser(String userName, String password) {
-    ZeppelinITUtils.sleep(300, false);
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
+    ZeppelinITUtils.sleep(300, false);
     pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
     pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
