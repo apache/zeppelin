@@ -452,7 +452,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void removeNote(String noteId) {
+  private void removeNote(String noteId) throws IOException {
     synchronized (noteSocketMap) {
       List<NotebookSocket> socketList = noteSocketMap.remove(noteId);
     }
@@ -1138,7 +1138,7 @@ public class NotebookServer extends WebSocketServlet
     broadcastRecentNotes(subject.getUser());
   }
 
-  private void removeFromRecent(Message message){
+  private void removeFromRecent(Message message) throws IOException {
     usersRepo().removeNoteFromRecent((String) message.get("noteId"));
     sendRecentNotes(message.principal);
   }
@@ -1384,7 +1384,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void clearRecent(String user) {
+  private void clearRecent(String user) throws IOException {
     usersRepo().clearRecent(user);
     sendRecentNotes(user);
   }

@@ -40,7 +40,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
- * Class for storing user information (persistence layer)
+ * Class for storing user information (persistence layer).
  */
 public class UsersRepo {
   private static final Logger LOG = LoggerFactory.getLogger(UsersRepo.class);
@@ -84,17 +84,19 @@ public class UsersRepo {
     }
   }
 
-  public void removeNoteFromRecent(String noteId) {
+  public void removeNoteFromRecent(String noteId) throws IOException {
     synchronized (usersInfo) {
       for (Map.Entry<String, UserInfo> e : usersInfo.entrySet()) {
         e.getValue().removeNoteFromRecent(noteId);
       }
+      saveToFile();
     }
   }
 
-  public void clearRecent(String user){
-    synchronized (usersInfo){
+  public void clearRecent(String user) throws IOException {
+    synchronized (usersInfo) {
       usersInfo.get(user).clearRecent();
+      saveToFile();
     }
   }
 
@@ -103,17 +105,14 @@ public class UsersRepo {
     if (!usersFile.exists()) {
       return;
     }
-    try {
-      FileInputStream fis = new FileInputStream(usersFile);
-      InputStreamReader isr = new InputStreamReader(fis);
+    try (FileInputStream fis = new FileInputStream(usersFile);
+         InputStreamReader isr = new InputStreamReader(fis)) {
       BufferedReader bufferedReader = new BufferedReader(isr);
       StringBuilder sb = new StringBuilder();
       String line;
       while ((line = bufferedReader.readLine()) != null) {
         sb.append(line);
       }
-      isr.close();
-      fis.close();
 
       String json = sb.toString();
       UserInfoSaving info = gson.fromJson(json, UserInfoSaving.class);

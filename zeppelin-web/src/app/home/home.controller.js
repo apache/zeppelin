@@ -21,7 +21,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
   ngToast.dismiss()
   let vm = this
   vm.notes = noteListDataFactory
-  vm.recentNotes = [];
+  vm.recentNotes = []
   vm.websocketMsgSrv = websocketMsgSrv
   vm.arrayOrderingSrv = arrayOrderingSrv
 
@@ -39,7 +39,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
 
   $scope.initHome = function () {
     websocketMsgSrv.getHomeNote()
-    if ($rootScope.ticket !== undefined){
+    if ($rootScope.ticket !== undefined) {
       websocketMsgSrv.getRecentNotes()
     }
     vm.noteCustomHome = false
@@ -55,7 +55,7 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
   }
 
   $scope.clearRecent = function() {
-    websocketMsgSrv.clearRecent();
+    websocketMsgSrv.clearRecent()
   }
 
   angular.element('#loginModal').on('hidden.bs.modal', function (e) {
@@ -76,7 +76,6 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
       vm.recentNotes.push(note)
     }
     vm.recentNotes.reverse()
-    console.log("Recent notes updated")
   })
 
   $scope.$on('setNoteMenu', function (event, notes) {

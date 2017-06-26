@@ -115,12 +115,16 @@ body .navbar {
   width: 100%;
 }
 
-.notebook-items {
+#notebook-names {
   list-style: none;
 }
 
-.notebook-items > .filter-names {
+#notebook-names > .filter-names {
   margin: 5px 0;
+}
+
+#recent-names {
+  list-style: none;
 }
 
 .note-name-query {
