@@ -12,7 +12,11 @@ group: manual
 <div id="toc"></div>
 
 ## Overview
-[Apache Pig](https://pig.apache.org/) is a platform for analyzing large data sets that consists of a high-level language for expressing data analysis programs, coupled with infrastructure for evaluating these programs. The salient property of Pig programs is that their structure is amenable to substantial parallelization, which in turns enables them to handle very large data sets.
+[Apache Pig](https://pig.apache.org/) is a platform for analyzing large data sets that consists of 
+a high-level language for expressing data analysis programs, 
+coupled with infrastructure for evaluating these programs. 
+The salient property of Pig programs is that their structure is amenable to substantial parallelization, 
+which in turns enables them to handle very large data sets.
 
 ## Supported interpreter type
   - `%pig.script` (default Pig interpreter, so you can use `%pig`)
@@ -55,7 +59,8 @@ group: manual
 
 At the Interpreters menu, you have to create a new Pig interpreter. Pig interpreter has below properties by default.
 And you can set any Pig properties here which will be passed to Pig engine. (like tez.queue.name & mapred.job.queue.name).
-Besides, we use paragraph title as job name if it exists, else use the last line of Pig script. So you can use that to find app running in YARN RM UI.
+Besides, we use paragraph title as job name if it exists, else use the last line of Pig script. 
+So you can use that to find app running in YARN RM UI.
 
 <table class="table-configuration">
     <tr>
@@ -116,7 +121,8 @@ b = group bank_data by age;
 foreach b generate group, COUNT($1);
 ```
 
-The same as above, but use dynamic text form so that use can specify the variable maxAge in textbox. (See screenshot below). Dynamic form is a very cool feature of Zeppelin, you can refer this [link]((../manual/dynamicform.html)) for details.
+The same as above, but use dynamic text form so that use can specify the variable maxAge in textbox. 
+(See screenshot below). Dynamic form is a very cool feature of Zeppelin, you can refer this [link]((../usage/dynamic_form/intro.html)) for details.
 
 ```
 %pig.query
@@ -126,7 +132,8 @@ b = group bank_data by age;
 foreach b generate group, COUNT($1) as count;
 ```
 
-Get the number of each age for specific marital type, also use dynamic form here. User can choose the marital type in the dropdown list (see screenshot below).
+Get the number of each age for specific marital type, 
+also use dynamic form here. User can choose the marital type in the dropdown list (see screenshot below).
 
 ```
 %pig.query
@@ -138,11 +145,14 @@ foreach b generate group, COUNT($1) as count;
 
 The above examples are in the Pig tutorial note in Zeppelin, you can check that for details. Here's the screenshot.
 
-<img class="img-responsive" width="1024px" style="margin:0 auto; padding: 26px;" src="../assets/themes/zeppelin/img/pig_zeppelin_tutorial.png" />
+<img class="img-responsive" width="1024px" style="margin:0 auto; padding: 26px;" src="/assets/themes/zeppelin/img/pig_zeppelin_tutorial.png" />
 
 
-Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, and do different kinds of query based on the data of `%pig`. 
-Besides, we recommend you to specify alias explicitly so that the visualization can display the column name correctly. In the above example 2 and 3 of `%pig.query`, we name `COUNT($1)` as `count`. If you don't do this,
-then we will name it using position. E.g. in the above first example of `%pig.query`, we will use `col_1` in chart to represent `COUNT($1)`.
+Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, 
+and do different kinds of query based on the data of `%pig`. 
+Besides, we recommend you to specify alias explicitly so that the visualization can display 
+the column name correctly. In the above example 2 and 3 of `%pig.query`, we name `COUNT($1)` as `count`. 
+If you don't do this, then we will name it using position. 
+E.g. in the above first example of `%pig.query`, we will use `col_1` in chart to represent `COUNT($1)`.
 
 

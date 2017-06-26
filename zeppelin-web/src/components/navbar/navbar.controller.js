@@ -38,7 +38,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   function getZeppelinVersion () {
     $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
       function (data, status, headers, config) {
-        $rootScope.zeppelinVersion = data.body
+        $rootScope.zeppelinVersion = data.body.version
       }).error(
       function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message)

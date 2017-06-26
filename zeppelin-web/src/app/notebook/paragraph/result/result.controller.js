@@ -176,7 +176,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       $scope.builtInTableDataVisualizationList.push({
         id: vis.id,
         name: vis.name,
-        icon: $sce.trustAsHtml(vis.icon)
+        icon: $sce.trustAsHtml(vis.icon),
+        supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
       })
       builtInVisualizations[vis.id] = {
         class: vis.class
