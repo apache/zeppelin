@@ -56,8 +56,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   static String shiroPath;
   static String authShiro = "[users]\n" +
       "admin = password1, admin\n" +
-      "user1 = password2, user\n" +
-      "user2 = password3, user\n" +
+      "user1 = password2, admin\n" +
+      "user2 = password3, admin\n" +
       "[main]\n" +
       "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
       "securityManager.sessionManager = $sessionManager\n" +
@@ -65,7 +65,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       "shiro.loginUrl = /api/login\n" +
       "[roles]\n" +
       "admin = *\n" +
-      "user = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
       "/** = authc";
@@ -207,7 +206,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
 
-      //TODO: need to add check process - interpreter and python process
+      //TODO: need to add logic to check process - interpreter process : 1 and python process : 1
 
       interpreterModeActionsIT.logoutUser("user1");
 
@@ -232,7 +231,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
 
-      //TODO: need to add check process - interpreter and python process
+      //TODO: need to add logic to check process - interpreter process : 1 and python process : 1
       interpreterModeActionsIT.logoutUser("user2");
 
       //step 4: (user2) login, come back note user1 made, run second paragraph, check result, check process, logout
@@ -251,7 +250,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
 
-      //TODO: need to add check process - interpreter and python process
+      //TODO: need to add logic to check process - interpreter process : 1 and python process : 1
+      //TODO: need to run python interpreter restart button in note
+      //TODO: need to add logic to check process - interpreter process : 0 and python process : 0
 
       interpreterModeActionsIT.logoutUser("user1");
 
