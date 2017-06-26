@@ -39,4 +39,16 @@ $(function() {
   });
 
   $('[data-toggle="tooltip"]').tooltip();
+
+  anchors.remove('.zeppelin-title');
+
+});
+
+$(document).click(function (event) {
+  // custom navigation click event
+  var clickover = $(event.target);
+  var _opened = $(".navbar-collapse").hasClass("navbar-collapse in");
+  if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+    $("button.navbar-toggle").click();
+  }
 });
