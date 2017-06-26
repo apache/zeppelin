@@ -25,4 +25,73 @@ limitations under the License.
 
 ## Overview
 
+Interpreter is a JVM process that communicates to Zeppelin daemon using thrift. 
+Each Interpreter process can have Interpreter Groups, and each interpreter instance belongs to this Interpreter Group.
+(See [here](../../development/writing_zeppelin_interpreter.html) to understand more about its internal structure.) 
 
+Zeppelin provides 3 different modes to run interpreter process: **shared**, **scoped** and **isolated**. 
+These 3 modes give flexibility to fit Zeppelin into any type of use cases.
+
+## Shared Mode
+
+<div class="text-center">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png">
+</div>
+<br/>
+
+In **Shared** mode, single JVM process and single Interpreter Group serves all Notes.
+
+## Scoped Mode
+
+<div class="text-center">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-scoped.png">
+</div>
+<br/>
+
+In Scoped mode, Zeppelin still runs single interpreter JVM process but multiple Interpreter Group serve each Note. 
+So, each Note have their own dedicated session but still it’s possible to share objects between different Interpreter Groups while they’re in the same JVM process.
+
+## Isolated Mode
+
+<div class="text-center">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png">
+</div>
+<br/>
+
+**Isolated** mode runs separate interpreter process for each Note. So, each Note have absolutely isolated session.
+
+## Which mode should I use?
+
+Each Interpreter implementation may have different characteristics depending on the back end system that they integrate. And 3 interpreter modes can be used differently.
+Let’s take a look how Spark Interpreter implementation uses these 3 interpreter modes, as an example. 
+Spark Interpreter implementation includes 4 different interpreters in the group: Spark, SparkSQL, Pyspark and SparkR. 
+SparkInterpreter instance embeds Scala REPL for interactive Spark API execution.
+
+<br/>
+
+In Shared mode, a SparkContext and a Scala REPL is being shared among all interpreters in the group. 
+So every Note will be sharing single SparkContext and single Scala REPL. 
+In this mode, if NoteA defines variable ‘a’ then NoteB not only able to read variable ‘a’ but also able to override the variable.
+
+<div class="text-center">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-shared.png">
+</div>
+<br/>
+
+In Scoped mode, each Note has its own Scala REPL. 
+So variable defined in a Note can not be read or overridden in another Note. 
+However, still single SparkContext serves all the Interpreter Groups. 
+And all the jobs are submitted to this SparkContext and fair scheduler schedules the job. 
+This could be useful when user does not want to share Scala session, but want to keep single Spark application and leverage its fair scheduler.
+
+<div class="text-center">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-scoped.png">
+</div>
+<br/>
+
+In Isolated mode, each Note has its own SparkContext and Scala REPL.
+
+<div class="text-center">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-isolated.png">
+</div>
+<br/>
