@@ -27,13 +27,10 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
+
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.TimeoutException;
 import org.slf4j.Logger;
@@ -44,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -362,7 +358,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
         waitForParagraph(1, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        collector.checkThat("Exception in PersonalizeActionsIT while testDynamicFormAction, status of 2nd Spark Paragraph ",
+        collector.checkThat("Exception in PersonalizeActionsIT while testDynamicFormAction, status of 1st Spark Paragraph ",
             "ERROR", CoreMatchers.equalTo("FINISHED"));
       }
 
