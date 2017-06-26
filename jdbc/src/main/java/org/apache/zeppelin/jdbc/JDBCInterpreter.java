@@ -104,6 +104,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
+  static final String SESSION_PRECODE_KEY = "sessionPrecode";
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
   static final String DEFAULT_COMPLETER_TTL = "120";
@@ -127,6 +128,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
   static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
+  static final String DEFAULT_SESSION_PRECODE = DEFAULT_KEY + DOT + SESSION_PRECODE_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
