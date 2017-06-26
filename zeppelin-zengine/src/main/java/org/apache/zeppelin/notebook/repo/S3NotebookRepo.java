@@ -221,6 +221,14 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
+    if (isSaveAndCommitEnabled()) {
+      LOG.debug("Save on commit setting for remote S3 repo is enabled, returning without save");
+      return;
+    }
+    doSave(note, subject);
+  }
+
+  private void doSave(Note note, AuthenticationInfo subject) throws IOException {
     String json = note.toJson();
     String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";
 
@@ -248,7 +256,7 @@ public class S3NotebookRepo implements NotebookRepo {
       FileUtils.deleteQuietly(file);
     }
   }
-
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     String key = user + "/" + "notebook" + "/" + noteId;
@@ -278,6 +286,9 @@ public class S3NotebookRepo implements NotebookRepo {
   public Revision checkpoint(String noteId, Note note, String checkpointMsg,
       AuthenticationInfo subject)
       throws IOException {
+    if (isSaveAndCommitEnabled()) {
+      doSave(note, subject);
+    }
     // no-op
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
