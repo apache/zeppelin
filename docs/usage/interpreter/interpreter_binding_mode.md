@@ -29,8 +29,11 @@ Interpreter is a JVM process that communicates to Zeppelin daemon using thrift.
 Each Interpreter process can have Interpreter Groups, and each interpreter instance belongs to this Interpreter Group.
 (See [here](../../development/writing_zeppelin_interpreter.html) to understand more about its internal structure.) 
 
-Zeppelin provides 3 different modes to run interpreter process: **shared**, **scoped** and **isolated**. 
+Zeppelin provides 3 different modes to run interpreter process: **shared**, **scoped** and **isolated**.   
+Also, user can specify the scope of this mode as well: **per user** or **per note**.  
 These 3 modes give flexibility to fit Zeppelin into any type of use cases.
+
+In this documentation, we mainly discuss the combination of **per note** mode with **shared**, **scoped** and **isolated** modes for explanation. 
 
 ## Shared Mode
 
