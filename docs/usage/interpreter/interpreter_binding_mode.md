@@ -62,6 +62,16 @@ So, each Note have their own dedicated session but still it’s possible to shar
 
 ## Which mode should I use?
 
+<br/>
+
+Mode | Each notebook...	| Benefits | Disadvantages
+--- | --- | --- | ---
+**shared** | Shares a single Interpreter Group in a single Interpreter Process (JVM) | Low resource utilization and Easy to share data between notebooks | All notebooks are affected if Interpreter Process dies
+**scoped** | Has its own Interpreter Group in the same Interpreter Process (JVM) | Less resource utilization than isolated mode | All notebooks are affected if Interpreter Process dies
+**isolated** | Has its own Interpreter Process | One notebook not affected directly by other notebooks | Can't share data between notebooks easily
+
+<br/>
+
 Each Interpreter implementation may have different characteristics depending on the back end system that they integrate. And 3 interpreter modes can be used differently.
 Let’s take a look how Spark Interpreter implementation uses these 3 interpreter modes, as an example. 
 Spark Interpreter implementation includes 4 different interpreters in the group: Spark, SparkSQL, Pyspark and SparkR. 
