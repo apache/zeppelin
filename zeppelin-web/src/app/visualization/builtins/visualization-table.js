@@ -290,6 +290,7 @@ export default class TableVisualization extends Visualization {
         gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.colResizable.on.columnSizeChanged(scope, () => { self.persistConfigWithGridState(self.config) });
 
         // pagination doesn't follow usual life-cycle in ui-grid v4.0.4
         // gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
