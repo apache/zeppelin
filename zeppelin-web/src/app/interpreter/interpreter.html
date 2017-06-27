@@ -62,7 +62,9 @@ limitations under the License.
       <p>Available repository lists. These repositories are used to resolve external dependencies of interpreter.</p>
       <ul class="noDot">
         <li class="liVertical" ng-repeat="repo in repositories">
-          <a tabindex="0" class="btn btn-info" role="button" uib-tooltip="{{repo.url}}">
+          <a tabindex="0" class="btn btn-info" role="button"
+             tooltip-append-to-body="true" tooltip-placement="top-left"
+             uib-tooltip="{{repo.url}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
             <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"
