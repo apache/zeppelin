@@ -63,14 +63,8 @@ limitations under the License.
       <ul class="noDot">
         <li class="liVertical" ng-repeat="repo in repositories">
           <a tabindex="0" class="btn btn-info" role="button"
-             popover-trigger="focus"
-             popover-placement="right"
-             popover-html-unsafe="<label>URL: </label>
-               {{repo.url}}<br>
-               <label>Username: </label>
-               {{repo.authentication.username}}<br>
-               <label>Proxy host: </label>
-               {{repo.proxy.host}}">
+             tooltip-append-to-body="true" tooltip-placement="top-left"
+             uib-tooltip="{{repo.url}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
             <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"

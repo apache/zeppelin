@@ -47,11 +47,10 @@ limitations under the License.
               style="font-weight: 300; font-size: 13px; margin-left: 1px;"
               ng-style="prop.name === 'xAxis' ? { 'background-color': '#906ebd' } : prop.name === 'yAxis' ? { 'background-color': '#cd5c5c' } : prop.name === 'group' ? { 'background-color': '#5782bd' } : ''">
         {{prop.name}}
-        <a tabindex="0" class="fa fa-info-circle" role="button" popover-placement="top"
-           ng-if="prop.tooltip"
-           style="color: white;"
-           popover-trigger="focus"
-           popover-html-unsafe="{{prop.tooltip}}"></a>
+        <a tabindex="0" class="fa fa-info-circle" role="button"
+           ng-if="prop.tooltip" style="color: white;"
+           tooltip-placement="top" tooltip-append-to-body="true"
+           uib-tooltip="{{prop.tooltip}}"></a>
         </span>
         <ul data-drop="true"
             ng-model="config[prop.name]"
