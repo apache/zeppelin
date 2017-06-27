@@ -63,6 +63,16 @@ export default class TableVisualization extends Visualization {
     initializeTableConfig(config, TABLE_OPTION_SPECS)
   }
 
+  getColumnMinWidth(colName) {
+    let width = 150 // default
+    const calculatedWidth = colName.length * 10
+
+    // use the broad one
+    if (calculatedWidth > width) { width = calculatedWidth }
+
+    return width
+  }
+
   createGridOptions(tableData, onRegisterApiCallback, config) {
     const rows = tableData.rows
     const columnNames = tableData.columns.map(c => c.name)
@@ -99,6 +109,8 @@ export default class TableVisualization extends Visualization {
                  class="ui-grid-cell-contents">
             </div>
           `,
+          minWidth: this.getColumnMinWidth(colName),
+          width: '*',
         }
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
@@ -245,7 +257,8 @@ export default class TableVisualization extends Visualization {
               ui-grid-selection
               ui-grid-cellNav ui-grid-pinning
               ui-grid-empty-base-layer
-              ui-grid-resize-columns ui-grid-move-columns
+              ui-grid-resize-columns 
+              ui-grid-move-columns
               ui-grid-grouping
               ui-grid-save-state
               ui-grid-exporter></div>`)
