@@ -51,7 +51,7 @@ In **Shared** mode, single JVM process and single Interpreter Group serves all N
 </div>
 <br/>
 
-In Scoped mode, Zeppelin still runs single interpreter JVM process but multiple Interpreter Group serve each Note. 
+In Scoped mode, Zeppelin still runs single interpreter JVM process but multiple Interpreter Group serve each note. (in case of **per note**) 
 So, each Note have their own dedicated session but still it’s possible to share objects between different Interpreter Groups while they’re in the same JVM process.
 
 From the code perspective, there is only one `InterpreterGroup` for the scoped mode, but multiple sessions in one `InterpreterGroup`.
@@ -63,7 +63,7 @@ From the code perspective, there is only one `InterpreterGroup` for the scoped m
 </div>
 <br/>
 
-**Isolated** mode runs separate interpreter process for each Note. So, each Note have absolutely isolated session.
+**Isolated** mode runs separate interpreter process for each Note. (in case of **per note**) So, each Note have absolutely isolated session.
 
 From the code perspective, there is only one `InterpreterGroup` for the scoped mode, but multiple sessions in one `InterpreterGroup`.
 
