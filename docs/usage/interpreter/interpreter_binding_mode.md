@@ -65,6 +65,8 @@ From the code perspective, there is only one `InterpreterGroup` for the scoped m
 
 **Isolated** mode runs separate interpreter process for each Note. So, each Note have absolutely isolated session.
 
+From the code perspective, there is only one `InterpreterGroup` for the scoped mode, but multiple sessions in one `InterpreterGroup`.
+
 ## Which mode should I use?
 
 <br/>
