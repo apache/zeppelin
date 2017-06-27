@@ -514,6 +514,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
 
+  public String getZeppelinDefaultCluster() {
+    return getString(ConfVars.ZEPPELIN_CLUSTER_DEFAULT);
+  }
+
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
     Map<String, String> configurations = new HashMap<>();
