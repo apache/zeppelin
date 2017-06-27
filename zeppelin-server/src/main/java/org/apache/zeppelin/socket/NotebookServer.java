@@ -1139,7 +1139,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void removeFromRecent(Message message) throws IOException {
-    usersRepo().removeNoteFromRecent((String) message.get("noteId"));
+    usersRepo().removeNoteFromRecent(message.principal, (String) message.get("noteId"));
     sendRecentNotes(message.principal);
   }
 

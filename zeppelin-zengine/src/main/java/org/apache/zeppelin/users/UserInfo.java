@@ -21,20 +21,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
- * Class defining information about user
+ * Class defining information about user.
  */
 public class UserInfo {
   private static final int MAX_RECENT_SIZE = 10;
 
   /**
-   * Last viewed notes (ids)
-   * Notes are added at the end (the last viewed note at the end of the list)
+   * Last viewed notes (ids).
+   * Notes are added at the end (the last viewed note at the end of the list).
    */
   private LinkedHashSet<String> recentNotes = new LinkedHashSet<>();
 
   /**
-   * Returns ids of last viewed notes
-   *
+   * Returns ids of last viewed notes.
    * @return list of ids of last viewed notes
    */
   public List<String> getRecentNotesIds() {

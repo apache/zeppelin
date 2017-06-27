@@ -14,7 +14,7 @@
 
 import moment from 'moment'
 
-import {isParagraphRunning} from "./paragraph/paragraph.status";
+import { isParagraphRunning, } from './paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl)
 

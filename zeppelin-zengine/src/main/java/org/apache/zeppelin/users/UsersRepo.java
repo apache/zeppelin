@@ -50,14 +50,17 @@ public class UsersRepo {
 
   private Map<String, UserInfo> usersInfo = new HashMap<>();
 
+  private boolean persistMode;
+
   public UsersRepo() {
+    persistMode = false;
   }
 
   public UsersRepo(String usersInfoPath) {
+    persistMode = true;
     if (usersInfoPath != null) {
       this.usersFile = new File(usersInfoPath);
     }
-
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -80,23 +83,35 @@ public class UsersRepo {
       }
       usersInfo.get(user)
           .addRecentNote(noteId);
-      saveToFile();
+      saveToFileIfPersistMode();
     }
   }
 
+  public void removeNoteFromRecent(String user, String noteId) throws IOException {
+    synchronized (usersInfo) {
+      usersInfo.get(user).removeNoteFromRecent(noteId);
+      saveToFileIfPersistMode();
+    }
+  }
+
+  /**
+   * Remove note from recent of all users
+   * @param noteId - id of removing note
+   * @throws IOException if problems with save to file
+   */
   public void removeNoteFromRecent(String noteId) throws IOException {
     synchronized (usersInfo) {
       for (Map.Entry<String, UserInfo> e : usersInfo.entrySet()) {
         e.getValue().removeNoteFromRecent(noteId);
       }
-      saveToFile();
+      saveToFileIfPersistMode();
     }
   }
 
   public void clearRecent(String user) throws IOException {
     synchronized (usersInfo) {
       usersInfo.get(user).clearRecent();
-      saveToFile();
+      saveToFileIfPersistMode();
     }
   }
 
@@ -121,6 +136,11 @@ public class UsersRepo {
       LOG.error("Error loading users file", e);
       e.printStackTrace();
     }
+  }
+
+  private void saveToFileIfPersistMode() throws IOException {
+    if (persistMode)
+      saveToFile();
   }
 
   private void saveToFile() throws IOException {

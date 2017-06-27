@@ -19,7 +19,7 @@ package org.apache.zeppelin.users;
 import java.util.Map;
 
 /**
- * Helper class to save user info
+ * Helper class to save user info.
  */
 class UserInfoSaving {
   Map<String, UserInfo> usersInfo;
