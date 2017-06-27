@@ -30,6 +30,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -115,6 +116,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   /*
    * note information.
    * - cron : cron expression validity.
+   * - version : version of Zeppelin
    */
   private Map<String, Object> info = new HashMap<>();
 
@@ -845,6 +847,26 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.info = info;
   }
 
+  public String getVersion() {
+    String version = StringUtils.EMPTY;
+    if (info.get("version") == null) {
+      return version;
+    }
+    try {
+      version = (String) info.get("version");
+    } catch (ClassCastException e) {
+      logger.error("Zeppelin note version info is not correct", e);
+    }
+    return version;
+  }
+  
+  public Object setVersion(String version) {
+    if (StringUtils.isBlank(version)) {
+      version = StringUtils.EMPTY;
+    }
+    return info.put("version", version);
+  }
+  
   @Override
   public void beforeStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {

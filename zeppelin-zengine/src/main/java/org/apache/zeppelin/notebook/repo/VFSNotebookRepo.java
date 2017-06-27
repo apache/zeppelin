@@ -24,11 +24,11 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;
@@ -46,6 +46,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,16 +154,13 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   private Note getNote(FileObject noteDir) throws IOException {
-    if (!isDirectory(noteDir)) {
-      throw new IOException(noteDir.getName().toString() + " is not a directory");
-    }
+    FileObject noteFile = getNoteFromDir(noteDir);
 
-    FileObject noteJson = noteDir.resolveFile("note.json", NameScope.CHILD);
-    if (!noteJson.exists()) {
-      throw new IOException(noteJson.getName().toString() + " not found");
+    boolean isExtended = false;
+    if (FilenameUtils.isExtension(noteFile.getName().toString(), Util.getZeppelinNoteExtension())) {
+      isExtended = true;
     }
-    
-    FileContent content = noteJson.getContent();
+    FileContent content = noteFile.getContent();
     InputStream ins = content.getInputStream();
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
     ins.close();
@@ -186,9 +184,39 @@ public class VFSNotebookRepo implements NotebookRepo {
       }
     }
 
+    if (isExtended) {
+      // TODO(khalid): fill out version/convert to title.zpln
+      LOG.info("note in new zpln format");
+    }
     return note;
   }
 
+  private FileObject getNoteFromDir(FileObject noteDir) throws IOException {
+    if (!isDirectory(noteDir)) {
+      throw new IOException(noteDir.getName().toString() + " is not a directory");
+    }
+
+    // enforce single file in directory
+    FileObject[] files = noteDir.getChildren();
+    if (files.length != 1) {
+      throw new IOException(
+          "note folder " + noteDir.getName().toString() + " contains more than one file or empty");
+    }
+    FileObject noteFile = files[0];
+
+    if (!noteFile.exists()) {
+      throw new IOException(noteFile.getName().toString() + " not found");
+    }
+    
+    // enforce either extended or note.json file
+    if (!FilenameUtils.isExtension(noteFile.getName().toString(), Util.getZeppelinNoteExtension())
+        && !FilenameUtils.equals(noteFile.getName().toString(), "note.json")) {
+      throw new IOException(noteFile.getName().toString() + " file isn't in acceptable format");
+    }
+    
+    return noteFile;
+  }
+  
   private NoteInfo getNoteInfo(FileObject noteDir) throws IOException {
     Note note = getNote(noteDir);
     return new NoteInfo(note);
