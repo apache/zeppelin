@@ -42,7 +42,7 @@ In this documentation, we mainly discuss the combination of **per note** mode wi
 </div>
 <br/>
 
-In **Shared** mode, single JVM process and single Interpreter Group serves all Notes.
+In **Shared** mode, single JVM process and single Interpreter Group serves all notes.
 
 ## Scoped Mode
 
@@ -52,7 +52,7 @@ In **Shared** mode, single JVM process and single Interpreter Group serves all N
 <br/>
 
 In Scoped mode, Zeppelin still runs single interpreter JVM process but multiple Interpreter Group serve each note. (in case of **per note**) 
-So, each Note have their own dedicated session but still it’s possible to share objects between different Interpreter Groups while they’re in the same JVM process.
+So, each note have their own dedicated session but still it’s possible to share objects between different Interpreter Groups while they’re in the same JVM process.
 
 From the code perspective, there is only one `InterpreterGroup` for the scoped mode, but multiple sessions in one `InterpreterGroup`.
 
@@ -63,7 +63,7 @@ From the code perspective, there is only one `InterpreterGroup` for the scoped m
 </div>
 <br/>
 
-**Isolated** mode runs separate interpreter process for each Note. (in case of **per note**) So, each Note have absolutely isolated session.
+**Isolated** mode runs separate interpreter process for each note. (in case of **per note**) So, each note have absolutely isolated session.
 
 From the code perspective, there is only one `InterpreterGroup` for the scoped mode, but multiple sessions in one `InterpreterGroup`.
 
@@ -75,7 +75,7 @@ Mode | Each notebook...	| Benefits | Disadvantages
 --- | --- | --- | ---
 **shared** | Shares a single Interpreter Group in a single Interpreter Process (JVM) | Low resource utilization and Easy to share data between notebooks | All notebooks are affected if Interpreter Process dies
 **scoped** | Has its own Interpreter Group in the same Interpreter Process (JVM) | Less resource utilization than isolated mode | All notebooks are affected if Interpreter Process dies
-**isolated** | Has its own Interpreter Process | One notebook not affected directly by other notebooks | Can't share data between notebooks easily
+**isolated** | Has its own Interpreter Process | One notebook not affected directly by other notebooks (**per note**) | Can't share data between notebooks easily (**per note**)
 
 <br/>
 
@@ -87,16 +87,16 @@ SparkInterpreter instance embeds Scala REPL for interactive Spark API execution.
 <br/>
 
 In Shared mode, a SparkContext and a Scala REPL is being shared among all interpreters in the group. 
-So every Note will be sharing single SparkContext and single Scala REPL. 
-In this mode, if NoteA defines variable ‘a’ then NoteB not only able to read variable ‘a’ but also able to override the variable.
+So every note will be sharing single SparkContext and single Scala REPL. 
+In this mode, if `Note A` defines variable ‘a’ then `Note B` not only able to read variable ‘a’ but also able to override the variable.
 
 <div class="text-center">
     <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-shared.png">
 </div>
 <br/>
 
-In Scoped mode, each Note has its own Scala REPL. 
-So variable defined in a Note can not be read or overridden in another Note. 
+In Scoped mode, each note has its own Scala REPL. 
+So variable defined in a note can not be read or overridden in another note. 
 However, still single SparkContext serves all the Interpreter Groups. 
 And all the jobs are submitted to this SparkContext and fair scheduler schedules the job. 
 This could be useful when user does not want to share Scala session, but want to keep single Spark application and leverage its fair scheduler.
@@ -106,7 +106,7 @@ This could be useful when user does not want to share Scala session, but want to
 </div>
 <br/>
 
-In Isolated mode, each Note has its own SparkContext and Scala REPL.
+In Isolated mode, each note has its own SparkContext and Scala REPL.
 
 <div class="text-center">
     <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-isolated.png">
