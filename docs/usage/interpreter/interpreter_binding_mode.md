@@ -52,7 +52,7 @@ In **Shared** mode, single JVM process and single Interpreter Group serves all n
 <br/>
 
 In Scoped mode, Zeppelin still runs single interpreter JVM process but multiple Interpreter Group serve each note. (in case of **per note**) 
-So, each note have their own dedicated session but still it’s possible to share objects between different Interpreter Groups while they’re in the same JVM process.
+So, each note have their own dedicated session. (but still possible to shared objects via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
 
 ## Isolated Mode
 
@@ -61,7 +61,8 @@ So, each note have their own dedicated session but still it’s possible to shar
 </div>
 <br/>
 
-**Isolated** mode runs separate interpreter process for each note. (in case of **per note**) So, each note have absolutely isolated session.
+**Isolated** mode runs separate interpreter process for each note. (in case of **per note**) 
+So, each note have absolutely isolated session. (but still possible to shared objects via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
 
 ## Which mode should I use?
 
