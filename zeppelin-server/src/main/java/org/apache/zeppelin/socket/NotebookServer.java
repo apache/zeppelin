@@ -1031,6 +1031,8 @@ public class NotebookServer extends WebSocketServlet
           noteName = "Note " + note.getId();
         }
         note.setName(noteName);
+        // to trigger note file rename/conversion
+        note.getFileInfo().setForceRename(true);
       }
 
       note.persist(subject);

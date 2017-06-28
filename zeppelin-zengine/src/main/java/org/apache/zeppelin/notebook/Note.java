@@ -135,7 +135,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.index = noteIndex;
     this.noteEventListener = noteEventListener;
     this.credentials = credentials;
-    this.fileInfo = FileInfo.EMPTY;
+    this.fileInfo = FileInfo.createInstance();
     generateId();
   }
 

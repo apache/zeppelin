@@ -32,9 +32,13 @@ public class FileInfo {
   private boolean forceRename;
   public static final FileInfo EMPTY = new FileInfo();
   
-  public FileInfo() {
+  private FileInfo() {
     fileName = Maps.newConcurrentMap();
     forceRename = false;
+  }
+  
+  public static FileInfo createInstance() {
+    return new FileInfo();
   }
   
   public String getFileName(String storageName) {
@@ -56,11 +60,12 @@ public class FileInfo {
     forceRename = triggerRename;
   }
   
-  public static boolean isEmpty(FileInfo obj) {
+  public static boolean isEmpty(Object obj) {
     if (obj == null || !(obj instanceof FileInfo)) {
       return true;
     }
-    return obj == EMPTY;
+    FileInfo fi = (FileInfo) obj;
+    return (fi.fileName.isEmpty()) || fi == EMPTY;
   }
   
   @Override

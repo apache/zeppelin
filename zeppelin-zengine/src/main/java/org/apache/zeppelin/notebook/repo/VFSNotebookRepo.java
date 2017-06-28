@@ -190,7 +190,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   private void setFileInfo(Note note, FileObject noteFile) {
     FileInfo fileInfo = note.getFileInfo();
     if (FileInfo.isEmpty(fileInfo)) {
-      fileInfo = new FileInfo();
+      fileInfo = FileInfo.createInstance();
       note.setFileInfo(fileInfo);
     }
     String storageName = this.getClass().getName();
@@ -283,7 +283,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     FileInfo fileInfo = note.getFileInfo();
     boolean newFile = false;
     if (FileInfo.isEmpty(fileInfo)) {
-      fileInfo = new FileInfo();
+      fileInfo = FileInfo.createInstance();
       note.setFileInfo(fileInfo);
       newFile = true;
     }
@@ -299,6 +299,14 @@ public class VFSNotebookRepo implements NotebookRepo {
     } else {
       if (newFile) {
         currentFileName = Util.convertTitleToFilename(note.getName());
+        FileObject newNote = noteDir.resolveFile(currentFileName, NameScope.CHILD);
+
+        if (!newNote.exists()) {
+          newNote.createFile();
+        }
+        newNote.close();
+        fileInfo.setForceRename(false);
+        fileInfo.setFileName(storageName, currentFileName);
       }
       noteFile.moveTo(noteDir.resolveFile(currentFileName, NameScope.CHILD));
     }
