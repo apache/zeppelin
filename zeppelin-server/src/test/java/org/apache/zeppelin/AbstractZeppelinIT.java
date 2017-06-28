@@ -138,4 +138,11 @@ abstract public class AbstractZeppelinIT {
     throw e;
   }
 
+  protected String getNoteName(){
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    String classWithName = "form-control-static2";
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.className(classWithName)));
+    return driver.findElement(By.className(classWithName)).getText();
+  }
+
 }

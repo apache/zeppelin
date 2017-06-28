@@ -17,9 +17,12 @@
 
 package org.apache.zeppelin.integration;
 
+import java.util.List;
+
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
+import org.apache.zeppelin.notebook.Folder;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +34,9 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -339,5 +345,211 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       handleException("Exception in ZeppelinIT while testAngularRunParagraph", e);
     }
 
+  }
+
+  @Test
+  public void testNoteAppearInRecentAfterCreateAndOpen() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+      String noteName = getNoteName();
+      driver.navigate().back();
+
+      //check note is first in recent list
+      ZeppelinITUtils.sleep(1000, true);
+      List<WebElement> recentNames = driver.
+          findElements(By.xpath("//ul[@id='recent-names']//li//div//div//a"));
+      assertTrue("Note " + noteName + " is not appear in recent list",
+          recentNames.get(0).getText().equals(noteName));
+
+      driver.navigate().forward();
+      deleteTestNotebook(driver);
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testNoteAppearInRecentAfterCreateAndOpen", e);
+    }
+  }
+
+  @Test
+  public void testNoteLiftsInRecentAfterOpenItAgain() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      //create note1
+      createNewNote();
+      String testingNoteUrl = driver.getCurrentUrl();
+      driver.navigate().back();
+
+      //create note2
+      createNewNote();
+      //delete note2 (it remains in recent at first place)
+      deleteTestNotebook(driver);
+      //open note 1 (it should lift in recent list)
+      driver.navigate().to(testingNoteUrl);
+      //to home page
+      driver.navigate().back();
+      ZeppelinITUtils.sleep(1000, true);
+
+      assertTrue("Note with url " + testingNoteUrl
+              + "is not at first place in recent list after open",
+          driver.findElements(By.xpath("//ul[@id='recent-names']//li//div//div//a")).get(0)
+              .getAttribute("href").equals(testingNoteUrl));
+
+      driver.navigate().forward();
+      deleteTestNotebook(driver);
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testNoteLiftsInRecentAfterOpenItAgain", e);
+    }
+  }
+
+  @Test
+  public void testChangeNoteNameInRecentWhenRenameInMainList() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      //create note
+      createNewNote();
+      String url = driver.getCurrentUrl();
+      url = url.substring(url.indexOf('#'));
+
+      //back to home page
+      driver.navigate().back();
+
+      //move mouse to note name (for rename button will shown)
+      Actions action = new Actions(driver);
+      String noteXPath = "//ul[@id='notebook-names']//li//div//div//a[@href= '" + url + "']";
+      action.moveToElement(driver.findElement(By.xpath(noteXPath)));
+      action.perform();
+
+
+      clickAndWait(By.xpath(noteXPath + "//..//a//i[@uib-tooltip='Rename note']"));
+      WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      block.until(ExpectedConditions.visibilityOfElementLocated(By.id("renameModal")));
+
+      //rename
+      String newName = "SomeNewName";
+      WebElement inputField = driver.findElement(By.xpath("//input[@ng-model='params.newName']"));
+      inputField.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+      inputField.sendKeys(Keys.BACK_SPACE);
+      inputField.sendKeys(newName);
+      clickAndWait(By.xpath("//div[@class='modal-footer']//div//button[text()=' Rename ']"));
+
+      assertTrue("Note name in recent is not equal name in main list: note url = " + url,
+          driver.findElement(
+              By.xpath("//ul[@id='recent-names']//li//div//div//a[@href='" + url + "']"))
+              .getText().equals(newName));
+    } catch (Exception e) {
+      handleException
+          ("Exception in ZeppelinIT while testChangeNoteNameInRecentWhenRenameInMainList", e);
+    }
+  }
+
+  @Test
+  public void testRemoveRecentNoteWhenRemoveFromTrash() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      //create and move to trash
+      createNewNote();
+      String url = driver.getCurrentUrl();
+      url = url.substring(url.indexOf('#'));
+      deleteTestNotebook(driver);
+
+      //open trash folder
+      String trashFolderPath = "//a[text()= ' Trash ']";
+      clickAndWait(By.xpath(trashFolderPath));
+
+      //move mouse to necessary node
+      Actions action = new Actions(driver);
+      String testingNotePath =
+          trashFolderPath + "//..//..//div//ul//li//div//div//a[@href='" + url + "']";
+      action.moveToElement(driver.findElement(By.xpath(testingNotePath)));
+      action.perform();
+
+      //remove note
+      clickAndWait(
+          By.xpath(testingNotePath + "//..//a//i[@uib-tooltip='Remove note permanently']"));
+      driver.switchTo().activeElement();
+      clickAndWait(By.xpath("//button[text() = 'OK']"));
+
+      //check note is not exist in recent list
+      assertTrue("Note with url " + url + "still exists in recent list after remove",
+          driver.findElements(By.xpath("//ul[@id='recent-names']//li//div//div//a[@href='" + url + "']"))
+              .size() == 0);
+
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testRemoveRecentNoteWhenRemoveFromTrash", e);
+    }
+  }
+
+  @Test
+  public void testRemoveNoteWhenRemoveContainingFolder() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      //create new note in folder
+      clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+          " note')]"));
+      WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+      String folderName = "folderName";
+      String newName = folderName + "/note";
+      WebElement inputField = driver.findElement(By.xpath("//input[@ng-model='note.notename']"));
+      inputField.sendKeys(newName);
+      clickAndWait(By.id("createNoteButton"));
+      block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
+      String url = driver.getCurrentUrl();
+      url = url.substring(url.indexOf('#'));
+
+      //back to home page
+      driver.navigate().back();
+
+      //move folder to trash
+      String folderXPath = "//a[text() = ' " + folderName + " ']";
+      WebElement folderElement = driver.findElement(By.xpath(folderXPath));
+      Actions action = new Actions(driver);
+      action.moveToElement(folderElement);
+      action.perform();
+      clickAndWait(By.xpath(folderXPath + "//..//a//i[@uib-tooltip='Move folder to Trash']"));
+      driver.switchTo().activeElement();
+      clickAndWait(By.xpath("//button[text() = 'OK']"));
+
+      //check note in folder has necessary name in recent
+      assertTrue("Note with url " + url + " was not renamed in recent list after move" +
+          " parent folder in trash", driver.findElements(
+          By.xpath("//ul[@id='recent-names']//li//div//div//a[@href='" + url + "']"))
+          .get(0).getText().equals(Folder.TRASH_FOLDER_ID + "/" + newName));
+
+      //remove folder
+      //open trash folder
+      String trashFolderPath = "//a[text()= ' Trash ']";
+      clickAndWait(By.xpath(trashFolderPath));
+
+      //move mouse to necessary node
+      String testingNotePath =
+          trashFolderPath + "//..//..//div//ul//li//div//div//a[text() = ' " + folderName + " ']";
+      action.moveToElement(driver.findElement(By.xpath(testingNotePath)));
+      action.perform();
+
+      //remove note
+      clickAndWait(
+          By.xpath(testingNotePath + "//..//a//i[@uib-tooltip='Remove folder permanently']"));
+      driver.switchTo().activeElement();
+      clickAndWait(By.xpath("//button[text() = 'OK']"));
+
+      //check note is not exist in recent list
+      assertTrue("Note with url " + url + "still exists in recent list after remove",
+          driver.findElements(By.xpath("//ul[@id='recent-names']//li//div//div//a[@href='" + url + "']"))
+              .size() == 0);
+
+      //check note doesn't exist in recent
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testNoteAppearInRecentAfterCreateAndOpen", e);
+    }
   }
 }
