@@ -39,10 +39,14 @@ function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arr
 
   $scope.initHome = function () {
     websocketMsgSrv.getHomeNote()
+    $scope.initRecentList()
+    vm.noteCustomHome = false
+  }
+
+  $scope.initRecentList = function() {
     if ($rootScope.ticket !== undefined) {
       websocketMsgSrv.getRecentNotes()
     }
-    vm.noteCustomHome = false
   }
 
   $scope.reloadNoteList = function () {
