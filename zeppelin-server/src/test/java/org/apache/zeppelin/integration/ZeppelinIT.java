@@ -91,6 +91,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // username is displayed and there's no login button anymore
       waitForText("admin", By.xpath("//span[@class=\"username ng-binding\"]"));
+
       assertEquals(0,
           driver.findElements(By.xpath("//button[@class=\"btn nav-login-btn\"]")).size());
 
