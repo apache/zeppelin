@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.util;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -30,6 +31,8 @@ public class Util {
   private static final String GIT_PROPERTIES_COMMIT_ID_KEY = "git.commit.id.abbrev";
   private static final String GIT_PROPERTIES_COMMIT_TS_KEY = "git.commit.time";
   private static final String ZEPPELIN_NOTE_FILE_EXTENSION = "zpln";
+  private static final int MAX_ZEPPELIN_NOTE_FILE_LENGTH = 127;
+  private static final String DEFAULT_NOTE_FILE_NAME = "note.zpln";
 
   private static Properties projectProperties;
   private static Properties gitProperties;
@@ -82,5 +85,23 @@ public class Util {
    */
   public static String getZeppelinNoteExtension() {
     return ZEPPELIN_NOTE_FILE_EXTENSION;
+  }
+  
+  /**
+   * Convert note title into valid file name
+   * 
+   * @return converted title into filename
+   */
+  public static String convertTitleToFilename(String title) {
+    if (StringUtils.isBlank(title)) {
+      return DEFAULT_NOTE_FILE_NAME;
+    }
+    // get rid of folders
+    String baseName = FilenameUtils.getName(title);
+    // remove \ / | : ? * " < > 'Control Chars'
+    baseName = baseName.replaceAll("\\\\|\\/|\\||:|\\?|\\*|\"|<|>|\\p{Cntrl}", " ");
+    return baseName.substring(0, Math.min(baseName.length(),
+        MAX_ZEPPELIN_NOTE_FILE_LENGTH - (ZEPPELIN_NOTE_FILE_EXTENSION.length() + 1))) + 
+        "." + ZEPPELIN_NOTE_FILE_EXTENSION;
   }
 }

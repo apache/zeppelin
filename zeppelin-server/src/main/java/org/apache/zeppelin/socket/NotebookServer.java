@@ -72,6 +72,7 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -938,6 +939,8 @@ public class NotebookServer extends WebSocketServlet
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setName(name);
+      // to trigger note file rename/conversion
+      note.getFileInfo().setForceRename(true);
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);

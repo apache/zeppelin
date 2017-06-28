@@ -106,6 +106,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
+  private transient FileInfo fileInfo;
 
   /*
    * note configurations.
@@ -134,6 +135,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.index = noteIndex;
     this.noteEventListener = noteEventListener;
     this.credentials = credentials;
+    this.fileInfo = FileInfo.EMPTY;
     generateId();
   }
 
@@ -214,6 +216,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return folderId;
   }
 
+  public FileInfo getFileInfo() {
+    return this.fileInfo;
+  }
+  
+  public void setFileInfo(FileInfo fi) {
+    this.fileInfo = fi;
+  }
+  
   public boolean isNameEmpty() {
     return this.name.trim().isEmpty();
   }

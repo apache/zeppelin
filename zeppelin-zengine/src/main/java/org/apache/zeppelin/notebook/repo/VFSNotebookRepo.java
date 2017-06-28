@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.NameScope;
@@ -41,6 +42,7 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.ApplicationState;
+import org.apache.zeppelin.notebook.FileInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -156,10 +158,6 @@ public class VFSNotebookRepo implements NotebookRepo {
   private Note getNote(FileObject noteDir) throws IOException {
     FileObject noteFile = getNoteFromDir(noteDir);
 
-    boolean isExtended = false;
-    if (FilenameUtils.isExtension(noteFile.getName().toString(), Util.getZeppelinNoteExtension())) {
-      isExtended = true;
-    }
     FileContent content = noteFile.getContent();
     InputStream ins = content.getInputStream();
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
@@ -183,14 +181,24 @@ public class VFSNotebookRepo implements NotebookRepo {
         }
       }
     }
+    
+    setFileInfo(note, noteFile);
 
-    if (isExtended) {
-      // TODO(khalid): fill out version/convert to title.zpln
-      LOG.info("note in new zpln format");
-    }
     return note;
   }
 
+  private void setFileInfo(Note note, FileObject noteFile) {
+    FileInfo fileInfo = note.getFileInfo();
+    if (FileInfo.isEmpty(fileInfo)) {
+      fileInfo = new FileInfo();
+      note.setFileInfo(fileInfo);
+    }
+    String storageName = this.getClass().getName();
+    fileInfo.setFileName(storageName, noteFile.getName().getBaseName());
+    fileInfo.setForceRename(false);
+    LOG.info("FileInfo when get note {}", note.getFileInfo());
+  }
+  
   private FileObject getNoteFromDir(FileObject noteDir) throws IOException {
     if (!isDirectory(noteDir)) {
       throw new IOException(noteDir.getName().toString() + " is not a directory");
@@ -209,9 +217,10 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
     
     // enforce either extended or note.json file
-    if (!FilenameUtils.isExtension(noteFile.getName().toString(), Util.getZeppelinNoteExtension())
-        && !FilenameUtils.equals(noteFile.getName().toString(), "note.json")) {
-      throw new IOException(noteFile.getName().toString() + " file isn't in acceptable format");
+    if (!FilenameUtils.isExtension(noteFile.getName().getBaseName(),
+        Util.getZeppelinNoteExtension())
+        && !FilenameUtils.equals(noteFile.getName().getBaseName(), "note.json")) {
+      throw new IOException(noteFile.getName().getBaseName() + " file isn't in acceptable format");
     }
     
     return noteFile;
@@ -259,14 +268,43 @@ public class VFSNotebookRepo implements NotebookRepo {
       throw new IOException(noteDir.getName().toString() + " is not a directory");
     }
 
-    FileObject noteJson = noteDir.resolveFile(".note.json", NameScope.CHILD);
+    FileObject noteJson = noteDir.resolveFile(".note.zpln", NameScope.CHILD);
+    
     // false means not appending. creates file if not exists
     OutputStream out = noteJson.getContent().getOutputStream(false);
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
     out.close();
-    noteJson.moveTo(noteDir.resolveFile("note.json", NameScope.CHILD));
+    
+    setFileName(note, noteJson, noteDir);
   }
 
+  private synchronized void setFileName(Note note, FileObject noteFile, FileObject noteDir)
+      throws IOException {
+    FileInfo fileInfo = note.getFileInfo();
+    boolean newFile = false;
+    if (FileInfo.isEmpty(fileInfo)) {
+      fileInfo = new FileInfo();
+      note.setFileInfo(fileInfo);
+      newFile = true;
+    }
+    
+    String storageName = this.getClass().getName();
+    String currentFileName = note.getFileInfo().getFileName(storageName);
+    if (fileInfo.isForceRename()) {
+      String newFileName = Util.convertTitleToFilename(note.getName());
+      noteFile.moveTo(noteDir.resolveFile(newFileName, NameScope.CHILD));
+      noteDir.resolveFile(currentFileName, NameScope.CHILD).delete();
+      fileInfo.setForceRename(false);
+      fileInfo.setFileName(storageName, newFileName);
+    } else {
+      if (newFile) {
+        currentFileName = Util.convertTitleToFilename(note.getName());
+      }
+      noteFile.moveTo(noteDir.resolveFile(currentFileName, NameScope.CHILD));
+    }
+    LOG.info("FileInfo after file save {}", note.getFileInfo());
+  }
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     FileObject rootDir = fsManager.resolveFile(getPath("/"));
