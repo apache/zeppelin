@@ -72,6 +72,33 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
+
+  @Test
+  public void testLogin() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      // anonymous should display a Login button
+      WebElement button = driver.findElement(By.xpath("//button[@class=\"btn nav-login-btn\"]"));
+      assertTrue(button.isDisplayed());
+
+      // login works
+      button.click();
+      setText("//input[@id=\"userName\"]", "admin");
+      setText("//input[@id=\"password\"]", "password1");
+      driver.findElement(By.xpath("//button[@class=\"btn btn-default btn-primary\"]")).click();
+
+      // username is displayed and there's no login button anymore
+      waitForText("admin", By.xpath("//span[@class=\"username ng-binding\"]"));
+      assertEquals(0,
+          driver.findElements(By.xpath("//button[@class=\"btn nav-login-btn\"]")).size());
+
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testLogin", e);
+    }
+  }
+
   @Test
   public void testAngularDisplay() throws Exception {
     if (!endToEndTestEnabled()) {
