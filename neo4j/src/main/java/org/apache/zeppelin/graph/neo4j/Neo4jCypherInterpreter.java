@@ -37,9 +37,6 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.internal.util.Iterables;
-import org.neo4j.driver.v1.AuthToken;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Config;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Value;
@@ -52,25 +49,12 @@ import org.neo4j.driver.v1.util.Pair;
  * Neo4j interpreter for Zeppelin.
  */
 public class Neo4jCypherInterpreter extends Interpreter {
-  public static final String NEO4J_SERVER_URL = "neo4j.url";
-  public static final String NEO4J_AUTH_TYPE = "neo4j.auth.type";
-  public static final String NEO4J_AUTH_USER = "neo4j.auth.user";
-  public static final String NEO4J_AUTH_PASSWORD = "neo4j.auth.password";
-  public static final String NEO4J_MAX_CONCURRENCY = "neo4j.max.concurrency";
-
   private static final String TABLE = "%table";
   public static final String NEW_LINE = "\n";
   public static final String TAB = "\t";
 
   private static final String MAP_KEY_TEMPLATE = "%s.%s";
   private static final String ARAY_KEY_TEMPLATE = "%s[%d]";
-
-  /**
-   * 
-   * Enum type for the AuthToken 
-   *
-   */
-  public enum Neo4jAuthType {NONE, BASIC}
 
   private Map<String, String> labels;
 
@@ -80,28 +64,7 @@ public class Neo4jCypherInterpreter extends Interpreter {
 
   public Neo4jCypherInterpreter(Properties properties) {
     super(properties);
-    Config config = Config.build()
-          .withMaxIdleSessions(Integer.parseInt(getProperty(NEO4J_MAX_CONCURRENCY)))
-          .toConfig();
-    String authType = getProperty(NEO4J_AUTH_TYPE);
-    AuthToken authToken = null;
-    switch (Neo4jAuthType.valueOf(authType.toUpperCase())) {
-      case BASIC:
-        String username = getProperty(NEO4J_AUTH_USER);
-        String password = getProperty(NEO4J_AUTH_PASSWORD);
-        logger.debug("Creating a BASIC authentication to neo4j with user '{}' and password '{}'",
-                username, password);
-        authToken = AuthTokens.basic(username, password);
-        break;
-      case NONE:
-        logger.debug("Creating NONE authentication");
-        authToken = AuthTokens.none();
-        break;
-      default:
-        throw new RuntimeException("Neo4j authentication type not supported");
-    }
-    this.neo4jConnectionManager = new Neo4jConnectionManager(
-            getProperty(NEO4J_SERVER_URL), authToken, config);
+    this.neo4jConnectionManager = new Neo4jConnectionManager(properties);
   }
 
   @Override
@@ -293,7 +256,7 @@ public class Neo4jCypherInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
         .createOrGetParallelScheduler(Neo4jCypherInterpreter.class.getName() + this.hashCode(),
-            Integer.parseInt(getProperty(NEO4J_MAX_CONCURRENCY)));
+            Integer.parseInt(getProperty(Neo4jConnectionManager.NEO4J_MAX_CONCURRENCY)));
   }
 
   @Override

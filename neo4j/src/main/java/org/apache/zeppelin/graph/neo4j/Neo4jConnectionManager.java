@@ -20,6 +20,7 @@ package org.apache.zeppelin.graph.neo4j;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.neo4j.driver.v1.AuthToken;
+import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Config;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
@@ -42,6 +44,12 @@ import org.slf4j.LoggerFactory;
  */
 public class Neo4jConnectionManager {
   static final Logger LOGGER = LoggerFactory.getLogger(Neo4jConnectionManager.class);
+  
+  public static final String NEO4J_SERVER_URL = "neo4j.url";
+  public static final String NEO4J_AUTH_TYPE = "neo4j.auth.type";
+  public static final String NEO4J_AUTH_USER = "neo4j.auth.user";
+  public static final String NEO4J_AUTH_PASSWORD = "neo4j.auth.password";
+  public static final String NEO4J_MAX_CONCURRENCY = "neo4j.max.concurrency";
 
   private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\{\\w+\\}");
   private static final String REPLACE_CURLY_BRACKETS = "\\{|\\}";
@@ -57,11 +65,34 @@ public class Neo4jConnectionManager {
 
   private final AuthToken authToken;
 
-  public Neo4jConnectionManager(String neo4jUrl, AuthToken authToken,
-          Config config) {
-    this.neo4jUrl = neo4jUrl;
-    this.authToken = authToken;
-    this.config = config;
+  /**
+   * 
+   * Enum type for the AuthToken 
+   *
+   */
+  public enum Neo4jAuthType {NONE, BASIC}
+
+  public Neo4jConnectionManager(Properties properties) {
+    this.neo4jUrl = properties.getProperty(NEO4J_SERVER_URL);
+    this.config = Config.build()
+          .withMaxIdleSessions(Integer.parseInt(properties.getProperty(NEO4J_MAX_CONCURRENCY)))
+          .toConfig();
+    String authType = properties.getProperty(NEO4J_AUTH_TYPE);
+    switch (Neo4jAuthType.valueOf(authType.toUpperCase())) {
+      case BASIC:
+        String username = properties.getProperty(NEO4J_AUTH_USER);
+        String password = properties.getProperty(NEO4J_AUTH_PASSWORD);
+        LOGGER.debug("Creating a BASIC authentication to neo4j with user '{}' and password '{}'",
+                username, password);
+        this.authToken = AuthTokens.basic(username, password);
+        break;
+      case NONE:
+        LOGGER.debug("Creating NONE authentication");
+        this.authToken = AuthTokens.none();
+        break;
+      default:
+        throw new RuntimeException("Neo4j authentication type not supported");
+    }
   }
 
   private Driver getDriver() {

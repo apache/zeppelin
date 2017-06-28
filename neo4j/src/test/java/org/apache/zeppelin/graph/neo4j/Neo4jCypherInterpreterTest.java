@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.graph.neo4j.Neo4jCypherInterpreter.Neo4jAuthType;
+import org.apache.zeppelin.graph.neo4j.Neo4jConnectionManager.Neo4jAuthType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -87,9 +87,9 @@ public class Neo4jCypherInterpreterTest {
   @Before
   public void setUpZeppelin() {
     Properties p = new Properties();
-    p.setProperty(Neo4jCypherInterpreter.NEO4J_SERVER_URL, server.boltURI().toString());
-    p.setProperty(Neo4jCypherInterpreter.NEO4J_AUTH_TYPE, Neo4jAuthType.NONE.toString());
-    p.setProperty(Neo4jCypherInterpreter.NEO4J_MAX_CONCURRENCY, "50");
+    p.setProperty(Neo4jConnectionManager.NEO4J_SERVER_URL, server.boltURI().toString());
+    p.setProperty(Neo4jConnectionManager.NEO4J_AUTH_TYPE, Neo4jAuthType.NONE.toString());
+    p.setProperty(Neo4jConnectionManager.NEO4J_MAX_CONCURRENCY, "50");
     interpreter = new Neo4jCypherInterpreter(p);
     context = new InterpreterContext("note", "id", null, "title", "text",
             new AuthenticationInfo(),
