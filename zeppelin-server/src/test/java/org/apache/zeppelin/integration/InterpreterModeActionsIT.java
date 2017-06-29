@@ -137,8 +137,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         userName + "')]//a[@ng-click='navbar.logout()']"), MAX_BROWSER_TIMEOUT_SEC).click();
 
     By locator = By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button");
-    WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    WebElement element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+        .until(ExpectedConditions.visibilityOfElementLocated(locator));
     if (element.isDisplayed()) {
       driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
     }
@@ -159,7 +159,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testGloballyModeAction() throws Exception {
+  public void testGloballyAction() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -197,8 +197,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       interpreterModeActionsIT.authenticationUser("user1", "password2");
       By locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
-      WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      WebElement element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         createNewNote();
       }
@@ -232,8 +232,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       interpreterModeActionsIT.authenticationUser("user2", "password3");
       locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         createNewNote();
       }
@@ -265,8 +265,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python process is '1'
       interpreterModeActionsIT.authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
@@ -306,7 +306,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       }
 
       locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
@@ -365,8 +366,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       interpreterModeActionsIT.authenticationUser("user1", "password2");
       By locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
-      WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      WebElement element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         createNewNote();
       }
@@ -394,14 +395,14 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       interpreterModeActionsIT.logoutUser("user1");
 
       //step 3: (user2) login, create a new note, run two paragraph with 'python', check result, check process, logout
-      //paragraph: Check if the result is 'user2' in the second paragraph
+      //                paragraph: Check if the result is 'user2' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '2'
       interpreterModeActionsIT.authenticationUser("user2", "password3");
       locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         createNewNote();
       }
@@ -429,14 +430,14 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
 
       //step 4: (user1) login, come back note user1 made, run second paragraph, check result,
-      // restart python interpreter in note, check process again, logout
+      //                restart python interpreter in note, check process again, logout
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
       interpreterModeActionsIT.authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
@@ -464,7 +465,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       }
 
       locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
@@ -480,12 +482,12 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       interpreterModeActionsIT.logoutUser("user1");
 
       //step 5: (user2) login, come back note user2 made, restart python interpreter in note, check process, logout
-      //System: Check if the number of python interpreter process is 0
-      //System: Check if the number of python process is 0
+      //System: Check if the number of python interpreter process is '0'
+      //System: Check if the number of python process is '0'
       interpreterModeActionsIT.authenticationUser("user2", "password3");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
@@ -506,7 +508,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       }
 
       locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
       }
@@ -523,12 +526,12 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
       //step 6: (user1) login, come back note user1 made, run first paragraph,logout
       //        (user2) login, come back note user2 made, run first paragraph, check process, logout
-      //System: Check if the number of python process is 2
-      //System: Check if the number of python interpreter process is 1
+      //System: Check if the number of python process is '2'
+      //System: Check if the number of python interpreter process is '1'
       interpreterModeActionsIT.authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
@@ -546,8 +549,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
       interpreterModeActionsIT.authenticationUser("user2", "password3");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
