@@ -31,13 +31,13 @@ In Zeppelin notebook, you can use ` %md ` in the beginning of a paragraph to inv
 
 In Zeppelin, Markdown interpreter is enabled by default and uses the [pegdown](https://github.com/sirthias/pegdown) parser.
 
-<img src="/assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="60%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="60%" />
 
 ## Example
 
 The following example demonstrates the basic usage of Markdown in a Zeppelin notebook.
 
-<img src="/assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example.png" width="70%" />
 
 ## Mathematical expression
 
@@ -63,11 +63,11 @@ For more information, please see [Mathematical Expression](../usage/display_syst
 
 `pegdown` parser provides github flavored markdown.
 
-<img src="/assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser.png" width="70%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser.png" width="70%" />
 
 `pegdown` parser provides [YUML](http://yuml.me/) and [Websequence](https://www.websequencediagrams.com/) plugins also. 
 
-<img src="/assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser-plugins.png" width="70%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser-plugins.png" width="70%" />
 
 ### Markdown4j Parser
 

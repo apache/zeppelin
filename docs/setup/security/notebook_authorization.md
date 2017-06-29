@@ -37,14 +37,14 @@ As you can see, each Zeppelin notebooks has 3 entities :
 * Readers ( users or groups )
 * Writers ( users or groups )
 
-<center><img src="/assets/themes/zeppelin/img/docs-img/permission_setting.png"></center>
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/permission_setting.png"></center>
 
 Fill out the each forms with comma seperated **users** and **groups** configured in `conf/shiro.ini` file.
 If the form is empty (*), it means that any users can perform that operation.
 
 If someone who doesn't have **read** permission is trying to access the notebook or someone who doesn't have **write** permission is trying to edit the notebook, Zeppelin will ask to login or block the user.
 
-<center><img src="/assets/themes/zeppelin/img/docs-img/insufficient_privileges.png"></center>
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/insufficient_privileges.png"></center>
 
 ## Separate notebook workspaces (public vs. private)
 By default, the authorization rights allow other users to see the newly created note, meaning the workspace is `public`. This behavior is controllable and can be set through either `ZEPPELIN_NOTEBOOK_PUBLIC` variable in `conf/zeppelin-env.sh`, or through `zeppelin.notebook.public` property in `conf/zeppelin-site.xml`. Thus, in order to make newly created note appear only in your `private` workspace by default, you can set either `ZEPPELIN_NOTEBOOK_PUBLIC` to `false` in your `conf/zeppelin-env.sh` as follows:

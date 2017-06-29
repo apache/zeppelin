@@ -85,16 +85,16 @@ export SPARK_HOME=[your_spark_home_path]
 
 Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
 
-<img src="/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
 
 ### 5. Run Zeppelin with Spark interpreter
 After running a single paragraph with Spark interpreter in Zeppelin,
 
-<img src="/assets/themes/zeppelin/img/docs-img/zeppelin_with_cdh.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_with_cdh.png" />
 
 <br/>
 
 browse `http://<hostname>:8088/cluster/apps` to check Zeppelin application is running well or not.
 
-<img src="/assets/themes/zeppelin/img/docs-img/cdh_yarn_applications.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/cdh_yarn_applications.png" />
 

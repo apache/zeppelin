@@ -33,7 +33,7 @@ Therefore, you can not only update scope variables from your interpreter but als
 ### Print AngularJS view
 
 To use angular display system, you should start with `%angular`.
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular.png" width="60%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_angular.png" width="60%" />
 
 Since `name` is not defined, `Hello {{name}}` will display `Hello`.
 > **Please Note:** Display system is backend independent.
@@ -60,7 +60,7 @@ z.angularUnbindGlobal(String name)
 
 Using the above example, let's bind `world` variable to `name`. Then you can see **AngularJs view** is immediately updated.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular1.png" width="60%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_angular1.png" width="60%" />
 
 
 <br />
@@ -86,12 +86,12 @@ z.angularUnwatchGlobal(String name)
 
 Let's make a button. When it is clicked, the value of `run` will be increased 1 by 1.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular2.png" width="60%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_angular2.png" width="60%" />
 
 `z.angularBind("run", 0)` will initialize `run` to zero. And then, it will be also applied to `run` in `z.angularWatch()`.
 When the button is clicked, you'll see both `run` and `numWatched` are incremented by 1.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width="60%" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_angular3.png" width="60%" />
 
 ## Let's make it Simpler and more Intuitive
 In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin.
@@ -188,7 +188,7 @@ AngularModel("myModel")()
 AngularModel("myModel", "New value")
 ```
 
-<img src="/assets/themes/zeppelin/img/docs-img/basic-usage-angular.png" width="70%">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/basic-usage-angular.png" width="70%">
 
 ### Example: String Converter
 Using below example, you can convert the lowercase string to uppercase.
@@ -211,4 +211,4 @@ val button = <div class="btn btn-success btn-sm">Convert</div>.onClick{() =>
 ```
 {% endraw %}
 
-<img src="/assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">
