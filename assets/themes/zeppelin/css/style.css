@@ -1198,7 +1198,6 @@ and (max-width: 996px) {
     display:block !important;
   }
 
-<<<<<<< 238bc2315fb310d746bffa994c5c248b91a4fcce
   .navbar-nav .open .dropdown-menu {
     position: static;
     float: none;
@@ -1369,7 +1368,6 @@ and (max-width: 631px) {
   }
 }
 
-<<<<<<< 238bc2315fb310d746bffa994c5c248b91a4fcce
 .zeppelin {
   background-image: url('../img/zepLogo.png');
   background-repeat: no-repeat;
@@ -1512,17 +1510,17 @@ and (max-width: 631px) {
 
 .tech_deploy .panel-content:hover:before,
 .tech_deploy .panel-content:hover:after {
- content: '';
- position: absolute;
- top: 0.67em;
- left: 0;
- width: 100%;
- text-align: center;
- opacity: 0;
- -webkit-transition: .6s,opacity .6s;
- -moz-transition: .6s,opacity .6s;
- -o-transition: .6s,opacity .6s;
- transition: .6s,opacity .6s;
+  content: '';
+  position: absolute;
+  top: 0.67em;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  -webkit-transition: .6s,opacity .6s;
+  -moz-transition: .6s,opacity .6s;
+  -o-transition: .6s,opacity .6s;
+  transition: .6s,opacity .6s;
 }
 
 .panel-button {
