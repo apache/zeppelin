@@ -122,8 +122,10 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
   }
 
   private void logoutUser(String userName) throws URISyntaxException {
-    pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+    ZeppelinITUtils.sleep(500, false);
+    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+        userName + "')]")).click();
+    ZeppelinITUtils.sleep(500, false);
     pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]//a[@ng-click='navbar.logout()']"), MAX_BROWSER_TIMEOUT_SEC).click();
 
