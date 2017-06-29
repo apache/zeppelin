@@ -25,6 +25,11 @@ limitations under the License.
 
 ## Overview
 
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_per_note_user.png" height="70%" width="70%"></center>
+<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_scoped_isolated.png" height="70%" width="70%"></center>
+
+<br/>
+
 Interpreter is a JVM process that communicates to Zeppelin daemon using thrift. 
 Each Interpreter process can have Interpreter Groups, and each interpreter instance belongs to this Interpreter Group.
 (See [here](../../development/writing_zeppelin_interpreter.html) to understand more about its internal structure.) 
