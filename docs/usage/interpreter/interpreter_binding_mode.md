@@ -68,11 +68,11 @@ So, each note have absolutely isolated session. (but still possible to share obj
 
 <br/>
 
-Mode | Each notebook...	| Benefits | Disadvantages
---- | --- | --- | ---
-**shared** | Shares a single Interpreter Group in a single Interpreter Process (JVM) | Low resource utilization and Easy to share data between notebooks | All notebooks are affected if Interpreter Process dies
-**scoped** | Has its own Interpreter Group in the same Interpreter Process (JVM) | Less resource utilization than isolated mode | All notebooks are affected if Interpreter Process dies
-**isolated** | Has its own Interpreter Process | One notebook not affected directly by other notebooks (**per note**) | Can't share data between notebooks easily (**per note**)
+Mode | Each notebook...	| Benefits | Disadvantages | Sharing objects
+--- | --- | --- | --- | ---
+**shared** | Shares a single Interpreter Group in a single Interpreter Process (JVM) | Low resource utilization and Easy to share data between notebooks | All notebooks are affected if Interpreter Process dies | can share directly
+**scoped** | Has its own Interpreter Group in the same Interpreter Process (JVM) | Less resource utilization than isolated mode | All notebooks are affected if Interpreter Process dies | can't share directly, but possible to share objets via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
+**isolated** | Has its own Interpreter Process | One notebook not affected directly by other notebooks (**per note**) | Can't share data between notebooks easily (**per note**) | can't share directly, but possible to share objets via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
 
 <br/>
 
