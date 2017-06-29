@@ -197,6 +197,9 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testGraphAction() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
     try {
       // step 1 : (admin) create a new note, run a paragraph, change active graph to 'Bar chart', turn on personalized mode
       AuthenticationIT authenticationIT = new AuthenticationIT();
@@ -270,6 +273,9 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testDynamicFormAction() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
     try {
       // step 1 : (admin) login, create a new note, run a paragraph with data of spark tutorial, logout.
       AuthenticationIT authenticationIT = new AuthenticationIT();
