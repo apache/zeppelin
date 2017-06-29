@@ -8,7 +8,7 @@
         "envName": null,
         "propertyName": "zeppelin.pig.execType",
         "defaultValue": "mapreduce",
-        "description": "local | mapreduce | tez",
+        "description": "local | mapreduce | tez_local | tez | spark_local | spark",
         "type": "string"
       },
       "zeppelin.pig.includeJobStats": {
@@ -17,6 +17,20 @@
         "defaultValue": false,
         "description": "flag to include job stats in output",
         "type": "checkbox"
+      },
+      "SPARK_MASTER": {
+        "envName": "SPARK_MASTER",
+        "propertyName": "SPARK_MASTER",
+        "defaultValue": "local",
+        "description": "local | yarn-client",
+        "type": "string"
+      },
+      "SPARK_JAR": {
+        "envName": "SPARK_JAR",
+        "propertyName": "SPARK_JAR",
+        "defaultValue": "",
+        "description": "spark assembly jar uploaded in hdfs",
+        "type": "textarea"
       }
     },
     "editor": {
@@ -29,13 +43,6 @@
     "name": "query",
     "className": "org.apache.zeppelin.pig.PigQueryInterpreter",
     "properties": {
-      "zeppelin.pig.execType": {
-        "envName": null,
-        "propertyName": "zeppelin.pig.execType",
-        "defaultValue": "mapreduce",
-        "description": "local | mapreduce | tez",
-        "type": "string"
-      },
       "zeppelin.pig.maxResult": {
         "envName": null,
         "propertyName": "zeppelin.pig.maxResult",
