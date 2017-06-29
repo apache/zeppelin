@@ -81,7 +81,7 @@ Mode | Each notebook...	| Benefits | Disadvantages | Sharing objects
 
 In case of **per user** (available on multi-user environment), Zeppelin manages interpreter sessions per user. For example,
  
-- In **scoped + per user** mode, `User A`'s notes will be affected by `User B`'s notes. Because all notes are running on the same JVM
+- In **scoped + per user** mode, `User A`'s notes **might** be affected by `User B`'s notes. (e.g JVM dies, ...) Because all notes are running on the same JVM
 - On the other hand, **isolated + per user** mode, `User A`'s notes will not be affected by others' notes which running on separated JVMs
 
 <br/>
