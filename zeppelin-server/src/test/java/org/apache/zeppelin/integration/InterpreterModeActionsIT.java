@@ -17,6 +17,8 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.CommandExecutor;
+import org.apache.zeppelin.ProcessData;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
@@ -30,7 +32,6 @@ import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
@@ -70,6 +71,10 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       "/** = authc";
 
   static String originalShiro = "";
+
+  static String cmdPsPython = "ps aux | grep 'zeppelin_python-' | grep -v 'grep' | wc -l";
+  static String cmdPsInterpreter = "ps aux | grep 'zeppelin/zeppelin/interpreter/python/*' |" +
+      " sed -E '/grep|local-repo/d' | wc -l";
 
   @BeforeClass
   public static void startUp() {
@@ -159,7 +164,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      //step 1: (admin) login, set globally mode of python, logout
+      //step 1: (admin) login, set 'globally in shared' mode of python interpreter, logout
       InterpreterModeActionsIT interpreterModeActionsIT = new InterpreterModeActionsIT();
       interpreterModeActionsIT.authenticationUser("admin", "password1");
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
@@ -179,11 +184,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       jse.executeScript("window.scrollBy(0,250)", "");
       ZeppelinITUtils.sleep(500, false);
       clickAndWait(By.xpath("//div[contains(@id, 'python')]//div/form/button[contains(@type, 'submit')]"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
+      clickAndWait(By.xpath(
+          "//div[@class='modal-dialog']//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       clickAndWait(By.xpath("//a[@class='navbar-brand navbar-title'][contains(@href, '#/')]"));
 
       interpreterModeActionsIT.logoutUser("admin");
-
 
       //step 2: (user1) login, create a new note, run two paragraph with 'python', check result, check process, logout
       interpreterModeActionsIT.authenticationUser("user1", "password2");
@@ -198,15 +203,22 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       String user1noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user1\"");
-
       waitForParagraph(2, "READY");
       interpreterModeActionsIT.setPythonParagraph(2, "print user");
 
       collector.checkThat("The output field paragraph contains",
-          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          driver.findElement(By.xpath(
+              getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
 
-      //TODO: need to add logic to check process - interpreter process : 1 and python process : 1
+      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
 
       interpreterModeActionsIT.logoutUser("user1");
 
@@ -220,21 +232,28 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         createNewNote();
       }
 
-      String user2noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
       waitForParagraph(1, "READY");
       interpreterModeActionsIT.setPythonParagraph(1, "user=\"user2\"");
-
       waitForParagraph(2, "READY");
       interpreterModeActionsIT.setPythonParagraph(2, "print user");
 
       collector.checkThat("The output field paragraph contains",
-          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          driver.findElement(By.xpath(
+              getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
 
-      //TODO: need to add logic to check process - interpreter process : 1 and python process : 1
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
       interpreterModeActionsIT.logoutUser("user2");
 
-      //step 4: (user2) login, come back note user1 made, run second paragraph, check result, check process, logout
+      //step 4: (user1) login, come back note user1 made, run second paragraph, check result, check process,
+      //restart python interpreter, check process again, logout
       interpreterModeActionsIT.authenticationUser("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
       wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
@@ -247,13 +266,46 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       waitForParagraph(2, "FINISHED");
       interpreterModeActionsIT.setPythonParagraph(2, "print user");
       collector.checkThat("The output field paragraph contains",
-          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          driver.findElement(By.xpath(getParagraphXPath(2) +
+              "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
 
-      //TODO: need to add logic to check process - interpreter process : 1 and python process : 1
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
       //TODO: need to run python interpreter restart button in note
-      //TODO: need to add logic to check process - interpreter process : 0 and python process : 0
+      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
+      clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
+      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
+          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
 
+      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
+      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      LOG.info("Holding on until if interpreter restart dialog is disappeared or not");
+      boolean invisibilityStatus= wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+      if (!invisibilityStatus) {
+        LOG.error("interpreter setting dialog visibility status : {}", !invisibilityStatus);
+      }
+
+      locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
+      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      if (element.isDisplayed()) {
+        clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
+      }
+
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("0"));
+      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
+      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("0"));
       interpreterModeActionsIT.logoutUser("user1");
 
     } catch (Exception e) {
@@ -263,6 +315,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void tesPerUserScopedAction() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
     try {
 
 
@@ -273,6 +328,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void tesPerUserIsolatedAction() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
     try {
 
     } catch (Exception e) {
