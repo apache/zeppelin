@@ -42,8 +42,7 @@ limitations under the License.
               The interpreter will be instantiated
               <span class="btn-group">
               <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-                      data-toggle="dropdown"
-              >
+                      data-toggle="dropdown">
                 {{getInterpreterRunningOption(setting.id)}} <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu">
@@ -125,7 +124,11 @@ limitations under the License.
                 </li>
               </ul>
             </span>
-              process.
+              process
+              <a class="fa fa-info-circle interpreter-binding-mode-info-link"
+                 aria-hidden="true"
+                 uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
+                 ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
             <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
               <span ng-if="getPerNoteOption(setting.id) === 'shared'">
                 <button type="button" class="btn btn-default btn-xs"
@@ -135,9 +138,6 @@ limitations under the License.
                 </button>
               </span>
             </span>
-            </div>
-            <div class="col-md-6">
-              &nbsp;
             </div>
           </div>
           <div class="row interpreter"
