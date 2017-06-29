@@ -28,6 +28,7 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
   'ngInject'
 
   let visualizationBundles = []
+  let visualizationPackageOrder = []
   // name `heliumBundles` should be same as `HeliumBundleFactory.HELIUM_BUNDLES_VAR`
   let heliumBundles = []
   // map for `{ magic: interpreter }`
@@ -70,17 +71,23 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
     })
   }
 
-  this.getVisualizationBundles = function () {
+  this.getVisualizationCachedPackages = function () {
     return visualizationBundles
   }
 
+  this.getVisualizationCachedPackageOrder = function () {
+    return visualizationPackageOrder
+  }
+
   /**
-   * @returns {Promise} which returns bundleOrder
+   * @returns {Promise} which returns bundleOrder and cache it in `visualizationPackageOrder`
    */
   this.getVisualizationPackageOrder = function () {
     return $http.get(baseUrlSrv.getRestApiBase() + '/helium/order/visualization')
       .then(function (response, status) {
-        return response.data.body
+        const order = response.data.body
+        visualizationPackageOrder = order
+        return order
       })
       .catch(function (error) {
         console.error('Can not get bundle order', error)
@@ -284,4 +291,11 @@ export default function heliumService ($http, $sce, baseUrlSrv) {
       }
     })
   })
+
+  this.init = function() {
+    this.getVisualizationPackageOrder()
+  }
+
+  // init
+  this.init()
 }

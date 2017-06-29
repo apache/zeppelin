@@ -38,10 +38,10 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
 
   let getSelectJson = function () {
     let selectJson = {
-      tags: false,
+      tags: true,
+      minimumInputLength: 3,
       multiple: true,
       tokenSeparators: [',', ' '],
-      minimumInputLength: 2,
       ajax: {
         url: function (params) {
           if (!params.term) {
@@ -51,17 +51,36 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         },
         delay: 250,
         processResults: function (data, params) {
-          let users = []
+          let results = []
+
           if (data.body.users.length !== 0) {
-            for (let i = 0; i < data.body.users.length; i++) {
+            let users = []
+            for (let len = 0; len < data.body.users.length; len++) {
               users.push({
-                'id': data.body.users[i],
-                'text': data.body.users[i]
+                'id': data.body.users[len],
+                'text': data.body.users[len]
               })
             }
+            results.push({
+              'text': 'Users :',
+              'children': users
+            })
+          }
+          if (data.body.roles.length !== 0) {
+            let roles = []
+            for (let len = 0; len < data.body.roles.length; len++) {
+              roles.push({
+                'id': data.body.roles[len],
+                'text': data.body.roles[len]
+              })
+            }
+            results.push({
+              'text': 'Roles :',
+              'children': roles
+            })
           }
           return {
-            results: users,
+            results: results,
             pagination: {
               more: false
             }
@@ -74,7 +93,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   }
 
   $scope.togglePermissions = function (intpName) {
-    angular.element('#' + intpName + 'Users').select2(getSelectJson())
+    angular.element('#' + intpName + 'Owners').select2(getSelectJson())
     if ($scope.showInterpreterAuth) {
       $scope.closePermissions()
     } else {
@@ -84,7 +103,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
 
   $scope.$on('ngRenderFinished', function (event, data) {
     for (let setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-      angular.element('#' + $scope.interpreterSettings[setting].name + 'Users').select2(getSelectJson())
+      angular.element('#' + $scope.interpreterSettings[setting].name + 'Owners').select2(getSelectJson())
     }
   })
 
@@ -340,7 +359,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
             // remote always true for now
             setting.option.remote = true
           }
-          setting.option.users = angular.element('#' + setting.name + 'Users').val()
+          setting.option.owners = angular.element('#' + setting.name + 'Owners').val()
 
           let request = {
             option: angular.copy(setting.option),
@@ -478,7 +497,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     if (newSetting.option.setPermission === undefined) {
       newSetting.option.setPermission = false
     }
-    newSetting.option.users = angular.element('#newInterpreterUsers').val()
+    newSetting.option.owners = angular.element('#newInterpreterOwners').val()
 
     let request = angular.copy($scope.newInterpreterSetting)
 

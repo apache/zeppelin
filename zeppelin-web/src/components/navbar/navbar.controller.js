@@ -99,6 +99,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
       $http.post(logoutURL).error(function () {
         $rootScope.userName = ''
         $rootScope.ticket.principal = ''
+        $rootScope.ticket.screenUsername = ''
         $rootScope.ticket.ticket = ''
         $rootScope.ticket.roles = ''
         BootstrapDialog.show({
@@ -135,6 +136,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   })
 
   $scope.$on('loginSuccess', function (event, param) {
+    $rootScope.ticket.screenUsername = $rootScope.ticket.principal
     listConfigurations()
     loadNotes()
     getHomeNote()

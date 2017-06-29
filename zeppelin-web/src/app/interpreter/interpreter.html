@@ -63,14 +63,8 @@ limitations under the License.
       <ul class="noDot">
         <li class="liVertical" ng-repeat="repo in repositories">
           <a tabindex="0" class="btn btn-info" role="button"
-             popover-trigger="focus"
-             popover-placement="right"
-             popover-html-unsafe="<label>URL: </label>
-               {{repo.url}}<br>
-               <label>Username: </label>
-               {{repo.authentication.username}}<br>
-               <label>Proxy host: </label>
-               {{repo.proxy.host}}">
+             tooltip-append-to-body="true" tooltip-placement="top-left"
+             uib-tooltip="{{repo.url}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
             <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"
@@ -372,14 +366,14 @@ limitations under the License.
         <div ng-show="setting.option.setPermission" class="permissionsForm">
           <div>
             <p>
-              Enter comma separated users in the fields. <br />
+              Enter comma separated users and groups in the fields. <br />
               Empty field (*) implies anyone can run this interpreter.
             </p>
             <div>
 
             <span class="owners">Owners </span>
-            <select id="{{setting.name}}Users" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
-              <option ng-repeat="user in setting.option.users" selected="selected">{{user}}</option>
+            <select id="{{setting.name}}Owners" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
+              <option ng-repeat="owner in setting.option.owners" selected="selected">{{owner}}</option>
             </select>
             </div>
           </div>

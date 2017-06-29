@@ -231,7 +231,8 @@ public class NotebookServer extends WebSocketServlet
         addUserConnection(messagereceived.principal, conn);
       }
       AuthenticationInfo subject =
-          new AuthenticationInfo(messagereceived.principal, messagereceived.ticket);
+          new AuthenticationInfo(messagereceived.principal, messagereceived.roles,
+              messagereceived.ticket);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
@@ -1651,8 +1652,15 @@ public class NotebookServer extends WebSocketServlet
         userAndRoles, fromMessage.principal, "write")) {
       return null;
     }
+    Map<String, Object> config;
+    if (fromMessage.get("config") != null) {
+      config = (Map<String, Object>) fromMessage.get("config");
+    } else {
+      config = new HashMap<>();
+    }
 
     Paragraph newPara = note.insertNewParagraph(index, subject);
+    newPara.setConfig(config);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
 
@@ -1872,7 +1880,7 @@ public class NotebookServer extends WebSocketServlet
     p.setText(text);
     p.setTitle(title);
     AuthenticationInfo subject =
-        new AuthenticationInfo(fromMessage.principal, fromMessage.ticket);
+        new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
     p.setAuthenticationInfo(subject);
     p.settings.setParams(params);
     p.setConfig(config);
