@@ -74,10 +74,15 @@ Mode | Each notebook...	| Benefits | Disadvantages | Sharing objects
 **scoped** | Has its own Interpreter Group in the same Interpreter Process (JVM) | Less resource utilization than isolated mode | All notebooks are affected if Interpreter Process dies | can't share directly, but possible to share objets via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
 **isolated** | Has its own Interpreter Process | One notebook not affected directly by other notebooks (**per note**) | Can't share data between notebooks easily (**per note**) | can't share directly, but possible to share objets via [ResourcePool](../../interpreter/spark.html#object-exchange)) 
 
+In case of **per user** (available on multi-user environment), Zeppelin manages interpreter sessions per user. For example,
+ 
+- In **scoped + per user** mode, `User A`'s notes will be affected by `User B`'s notes. Because all notes are running on the same JVM
+- On the other hand, **isolated + per user** mode, `User A`'s notes will not be affected by others' notes which running on separated JVMs
+
 <br/>
 
 Each Interpreter implementation may have different characteristics depending on the back end system that they integrate. And 3 interpreter modes can be used differently.
-Let’s take a look how Spark Interpreter implementation uses these 3 interpreter modes, as an example. 
+Let’s take a look how Spark Interpreter implementation uses these 3 interpreter modes with **per note** mote, as an example. 
 Spark Interpreter implementation includes 4 different interpreters in the group: Spark, SparkSQL, Pyspark and SparkR. 
 SparkInterpreter instance embeds Scala REPL for interactive Spark API execution.
 
