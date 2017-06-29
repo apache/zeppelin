@@ -43,7 +43,7 @@ In this documentation, we mainly discuss the combination of **per note** mode wi
 ## Shared Mode
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png" height="40%" width="40%">
 </div>
 <br/>
 
@@ -62,7 +62,7 @@ So, each note have their own dedicated session. (but still possible to share obj
 ## Isolated Mode
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-isolated.png">
 </div>
 <br/>
 
@@ -98,7 +98,7 @@ So every note will be sharing single SparkContext and single Scala REPL.
 In this mode, if `Note A` defines variable ‘a’ then `Note B` not only able to read variable ‘a’ but also able to override the variable.
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-shared.png">
+    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-shared.png" height="40%" width="40%">
 </div>
 <br/>
 
