@@ -24,6 +24,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -81,6 +83,9 @@ public class RemoteInterpreterServer
   private ZeppelinRemoteWorksController remoteWorksController;
 
   private final long DEFAULT_SHUTDOWN_TIMEOUT = 2000;
+
+  // Hold information for manual progress update
+  private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
 
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
@@ -330,6 +335,8 @@ public class RemoteInterpreterServer
       }
     }
 
+    progressMap.remove(interpreterContext.getParagraphId());
+
     InterpreterResult result;
     if (job.getStatus() == Status.ERROR) {
       result = new InterpreterResult(Code.ERROR, Job.getStack(job.getException()));
@@ -557,8 +564,13 @@ public class RemoteInterpreterServer
   public int getProgress(String noteId, String className,
                          RemoteInterpreterContext interpreterContext)
       throws TException {
-    Interpreter intp = getInterpreter(noteId, className);
-    return intp.getProgress(convert(interpreterContext, null));
+    Integer manuallyProvidedProgress = progressMap.get(interpreterContext.getParagraphId());
+    if (manuallyProvidedProgress != null) {
+      return manuallyProvidedProgress;
+    } else {
+      Interpreter intp = getInterpreter(noteId, className);
+      return intp.getProgress(convert(interpreterContext, null));
+    }
   }
 
 
@@ -603,7 +615,7 @@ public class RemoteInterpreterServer
         GUI.fromJson(ric.getGui()),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output, remoteWorksController, eventClient);
+        contextRunners, output, remoteWorksController, eventClient, progressMap);
   }
 
 
