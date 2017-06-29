@@ -110,36 +110,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
-  /*private void authenticationUser(String userName, String password) {
-    pollingWait(By.xpath(
-        "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(1000, false);
-    pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
-    pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(1000, false);
-  }
-
-  private void logoutUser(String userName) throws URISyntaxException {
-    ZeppelinITUtils.sleep(500, false);
-    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]")).click();
-    ZeppelinITUtils.sleep(500, false);
-    pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='navbar.logout()']"), MAX_BROWSER_TIMEOUT_SEC).click();
-
-    By locator = By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button");
-    WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-    if (element.isDisplayed()) {
-      driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
-    }
-    driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
-    ZeppelinITUtils.sleep(1000, false);
-  }*/
-
   private void setParagraphText(String text) {
     setTextOfParagraph(1, "%md\\n # " + text);
     runParagraph(1);
