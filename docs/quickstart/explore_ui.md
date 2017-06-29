@@ -27,19 +27,19 @@ limitations under the License.
 
 The first time you connect to Zeppelin ([default installations start on http://localhost:8080](http://localhost:8080/)), you'll land at the main page similar to the below screen capture.
 
-<img src="/assets/themes/zeppelin/img/ui-img/homepage.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/homepage.png" />
 
 On the left of the page are listed all existing notes. Those notes are stored by default in the `$ZEPPELIN_HOME/notebook` folder.
 
 You can filter them by name using the input text form. You can also create a new note, refresh the list of existing notes
 (in case you manually copy them into the `$ZEPPELIN_HOME/notebook` folder) and import a note.
 
-<img src="/assets/themes/zeppelin/img/ui-img/notes_management.png" width="230px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/notes_management.png" width="230px" />
 
 When clicking on `Import Note` link, a new dialog open. From there you can import your note from local disk or from a remote location
 if you provide the URL.
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_import_dialog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/note_import_dialog.png" />
 
 By default, the name of the imported note is the same as the original note but you can override it by providing a new name.
 
@@ -54,18 +54,18 @@ The `Notebook` menu proposes almost the same features as the note management sec
 2. Filter node by name
 3. Create a new note
 
-<img src="/assets/themes/zeppelin/img/ui-img/notebook_menu.png" width="170px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/notebook_menu.png" width="170px" />
 
 ### Settings
 This menu gives you access to settings and displays information about Zeppelin. User name is set to `anonymous` if you use default shiro configuration. If you want to set up authentification, see [Shiro Authentication](../setup/security/shiro_authentication.html).
 
-<img src="/assets/themes/zeppelin/img/ui-img/settings_menu.png" width="170px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/settings_menu.png" width="170px" />
 
 #### About Zeppelin
 
 You can check Zeppelin version in this menu.
 
-<img src="/assets/themes/zeppelin/img/ui-img/about_menu.png" width="450px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/about_menu.png" width="450px" />
 
 #### Interpreter
 
@@ -74,19 +74,19 @@ In this menu you can:
 1. Configure existing **interpreter instance**
 2. Add/remove **interpreter instances**
 
-<img src="/assets/themes/zeppelin/img/ui-img/interpreter_menu.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/interpreter_menu.png" />
 
 #### Credential
 
 This menu allows you to save credentials for data sources which are passed to interpreters.
 
-<img src="/assets/themes/zeppelin/img/ui-img/credential_menu.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/credential_menu.png" />
 
 #### Configuration
 
 This menu displays all the Zeppelin configuration that are set in the config file `$ZEPPELIN_HOME/conf/zeppelin-site.xml`
 
-<img src="/assets/themes/zeppelin/img/ui-img/configuration_menu.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/configuration_menu.png" />
 
 
 <br />
@@ -94,13 +94,13 @@ This menu displays all the Zeppelin configuration that are set in the config fil
 
 Each Zeppelin note is composed of 1 .. N paragraphs. The note can be viewed as a paragraph container.
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_paragraph_layout.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/note_paragraph_layout.png" />
 
 ### Paragraph
 
 Each paragraph consists of 2 sections: `code section` where you put your source code and `result section` where you can see the result of the code execution.
 
-<img src="/assets/themes/zeppelin/img/ui-img/paragraph_layout.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/paragraph_layout.png" />
 
 On the top-right corner of each paragraph there are some commands to:
 
@@ -111,7 +111,7 @@ On the top-right corner of each paragraph there are some commands to:
 
 To configure the paragraph, just click on the gear icon:
 
-<img src="/assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" width="180px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/paragraph_configuration_dialog.png" width="180px" />
 
 From this dialog, you can (in descending order):
 
@@ -131,7 +131,7 @@ From this dialog, you can (in descending order):
 
 At the top of the note, you can find a toolbar which exposes command buttons as well as configuration, security and display options.
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_toolbar.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/note_toolbar.png" />
 
 On the far right is displayed the note name, just click on it to reveal the input form and update it.
 
@@ -147,7 +147,7 @@ In the middle of the toolbar you can find the command buttons:
 * delete the note
 * schedule the execution of **all paragraph** using a CRON syntax
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_commands.png" width="300px"/>
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/note_commands.png" width="300px"/>
 
 On the right of the note tool bar you can find configuration icons:
 
@@ -156,4 +156,4 @@ On the right of the note tool bar you can find configuration icons:
 * configure the note permissions
 * switch the node display mode between `default`, `simple` and `report`
 
-<img src="/assets/themes/zeppelin/img/ui-img/note_configuration.png" width="180px"/>
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/note_configuration.png" width="180px"/>

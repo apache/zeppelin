@@ -55,7 +55,7 @@ Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 ### 4. Login
 Finally, you can login using one of the below **username/password** combinations.
 
-<center><img src="/assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
 
 ```
 [users]

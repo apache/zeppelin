@@ -145,7 +145,7 @@ foreach b generate group, COUNT($1) as count;
 
 The above examples are in the Pig tutorial note in Zeppelin, you can check that for details. Here's the screenshot.
 
-<img class="img-responsive" width="1024px" style="margin:0 auto; padding: 26px;" src="/assets/themes/zeppelin/img/pig_zeppelin_tutorial.png" />
+<img class="img-responsive" width="1024px" style="margin:0 auto; padding: 26px;" src="{{BASE_PATH}}/assets/themes/zeppelin/img/pig_zeppelin_tutorial.png" />
 
 
 Data is shared between `%pig` and `%pig.query`, so that you can do some common work in `%pig`, 

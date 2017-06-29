@@ -61,12 +61,12 @@ Note that `sparkmaster` hostname used here to run docker container should be def
 ### 3. Configure Spark interpreter in Zeppelin
 Set Spark master as `spark://<hostname>:7077` in Zeppelin **Interpreters** setting page.
 
-<img src="/assets/themes/zeppelin/img/docs-img/standalone_conf.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/standalone_conf.png" />
 
 ### 4. Run Zeppelin with Spark interpreter
 After running single paragraph with Spark interpreter in Zeppelin, browse `https://<hostname>:8080` and check whether Spark cluster is running well or not.
 
-<img src="/assets/themes/zeppelin/img/docs-img/spark_ui.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_ui.png" />
 
 You can also simply verify that Spark is running well in Docker with below command.
 
@@ -139,12 +139,12 @@ export SPARK_HOME=[your_spark_home_path]
 
 Don't forget to set Spark `master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
 
-<img src="/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
 
 ### 5. Run Zeppelin with Spark interpreter
 After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:8088/cluster/apps` and check Zeppelin application is running well or not.
 
-<img src="/assets/themes/zeppelin/img/docs-img/yarn_applications.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/yarn_applications.png" />
 
 
 
@@ -201,13 +201,13 @@ export SPARK_HOME=[PATH OF SPARK HOME]
 
 Don't forget to set Spark `master` as `mesos://127.0.1.1:5050` in Zeppelin **Interpreters** setting page like below.
 
-<img src="/assets/themes/zeppelin/img/docs-img/zeppelin_mesos_conf.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_mesos_conf.png" />
 
 
 ### 5. Run Zeppelin with Spark interpreter
 After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:5050/#/frameworks` and check Zeppelin application is running well or not.
 
-<img src="/assets/themes/zeppelin/img/docs-img/mesos_frameworks.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/mesos_frameworks.png" />
 
 ### Troubleshooting for Spark on Mesos
 

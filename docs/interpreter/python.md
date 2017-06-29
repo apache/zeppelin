@@ -186,7 +186,7 @@ The `z.show()` function can take optional parameters to adapt graph dimensions (
 z.show(plt, width='50px')
 z.show(plt, height='150px', fmt='svg')
 ```
-<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
 
 
 ## Pandas integration

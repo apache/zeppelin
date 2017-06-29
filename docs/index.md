@@ -37,7 +37,7 @@ limitations under the License.
   </div>
   <div class="col-sm-6 col-md-6" style="padding:0;">
     <div class="hidden-xs" style="margin-top: 60px;"></div>
-    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="/assets/themes/zeppelin/img/notebook.png" />
+    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="{{BASE_PATH}}/assets/themes/zeppelin/img/notebook.png" />
   </div>
 </div>
 
