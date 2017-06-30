@@ -68,23 +68,36 @@ The interpreter can use all modules already installed (with pip, easy_install...
 
 #### Usage
 
-List your environments
+- get the Conda Infomation: 
 
-```
-%python.conda
-```
+    ```%python.conda info```
+    
+- list the Conda environments: 
 
-Activate an environment
+    ```%python.conda env list```
 
-```
-%python.conda activate [ENVIRONMENT_NAME]
-```
+- create a conda enviornment: 
+    ```%python.conda create --name [ENV NAME]```
+    
+- activate an environment (python interpreter will be restarted): 
 
-Deactivate
+    ```%python.conda activate [ENV NAME]```
 
-```
-%python.conda deactivate
-```
+- deactivate
+
+    ```%python.conda deactivate```
+    
+- get installed package list inside the current environment
+
+    ```%python.conda list```
+    
+- install package
+
+    ```%python.conda install [PACKAGE NAME]```
+  
+- uninstall package
+  
+    ```%python.conda uninstall [PACKAGE NAME]```
 
 ### Docker
 
@@ -92,21 +105,22 @@ Deactivate
 
 #### Usage
 
-Activate an environment
+- activate an environment
 
-```
-%python.docker activate [Repository]
-%python.docker activate [Repository:Tag]
-%python.docker activate [Image Id]
-```
+    ```
+    %python.docker activate [Repository]
+    %python.docker activate [Repository:Tag]
+    %python.docker activate [Image Id]
+    ```
 
-Deactivate
+- deactivate
 
-```
-%python.docker deactivate
-```
+    ```
+    %python.docker deactivate
+    ```
 
-Example
+<br/>
+Here is an example
 
 ```
 # activate latest tensorflow image as a python environment
@@ -114,7 +128,7 @@ Example
 ```
 
 ## Using Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your Python code.
+You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/usage/dynamic_form/intro.html) inside your Python code.
 
 **Zeppelin Dynamic Form can only be used if py4j Python library is installed in your system. If not, you can install it with `pip install py4j`.**
 
@@ -148,9 +162,13 @@ z.configure_mpl(width=400, height=300, fmt='svg')
 plt.plot([1, 2, 3])
 ```
 
-Will produce a 400x300 image in SVG format, which by default are normally 600x400 and PNG respectively. In the future, another option called `angular` can be used to make it possible to update a plot produced from one paragraph directly from another (the output will be `%angular` instead of `%html`). However, this feature is already available in the `pyspark` interpreter. More details can be found in the included "Zeppelin Tutorial: Python - matplotlib basic" tutorial notebook. 
+Will produce a 400x300 image in SVG format, which by default are normally 600x400 and PNG respectively. 
+In the future, another option called `angular` can be used to make it possible to update a plot produced from one paragraph directly from another 
+(the output will be `%angular` instead of `%html`). However, this feature is already available in the `pyspark` interpreter. 
+More details can be found in the included "Zeppelin Tutorial: Python - matplotlib basic" tutorial notebook. 
 
-If Zeppelin cannot find the matplotlib backend files (which should usually be found in `$ZEPPELIN_HOME/interpreter/lib/python`) in your `PYTHONPATH`, then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
+If Zeppelin cannot find the matplotlib backend files (which should usually be found in `$ZEPPELIN_HOME/interpreter/lib/python`) in your `PYTHONPATH`, 
+then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
 
 If you are unable to load the inline backend, use `z.show(plt)`:
  ```python
@@ -168,11 +186,13 @@ The `z.show()` function can take optional parameters to adapt graph dimensions (
 z.show(plt, width='50px')
 z.show(plt, height='150px', fmt='svg')
 ```
-<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/pythonMatplotlib.png" />
 
 
 ## Pandas integration
-Apache Zeppelin [Table Display System](../displaysystem/basicdisplaysystem.html#table) provides built-in data visualization capabilities. Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, same as with [Matplotlib integration](#matplotlib-integration).
+Apache Zeppelin [Table Display System](../usage/display_system/basic.html#table) provides built-in data visualization capabilities. 
+Python interpreter leverages it to visualize Pandas DataFrames though similar `z.show()` API, 
+same as with [Matplotlib integration](#matplotlib-integration).
 
 Example:
 
@@ -184,7 +204,9 @@ z.show(rates)
 
 ## SQL over Pandas DataFrames
 
-There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and enables usage of SQL language to query [Pandas DataFrames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html) and visualization of results though built-in [Table Display System](../displaysystem/basicdisplaysystem.html#table).
+There is a convenience `%python.sql` interpreter that matches Apache Spark experience in Zeppelin and 
+enables usage of SQL language to query [Pandas DataFrames](http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html) and 
+visualization of results though built-in [Table Display System](../usage/display_system/basic.html#table).
 
  **Pre-requests**
 
@@ -217,7 +239,9 @@ For in-depth technical details on current implementation please refer to [python
 
 ### Some features not yet implemented in the Python Interpreter
 
-* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
+* Interrupt a paragraph execution (`cancel()` method) is currently only supported in Linux and MacOs. 
+If interpreter runs in another operating system (for instance MS Windows) , interrupt a paragraph will close the whole interpreter. 
+A JIRA ticket ([ZEPPELIN-893](https://issues.apache.org/jira/browse/ZEPPELIN-893)) is opened to implement this feature in a next release of the interpreter.
 * Progression bar in webUI  (`getProgress()` method) is currently not implemented.
 * Code-completion is currently not implemented.
 

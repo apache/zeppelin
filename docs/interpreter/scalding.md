@@ -37,9 +37,9 @@ In a notebook, to enable the **Scalding** interpreter, click on the **Gear** ico
 
 <center>
 
-![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterBinding.png)
+![Interpreter Binding]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/scalding-InterpreterBinding.png)
 
-![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterSelection.png)
+![Interpreter Selection]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/scalding-InterpreterSelection.png)
 
 </center>
 
@@ -124,7 +124,7 @@ print("%table " + table)
 ```
 
 If you click on the icon for the pie chart, you should be able to see a chart like this:
-![Scalding - Pie - Chart](../assets/themes/zeppelin/img/docs-img/scalding-pie.png)
+![Scalding - Pie - Chart]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/scalding-pie.png)
 
 
 ### HDFS mode

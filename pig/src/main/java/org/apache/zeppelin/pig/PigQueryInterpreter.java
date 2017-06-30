@@ -25,6 +25,7 @@ import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.tools.pigscript.parser.ParseException;
 import org.apache.pig.tools.pigstats.PigStats;
 import org.apache.pig.tools.pigstats.ScriptState;
 import org.apache.zeppelin.interpreter.*;
@@ -125,8 +126,9 @@ public class PigQueryInterpreter extends BasePigInterpreter {
     } catch (IOException e) {
       // Extract error in the following order
       // 1. catch FrontendException, FrontendException happens in the query compilation phase.
-      // 2. PigStats, This is execution error
-      // 3. Other errors.
+      // 2. catch ParseException for syntax error
+      // 3. PigStats, This is execution error
+      // 4. Other errors.
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
@@ -134,9 +136,12 @@ public class PigQueryInterpreter extends BasePigInterpreter {
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }
+      if (e.getCause() instanceof ParseException) {
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
       PigStats stats = PigStats.get();
       if (stats != null) {
-        String errorMsg = PigUtils.extactJobStats(stats);
+        String errorMsg = stats.getDisplayString();
         if (errorMsg != null) {
           return new InterpreterResult(Code.ERROR, errorMsg);
         }

@@ -28,11 +28,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.google.gson.annotations.SerializedName;
+import org.apache.zeppelin.dep.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.zeppelin.dep.Dependency;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
 
@@ -396,5 +399,23 @@ public class InterpreterSetting {
 
   public void clearNoteIdAndParaMap() {
     runtimeInfosToBeCleared = null;
+  }
+
+  // For backward compatibility of interpreter.json format after ZEPPELIN-2654
+  public void convertPermissionsFromUsersToOwners(JsonObject jsonObject) {
+    if (jsonObject != null) {
+      JsonObject option = jsonObject.getAsJsonObject("option");
+      if (option != null) {
+        JsonArray users = option.getAsJsonArray("users");
+        if (users != null) {
+          if (this.option.getOwners() == null) {
+            this.option.owners = new LinkedList<>();
+          }
+          for (JsonElement user : users) {
+            this.option.getOwners().add(user.getAsString());
+          }
+        }
+      }
+    }
   }
 }

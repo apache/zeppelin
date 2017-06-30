@@ -94,7 +94,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && graphMode!='table' && !asIframe && !viewOnly"
+   ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphSetting()">
     settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>

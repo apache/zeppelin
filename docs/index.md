@@ -18,179 +18,140 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
-<br />
-<div class="row">
-  <div class="col-md-6" style="padding-right:0">
-    <h1 style="color:#4c555a">Multi-purpose Notebook</h1>
-    <p class="index-header">
-      The Notebook is the place for all your needs
+<div class="row" style="margin-top: 0px;">
+  <div class="col-sm-6 col-md-6" style="padding-right:0;">
+    <h1 style="color:#4c555a; margin-top: 0px;">What is Apache Zeppelin?</h1>
+    <p style="margin-bottom: 0px; margin-top: 20px; font-size: 18px; font-style="font-family: "Roboto", sans-serif;">
+      Multi-purpose notebook which supports
     </p>
-    <ul style="list-style-type: none;padding-left:10px;" >
-      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-import" style="margin-right:10px"></span> Data Ingestion</li>
-      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-eye-open" style="margin-right:10px"></span> Data Discovery</li>
-      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-wrench" style="margin-right:10px"></span> Data Analytics</li>
-      <li style="font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-dashboard" style="margin-right:10px"></span> Data Visualization & Collaboration</li>
+    <p style="font-size: 18px; font-style="font-family: "Roboto", sans-serif;">
+      20+ language backends
+    </p>
+    <ul style="list-style-type: none; padding-left:10px; margin-top: 30px;" >
+      <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-import" style="margin-right:10px"></span> Data Ingestion</li>
+      <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-eye-open" style="margin-right:10px"></span> Data Discovery</li>
+      <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-wrench" style="margin-right:10px"></span> Data Analytics</li>
+      <li style="font-weight: 300; font-size:18px; margin: 5px;"><span class="glyphicon glyphicon-dashboard" style="margin-right:10px"></span> Data Visualization & Collaboration</li>
     </ul>
+    <br/>
   </div>
-  <div class="col-md-6" style="padding:0">
-    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="./assets/themes/zeppelin/img/notebook.png" />
-  </div>
-</div>
-
-<br />
-## Multiple Language Backend
-[Apache Zeppelin interpreter](./manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
-
-<img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="./assets/themes/zeppelin/img/available_interpreters.png" />
-
-Adding new language-backend is really simple. Learn [how to create your own interpreter](./development/writingzeppelininterpreter.html#make-your-own-interpreter).
-
-#### Apache Spark integration
-Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
-
-<img class="img-responsive" src="./assets/themes/zeppelin/img/spark_logo.png" width="140px" />
-
-Apache Zeppelin with Spark integration provides
-
-- Automatic SparkContext and SQLContext injection
-- Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./interpreter/spark.html#dependencyloading).
-- Canceling job and displaying its progress
-
-For the further information about Apache Spark in Apache Zeppelin, please see [Spark interpreter for Apache Zeppelin](./interpreter/spark.html).
-
-<br />
-## Data visualization
-
-Some basic charts are already included in Apache Zeppelin. Visualizations are not limited to Spark SQL query, any output from any language backend can be recognized and visualized.
-
-<div class="row">
-  <div class="col-md-6">
-    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph1.png" />
-  </div>
-  <div class="col-md-6">
-    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph2.png" />
+  <div class="col-sm-6 col-md-6" style="padding:0;">
+    <div class="hidden-xs" style="margin-top: 60px;"></div>
+    <img class="img-responsive" style="border: 1px solid #ecf0f1;" src="{{BASE_PATH}}/assets/themes/zeppelin/img/notebook.png" />
   </div>
 </div>
 
-### Pivot chart
+## Documentation 
 
-Apache Zeppelin aggregates values and displays them in pivot chart with simple drag and drop. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
+#### Quick Start
 
-<div class="row">
-  <div class="col-md-12">
-    <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/pivot.png" width="480px" />
-  </div>
-</div>
-
-Learn more about [display systems](#display-system) in Apache Zeppelin.
-
-<br />
-## Dynamic forms
-
-Apache Zeppelin can dynamically create some input forms in your notebook.
-<div class="row">
-  <div class="col-md-12">
-    <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/dynamicform.png" />
-  </div>
-</div>
-Learn more about [Dynamic Forms](./manual/dynamicform.html).
-
-<br />
-## Collaborate by sharing your Notebook & Paragraph
-Your notebook URL can be shared among collaborators. Then Apache Zeppelin will broadcast any changes in realtime, just like the collaboration in Google docs.
-
-<div class="row">
-  <div class="col-md-12">
-    <img class="img-responsive" style="margin: 20px auto" src="./assets/themes/zeppelin/img/screenshots/publish.png" width="650px"/>
-  </div>
-</div>
-
-Apache Zeppelin provides an URL to display the result only, that page does not include any menus and buttons inside of notebooks.
-You can easily embed it as an iframe inside of your website in this way.
-If you want to learn more about this feature, please visit [this page](./manual/publish.html).
-
-<br />
-## 100% Opensource
-
-<img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
-
-Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](https://zeppelin.apache.org/contribution/contributions.html).
-Apache Zeppelin has a very active development community.
-Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
-
-## What is the next ?
-
-####Quick Start
-
-* Getting Started
-  * [Quick Start](./install/install.html) for basic instructions on installing Apache Zeppelin
-  * [Configuration](./install/configuration.html) lists for Apache Zeppelin
-  * [Explore Apache Zeppelin UI](./quickstart/explorezeppelinui.html): basic components of Apache Zeppelin home
-  * [Tutorial](./quickstart/tutorial.html): a short walk-through tutorial that uses Apache Spark backend
-* Basic Feature Guide
-  * [Dynamic Form](./manual/dynamicform.html): a step by step guide for creating dynamic forms
-  * [Publish your Paragraph](./manual/publish.html) results into your external website
-  * [Customize Zeppelin Homepage](./manual/notebookashomepage.html) with one of your notebooks
-* More
-  * [Upgrade Apache Zeppelin Version](./install/upgrade.html): a manual procedure of upgrading Apache Zeppelin version
-  * [Build](./install/build.html): Build from source
-
-####Interpreter
-
-* [Interpreters in Apache Zeppelin](./manual/interpreters.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
-* Usage
-  * [Interpreter Installation](./manual/interpreterinstallation.html): Install not only community managed interpreters but also 3rd party interpreters
-  * [Interpreter Dependency Management](./manual/dependencymanagement.html) when you include external libraries to interpreter
-  * [Interpreter User Impersonation](./manual/userimpersonation.html) when you want to run interpreter as end user
-  * [Interpreter Execution Hooks](./manual/interpreterexechooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
-* Available Interpreters: currently, about 20 interpreters are available in Apache Zeppelin.
-
-####Display System
-
-* Basic Display System: [Text](./displaysystem/basicdisplaysystem.html#text), [HTML](./displaysystem/basicdisplaysystem.html#html), [Table](./displaysystem/basicdisplaysystem.html#table) is available
-* Angular API: a description about avilable backend and frontend AngularJS API with examples
-  * [Angular (backend API)](./displaysystem/back-end-angular.html)
-  * [Angular (frontend API)](./displaysystem/front-end-angular.html)
-
-#### More
-
-* Notebook Storage: a guide about saving notebooks to external storage
-  * [Git Storage](./storage/storage.html#notebook-storage-in-local-git-repository)
-  * [S3 Storage](./storage/storage.html#notebook-storage-in-s3)
-  * [Azure Storage](./storage/storage.html#notebook-storage-in-azure)
-  * [ZeppelinHub Storage](./storage/storage.html#storage-in-zeppelinhub)
+* [Install](./quickstart/install.html) for basic instructions on installing Apache Zeppelin
+* [Explore UI](./quickstart/explore_ui.html): basic components of Apache Zeppelin home
+* [Tutorial](./quickstart/tutorial.html)
+* [Spark with Zeppelin](./quickstart/spark_with_zeppelin.html)
+* [SQL with Zeppelin](./quickstart/sql_with_zeppelin.html)
+* [Python with Zeppelin](./quickstart/python_with_zeppelin.html)
+  
+#### Usage 
+* Dynamic Form 
+  * [What is Dynamic Form](./usage/dynamic_form/intro.html): a step by step guide for creating dynamic forms
+* Display System 
+  * [Text Display (`%text`)](./usage/display_system/basic.html#text)
+  * [HTML Display (`%html`)](./usage/display_system/basic.html#html)
+  * [Table Display (`%table`)](./usage/display_system/basic.html#table)
+  * [Angular Display using Backend API (`%angular`)](./usage/display_system/angular_backend.html)
+  * [Angular Display using Frontend API (`%angular`)](./usage/display_system/angular_frontend.html)
+* Interpreter  
+  * [Overview](./usage/interpreter/overview.html): what is interpreter group? how can you set interpreters in Apache Zeppelin?
+  * [User Impersonation](./usage/interpreter/user_impersonation.html) when you want to run interpreter as end user
+  * [Interpreter Binding Mode](./usage/interpreter/interpreter_binding_mode.html) when you want to manage separate interpreter contexts 
+  * [Dependency Management](./usage/interpreter/dependency_management.html) when you include external libraries to interpreter
+  * [Installing Interpreters](./usage/interpreter/installation.html): Install not only community managed interpreters but also 3rd party interpreters
+  * [Execution Hooks](./usage/interpreter/execution_hooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
+* Other Features:
+  * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
+  * [Personalized Mode](./usage/other_features/personalized_mode.html) 
+  * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
 * REST API: available REST API list in Apache Zeppelin
-  * [Zeppelin server API](./rest-api/rest-zeppelin-server.html)
-  * [Interpreter API](./rest-api/rest-interpreter.html)
-  * [Notebook API](./rest-api/rest-notebook.html)
-  * [Notebook Repository API](./rest-api/rest-notebookRepo.html)
-  * [Configuration API](./rest-api/rest-configuration.html)
-  * [Credential API](./rest-api/rest-credential.html)
-  * [Helium API](./rest-api/rest-helium.html)
+  * [Interpreter API](./usage/rest_api/interpreter.html)
+  * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
+  * [Notebook API](./usage/rest_api/notebook.html)
+  * [Notebook Repository API](./usage/rest_api/notebook_repository.html)
+  * [Configuration API](./usage/rest_api/configuration.html)
+  * [Credential API](./usage/rest_api/credential.html)
+  * [Helium API](./usage/rest_api/helium.html)
+  
+#### Setup 
+* Basics 
+  * [How to Build Zeppelin](./setup/basics/how_to_build.html)
+  * [Multi-user Support](./setup/basics/multi_user_support.html)
+* Deployment 
+  * [Spark Cluster Mode: Standalone](./setup/deployment/spark_cluster_mode.html#spark-standalone-mode)
+  * [Spark Cluster Mode: YARN](./setup/deployment/spark_cluster_mode.html#spark-on-yarn-mode)
+  * [Spark Cluster Mode: Mesos](./setup/deployment/spark_cluster_mode.html#spark-on-mesos-mode)
+  * [Zeppelin with Flink and Spark Cluster](./setup/deployment/flink_and_spark_cluster.html)
+  * [Zeppelin on CDH](./setup/deployment/cdh.html)
+  * [Zeppelin on VM: Vagrant](./setup/deployment/virtual_machine.html)
 * Security: available security support in Apache Zeppelin
-  * [Authentication for NGINX](./security/authentication.html)
-  * [Shiro Authentication](./security/shiroauthentication.html)
-  * [Notebook Authorization](./security/notebook_authorization.html)
-  * [Data Source Authorization](./security/datasource_authorization.html)
-  * [Helium Authorization](./security/helium_authorization.html)
-* Helium Framework (Experimental)
-  * [Writing Zeppelin Application](./development/writingzeppelinapplication.html)
-  * [Writing Zeppelin Spell](./development/writingzeppelinspell.html)
-  * [Writing Zeppelin Visualization: Basic](./development/writingzeppelinvisualization.html)
-  * [Writing Zeppelin Visualization: Transformation](./development/writingzeppelinvisualization_transformation.html)
-* Advanced
-  * [Apache Zeppelin on Vagrant VM](./install/virtual_machine.html)
-  * [Zeppelin on Spark Cluster Mode (Standalone via Docker)](./install/spark_cluster_mode.html#spark-standalone-mode)
-  * [Zeppelin on Spark Cluster Mode (YARN via Docker)](./install/spark_cluster_mode.html#spark-on-yarn-mode)
-  * [Zeppelin on Spark Cluster Mode (Mesos via Docker)](./install/spark_cluster_mode.html#spark-on-mesos-mode)
-  * [Zeppelin on CDH (via Docker)](./install/cdh.html)
-* Contribute
-  * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
-  * [How to contribute (code)](./development/howtocontribute.html)
-  * [How to contribute (documentation website)](./development/howtocontributewebsite.html)
+  * [HTTP Basic Auth using NGINX](./setup/security/authentication_nginx.html)
+  * [Shiro Authentication](./setup/security/shiro_authentication.html)
+  * [Notebook Authorization](./setup/security/notebook_authorization.html)
+  * [Data Source Authorization](./setup/security/datasource_authorization.html)
+* Notebook Storage: a guide about saving notebooks to external storage
+  * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
+  * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
+  * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
+  * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-storage-in-zeppelinhub)
+  * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
+* Operation 
+  * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
+  * [Proxy Setting](./setup/operation/proxy_setting.html)
+  * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
+  * [Trouble Shooting](./setup/operation/trouble_shooting.html)
+  
+#### Developer Guide
+* Extending Zeppelin
+  * [Writing Zeppelin Interpreter](./development/writing_zeppelin_interpreter.html)
+  * [Helium: Overview](./development/helium/overview.html)
+  * [Helium: Writing Application](./development/helium/writing_application.html)
+  * [Helium: Writing Spell](./development/helium/writing_spell.html)
+  * [Helium: Writing Visualization: Basic](./development/helium/writing_visualization_basic.html)
+  * [Helium: Writing Visualization: Transformation](./development/helium/writing_visualization_transformation.html)
+* Contributing to Zeppelin
+  * [How to Build Zeppelin](./setup/basics/how_to_build.html)
+  * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)
+  * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
+  * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
 
 #### External Resources
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
-  * [StackOverflow tag `apache-zeppelin`](http://stackoverflow.com/questions/tagged/apache-zeppelin)
+  * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
+  
+#### Available Interpreters 
+  * [Alluxio](./interpreter/alluxio.html)
+  * [Beam](./interpreter/beam.html)
+  * [BigQuery](./interpreter/bigquery.html)
+  * [Cassandra](./interpreter/cassandra.html)
+  * [Elasticsearch](./interpreter/elasticsearch.html)
+  * [flink](./interpreter/flink.html)
+  * [Geode](./interpreter/geode.html)
+  * [Groovy](./interpreter/groovy.html)
+  * [HBase](./interpreter/hbase.html)
+  * [HDFS](./interpreter/hdfs.html)
+  * [Hive](./interpreter/hive.html)
+  * [Ignite](./interpreter/ignite.html)
+  * [JDBC](./interpreter/jdbc.html)
+  * [Kylin](./interpreter/kylin.html)
+  * [Lens](./interpreter/lens.html)
+  * [Livy](./interpreter/livy.html)
+  * [markdown](./interpreter/markdown.html)
+  * [Pig](./interpreter/pig.html)
+  * [Postgresql, HAWQ](./interpreter/postgresql.html)
+  * [Python](./interpreter/python.html)
+  * [R](./interpreter/r.html)
+  * [Scalding](./interpreter/scalding.html)
+  * [Scio](./interpreter/scio.html)
+  * [Shell](./interpreter/Shell.html)
+  * [Spark](./interpreter/spark.html)
+  

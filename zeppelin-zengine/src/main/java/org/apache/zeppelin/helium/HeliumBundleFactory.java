@@ -48,7 +48,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
  * Load helium visualization & spell
  */
 public class HeliumBundleFactory {
-  Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
+  private Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
   private static final String NODE_VERSION = "v6.9.1";
   private static final String NPM_VERSION = "3.10.8";
   private static final String YARN_VERSION = "v0.21.3";
@@ -82,7 +82,7 @@ public class HeliumBundleFactory {
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
 
-  ByteArrayOutputStream out  = new ByteArrayOutputStream();
+  private ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
   public HeliumBundleFactory(
       ZeppelinConfiguration conf,
@@ -97,7 +97,7 @@ public class HeliumBundleFactory {
     this.spellModulePath = spellModulePath;
   }
 
-  public HeliumBundleFactory(
+  private HeliumBundleFactory(
       ZeppelinConfiguration conf,
       File nodeInstallationDir,
       File moduleDownloadPath) throws TaskRunnerException {
@@ -200,48 +200,47 @@ public class HeliumBundleFactory {
     buildAllPackages(pkgs, false);
   }
 
-  public File getHeliumPackageDirectory(String pkgName) {
+  private File getHeliumPackageDirectory(String pkgName) {
     return new File(heliumBundleDirectory, pkgName);
   }
 
-  public File getHeliumPackageSourceDirectory(String pkgName) {
+  private File getHeliumPackageSourceDirectory(String pkgName) {
     return new File(heliumBundleDirectory, pkgName + "/" + HELIUM_BUNDLES_SRC_DIR);
   }
 
-  public File getHeliumPackageBundleCache(String pkgName) {
+  private File getHeliumPackageBundleCache(String pkgName) {
     return new File(heliumBundleDirectory, pkgName + "/" + HELIUM_BUNDLE_CACHE);
   }
 
-  public static List<String> unTgz(File tarFile, File directory) throws IOException {
-    List<String> result = new ArrayList<String>();
-    InputStream is = new FileInputStream(tarFile);
-    GzipCompressorInputStream gcis = new GzipCompressorInputStream(is);
-    TarArchiveInputStream in = new TarArchiveInputStream(gcis);
-    TarArchiveEntry entry = in.getNextTarEntry();
-    while (entry != null) {
-      if (entry.isDirectory()) {
+  private static List<String> unTgz(File tarFile, File directory) throws IOException {
+    List<String> result = new ArrayList<>();
+    try (TarArchiveInputStream in = new TarArchiveInputStream(
+            new GzipCompressorInputStream(new FileInputStream(tarFile)))) {
+      TarArchiveEntry entry = in.getNextTarEntry();
+      while (entry != null) {
+        if (entry.isDirectory()) {
+          entry = in.getNextTarEntry();
+          continue;
+        }
+        File curfile = new File(directory, entry.getName());
+        File parent = curfile.getParentFile();
+        if (!parent.exists()) {
+          parent.mkdirs();
+        }
+        try (OutputStream out = new FileOutputStream(curfile)) {
+          IOUtils.copy(in, out);
+        }
+        result.add(entry.getName());
         entry = in.getNextTarEntry();
-        continue;
       }
-      File curfile = new File(directory, entry.getName());
-      File parent = curfile.getParentFile();
-      if (!parent.exists()) {
-        parent.mkdirs();
-      }
-      OutputStream out = new FileOutputStream(curfile);
-      IOUtils.copy(in, out);
-      out.close();
-      result.add(entry.getName());
-      entry = in.getNextTarEntry();
     }
-    in.close();
     return result;
   }
 
   /**
    * @return main file name of this helium package (relative path)
    */
-  public String downloadPackage(HeliumPackage pkg, String[] nameAndVersion, File bundleDir,
+  private String downloadPackage(HeliumPackage pkg, String[] nameAndVersion, File bundleDir,
                                 String templateWebpackConfig, String templatePackageJson,
                                 FrontendPluginFactory fpf) throws IOException, TaskRunnerException {
     if (bundleDir.exists()) {
@@ -276,7 +275,8 @@ public class HeliumBundleFactory {
       npmCommand(fpf, "pack " + pkg.getArtifact());
       File extracted = new File(heliumBundleDirectory, "package");
       FileUtils.deleteDirectory(extracted);
-      unTgz(tgz, heliumBundleDirectory);
+      List<String> entries = unTgz(tgz, heliumBundleDirectory);
+      for (String entry: entries) logger.debug("Extracted " + entry);
       tgz.delete();
       FileUtils.copyDirectory(extracted, bundleDir);
       FileUtils.deleteDirectory(extracted);
@@ -321,7 +321,7 @@ public class HeliumBundleFactory {
     return mainFileName;
   }
 
-  public void prepareSource(HeliumPackage pkg, String[] moduleNameVersion,
+  private void prepareSource(HeliumPackage pkg, String[] moduleNameVersion,
                             String mainFileName) throws IOException {
     StringBuilder loadJsImport = new StringBuilder();
     StringBuilder loadJsRegister = new StringBuilder();
@@ -351,7 +351,7 @@ public class HeliumBundleFactory {
             loadJsImport.append(loadJsRegister).toString());
   }
 
-  public synchronized void installNodeModules(FrontendPluginFactory fpf) throws IOException {
+  private synchronized void installNodeModules(FrontendPluginFactory fpf) throws IOException {
     try {
       out.reset();
       String commandForNpmInstall =
@@ -366,7 +366,7 @@ public class HeliumBundleFactory {
     }
   }
 
-  public synchronized File bundleHeliumPackage(FrontendPluginFactory fpf,
+  private synchronized File bundleHeliumPackage(FrontendPluginFactory fpf,
                                                File bundleDir) throws IOException {
     try {
       out.reset();
@@ -401,10 +401,6 @@ public class HeliumBundleFactory {
     }
 
     String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
-    if (moduleNameVersion == null) {
-      return null;
-    }
-
     if (moduleNameVersion == null) {
       logger.error("Can't get module name and version of package " + pkg.getName());
       return null;
@@ -463,7 +459,7 @@ public class HeliumBundleFactory {
     return bundleCache;
   }
 
-  public synchronized void buildAllPackages(List<HeliumPackage> pkgs, boolean rebuild)
+  private synchronized void buildAllPackages(List<HeliumPackage> pkgs, boolean rebuild)
       throws IOException {
 
     if (pkgs == null || pkgs.size() == 0) {
@@ -482,7 +478,7 @@ public class HeliumBundleFactory {
     }
   }
 
-  void copyFrameworkModule(boolean recopy, FileFilter filter,
+  private void copyFrameworkModule(boolean recopy, FileFilter filter,
                            File src, File dest) throws IOException {
     if (src != null) {
       if (recopy && dest.exists()) {
@@ -498,7 +494,7 @@ public class HeliumBundleFactory {
     }
   }
 
-  void deleteYarnCache() {
+  private void deleteYarnCache() {
     FilenameFilter filter = new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
