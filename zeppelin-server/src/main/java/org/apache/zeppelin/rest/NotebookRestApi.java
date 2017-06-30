@@ -338,15 +338,17 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
     LOG.info("Create new note by JSON {}", message);
-    NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note note = notebook.createNote(subject);
-    List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
-    if (initialParagraphs != null) {
-      for (NewParagraphRequest paragraphRequest : initialParagraphs) {
-        Paragraph p = note.addParagraph(subject);
-        p.setTitle(paragraphRequest.getTitle());
-        p.setText(paragraphRequest.getText());
+    NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
+    if (request != null) {
+      List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
+      if (initialParagraphs != null) {
+        for (NewParagraphRequest paragraphRequest : initialParagraphs) {
+          Paragraph p = note.addParagraph(subject);
+          p.setTitle(paragraphRequest.getTitle());
+          p.setText(paragraphRequest.getText());
+        }
       }
     }
     note.addParagraph(subject); // add one paragraph to the last
