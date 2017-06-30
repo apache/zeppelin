@@ -88,6 +88,9 @@ public class Client {
   }
   
   public boolean isSaveAndCommitEnabled() {
+    if (repo == null) {
+      return false;
+    }
     return repo.isSaveAndCommitEnabled();
   }
 }

@@ -59,7 +59,7 @@ public class ZeppelinhubClientTest {
 
   @Test
   public void runAllParagraphTest() throws Exception {
-    Client.initialize(validWebsocketUrl, validWebsocketUrl, "TOKEN", null);
+    Client.initialize(validWebsocketUrl, validWebsocketUrl, "TOKEN", null, null);
     Client.getInstance().start();
     ZeppelinhubClient zeppelinhubClient = ZeppelinhubClient.getInstance();
     boolean runStatus = zeppelinhubClient.runAllParagraph("2AB7SY361", runNotebookMsg);
