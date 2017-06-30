@@ -250,24 +250,15 @@ public class InterpreterRestApi {
    */
   @GET
   @Path("getmetainfos/{settingId}")
+  @ZeppelinApi
   public Response getMetaInfo(@Context HttpServletRequest req,
       @PathParam("settingId") String settingId) {
-    String propName = req.getParameter("propName");
-    if (propName == null) {
-      return new JsonResponse<>(Status.BAD_REQUEST).build();
-    }
-    String propValue = null;
     InterpreterSetting interpreterSetting = interpreterSettingManager.get(settingId);
-    Map<String, String> infos = interpreterSetting.getInfos();
-    if (infos != null) {
-      propValue = infos.get(propName);
+    if (interpreterSetting == null) {
+      return new JsonResponse<>(Status.NOT_FOUND).build();
     }
-    Map<String, String> respMap = new HashMap<>();
-    respMap.put(propName, propValue);
-    logger.debug("Get meta info");
-    logger.debug("Interpretersetting Id: {}, property Name:{}, property value: {}", settingId,
-        propName, propValue);
-    return new JsonResponse<>(Status.OK, respMap).build();
+    Map<String, String> infos = interpreterSetting.getInfos();
+    return new JsonResponse<>(Status.OK, "metainfo", infos).build();
   }
 
   /**

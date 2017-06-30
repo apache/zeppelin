@@ -26,6 +26,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -55,7 +56,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InterpreterRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
-  AuthenticationInfo anonymous;
+  private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -365,21 +366,43 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     delete.releaseConnection();
   }
 
-  public JsonObject getBodyFieldFromResponse(String rawResponse) {
+  @Test
+  public void testGetMetaInfo() throws IOException {
+    String rawRequest = "{\"name\":\"spark\",\"group\":\"spark\"," +
+            "\"properties\":{\"propname\":\"propvalue\"}," +
+            "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+            "\"dependencies\":[]," +
+            "\"option\": { \"remote\": true, \"session\": false }}";
+    JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
+    PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
+    InterpreterSetting created = convertResponseToInterpreterSetting(post.getResponseBodyAsString());
+    String settingId = created.getId();
+    Map<String, String> infos = new java.util.HashMap<>();
+    infos.put("key1", "value1");
+    infos.put("key2", "value2");
+    ZeppelinServer.notebook.getInterpreterSettingManager().get(settingId).setInfos(infos);
+    GetMethod get = httpGet("/interpreter/getmetainfos/" + settingId);
+    assertThat(get, isAllowed());
+    JsonObject body = getBodyFieldFromResponse(get.getResponseBodyAsString());
+    assertEquals(body.entrySet().size(), infos.size());
+    get.releaseConnection();
+  }
+
+  private JsonObject getBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonObject("body");
   }
 
-  public JsonArray getArrayBodyFieldFromResponse(String rawResponse) {
+  private JsonArray getArrayBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonArray("body");
   }
 
-  public InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
+  private InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
     return gson.fromJson(getBodyFieldFromResponse(rawResponse), InterpreterSetting.class);
   }
 
-  public static String getSimulatedMarkdownResult(String markdown) {
+  private static String getSimulatedMarkdownResult(String markdown) {
     return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n</div>", markdown);
   }
 }

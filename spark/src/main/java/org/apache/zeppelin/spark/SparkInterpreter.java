@@ -184,11 +184,12 @@ public class SparkInterpreter extends Interpreter {
         super.onJobStart(jobStart);
         int jobId = jobStart.jobId();
         String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
+        String uiEnabled = jobStart.properties().getProperty("spark.ui.enabled");
         String jobUrl = getJobUrl(jobId);
         String noteId = Utils.getNoteId(jobGroupId);
         String paragraphId = Utils.getParagraphId(jobGroupId);
 
-        if (jobUrl != null && noteId != null && paragraphId != null) {
+        if (uiEnabled != "false" && jobUrl != null) {
           RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
           infos.put("jobUrl", jobUrl);
@@ -1040,21 +1041,20 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public void populateSparkWebUrl(InterpreterContext ctx) {
-    if (sparkUrl == null) {
-      sparkUrl = getSparkUIUrl();
-      Map<String, String> infos = new java.util.HashMap<>();
-      if (sparkUrl != null) {
-        infos.put("url", sparkUrl);
-        if (ctx != null && ctx.getClient() != null) {
-          logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
-          getZeppelinContext().setEventClient(ctx.getClient());
-          ctx.getClient().onMetaInfosReceived(infos);
-        }
-      }
+    sparkUrl = getSparkUIUrl();
+    Map<String, String> infos = new java.util.HashMap<>();
+    infos.put("url", sparkUrl);
+    java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
+            property.getProperty("spark.ui.enabled", "true"));
+    infos.put("sparkUiEnabled", uiEnabled.toString());
+    if (ctx != null && ctx.getClient() != null) {
+      logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
+      getZeppelinContext().setEventClient(ctx.getClient());
+      ctx.getClient().onMetaInfosReceived(infos);
     }
   }
 
-  public List<File> currentClassPath() {
+  private List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
     String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
     if (cps != null) {

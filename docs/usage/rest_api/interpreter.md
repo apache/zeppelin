@@ -604,3 +604,26 @@ The role of registered interpreters, settings and interpreters group are describ
     </td>        
   </table>  
   
+<br/>
+### Get interpreter settings metadata info
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns interpreter settings metadata info. </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/getmetainfos/[setting ID]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+  </table>
+  
