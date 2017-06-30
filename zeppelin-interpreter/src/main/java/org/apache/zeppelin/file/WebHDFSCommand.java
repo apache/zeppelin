@@ -21,7 +21,6 @@ package org.apache.zeppelin.file;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
