@@ -25,8 +25,8 @@ limitations under the License.
 
 ## Overview
 
-<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_per_note_user.png" height="70%" width="70%"></center>
-<center><img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_scoped_isolated.png" height="70%" width="70%"></center>
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_per_note_user.png" height="70%" width="70%"></center>
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_scoped_isolated.png" height="70%" width="70%"></center>
 
 <br/>
 
@@ -43,7 +43,7 @@ In this documentation, we mainly discuss the combination of **per note** mode wi
 ## Shared Mode
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png" height="40%" width="40%">
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-shared.png" height="40%" width="40%">
 </div>
 <br/>
 
@@ -52,7 +52,7 @@ In **Shared** mode, single JVM process and single Interpreter Group serves all n
 ## Scoped Mode
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-scoped.png">
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-scoped.png">
 </div>
 <br/>
 
@@ -62,7 +62,7 @@ So, each note have their own dedicated session. (but still possible to share obj
 ## Isolated Mode
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-isolated.png">
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-isolated.png">
 </div>
 <br/>
 
@@ -98,7 +98,7 @@ So every note will be sharing single SparkContext and single Scala REPL.
 In this mode, if `Note A` defines variable ‘a’ then `Note B` not only able to read variable ‘a’ but also able to override the variable.
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-shared.png" height="40%" width="40%">
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-shared.png" height="40%" width="40%">
 </div>
 <br/>
 
@@ -109,13 +109,13 @@ And all the jobs are submitted to this SparkContext and fair scheduler schedules
 This could be useful when user does not want to share Scala session, but want to keep single Spark application and leverage its fair scheduler.
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-scoped.png">
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-scoped.png">
 </div>
 <br/>
 
 In Isolated mode, each note has its own SparkContext and Scala REPL.
 
 <div class="text-center">
-    <img src="/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-isolated.png">
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/interpreter_binding_mode-example-spark-isolated.png">
 </div>
 <br/>
