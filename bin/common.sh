@@ -54,7 +54,7 @@ fi
 
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
-if [[ -z "${HADOOP_CONF_DIR}" ]]; then
+if [[ -n "${HADOOP_CONF_DIR}" ]]; then
   ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
 fi
 

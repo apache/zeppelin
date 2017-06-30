@@ -28,6 +28,7 @@ import javax.ws.rs.core.Application;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
+import org.apache.zeppelin.cluster.ClusterManagerFactory;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -88,7 +89,7 @@ public class ZeppelinServer extends Application {
   public static Helium helium;
 
   private final InterpreterSettingManager interpreterSettingManager;
-  private ClusterManager clusterManager;
+  private ClusterManagerFactory clusterManagerFactory;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   private SearchService noteSearchService;
@@ -149,16 +150,10 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
     this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
         new InterpreterOption(true));
-    try {
-      this.clusterManager = (ClusterManager) Class
-          .forName("org.apache.zeppelin.cluster.yarn.Client").getConstructor().newInstance();
-    } catch (Throwable t) {
-      // TODO(jl): To be fixed
-      this.clusterManager = null;
-    }
+    this.clusterManagerFactory = new ClusterManagerFactory(conf.getHome(), "local");
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
-        interpreterSettingManager, clusterManager);
+        interpreterSettingManager, clusterManagerFactory);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.noteSearchService = new LuceneSearch();
     this.notebookAuthorization = NotebookAuthorization.init(conf);

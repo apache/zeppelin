@@ -21,6 +21,7 @@ import java.util.*;
 
 import org.apache.thrift.TException;
 import org.apache.zeppelin.cluster.ClusterManager;
+import org.apache.zeppelin.cluster.ClusterManagerFactory;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
@@ -67,7 +68,7 @@ public class RemoteInterpreter extends Interpreter {
   private Boolean isUserImpersonate;
   private int outputLimit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
   private String interpreterGroupName;
-  private ClusterManager clusterManager;
+  private ClusterManagerFactory clusterManagerFactory;
   private String group;
 
   /**
@@ -77,7 +78,8 @@ public class RemoteInterpreter extends Interpreter {
       String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
       int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
-      int outputLimit, String interpreterGroupName, ClusterManager clusterManager, String group) {
+      int outputLimit, String interpreterGroupName, ClusterManagerFactory clusterManagerFactory,
+      String group) {
     super(property);
     this.sessionKey = sessionKey;
     this.className = className;
@@ -95,7 +97,7 @@ public class RemoteInterpreter extends Interpreter {
     this.isUserImpersonate = isUserImpersonate;
     this.outputLimit = outputLimit;
     this.interpreterGroupName = interpreterGroupName;
-    this.clusterManager = clusterManager;
+    this.clusterManagerFactory = clusterManagerFactory;
     this.group = group;
   }
 
@@ -184,25 +186,22 @@ public class RemoteInterpreter extends Interpreter {
               port);
         } else {
           String clusterManagerKey = getProperty(Constants.ZEPPELIN_CLUSTER_MANAGER_KEY);
-          if (null == clusterManagerKey) {
-            //TODO(jl): Set defult cluster manager
-            clusterManagerKey = Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL;
-          }
-          switch (clusterManagerKey) {
-            case Constants.ZEPPELIN_CLUSTER_MANAGER_YARN:
-              remoteProcess = clusterManager
-                  .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
-                      connectTimeout, remoteInterpreterProcessListener, applicationEventListener,
-                      homeDir, interpreterPath);
-              break;
-            case Constants.ZEPPELIN_CLUSTER_MANAGER_LOCAL:
-            default:
-              // Default is local process
-              // create new remote process
-              remoteProcess = new RemoteInterpreterManagedProcess(
-                  interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-                  remoteInterpreterProcessListener, applicationEventListener,
-                  interpreterGroupName);
+          ClusterManager clusterManager =
+              clusterManagerFactory.getClusterManager(clusterManagerKey);
+
+          //TODO(jl): Fix the parameter list to unify all methods
+          if (null != clusterManager) {
+            remoteProcess = clusterManager
+                .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
+                    connectTimeout, remoteInterpreterProcessListener, applicationEventListener,
+                    homeDir, interpreterPath);
+          } else {
+            // Default is local process
+            // create new remote process
+            remoteProcess = new RemoteInterpreterManagedProcess(
+                interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
+                remoteInterpreterProcessListener, applicationEventListener,
+                interpreterGroupName);
           }
         }
 

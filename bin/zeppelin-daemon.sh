@@ -73,10 +73,13 @@ fi
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/lib/interpreter"
+addJarInDir "${ZEPPELIN_HOME}/lib/cluster/common"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-cluster/common/target"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-cluster/common/target/lib"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 

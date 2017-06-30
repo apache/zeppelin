@@ -85,6 +85,11 @@ fi
 addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDirForIntp "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDirForIntp "${INTERPRETER_DIR}"
+addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-cluster/common/target/lib"
+addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-cluster/yarn/target/lib"
+addJarInDirForIntp "${ZEPPELIN_HOME}/lib/cluster/common"
+addJarInDirForIntp "${ZEPPELIN_HOME}/lib/cluster/yarn"
+
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer

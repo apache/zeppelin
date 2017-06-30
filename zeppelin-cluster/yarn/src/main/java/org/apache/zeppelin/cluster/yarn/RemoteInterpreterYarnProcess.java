@@ -193,13 +193,13 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
       FileSystem fileSystem = FileSystem.get(configuration);
 
-      Path interpreterDir = getInterpreterRelativePath(group);
+      Path interpreterDir = getInterpreterRelativePath();
       List<Path> interpreterPaths = getPathsFromDirPath(interpreterDir);
 
       if (isSparkInterpreter()) {
         // For pyspark
         interpreterDir = isSparkHomeSet() ? Paths.get(this.env.get("SPARK_HOME"), "python", "lib")
-            : getInterpreterRelativePath(group, "pyspark");
+            : getInterpreterRelativePath("pyspark");
         List<Path> pythonLibPath = getPathsFromDirPath(interpreterDir);
         interpreterPaths.addAll(pythonLibPath);
 
@@ -214,7 +214,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         env.put("PYSPARK_ARCHIVES_PATH", Joiner.on(",").join(pythonLibPaths));
 
         interpreterDir = isSparkHomeSet() ? Paths.get(this.env.get("SPARK_HOME"), "jars")
-            : getInterpreterRelativePath(group, "dep");
+            : getInterpreterRelativePath("dep");
         List<Path> jarPaths = getPathsFromDirPath(interpreterDir);
         interpreterPaths.addAll(jarPaths);
 
@@ -238,7 +238,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
         }
         properties.setProperty("spark.yarn.archive", dstPath);
       } else if (isPythonInterpreter()) {
-        interpreterDir = getInterpreterRelativePath(group);
+        interpreterDir = getInterpreterRelativePath();
         List<Path> pythonLibPath = getPathsFromDirPath(interpreterDir);
         interpreterPaths.addAll(pythonLibPath);
 
@@ -255,7 +255,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
       // For pyspark and python
       List<Path> zeppelinPythonLibPaths = getPathsFromDirPath(
-          getInterpreterRelativePath("lib", "python"));
+          Paths.get(this.interpreterDir, "lib", "python"));
       interpreterPaths.addAll(zeppelinPythonLibPaths);
       List<String> distributedZeppelinPythonLibPaths = Lists.newArrayList();
       for (Path p : zeppelinPythonLibPaths) {
@@ -406,7 +406,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
   }
 
   private boolean isHadoopConfSet() {
-    return this.env.containsKey("HADOOP_CONF_DIR");
+    return null != System.getenv("HADOOP_CONF_DIR");
   }
 
   private int convertSparkMemoryFormat(String memoryFormat) {

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.zeppelin.cluster.ClusterManagerFactory;
 
 /**
  * Manage interpreters.
@@ -65,7 +66,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener appEventListener;
 
-  private final ClusterManager clusterManager;
+  private final ClusterManagerFactory clusterManagerFactory;
 
   private boolean shiroEnabled;
 
@@ -78,7 +79,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appEventListener, DependencyResolver depResolver,
       boolean shiroEnabled, InterpreterSettingManager interpreterSettingManager,
-      ClusterManager clusterManager)
+      ClusterManagerFactory clusterManagerFactory)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -90,7 +91,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     //TODO(jl): Fix it not to use InterpreterGroupFactory
     interpreterSettingManager.setInterpreterGroupFactory(this);
 
-    this.clusterManager = clusterManager;
+    this.clusterManagerFactory = clusterManagerFactory;
 
     logger.info("shiroEnabled: {}", shiroEnabled);
   }
@@ -287,7 +288,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
             interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate,
             conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT), interpreterGroupName,
-            clusterManager, interpreterGroupStr);
+            clusterManagerFactory, interpreterGroupStr);
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);
