@@ -172,6 +172,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   @Override
   public void open() {
+    super.open();
     for (String propertyKey : property.stringPropertyNames()) {
       logger.debug("propertyKey: {}", propertyKey);
       String[] keyValue = propertyKey.split("\\.", 2);
@@ -207,12 +208,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
     logger.debug("JDBC PropretiesMap: {}", basePropretiesMap);
 
     setMaxLineResults();
+  }
 
+
+  protected boolean isKerboseEnabled() {
     UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
     if (authType.equals(KERBEROS)) {
-      startKerberosLoginThread();
+      return true;
     }
+    return false;
   }
+
 
   private void setMaxLineResults() {
     if (basePropretiesMap.containsKey(COMMON_KEY) &&
@@ -283,6 +289,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   @Override
   public void close() {
+    super.close();
     try {
       initStatementMap();
       initConnectionPoolMap();

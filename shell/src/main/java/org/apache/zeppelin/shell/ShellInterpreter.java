@@ -57,17 +57,14 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   public void open() {
+    super.open();
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new ConcurrentHashMap<>();
-    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
-      startKerberosLoginThread();
-    }
   }
 
   @Override
   public void close() {
-    shutdownExecutorService();
-
+    super.close();
     for (String executorKey : executors.keySet()) {
       DefaultExecutor executor = executors.remove(executorKey);
       if (executor != null) {
@@ -169,6 +166,15 @@ public class ShellInterpreter extends KerberosInterpreter {
       return false;
     }
     return true;
+  }
+
+  @Override
+  protected boolean isKerboseEnabled() {
+    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type")) && getProperty(
+        "zeppelin.shell.auth.type").equalsIgnoreCase("kerberos")) {
+      return true;
+    }
+    return false;
   }
 
 }

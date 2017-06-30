@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 public abstract class KerberosInterpreter extends Interpreter {
 
   private Integer kinitFailCount = 0;
-  protected ScheduledExecutorService scheduledExecutorService;
-  public static Logger logger = LoggerFactory.getLogger(KerberosInterpreter.class);
+  private ScheduledExecutorService scheduledExecutorService;
+  private static Logger logger = LoggerFactory.getLogger(KerberosInterpreter.class);
 
   public KerberosInterpreter(Properties property) {
     super(property);
@@ -48,7 +48,22 @@ public abstract class KerberosInterpreter extends Interpreter {
   @ZeppelinApi
   protected abstract boolean runKerberosLogin();
 
-  public String getKerberosRefreshInterval() {
+  @ZeppelinApi
+  protected abstract boolean isKerboseEnabled();
+
+  public void open() {
+    if (isKerboseEnabled()) {
+      startKerberosLoginThread();
+    }
+  }
+
+  public void close() {
+    if (isKerboseEnabled()) {
+      shutdownExecutorService();
+    }
+  }
+
+  private String getKerberosRefreshInterval() {
     if (System.getenv("KERBEROS_REFRESH_INTERVAL") == null) {
       return "1d";
     } else {
@@ -56,7 +71,7 @@ public abstract class KerberosInterpreter extends Interpreter {
     }
   }
 
-  public Integer kinitFailThreshold() {
+  private Integer kinitFailThreshold() {
     if (System.getenv("KINIT_FAIL_THRESHOLD") == null) {
       return 5;
     } else {
@@ -64,7 +79,7 @@ public abstract class KerberosInterpreter extends Interpreter {
     }
   }
 
-  public Long getTimeAsMs(String time) {
+  private Long getTimeAsMs(String time) {
     if (time == null) {
       logger.error("Cannot convert to time value.", time);
       time = "1d";
@@ -86,7 +101,7 @@ public abstract class KerberosInterpreter extends Interpreter {
         suffix != null ? Constants.TIME_SUFFIXES.get(suffix) : TimeUnit.MILLISECONDS);
   }
 
-  protected ScheduledExecutorService startKerberosLoginThread() {
+  private ScheduledExecutorService startKerberosLoginThread() {
     scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     scheduledExecutorService.schedule(new Callable() {
@@ -116,7 +131,7 @@ public abstract class KerberosInterpreter extends Interpreter {
     return scheduledExecutorService;
   }
 
-  protected void shutdownExecutorService() {
+  private void shutdownExecutorService() {
     if (scheduledExecutorService != null) {
       scheduledExecutorService.shutdown();
     }
