@@ -240,11 +240,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Revision.EMPTY;
     }
-    if (isSaveAndCommitEnabled()) {
-      doSave(note, subject);
-    }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
-    String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
+    String jsonNote = GSON.toJson(note);
+    String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg,
+        "notebook", jsonNote));
     
     String token = getUserToken(subject.getUser());
     String response = restApiClient.putWithResponseBody(token, endpoint, content);
