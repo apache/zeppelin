@@ -17,14 +17,28 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 
 /**
  *
@@ -38,6 +52,24 @@ public class RemoteInterpreterUtils {
       socket.close();
     }
     return port;
+  }
+
+  public static String findAvailableHostname() throws UnknownHostException, SocketException {
+    InetAddress address = InetAddress.getLocalHost();
+    if (address.isLoopbackAddress()) {
+      for (NetworkInterface networkInterface : Collections
+          .list(NetworkInterface.getNetworkInterfaces())) {
+        if (!networkInterface.isLoopback()) {
+          for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+            InetAddress a = interfaceAddress.getAddress();
+            if (a instanceof Inet4Address) {
+              return a.getHostAddress();
+            }
+          }
+        }
+      }
+    }
+    return address.getHostName();
   }
 
   public static boolean checkIfRemoteEndpointAccessible(String host, int port) {
@@ -79,5 +111,18 @@ public class RemoteInterpreterUtils {
     }
 
     return key.matches("^[A-Z_0-9]*");
+  }
+
+  public static void registerInterpreter(String callbackHost, int callbackPort,
+      final CallbackInfo callbackInfo) throws TException {
+    LOGGER.info("callbackHost: {}, callbackPort: {}, callbackInfo: {}", callbackHost, callbackPort,
+        callbackInfo);
+    try (TTransport transport = new TSocket(callbackHost, callbackPort)) {
+      transport.open();
+      TProtocol protocol = new TBinaryProtocol(transport);
+      RemoteInterpreterCallbackService.Client client = new RemoteInterpreterCallbackService.Client(
+          protocol);
+      client.callback(callbackInfo);
+    }
   }
 }
