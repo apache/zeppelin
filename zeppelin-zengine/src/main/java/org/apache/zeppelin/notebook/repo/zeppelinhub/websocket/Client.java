@@ -17,6 +17,7 @@
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +32,15 @@ public class Client {
   private final ZeppelinhubClient zeppelinhubClient;
   private final ZeppelinClient zeppelinClient;
   private static Client instance = null;
+  private ZeppelinHubRepo repo;
 
   private static final int MB = 1048576;
   private static final int MAXIMUM_NOTE_SIZE = 64 * MB;
 
   public static Client initialize(String zeppelinUri, String zeppelinhubUri, String token, 
-      ZeppelinConfiguration conf) {
+      ZeppelinConfiguration conf, ZeppelinHubRepo repo) {
     if (instance == null) {
-      instance = new Client(zeppelinUri, zeppelinhubUri, token, conf);
+      instance = new Client(zeppelinUri, zeppelinhubUri, token, conf, repo);
     }
     return instance;
   }
@@ -48,8 +50,9 @@ public class Client {
   }
 
   private Client(String zeppelinUri, String zeppelinhubUri, String token,
-      ZeppelinConfiguration conf) {
+      ZeppelinConfiguration conf, ZeppelinHubRepo repo) {
     LOG.debug("Init Client");
+    this.repo = repo;
     zeppelinhubClient = ZeppelinhubClient.initialize(zeppelinhubUri, token);
     zeppelinClient = ZeppelinClient.initialize(zeppelinUri, token, conf);
   }
@@ -82,5 +85,9 @@ public class Client {
 
   public static int getMaxNoteSize() {
     return MAXIMUM_NOTE_SIZE;
+  }
+  
+  public boolean isSaveAndCommitEnabled() {
+    return repo.isSaveAndCommitEnabled();
   }
 }

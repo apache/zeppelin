@@ -79,7 +79,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     tokenManager = UserTokenContainer.init(restApiClient, token);
 
     websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
-        getZeppelinhubWebsocketUri(conf), token, conf);
+        getZeppelinhubWebsocketUri(conf), token, conf, this);
     websocketClient.start();
   }
 
