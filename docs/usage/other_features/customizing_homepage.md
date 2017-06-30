@@ -47,7 +47,7 @@ the code sections.
 To set the note id in the config file, you should copy it from the last word in the note url.
 For example,
 
-<img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" width="400px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" width="400px" />
 
 Set the note id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable
 or ```zeppelin.notebook.homescreen``` property.
@@ -82,7 +82,7 @@ println(
 
 After running the paragraph, you will see output similar to this one:
 
-<img src="/assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/homepage_custom_notebook_list.png" />
 
 That's it! Voila! You have your note list.
 

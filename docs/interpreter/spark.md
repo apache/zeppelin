@@ -398,7 +398,7 @@ a popular plotting library for python. More details can be found in the [python 
 since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through 
 utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/angular_backend.html), as shown below:
 
-<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 
@@ -410,7 +410,7 @@ It creates separated SparkContext per each notebook in `isolated` mode.
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
-<img src="/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 ### Configuration Setup
 

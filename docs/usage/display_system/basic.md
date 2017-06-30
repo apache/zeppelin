@@ -27,38 +27,38 @@ limitations under the License.
 
 By default, Apache Zeppelin prints interpreter response as a plain text using `text` display system.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_text.png" />
 
 You can explicitly say you're using `text` display system.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_text1.png" />
 
 ## Html
 
 With `%html` directive, Zeppelin treats your output as HTML
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_html.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_html.png" />
 
 ### Mathematical expressions
 HTML display system automatically formats mathematical expression using [MathJax](https://www.mathjax.org/). You can use
 `\\( INLINE EXPRESSION \\)` and `$$ EXPRESSION $$` to format. For example
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_formula.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_formula.png" />
 
 
 ## Table
 
 If you have data that row separated by `\n` (newline) and column separated by `\t` (tab) with first row as header row, for example
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_table.png" />
 
 You can simply use `%table` display system to leverage Zeppelin's built in visualization.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table1.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_table1.png" />
 
 If table contents start with `%html`, it is interpreted as an HTML.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_table_html.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_table_html.png" />
 
 > **Note :** Display system is backend independent.
 
@@ -109,11 +109,11 @@ The new NETWORK visualization is based on json with the following params:
 
 If you click on a node or edge on the bottom of the paragraph you find a list of entity properties
 
-<img src="../assets/themes/zeppelin/img/screenshots/display_network.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_network.png" />
 
 This kind of graph can be easily *flatten* in order to support other visualization formats provided by Zeppelin.
 
-<img src="../assets/themes/zeppelin/img/screenshots/display_network_flatten.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_network_flatten.png" />
 
 ### How to use it?
 
@@ -142,7 +142,7 @@ print(s"""
 
 that will look like:
 
-<img src="../assets/themes/zeppelin/img/screenshots/display_simple_network.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_simple_network.png" />
 
 A little more complex graph:
 
@@ -161,4 +161,4 @@ print(s"""
 
 that will look like:
 
-<img src="../assets/themes/zeppelin/img/screenshots/display_complex_network.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_complex_network.png" />
