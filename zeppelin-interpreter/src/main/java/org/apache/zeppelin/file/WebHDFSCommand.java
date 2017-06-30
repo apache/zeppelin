@@ -136,26 +136,20 @@ public class WebHDFSCommand {
     if (args != null) {
       boolean isUserName = false;
       for (Arg a : args) {
-//        builder = builder.queryParam(a.key, a.value);
         uriBuilder.addParameter(a.key, a.value);
-        //System.out.println("a.key/a.value=" + a.key + "=" + a.value);
         if ("user.name".equals(a.key)) {
           isUserName = true;
         }
       }
       if (!isUserName) {
-        //builder = builder.queryParam("user.name", this.user);
         uriBuilder.addParameter("user.name", this.user);
       }
     } else {
-      // builder = builder.queryParam("user.name", this.user);
       uriBuilder.addParameter("user.name", this.user);
     }
     java.net.URI uri = uriBuilder.build();
-    // System.out.println("resUrl=" + resUrl);
     // Connect and get response string
     URL hdfsUrl = uri.toURL();
-    // System.out.println("hdfsUrl=" + hdfsUrl.toExternalForm());
     HttpURLConnection con = (HttpURLConnection) hdfsUrl.openConnection();
 
     if (op.cmd == HttpType.GET) {
