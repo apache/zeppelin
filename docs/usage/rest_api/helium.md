@@ -32,7 +32,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
 
 ## Helium REST API List
 
-### List of all available helium packages
+### Get all available helium packages
 
   <table class="table-configuration">
     <col width="200">
@@ -42,7 +42,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/all```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/package```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -78,42 +78,60 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
         },
         "enabled": false
       }
-    ],
-    "zeppelin-bubblechart": [
+    ]
+  }
+}
+        </pre>
+      </td>
+    </tr>
+  </table>
+<br/>
+
+### Get all enabled helium packages
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns all enabled helium packages in configured registries.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/enabledPackage```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "zeppelin.clock": [
       {
         "registry": "local",
         "pkg": {
-          "type": "VISUALIZATION",
-          "name": "zeppelin-bubblechart",
-          "description": "Animated bubble chart",
-          "artifact": ".\/..\/helium\/zeppelin-bubble",
-          "icon": "icon"
-        },
-        "enabled": true
-      },
-      {
-        "registry": "local",
-        "pkg": {
-          "type": "VISUALIZATION",
-          "name": "zeppelin-bubblechart",
-          "description": "Animated bubble chart",
-          "artifact": "zeppelin-bubblechart@0.0.2",
+          "type": "APPLICATION",
+          "name": "zeppelin.clock",
+          "description": "Clock (example)",
+          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
+          "className": "org.apache.zeppelin.example.app.clock.Clock",
+          "resources": [
+            [
+              ":java.util.Date"
+            ]
+          ],
           "icon": "icon"
         },
         "enabled": false
-      }
-    ],
-    "zeppelin\_horizontalbar": [
-      {
-        "registry": "local",
-        "pkg": {
-          "type": "VISUALIZATION",
-          "name": "zeppelin_horizontalbar",
-          "description": "Horizontal Bar chart (example)",
-          "artifact": ".\/zeppelin-examples\/zeppelin-example-horizontalbar",
-          "icon": "icon"
-        },
-        "enabled": true
       }
     ]
   }
@@ -122,15 +140,70 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       </td>
     </tr>
   </table>
-
 <br/>
-### Suggest Helium application
+
+### Get single helium package
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns suggested helium application for the paragraph.</td>
+      <td>This ```GET``` method returns specified helium package information</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/package/[Package Name]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "zeppelin.clock": [
+      {
+        "registry": "local",
+        "pkg": {
+          "type": "APPLICATION",
+          "name": "zeppelin.clock",
+          "description": "Clock (example)",
+          "artifact": "zeppelin-examples\/zeppelin-example-clock\/target\/zeppelin-example-clock-0.7.0-SNAPSHOT.jar",
+          "className": "org.apache.zeppelin.example.app.clock.Clock",
+          "resources": [
+            [
+              ":java.util.Date"
+            ]
+          ],
+          "icon": "icon"
+        },
+        "enabled": false
+      }
+    ]
+  }
+}
+        </pre>
+      </td>
+    </tr>
+  </table>
+<br/>
+
+### Suggest Helium package on a paragraph
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns suggested helium package for the paragraph.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -180,15 +253,15 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       </td>
     </tr>
   </table>
-  
 <br/>
-### Load helium Application on a paragraph
+
+### Load Helium package on a paragraph
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns a helium Application id on success.</td>
+      <td>This ```POST``` method loads helium package to target paragraph.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -201,8 +274,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td>Fail code</td>
       <td>
-          404 on note or paragraph not exists <br/>
-          500 for any other errors
+        404 on note or paragraph not exists <br />
+        500
       </td>
     </tr>
     <tr>
@@ -218,19 +291,19 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       </td>
     </tr>
   </table>
-
 <br/>
+
 ### Load bundled visualization script
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns bundled helium visualization javascript. When refresh=true (optional) is provided, Zeppelin rebuild bundle. otherwise, provided from cache</td>
+      <td>This ```GET``` method returns bundled helium visualization javascript. When refresh=true (optional) is provided, Zeppelin rebuilds bundle. Otherwise, it's provided from cache</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/visualizations/load[?refresh=true]```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/bundle/load/[Package Name][?refresh=true]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -243,8 +316,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
       </td>
     </tr>
   </table>
-
 <br/>
+
 ### Enable package
   <table class="table-configuration">
     <col width="200">
@@ -281,8 +354,8 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
       </td>
     </tr>
   </table>
-
 <br/>
+
 ### Disable package
 
   <table class="table-configuration">
@@ -310,7 +383,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
       </td>
     </tr>
   </table>
-<br />
+<br/>
 
 ### Get visualization display order
 
@@ -322,7 +395,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/visualizationOrder```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/order/visualization```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -339,9 +412,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
       </td>
     </tr>
   </table>
-
-
-<br />
+<br/>
 
 ### Set visualization display order
 
@@ -353,7 +424,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/visualizationOrder```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/order/visualization```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -376,3 +447,97 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
       </td>
     </tr>
   </table>
+<br/>
+
+### Get configuration for all Helium packages
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns configuration for all Helium packages</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/config```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+  </table>
+ <br/>
+ 
+ ### Get configuration for specific package
+ 
+   <table class="table-configuration">
+     <col width="200">
+     <tr>
+       <td>Description</td>
+       <td>This ```GET``` method returns configuration for the specified package name and artifact</td>
+     </tr>
+     <tr>
+       <td>URL</td>
+       <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/config/[Package Name]/[Artifact]```</td>
+     </tr>
+     <tr>
+       <td>Success code</td>
+       <td>200</td>
+     </tr>
+     <tr>
+       <td> Fail code</td>
+       <td> 500 </td>
+     </tr>
+   </table>
+<br/>
+
+### Set configuration for specific package
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method updates configuration for specified package name and artifact</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/config/[Package Name]/[Artifact]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+  </table>   
+ <br/>
+ 
+ ### Get Spell configuration for single package
+ 
+   <table class="table-configuration">
+     <col width="200">
+     <tr>
+       <td>Description</td>
+       <td>This ```GET``` method returns specified package Spell configuration</td>
+     </tr>
+     <tr>
+       <td>URL</td>
+       <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/spell/config/[Package Name]```</td>
+     </tr>
+     <tr>
+       <td>Success code</td>
+       <td>200</td>
+     </tr>
+     <tr>
+       <td> Fail code</td>
+       <td> 500 </td>
+     </tr>
+   </table>
+ <br/>
+ 

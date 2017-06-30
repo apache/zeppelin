@@ -56,7 +56,7 @@ public class HeliumTest {
     assertFalse(heliumConf.exists());
 
     // when
-    helium.save();
+    helium.saveConfig();
 
     // then
     assertTrue(heliumConf.exists());

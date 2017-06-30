@@ -61,7 +61,6 @@ public class HeliumConf implements JsonSerializable {
       packageConfig.put(artifact,
           Collections.synchronizedMap(new HashMap<String, Object>()));
     }
-
     packageConfig.put(artifact, newConfig);
   }
 
@@ -91,7 +90,7 @@ public class HeliumConf implements JsonSerializable {
 
   public List<String> getBundleDisplayOrder() {
     if (bundleDisplayOrder == null) {
-      return new LinkedList<String>();
+      return new LinkedList<>();
     } else {
       return bundleDisplayOrder;
     }

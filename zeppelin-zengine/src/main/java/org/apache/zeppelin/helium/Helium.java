@@ -41,7 +41,7 @@ public class Helium {
   Logger logger = LoggerFactory.getLogger(Helium.class);
   private List<HeliumRegistry> registry = new LinkedList<>();
 
-  private final HeliumConf heliumConf;
+  private HeliumConf heliumConf;
   private final String heliumConfPath;
   private final String registryPaths;
   private final File registryCacheDir;
@@ -49,7 +49,7 @@ public class Helium {
   private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
 
-  Map<String, List<HeliumPackageSearchResult>> allPackages;
+  private Map<String, List<HeliumPackageSearchResult>> allPackages;
 
   public Helium(
       String heliumConfPath,
@@ -77,6 +77,14 @@ public class Helium {
     }
   }
 
+  public void clearRegistries() {
+    this.registry.clear();
+  }
+
+  public void clearConf() {
+    this.heliumConf = new HeliumConf();
+  }
+
   public List<HeliumRegistry> getAllRegistry() {
     synchronized (this.registry) {
       List list = new LinkedList<>();
@@ -89,10 +97,6 @@ public class Helium {
 
   public HeliumApplicationFactory getApplicationFactory() {
     return applicationFactory;
-  }
-
-  public HeliumBundleFactory getBundleFactory() {
-    return bundleFactory;
   }
 
   private synchronized HeliumConf loadConf(String path) throws IOException {
@@ -122,7 +126,7 @@ public class Helium {
     }
   }
 
-  public synchronized void save() throws IOException {
+  public synchronized void saveConfig() throws IOException {
     String jsonString;
     synchronized (registry) {
       clearNotExistsPackages();
@@ -138,7 +142,7 @@ public class Helium {
   }
 
   private void clearNotExistsPackages() {
-    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfoWithoutRefresh();
+    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo();
 
     // clear visualization display order
     List<String> packageOrder = heliumConf.getBundleDisplayOrder();
@@ -187,9 +191,7 @@ public class Helium {
                   !name.equals(packageName)) {
                 continue;
               }
-
-              String artifact = enabledPackageInfo.get(name);
-              boolean enabled = (artifact != null && artifact.equals(pkg.getArtifact()));
+              boolean enabled = enabledPackageInfo.containsKey(pkg.getName());
 
               if (!allPackages.containsKey(name)) {
                 allPackages.put(name, new LinkedList<HeliumPackageSearchResult>());
@@ -208,12 +210,10 @@ public class Helium {
           }
 
           List<HeliumPackageSearchResult> pkgs = allPackages.get(name);
-          String artifact = enabledPackageInfo.get(name);
-          LinkedList<HeliumPackageSearchResult> newResults =
-              new LinkedList<HeliumPackageSearchResult>();
+          LinkedList<HeliumPackageSearchResult> newResults = new LinkedList<>();
 
           for (HeliumPackageSearchResult pkg : pkgs) {
-            boolean enabled = (artifact != null && artifact.equals(pkg.getPkg().getArtifact()));
+            boolean enabled = enabledPackageInfo.containsKey(pkg.getPkg().getName());
             newResults.add(new HeliumPackageSearchResult(pkg.getRegistry(), pkg.getPkg(), enabled));
           }
 
@@ -236,7 +236,7 @@ public class Helium {
   }
 
   public List<HeliumPackageSearchResult> getAllEnabledPackages() {
-    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo();
     List<HeliumPackageSearchResult> enabledPackages = new ArrayList<>();
 
     for (List<HeliumPackageSearchResult> versionedPackages : allPackages.values()) {
@@ -252,17 +252,16 @@ public class Helium {
   }
 
   public List<HeliumPackageSearchResult> getSinglePackageInfo(String packageName) {
-    Map<String, List<HeliumPackageSearchResult>> result = getAllPackageInfo(false, packageName);
+    Map<String, List<HeliumPackageSearchResult>> result = getAllPackageInfo(true, packageName);
 
     if (!result.containsKey(packageName)) {
       return new ArrayList<>();
     }
-
     return result.get(packageName);
   }
 
-  public HeliumPackageSearchResult getEnabledPackageInfo(String packageName) {
-    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfoWithoutRefresh();
+  private HeliumPackageSearchResult getEnabledPackageInfo(String packageName) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo();
     List<HeliumPackageSearchResult> packages = infos.get(packageName);
 
     for (HeliumPackageSearchResult pkgSearchResult : packages) {
@@ -274,10 +273,10 @@ public class Helium {
     return null;
   }
 
-  public HeliumPackageSearchResult getPackageInfo(String pkgName, String artifact) {
-    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo(false, pkgName);
+  private HeliumPackageSearchResult getPackageInfo(String pkgName, String artifact) {
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo(true, pkgName);
     List<HeliumPackageSearchResult> packages = infos.get(pkgName);
-    if (artifact == null) {
+    if (StringUtils.isBlank(artifact)) {
       return packages.get(0); /** return the FIRST package */
     } else {
       for (HeliumPackageSearchResult pkg : packages) {
@@ -286,7 +285,6 @@ public class Helium {
         }
       }
     }
-
     return null;
   }
 
@@ -294,12 +292,12 @@ public class Helium {
     return bundleFactory.buildPackage(pkg, rebuild, true);
   }
 
-  public void enable(String name, String artifact) throws IOException {
+  public boolean enable(String name, String artifact) throws IOException {
     HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
 
-    // no package found.
     if (pkgInfo == null) {
-      return;
+      logger.info("Package {} not found", name);
+      return false;
     }
 
     // if package is bundle, rebuild bundle
@@ -317,17 +315,19 @@ public class Helium {
       }
     }
 
-    save();
+    saveConfig();
+    return true;
   }
 
-  public void disable(String name) throws IOException {
-    String artifact = heliumConf.getEnabledPackages().get(name);
+  public boolean disable(String name) throws IOException {
+    String pkg = heliumConf.getEnabledPackages().get(name);
 
-    if (artifact == null) {
-      return;
+    if (pkg == null) {
+      logger.info("Package {} not found", name);
+      return false;
     }
 
-    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, artifact);
+    HeliumPackageSearchResult pkgInfo = getPackageInfo(name, pkg);
 
     // set `enable` field
     heliumConf.disablePackage(name);
@@ -337,21 +337,22 @@ public class Helium {
         currentDisplayOrder.remove(name);
       }
     }
-    save();
+    saveConfig();
+    return true;
   }
 
   public void updatePackageConfig(String artifact, Map<String, Object> pkgConfig)
       throws IOException {
 
     heliumConf.updatePackageConfig(artifact, pkgConfig);
-    save();
+    saveConfig();
   }
 
   public Map<String, Map<String, Object>> getAllPackageConfig() {
     return heliumConf.getAllPackageConfigs();
   }
 
-  public Map<String, Object> getPackagePersistedConfig(String artifact) {
+  private Map<String, Object> getPackagePersistedConfig(String artifact) {
     return heliumConf.getPackagePersistedConfig(artifact);
   }
 
@@ -376,7 +377,7 @@ public class Helium {
       allResources = ResourcePoolUtils.getAllResources();
     }
 
-    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfoWithoutRefresh().values()) {
+    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo().values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
         if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
           ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
@@ -404,7 +405,7 @@ public class Helium {
    * @return ordered list of enabled buildBundle package
    */
   public List<HeliumPackage> getBundlePackagesToBundle() {
-    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo();
     List<String> visOrder = heliumConf.getBundleDisplayOrder();
 
     List<HeliumPackage> orderedBundlePackages = new LinkedList<>();
@@ -437,7 +438,7 @@ public class Helium {
     return orderedBundlePackages;
   }
 
-  public boolean canBundle(HeliumPackageSearchResult pkgInfo) {
+  private boolean canBundle(HeliumPackageSearchResult pkgInfo) {
     return (pkgInfo.isEnabled() &&
         HeliumPackage.isBundleType(pkgInfo.getPkg().getType()));
   }
@@ -453,7 +454,7 @@ public class Helium {
   public void setVisualizationPackageOrder(List<String> orderedPackageList)
       throws IOException {
     heliumConf.setBundleDisplayOrder(orderedPackageList);
-    save();
+    saveConfig();
   }
 
   /**
@@ -494,7 +495,7 @@ public class Helium {
     return createMixedConfig(configPersisted, configSpec);
   }
 
-  public static Map<String, Map<String, Object>> createMixedConfig(Map<String, Object> persisted,
+  private static Map<String, Map<String, Object>> createMixedConfig(Map<String, Object> persisted,
                                                                    Map<String, Object> spec) {
     Map<String, Map<String, Object>> mixed = new HashMap<>();
     mixed.put("confPersisted", persisted);
