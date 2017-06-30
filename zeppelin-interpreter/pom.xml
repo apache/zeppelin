@@ -44,8 +44,6 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
     <jline.version>2.12.1</jline.version>
-    <ws.rsapi.version>2.0-m10</ws.rsapi.version>
-    <httpcomponents.client.version>4.3.6</httpcomponents.client.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
@@ -83,12 +81,6 @@
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>${ws.rsapi.version}</version>
     </dependency>
 
     <dependency>
@@ -227,12 +219,6 @@
       <artifactId>guava</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>${httpcomponents.client.version}</version>
-    </dependency>
-    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

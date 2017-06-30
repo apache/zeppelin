@@ -585,7 +585,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.livy.LivyPySpark3Interpreter,"
         + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
-        + "org.apache.zeppelin.file.HDFSFileInterpreter,"
+        + "org.apache.zeppelin.file.WebHDFSFileInterpreter,"
         + "org.apache.zeppelin.pig.PigInterpreter,"
         + "org.apache.zeppelin.pig.PigQueryInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
