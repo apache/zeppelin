@@ -185,8 +185,7 @@ public class RemoteInterpreterServer
   }
 
 
-  public static void main(String[] args)
-      throws TTransportException, InterruptedException {
+  public static void main(String[] args) throws Exception {
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     if (args.length > 0) {
       port = Integer.parseInt(args[0]);

@@ -47,7 +47,7 @@ public class YarnRemoteInterpreterServer extends RemoteInterpreterServer {
   private AMRMClientAsync amrmClientAsync;
 
   public YarnRemoteInterpreterServer(int port) throws TTransportException, IOException {
-    super(null, port);
+    super(port);
     configuration = new Configuration();
   }
 
