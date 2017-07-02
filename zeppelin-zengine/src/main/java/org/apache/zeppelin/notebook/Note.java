@@ -117,7 +117,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   /*
    * note information.
    * - cron : cron expression validity.
-   * - version : version of Zeppelin
    */
   private Map<String, Object> info = new HashMap<>();
 
@@ -855,26 +854,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   public void setInfo(Map<String, Object> info) {
     this.info = info;
-  }
-
-  public String getVersion() {
-    String version = StringUtils.EMPTY;
-    if (info.get("version") == null) {
-      return version;
-    }
-    try {
-      version = (String) info.get("version");
-    } catch (ClassCastException e) {
-      logger.error("Zeppelin note version info is not correct", e);
-    }
-    return version;
-  }
-  
-  public Object setVersion(String version) {
-    if (StringUtils.isBlank(version)) {
-      version = StringUtils.EMPTY;
-    }
-    return info.put("version", version);
   }
   
   @Override
