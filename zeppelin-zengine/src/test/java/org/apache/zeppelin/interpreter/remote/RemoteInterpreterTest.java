@@ -911,4 +911,65 @@ public class RemoteInterpreterTest {
     intp.close();
   }
 
+  @Test
+  public void testSetProgress() throws InterruptedException {
+    // given MockInterpreterA set progress through InterpreterContext
+    Properties p = new Properties();
+    p.setProperty("progress", "50");
+    final RemoteInterpreter intpA = createMockInterpreterA(p);
+
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+
+    final InterpreterContext context1 = new InterpreterContext(
+        "noteId",
+        "id1",
+        null,
+        "title",
+        "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("pool1"),
+        new LinkedList<InterpreterContextRunner>(), null);
+
+    InterpreterContext context2 = new InterpreterContext(
+        "noteId",
+        "id2",
+        null,
+        "title",
+        "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("pool1"),
+        new LinkedList<InterpreterContextRunner>(), null);
+
+
+    assertEquals(0, intpA.getProgress(context1));
+    assertEquals(0, intpA.getProgress(context2));
+
+    // when interpreter update progress through InterpreterContext
+    Thread t = new Thread() {
+      public void run() {
+        InterpreterResult ret = intpA.interpret("1000", context1);
+      }
+    };
+    t.start();
+
+    // then progress need to be updated in given context
+    while(intpA.getProgress(context1) == 0) Thread.yield();
+    assertEquals(50, intpA.getProgress(context1));
+    assertEquals(0, intpA.getProgress(context2));
+
+    t.join();
+    assertEquals(0, intpA.getProgress(context1));
+    assertEquals(0, intpA.getProgress(context2));
+  }
+
 }
