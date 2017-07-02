@@ -54,24 +54,6 @@ public class RemoteInterpreterUtils {
     return port;
   }
 
-  public static String findAvailableHostname() throws UnknownHostException, SocketException {
-    InetAddress address = InetAddress.getLocalHost();
-    if (address.isLoopbackAddress()) {
-      for (NetworkInterface networkInterface : Collections
-          .list(NetworkInterface.getNetworkInterfaces())) {
-        if (!networkInterface.isLoopback()) {
-          for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-            InetAddress a = interfaceAddress.getAddress();
-            if (a instanceof Inet4Address) {
-              return a.getHostAddress();
-            }
-          }
-        }
-      }
-    }
-    return address.getHostName();
-  }
-
   public static boolean checkIfRemoteEndpointAccessible(String host, int port) {
     try {
       Socket discover = new Socket();
@@ -111,18 +93,5 @@ public class RemoteInterpreterUtils {
     }
 
     return key.matches("^[A-Z_0-9]*");
-  }
-
-  public static void registerInterpreter(String callbackHost, int callbackPort,
-      final CallbackInfo callbackInfo) throws TException {
-    LOGGER.info("callbackHost: {}, callbackPort: {}, callbackInfo: {}", callbackHost, callbackPort,
-        callbackInfo);
-    try (TTransport transport = new TSocket(callbackHost, callbackPort)) {
-      transport.open();
-      TProtocol protocol = new TBinaryProtocol(transport);
-      RemoteInterpreterCallbackService.Client client = new RemoteInterpreterCallbackService.Client(
-          protocol);
-      client.callback(callbackInfo);
-    }
   }
 }

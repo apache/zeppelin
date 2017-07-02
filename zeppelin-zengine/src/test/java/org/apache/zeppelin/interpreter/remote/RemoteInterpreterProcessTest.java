@@ -78,8 +78,8 @@ public class RemoteInterpreterProcessTest {
   }
 
   @Test
-  public void testStartStopRemoteInterpreter() throws TException, InterruptedException, IOException {
-    RemoteInterpreterServer server = new RemoteInterpreterServer(null, 3678);
+  public void testStartStopRemoteInterpreter() throws TException, InterruptedException {
+    RemoteInterpreterServer server = new RemoteInterpreterServer(3678);
     server.start();
     boolean running = false;
     long startTime = System.currentTimeMillis();

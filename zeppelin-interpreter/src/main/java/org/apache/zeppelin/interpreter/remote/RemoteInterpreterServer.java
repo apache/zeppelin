@@ -72,7 +72,6 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.RemoteWorksController;
 import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
-import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
@@ -111,9 +110,6 @@ public class RemoteInterpreterServer
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
-  private String callbackHost;
-  private int callbackPort;
-  private String host;
   private int port;
   protected TThreadPoolServer server;
 
@@ -135,15 +131,7 @@ public class RemoteInterpreterServer
     this.port = port;
 
     processor = new RemoteInterpreterService.Processor<>(this);
-    TServerSocket serverTransport;
-    if (null == callbackHost) {
-      // Dev Interpreter
-      serverTransport = new TServerSocket(port);
-    } else {
-      this.port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-      this.host = RemoteInterpreterUtils.findAvailableHostname();
-      serverTransport = new TServerSocket(this.port);
-    }
+    TServerSocket serverTransport = new TServerSocket(port);
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
@@ -152,36 +140,6 @@ public class RemoteInterpreterServer
 
   @Override
   public void run() {
-    if (null != callbackHost) {
-      new Thread(new Runnable() {
-        boolean interrupted = false;
-        @Override
-        public void run() {
-          while (!interrupted && !server.isServing()) {
-            try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e) {
-              interrupted = true;
-            }
-          }
-
-          if (!interrupted) {
-            CallbackInfo callbackInfo = new CallbackInfo(host, port);
-            try {
-              RemoteInterpreterUtils
-                  .registerInterpreter(callbackHost, callbackPort, callbackInfo);
-            } catch (TException e) {
-              logger.error("Error while registering interpreter: {}", callbackInfo, e);
-              try {
-                shutdown();
-              } catch (TException e1) {
-                logger.warn("Exception occurs while shutting down", e1);
-              }
-            }
-          }
-        }
-      }).start();
-    }
     logger.info("Starting remote interpreter server on port {}", port);
     server.serve();
   }
@@ -228,15 +186,12 @@ public class RemoteInterpreterServer
 
 
   public static void main(String[] args)
-      throws TTransportException, InterruptedException, Exception {
-    String callbackHost = null;
+      throws TTransportException, InterruptedException {
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     if (args.length > 0) {
-      callbackHost = args[0];
-      port = Integer.parseInt(args[1]);
+      port = Integer.parseInt(args[0]);
     }
-    RemoteInterpreterServer remoteInterpreterServer =
-        new RemoteInterpreterServer(callbackHost, port);
+    RemoteInterpreterServer remoteInterpreterServer = new RemoteInterpreterServer(port);
     remoteInterpreterServer.start();
     remoteInterpreterServer.join();
     System.exit(0);

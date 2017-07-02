@@ -80,7 +80,6 @@
     <module>scio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
-    <module>zeppelin-cluster/yarn</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-distribution</module>
   </modules>
@@ -268,38 +267,6 @@
         <version>${shiro.version}</version>
       </dependency>
 
-      <!-- Apache Hadoop -->
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-common</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-hdfs</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-api</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-common</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-client</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-
-
       <!-- Test libraries -->
       <dependency>
         <groupId>junit</groupId>
@@ -356,6 +323,7 @@
         <version>${powermock.version}</version>
         <scope>test</scope>
       </dependency>
+
     </dependencies>
   </dependencyManagement>
 
