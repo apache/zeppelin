@@ -186,11 +186,12 @@ public class RemoteInterpreter extends Interpreter {
               port);
         } else {
           String clusterManagerKey = getProperty(Constants.ZEPPELIN_CLUSTER_MANAGER_KEY);
-          ClusterManager clusterManager =
-              clusterManagerFactory.getClusterManager(clusterManagerKey);
+          ClusterManager clusterManager;
 
           //TODO(jl): Fix the parameter list to unify all methods
-          if (null != clusterManager) {
+          if (null != clusterManagerFactory
+              && null !=
+              (clusterManager = clusterManagerFactory.getClusterManager(clusterManagerKey))) {
             remoteProcess = clusterManager
                 .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
                     connectTimeout, remoteInterpreterProcessListener, applicationEventListener,
