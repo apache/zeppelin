@@ -72,6 +72,32 @@
     </dependency>
 
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-python</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.sf.py4j</groupId>
+          <artifactId>py4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-python</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>net.sf.py4j</groupId>
+          <artifactId>py4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -93,12 +119,6 @@
       <artifactId>spark-hive_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
     </dependency>
 
     <!-- Aether :: maven dependency resolution -->
@@ -355,6 +375,12 @@
             <exclude>**/SparkRInterpreterTest.java</exclude>
             <exclude>${pyspark.test.exclude}</exclude>
           </excludes>
+          <environmentVariables>
+            <!-- local pyspark execution needs PYTHONPATH otherwise python daemon in executor side will fail
+            e.g. sc.range(1,10).sum()
+            -->
+            <PYTHONPATH>../interpreter/spark/pyspark/pyspark.zip:../interpreter/spark/pyspark/py4j-${spark.py4j.version}-src.zip:../interpreter/lib/python</PYTHONPATH>
+          </environmentVariables>
         </configuration>
       </plugin>
 
@@ -379,6 +405,19 @@
               <resource>reference.conf</resource>
             </transformer>
           </transformers>
+
+          <relocations>
+            <!-- shade guava and proto-buf, because it might conflict with those of spark -->
+            <relocation>
+              <pattern>com.google</pattern>
+              <shadedPattern>org.apache.zeppelin.com.google</shadedPattern>
+            </relocation>
+            <!-- shade netty, because it might conflict with that of spark-->
+            <relocation>
+              <pattern>io.netty</pattern>
+              <shadedPattern>org.apache.zeppelin.io.netty</shadedPattern>
+            </relocation>
+          </relocations>
         </configuration>
         <executions>
           <execution>

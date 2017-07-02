@@ -123,6 +123,10 @@ public abstract class BaseZeppelinContext {
     this.gui = o;
   }
 
+  public GUI getGui() {
+    return gui;
+  }
+
   private void restartInterpreter() {
   }
 

@@ -29,7 +29,7 @@ import java.io.IOException;
  */
 public class InterpreterOutputStream extends LogOutputStream {
   private Logger logger;
-  InterpreterOutput interpreterOutput;
+  volatile InterpreterOutput interpreterOutput;
   boolean ignoreLeadingNewLinesFromScalaReporter = false;
 
   public InterpreterOutputStream(Logger logger) {
@@ -78,7 +78,7 @@ public class InterpreterOutputStream extends LogOutputStream {
 
   @Override
   protected void processLine(String s, int i) {
-    logger.debug("Interpreter output:" + s);
+//    logger.debug("Interpreter output:" + s);
   }
 
   @Override
