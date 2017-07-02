@@ -36,7 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * This class handle to create and initializing actual clustermanagers. It uses reflection and
+ * URLClassloader to load and make an object of cluster manager.
  */
 public class ClusterManagerFactory {
 
