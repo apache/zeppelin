@@ -53,6 +53,9 @@ public class MockInterpreterA extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    if (property.containsKey("progress")) {
+      context.setProgress(Integer.parseInt(getProperty("progress")));
+    }
     try {
       Thread.sleep(Long.parseLong(st));
       this.lastSt = st;

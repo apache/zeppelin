@@ -62,7 +62,9 @@ public class InterpreterContext {
   private String className;
   private RemoteEventClientWrapper client;
   private RemoteWorksController remoteWorksController;
+  private final Map<String, Integer> progressMap;
 
+  // visible for testing
   public InterpreterContext(String noteId,
                             String paragraphId,
                             String replName,
@@ -77,7 +79,7 @@ public class InterpreterContext {
                             InterpreterOutput out
                             ) {
     this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
-        config, gui, angularObjectRegistry, resourcePool, runners, out, null);
+        config, gui, angularObjectRegistry, resourcePool, runners, out, null, null);
   }
 
   public InterpreterContext(String noteId,
@@ -92,7 +94,8 @@ public class InterpreterContext {
                             ResourcePool resourcePool,
                             List<InterpreterContextRunner> runners,
                             InterpreterOutput out,
-                            RemoteWorksController remoteWorksController
+                            RemoteWorksController remoteWorksController,
+                            Map<String, Integer> progressMap
                             ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
@@ -107,6 +110,7 @@ public class InterpreterContext {
     this.runners = runners;
     this.out = out;
     this.remoteWorksController = remoteWorksController;
+    this.progressMap = progressMap;
   }
 
   public InterpreterContext(String noteId,
@@ -122,10 +126,11 @@ public class InterpreterContext {
                             List<InterpreterContextRunner> contextRunners,
                             InterpreterOutput output,
                             RemoteWorksController remoteWorksController,
-                            RemoteInterpreterEventClient eventClient) {
+                            RemoteInterpreterEventClient eventClient,
+                            Map<String, Integer> progressMap) {
     this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
         config, gui, angularObjectRegistry, resourcePool, contextRunners, output,
-        remoteWorksController);
+        remoteWorksController, progressMap);
     this.client = new RemoteEventClient(eventClient);
   }
 
@@ -195,5 +200,17 @@ public class InterpreterContext {
 
   public InterpreterOutput out() {
     return out;
+  }
+
+  /**
+   * Set progress of paragraph manually
+   * @param n integer from 0 to 100
+   */
+  public void setProgress(int n) {
+    if (progressMap != null) {
+      n = Math.max(n, 0);
+      n = Math.min(n, 100);
+      progressMap.put(paragraphId, new Integer(n));
+    }
   }
 }
