@@ -31,7 +31,7 @@ public class Util {
   private static final String GIT_PROPERTIES_COMMIT_ID_KEY = "git.commit.id.abbrev";
   private static final String GIT_PROPERTIES_COMMIT_TS_KEY = "git.commit.time";
   private static final String ZEPPELIN_NOTE_FILE_EXTENSION = "zpln";
-  private static final int MAX_ZEPPELIN_NOTE_FILE_LENGTH = 127;
+  private static final int MAX_ZEPPELIN_NOTE_FILE_LENGTH = 100;
   private static final String DEFAULT_NOTE_FILE_NAME = "note.zpln";
 
   private static Properties projectProperties;
