@@ -38,7 +38,8 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import static org.apache.hadoop.yarn.api.records.FinalApplicationStatus.SUCCEEDED;
 
 /**
- *
+ * This class register its host and port to yarn application information. Those information will be
+ * used in RemoteInterpreterYarnProcess. Rest of them has a same function of RemoteInterpreterServer
  */
 public class YarnRemoteInterpreterServer extends RemoteInterpreterServer {
   private static final Logger logger = LoggerFactory.getLogger(YarnRemoteInterpreterServer.class);

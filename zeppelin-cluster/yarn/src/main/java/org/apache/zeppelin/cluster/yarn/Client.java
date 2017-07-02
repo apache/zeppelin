@@ -39,7 +39,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
 /**
- *
+ * This class is in charge of making yarn client and implementing cluster manager.
  */
 public class Client extends ClusterManager {
 

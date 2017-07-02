@@ -27,7 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Abstract class for interpreter process
+ * Abstract class for interpreter process. This class actually makes InterpreterProcess for yarn and
+ * pass actual data to interpreter by calling thrift methods.
  */
 public abstract class RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
