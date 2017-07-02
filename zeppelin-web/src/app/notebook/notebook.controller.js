@@ -443,6 +443,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
       $scope.note.paragraphs[0].focus = true
     }
+
+    $rootScope.pageTitle = $scope.note.name
+
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel)
   }
 
