@@ -63,8 +63,8 @@ bin\zeppelin.cmd
 
 <div class="row">
   <div class="col-md-12" >
-      <a data-lightbox="compiler" href="/assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
-        <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
+      <a data-lightbox="compiler" href="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
+        <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
       </a>
 
   </div>

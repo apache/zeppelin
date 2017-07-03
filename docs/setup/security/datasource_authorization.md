@@ -35,14 +35,14 @@ In this case, you can add your credential information to Apache Zeppelin and use
 ## How to save the credential information?
 You can add new credentials in the dropdown menu for your data source which can be passed to interpreters. 
 
-<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/credential_tab.png" width="180px"/>
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/credential_tab.png" width="180px"/>
 
 **Entity** can be the key that distinguishes each credential sets.(We suggest that the convention of the **Entity** is `[Interpreter Group].[Interpreter Name]`.)
 Please see [what is interpreter group](../../usage/interpreter/overview.html#what-is-interpreter-group) for the detailed information.
 
 Type **Username & Password** for your own credentials. ex) Mysql user & password of the JDBC Interpreter.
 
-<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/add_credential.png" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/add_credential.png" />
 
 The credentials saved as per users defined in `conf/shiro.ini`.
 If you didn't activate [shiro authentication in Apache Zeppelin](./shiro_authentication.html), your credential information will be saved as `anonymous`.

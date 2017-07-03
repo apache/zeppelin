@@ -36,12 +36,12 @@ To create text input form, use `${formName}` templates.
 
 for example
 
-<img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" width="450px" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input.png" width="450px" />
 
 
 Also you can provide default value, using `${formName=defaultValue}`.
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
 ### Select form
 
@@ -49,11 +49,11 @@ To create select form, use `${formName=defaultValue,option1|option2...}`
 
 for example
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_select.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_select.png" />
 
 Also you can separate option's display name and value, using `${formName=defaultValue,option1(DisplayName)|option2(DisplayName)...}`
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
 The paragraph will be automatically run after you change your selection by default.
 But in case you have multiple types dynamic form in one paragraph, you might want to run the paragraph after changing all the selections.
@@ -61,17 +61,17 @@ You can control this by unchecking the below **Run on selection change** option 
 
 Even if you uncheck this option, still you can run it by pressing `Enter`.
 
-<img src="/assets/themes/zeppelin/img/screenshots/selectForm-checkbox.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/selectForm-checkbox.png" />
 
 ### Checkbox form
 
 For multi-selection, you can create a checkbox form using `${checkbox:formName=defaultValue1|defaultValue2...,option1|option2...}`. The variable will be substituted by a comma-separated string based on the selected items. For example:
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox.png">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_checkbox.png">
 
 You can specify the delimiter using `${checkbox(delimiter):formName=...}`:
 
-<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox_delimiter.png">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_checkbox_delimiter.png">
 
 Like [select form](#select-form), the paragraph will be automatically run after you change your selection by default.
 But in case you have multiple types dynamic form in one paragraph, you might want to run the paragraph after changing all the selections.
@@ -79,7 +79,7 @@ You can control this by unchecking the below **Run on selection change** option 
 
 Even if you uncheck this option, still you can run it by pressing `Enter`.
 
-<img src="/assets/themes/zeppelin/img/screenshots/selectForm-checkbox.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/selectForm-checkbox.png" />
 
 ## Creates Programmatically
 
@@ -106,7 +106,7 @@ print("Hello "+z.input("name"))
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
 ### Text input form with default value
 <div class="codetabs">
@@ -127,7 +127,7 @@ print("Hello "+z.input("name", "sun"))
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
 ### Select form
 <div class="codetabs">
@@ -160,7 +160,7 @@ print("Hello "+z.select("day", [("1","mon"),
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
 
 #### Checkbox form
 <div class="codetabs">
@@ -183,4 +183,4 @@ print("Hello "+ " and ".join(z.checkbox("fruit", options, ["apple"])))
 
     </div>
 </div>
-<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />

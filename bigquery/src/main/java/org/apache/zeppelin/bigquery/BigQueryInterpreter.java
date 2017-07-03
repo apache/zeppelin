@@ -99,7 +99,7 @@ import java.util.NoSuchElementException;
 
 public class BigQueryInterpreter extends Interpreter {
 
-  private Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
+  private static Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static Bigquery service = null;
@@ -109,6 +109,7 @@ public class BigQueryInterpreter extends Interpreter {
   static final String PROJECT_ID = "zeppelin.bigquery.project_id";
   static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
   static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
+  static final String LEGACY_SQL = "zeppelin.bigquery.use_legacy_sql";
 
   private static String jobId = null;
   private static String projectId = null;
@@ -245,9 +246,11 @@ public class BigQueryInterpreter extends Interpreter {
     String projId = getProperty(PROJECT_ID);
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
+    String legacySql = getProperty(LEGACY_SQL);
+    boolean useLegacySql = legacySql == null ? true : Boolean.parseBoolean(legacySql);
     Iterator<GetQueryResultsResponse> pages;
     try {
-      pages = run(sql, projId, wTime, maxRows);
+      pages = run(sql, projId, wTime, maxRows, useLegacySql);
     } catch ( IOException ex ) {
       logger.error(ex.getMessage());
       return new InterpreterResult(Code.ERROR, ex.getMessage());
@@ -263,14 +266,19 @@ public class BigQueryInterpreter extends Interpreter {
   }
 
   //Function to run the SQL on bigQuery service
-  public static Iterator<GetQueryResultsResponse> run(final String queryString, 
-    final String projId, final long wTime, final long maxRows) 
+  public static Iterator<GetQueryResultsResponse> run(final String queryString,
+    final String projId, final long wTime, final long maxRows, boolean useLegacySql)
       throws IOException {
     try {
-      QueryResponse query = service.jobs().query(
-          projId,
-          new QueryRequest().setTimeoutMs(wTime).setQuery(queryString).setMaxResults(maxRows))
-          .execute();
+      logger.info("Use legacy sql: {}", useLegacySql);
+      QueryResponse query;
+      query = service
+          .jobs()
+          .query(
+              projId,
+              new QueryRequest().setTimeoutMs(wTime)
+                  .setUseLegacySql(useLegacySql).setQuery(queryString)
+                  .setMaxResults(maxRows)).execute();
       jobId = query.getJobReference().getJobId();
       projectId = query.getJobReference().getProjectId();
       GetQueryResults getRequest = service.jobs().getQueryResults(

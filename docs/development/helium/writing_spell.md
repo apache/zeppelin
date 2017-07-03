@@ -47,14 +47,14 @@ Helium Spell works like [Helium Visualization](./writing_visualization_basic.htm
 
 Find a spell what you want to use in `/helium` package and click `Enable` button.
 
-<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_spell_registered.png" />
+<img class="img-responsive" style="width:70%" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/writing_spell_registered.png" />
 
 ### 2. Using
 
 Spell works like an interpreter. Use the `MAGIC` value to execute spell in a note. (you might need to refresh after enabling)
 For example, Use `%echo` for the Echo Spell.
 
-<img class="img-responsive" style="width:70%" src="/assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
+<img class="img-responsive" style="width:70%" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/writing_spell_using.gif" />
 
 
 ## Write a new Spell

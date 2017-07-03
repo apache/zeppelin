@@ -51,7 +51,8 @@ const requiredModules = [
   'ui.grid.cellNav', 'ui.grid.pinning',
   'ui.grid.grouping',
   'ui.grid.emptyBaseLayer',
-  'ui.grid.resizeColumns', 'ui.grid.moveColumns',
+  'ui.grid.resizeColumns',
+  'ui.grid.moveColumns',
   'ui.grid.pagination',
   'ui.grid.saveState',
 ]
