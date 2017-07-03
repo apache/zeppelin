@@ -75,6 +75,7 @@ The role of registered interpreters, settings and interpreters group are describ
       "className": "org.apache.zeppelin.spark.SparkInterpreter",
       "properties": {
         "spark.executor.memory": {
+          "name": "spark.executor.memory",
           "defaultValue": "1g",
           "description": "Executor memory per worker instance. ex) 512m, 32g",
           "type": "string"
@@ -93,6 +94,7 @@ The role of registered interpreters, settings and interpreters group are describ
       "className": "org.apache.zeppelin.spark.SparkSqlInterpreter",
       "properties": {
         "zeppelin.spark.maxResult": {
+          "name": "zeppelin.spark.maxResult",
           "defaultValue": "1000",
           "description": "Max number of Spark SQL result to display.",
           "type": "number"
@@ -162,7 +164,7 @@ The role of registered interpreters, settings and interpreters group are describ
           "type": "number"
         },
         "spark.executor.memory": {
-          "name": "",
+          "name": "spark.executor.memory",
           "value": "1g",
           "type": "string"
         }
