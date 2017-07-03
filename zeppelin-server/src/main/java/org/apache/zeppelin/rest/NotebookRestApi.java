@@ -332,14 +332,16 @@ public class NotebookRestApi {
   public Response createNote(String message) throws IOException {
     String user = SecurityUtils.getPrincipal();
     LOG.info("Create new note by JSON {}", message);
-    NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
     AuthenticationInfo subject = new AuthenticationInfo(user);
     Note note = notebook.createNote(subject);
-    List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
-    if (initialParagraphs != null) {
-      for (NewParagraphRequest paragraphRequest : initialParagraphs) {
-        Paragraph p = note.addNewParagraph(subject);
-        initParagraph(p, paragraphRequest, user);
+    NewNoteRequest request = gson.fromJson(message, NewNoteRequest.class);
+    if (request != null) {
+      List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
+      if (initialParagraphs != null) {
+        for (NewParagraphRequest paragraphRequest : initialParagraphs) {
+          Paragraph p = note.addNewParagraph(subject);
+          initParagraph(p, paragraphRequest, user);
+        }
       }
     }
     note.addNewParagraph(subject); // add one paragraph to the last
