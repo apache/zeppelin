@@ -105,7 +105,7 @@
       },
       "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
-        "defaultValue": false,
+        "defaultValue": "true",
         "description": "Whether display app info",
         "type": "checkbox"
       }
@@ -188,7 +188,7 @@
     "name": "pyspark3",
     "className": "org.apache.zeppelin.livy.LivyPySpark3Interpreter",
     "properties": {
-    },    
+    },
     "option": {
       "remote": true,
       "port": -1,
@@ -202,7 +202,7 @@
       "language": "python",
       "editOnDblClick": false
     }
-  },  
+  },
   {
     "group": "livy",
     "name": "sparkr",
