@@ -49,6 +49,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -766,6 +767,20 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     repo.save(this, subject);
   }
 
+  public void rename(AuthenticationInfo subject) throws IOException {
+    Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
+    stopDelayedPersistTimer();
+    snapshotAngularObjectRegistry(subject.getUser());
+    index.updateIndexDoc(this);
+    
+    FileInfo currentFile = this.getFileInfo().copy();
+    FileInfo newFile = FileInfo.createInstance();
+    // assuming in the same folder
+    newFile.setFolder(currentFile.getFolder());
+    newFile.setFile(Util.convertTitleToFilename(this.getName()));
+    repo.rename(currentFile, newFile, subject);
+  }
+  
   /**
    * Persist this note with maximum delay.
    */

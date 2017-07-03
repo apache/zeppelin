@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.notebook.FileInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -129,6 +130,17 @@ public interface NotebookRepo {
    * @param subject
    */
   @ZeppelinApi public void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
+  
+  /**
+   * update note file name.
+   *
+   * @param oldFile
+   * @param newFile
+   * @param subject
+   * @throws IOException TODO
+   */
+  @ZeppelinApi public void rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject) 
+      throws IOException;
 
   /**
    * Represents the 'Revision' a point in life of the notebook

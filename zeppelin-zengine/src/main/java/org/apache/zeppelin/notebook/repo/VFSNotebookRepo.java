@@ -125,17 +125,14 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     List<NoteInfo> infos = new LinkedList<>();
     for (FileObject f : children) {
-      String fileName = f.getName().getBaseName();
-      if (f.isHidden()
-          || fileName.startsWith(".")
-          || fileName.startsWith("#")
-          || fileName.startsWith("~")) {
+      
+      if (isHidden(f)) {
         // skip hidden, temporary files
         continue;
       }
 
       if (!isDirectory(f)) {
-        // currently single note is saved like, [NOTE_ID]/note.json.
+        // currently single note is saved like, [NOTE_ID]/note.json or [NOTE_ID]/title.zpln.
         // so it must be a directory
         continue;
       }
@@ -155,6 +152,24 @@ public class VFSNotebookRepo implements NotebookRepo {
     return infos;
   }
 
+  private boolean isHidden(FileObject file) throws FileSystemException {
+    String fileName = file.getName().getBaseName();
+    return file.isHidden()
+        || fileName.startsWith(".")
+        || fileName.startsWith("#")
+        || fileName.startsWith("~");
+  }
+  
+  private List<FileObject> filterHiddenFiles(FileObject[] files) throws FileSystemException {
+    List<FileObject> filteredFiles = Lists.newArrayList();
+    for (FileObject f: files) {
+      if (!isHidden(f)) {
+        filteredFiles.add(f);
+      }
+    }
+    return filteredFiles;
+  }
+  
   private Note getNote(FileObject noteDir) throws IOException {
     FileObject noteFile = getNoteFromDir(noteDir);
 
@@ -193,10 +208,9 @@ public class VFSNotebookRepo implements NotebookRepo {
       fileInfo = FileInfo.createInstance();
       note.setFileInfo(fileInfo);
     }
-    String storageName = this.getClass().getName();
-    fileInfo.setFileName(storageName, noteFile.getName().getBaseName());
-    fileInfo.setForceRename(false);
-    LOG.info("FileInfo when get note {}", note.getFileInfo());
+    fileInfo.setFile(noteFile.getName().getBaseName());
+    // TODO(khalid): integrate it with folder structure
+    fileInfo.setFolder(note.getId());
   }
   
   private FileObject getNoteFromDir(FileObject noteDir) throws IOException {
@@ -206,11 +220,22 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     // enforce single file in directory
     FileObject[] files = noteDir.getChildren();
+    
+    FileObject noteFile;
     if (files.length != 1) {
-      throw new IOException(
-          "note folder " + noteDir.getName().toString() + " contains more than one file or empty");
+      List<FileObject> filteredFiles = filterHiddenFiles(files);
+      if (filteredFiles.isEmpty()) {
+        throw new IOException(
+            "note folder " + noteDir.getName().toString() + " is empty");
+      }
+      if (filteredFiles.size() > 1)
+        throw new IOException(
+            "note folder " + noteDir.getName().toString() + " contains more than one file");
+      noteFile = filteredFiles.get(0);
+    } else {
+      noteFile = files[0];
     }
-    FileObject noteFile = files[0];
+    
 
     if (!noteFile.exists()) {
       throw new IOException(noteFile.getName().toString() + " not found");
@@ -257,16 +282,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     String json = note.toJson();
 
-    FileObject rootDir = getRootDir();
-
-    FileObject noteDir = rootDir.resolveFile(note.getId(), NameScope.CHILD);
-
-    if (!noteDir.exists()) {
-      noteDir.createFolder();
-    }
-    if (!isDirectory(noteDir)) {
-      throw new IOException(noteDir.getName().toString() + " is not a directory");
-    }
+    FileObject noteDir = getNoteDir(note.getId());
 
     FileObject noteJson = noteDir.resolveFile(".note.zpln", NameScope.CHILD);
     
@@ -275,42 +291,59 @@ public class VFSNotebookRepo implements NotebookRepo {
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
     out.close();
     
-    setFileName(note, noteJson, noteDir);
+    String filename = note.getFileInfo().getFile();
+    if (StringUtils.isBlank(filename)) {
+      // when creating note
+      filename = Util.convertTitleToFilename(note.getName());
+    }
+    noteJson.moveTo(noteDir.resolveFile(filename, NameScope.CHILD));
+    note.getFileInfo().setFile(filename);
   }
 
-  private synchronized void setFileName(Note note, FileObject noteFile, FileObject noteDir)
-      throws IOException {
-    FileInfo fileInfo = note.getFileInfo();
-    boolean newFile = false;
-    if (FileInfo.isEmpty(fileInfo)) {
-      fileInfo = FileInfo.createInstance();
-      note.setFileInfo(fileInfo);
-      newFile = true;
+  private FileObject getNoteDir(String dirPath) throws IOException {
+    FileObject rootDir = getRootDir();
+
+    FileObject noteDir = rootDir.resolveFile(dirPath, NameScope.CHILD);
+
+    if (!noteDir.exists()) {
+      noteDir.createFolder();
+    }
+    if (!isDirectory(noteDir)) {
+      throw new IOException(noteDir.getName().toString() + " is not a directory");
+    }
+    return noteDir;
+  }
+  
+  private FileObject getNoteFile(FileObject noteDir, String filename) throws IOException {
+    FileObject noteFile = noteDir.resolveFile(filename, NameScope.CHILD);
+    
+    if (isDirectory(noteFile)) {
+      throw new IOException(noteFile.getName().toString() + " is a directory");
     }
     
-    String storageName = this.getClass().getName();
-    String currentFileName = note.getFileInfo().getFileName(storageName);
-    if (fileInfo.isForceRename()) {
-      String newFileName = Util.convertTitleToFilename(note.getName());
-      noteFile.moveTo(noteDir.resolveFile(newFileName, NameScope.CHILD));
-      noteDir.resolveFile(currentFileName, NameScope.CHILD).delete();
-      fileInfo.setForceRename(false);
-      fileInfo.setFileName(storageName, newFileName);
-    } else {
-      if (newFile) {
-        currentFileName = Util.convertTitleToFilename(note.getName());
-        FileObject newNote = noteDir.resolveFile(currentFileName, NameScope.CHILD);
+    return noteFile;
+  }
+  
+  @Override
+  public void rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
+      throws IOException {
+    // currently assuming old and new files are in same folder
+    FileObject noteDir = getNoteDir(newFile.getFolder());
 
-        if (!newNote.exists()) {
-          newNote.createFile();
-        }
-        newNote.close();
-        fileInfo.setForceRename(false);
-        fileInfo.setFileName(storageName, currentFileName);
-      }
-      noteFile.moveTo(noteDir.resolveFile(currentFileName, NameScope.CHILD));
+    FileObject oldNoteFile = getNoteFile(noteDir, oldFile.getFile());
+    FileObject newNoteFile = getNoteFile(noteDir, newFile.getFile());
+    
+    if (!oldNoteFile.exists()) {
+      throw new IOException(oldNoteFile.getName().toString() + " doesn't exist");
     }
-    LOG.info("FileInfo after file save {}", note.getFileInfo());
+    
+    if (!newNoteFile.exists()) {
+      newNoteFile.createFile();
+    }
+    
+    oldNoteFile.moveTo(newNoteFile);
+    
+    LOG.info("File {} was renamed into {}", oldFile.getFile(), newFile.getFile());
   }
   
   @Override

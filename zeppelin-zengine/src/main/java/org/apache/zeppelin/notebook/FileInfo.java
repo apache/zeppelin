@@ -16,11 +16,7 @@
  */
 package org.apache.zeppelin.notebook;
 
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.commons.lang.StringUtils;
-
-import com.google.common.collect.Maps;
 
 /**
  * Represents note file info for storage 
@@ -28,36 +24,33 @@ import com.google.common.collect.Maps;
  */
 public class FileInfo {
 
-  private ConcurrentMap<String, String> fileName;
-  private boolean forceRename;
+  private String folder;
+  private String fileName;
   public static final FileInfo EMPTY = new FileInfo();
   
   private FileInfo() {
-    fileName = Maps.newConcurrentMap();
-    forceRename = false;
+    folder = StringUtils.EMPTY;
+    fileName = StringUtils.EMPTY;
   }
   
   public static FileInfo createInstance() {
     return new FileInfo();
   }
   
-  public String getFileName(String storageName) {
-    if (!fileName.containsKey(storageName)) {
-      return StringUtils.EMPTY;
-    }
-    return fileName.get(storageName);
+  public String getFile() {
+    return fileName;
   }
   
-  public String setFileName(String storageName, String filename) {
-    return fileName.put(storageName, filename);
+  public String setFile(String filename) {
+    return this.fileName = filename; 
   }
   
-  public boolean isForceRename() {
-    return forceRename;
+  public String getFolder() {
+    return folder;
   }
   
-  public void setForceRename(boolean triggerRename) {
-    forceRename = triggerRename;
+  public String setFolder(String path) {
+    return this.folder = path; 
   }
   
   public static boolean isEmpty(Object obj) {
@@ -65,14 +58,21 @@ public class FileInfo {
       return true;
     }
     FileInfo fi = (FileInfo) obj;
-    return (fi.fileName.isEmpty()) || fi == EMPTY;
+    return fi == EMPTY;
+  }
+  
+  public FileInfo copy() {
+    FileInfo copy = createInstance();
+    copy.setFile(this.getFile());
+    copy.setFolder(this.getFolder());
+    return copy;
   }
   
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
-    str.append("FileInfo = [ fileName: ").append(fileName.toString())
-      .append(", ").append("forceRename: ").append(forceRename)
+    str.append("FileInfo = [ file: ").append(fileName.toString())
+    .append(", folder: ").append(folder.toString())
       .append(" ] ");
     
     return str.toString();

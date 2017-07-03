@@ -939,11 +939,9 @@ public class NotebookServer extends WebSocketServlet
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setName(name);
-      // to trigger note file rename/conversion
-      note.getFileInfo().setForceRename(true);
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note.persist(subject);
+      note.rename(subject);
       broadcastNote(note);
       broadcastNoteList(subject, userAndRoles);
     }
@@ -1032,7 +1030,7 @@ public class NotebookServer extends WebSocketServlet
         }
         note.setName(noteName);
         // to trigger note file rename/conversion
-        note.getFileInfo().setForceRename(true);
+        //note.getFileInfo().setForceRename(true);
       }
 
       note.persist(subject);
