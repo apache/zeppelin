@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -30,6 +31,7 @@ import java.util.Properties;
 
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -41,8 +43,10 @@ import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
+import org.apache.zeppelin.notebook.FileInfo;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -50,12 +54,14 @@ import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 
 public class VFSNotebookRepoTest implements JobListenerFactory {
@@ -71,6 +77,8 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
 
   private File mainZepDir;
   private File mainNotebookDir;
+  
+  private static final String TEST_NOTE_ID = "2A94M5J2Z";
 
   @Before
   public void setUp() throws Exception {
@@ -180,6 +188,83 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     // restaure
     notebookRepo.updateSettings(ImmutableMap.of("Notebook Path", originalDir), subject);
     FileUtils.deleteQuietly(tmpDir);
+  }
+  
+  @Test
+  public void testGetRenameNote() throws IOException {
+    String noteDir = Joiner.on(File.separator).join(mainNotebookDir, TEST_NOTE_ID);
+    FileUtils.copyDirectory(
+        new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID)),
+        new File(noteDir));
+    
+    // confirm original note.json
+    List<File> files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
+        TrueFileFilter.INSTANCE);
+    assertThat(files).isNotEmpty();
+    assertThat(files.size()).isEqualTo(1);
+    String filepath = Joiner.on(File.separator).join(noteDir, "note.json");
+    File file = FileUtils.getFile(filepath);
+    assertThat(file.exists()).isTrue();
+    
+    List<NoteInfo> lst = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    
+    assertThat(lst.size()).isEqualTo(1);
+    assertThat(lst.get(0).getId()).isEqualTo(TEST_NOTE_ID);
+
+    // load note and verify
+    Note note = notebookRepo.get(TEST_NOTE_ID, AuthenticationInfo.ANONYMOUS);
+    assertThat(note).isNotNull();
+    assertThat(note.getId()).isEqualTo(TEST_NOTE_ID);
+    assertThat(note.getName()).isEqualTo("Sample note - excerpt from Zeppelin Tutorial");
+    assertThat(note.getFileInfo().getFile()).isEqualTo("note.json");
+    assertThat(note.getFileInfo().getFolder()).isEqualTo(TEST_NOTE_ID);
+    
+    String newTitle = "Sample note - advanced example"; 
+    String newNoteName = Util.convertTitleToFilename(newTitle);
+    
+    // rename
+    FileInfo newFileInfo = FileInfo.createInstance();
+    newFileInfo.setFolder(note.getFileInfo().getFolder());
+    newFileInfo.setFile(newNoteName);
+    notebookRepo.rename(note.getFileInfo(), newFileInfo,  AuthenticationInfo.ANONYMOUS);
+    
+    // check if file changed
+    files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
+        TrueFileFilter.INSTANCE);
+    assertThat(files).isNotEmpty();
+    assertThat(files.size()).isEqualTo(1);
+    filepath = Joiner.on(File.separator).join(noteDir, newNoteName);
+    file = FileUtils.getFile(filepath);
+    assertThat(file.exists()).isTrue();
+        
+    // reload note
+    note = notebookRepo.get(TEST_NOTE_ID, AuthenticationInfo.ANONYMOUS);
+    assertThat(note).isNotNull();
+    assertThat(note.getId()).isEqualTo(TEST_NOTE_ID);
+    assertThat(note.getName()).isEqualTo("Sample note - excerpt from Zeppelin Tutorial");
+    assertThat(note.getFileInfo().getFile()).isEqualTo(newNoteName);
+    assertThat(note.getFileInfo().getFolder()).isEqualTo(TEST_NOTE_ID);
+    
+    // change name and persist
+    note.setName(newTitle);
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+    
+    // check that one file and unchanged
+    files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
+        TrueFileFilter.INSTANCE);
+    assertThat(files).isNotEmpty();
+    assertThat(files.size()).isEqualTo(1);
+    filepath = Joiner.on(File.separator).join(noteDir, newNoteName);
+    file = FileUtils.getFile(filepath);
+    assertThat(file.exists()).isTrue();
+        
+    // reload note
+    note = notebookRepo.get(TEST_NOTE_ID, AuthenticationInfo.ANONYMOUS);
+    assertThat(note).isNotNull();
+    assertThat(note.getId()).isEqualTo(TEST_NOTE_ID);
+    assertThat(note.getName()).isEqualTo(newTitle);
+    assertThat(note.getFileInfo().getFile()).isEqualTo(newNoteName);
+    assertThat(note.getFileInfo().getFolder()).isEqualTo(TEST_NOTE_ID);
   }
 
   class NotebookWriter implements Runnable {
