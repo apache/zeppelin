@@ -1004,7 +1004,6 @@ a.anchorjs-link:hover { text-decoration: none; }
 
   .tech_deploy .panel-content ._hover-text,
   .tech_deploy .panel-content:hover ._hover-text {
-
     font-size: 16px;
     padding: 10px;
   }
@@ -1464,7 +1463,8 @@ and (max-width: 631px) {
   margin-top: 65px;
 }
 
-.tech_deploy .panel-content:hover ._default-text {
+.tech_deploy .panel-content:hover ._default-text,
+ .tech_deploy .panel-content:active ._default-text {
   opacity: 0;
   -webkit-transform: scale(0.3);
   -moz-transform: scale(0.3);
@@ -1493,7 +1493,8 @@ and (max-width: 631px) {
   min-height: 200px;
 }
 
-.tech_deploy .panel-content:hover ._hover-text {
+.tech_deploy .panel-content:hover ._hover-text,
+ .tech_deploy .panel-content:active ._hover-text {
   opacity: 1;
   position: absolute;
   font-weight: 500;
@@ -1509,7 +1510,9 @@ and (max-width: 631px) {
 }
 
 .tech_deploy .panel-content:hover:before,
-.tech_deploy .panel-content:hover:after {
+.tech_deploy .panel-content:hover:after,
+ .tech_deploy .panel-content:active:before,
+ .tech_deploy .panel-content:active:after {
   content: '';
   position: absolute;
   top: 0.67em;
