@@ -246,10 +246,10 @@ public class InterpreterRestApi {
   }
 
   /**
-   * get the metainfo property value
+   * get metadata values
    */
   @GET
-  @Path("getmetainfos/{settingId}")
+  @Path("metadata/{settingId}")
   @ZeppelinApi
   public Response getMetaInfo(@Context HttpServletRequest req,
       @PathParam("settingId") String settingId) {
@@ -258,7 +258,7 @@ public class InterpreterRestApi {
       return new JsonResponse<>(Status.NOT_FOUND).build();
     }
     Map<String, String> infos = interpreterSetting.getInfos();
-    return new JsonResponse<>(Status.OK, "metainfo", infos).build();
+    return new JsonResponse<>(Status.OK, "metadata", infos).build();
   }
 
   /**

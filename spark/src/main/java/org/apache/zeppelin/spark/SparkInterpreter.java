@@ -188,8 +188,10 @@ public class SparkInterpreter extends Interpreter {
         String jobUrl = getJobUrl(jobId);
         String noteId = Utils.getNoteId(jobGroupId);
         String paragraphId = Utils.getParagraphId(jobGroupId);
-
-        if (uiEnabled != "false" && jobUrl != null) {
+        // Button visible if Spark UI property not set, set as invalid boolean or true
+        java.lang.Boolean showSparkUI =
+                uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
+        if (showSparkUI && jobUrl != null) {
           RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
           infos.put("jobUrl", jobUrl);
@@ -1046,9 +1048,17 @@ public class SparkInterpreter extends Interpreter {
     infos.put("url", sparkUrl);
     java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
             property.getProperty("spark.ui.enabled", "true"));
-    infos.put("sparkUiEnabled", uiEnabled.toString());
+    if (!uiEnabled) {
+      infos.put("message", "Spark UI disabled");
+    } else {
+      if (StringUtils.isNotBlank(sparkUrl)) {
+        infos.put("message", "Spark UI enabled");
+      } else {
+        infos.put("message", "No spark url defined");
+      }
+    }
     if (ctx != null && ctx.getClient() != null) {
-      logger.info("Sending metainfos to Zeppelin server: {}", infos.toString());
+      logger.info("Sending metadata to Zeppelin server: {}", infos.toString());
       getZeppelinContext().setEventClient(ctx.getClient());
       ctx.getClient().onMetaInfosReceived(infos);
     }

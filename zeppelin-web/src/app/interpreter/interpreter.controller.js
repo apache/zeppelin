@@ -754,21 +754,21 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.showSparkUI = function (settingId) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId)
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
       .success(function (data, status, headers, config) {
-        if (data.body === undefined || !data.body.url) {
-          if (data.body !== undefined && data.body.sparkUiEnabled === 'false') {
-            BootstrapDialog.alert({
-              message: 'Spark Web UI disabled. Set spark.ui.enabled property'
-            })
-          } else {
-            BootstrapDialog.alert({
-              message: 'No spark application running'
-            })
-          }
+        if (data.body === undefined) {
+          BootstrapDialog.alert({
+            message: 'No spark application running'
+          })
           return
         }
-        window.open(data.body.url, '_blank')
+        if (data.body.url) {
+          window.open(data.body.url, '_blank')
+        } else {
+          BootstrapDialog.alert({
+            message: data.body.message
+          })
+        }
       }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message)
       })

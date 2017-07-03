@@ -615,7 +615,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/getmetainfos/[setting ID]```</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/metadata/[setting ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>

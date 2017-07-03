@@ -26,7 +26,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -367,7 +366,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetMetaInfo() throws IOException {
+  public void testGetMetadataInfo() throws IOException {
     String rawRequest = "{\"name\":\"spark\",\"group\":\"spark\"," +
             "\"properties\":{\"propname\":\"propvalue\"}," +
             "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
@@ -381,10 +380,16 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     infos.put("key1", "value1");
     infos.put("key2", "value2");
     ZeppelinServer.notebook.getInterpreterSettingManager().get(settingId).setInfos(infos);
-    GetMethod get = httpGet("/interpreter/getmetainfos/" + settingId);
+    GetMethod get = httpGet("/interpreter/metadata/" + settingId);
     assertThat(get, isAllowed());
     JsonObject body = getBodyFieldFromResponse(get.getResponseBodyAsString());
     assertEquals(body.entrySet().size(), infos.size());
+    java.util.Map.Entry<String, JsonElement> item = body.entrySet().iterator().next();
+    if (item.getKey().equals("key1")) {
+      assertEquals(item.getValue().getAsString(), "value1");
+    } else {
+      assertEquals(item.getValue().getAsString(), "value2");
+    }
     get.releaseConnection();
   }
 
