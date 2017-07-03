@@ -298,6 +298,15 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
     noteJson.moveTo(noteDir.resolveFile(filename, NameScope.CHILD));
     note.getFileInfo().setFile(filename);
+    note.getFileInfo().setFolder(note.getId());
+    
+    if (StringUtils.equals(filename, note.getId() + "." + Util.getZeppelinNoteExtension())
+        && !StringUtils.equals(note.getId(), note.getName())) {
+      // rename new note without title
+      FileInfo newFileName = note.getFileInfo().copy();
+      newFileName.setFile(Util.convertTitleToFilename(note.getName()));
+      note.setFileInfo(rename(note.getFileInfo(), newFileName, subject));
+    }
   }
 
   private FileObject getNoteDir(String dirPath) throws IOException {
@@ -325,9 +334,10 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
   
   @Override
-  public void rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
-      throws IOException {
+  public synchronized FileInfo rename(FileInfo oldFile, FileInfo newFile,
+      AuthenticationInfo subject) throws IOException {
     // currently assuming old and new files are in same folder
+    LOG.info("entered renaming, oldFile is {}, newFile is {}", oldFile, newFile);
     FileObject noteDir = getNoteDir(newFile.getFolder());
 
     FileObject oldNoteFile = getNoteFile(noteDir, oldFile.getFile());
@@ -342,8 +352,9 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
     
     oldNoteFile.moveTo(newNoteFile);
-    
+
     LOG.info("File {} was renamed into {}", oldFile.getFile(), newFile.getFile());
+    return newFile;
   }
   
   @Override

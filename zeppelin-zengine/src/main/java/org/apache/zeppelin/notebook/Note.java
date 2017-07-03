@@ -778,7 +778,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     // assuming in the same folder
     newFile.setFolder(currentFile.getFolder());
     newFile.setFile(Util.convertTitleToFilename(this.getName()));
-    repo.rename(currentFile, newFile, subject);
+    this.setFileInfo(repo.rename(currentFile, newFile, subject));
   }
   
   /**

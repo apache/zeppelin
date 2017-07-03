@@ -133,14 +133,14 @@ public interface NotebookRepo {
   
   /**
    * update note file name.
-   *
    * @param oldFile
    * @param newFile
    * @param subject
+   * @return fileInfo
    * @throws IOException TODO
    */
-  @ZeppelinApi public void rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject) 
-      throws IOException;
+  @ZeppelinApi public FileInfo rename(FileInfo oldFile, FileInfo newFile, 
+      AuthenticationInfo subject) throws IOException;
 
   /**
    * Represents the 'Revision' a point in life of the notebook

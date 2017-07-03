@@ -247,9 +247,9 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
+  public FileInfo rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
       throws IOException {
     // Auto-generated method stub
-    
+    return FileInfo.EMPTY;
   }
 }
