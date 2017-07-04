@@ -396,6 +396,11 @@ table.table-shortcut {
  opacity: 0 !important;
 }
 
+#main .emacs-mode .ace_cursor {
+  background: #C0C0C0!important;
+  border: none !important;
+}
+
 /*
   Table Display CSS
 */
