@@ -20,6 +20,7 @@ package org.apache.zeppelin.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public class Credentials {
       fis.close();
 
       String json = sb.toString();
-      CredentialsInfoSaving info = gson.fromJson(json, CredentialsInfoSaving.class);
+      CredentialsInfoSaving info = CredentialsInfoSaving.fromJson(json);
       this.credentialsMap = info.credentialsMap;
     } catch (IOException e) {
       LOG.error("Error loading credentials file", e);

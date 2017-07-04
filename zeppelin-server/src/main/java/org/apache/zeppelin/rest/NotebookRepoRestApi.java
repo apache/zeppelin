@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 /**
@@ -52,7 +51,6 @@ public class NotebookRepoRestApi {
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoRestApi.class);
 
-  private Gson gson = new Gson();
   private NotebookRepoSync noteRepos;
   private NotebookServer notebookWsServer;
 
@@ -91,8 +89,7 @@ public class NotebookRepoRestApi {
   /**
    * Update a specific note repo.
    *
-   * @param message
-   * @param settingId
+   * @param payload
    * @return
    */
   @PUT
@@ -104,7 +101,7 @@ public class NotebookRepoRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     NotebookRepoSettingsRequest newSettings = NotebookRepoSettingsRequest.EMPTY;
     try {
-      newSettings = gson.fromJson(payload, NotebookRepoSettingsRequest.class);
+      newSettings = NotebookRepoSettingsRequest.fromJson(payload);
     } catch (JsonSyntaxException e) {
       LOG.error("Cannot update notebook repo settings", e);
       return new JsonResponse<>(Status.NOT_ACCEPTABLE, "",

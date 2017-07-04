@@ -1,7 +1,5 @@
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -18,7 +16,6 @@ import com.mongodb.client.model.UpdateOptions;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.scheduler.Job;
@@ -164,10 +161,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     // document to JSON
     String json = doc.toJson();
     // JSON to note
-    Gson gson = new GsonBuilder()
-            .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-            .create();
-    Note note = gson.fromJson(json, Note.class);
+    Note note = Note.fromJson(json);
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Job.Status.PENDING || p.getStatus() == Job.Status.RUNNING) {
@@ -192,8 +186,7 @@ public class MongoNotebookRepo implements NotebookRepo {
    */
   private Document noteToDocument(Note note) {
     // note to JSON
-    Gson gson = new GsonBuilder().create();
-    String json = gson.toJson(note);
+    String json = note.toJson();
     // JSON to document
     Document doc = Document.parse(json);
     // set object id as note id

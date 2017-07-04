@@ -25,7 +25,6 @@ import java.io.Writer;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,15 +34,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.file.CloudFile;
@@ -132,12 +128,6 @@ public class AzureNotebookRepo implements NotebookRepo {
     String json = IOUtils.toString(ins,
         conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
-
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-        .create();
-
     Note note = Note.fromJson(json);
 
     for (Paragraph p : note.getParagraphs()) {
@@ -156,10 +146,7 @@ public class AzureNotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-    String json = gson.toJson(note);
+    String json = note.toJson();
 
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     Writer writer = new OutputStreamWriter(output);

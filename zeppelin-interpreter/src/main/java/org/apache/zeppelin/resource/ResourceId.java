@@ -16,10 +16,15 @@
  */
 package org.apache.zeppelin.resource;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
+
 /**
  * Identifying resource
  */
-public class ResourceId {
+public class ResourceId implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   private final String resourcePoolId;
   private final String name;
   private final String noteId;
@@ -79,5 +84,13 @@ public class ResourceId {
     } else {
       return false;
     }
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static ResourceId fromJson(String json) {
+    return gson.fromJson(json, ResourceId.class);
   }
 }

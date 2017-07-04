@@ -147,10 +147,10 @@ public class DistributedResourcePoolTest {
     intp2.interpret("put key2 value2", context);
 
     ret = intp1.interpret("getAll", context);
-    assertEquals(2, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+    assertEquals(2, ResourceSet.fromJson(ret.message().get(0).getData()).size());
 
     ret = intp2.interpret("getAll", context);
-    assertEquals(2, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+    assertEquals(2, ResourceSet.fromJson(ret.message().get(0).getData()).size());
 
     ret = intp1.interpret("get key1", context);
     assertEquals("value1", gson.fromJson(ret.message().get(0).getData(), String.class));
@@ -173,7 +173,7 @@ public class DistributedResourcePoolTest {
         ResourceSet remoteSet = new ResourceSet();
         Gson gson = new Gson();
         for (Resource s : set) {
-          RemoteResource remoteResource = gson.fromJson(gson.toJson(s), RemoteResource.class);
+          RemoteResource remoteResource = RemoteResource.fromJson(s.toJson());
           remoteResource.setResourcePoolConnector(this);
           remoteSet.add(remoteResource);
         }
@@ -278,14 +278,14 @@ public class DistributedResourcePoolTest {
 
     // make sure no resources are automatically created
     ret = intp1.interpret("getAll", context);
-    assertEquals(2, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+    assertEquals(2, ResourceSet.fromJson(ret.message().get(0).getData()).size());
 
     // invoke method in local resource pool and save result
     ret = intp1.interpret("invoke key1 length ret1", context);
     assertEquals("3", ret.message().get(0).getData());
 
     ret = intp1.interpret("getAll", context);
-    assertEquals(3, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+    assertEquals(3, ResourceSet.fromJson(ret.message().get(0).getData()).size());
 
     ret = intp1.interpret("get ret1", context);
     assertEquals("3", gson.fromJson(ret.message().get(0).getData(), String.class));
@@ -295,7 +295,7 @@ public class DistributedResourcePoolTest {
     assertEquals("5", ret.message().get(0).getData());
 
     ret = intp1.interpret("getAll", context);
-    assertEquals(4, gson.fromJson(ret.message().get(0).getData(), ResourceSet.class).size());
+    assertEquals(4, ResourceSet.fromJson(ret.message().get(0).getData()).size());
 
     ret = intp1.interpret("get ret2", context);
     assertEquals("5", gson.fromJson(ret.message().get(0).getData(), String.class));
