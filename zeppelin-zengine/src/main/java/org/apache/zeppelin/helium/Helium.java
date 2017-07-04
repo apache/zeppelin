@@ -38,7 +38,7 @@ import java.util.*;
  * Manages helium packages
  */
 public class Helium {
-  Logger logger = LoggerFactory.getLogger(Helium.class);
+  private Logger logger = LoggerFactory.getLogger(Helium.class);
   private List<HeliumRegistry> registry = new LinkedList<>();
 
   private HeliumConf heliumConf;
@@ -117,12 +117,10 @@ public class Helium {
     File heliumConfFile = new File(path);
     if (!heliumConfFile.isFile()) {
       logger.warn("{} does not exists", path);
-      HeliumConf conf = new HeliumConf();
-      return conf;
+      return new HeliumConf();
     } else {
       String jsonString = FileUtils.readFileToString(heliumConfFile);
-      HeliumConf conf = HeliumConf.fromJson(jsonString);
-      return conf;
+      return HeliumConf.fromJson(jsonString);
     }
   }
 
@@ -142,7 +140,7 @@ public class Helium {
   }
 
   private void clearNotExistsPackages() {
-    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfo();
+    Map<String, List<HeliumPackageSearchResult>> all = getAllPackageInfoWithoutRefresh();
 
     // clear visualization display order
     List<String> packageOrder = heliumConf.getBundleDisplayOrder();
@@ -236,7 +234,7 @@ public class Helium {
   }
 
   public List<HeliumPackageSearchResult> getAllEnabledPackages() {
-    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfo();
+    Map<String, List<HeliumPackageSearchResult>> allPackages = getAllPackageInfoWithoutRefresh();
     List<HeliumPackageSearchResult> enabledPackages = new ArrayList<>();
 
     for (List<HeliumPackageSearchResult> versionedPackages : allPackages.values()) {
@@ -261,7 +259,7 @@ public class Helium {
   }
 
   private HeliumPackageSearchResult getEnabledPackageInfo(String packageName) {
-    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo();
+    Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfoWithoutRefresh();
     List<HeliumPackageSearchResult> packages = infos.get(packageName);
 
     for (HeliumPackageSearchResult pkgSearchResult : packages) {
@@ -377,7 +375,7 @@ public class Helium {
       allResources = ResourcePoolUtils.getAllResources();
     }
 
-    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfo().values()) {
+    for (List<HeliumPackageSearchResult> pkgs : getAllPackageInfoWithoutRefresh().values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
         if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
           ResourceSet resources = ApplicationLoader.findRequiredResourceSet(

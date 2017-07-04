@@ -17,13 +17,13 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.gson.Gson;
 import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.zeppelin.helium.*;
 import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.*;
 
 import java.io.IOException;
@@ -35,6 +35,8 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class HeliumRestApiTest extends AbstractTestRestApi {
+    Gson gson = new Gson();
+
     @BeforeClass
     public static void init() throws Exception {
         AbstractTestRestApi.startUp();
@@ -184,6 +186,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
                 new TypeToken<Map<String, Object>>() { }.getType());
         List<Object> body1 = (List<Object>) resp1.get("body");
         assertEquals(body1.size(), 0);
+
+        //We assume allPackages list has been refreshed before sorting
+        ZeppelinServer.helium.getAllPackageInfo();
 
         String postRequestJson = "[name2, name1]";
         PostMethod post = httpPost("/helium/order/visualization", postRequestJson);
