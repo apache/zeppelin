@@ -161,11 +161,11 @@ public class ShellInterpreter extends KerberosInterpreter {
   protected boolean runKerberosLogin() {
     try {
       createSecureConfiguration();
+      return true;
     } catch (Exception e) {
       LOGGER.error("Unable to run kinit for zeppelin", e);
-      return false;
     }
-    return true;
+    return false;
   }
 
   public void createSecureConfiguration() {

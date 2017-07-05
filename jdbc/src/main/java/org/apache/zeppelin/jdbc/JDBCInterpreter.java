@@ -153,14 +153,15 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       if (UserGroupInformation.isLoginKeytabBased()) {
         UserGroupInformation.getLoginUser().reloginFromKeytab();
+        return true;
       } else if (UserGroupInformation.isLoginTicketBased()) {
         UserGroupInformation.getLoginUser().reloginFromTicketCache();
+        return true;
       }
     } catch (Exception e) {
       logger.error("Unable to run kinit for zeppelin", e);
-      return false;
     }
-    return true;
+    return false;
   }
 
   public HashMap<String, Properties> getPropertiesMap() {
