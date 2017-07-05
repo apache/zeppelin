@@ -17,51 +17,46 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Property for instance of interpreter
+ * Types of interpreter properties
  */
-public class InterpreterProperty {
-  private String name;
-  private Object value;
-  private String type;
+public enum InterpreterPropertyType {
 
-  public InterpreterProperty(String name, Object value, String type) {
-    this.name = name;
+  TEXTAREA("textarea"),
+  STRING("string"),
+  NUMBER("number"),
+  URL("url"),
+  PASSWORD("password"),
+  CHECKBOX("checkbox");
+
+  private String value;
+
+  InterpreterPropertyType(String value) {
     this.value = value;
-    this.type = type;
   }
 
-  public InterpreterProperty(String name, Object value) {
-    this.name = name;
-    this.value = value;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Object getValue() {
+  public String getValue() {
     return value;
   }
 
-  public void setValue(Object value) {
-    this.value = value;
+  public static InterpreterPropertyType byValue(String value) {
+    for (InterpreterPropertyType e : values()) {
+      if (e.getValue().equals(value)) {
+        return e;
+      }
+    }
+    return null;
   }
 
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("{name=%s, value=%s, type=%s}", name, value, type);
+  public static List<String> getTypes() {
+    List<String> types = new ArrayList<>();
+    InterpreterPropertyType[] values = values();
+    for (InterpreterPropertyType interpreterPropertyType : values) {
+      types.add(interpreterPropertyType.getValue());
+    }
+    return types;
   }
 }

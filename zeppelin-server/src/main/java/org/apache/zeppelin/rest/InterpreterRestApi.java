@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -36,21 +35,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.dep.Repository;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterPropertyType;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
+import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
-
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.dep.Repository;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
-import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.socket.NotebookServer;
 
 /**
  * Interpreter Rest API
@@ -118,11 +117,10 @@ public class InterpreterRestApi {
       if (request == null) {
         return new JsonResponse<>(Status.BAD_REQUEST).build();
       }
-      Properties p = new Properties();
-      p.putAll(request.getProperties());
+
       InterpreterSetting interpreterSetting = interpreterSettingManager
           .createNewSetting(request.getName(), request.getGroup(), request.getDependencies(),
-              request.getOption(), p);
+              request.getOption(), request.getProperties());
       logger.info("new setting created with {}", interpreterSetting.getId());
       return new JsonResponse<>(Status.OK, "", interpreterSetting).build();
     } catch (InterpreterException | IOException e) {
@@ -253,7 +251,7 @@ public class InterpreterRestApi {
   @GET
   @Path("getmetainfos/{settingId}")
   public Response getMetaInfo(@Context HttpServletRequest req,
-                              @PathParam("settingId") String settingId) {
+      @PathParam("settingId") String settingId) {
     String propName = req.getParameter("propName");
     if (propName == null) {
       return new JsonResponse<>(Status.BAD_REQUEST).build();
@@ -291,4 +289,14 @@ public class InterpreterRestApi {
     }
     return new JsonResponse(Status.OK).build();
   }
+
+  /**
+   * Get available types for property
+   */
+  @GET
+  @Path("property/types")
+  public Response listInterpreterPropertyTypes() {
+    return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
+  }
+
 }

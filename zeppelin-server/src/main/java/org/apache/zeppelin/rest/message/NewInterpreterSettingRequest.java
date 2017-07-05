@@ -24,6 +24,7 @@ import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
 
 /**
  * NewInterpreterSetting rest api request message
@@ -33,7 +34,7 @@ public class NewInterpreterSettingRequest implements JsonSerializable {
   private String name;
   private String group;
 
-  private Map<String, String> properties;
+  private Map<String, InterpreterProperty> properties;
   private List<Dependency> dependencies;
   private InterpreterOption option;
 
@@ -49,7 +50,7 @@ public class NewInterpreterSettingRequest implements JsonSerializable {
     return group;
   }
 
-  public Map<String, String> getProperties() {
+  public Map<String, InterpreterProperty> getProperties() {
     return properties;
   }
 
