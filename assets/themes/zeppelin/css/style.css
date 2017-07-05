@@ -1305,6 +1305,10 @@ and (max-width: 1024px) {
 */
 
 @media (max-width: 991px) {
+  body, html {
+    overflow-x:hidden;
+  }
+
   .navbar-inverse .navbar-brand {
     font-size: 24px;
   }
