@@ -107,7 +107,7 @@ public abstract class KerberosInterpreter extends Interpreter {
   private ScheduledExecutorService startKerberosLoginThread() {
     scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
-    scheduledExecutorService.schedule(new Callable() {
+    scheduledExecutorService.submit(new Callable() {
       public Object call() throws Exception {
 
         if (runKerberosLogin()) {
@@ -129,7 +129,7 @@ public abstract class KerberosInterpreter extends Interpreter {
         }
         return null;
       }
-    }, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
+    });
 
     return scheduledExecutorService;
   }
