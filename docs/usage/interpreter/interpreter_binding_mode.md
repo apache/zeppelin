@@ -30,7 +30,7 @@ limitations under the License.
 
 <br/>
 
-Interpreter is a JVM process that communicates with Zeppelin daemon using thrift. 
+Interpreter Process is a JVM process that communicates with Zeppelin daemon using thrift. 
 Each interpreter process has a single interpreter group, and this interpreter group can have one or more instances of an interpreter.
 (See [here](../../development/writing_zeppelin_interpreter.html) to understand more about its internal structure.) 
 
