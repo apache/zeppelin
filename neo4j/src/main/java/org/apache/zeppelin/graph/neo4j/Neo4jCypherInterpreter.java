@@ -18,6 +18,7 @@
 package org.apache.zeppelin.graph.neo4j;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,6 +46,8 @@ import org.neo4j.driver.v1.types.Relationship;
 import org.neo4j.driver.v1.types.TypeSystem;
 import org.neo4j.driver.v1.util.Pair;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Neo4j interpreter for Zeppelin.
  */
@@ -54,13 +57,14 @@ public class Neo4jCypherInterpreter extends Interpreter {
   public static final String TAB = "\t";
 
   private static final String MAP_KEY_TEMPLATE = "%s.%s";
-  private static final String ARAY_KEY_TEMPLATE = "%s[%d]";
 
   private Map<String, String> labels;
 
   private Set<String> types;
   
   private final Neo4jConnectionManager neo4jConnectionManager;
+  
+  private final ObjectMapper jsonMapper = new ObjectMapper();
 
   public Neo4jCypherInterpreter(Properties properties) {
     super(properties);
@@ -135,16 +139,6 @@ public class Neo4jCypherInterpreter extends Interpreter {
           } else if (field.value().hasType(InternalTypeSystem.TYPE_SYSTEM.PATH())) {
             nodes.addAll(Iterables.asList(field.value().asPath().nodes()));
             relationships.addAll(Iterables.asList(field.value().asPath().relationships()));
-          } else if (field.value().hasType(InternalTypeSystem.TYPE_SYSTEM.LIST())) {
-            List<Object> list = field.value().asList();
-            for (Object elem : list) {
-              List<String> lineList = new ArrayList<>();
-              setTabularResult(field.key(), elem, columns, lineList,
-                      InternalTypeSystem.TYPE_SYSTEM);
-              if (!lineList.isEmpty()) {
-                lines.add(lineList);
-              }
-            }
           } else {
             setTabularResult(field.key(), field.value(), columns, line,
                     InternalTypeSystem.TYPE_SYSTEM);
@@ -175,15 +169,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
           setTabularResult(String.format(MAP_KEY_TEMPLATE, key, entry.getKey()), entry.getValue(),
                 columns, line, typeSystem);
         }
-      } else if (value.hasType(typeSystem.LIST())) {
-        List<Object> list = value.asList();
-        for (int i = 0; i < list.size(); i++) {
-          Object elem = list.get(i);
-          setTabularResult(String.format(ARAY_KEY_TEMPLATE, key, i), elem, columns,
-                line, typeSystem);
-        }
       } else {
-        addLine(key, columns, line, value);
+        addValueToLine(key, columns, line, value);
       }
     } else if (obj instanceof Map) {
       @SuppressWarnings("unchecked")
@@ -192,20 +179,12 @@ public class Neo4jCypherInterpreter extends Interpreter {
         setTabularResult(String.format(MAP_KEY_TEMPLATE, key, entry.getKey()), entry.getValue(),
                 columns, line, typeSystem);
       }
-    } else if (obj instanceof List) {
-      @SuppressWarnings("unchecked")
-      List<Object> list = (List<Object>) obj;
-      for (int i = 0; i < list.size(); i++) {
-        Object elem = list.get(i);
-        setTabularResult(String.format(ARAY_KEY_TEMPLATE, key, i), elem, columns,
-                line, typeSystem);
-      }
     } else {
-      addLine(key, columns, line, obj);
+      addValueToLine(key, columns, line, obj);
     }
   }
 
-  private void addLine(String key, List<String> columns, List<String> line, Object value) {
+  private void addValueToLine(String key, List<String> columns, List<String> line, Object value) {
     if (!columns.contains(key)) {
       columns.add(key);
     }
@@ -215,23 +194,43 @@ public class Neo4jCypherInterpreter extends Interpreter {
         line.add(null);
       }
     }
+    if (value != null) {
+      if (value instanceof Value) {
+        Value val = (Value) value;
+        if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.LIST())) {
+          value = val.asList();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.MAP())) {
+          value = val.asMap();
+        }
+      }
+      if (value instanceof Collection) {
+        try {
+          value = jsonMapper.writer().writeValueAsString(value);
+        } catch (Exception ignored) {}
+      }
+    }
     line.set(position, value == null ? null : value.toString());
   }
 
   private InterpreterResult renderTable(List<String> cols, List<List<String>> lines) {
     logger.info("Executing renderTable method");
-    StringBuilder msg = new StringBuilder(TABLE);
-    msg.append(NEW_LINE);
-    msg.append(StringUtils.join(cols, TAB));
-    msg.append(NEW_LINE);
-    for (List<String> line : lines) {
-      if (line.size() < cols.size()) {
-        for (int i = line.size(); i < cols.size(); i++) {
-          line.add(null);
-        }
-      }
-      msg.append(StringUtils.join(line, TAB));
+    StringBuilder msg = null;
+    if (cols.isEmpty()) {
+      msg = new StringBuilder();
+    } else {
+      msg = new StringBuilder(TABLE);
       msg.append(NEW_LINE);
+      msg.append(StringUtils.join(cols, TAB));
+      msg.append(NEW_LINE);
+      for (List<String> line : lines) {
+        if (line.size() < cols.size()) {
+          for (int i = line.size(); i < cols.size(); i++) {
+            line.add(null);
+          }
+        }
+        msg.append(StringUtils.join(line, TAB));
+        msg.append(NEW_LINE);
+      }
     }
     return new InterpreterResult(Code.SUCCESS, msg.toString());
   }

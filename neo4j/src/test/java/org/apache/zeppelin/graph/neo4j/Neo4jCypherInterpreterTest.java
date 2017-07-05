@@ -68,8 +68,6 @@ public class Neo4jCypherInterpreterTest {
         + "MATCH (n), (m) WHERE id(n) = x AND id(m) = toInt(rand() * 1000) "
         + "CREATE (n)-[:%s]->(m)";
 
-  private static final String QUERY_TEMPLATE_SIMPLE_OBJECT = "RETURN %s as object";
-
   @BeforeClass
   public static void setUpNeo4jServer() throws Exception {
     server = TestServerBuilders.newInProcessBuilder()
@@ -107,6 +105,28 @@ public class Neo4jCypherInterpreterTest {
   }
 
   @Test
+  public void testTableWithArray() {
+    interpreter.open();
+    InterpreterResult result = interpreter.interpret("return 'a' as colA, 'b' as colB, [1, 2, 3] as colC", context);
+    assertEquals(Code.SUCCESS, result.code());
+    final String tableResult = "colA\tcolB\tcolC\n\"a\"\t\"b\"\t[1,2,3]\n";
+    assertEquals(tableResult, result.toString().replace("%table ", StringUtils.EMPTY));
+    
+    result = interpreter.interpret("return 'a' as colA, 'b' as colB, [{key: \"value\"}, {key: 1}] as colC", context);
+    assertEquals(Code.SUCCESS, result.code());
+    final String tableResultWithMap = "colA\tcolB\tcolC\n\"a\"\t\"b\"\t[{\"key\":\"value\"},{\"key\":1}]\n";
+    assertEquals(tableResultWithMap, result.toString().replace("%table ", StringUtils.EMPTY));
+  }
+
+  @Test
+  public void testCreateIndex() {
+    interpreter.open();
+    InterpreterResult result = interpreter.interpret("CREATE INDEX ON :Person(name)", context);
+    assertEquals(Code.SUCCESS, result.code());
+    assertEquals(StringUtils.EMPTY, result.toString());
+  }
+
+  @Test
   public void testRenderTable() {
     interpreter.open();
     InterpreterResult result = interpreter.interpret("MATCH (n:Person) "
@@ -118,81 +138,80 @@ public class Neo4jCypherInterpreterTest {
   }
 
   @Test
-  public void testRenderArray() {
-    interpreter.open();
-    final String array = "[0, 1, 2]";
-    final String tableResult = "object\n0\n1\n2\n";
-    InterpreterResult result = interpreter.interpret(String.format(QUERY_TEMPLATE_SIMPLE_OBJECT, array), context);
-    assertEquals(Code.SUCCESS, result.code());
-    assertEquals(tableResult, result.toString().replace("%table ", StringUtils.EMPTY));
-  }
-
-  @Test
   public void testRenderMap() {
     interpreter.open();
-    final String json = "{key: \"value\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]}";
+    final String jsonQuery = "RETURN {key: \"value\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]} as object";
     final String objectKey = "object.key";
-    final String objectListKey0Inner = "object.listKey[0].inner";
-    final String objectListKey1Inner = "object.listKey[1].inner";
-    InterpreterResult result = interpreter.interpret(String.format(QUERY_TEMPLATE_SIMPLE_OBJECT, json), context);
+    final String objectListKey = "object.listKey";
+    InterpreterResult result = interpreter.interpret(jsonQuery, context);
     assertEquals(Code.SUCCESS, result.code());
     String[] rows = result.toString().replace("%table ", StringUtils.EMPTY).split(Neo4jCypherInterpreter.NEW_LINE);
     assertEquals(rows.length, 2);
     List<String> header = Arrays.asList(rows[0].split(Neo4jCypherInterpreter.TAB));
     assertEquals(header.contains(objectKey), true);
-    assertEquals(header.contains(objectListKey0Inner), true);
-    assertEquals(header.contains(objectListKey1Inner), true);
+    assertEquals(header.contains(objectListKey), true);
     List<String> row = Arrays.asList(rows[1].split(Neo4jCypherInterpreter.TAB));
     assertEquals(row.size(), header.size());
     assertEquals(row.get(header.indexOf(objectKey)), "value");
-    assertEquals(row.get(header.indexOf(objectListKey0Inner)), "Map1");
-    assertEquals(row.get(header.indexOf(objectListKey1Inner)), "Map2");
+    assertEquals(row.get(header.indexOf(objectListKey)), "[{\"inner\":\"Map1\"},{\"inner\":\"Map2\"}]");
 
-    final String jsonList = "[{key: \"value\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]},"
-    		+ "{key: \"value2\", listKey: [{inner: \"Map12\"}, {inner: \"Map22\"}]}]";
-    result = interpreter.interpret(String.format(QUERY_TEMPLATE_SIMPLE_OBJECT, jsonList), context);
+    final String query = "WITH [{key: \"value\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]},"
+    		+ "{key: \"value2\", listKey: [{inner: \"Map12\"}, {inner: \"Map22\"}]}] "
+    		+ "AS array UNWIND array AS object RETURN object";
+    result = interpreter.interpret(query, context);
     assertEquals(Code.SUCCESS, result.code());
     rows = result.toString().replace("%table ", StringUtils.EMPTY).split(Neo4jCypherInterpreter.NEW_LINE);
     assertEquals(rows.length, 3);
     header = Arrays.asList(rows[0].split(Neo4jCypherInterpreter.TAB));
     assertEquals(header.contains(objectKey), true);
-    assertEquals(header.contains(objectListKey0Inner), true);
-    assertEquals(header.contains(objectListKey1Inner), true);
+    assertEquals(header.contains(objectListKey), true);
     row = Arrays.asList(rows[1].split(Neo4jCypherInterpreter.TAB));
     assertEquals(row.size(), header.size());
     assertEquals(row.get(header.indexOf(objectKey)), "value");
-    assertEquals(row.get(header.indexOf(objectListKey0Inner)), "Map1");
-    assertEquals(row.get(header.indexOf(objectListKey1Inner)), "Map2");
+    assertEquals(row.get(header.indexOf(objectListKey)), "[{\"inner\":\"Map1\"},{\"inner\":\"Map2\"}]");
     row = Arrays.asList(rows[2].split(Neo4jCypherInterpreter.TAB));
     assertEquals(row.size(), header.size());
     assertEquals(row.get(header.indexOf(objectKey)), "value2");
-    assertEquals(row.get(header.indexOf(objectListKey0Inner)), "Map12");
-    assertEquals(row.get(header.indexOf(objectListKey1Inner)), "Map22");
+    assertEquals(row.get(header.indexOf(objectListKey)), "[{\"inner\":\"Map12\"},{\"inner\":\"Map22\"}]");
 
-    final String jsonListWithNull = "[{key: \"value\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]},"
-    		+ "{key: \"value2\", listKey: null}]";
-    final String objectListKey = "object.listKey";
-    result = interpreter.interpret(String.format(QUERY_TEMPLATE_SIMPLE_OBJECT, jsonListWithNull), context);
+    final String jsonListWithNullQuery = "WITH [{key: \"value\", listKey: null},"
+    		+ "{key: \"value2\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]}] "
+    		+ "AS array UNWIND array AS object RETURN object";
+    result = interpreter.interpret(jsonListWithNullQuery, context);
     assertEquals(Code.SUCCESS, result.code());
     rows = result.toString().replace("%table ", StringUtils.EMPTY).split(Neo4jCypherInterpreter.NEW_LINE);
     assertEquals(rows.length, 3);
     header = Arrays.asList(rows[0].split(Neo4jCypherInterpreter.TAB, -1));
     assertEquals(header.contains(objectKey), true);
-    assertEquals(header.contains(objectListKey0Inner), true);
-    assertEquals(header.contains(objectListKey1Inner), true);
     assertEquals(header.contains(objectListKey), true);
     row = Arrays.asList(rows[1].split(Neo4jCypherInterpreter.TAB, -1));
     assertEquals(row.size(), header.size());
     assertEquals(row.get(header.indexOf(objectKey)), "value");
-    assertEquals(row.get(header.indexOf(objectListKey0Inner)), "Map1");
-    assertEquals(row.get(header.indexOf(objectListKey1Inner)), "Map2");
+    assertEquals(row.get(header.indexOf(objectListKey)), StringUtils.EMPTY);
     assertEquals(row.get(header.indexOf(objectListKey)), "");
     row = Arrays.asList(rows[2].split(Neo4jCypherInterpreter.TAB, -1));
     assertEquals(row.size(), header.size());
     assertEquals(row.get(header.indexOf(objectKey)), "value2");
-    assertEquals(row.get(header.indexOf(objectListKey0Inner)), "");
-    assertEquals(row.get(header.indexOf(objectListKey1Inner)), "");
-    assertEquals(row.get(header.indexOf(objectListKey)), "");
+    assertEquals(row.get(header.indexOf(objectListKey)), "[{\"inner\":\"Map1\"},{\"inner\":\"Map2\"}]");
+    
+    final String jsonListWithoutListKeyQuery = "WITH [{key: \"value\"},"
+    		+ "{key: \"value2\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]}] "
+    		+ "AS array UNWIND array AS object RETURN object";
+    result = interpreter.interpret(jsonListWithoutListKeyQuery, context);
+    assertEquals(Code.SUCCESS, result.code());
+    rows = result.toString().replace("%table ", StringUtils.EMPTY).split(Neo4jCypherInterpreter.NEW_LINE);
+    assertEquals(rows.length, 3);
+    header = Arrays.asList(rows[0].split(Neo4jCypherInterpreter.TAB, -1));
+    assertEquals(header.contains(objectKey), true);
+    assertEquals(header.contains(objectListKey), true);
+    row = Arrays.asList(rows[1].split(Neo4jCypherInterpreter.TAB, -1));
+    assertEquals(row.size(), header.size());
+    assertEquals(row.get(header.indexOf(objectKey)), "value");
+    assertEquals(row.get(header.indexOf(objectListKey)), StringUtils.EMPTY);
+    row = Arrays.asList(rows[2].split(Neo4jCypherInterpreter.TAB, -1));
+    assertEquals(row.size(), header.size());
+    assertEquals(row.get(header.indexOf(objectKey)), "value2");
+    assertEquals(row.get(header.indexOf(objectListKey)), "[{\"inner\":\"Map1\"},{\"inner\":\"Map2\"}]");
   }
 
   @Test

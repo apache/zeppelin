@@ -36,6 +36,7 @@
   	<neo4j.driver.version>1.4.0</neo4j.driver.version>
   	<test.neo4j.kernel.version>3.2.1</test.neo4j.kernel.version>
   	<neo4j.version>3.2.1</neo4j.version>
+  	<jackson.version>2.8.9</jackson.version>
   </properties>
 
   <dependencies>
@@ -44,7 +45,13 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
-    </dependency> 
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.neo4j.driver</groupId>
