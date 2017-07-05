@@ -151,13 +151,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
   @Override
   protected boolean runKerberosLogin() {
     try {
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
-      if (authType.equals(KERBEROS)) {
-        if (UserGroupInformation.isLoginKeytabBased()) {
-          UserGroupInformation.getLoginUser().reloginFromKeytab();
-        } else if (UserGroupInformation.isLoginTicketBased()) {
-          UserGroupInformation.getLoginUser().reloginFromTicketCache();
-        }
+      if (UserGroupInformation.isLoginKeytabBased()) {
+        UserGroupInformation.getLoginUser().reloginFromKeytab();
+      } else if (UserGroupInformation.isLoginTicketBased()) {
+        UserGroupInformation.getLoginUser().reloginFromTicketCache();
       }
     } catch (Exception e) {
       logger.error("Unable to run kinit for zeppelin", e);

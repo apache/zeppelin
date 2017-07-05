@@ -31,7 +31,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Interpreter wrapper for Kerberos initialization
  *
- * runKerberosLogin() method you need to implement that determine Zeppelin's behavior.
+ * runKerberosLogin() method you need to implement that determine how should this interpeter do a
+ * kinit for this interpreter.
+ * isKerboseEnabled() method needs to implement which determines if the kerberos is enabled for that
+ * interpreter.
  * startKerberosLoginThread() needs to be called inside the open() and
  * shutdownExecutorService() inside close().
  */
