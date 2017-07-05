@@ -57,6 +57,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookEventListener;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
@@ -129,6 +130,8 @@ public class NotebookServer extends WebSocketServlet
           }
         }
       }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
