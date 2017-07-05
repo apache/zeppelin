@@ -40,6 +40,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -104,6 +105,8 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
   private String host = null;
   private int port = -1;
+
+  private String extraClasspath = null;
 
   RemoteInterpreterYarnProcess(int connectTimeout, RemoteInterpreterProcessListener listener,
       ApplicationEventListener appListener, YarnClient yarnClient, String homeDir,
@@ -174,8 +177,12 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       classpathStrings.add(0, "./*");
       classpathStrings.add(0, ApplicationConstants.Environment.CLASSPATH.$$());
       classpathStrings.add("./log4j.properties");
-      classpathStrings.add(System.getenv("HADOOP_CONF_DIR"));
-      classpathStrings.add("`hadoop classpath 2> /dev/null`");
+      if (isHadoopConfSet()) {
+        classpathStrings.add(System.getenv("HADOOP_CONF_DIR"));
+      }
+      if (null != extraClasspath) {
+        classpathStrings.add(extraClasspath);
+      }
 
       String classpathEnv =
           Joiner.on(ApplicationConstants.CLASS_PATH_SEPARATOR).join(classpathStrings);
@@ -295,7 +302,11 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
       List<String> vargs = Lists.newArrayList();
 
-      vargs.add(ApplicationConstants.Environment.JAVA_HOME.$$() + "/bin/java");
+      if (null != System.getenv("JAVA_HOME")) {
+        vargs.add(ApplicationConstants.Environment.JAVA_HOME.$$() + "/bin/java");
+      } else {
+        vargs.add("java");
+      }
 
       int memory;
       int defaultMemory = Integer.valueOf(ZEPPELIN_YARN_MEMORY_DEFAULT);
@@ -384,6 +395,9 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       waitingInitialized.await(5, TimeUnit.MINUTES);
       if (oldState != RUNNING) {
         stop();
+        ApplicationAttemptId applicationAttemptId =
+            yarnClient.getApplicationReport(applicationId).getCurrentApplicationAttemptId();
+        logger.error(yarnClient.getApplicationAttemptReport(applicationAttemptId).getDiagnostics());
         throw new InterpreterException("Failed to initialize yarn application: " + applicationId);
       }
 
@@ -454,6 +468,12 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
 
   private void setRunning(boolean running) {
     this.isRunning = running;
+  }
+
+  // For Testing
+  // It should be called before calling start()
+  void setExtraClasspath(String extraClasspath) {
+    this.extraClasspath = extraClasspath;
   }
 
   private class ApplicationMonitor implements Runnable {

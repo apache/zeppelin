@@ -34,6 +34,10 @@
   <name>Zeppelin Cluster: yarn</name>
   <description>Zeppelin Yarn Cluster</description>
 
+  <properties>
+    <jersey-1.version>1.9</jersey-1.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -160,6 +164,45 @@
           <artifactId>jetty-util</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-server-tests</artifactId>
+      <classifier>tests</classifier>
+    </dependency>
+
+    <!--
+       Jersey 1 dependencies only required for YARN integration testing. Creating a YARN cluster
+       in the JVM requires starting a Jersey 1-based web application.
+     -->
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-core</artifactId>
+      <version>${jersey-1.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-json</artifactId>
+      <version>${jersey-1.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>${jersey-1.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-guice</artifactId>
+      <version>${jersey-1.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

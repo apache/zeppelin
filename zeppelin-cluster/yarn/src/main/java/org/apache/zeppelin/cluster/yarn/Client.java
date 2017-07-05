@@ -60,10 +60,17 @@ public class Client extends ClusterManager {
     this.started = false;
   }
 
+  // For Testing
+  Client(Configuration configuration) {
+    this.configuration = configuration;
+  }
+
   public synchronized void start() {
     if (!started) { // it will help when calling it multiple times from different threads
       logger.info("Start to initialize yarn client");
-      this.configuration = new Configuration();
+      if (null == this.configuration) {
+        this.configuration = new Configuration();
+      }
       this.yarnClient = YarnClient.createYarnClient();
       this.yarnClient.init(configuration);
       this.yarnClient.start();
