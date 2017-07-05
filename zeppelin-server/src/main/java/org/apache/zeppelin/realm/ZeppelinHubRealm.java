@@ -37,6 +37,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -62,7 +63,6 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
 
   private final HttpClient httpClient;
-  private final Gson gson;
 
   private String zeppelinhubUrl;
   private String name;
@@ -73,7 +73,6 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     //TODO(anthonyc): think about more setting for this HTTP client.
     //                eg: if user uses proxy etcetc...
     httpClient = new HttpClient();
-    gson = new Gson();
     name = getClass().getName() + "_" + INSTANCE_COUNT.getAndIncrement();
   }
 
@@ -150,9 +149,9 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     
     User account = null;
     try {
-      account = gson.fromJson(responseBody, User.class);
+      account = User.fromJson(responseBody);
     } catch (JsonParseException e) {
-      LOG.error("Cannot deserialize ZeppelinHub response to User instance", e);
+      LOG.error("Cannot fromJson ZeppelinHub response to User instance", e);
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
 
@@ -200,12 +199,21 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   }
 
   /**
-   * Helper class that will be use to deserialize ZeppelinHub response.
+   * Helper class that will be use to fromJson ZeppelinHub response.
    */
-  protected class User {
+  protected static class User implements JsonSerializable {
+    private static final Gson gson = new Gson();
     public String login;
     public String email;
     public String name;
+
+    public String toJson() {
+      return gson.toJson(this);
+    }
+
+    public static User fromJson(String json) {
+      return gson.fromJson(json, User.class);
+    }
   }
   
   public void onLoginSuccess(String username, String session) {

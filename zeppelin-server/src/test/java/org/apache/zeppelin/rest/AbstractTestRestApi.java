@@ -54,7 +54,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -68,7 +67,6 @@ public abstract class AbstractTestRestApi {
   protected static final boolean wasRunning = checkIfServerIsRunning();
   static boolean pySpark = false;
   static boolean sparkR = false;
-  static Gson gson = new Gson();
   static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;

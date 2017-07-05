@@ -195,7 +195,15 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes.size(), 2);
     assertEquals(notes.get(1).getId(), copiedNote.getId());
     assertEquals(notes.get(1).getName(), copiedNote.getName());
-    assertEquals(notes.get(1).getParagraphs(), copiedNote.getParagraphs());
+    // format has make some changes due to
+    // Notebook.convertFromSingleResultToMultipleResultsFormat
+    assertEquals(notes.get(1).getParagraphs().size(), copiedNote.getParagraphs().size());
+    assertEquals(notes.get(1).getParagraphs().get(0).getText(),
+        copiedNote.getParagraphs().get(0).getText());
+    assertEquals(notes.get(1).getParagraphs().get(0).settings,
+        copiedNote.getParagraphs().get(0).settings);
+    assertEquals(notes.get(1).getParagraphs().get(0).title,
+        copiedNote.getParagraphs().get(0).title);
 
     // delete the notebook
     for (String note : noteNames) {

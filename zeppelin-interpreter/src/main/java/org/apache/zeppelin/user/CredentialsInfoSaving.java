@@ -17,11 +17,24 @@
 
 package org.apache.zeppelin.user;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
+
 import java.util.Map;
 
 /**
  * Helper class to save credentials
  */
-public class CredentialsInfoSaving {
+public class CredentialsInfoSaving implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   public Map<String, UserCredentials> credentialsMap;
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static CredentialsInfoSaving fromJson(String json) {
+    return gson.fromJson(json, CredentialsInfoSaving.class);
+  }
 }

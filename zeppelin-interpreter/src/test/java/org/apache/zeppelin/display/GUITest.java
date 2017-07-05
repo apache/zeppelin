@@ -117,4 +117,53 @@ public class GUITest {
     assertTrue(gui2.forms.get("checkbox_1") instanceof CheckBox);
     assertEquals(options, ((CheckBox) gui2.forms.get("checkbox_1")).getOptions());
   }
+
+  // load old json file and will convert it into new forms of Input
+  @Test
+  public void testOldGson_3() throws IOException {
+    String oldJson = "{\n" +
+        "        \"params\": {\n" +
+        "          \"maxAge\": \"35\"\n" +
+        "        },\n" +
+        "        \"forms\": {\n" +
+        "          \"maxAge\": {\n" +
+        "            \"name\": \"maxAge\",\n" +
+        "            \"defaultValue\": \"30\",\n" +
+        "            \"hidden\": false\n" +
+        "          }\n" +
+        "        }\n" +
+        "      }";
+    GUI gui = GUI.fromJson(oldJson);
+    assertEquals(1, gui.forms.size());
+    assertTrue(gui.forms.get("maxAge") instanceof TextBox);
+    assertEquals("30", gui.forms.get("maxAge").getDefaultValue());
+
+    oldJson = "{\n" +
+        "        \"params\": {\n" +
+        "          \"marital\": \"single\"\n" +
+        "        },\n" +
+        "        \"forms\": {\n" +
+        "          \"marital\": {\n" +
+        "            \"name\": \"marital\",\n" +
+        "            \"defaultValue\": \"single\",\n" +
+        "            \"options\": [\n" +
+        "              {\n" +
+        "                \"value\": \"single\"\n" +
+        "              },\n" +
+        "              {\n" +
+        "                \"value\": \"divorced\"\n" +
+        "              },\n" +
+        "              {\n" +
+        "                \"value\": \"married\"\n" +
+        "              }\n" +
+        "            ],\n" +
+        "            \"hidden\": false\n" +
+        "          }\n" +
+        "        }\n" +
+        "      }";
+    gui = GUI.fromJson(oldJson);
+    assertEquals(1, gui.forms.size());
+    assertTrue(gui.forms.get("marital") instanceof Select);
+    assertEquals("single", gui.forms.get("marital").getDefaultValue());
+  }
 }

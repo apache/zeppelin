@@ -25,8 +25,12 @@ import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 
 import java.io.Serializable;
-
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -96,7 +100,7 @@ public class GUI implements Serializable {
   }
 
   public List<Object> checkbox(String id, Collection<Object> defaultChecked,
-                                     ParamOption[] options) {
+                               ParamOption[] options) {
     Collection<Object> checked = (Collection<Object>) params.get(id);
     if (checked == null) {
       checked = defaultChecked;
@@ -122,6 +126,31 @@ public class GUI implements Serializable {
 
   public void clear() {
     this.forms = new LinkedHashMap<>();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    GUI gui = (GUI) o;
+
+    if (params != null ? !params.equals(gui.params) : gui.params != null) {
+      return false;
+    }
+    return forms != null ? forms.equals(gui.forms) : gui.forms == null;
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result = params != null ? params.hashCode() : 0;
+    result = 31 * result + (forms != null ? forms.hashCode() : 0);
+    return result;
   }
 
   public String toJson() {

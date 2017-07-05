@@ -769,5 +769,10 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       })
   }
 
+  $scope.getInterpreterBindingModeDocsLink = function() {
+    const currentVersion = $rootScope.zeppelinVersion
+    return `https://zeppelin.apache.org/docs/${currentVersion}/usage/interpreter/interpreter_binding_mode.html`
+  }
+
   init()
 }

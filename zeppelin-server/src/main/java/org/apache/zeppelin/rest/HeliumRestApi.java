@@ -134,7 +134,7 @@ public class HeliumRestApi {
       return new JsonResponse(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
           .build();
     }
-    HeliumPackage pkg = gson.fromJson(heliumPackage, HeliumPackage.class);
+    HeliumPackage pkg = HeliumPackage.fromJson(heliumPackage);
 
     String appId = helium.getApplicationFactory().loadAndRun(pkg, paragraph);
     return new JsonResponse(Response.Status.OK, "", appId).build();

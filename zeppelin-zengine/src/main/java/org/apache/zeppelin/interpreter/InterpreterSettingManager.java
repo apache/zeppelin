@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -161,11 +162,12 @@ public class InterpreterSettingManager {
       return;
     }
     InterpreterInfoSaving infoSaving;
-    try (BufferedReader json =
+    try (BufferedReader jsonReader =
         Files.newBufferedReader(interpreterBindingPath, StandardCharsets.UTF_8)) {
       JsonParser jsonParser = new JsonParser();
-      JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+      JsonObject jsonObject = jsonParser.parse(jsonReader).getAsJsonObject();
       infoSaving = gson.fromJson(jsonObject.toString(), InterpreterInfoSaving.class);
+
       for (String k : infoSaving.interpreterSettings.keySet()) {
         InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
 
@@ -246,7 +248,7 @@ public class InterpreterSettingManager {
       info.interpreterSettings = interpreterSettings;
       info.interpreterRepositories = interpreterRepositories;
 
-      jsonString = gson.toJson(info);
+      jsonString = info.toJson();
     }
 
     if (!Files.exists(interpreterBindingPath)) {
