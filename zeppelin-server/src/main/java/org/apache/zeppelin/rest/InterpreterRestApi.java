@@ -51,8 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
-import com.google.gson.Gson;
-
 /**
  * Interpreter Rest API
  */
