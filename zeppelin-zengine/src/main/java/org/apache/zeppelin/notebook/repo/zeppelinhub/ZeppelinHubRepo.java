@@ -186,7 +186,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, noteId);
-    Note note = GSON.fromJson(response, Note.class);
+    Note note = Note.fromJson(response);
     if (note == null) {
       return EMPTY_NOTE;
     }
@@ -199,7 +199,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (note == null || !isSubjectValid(subject)) {
       throw new IOException("Zeppelinhub failed to save note");
     }
-    String jsonNote = GSON.toJson(note);
+    String jsonNote = note.toJson();
     String token = getUserToken(subject.getUser());
     LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
     restApiClient.put(token, jsonNote);
@@ -245,7 +245,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, endpoint);
 
-    Note note = GSON.fromJson(response, Note.class);
+    Note note = Note.fromJson(response);
     if (note == null) {
       return EMPTY_NOTE;
     }
