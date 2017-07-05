@@ -147,24 +147,24 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
 
   // handel logout on API failure
     .config(function ($httpProvider, $provide) {
-    if (process.env.PROD) {
-      $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
-    }
-    $provide.factory('httpInterceptor', function ($q, $rootScope) {
-      return {
-        'responseError': function (rejection) {
-          if (rejection.status === 405) {
-            let data = {}
-            data.info = ''
-            $rootScope.$broadcast('session_logout', data)
-          }
-          $rootScope.$broadcast('httpResponseError', rejection)
-          return $q.reject(rejection)
-        }
+      if (process.env.PROD) {
+        $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
       }
+      $provide.factory('httpInterceptor', function ($q, $rootScope) {
+        return {
+          'responseError': function (rejection) {
+            if (rejection.status === 405) {
+              let data = {}
+              data.info = ''
+              $rootScope.$broadcast('session_logout', data)
+            }
+            $rootScope.$broadcast('httpResponseError', rejection)
+            return $q.reject(rejection)
+          }
+        }
+      })
+      $httpProvider.interceptors.push('httpInterceptor')
     })
-    $httpProvider.interceptors.push('httpInterceptor')
-  })
   .constant('TRASH_FOLDER_ID', '~Trash')
 
 function auth () {
