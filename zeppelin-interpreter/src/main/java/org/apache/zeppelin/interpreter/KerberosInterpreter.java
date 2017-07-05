@@ -37,6 +37,12 @@ import org.slf4j.LoggerFactory;
  * interpreter.
  * startKerberosLoginThread() needs to be called inside the open() and
  * shutdownExecutorService() inside close().
+ *
+ * 
+ * Environment variables defined in zeppelin-env.sh
+ * KERBEROS_REFRESH_INTERVAL controls the refresh interval for Kerberos ticket. The default value
+ * is 1d.
+ * KINIT_FAIL_THRESHOLD controls how many times should kinit retry. The default value is 5.
  */
 public abstract class KerberosInterpreter extends Interpreter {
 
@@ -66,20 +72,36 @@ public abstract class KerberosInterpreter extends Interpreter {
     }
   }
 
-  private String getKerberosRefreshInterval() {
-    if (System.getenv("KERBEROS_REFRESH_INTERVAL") == null) {
-      return "1d";
-    } else {
-      return System.getenv("KERBEROS_REFRESH_INTERVAL");
+  private Long getKerberosRefreshInterval() {
+    Long refreshInterval;
+    String refreshIntervalString = "1d";
+    //defined in zeppelin-env.sh, if not initialized then the default value is one day.
+    if (System.getenv("KERBEROS_REFRESH_INTERVAL") != null) {
+      refreshIntervalString = System.getenv("KERBEROS_REFRESH_INTERVAL");
     }
+    try {
+      refreshInterval = getTimeAsMs(refreshIntervalString);
+    } catch (IllegalArgumentException e) {
+      logger.error("Cannot get time in MS for the given string, " + refreshIntervalString
+          + " defaulting to 1d ", e);
+      refreshInterval = getTimeAsMs("1d");
+    }
+
+    return refreshInterval;
   }
 
   private Integer kinitFailThreshold() {
-    if (System.getenv("KINIT_FAIL_THRESHOLD") == null) {
-      return 5;
-    } else {
-      return new Integer(System.getenv("KINIT_FAIL_THRESHOLD"));
+    Integer kinitFailThreshold = 5;
+    //defined in zeppelin-env.sh, if not initialized then the default value is 5.
+    if (System.getenv("KINIT_FAIL_THRESHOLD") != null) {
+      try {
+        kinitFailThreshold = new Integer(System.getenv("KINIT_FAIL_THRESHOLD"));
+      } catch (Exception e) {
+        logger.error("Cannot get integer value from the given string, " + System
+            .getenv("KINIT_FAIL_THRESHOLD") + " defaulting to " + kinitFailThreshold, e);
+      }
     }
+    return kinitFailThreshold;
   }
 
   private Long getTimeAsMs(String time) {
@@ -115,7 +137,7 @@ public abstract class KerberosInterpreter extends Interpreter {
           kinitFailCount = 0;
           // schedule another kinit run with a fixed delay.
           scheduledExecutorService
-              .schedule(this, getTimeAsMs(getKerberosRefreshInterval()), TimeUnit.MILLISECONDS);
+              .schedule(this, getKerberosRefreshInterval(), TimeUnit.MILLISECONDS);
         } else {
           kinitFailCount++;
           logger.info("runKerberosLogin failed for " + kinitFailCount + " time(s).");
