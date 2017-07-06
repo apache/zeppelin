@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl)
 
 function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {

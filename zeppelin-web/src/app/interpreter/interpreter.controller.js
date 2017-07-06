@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl)

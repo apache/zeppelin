@@ -1,3 +1,5 @@
+import angular from 'angular'
+
 describe('Directive: ngEnter', function () {
   // load the directive's module
   beforeEach(angular.mock.module('zeppelinWebApp'))

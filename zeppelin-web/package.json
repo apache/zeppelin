@@ -21,6 +21,7 @@
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
+    "angular": "1.5.7",
     "angular-animate": "1.5.7",
     "angular-cookies": "1.5.7",
     "angular-dragdrop": "~1.0.8",

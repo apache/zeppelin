@@ -17,6 +17,7 @@ import {
   ParagraphStatus, isParagraphRunning,
 } from './paragraph.status'
 
+import angular from 'angular'
 import moment from 'moment'
 require('moment-duration-format')
 

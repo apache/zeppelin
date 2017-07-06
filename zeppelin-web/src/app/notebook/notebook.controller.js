@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
 import moment from 'moment'
 
 import { isParagraphRunning, } from './paragraph/paragraph.status'

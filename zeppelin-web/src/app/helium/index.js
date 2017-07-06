@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import HeliumController from './helium.controller'
 
 angular.module('zeppelinWebApp')

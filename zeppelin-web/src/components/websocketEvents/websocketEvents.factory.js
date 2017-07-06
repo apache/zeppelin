@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents)
 
 function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {

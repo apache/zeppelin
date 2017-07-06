@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import './note-name-dialog.css'
 
 angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl)

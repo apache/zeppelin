@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').directive('codeEditor', codeEditor)
 
 function codeEditor ($templateRequest, $compile) {

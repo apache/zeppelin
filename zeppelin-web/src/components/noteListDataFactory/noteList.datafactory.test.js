@@ -1,3 +1,5 @@
+import angular from 'angular'
+
 describe('Factory: NoteList', function () {
   let noteList
 

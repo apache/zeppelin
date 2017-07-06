@@ -1,3 +1,5 @@
+import angular from 'angular'
+
 describe('Controller: ParagraphCtrl', function () {
   beforeEach(angular.mock.module('zeppelinWebApp'))
 

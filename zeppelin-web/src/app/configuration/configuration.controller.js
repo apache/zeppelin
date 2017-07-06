@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
 
 function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {

@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import './rename.css'
 
 angular.module('zeppelinWebApp').controller('RenameCtrl', RenameCtrl)

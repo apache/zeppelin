@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
 

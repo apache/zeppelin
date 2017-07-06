@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv)
 
 function arrayOrderingSrv (TRASH_FOLDER_ID) {

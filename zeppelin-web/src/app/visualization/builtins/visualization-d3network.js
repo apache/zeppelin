@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import Visualization from '../visualization'
 import NetworkTransformation from '../../tabledata/network'
 
