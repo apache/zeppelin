@@ -17,10 +17,12 @@
 
 package org.apache.zeppelin.user;
 
+import java.io.Serializable;
+
 /**
  * Username and Password POJO
  */
-public class UsernamePassword {
+public class UsernamePassword implements Serializable {
   private String username;
   private String password;
 

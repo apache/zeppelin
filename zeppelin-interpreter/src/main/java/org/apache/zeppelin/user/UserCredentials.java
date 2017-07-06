@@ -17,13 +17,15 @@
 
 package org.apache.zeppelin.user;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User Credentials POJO
  */
-public class UserCredentials {
+public class UserCredentials implements Serializable{
+
   private Map<String, UsernamePassword> userCredentials = new ConcurrentHashMap<>();
 
   public UsernamePassword getUsernamePassword(String entity) {
@@ -40,6 +42,14 @@ public class UserCredentials {
 
   public boolean existUsernamePassword(String entity) {
     return userCredentials.containsKey(entity);
+  }
+
+  public Map<String, UsernamePassword> getUserCredentials() {
+    return userCredentials;
+  }
+
+  public void setUserCredentials(Map<String, UsernamePassword> userCredentials) {
+    this.userCredentials = userCredentials;
   }
 
   @Override

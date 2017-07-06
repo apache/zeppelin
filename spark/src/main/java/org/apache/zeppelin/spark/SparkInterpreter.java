@@ -29,6 +29,8 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Joiner;
 
 import org.apache.commons.lang3.StringUtils;
@@ -1172,6 +1174,14 @@ public class SparkInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
+
+    ObjectMapper om = new ObjectMapper();
+    om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    Map<String, Map<String, String>> userCredentials = om.convertValue(
+            context.getAuthenticationInfo().getUserCredentials().getUserCredentials(), Map.class);
+    interpreter.intp().directBind("userCredentials",
+            "java.util.HashMap[String, java.util.HashMap[String,String]]", userCredentials);
+
     populateSparkWebUrl(context);
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
