@@ -54,7 +54,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InterpreterRestApiTest extends AbstractTestRestApi {
-  Gson gson = new Gson();
+  private Gson gson = new Gson();
   private AuthenticationInfo anonymous;
 
   @BeforeClass
@@ -367,13 +367,12 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetMetadataInfo() throws IOException {
-    String rawRequest = "{\"name\":\"spark\",\"group\":\"spark\"," +
-            "\"properties\":{\"propname\":\"propvalue\"}," +
+    String jsonRequest = "{\"name\":\"spark\",\"group\":\"spark\"," +
+            "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
             "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
             "\"dependencies\":[]," +
             "\"option\": { \"remote\": true, \"session\": false }}";
-    JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
-    PostMethod post = httpPost("/interpreter/setting/", jsonRequest.toString());
+    PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
     InterpreterSetting created = convertResponseToInterpreterSetting(post.getResponseBodyAsString());
     String settingId = created.getId();
     Map<String, String> infos = new java.util.HashMap<>();
