@@ -76,6 +76,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
         }
       }).setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   // threadpool for delayed persist of note
