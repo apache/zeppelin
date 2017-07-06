@@ -489,8 +489,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
 
-  public boolean isPersistOnCommit() {
-    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT);
+  public String getNotePersistence() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_PERSISTENCE);
   }
   
   public String getConfDir() {
@@ -645,7 +645,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT("zeppelin.notebook.mongo.autoimport", false),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", GitNotebookRepo.class.getName()),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
-    ZEPPELIN_NOTEBOOK_PERSIST_ON_COMMIT("zeppelin.notebook.persist.on.commit", false),
+    ZEPPELIN_NOTEBOOK_PERSISTENCE("zeppelin.notebook.persistence", "continuous"),
     // whether by default note is public or private
     ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
