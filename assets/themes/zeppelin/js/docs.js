@@ -52,3 +52,6 @@ $(document).click(function (event) {
     $("button.navbar-toggle").click();
   }
 });
+
+// fix hover class on mobile TouchEvents
+document.addEventListener("touchstart", function() {}, false);
