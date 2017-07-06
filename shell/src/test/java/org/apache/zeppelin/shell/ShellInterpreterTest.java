@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.junit.After;
@@ -41,7 +42,8 @@ public class ShellInterpreterTest {
     p.setProperty("shell.command.timeout.millisecs", "2000");
     shell = new ShellInterpreter(p);
 
-    context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null, null);
+    context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null,
+        new InterpreterOutput(null));
     shell.open();
   }
 
