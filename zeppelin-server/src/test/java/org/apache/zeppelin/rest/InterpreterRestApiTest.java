@@ -110,7 +110,8 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testSettingsCRUD() throws IOException {
     // when: call create setting API
-    String rawRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String rawRequest = "{\"name\":\"md2\",\"group\":\"md\"," +
+        "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
@@ -135,7 +136,11 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
     // when: call update setting API
-    jsonRequest.getAsJsonObject("properties").addProperty("propname2", "this is new prop");
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.addProperty("name", "propname2");
+    jsonObject.addProperty("value", "this is new prop");
+    jsonObject.addProperty("type", "textarea");
+    jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
     PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
     LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
     // then: call update setting API
@@ -160,7 +165,8 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     String md1Dep = "org.apache.drill.exec:drill-jdbc:jar:1.7.0";
     String md2Dep = "org.apache.drill.exec:drill-jdbc:jar:1.6.0";
 
-    String reqBody1 = "{\"name\":\"" + md1Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String reqBody1 = "{\"name\":\"" + md1Name + "\",\"group\":\"md\"," +
+        "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[ {\n" +
         "      \"groupArtifactVersion\": \"" + md1Dep + "\",\n" +
@@ -171,7 +177,8 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertThat("test create method:", post, isAllowed());
     post.releaseConnection();
 
-    String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\"," +
+        "\"properties\": {\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[ {\n" +
         "      \"groupArtifactVersion\": \"" + md2Dep + "\",\n" +

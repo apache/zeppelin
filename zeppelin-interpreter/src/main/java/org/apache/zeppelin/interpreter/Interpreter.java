@@ -165,12 +165,13 @@ public abstract class Interpreter {
     RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
         getClassName());
     if (null != registeredInterpreter) {
-      Map<String, InterpreterProperty> defaultProperties = registeredInterpreter.getProperties();
+      Map<String, DefaultInterpreterProperty> defaultProperties =
+          registeredInterpreter.getProperties();
       for (String k : defaultProperties.keySet()) {
         if (!p.containsKey(k)) {
-          String value = defaultProperties.get(k).getValue();
+          Object value = defaultProperties.get(k).getValue();
           if (value != null) {
-            p.put(k, defaultProperties.get(k).getValue());
+            p.put(k, defaultProperties.get(k).getValue().toString());
           }
         }
       }
@@ -369,19 +370,19 @@ public abstract class Interpreter {
     private String name;
     private String className;
     private boolean defaultInterpreter;
-    private Map<String, InterpreterProperty> properties;
+    private Map<String, DefaultInterpreterProperty> properties;
     private Map<String, Object> editor;
     private String path;
     private InterpreterOption option;
     private InterpreterRunner runner;
 
     public RegisteredInterpreter(String name, String group, String className,
-        Map<String, InterpreterProperty> properties) {
+        Map<String, DefaultInterpreterProperty> properties) {
       this(name, group, className, false, properties);
     }
 
     public RegisteredInterpreter(String name, String group, String className,
-        boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
+        boolean defaultInterpreter, Map<String, DefaultInterpreterProperty> properties) {
       super();
       this.name = name;
       this.group = group;
@@ -411,7 +412,7 @@ public abstract class Interpreter {
       this.defaultInterpreter = defaultInterpreter;
     }
 
-    public Map<String, InterpreterProperty> getProperties() {
+    public Map<String, DefaultInterpreterProperty> getProperties() {
       return properties;
     }
 
@@ -452,13 +453,13 @@ public abstract class Interpreter {
 
   @Deprecated
   public static void register(String name, String group, String className,
-      Map<String, InterpreterProperty> properties) {
+      Map<String, DefaultInterpreterProperty> properties) {
     register(name, group, className, false, properties);
   }
 
   @Deprecated
   public static void register(String name, String group, String className,
-      boolean defaultInterpreter, Map<String, InterpreterProperty> properties) {
+      boolean defaultInterpreter, Map<String, DefaultInterpreterProperty> properties) {
     logger.warn("Static initialization is deprecated for interpreter {}, You should change it " +
         "to use interpreter-setting.json in your jar or " +
         "interpreter/{interpreter}/interpreter-setting.json", name);

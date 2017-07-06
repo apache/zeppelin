@@ -8,13 +8,15 @@
         "envName": null,
         "propertyName": "zeppelin.bigquery.project_id",
         "defaultValue": " ",
-        "description": "Google Project ID"
+        "description": "Google Project ID",
+        "type": "string"
       },
       "zeppelin.bigquery.wait_time": {
         "envName": null,
         "propertyName": "zeppelin.bigquery.wait_time",
         "defaultValue": "5000",
-        "description": "Query timeout in Milliseconds"
+        "description": "Query timeout in Milliseconds",
+        "type": "number"
       },
       "zeppelin.bigquery.max_no_of_rows": {
         "envName": null,
@@ -26,7 +28,8 @@
         "envName": null,
         "propertyName": "zeppelin.bigquery.use_legacy_sql",
         "defaultValue": "true",
-        "description": "set true to use legacy sql"
+        "description": "set true to use legacy sql",
+        "type": "checkbox"
       }
     },
     "editor": {

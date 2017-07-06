@@ -16,7 +16,7 @@ import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl)
 
-function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
   'ngInject'
 
   let interpreterSettingsTmp = []
@@ -26,6 +26,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   $scope.showRepositoryInfo = false
   $scope.searchInterpreter = ''
   $scope._ = _
+  $scope.interpreterPropertyTypes = []
   ngToast.dismiss()
 
   $scope.openPermissions = function () {
@@ -161,8 +162,17 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     })
   }
 
-  let emptyNewProperty = function (object) {
-    angular.extend(object, {propertyValue: '', propertyKey: ''})
+  let getAvailableInterpreterPropertyWidgets = function () {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
+      .success(function (data, status, headers, config) {
+        $scope.interpreterPropertyTypes = data.body
+      }).error(function (data, status, headers, config) {
+        console.log('Error %o %o', status, data.message)
+      })
+  }
+
+  let emptyNewProperty = function(object) {
+    angular.extend(object, {propertyValue: '', propertyKey: '', propertyType: $scope.interpreterPropertyTypes[0]})
   }
 
   let emptyNewDependency = function (object) {
@@ -201,6 +211,15 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       option.session = false
       option.process = false
     }
+  }
+
+  $scope.defaultValueByType = function (setting) {
+    if (setting.propertyType === 'checkbox') {
+      setting.propertyValue = false
+      return
+    }
+
+    setting.propertyValue = ''
   }
 
   $scope.setPerUserOption = function (settingId, sessionOption) {
@@ -428,7 +447,8 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       for (let key in intpInfo) {
         properties[key] = {
           value: intpInfo[key].defaultValue,
-          description: intpInfo[key].description
+          description: intpInfo[key].description,
+          type: intpInfo[key].type
         }
       }
     }
@@ -503,9 +523,15 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
 
     // Change properties to proper request format
     let newProperties = {}
+
     for (let p in newSetting.properties) {
-      newProperties[p] = newSetting.properties[p].value
+      newProperties[p] = {
+        value: newSetting.properties[p].value,
+        type: newSetting.properties[p].type,
+        name: p
+      }
     }
+
     request.properties = newProperties
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
@@ -573,9 +599,9 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
         return
       }
-
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
-        value: $scope.newInterpreterSetting.propertyValue
+        value: $scope.newInterpreterSetting.propertyValue,
+        type: $scope.newInterpreterSetting.propertyType
       }
       emptyNewProperty($scope.newInterpreterSetting)
     } else {
@@ -586,7 +612,10 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       if (!setting.propertyKey || setting.propertyKey === '') {
         return
       }
-      setting.properties[setting.propertyKey] = setting.propertyValue
+
+      setting.properties[setting.propertyKey] =
+        {value: setting.propertyValue, type: setting.propertyType}
+
       emptyNewProperty(setting)
     }
   }
@@ -713,7 +742,9 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     })
   }
 
-  let init = function () {
+  let init = function() {
+    getAvailableInterpreterPropertyWidgets()
+
     $scope.resetNewInterpreterSetting()
     $scope.resetNewRepositorySetting()
 
