@@ -133,7 +133,7 @@ public class ClusterManagerFactory {
         IOUtils.copy(classNameInputstream, classNameWriter);
         className = classNameWriter.toString();
         Class clazz = classLoader.loadClass(className);
-        Object cm = clazz.getConstructor().newInstance();
+        Object cm = clazz.getConstructor(ClassLoader.class).newInstance(classLoader);
         logger.info("Class loaded. {}", clazz.getName());
         if (!clusterManagerMap.containsKey(key)) {
           clusterManagerMap.put(key, (ClusterManager) cm);

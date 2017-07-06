@@ -29,6 +29,11 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
  * This is an abstraction class for implementing cluster managing service.
  */
 public abstract class ClusterManager {
+  protected final ClassLoader classLoader;
+
+  public ClusterManager(ClassLoader classLoader) {
+    this.classLoader = classLoader;
+  }
 
   /**
    * Can throw `RuntimeException`

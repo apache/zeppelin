@@ -56,12 +56,14 @@ public class Client extends ClusterManager {
    */
   private Map<String, ApplicationId> idApplicationIdMap;
 
-  public Client() {
+  public Client(ClassLoader classLoader) {
+    super(classLoader);
     this.started = false;
   }
 
   // For Testing
-  Client(Configuration configuration) {
+  Client(ClassLoader classLoader, Configuration configuration) {
+    super(classLoader);
     this.configuration = configuration;
   }
 
@@ -71,6 +73,7 @@ public class Client extends ClusterManager {
       if (null == this.configuration) {
         this.configuration = new Configuration();
       }
+      this.configuration.setClassLoader(classLoader);
       this.yarnClient = YarnClient.createYarnClient();
       this.yarnClient.init(configuration);
       this.yarnClient.start();
