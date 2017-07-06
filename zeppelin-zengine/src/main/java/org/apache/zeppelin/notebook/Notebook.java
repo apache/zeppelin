@@ -254,7 +254,7 @@ public class Notebook implements NoteEventListener {
     }
 
     noteSearchService.addIndexDoc(newNote);
-    newNote.persist(subject);
+    newNote.forcePersist(subject);
     return newNote;
   }
 

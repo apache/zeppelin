@@ -538,6 +538,10 @@ public class NotebookRepoSync implements NotebookRepo {
     return isSaveAndCommit;
   }
   
+  public boolean isSaveOnRunEnabled() {
+    return false;
+  }
+  
   void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
     getRepo(repoIndex).save(note, subject);
   }

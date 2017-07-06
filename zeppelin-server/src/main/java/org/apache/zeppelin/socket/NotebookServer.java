@@ -940,7 +940,7 @@ public class NotebookServer extends WebSocketServlet
       note.setName(name);
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note.persist(subject);
+      note.forcePersist(subject);
       broadcastNote(note);
       broadcastNoteList(subject, userAndRoles);
     }
@@ -977,7 +977,7 @@ public class NotebookServer extends WebSocketServlet
 
       List<Note> renamedNotes = oldFolder.getNotesRecursively();
       for (Note note : renamedNotes) {
-        note.persist(subject);
+        note.forcePersist(subject);
         broadcastNote(note);
       }
 
@@ -1030,7 +1030,7 @@ public class NotebookServer extends WebSocketServlet
         note.setName(noteName);
       }
 
-      note.persist(subject);
+      note.forcePersist(subject);
       addConnectionToNote(note.getId(), (NotebookSocket) conn);
       conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
     } catch (FileSystemException e) {
@@ -1780,7 +1780,7 @@ public class NotebookServer extends WebSocketServlet
   private boolean persistNoteWithAuthInfo(NotebookSocket conn,
                                           Note note, Paragraph p) throws IOException {
     try {
-      note.persist(p.getAuthenticationInfo());
+      note.forcePersist(p.getAuthenticationInfo());
       return true;
     } catch (FileSystemException ex) {
       LOG.error("Exception from run", ex);
@@ -2220,8 +2220,8 @@ public class NotebookServer extends WebSocketServlet
         }
 
         try {
-          //TODO(khalid): may change interface for JobListener and pass subject from interpreter
-          note.persist(job instanceof Paragraph ? ((Paragraph) job).getAuthenticationInfo() : null);
+          note.forcePersist(job instanceof Paragraph ? ((Paragraph) job).getAuthenticationInfo()
+              : AuthenticationInfo.ANONYMOUS);
         } catch (IOException e) {
           LOG.error(e.toString(), e);
         }

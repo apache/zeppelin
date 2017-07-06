@@ -351,7 +351,7 @@ public class NotebookRestApi {
     }
 
     note.setName(noteName);
-    note.persist(subject);
+    note.forcePersist(subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
     return new JsonResponse<>(Status.OK, "", note.getId()).build();
@@ -700,7 +700,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
 
     paragraph.setAuthenticationInfo(subject);
-    note.persist(subject);
+    note.forcePersist(subject);
 
     note.run(paragraph.getId());
     return new JsonResponse<>(Status.OK).build();
@@ -942,7 +942,7 @@ public class NotebookRestApi {
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
         AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-        note.persist(subject);
+        note.forcePersist(subject);
       }
     }
   }
