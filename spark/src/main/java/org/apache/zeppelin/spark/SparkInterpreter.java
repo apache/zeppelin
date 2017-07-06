@@ -1046,8 +1046,9 @@ public class SparkInterpreter extends Interpreter {
     sparkUrl = getSparkUIUrl();
     Map<String, String> infos = new java.util.HashMap<>();
     infos.put("url", sparkUrl);
+    String uiEnabledProp = property.getProperty("spark.ui.enabled", "true");
     java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
-            property.getProperty("spark.ui.enabled", "true"));
+            uiEnabledProp.trim());
     if (!uiEnabled) {
       infos.put("message", "Spark UI disabled");
     } else {
