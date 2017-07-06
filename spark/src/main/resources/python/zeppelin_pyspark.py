@@ -299,6 +299,8 @@ while True :
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
     jobDesc = req.jobDescription()
+    jobShortText = req.jobShortText()
+    jobLongText = req.jobLongText()
     
     # Get post-execute hooks
     try:
@@ -319,6 +321,8 @@ while True :
     if stmts:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
+      sc.setLocalProperty("callSite.short", jobShortText)
+      sc.setLocalProperty("callSite.long", jobLongText)
       sc.setJobGroup(jobGroup, jobDesc)
       code = compile('\n'.join(stmts), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
       to_run_hooks = []

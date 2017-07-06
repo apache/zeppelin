@@ -277,12 +277,16 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     public String statements;
     public String jobGroup;
     public String jobDescription;
+    public String jobShortText;
+    public String jobLongText;
 
     public PythonInterpretRequest(String statements, String jobGroup,
-        String jobDescription) {
+        String jobDescription, String shortText, String longText) {
       this.statements = statements;
       this.jobGroup = jobGroup;
       this.jobDescription = jobDescription;
+      this.jobShortText = shortText;
+      this.jobLongText = longText;
     }
 
     public String statements() {
@@ -295,6 +299,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     public String jobDescription() {
       return jobDescription;
+    }
+
+    public String jobShortText() {
+      return jobShortText;
+    }
+
+    public String jobLongText() {
+      return jobLongText;
     }
   }
 
@@ -406,7 +418,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     SparkZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
     __zeppelin__.setInterpreterContext(context);
     __zeppelin__.setGui(context.getGui());
-    pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup, jobDesc);
+    pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup, jobDesc,
+        Utils.getJobShortText(context.getParagraphText()), Utils.getJobLongText(context
+            .getParagraphText()));
     statementOutput = null;
 
     synchronized (statementSetNotifier) {
@@ -484,7 +498,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new LinkedList<>();
     }
 
-    pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "", "");
+    pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "", "", "", "");
     statementOutput = null;
 
     synchronized (statementSetNotifier) {

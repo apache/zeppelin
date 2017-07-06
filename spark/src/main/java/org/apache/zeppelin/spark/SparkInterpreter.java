@@ -46,6 +46,7 @@ import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.spark.util.CallSite;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
@@ -1183,6 +1184,9 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
+      String paraText = context.getParagraphText();
+      sc.setCallSite(new CallSite(Utils.getJobShortText(paraText),
+          Utils.getJobLongText(paraText)));
       String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
       sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
       InterpreterResult r = interpretInput(lines, context);

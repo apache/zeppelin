@@ -135,4 +135,33 @@ class Utils {
     }
     return uName;
   }
+
+  public static String getJobShortText(String paraText) {
+    paraText = sanitizeText(paraText);
+    String text = paraText;
+    if (paraText != null && !paraText.isEmpty()) {
+      String[] splits = paraText.split(System.lineSeparator(), 2);
+      if (splits.length > 0) {
+        text = splits[0];
+      }
+    }
+    return text;
+  }
+
+  public static String getJobLongText(String paraText) {
+    String text = sanitizeText(paraText);
+    return text;
+  }
+
+  private static String sanitizeText(String paraText) {
+    String text = paraText;
+    if (paraText != null && !paraText.isEmpty() && paraText.startsWith("%")) {
+      String[] splits = paraText.split(System.lineSeparator() + "|\\s", 2);
+      if (splits.length == 2) {
+        text = splits[1];
+        text = text.trim();
+      }
+    }
+    return text;
+  }
 }
