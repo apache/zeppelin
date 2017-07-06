@@ -483,7 +483,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void broadcast(String noteId, Message m) {
-    List<NotebookSocket> socketsToBroadcast;
+    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {
       broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
@@ -503,7 +503,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
-    List<NotebookSocket> socketsToBroadcast;
+    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {
       broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
