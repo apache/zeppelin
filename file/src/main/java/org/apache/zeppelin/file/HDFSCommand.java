@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.file;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.io.BufferedReader;
@@ -134,21 +135,14 @@ public class HDFSCommand {
       int responseCode = con.getResponseCode();
       logger.info("Sending 'GET' request to URL : " + hdfsUrl);
       logger.info("Response Code : " + responseCode);
-
-      BufferedReader in = new BufferedReader(
-          new InputStreamReader(con.getInputStream()));
-      String inputLine;
       StringBuffer response = new StringBuffer();
-
-      int i = 0;
-      while ((inputLine = in.readLine()) != null) {
-        if (inputLine.length() < maxLength)
+      try (BufferedReader in = new BufferedReader(
+              new InputStreamReader(con.getInputStream()));) {
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
           response.append(inputLine);
-        i++;
-        if (i >= maxLength)
-          break;
+        }
       }
-      in.close();
       return response.toString();
     }
     return null;

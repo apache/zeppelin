@@ -217,8 +217,10 @@ public class HDFSFileInterpreter extends FileInterpreter {
                   allFiles.FileStatuses != null &&
                   allFiles.FileStatuses.FileStatus != null)
           {
-            for (OneFileStatus fs : allFiles.FileStatuses.FileStatus)
+            for (int index = 0; index < cmd.maxLength; index++) {
+              OneFileStatus fs = allFiles.FileStatuses.FileStatus[index];
               all = all + listOne(path, fs) + '\n';
+            }
           }
         }
         return all;
