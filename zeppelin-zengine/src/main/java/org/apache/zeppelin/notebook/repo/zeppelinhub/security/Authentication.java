@@ -134,7 +134,6 @@ public class Authentication implements Runnable {
 
   // returns login:password
   private String getAuthKey(String userKey) {
-    LOG.debug("Encrypted user key is {}", userKey);
     if (StringUtils.isBlank(userKey)) {
       LOG.warn("ZEPPELINHUB_USER_KEY is blank");
       return StringUtils.EMPTY;
@@ -145,7 +144,6 @@ public class Authentication implements Runnable {
   }
 
   private String decrypt(String value, String initVector) {
-    LOG.debug("IV is {}, IV length is {}", initVector, initVector.length());
     if (StringUtils.isBlank(value) || StringUtils.isBlank(initVector)) {
       LOG.error("String to decode or salt is not provided");
       return StringUtils.EMPTY;
