@@ -16,11 +16,8 @@
  */
 package org.apache.zeppelin.helium;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.resource.DistributedResourcePool;
@@ -49,7 +46,7 @@ public class Helium {
   private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
 
-  private Map<String, List<HeliumPackageSearchResult>> allPackages;
+  private Map<String, List<HeliumPackageSearchResult>> allPackages = new HashMap<>();
 
   public Helium(
       String heliumConfPath,
@@ -178,8 +175,7 @@ public class Helium {
     Map<String, String> enabledPackageInfo = heliumConf.getEnabledPackages();
 
     synchronized (registry) {
-      if (refresh || allPackages == null) {
-        allPackages = new HashMap<>();
+      if (refresh || !allPackages.containsKey(packageName)) {
         for (HeliumRegistry r : registry) {
           try {
             for (HeliumPackage pkg : r.getAll()) {
@@ -189,11 +185,12 @@ public class Helium {
                   !name.equals(packageName)) {
                 continue;
               }
-              boolean enabled = enabledPackageInfo.containsKey(pkg.getName());
 
-              if (!allPackages.containsKey(name)) {
-                allPackages.put(name, new LinkedList<HeliumPackageSearchResult>());
+              if (allPackages.containsKey(name)) {
+                allPackages.remove(name);
               }
+              allPackages.put(name, new LinkedList<HeliumPackageSearchResult>());
+              boolean enabled = enabledPackageInfo.containsKey(pkg.getName());
               allPackages.get(name).add(new HeliumPackageSearchResult(r.name(), pkg, enabled));
             }
           } catch (IOException e) {
