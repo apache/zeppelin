@@ -754,16 +754,21 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.showSparkUI = function (settingId) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
       .success(function (data, status, headers, config) {
-        let url = data.body.url
-        if (!url) {
+        if (data.body === undefined) {
           BootstrapDialog.alert({
             message: 'No spark application running'
           })
           return
         }
-        window.open(url, '_blank')
+        if (data.body.url) {
+          window.open(data.body.url, '_blank')
+        } else {
+          BootstrapDialog.alert({
+            message: data.body.message
+          })
+        }
       }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message)
       })
