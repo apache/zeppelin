@@ -702,6 +702,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
               String results = getResults(resultSet,
                   !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
               interpreterResult.add(results);
+              try {
+                if (resultSet.isClosed()) {
+                  break;
+                }
+              } catch (Exception e) {
+                logger.info("Exception checking isClosed on resultSet, nothing to worry");
+              }
               if (resultSet.next()) {
                 interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
                     String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
