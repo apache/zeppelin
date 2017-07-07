@@ -25,6 +25,16 @@ limitations under the License.
 
       <div class="row">
         <div class="col-md-4" ng-if="ticket">
+          <h4>Recent
+            <i class="fa fa-eraser notebook-list-btn" ng-click="clearRecent()"></i>
+          </h4>
+          <div>
+            <ul id="recent-names">
+              <li ng-repeat="node in home.recentNotes track by $index"
+                  ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
+            </ul>
+          </div>
+
           <h4>Notebook
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
@@ -52,16 +62,6 @@ limitations under the License.
                 <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteFlatListOrdering track by $index"
                     ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
              </div>
-            </ul>
-          </div>
-
-          <h4>Recent
-            <i class="fa fa-eraser notebook-list-btn" ng-click="clearRecent()"></i>
-          </h4>
-          <div>
-            <ul id="recent-names">
-              <li ng-repeat="node in home.recentNotes track by $index"
-                  ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
             </ul>
           </div>
         </div>
