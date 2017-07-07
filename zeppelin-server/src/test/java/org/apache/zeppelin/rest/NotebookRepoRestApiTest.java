@@ -130,4 +130,43 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     updateNotebookRepoWithNewSetting(payload);
   }
   
+  @Test
+  public void testUpdatePersistenceGlobalSettingsOnRun() throws IOException {
+    List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
+    String notePersistence = StringUtils.EMPTY;
+    String settingName = "Global Settings";
+    String className = StringUtils.EMPTY;
+
+    for (int i = 0; i < listOfRepositories.size(); i++) {
+      if (listOfRepositories.get(i).get("name").equals(settingName)) {
+        notePersistence = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
+        className = (String) listOfRepositories.get(i).get("className");
+        LOG.info("class name is {}", className);
+        break;
+      }
+    }
+    if (StringUtils.isBlank(notePersistence)) {
+      return;
+    }
+
+    String payload = "{ \"name\": \"" + className + "\", \"settings\" : { \""
+        + NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME + "\" : \"run\" } }";
+    updateNotebookRepoWithNewSetting(payload);
+    
+    // Verify
+    listOfRepositories = getListOfReposotiry();
+    String updatedNotePersistence = StringUtils.EMPTY;
+    for (int i = 0; i < listOfRepositories.size(); i++) {
+      if (listOfRepositories.get(i).get("name").equals(settingName)) {
+        updatedNotePersistence = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
+        break;
+      }
+    }
+    assertThat(updatedNotePersistence, is("run"));
+    
+    // go back to normal
+    payload = "{ \"name\": \"" + className + "\", \"settings\" : { \""
+        + NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME + "\" : \"continuous\" } }";
+    updateNotebookRepoWithNewSetting(payload);
+  }
 }
