@@ -34,10 +34,12 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.eclipse.jgit.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,9 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
+  
+  private String notePersistence;
+  private static final String settingsName = "Global Settings";
 
   /**
    * @param conf
@@ -67,6 +72,7 @@ public class NotebookRepoSync implements NotebookRepo {
   public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
+    notePersistence = conf.getNotePersistence();
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -134,23 +140,42 @@ public class NotebookRepoSync implements NotebookRepo {
       reposSetting.add(repoWithSettings);
     }
     
+    // add global note persistence setting
+    repoWithSettings = NotebookRepoWithSettings
+        .builder(settingsName)
+        .className(this.getClass().getName())
+        .settings(getSettings(subject))
+        .build();
+    reposSetting.add(repoWithSettings);
+    
     return reposSetting;
   }
 
   public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
                                                      AuthenticationInfo subject) {
     NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
-    for (NotebookRepo repo : repos) {
-      if (repo.getClass().getName().equals(name)) {
-        repo.updateSettings(settings, subject);
-        updatedSettings = NotebookRepoWithSettings.
-            builder(repo.getClass().getSimpleName()).
-            className(repo.getClass().getName()).
-            settings(repo.getSettings(subject)).
-            build();
-        break;
+    
+    if (this.getClass().getName().equals(name)) {
+      updateSettings(settings, subject);
+      updatedSettings = NotebookRepoWithSettings
+          .builder(settingsName)
+          .className(this.getClass().getName())
+          .settings(getSettings(subject))
+          .build();
+    } else {
+      for (NotebookRepo repo : repos) {
+        if (repo.getClass().getName().equals(name)) {
+          repo.updateSettings(settings, subject);
+          updatedSettings = NotebookRepoWithSettings.
+              builder(repo.getClass().getSimpleName()).
+              className(repo.getClass().getName()).
+              settings(repo.getSettings(subject)).
+              build();
+          break;
+        }
       }
     }
+
     
     return updatedSettings;
   }
@@ -487,12 +512,22 @@ public class NotebookRepoSync implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    return Collections.emptyList();
+    // add note persistence settings
+    List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
+    NotebookRepoSettingsInfo persistSetting = NotebookRepoSettingUtils
+        .getNotePersistSettings(notePersistence);
+    settings.add(persistSetting);
+    return settings;
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    // no global setting yet
+    // update persistence setting
+    if (settings.containsKey(NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME)) {
+      notePersistence = settings.get(NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME);
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          notePersistence);
+    }
   }
 
   @Override
@@ -516,30 +551,12 @@ public class NotebookRepoSync implements NotebookRepo {
     return revisionNote;
   }
   
-  public boolean isSaveAndCommitEnabled() {
-    // combined saveAndCommit
-    boolean isSaveAndCommit = false;
-    for (NotebookRepo repo: repos) {
-      if (repo instanceof S3NotebookRepo) {
-        if (((S3NotebookRepo) repo).isSaveAndCommitEnabled()) {
-          isSaveAndCommit = true;
-          break;
-        }
-      } else if (repo instanceof ZeppelinHubRepo) {
-        if (((ZeppelinHubRepo) repo).isSaveAndCommitEnabled()) {
-          isSaveAndCommit = true;
-          break;
-        }
-        LOG.info("isSave() is {}, var is {}", ((ZeppelinHubRepo) repo).isSaveAndCommitEnabled(),
-            isSaveAndCommit);
-      }
-    }
-    LOG.info("returning {}", isSaveAndCommit);
-    return isSaveAndCommit;
+  public boolean isSaveOnRunEnabled() {
+    return StringUtils.equalsIgnoreCase(notePersistence, "run");
   }
   
-  public boolean isSaveOnRunEnabled() {
-    return false;
+  public boolean isSaveOnCheckpointEnabled() {
+    return StringUtils.equalsIgnoreCase(notePersistence, "checkpoint");
   }
   
   void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {

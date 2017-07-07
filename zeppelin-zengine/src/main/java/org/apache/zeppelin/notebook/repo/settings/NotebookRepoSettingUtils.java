@@ -27,21 +27,23 @@ import com.google.common.collect.Lists;
  *
  */
 public class NotebookRepoSettingUtils {
-  public static final String PERSIST_ON_COMMIT_NAME = "Note Persistence";
-  private static final String PERSIST_ON_COMMIT_OPTION1 = "Persist continuously";
-  private static final String PERSIST_ON_COMMIT_OPTION2 = "Persist on note commits";
+  public static final String NOTE_PERSISTENCE_NAME = "Note Persistence";
+  private static final String NOTE_PERSIST_OPTION1 = "Persist continuously";
+  private static final String NOTE_PERSIST_OPTION2 = "Persist on note run";
+  private static final String NOTE_PERSIST_OPTION3 = "Persist on note checkpoint/commit";
   
-  // note persist setting
-  public static NotebookRepoSettingsInfo getNotePersistSettings(boolean persistOnCommit) {
+  // note persistence setting
+  public static NotebookRepoSettingsInfo getNotePersistSettings(String optionEnabled) {
     NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
     List<Map<String, String>> values = Lists.newLinkedList();
     repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
     values = Lists.newLinkedList();
-    values.add(ImmutableMap.of("name", PERSIST_ON_COMMIT_OPTION1, "value", "false"));
-    values.add(ImmutableMap.of("name", PERSIST_ON_COMMIT_OPTION2, "value", "true"));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION1, "value", "continuous"));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION2, "value", "run"));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION3, "value", "checkpoint"));
     repoSetting.value = values;
-    repoSetting.selected  = Boolean.toString(persistOnCommit);
-    repoSetting.name = PERSIST_ON_COMMIT_NAME;
+    repoSetting.selected  = optionEnabled;
+    repoSetting.name = NOTE_PERSISTENCE_NAME;
     return repoSetting;
   }
   

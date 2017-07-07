@@ -70,7 +70,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
-    saveAndCommit = conf.isPersistOnCommit();
     LOG.info("Initializing ZeppelinHub integration module");
 
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
@@ -326,11 +325,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
     repoSetting.reload = !values.isEmpty();
     settings.add(repoSetting);
     
-    // add save and commit setting
-    NotebookRepoSettingsInfo saveSetting = NotebookRepoSettingUtils
-        .getNotePersistSettings(isSaveAndCommitEnabled());
-    settings.add(saveSetting);
-    
     return settings;
   }
 
@@ -387,12 +381,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
       }
     }
 
-    if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
-      saveAndCommit = Boolean
-          .valueOf(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
-      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
-          saveAndCommit);
-    }
   }
 
   @Override

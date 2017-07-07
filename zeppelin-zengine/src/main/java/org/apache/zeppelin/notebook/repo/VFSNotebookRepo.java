@@ -62,11 +62,9 @@ public class VFSNotebookRepo implements NotebookRepo {
   private FileSystemManager fsManager;
   private URI filesystemRoot;
   private ZeppelinConfiguration conf;
-  private boolean persistOnCommit;
   
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    persistOnCommit = conf.isPersistOnCommit();
     setNotebookDirectory(conf.getNotebookDir());
   }
 

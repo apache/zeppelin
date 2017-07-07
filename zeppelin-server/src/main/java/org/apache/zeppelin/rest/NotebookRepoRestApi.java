@@ -96,7 +96,7 @@ public class NotebookRepoRestApi {
   public Response getGlobalSettings() {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     LOG.info("Getting global settings for user {}", subject.getUser());
-    boolean saveAndCommit = noteRepos.isSaveAndCommitEnabled();
+    boolean saveAndCommit = noteRepos.isSaveOnCheckpointEnabled();
     return new JsonResponse<>(Status.OK, "", 
         ImmutableMap.of("saveAndCommit", saveAndCommit)).build();
   }

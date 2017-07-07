@@ -36,7 +36,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -61,7 +60,6 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.collect.Lists;
 
 /**
  * Backend for storing Notebooks on S3
@@ -88,14 +86,12 @@ public class S3NotebookRepo implements NotebookRepo {
   private final String user;
   private final boolean useServerSideEncryption;
   private final ZeppelinConfiguration conf;
-  private boolean saveAndCommit;
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     bucketName = conf.getBucketName();
     user = conf.getUser();
     useServerSideEncryption = conf.isS3ServerSideEncryption();
-    saveAndCommit = conf.isPersistOnCommit();
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
@@ -222,14 +218,6 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    if (isSaveAndCommitEnabled()) {
-      LOG.debug("Save on commit setting for remote S3 repo is enabled, returning without save");
-      return;
-    }
-    doSave(note, subject);
-  }
-
-  private void doSave(Note note, AuthenticationInfo subject) throws IOException {
     String json = note.toJson();
     String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";
 
@@ -285,11 +273,7 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public Revision checkpoint(String noteId, Note note, String checkpointMsg,
-      AuthenticationInfo subject)
-      throws IOException {
-    if (isSaveAndCommitEnabled()) {
-      doSave(note, subject);
-    }
+      AuthenticationInfo subject) throws IOException {
     // no-op
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
@@ -309,23 +293,13 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
-    // add save and commit setting
-    NotebookRepoSettingsInfo saveSetting = NotebookRepoSettingUtils
-        .getNotePersistSettings(isSaveAndCommitEnabled());
-    settings.add(saveSetting);
-    
-    return settings;
+    LOG.warn("Method not implemented");
+    return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    if (settings.containsKey(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME)) {
-      saveAndCommit = Boolean
-          .valueOf(settings.get(NotebookRepoSettingUtils.PERSIST_ON_COMMIT_NAME));
-      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
-          saveAndCommit);
-    }
+    LOG.warn("Method not implemented");
   }
 
   @Override
@@ -335,7 +309,4 @@ public class S3NotebookRepo implements NotebookRepo {
     return null;
   }
   
-  public boolean isSaveAndCommitEnabled() {
-    return saveAndCommit;
-  }
 }
