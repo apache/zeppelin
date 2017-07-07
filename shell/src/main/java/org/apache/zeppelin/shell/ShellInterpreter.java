@@ -31,13 +31,13 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.KerberosInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.shell.security.ShellSecurityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,17 +57,14 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   public void open() {
+    super.open();
     LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new ConcurrentHashMap<>();
-    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type"))) {
-      startKerberosLoginThread();
-    }
   }
 
   @Override
   public void close() {
-    shutdownExecutorService();
-
+    super.close();
     for (String executorKey : executors.keySet()) {
       DefaultExecutor executor = executors.remove(executorKey);
       if (executor != null) {
@@ -163,12 +160,38 @@ public class ShellInterpreter extends KerberosInterpreter {
   @Override
   protected boolean runKerberosLogin() {
     try {
-      ShellSecurityImpl.createSecureConfiguration(getProperty(), shell);
+      createSecureConfiguration();
+      return true;
     } catch (Exception e) {
       LOGGER.error("Unable to run kinit for zeppelin", e);
-      return false;
     }
-    return true;
+    return false;
+  }
+
+  public void createSecureConfiguration() {
+    Properties properties = getProperty();
+    CommandLine cmdLine = CommandLine.parse(shell);
+    cmdLine.addArgument("-c", false);
+    String kinitCommand = String.format("kinit -k -t %s %s",
+        properties.getProperty("zeppelin.shell.keytab.location"),
+        properties.getProperty("zeppelin.shell.principal"));
+    cmdLine.addArgument(kinitCommand, false);
+    DefaultExecutor executor = new DefaultExecutor();
+    try {
+      executor.execute(cmdLine);
+    } catch (Exception e) {
+      LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
+      throw new InterpreterException(e);
+    }
+  }
+
+  @Override
+  protected boolean isKerboseEnabled() {
+    if (!StringUtils.isAnyEmpty(getProperty("zeppelin.shell.auth.type")) && getProperty(
+        "zeppelin.shell.auth.type").equalsIgnoreCase("kerberos")) {
+      return true;
+    }
+    return false;
   }
 
 }
