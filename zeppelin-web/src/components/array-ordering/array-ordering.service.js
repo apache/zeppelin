@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('arrayOrderingSrv', arrayOrderingSrv)
+angular.module('zeppelinWebApp').service('arrayOrderingSrv', ArrayOrderingService)
 
-function arrayOrderingSrv (TRASH_FOLDER_ID) {
+function ArrayOrderingService(TRASH_FOLDER_ID) {
   'ngInject'
 
   let arrayOrderingSrv = this
