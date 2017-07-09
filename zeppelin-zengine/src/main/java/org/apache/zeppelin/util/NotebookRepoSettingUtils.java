@@ -43,9 +43,12 @@ public class NotebookRepoSettingUtils {
     List<Map<String, String>> values = Lists.newLinkedList();
     repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
     values = Lists.newLinkedList();
-    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION1, "value", NotePersist.CONTINUOUS.name()));
-    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION2, "value", NotePersist.RUN.name()));
-    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION3, "value", NotePersist.CHECKPOINT.name()));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION1, 
+        "value", NotePersist.CONTINUOUS.name()));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION2, 
+        "value", NotePersist.RUN.name()));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION3, 
+        "value", NotePersist.CHECKPOINT.name()));
     repoSetting.value = values;
     repoSetting.selected  = optionEnabled;
     repoSetting.name = NOTE_PERSISTENCE_NAME;
