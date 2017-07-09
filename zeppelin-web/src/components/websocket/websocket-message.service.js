@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('websocketMsgSrv', WebsocketMsgService)
+angular.module('zeppelinWebApp').service('websocketMsgSrv', WebsocketMessageService)
 
-function WebsocketMsgService ($rootScope, websocketEvents) {
+function WebsocketMessageService ($rootScope, websocketEvents) {
   'ngInject'
 
   return {
