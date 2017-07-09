@@ -218,6 +218,9 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
+    if (isSaveOnCheckpointEnabled()) {
+      return;
+    }
     try {
       for (NotebookRepo repo : repos) {
         repo.save(note, subject);
