@@ -22,9 +22,9 @@ import {
   createDefaultPackages,
 } from './helium-package'
 
-angular.module('zeppelinWebApp').service('heliumService', heliumService)
+angular.module('zeppelinWebApp').service('heliumService', HeliumService)
 
-export default function heliumService ($http, $sce, baseUrlSrv) {
+export default function HeliumService($http, $sce, baseUrlSrv) {
   'ngInject'
 
   let visualizationBundles = []
