@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo.settings;
+package org.apache.zeppelin.util;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;

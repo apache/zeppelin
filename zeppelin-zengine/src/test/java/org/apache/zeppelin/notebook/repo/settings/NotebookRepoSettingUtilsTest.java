@@ -24,6 +24,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NotebookRepoSettingUtils;
 import org.junit.Test;
 
 public class NotebookRepoSettingUtilsTest {

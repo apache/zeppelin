@@ -44,10 +44,10 @@ import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NotebookRepoSettingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
