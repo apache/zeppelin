@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('searchService', searchService)
+angular.module('zeppelinWebApp').service('searchService', SearchService)
 
-function searchService ($resource, baseUrlSrv) {
+function SearchService ($resource, baseUrlSrv) {
   'ngInject'
 
   this.search = function (term) {
