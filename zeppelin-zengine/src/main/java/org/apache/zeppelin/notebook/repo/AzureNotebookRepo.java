@@ -210,9 +210,10 @@ public class AzureNotebookRepo implements NotebookRepo {
 
   @Override
   public Revision checkpoint(String noteId, Note note, String checkpointMsg,
-      AuthenticationInfo subject)
-      throws IOException {
-    // no-op
+      AuthenticationInfo subject) throws IOException {
+    // save
+    save(note, subject);
+    // and checkpoint
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
   }

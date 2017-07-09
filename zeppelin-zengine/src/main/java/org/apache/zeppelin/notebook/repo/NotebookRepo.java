@@ -75,7 +75,7 @@ public interface NotebookRepo {
    */
 
   /**
-   * chekpoint (set revision) for notebook.
+   * save and chekpoint (set revision) for notebook.
    * @param noteId Id of the Notebook
    * @param note current note
    * @param checkpointMsg message description of the checkpoint
