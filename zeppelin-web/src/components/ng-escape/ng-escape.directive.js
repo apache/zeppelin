@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('ngEscape', ngEscape)
+angular.module('zeppelinWebApp').directive('ngEscape', NgEscapeDirective)
 
-function ngEscape () {
+function NgEscapeDirective() {
   return function (scope, element, attrs) {
     element.bind('keydown keyup', function (event) {
       if (event.which === 27) {

@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('ngEnter', ngEnter)
+angular.module('zeppelinWebApp').directive('ngEnter', NgEnterDirective)
 
-function ngEnter () {
+function NgEnterDirective() {
   return function (scope, element, attrs) {
     element.bind('keydown keypress', function (event) {
       if (event.which === 13) {
