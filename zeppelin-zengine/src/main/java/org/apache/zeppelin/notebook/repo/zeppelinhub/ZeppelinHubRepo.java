@@ -233,13 +233,12 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, Note note, String checkpointMsg,
-      AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
+    if (StringUtils.isBlank(note.getId()) || !isSubjectValid(subject)) {
       return Revision.EMPTY;
     }
-    String endpoint = Joiner.on("/").join(noteId, "checkpoint");
+    String endpoint = Joiner.on("/").join(note.getId(), "checkpoint");
     String jsonNote = GSON.toJson(note);
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg,
         "notebook", jsonNote));

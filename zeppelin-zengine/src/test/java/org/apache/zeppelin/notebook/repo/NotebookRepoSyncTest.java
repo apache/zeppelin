@@ -295,7 +295,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     String noteId = note.getId();
     // first checkpoint
-    vRepoSync.checkpoint(noteId, note, "checkpoint message", anonymous);
+    vRepoSync.checkpoint(note, "checkpoint message", anonymous);
     int vCount = gitRepo.revisionHistory(noteId, anonymous).size();
     assertThat(vCount).isEqualTo(1);
     
@@ -307,7 +307,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     // save and checkpoint again
     vRepoSync.save(note, anonymous);
-    vRepoSync.checkpoint(noteId, null, "checkpoint message 2", anonymous);
+    vRepoSync.checkpoint(note, "checkpoint message 2", anonymous);
     assertThat(gitRepo.revisionHistory(noteId, anonymous).size()).isEqualTo(vCount + 1);
     notebookRepoSync.remove(note.getId(), anonymous);
   }

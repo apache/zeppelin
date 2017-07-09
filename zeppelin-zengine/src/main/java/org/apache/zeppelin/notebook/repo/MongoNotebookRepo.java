@@ -223,8 +223,8 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, Note note, String checkpointMsg,
-      AuthenticationInfo subject) throws IOException {
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
+      throws IOException {
     // save
     save(note, subject);
     // and checkpoint

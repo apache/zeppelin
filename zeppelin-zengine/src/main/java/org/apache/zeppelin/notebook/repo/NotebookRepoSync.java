@@ -452,8 +452,7 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, Note note, String checkpointMsg,
-      AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
@@ -463,10 +462,10 @@ public class NotebookRepoSync implements NotebookRepo {
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, note, checkpointMsg, subject));
+        allRepoCheckpoints.add(getRepo(i).checkpoint(note, checkpointMsg, subject));
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
-          getRepo(i).getClass().toString(), i, noteId);
+          getRepo(i).getClass().toString(), i, note.getId());
         errorMessage += "Error on storage class " + getRepo(i).getClass().toString() +
           " with index " + i + " : " + e.getMessage() + "\n";
         errorCount++;
