@@ -61,23 +61,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.noteRevisions = []
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
-  $scope.saveAndCommit = false
-  setGlobalRepoSettings()
-
-  function setGlobalRepoSettings () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/notebook-repositories/global-settings')
-      .success(function (data, status, headers, config) {
-        console.log('REST received << global-settings %o', data)
-        let settings = data.body
-        if (settings.saveAndCommit === true) {
-          // $scope.saveAndCommit = 'Save & Commit'
-          $scope.saveAndCommit = true
-          console.log('save and commit is trueee ' + settings.saveAndCommit)
-        }
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
-      })
-  }
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {

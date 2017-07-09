@@ -115,7 +115,7 @@ limitations under the License.
                 tooltip-placement="bottom" uib-tooltip="Set revision">
           <i class="fa fa-arrow-circle-o-right"></i>
         </button>
-        <ul class="dropdown-menu" style="{{saveAndCommit === true ? 'width:290px' : 'width:250px'}}"
+        <ul class="dropdown-menu" style="width:250px"
           aria-labelledby="versionControlDropdown">
           <li>
             <div class="commit-container">
@@ -133,8 +133,8 @@ limitations under the License.
                         style="margin-left: 4px;"
                         tooltip-append-to-body="true"
                         tooltip-class="revisionTooltip"
-                        tooltip-placement="bottom" uib-tooltip="{{saveAndCommit === true ? 'Save & commit this note' : 'Commit this note'}}">
-                        {{saveAndCommit === true ? 'Save & Commit' : 'Commit'}}
+                        tooltip-placement="bottom" uib-tooltip="Commit this note">
+                        Commit
                 </button>
               </div>
             </div>
