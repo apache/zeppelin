@@ -28,7 +28,7 @@ public class ClusterManagerFactoryTest {
   @Test
   public void initTest() {
     System.out.println(System.getenv("CLASSPATH"));
-    ClusterManagerFactory cmf = new ClusterManagerFactory(null, "../../", "local");
+    ClusterManagerFactory cmf = new ClusterManagerFactory(null, "local");
     // TODO(jl): Fix order of building module for testing it
     //assertTrue("One of cluster manager will exists", null != cmf.getClusterManager("yarn") || null != cmf.getClusterManager("mesos"));
   }
