@@ -38,6 +38,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_CLUSTER_MANAGER_YARN;
+
 /**
  * This class is in charge of making yarn client and implementing cluster manager.
  */
@@ -56,15 +58,18 @@ public class Client extends ClusterManager {
    */
   private Map<String, ApplicationId> idApplicationIdMap;
 
-  public Client(ClassLoader classLoader) {
-    super(classLoader);
+  public Client() {
     this.started = false;
   }
 
   // For Testing
-  Client(ClassLoader classLoader, Configuration configuration) {
-    super(classLoader);
+  Client(Configuration configuration) {
     this.configuration = configuration;
+  }
+
+  @Override
+  public String getClusterManagerName() {
+    return ZEPPELIN_CLUSTER_MANAGER_YARN;
   }
 
   public synchronized void start() {
@@ -73,7 +78,6 @@ public class Client extends ClusterManager {
       if (null == this.configuration) {
         this.configuration = new Configuration();
       }
-      this.configuration.setClassLoader(classLoader);
       this.yarnClient = YarnClient.createYarnClient();
       this.yarnClient.init(configuration);
       this.yarnClient.start();

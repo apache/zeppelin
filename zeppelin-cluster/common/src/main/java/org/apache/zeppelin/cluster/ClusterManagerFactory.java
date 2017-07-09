@@ -17,21 +17,10 @@
 
 package org.apache.zeppelin.cluster;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +34,16 @@ public class ClusterManagerFactory {
   private static final String CLUSTER_COMMON_DIR_NAME = "common";
   private static final String CLUSTER_CLASS_NAME_FILE = "clustermanager-class";
 
+  private final List<String> clusterManagerList;
   private final String zeppelinHome;
   private final String defaultClusterKey;
   private final Map<String, ClusterManager> clusterManagerMap;
 
   private boolean initialized;
 
-  public ClusterManagerFactory(String zeppelinHome, String defaultClusterKey) {
+  public ClusterManagerFactory(List<String> clusterManagerList, String zeppelinHome,
+      String defaultClusterKey) {
+    this.clusterManagerList = clusterManagerList;
     this.zeppelinHome = zeppelinHome;
     this.defaultClusterKey = defaultClusterKey;
     this.clusterManagerMap = Maps.newHashMap();
@@ -83,86 +75,33 @@ public class ClusterManagerFactory {
     if (initialized) {
       return;
     }
-    // Find clusters inside source tree
-    logger.info("ZeppelinHome: {}", Paths.get(zeppelinHome).toAbsolutePath().toString());
-    try {
-      for (Path p : Files
-          .newDirectoryStream(Paths.get(zeppelinHome, "zeppelin-cluster"), new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-              return !entry.toString().endsWith(CLUSTER_COMMON_DIR_NAME);
-            }
-          })) {
-        String key = p.getFileName().toString();
-        List<URL> jars = Lists.newArrayList();
-        addJarsFromPath(Paths.get(p.toString(), "target"), jars);
-        addJarsFromPath(Paths.get(p.toString(), "target", "lib"), jars);
 
-        registerClusterManager(key, jars);
-      }
-
-      for (Path p : Files
-          .newDirectoryStream(Paths.get(zeppelinHome, "lib", "cluster"), new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-              return !entry.toString().endsWith(CLUSTER_COMMON_DIR_NAME);
-            }
-          })) {
-        String key = p.getFileName().toString();
-        List<URL> jars = Lists.newArrayList();
-        addJarsFromPath(p, jars);
-
-        registerClusterManager(key, jars);
-      }
-    } catch (IOException e) {
-      logger.debug("error while reading directory", e);
-    }
+    findAndRegisterClusterManager();
 
     initialized = true;
   }
 
-  private void registerClusterManager(String key, List<URL> jars) {
-    ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
-    ClassLoader classLoader = new URLClassLoader(jars.toArray(new URL[0]), parentClassLoader);
-    String className = null;
-
-    try (InputStream classNameInputstream =
-             classLoader.getResourceAsStream(CLUSTER_CLASS_NAME_FILE);
-         StringWriter classNameWriter = new StringWriter()) {
-      if (null != classNameInputstream) {
-        IOUtils.copy(classNameInputstream, classNameWriter);
-        className = classNameWriter.toString();
-        Class clazz = classLoader.loadClass(className);
-        Object cm = clazz.getConstructor(ClassLoader.class).newInstance(classLoader);
-        logger.info("Class loaded. {}", clazz.getName());
-        if (!clusterManagerMap.containsKey(key)) {
-          clusterManagerMap.put(key, (ClusterManager) cm);
-        }
-      } else {
-        logger.debug("No resources {} in {}", CLUSTER_COMMON_DIR_NAME, jars);
-      }
-    } catch (ClassNotFoundException | IllegalAccessException | InstantiationException
-        | NoSuchMethodException | InvocationTargetException | IOException e) {
-      if (null != className) {
-        logger.error("class name is defined {}, but witch doesn't exist", className);
-      }
-    } catch (NoClassDefFoundError e) {
-      logger.info("{} exists but insufficient dependencies. jars: {}", className, jars);
+  private void findAndRegisterClusterManager() {
+    if (null == clusterManagerList) {
+      return;
     }
-  }
 
-  public void addJarsFromPath(Path dir, List<URL> jars) {
-    try {
-      for (Path p : Files.newDirectoryStream(dir, new Filter<Path>() {
-        @Override
-        public boolean accept(Path entry) throws IOException {
-          return entry.toString().endsWith(".jar");
+    for (String clusterManagerClassName : clusterManagerList) {
+      try {
+        Class clazz = Class.forName(clusterManagerClassName);
+        Object cm = clazz.getConstructor().newInstance();
+        String name = ((ClusterManager) cm).getClusterManagerName();
+        if (null == name || name.isEmpty()) {
+          throw new IllegalArgumentException("Cluster manager is null:" + clusterManagerClassName);
         }
-      })) {
-        jars.add(p.toUri().toURL());
+        if (!clusterManagerMap.containsKey(name)) {
+          clusterManagerMap.put(name, (ClusterManager) cm);
+        }
+        logger.info("ClusterManager {} is loaded with class {}", name, clusterManagerClassName);
+      } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException |
+          NoSuchMethodException | InstantiationException | IllegalArgumentException e) {
+        logger.error("Wrong cluster manager name: {}", clusterManagerClassName);
       }
-    } catch (IOException e) {
-      logger.error("Error occurs while reading {}", dir.toAbsolutePath().toString());
     }
   }
 }

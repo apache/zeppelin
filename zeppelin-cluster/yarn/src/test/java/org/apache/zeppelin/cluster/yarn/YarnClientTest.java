@@ -90,7 +90,7 @@ public class YarnClientTest {
   @Test
   public void clientTest() throws Exception {
     System.out.println("RM_ADDRESS = " + miniYARNCluster.getConfig().get(YarnConfiguration.RM_ADDRESS));
-    Client client = new Client(ClassLoader.getSystemClassLoader(), miniYARNCluster.getConfig());
+    Client client = new Client(miniYARNCluster.getConfig());
     client.start();
     RemoteInterpreterProcess remoteInterpreterProcess = client.createInterpreter("id", "name", "fake", Maps.<String, String>newHashMap(), new Properties(), 100000, null, null, "fakeHome", "fake");
     String parentClasspath = Paths.get(YarnRemoteInterpreterServer.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent().getParent().getParent().toAbsolutePath().toString();

@@ -68,16 +68,16 @@ import static org.apache.hadoop.yarn.api.records.YarnApplicationState.KILLED;
 import static org.apache.hadoop.yarn.api.records.YarnApplicationState.RUNNING;
 import static org.apache.zeppelin.cluster.yarn.YarnUtils.addLocalResource;
 import static org.apache.zeppelin.cluster.yarn.YarnUtils.getPathsFromDirPath;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_APPLICATION_TYPE_DEFAULT;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_APPLICATION_TYPE_KEY;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_MEMORY_DEFAULT;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_MEMORY_KEY;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_PRIORITY_DEFAULT;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_PRIORITY_KEY;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_QUEUE_DEFAULT;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_QUEUE_KEY;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_VCORES_DEFAULT;
-import static org.apache.zeppelin.interpreter.Constants.ZEPPELIN_YARN_VCORES_KEY;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_APPLICATION_TYPE_DEFAULT;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_APPLICATION_TYPE_KEY;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_MEMORY_DEFAULT;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_MEMORY_KEY;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_PRIORITY_DEFAULT;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_PRIORITY_KEY;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_QUEUE_DEFAULT;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_QUEUE_KEY;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_VCORES_DEFAULT;
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_YARN_VCORES_KEY;
 
 /**
  *

@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_CLUSTER_MANAGER_KEY;
+
 /**
  * Proxy for Interpreter instance that runs on separate process
  */
@@ -185,7 +187,7 @@ public class RemoteInterpreter extends Interpreter {
               host,
               port);
         } else {
-          String clusterManagerKey = getProperty(Constants.ZEPPELIN_CLUSTER_MANAGER_KEY);
+          String clusterManagerKey = getProperty(ZEPPELIN_CLUSTER_MANAGER_KEY);
           ClusterManager clusterManager;
 
           //TODO(jl): Fix the parameter list to unify all methods
