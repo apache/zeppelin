@@ -42,7 +42,7 @@ limitations under the License.
         <ul>
           <li ng-repeat="node in node.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by $index"
               ng-class="{'active' : navbar.isActive(node.id)}"
-              ng-include="'components/navbar/navbar-noteList-elem.html'">
+              ng-include="'components/navbar/navbar-note-list-elem.html'">
           </li>
         </ul>
       </div>

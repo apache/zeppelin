@@ -12,9 +12,11 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('expandCollapse', expandCollapse)
+import './expand-collapse.css'
 
-function expandCollapse () {
+angular.module('zeppelinWebApp').directive('expandCollapse', expandCollapseDirective)
+
+function expandCollapseDirective() {
   return {
     restrict: 'EA',
     link: function (scope, element, attrs) {
