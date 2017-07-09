@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('codeEditor', codeEditor)
+angular.module('zeppelinWebApp').directive('codeEditor', CodeEditorDirective)
 
-function codeEditor ($templateRequest, $compile) {
+function CodeEditorDirective($templateRequest, $compile) {
   return {
     restrict: 'AE',
     scope: {
@@ -26,7 +26,7 @@ function codeEditor ($templateRequest, $compile) {
       revisionView: '=revisionView'
     },
     link: function (scope, element, attrs, controller) {
-      $templateRequest('components/editor/ace.editor.directive.html').then(function (editorHtml) {
+      $templateRequest('app/notebook/paragraph/code-editor/code-editor.directive.html').then(function (editorHtml) {
         let editor = angular.element(editorHtml)
         editor.attr('id', scope.paragraphId + '_editor')
         element.append(editor)
