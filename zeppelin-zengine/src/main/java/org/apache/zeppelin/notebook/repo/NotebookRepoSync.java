@@ -37,14 +37,12 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * Notebook repository sync with remote storage
@@ -63,7 +61,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private final boolean oneWaySync;
   
   private String notePersistence;
-  private static final String settingsName = "Global Settings";
+  private static final String GLOBAL_SETTINGS_NAME = "Global Settings";
 
   /**
    * @param conf
@@ -142,7 +140,7 @@ public class NotebookRepoSync implements NotebookRepo {
     
     // add global note persistence setting
     repoWithSettings = NotebookRepoWithSettings
-        .builder(settingsName)
+        .builder(GLOBAL_SETTINGS_NAME)
         .className(this.getClass().getName())
         .settings(getSettings(subject))
         .build();
@@ -158,7 +156,7 @@ public class NotebookRepoSync implements NotebookRepo {
     if (this.getClass().getName().equals(name)) {
       updateSettings(settings, subject);
       updatedSettings = NotebookRepoWithSettings
-          .builder(settingsName)
+          .builder(GLOBAL_SETTINGS_NAME)
           .className(this.getClass().getName())
           .settings(getSettings(subject))
           .build();
@@ -557,6 +555,10 @@ public class NotebookRepoSync implements NotebookRepo {
   
   public boolean isSaveOnCheckpointEnabled() {
     return StringUtils.equalsIgnoreCase(notePersistence, "checkpoint");
+  }
+  
+  public String getGlobalSettingsName() {
+    return GLOBAL_SETTINGS_NAME;
   }
   
   void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {

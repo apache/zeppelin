@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
@@ -39,7 +40,10 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingUtils;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
@@ -1202,6 +1206,93 @@ public class NotebookTest implements JobListenerFactory{
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     ZeppelinConfiguration.create();
+  }
+  
+  @Test
+  public void testPersistOnRun() throws IOException, SchedulerException {
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
+        "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSISTENCE.getVarName(),
+        "run");
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    
+    SearchService search = mock(SearchService.class);
+    NotebookRepoSync repoManager = new NotebookRepoSync(conf);
+    Notebook notebook = new Notebook(conf, repoManager, schedulerFactory, factory,
+        interpreterSettingManager, this, search, notebookAuthorization, credentials);
+
+    // one git versioned storage initialized
+    assertThat(repoManager.getRepoCount()).isEqualTo(1);
+    
+    // persist settings applied
+    List<NotebookRepoWithSettings> settings = repoManager.getNotebookRepos(anonymous);
+    assertThat(settings.size()).isEqualTo(2);
+    assertThat(settings.get(0).name).isEqualTo("GitNotebookRepo");
+    assertThat(settings.get(1).name).isEqualTo(repoManager.getGlobalSettingsName());
+    assertThat(settings.get(1).settings.get(0).name)
+        .isEqualTo(NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME);
+    assertThat(settings.get(1).settings.get(0).selected).isEqualTo("run");
+
+    // no notes in memory
+    assertThat(notebook.getAllNotes().size()).isEqualTo(0);
+    // no notes on disk
+    assertThat(repoManager.list(anonymous).size()).isEqualTo(0);
+    
+    // create note
+    Note note = notebook.createNote(anonymous);
+    interpreterSettingManager.setInterpreters("user", note.getId(), interpreterSettingManager.getDefaultInterpreterSettingList());
+    
+    // 1 note in memory
+    assertThat(notebook.getAllNotes().size()).isEqualTo(1);
+    // no notes on disk
+    assertThat(repoManager.list(anonymous).size()).isEqualTo(0);
+    
+    // p1
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Map config1 = p1.getConfig();
+    config1.put("enabled", true);
+    p1.setConfig(config1);
+    p1.setText("p1");
+
+    // p2
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Map config2 = p2.getConfig();
+    config2.put("enabled", false);
+    p2.setConfig(config2);
+    p2.setText("p2");
+
+    // p3
+    Paragraph p3 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p3.setText("p3");
+
+    // before run
+    // 1 note with 3 paragraphs in memory
+    assertThat(notebook.getAllNotes().size()).isEqualTo(1);
+    assertNotNull(notebook.getNote(note.getId()).getParagraphs());
+    assertThat(notebook.getNote(note.getId()).getParagraphs().size()).isEqualTo(3);
+    // no notes on disk
+    assertThat(repoManager.list(anonymous).size()).isEqualTo(0);
+    
+    // when
+    note.runAll();
+
+    // wait for finish
+    while(p3.isTerminated() == false || p3.getResult() == null) {
+      Thread.yield();
+    }
+    
+    assertEquals("repl1: p1", p1.getResult().message().get(0).getData());
+    assertNull(p2.getResult());
+    assertEquals("repl1: p3", p3.getResult().message().get(0).getData());
+    
+    // TODO(khalid): make run initiate status change that persists in test
+    //assertThat(repoManager.list(anonymous).size()).isEqualTo(1);
+    
+    // set back
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSISTENCE.getVarName(),
+        "continuous");
+    // remove note
+    notebook.removeNote(note.getId(), anonymous);
   }
   
   private void delete(File file){
