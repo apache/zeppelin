@@ -681,7 +681,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
     ZEPPELIN_CLUSTER_DEFAULT("zeppelin.cluster.default", "local"),
-    ZEPPELIN_CLUSTER_MANAGER_LIST("zeppelin.cluster.manager.list", YarnClusterManager.class.getName());
+    ZEPPELIN_CLUSTER_MANAGER_LIST("zeppelin.cluster.manager.list",
+        YarnClusterManager.class.getName());
 
     private String varName;
     @SuppressWarnings("rawtypes")
