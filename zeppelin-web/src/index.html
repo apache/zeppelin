@@ -81,8 +81,8 @@ limitations under the License.
     <div id="main" class="container">
       <div ng-view></div>
     </div>
-    <!-- Modal ::  Keyboard shortcuts -->
-    <div ng-include src="'components/modal-shortcut/modal-shortcut.html'"></div>
+    <!-- global :: dialogs -->
+    <div ng-include src="'app/notebook/shortcut.html'"></div>
     <div ng-controller="NotenameCtrl as notenamectrl">
       <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html'"></div>
     </div>
