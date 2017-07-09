@@ -6,11 +6,11 @@ describe('Controller: NotenameCtrl', function () {
   let noteList
 
   beforeEach(inject(function ($injector, $rootScope, $controller) {
-    noteList = $injector.get('noteListDataFactory')
+    noteList = $injector.get('noteListFactory')
     scope = $rootScope.$new()
     ctrl = $controller('NotenameCtrl', {
       $scope: scope,
-      noteListDataFactory: noteList
+      noteListFactory: noteList
     })
   }))
 

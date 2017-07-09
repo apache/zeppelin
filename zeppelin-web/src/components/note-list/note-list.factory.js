@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory)
+angular.module('zeppelinWebApp').factory('noteListFactory', NoteListFactory)
 
-function noteListDataFactory (TRASH_FOLDER_ID) {
+function NoteListFactory(TRASH_FOLDER_ID) {
   'ngInject'
 
   const notes = {

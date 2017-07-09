@@ -48,12 +48,12 @@ limitations under the License.
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
               <div ng-if="!query.q || query.q === ''">
               <li ng-repeat="node in navbar.notes.root.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by node.id"
-                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
             <div ng-if="query.q">
               <li ng-repeat="node in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering track by node.id"
-                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
             </div>

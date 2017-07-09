@@ -5,7 +5,7 @@ describe('Factory: NoteList', function () {
     angular.mock.module('zeppelinWebApp')
 
     inject(function ($injector) {
-      noteList = $injector.get('noteListDataFactory')
+      noteList = $injector.get('noteListFactory')
     })
   })
 

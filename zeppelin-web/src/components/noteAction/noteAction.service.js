@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').service('noteActionSrv', noteActionSrv)
 
-function noteActionSrv (websocketMsgSrv, $location, renameSrv, noteListDataFactory) {
+function noteActionSrv (websocketMsgSrv, $location, renameSrv, noteListFactory) {
   'ngInject'
 
   this.moveNoteToTrash = function (noteId, redirectToHome) {
@@ -134,7 +134,7 @@ function noteActionSrv (websocketMsgSrv, $location, renameSrv, noteListDataFacto
       oldName: folderId,
       callback: function (newName) {
         let newFolderId = normalizeFolderId(newName)
-        if (_.has(noteListDataFactory.flatFolderMap, newFolderId)) {
+        if (_.has(noteListFactory.flatFolderMap, newFolderId)) {
           BootstrapDialog.confirm({
             type: BootstrapDialog.TYPE_WARNING,
             closable: true,

@@ -16,12 +16,12 @@ import './note-name-dialog.css'
 
 angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl)
 
-function NotenameCtrl ($scope, noteListDataFactory, $routeParams, websocketMsgSrv) {
+function NotenameCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv) {
   'ngInject'
 
   let vm = this
   vm.clone = false
-  vm.notes = noteListDataFactory
+  vm.notes = noteListFactory
   vm.websocketMsgSrv = websocketMsgSrv
   $scope.note = {}
   $scope.interpreterSettings = {}
