@@ -34,8 +34,8 @@ public class NotebookRepoSettingUtils {
   
   public static final String NOTE_PERSISTENCE_NAME = "Note Persistence";
   private static final String NOTE_PERSIST_OPTION1 = "Persist continuously";
-  private static final String NOTE_PERSIST_OPTION2 = "Persist on note run";
-  private static final String NOTE_PERSIST_OPTION3 = "Persist on note checkpoint/commit";
+  private static final String NOTE_PERSIST_OPTION2 = "Persist on note run and commit (revision)";
+  private static final String NOTE_PERSIST_OPTION3 = "Persist on note commit (revision) only";
   
   // note persistence setting
   public static NotebookRepoSettingsInfo getNotePersistSettings(String optionEnabled) {
