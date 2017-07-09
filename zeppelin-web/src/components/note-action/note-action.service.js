@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('noteActionSrv', noteActionSrv)
+angular.module('zeppelinWebApp').service('noteActionService', noteActionService)
 
-function noteActionSrv (websocketMsgSrv, $location, renameSrv, noteListFactory) {
+function noteActionService(websocketMsgSrv, $location, renameSrv, noteListFactory) {
   'ngInject'
 
   this.moveNoteToTrash = function (noteId, redirectToHome) {
