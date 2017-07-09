@@ -14,9 +14,9 @@
 
 import './rename.css'
 
-angular.module('zeppelinWebApp').controller('RenameCtrl', RenameCtrl)
+angular.module('zeppelinWebApp').controller('RenameCtrl', RenameController)
 
-function RenameCtrl ($scope) {
+function RenameController ($scope) {
   'ngInject'
 
   let self = this

@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').service('noteActionService', noteActionService)
 
-function noteActionService(websocketMsgSrv, $location, renameSrv, noteListFactory) {
+function noteActionService(websocketMsgSrv, $location, renameService, noteListFactory) {
   'ngInject'
 
   this.moveNoteToTrash = function (noteId, redirectToHome) {
@@ -119,7 +119,7 @@ function noteActionService(websocketMsgSrv, $location, renameSrv, noteListFactor
   }
 
   this.renameNote = function (noteId, notePath) {
-    renameSrv.openRenameModal({
+    renameService.openRenameModal({
       title: 'Rename note',
       oldName: notePath,
       callback: function (newName) {
@@ -129,7 +129,7 @@ function noteActionService(websocketMsgSrv, $location, renameSrv, noteListFactor
   }
 
   this.renameFolder = function (folderId) {
-    renameSrv.openRenameModal({
+    renameService.openRenameModal({
       title: 'Rename folder',
       oldName: folderId,
       callback: function (newName) {

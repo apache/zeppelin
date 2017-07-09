@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('renameSrv', renameSrv)
+angular.module('zeppelinWebApp').service('renameService', RenameService)
 
-function renameSrv ($rootScope) {
+function RenameService($rootScope) {
   'ngInject'
 
   let self = this
