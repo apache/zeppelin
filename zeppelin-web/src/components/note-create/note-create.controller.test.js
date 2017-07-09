@@ -1,4 +1,4 @@
-describe('Controller: NotenameCtrl', function () {
+describe('Controller: NoteCreateCtrl', function () {
   beforeEach(angular.mock.module('zeppelinWebApp'))
 
   let scope
@@ -8,7 +8,7 @@ describe('Controller: NotenameCtrl', function () {
   beforeEach(inject(function ($injector, $rootScope, $controller) {
     noteList = $injector.get('noteListFactory')
     scope = $rootScope.$new()
-    ctrl = $controller('NotenameCtrl', {
+    ctrl = $controller('NoteCreateCtrl', {
       $scope: scope,
       noteListFactory: noteList
     })

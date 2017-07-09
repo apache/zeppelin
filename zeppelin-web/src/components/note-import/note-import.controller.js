@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import './note-import-dialog.css'
+import './note-import.css'
 
 angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl)
 

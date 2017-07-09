@@ -83,11 +83,11 @@ limitations under the License.
     </div>
     <!-- global :: dialogs -->
     <div ng-include src="'app/notebook/shortcut.html'"></div>
-    <div ng-controller="NotenameCtrl as notenamectrl">
-      <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html'"></div>
+    <div ng-controller="NoteCreateCtrl as noteCreateCtrl">
+      <div id="note-modal-container" ng-include src="'components/note-create/note-create.html'"></div>
     </div>
-    <div ng-controller="NoteImportCtrl as noteimportctrl">
-      <div id="note-import-container" ng-include src="'components/noteName-import/note-import-dialog.html'"></div>
+    <div ng-controller="NoteImportCtrl as noteImportCtrl">
+      <div id="note-import-container" ng-include src="'components/note-import/note-import.html'"></div>
     </div>
     <div ng-controller="LoginCtrl as noteimportctrl">
       <div id="login-container" ng-include src="'components/login/login.html'"></div>

@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-import './note-name-dialog.css'
+import './note-create.css'
 
-angular.module('zeppelinWebApp').controller('NotenameCtrl', NotenameCtrl)
+angular.module('zeppelinWebApp').controller('NoteCreateCtrl', NoteCreateCtrl)
 
-function NotenameCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv) {
+function NoteCreateCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv) {
   'ngInject'
 
   let vm = this
@@ -42,7 +42,7 @@ function NotenameCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv) {
   }
 
   vm.handleNameEnter = function () {
-    angular.element('#noteNameModal').modal('toggle')
+    angular.element('#noteCreateModal').modal('toggle')
     vm.createNote()
   }
 
