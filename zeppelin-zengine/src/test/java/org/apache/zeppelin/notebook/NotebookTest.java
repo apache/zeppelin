@@ -1288,6 +1288,19 @@ public class NotebookTest implements JobListenerFactory{
     // TODO(khalid): make run initiate status change that persists in test
     //assertThat(repoManager.list(anonymous).size()).isEqualTo(1);
     
+    // commit revision
+    notebook.checkpointNote(note.getId(), "checkpoint msg1", anonymous);
+    
+    // check that saved in repo
+    assertThat(repoManager.list(anonymous).size()).isEqualTo(1);
+    assertThat(repoManager.list(anonymous).get(0).id).isEqualTo(note.getId());
+    assertThat(repoManager.get(note.getId(), anonymous).getParagraphs().size())
+        .isEqualTo(note.getParagraphs().size());
+    
+    assertThat(notebook.listRevisionHistory(note.getId(), anonymous).size()).isEqualTo(1);
+    assertThat(notebook.listRevisionHistory(note.getId(), anonymous).get(0).message)
+        .isEqualTo("checkpoint msg1");
+    
     // set back
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PERSISTENCE.getVarName(),
         "continuous");
