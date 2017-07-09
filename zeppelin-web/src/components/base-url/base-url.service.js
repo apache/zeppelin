@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('baseUrlSrv', baseUrlSrv)
+angular.module('zeppelinWebApp').service('baseUrlSrv', BaseUrlService)
 
-function baseUrlSrv () {
+function BaseUrlService() {
   this.getPort = function () {
     let port = Number(location.port)
     if (!port) {
