@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-angular.module('zeppelinWebApp').controller('clipboardCtrl', clipboardCtrl)
+angular.module('zeppelinWebApp').controller('clipboardCtrl', ClipboardController)
 
-function clipboardCtrl ($scope) {
+function ClipboardController ($scope) {
   'ngInject'
 
   $scope.complete = function (e) {
