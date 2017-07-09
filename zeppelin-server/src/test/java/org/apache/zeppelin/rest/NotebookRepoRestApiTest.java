@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync.NotePersist;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.NotebookRepoSettingUtils;
 import org.junit.AfterClass;
@@ -150,7 +151,8 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     }
 
     String payload = "{ \"name\": \"" + className + "\", \"settings\" : { \""
-        + NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME + "\" : \"run\" } }";
+        + NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME + "\" : \"" + NotePersist.RUN.name()
+        + "\" } }";
     updateNotebookRepoWithNewSetting(payload);
     
     // Verify
@@ -162,7 +164,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
         break;
       }
     }
-    assertThat(updatedNotePersistence, is("run"));
+    assertThat(updatedNotePersistence, is(NotePersist.RUN.name()));
     
     // go back to normal
     payload = "{ \"name\": \"" + className + "\", \"settings\" : { \""

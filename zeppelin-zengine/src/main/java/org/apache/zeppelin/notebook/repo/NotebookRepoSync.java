@@ -64,6 +64,15 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final String GLOBAL_SETTINGS_NAME = "Global Settings";
 
   /**
+   * Options for persisting notes on actions.
+   */
+  public enum NotePersist {
+    CONTINUOUS,       // Default value when all edit actions initiate note persist
+    RUN,              // Persist notes on run and checkpoint (commit) actions 
+    CHECKPOINT        // Persist note on checkpoint (commit) actions only
+  }
+  
+  /**
    * @param conf
    */
   @SuppressWarnings("static-access")
@@ -549,11 +558,11 @@ public class NotebookRepoSync implements NotebookRepo {
   }
   
   public boolean isSaveOnRunEnabled() {
-    return StringUtils.equalsIgnoreCase(notePersistence, "run");
+    return StringUtils.equalsIgnoreCase(notePersistence, NotePersist.RUN.name());
   }
   
   public boolean isSaveOnCheckpointEnabled() {
-    return StringUtils.equalsIgnoreCase(notePersistence, "checkpoint");
+    return StringUtils.equalsIgnoreCase(notePersistence, NotePersist.CHECKPOINT.name());
   }
   
   public String getGlobalSettingsName() {

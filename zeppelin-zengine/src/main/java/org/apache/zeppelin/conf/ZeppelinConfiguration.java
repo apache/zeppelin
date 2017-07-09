@@ -29,6 +29,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync.NotePersist;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -645,7 +646,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT("zeppelin.notebook.mongo.autoimport", false),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", GitNotebookRepo.class.getName()),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
-    ZEPPELIN_NOTEBOOK_PERSISTENCE("zeppelin.notebook.persistence", "continuous"),
+    ZEPPELIN_NOTEBOOK_PERSISTENCE("zeppelin.notebook.persistence", NotePersist.CONTINUOUS.name()),
     // whether by default note is public or private
     ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",

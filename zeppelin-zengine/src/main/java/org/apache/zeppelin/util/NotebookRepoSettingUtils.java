@@ -19,6 +19,7 @@ package org.apache.zeppelin.util;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync.NotePersist;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 
@@ -30,6 +31,7 @@ import com.google.common.collect.Lists;
  *
  */
 public class NotebookRepoSettingUtils {
+  
   public static final String NOTE_PERSISTENCE_NAME = "Note Persistence";
   private static final String NOTE_PERSIST_OPTION1 = "Persist continuously";
   private static final String NOTE_PERSIST_OPTION2 = "Persist on note run";
@@ -41,9 +43,9 @@ public class NotebookRepoSettingUtils {
     List<Map<String, String>> values = Lists.newLinkedList();
     repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
     values = Lists.newLinkedList();
-    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION1, "value", "continuous"));
-    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION2, "value", "run"));
-    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION3, "value", "checkpoint"));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION1, "value", NotePersist.CONTINUOUS.name()));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION2, "value", NotePersist.RUN.name()));
+    values.add(ImmutableMap.of("name", NOTE_PERSIST_OPTION3, "value", NotePersist.CHECKPOINT.name()));
     repoSetting.value = values;
     repoSetting.selected  = optionEnabled;
     repoSetting.name = NOTE_PERSISTENCE_NAME;
