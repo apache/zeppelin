@@ -30,7 +30,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.commons.lang.StringUtils;
 
-import org.apache.zeppelin.cluster.yarn.Client;
+import org.apache.zeppelin.cluster.yarn.YarnClusterManager;
 import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -681,7 +681,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
     ZEPPELIN_CLUSTER_DEFAULT("zeppelin.cluster.default", "local"),
-    ZEPPELIN_CLUSTER_MANAGER_LIST("zeppelin.cluster.manager.list", Client.class.getName());
+    ZEPPELIN_CLUSTER_MANAGER_LIST("zeppelin.cluster.manager.list", YarnClusterManager.class.getName());
 
     private String varName;
     @SuppressWarnings("rawtypes")

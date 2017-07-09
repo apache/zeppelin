@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class YarnClientTest {
+public class YarnClusterManagerTest {
   private static MiniYARNCluster miniYARNCluster;
   private static YarnConfiguration yarnConfiguration;
 
@@ -49,7 +49,7 @@ public class YarnClientTest {
     yarnConfiguration.set(YarnConfiguration.YARN_MINICLUSTER_FIXED_PORTS, "true");
     yarnConfiguration.set(YarnConfiguration.YARN_MINICLUSTER_USE_RPC, "true");
 
-    miniYARNCluster = new MiniYARNCluster(YarnClientTest.class.getName(), 1, 1, 1);
+    miniYARNCluster = new MiniYARNCluster(YarnClusterManagerTest.class.getName(), 1, 1, 1);
     miniYARNCluster.init(yarnConfiguration);
     miniYARNCluster.start();
 
@@ -88,11 +88,12 @@ public class YarnClientTest {
   }
 
   @Test
-  public void clientTest() throws Exception {
+  public void yarnClusterManagerTest() throws Exception {
     System.out.println("RM_ADDRESS = " + miniYARNCluster.getConfig().get(YarnConfiguration.RM_ADDRESS));
-    Client client = new Client(miniYARNCluster.getConfig());
-    client.start();
-    RemoteInterpreterProcess remoteInterpreterProcess = client.createInterpreter("id", "name", "fake", Maps.<String, String>newHashMap(), new Properties(), 100000, null, null, "fakeHome", "fake");
+    YarnClusterManager yarnClusterManager = new YarnClusterManager(miniYARNCluster.getConfig());
+    yarnClusterManager.start();
+    RemoteInterpreterProcess remoteInterpreterProcess = yarnClusterManager
+        .createInterpreter("id", "name", "fake", Maps.<String, String>newHashMap(), new Properties(), 100000, null, null, "fakeHome", "fake");
     String parentClasspath = Paths.get(YarnRemoteInterpreterServer.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent().getParent().getParent().toAbsolutePath().toString();
     String commonClasspath = parentClasspath + "/common/target";
     String yarnClasspath = parentClasspath + "/yarn/target";

@@ -389,7 +389,7 @@ public class RemoteInterpreterYarnProcess extends RemoteInterpreterProcess {
       this.applicationId = appContext.getApplicationId();
 
       yarnClient.submitApplication(appContext);
-      monitor = Client.scheduledExecutorService
+      monitor = YarnClusterManager.scheduledExecutorService
           .scheduleAtFixedRate(new ApplicationMonitor(), 1, 1, TimeUnit.SECONDS);
 
       waitingInitialized.await(5, TimeUnit.MINUTES);

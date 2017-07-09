@@ -31,44 +31,39 @@ import org.slf4j.LoggerFactory;
 public class ClusterManagerFactory {
 
   private static final Logger logger = LoggerFactory.getLogger(ClusterManagerFactory.class);
-  private static final String CLUSTER_COMMON_DIR_NAME = "common";
-  private static final String CLUSTER_CLASS_NAME_FILE = "clustermanager-class";
 
   private final List<String> clusterManagerList;
-  private final String zeppelinHome;
-  private final String defaultClusterKey;
+  private final String defaultClusterManagerName;
   private final Map<String, ClusterManager> clusterManagerMap;
 
   private boolean initialized;
 
-  public ClusterManagerFactory(List<String> clusterManagerList, String zeppelinHome,
-      String defaultClusterKey) {
+  public ClusterManagerFactory(List<String> clusterManagerList, String defaultClusterManagerName) {
     this.clusterManagerList = clusterManagerList;
-    this.zeppelinHome = zeppelinHome;
-    this.defaultClusterKey = defaultClusterKey;
+    this.defaultClusterManagerName = defaultClusterManagerName;
     this.clusterManagerMap = Maps.newHashMap();
     this.initialized = false;
   }
 
-  public ClusterManager getClusterManager() {
-    return getClusterManager(defaultClusterKey);
+  public ClusterManager getDefaultClusterManager() {
+    return getClusterManager(defaultClusterManagerName);
   }
 
-  public ClusterManager getClusterManager(String key) {
+  public ClusterManager getClusterManager(String name) {
     if (!initialized) {
       init();
     }
 
-    if (null == key) {
-      return getClusterManager();
+    if (null == name) {
+      return getDefaultClusterManager();
     }
 
-    if (!clusterManagerMap.containsKey(key)) {
-      logger.info("Not supported. {}", key);
+    if (!clusterManagerMap.containsKey(name)) {
+      logger.info("Not supported. {}", name);
       return null;
     }
 
-    return clusterManagerMap.get(key);
+    return clusterManagerMap.get(name);
   }
 
   synchronized void init() {

@@ -43,9 +43,9 @@ import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_CLUSTER_MANAGER_YAR
 /**
  * This class is in charge of making yarn client and implementing cluster manager.
  */
-public class Client extends ClusterManager {
+public class YarnClusterManager extends ClusterManager {
 
-  private static final Logger logger = LoggerFactory.getLogger(Client.class);
+  private static final Logger logger = LoggerFactory.getLogger(YarnClusterManager.class);
   public static final ScheduledExecutorService scheduledExecutorService =
       Executors.newScheduledThreadPool(1);
 
@@ -58,12 +58,12 @@ public class Client extends ClusterManager {
    */
   private Map<String, ApplicationId> idApplicationIdMap;
 
-  public Client() {
+  public YarnClusterManager() {
     this.started = false;
   }
 
   // For Testing
-  Client(Configuration configuration) {
+  YarnClusterManager(Configuration configuration) {
     this.configuration = configuration;
   }
 

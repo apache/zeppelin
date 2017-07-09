@@ -151,7 +151,7 @@ public class ZeppelinServer extends Application {
     this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
         new InterpreterOption(true));
     this.clusterManagerFactory = new ClusterManagerFactory(conf.getClusterManagerList(),
-        conf.getHome(), conf.getZeppelinDefaultCluster());
+        conf.getZeppelinDefaultCluster());
     this.replFactory = new InterpreterFactory(conf, notebookWsServer,
         notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
         interpreterSettingManager, clusterManagerFactory);
