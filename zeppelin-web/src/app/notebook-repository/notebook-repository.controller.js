@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('NotebookReposCtrl', NotebookReposCtrl)
+angular.module('zeppelinWebApp').controller('NotebookRepositoryCtrl', NotebookRepositoryCtrl)
 
-function NotebookReposCtrl ($http, baseUrlSrv, ngToast) {
+function NotebookRepositoryCtrl($http, baseUrlSrv, ngToast) {
   'ngInject'
 
   let vm = this
