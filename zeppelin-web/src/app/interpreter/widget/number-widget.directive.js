@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('widgetNumber', numericOnly)
+angular.module('zeppelinWebApp').directive('numberWidget', InterpreterNumberDirective)
 
-function numericOnly() {
+function InterpreterNumberDirective() {
   return {
     require: 'ngModel',
     link: function (scope, element, attrs, modelCtrl) {
