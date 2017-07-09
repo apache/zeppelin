@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('renameService', RenameService)
+angular.module('zeppelinWebApp').service('noteRenameService', NoteRenameService)
 
-function RenameService($rootScope) {
+function NoteRenameService($rootScope) {
   'ngInject'
 
   let self = this

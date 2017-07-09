@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-import './rename.css'
+import './note-rename.css'
 
-angular.module('zeppelinWebApp').controller('RenameCtrl', RenameController)
+angular.module('zeppelinWebApp').controller('NoteRenameCtrl', NoteRenameController)
 
-function RenameController ($scope) {
+function NoteRenameController($scope) {
   'ngInject'
 
   let self = this
@@ -25,7 +25,7 @@ function RenameController ($scope) {
   $scope.isValid = true
 
   $scope.rename = function () {
-    angular.element('#renameModal').modal('hide')
+    angular.element('#noteRenameModal').modal('hide')
     self.callback($scope.params.newName)
   }
 
@@ -39,7 +39,7 @@ function RenameController ($scope) {
       $scope.isValid = self.validator($scope.params.newName)
     }
 
-    angular.element('#renameModal').modal('show')
+    angular.element('#noteRenameModal').modal('show')
   })
 
   function defaultValidator (str) {
