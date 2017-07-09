@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').factory('websocketEvents', websocketEvents)
+angular.module('zeppelinWebApp').factory('websocketEvents', WebsocketEventsFactory)
 
-function websocketEvents ($rootScope, $websocket, $location, baseUrlSrv) {
+function WebsocketEventsFactory ($rootScope, $websocket, $location, baseUrlSrv) {
   'ngInject'
 
   let websocketCalls = {}
