@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('dropdownInput', dropdownInput)
+angular.module('zeppelinWebApp').directive('dropdownInput', dropdownInputDirective)
 
-function dropdownInput () {
+function dropdownInputDirective() {
   return {
     restrict: 'A',
     link: function (scope, element) {
