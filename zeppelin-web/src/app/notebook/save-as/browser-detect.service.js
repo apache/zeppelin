@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('browserDetectService', browserDetectService)
+angular.module('zeppelinWebApp').service('browserDetectService', BrowserDetectService)
 
-function browserDetectService () {
+function BrowserDetectService () {
   this.detectIE = function () {
     let ua = window.navigator.userAgent
     let msie = ua.indexOf('MSIE ')
