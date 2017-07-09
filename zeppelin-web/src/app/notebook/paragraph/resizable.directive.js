@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('resizable', resizable)
+angular.module('zeppelinWebApp').directive('resizable', ResizableDirective)
 
-function resizable () {
+function ResizableDirective () {
   let resizableConfig = {
     autoHide: true,
     handles: 'se',
