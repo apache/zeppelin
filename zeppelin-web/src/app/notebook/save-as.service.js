@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('saveAsService', saveAsService)
+angular.module('zeppelinWebApp').service('saveAsService', SaveAsService)
 
-function saveAsService (browserDetectService) {
+function SaveAsService (browserDetectService) {
   'ngInject'
 
   this.saveAs = function (content, filename, extension) {
