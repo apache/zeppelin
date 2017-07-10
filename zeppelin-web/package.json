@@ -18,6 +18,7 @@
     "dev:helium": "HELIUM_BUNDLE_DEV=true webpack-dev-server --hot",
     "dev:watch": "grunt watch-webpack-dev",
     "dev": "npm-run-all --parallel dev:server lint:watch dev:watch",
+    "test:watch": "karma start karma.conf.js --single-run=false",
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
