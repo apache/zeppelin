@@ -38,13 +38,7 @@
   </prerequisites>
 
   <properties>
-    <node.version>v6.9.1</node.version>
-    <yarn.version>v0.18.1</yarn.version>
-    <npm.version>4.2.0</npm.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!--plugin versions-->
-    <plugin.frontned.version>1.3</plugin.frontned.version>
   </properties>
 
   <build>

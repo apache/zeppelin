@@ -89,6 +89,12 @@
     <scalatest.version>2.2.4</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
 
+    <!-- frontend maven plugin related versions-->
+    <node.version>v6.9.1</node.version>
+    <yarn.version>v0.18.1</yarn.version>
+    <npm.version>4.2.0</npm.version>
+    <plugin.frontned.version>1.3</plugin.frontned.version>
+
     <!-- common library versions -->
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>

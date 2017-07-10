@@ -28,6 +28,7 @@ cache:
     -  zeppelin-web/bower_components
 
 addons:
+  chrome: stable
   apt:
     sources:
     - r-packages-precise

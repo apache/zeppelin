@@ -32,6 +32,11 @@
   <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
 
+  <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
+  <prerequisites>
+    <maven>3.1.0</maven>
+  </prerequisites>
+
   <properties>
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
@@ -427,6 +432,34 @@
         </executions>
       </plugin>
 
+      <!-- IMPORTANT: frontend-maven-plugin should be placed before maven-antrun-plugin
+                      so that browser-side integration test can run before stopping zeppelin daemon -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>${plugin.frontned.version}</version>
+
+        <executions>
+          <execution>
+            <id>yarn e2e</id>
+            <goals>
+              <goal>yarn</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <arguments>run e2e</arguments>
+            </configuration>
+          </execution>
+        </executions>
+
+          <configuration>
+              <!-- use existing yarn -->
+              <workingDirectory>${project.parent.basedir}/zeppelin-web</workingDirectory>
+          </configuration>
+      </plugin>
+
+      <!-- IMPORTANT: maven-antrun-plugin should be placed after frontend-maven-plugin
+                      so that stopping zeppelin daemon after executing browser-side integration test -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
