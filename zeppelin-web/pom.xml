@@ -223,20 +223,6 @@
         <web.e2e.disabled>false</web.e2e.disabled>
       </properties>
     </profile>
-
-    <profile>
-      <id>using-packaged-distr</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <zeppelin.daemon.package.base>
-          ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
-        </zeppelin.daemon.package.base>
-      </properties>
-    </profile>
-
   </profiles>
-
 
 </project>
