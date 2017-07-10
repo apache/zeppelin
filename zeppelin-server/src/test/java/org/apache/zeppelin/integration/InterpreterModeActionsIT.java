@@ -139,7 +139,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     ZeppelinITUtils.sleep(500, false);
     pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
+    pollingWait(By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
     ZeppelinITUtils.sleep(1000, false);
   }
