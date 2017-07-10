@@ -21,12 +21,13 @@
     "test:watch": "karma start karma.conf.js --single-run=false",
     "pree2e": "webdriver-manager update --gecko false",
     "e2e": "protractor protractor.conf.js",
+    "pretest": "npm rebuild phantomjs-prebuilt",
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
+    "angular-ui-grid": "^4.0.4",
     "angular-viewport-watch": "github:shahata/angular-viewport-watch",
     "github-markdown-css": "2.6.0",
-    "angular-ui-grid": "^4.0.4",
     "grunt-angular-templates": "^0.5.7",
     "grunt-dom-munger": "^3.4.0",
     "headroom.js": "^0.9.3",
