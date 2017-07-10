@@ -38,6 +38,8 @@
   </prerequisites>
 
   <properties>
+    <web.e2e.disabled>true</web.e2e.disabled>
+
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.22.2</jersey.version>
@@ -453,8 +455,9 @@
         </executions>
 
           <configuration>
-              <!-- use existing yarn -->
-              <workingDirectory>${project.parent.basedir}/zeppelin-web</workingDirectory>
+            <skip>${web.e2e.disabled}</skip>
+            <!-- use existing yarn -->
+            <workingDirectory>${project.parent.basedir}/zeppelin-web</workingDirectory>
           </configuration>
       </plugin>
 
@@ -520,6 +523,13 @@
         <zeppelin.daemon.package.base>
 	        ../bin
         </zeppelin.daemon.package.base>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>web-e2e</id>
+      <properties>
+        <web.e2e.disabled>false</web.e2e.disabled>
       </properties>
     </profile>
 
