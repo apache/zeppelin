@@ -447,7 +447,7 @@
             <goals>
               <goal>yarn</goal>
             </goals>
-            <phase>post-integration-test</phase>
+            <phase>integration-test</phase>
             <configuration>
               <arguments>run e2e</arguments>
             </configuration>

@@ -46,13 +46,16 @@ matrix:
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
+    # Run e2e tests (in zeppelin-web)
+    - jdk: "oraclejdk7"
+      env: WEB_E2E="true" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pweb-e2e -Pscala-2.11" BUILD_FLAG="package -DskipTests -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl !spark,!spark-dependencies,!zeppelin-web,!zeppelin-jupyter,!zeppelin-distribution" TEST_PROJECTS="-Dtests.to.exclude=**/org/apache/zeppelin/**/*.java -DtagsToInclude=None -DfailIfNoTests=false"
+
     # Test core modules
-    #
     # Several tests were excluded from this configuration due to the following issues:
     # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pweb-e2e -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -X -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for 1.6.3
     - jdk: "oraclejdk7"
@@ -118,7 +121,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
+  - mvn $TEST_FLAG $MODULES $TEST_MODULES $PROFILE -B $TEST_PROJECTS
 
 after_success:
   - echo "Travis exited with ${TRAVIS_TEST_RESULT}"
