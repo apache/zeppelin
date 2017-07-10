@@ -1013,6 +1013,7 @@
               <exclude>**/src/fonts/Source-Code-Pro*</exclude>
               <exclude>**/src/fonts/source-code-pro*</exclude>
               <exclude>**/src/**/**.test.js</exclude>
+              <exclude>**/e2e/**/**.spec.js</exclude>
 
               <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>
