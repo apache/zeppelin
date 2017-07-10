@@ -113,8 +113,8 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
         controller: 'InterpreterCtrl'
       })
       .when('/notebookRepos', {
-        templateUrl: 'app/notebookRepos/notebookRepos.html',
-        controller: 'NotebookReposCtrl',
+        templateUrl: 'app/notebook-repository/notebook-repository.html',
+        controller: 'NotebookRepositoryCtrl',
         controllerAs: 'noterepo'
       })
       .when('/credential', {

@@ -1,0 +1,66 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div id="noteCreateModal" class="modal fade" role="dialog"
+     modalvisible previsiblecallback="noteCreateCtrl.preVisible"
+     targetinput="noteName" tabindex="-1">
+  <div class="modal-dialog">
+
+    <!-- modal content-->
+    <div class="modal-content" id="NoteCreateCtrl">
+      <!-- modal header -->
+      <div class="modal-header modal-header-note-name">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" ng-show="!noteCreateCtrl.clone">Create New Note</h4>
+        <h4 class="modal-title" ng-show="noteCreateCtrl.clone">Clone Note</h4>
+      </div>
+
+      <!-- modal body-->
+      <div class="modal-body modal-body-note-name">
+        <div class="form-group">
+          <!-- note name -->
+          <div>
+            <label for="noteName">Note Name</label>
+            <input placeholder="Insert Note Name" type="text"
+                   class="form-control note-name-create-input"
+                   id="noteName" ng-model="note.notename"
+                   ng-enter="noteCreateCtrl.handleNameEnter()" />
+          </div>
+          <!-- default interpreter -->
+          <div class="btn-group default-interpreter-select" ng-show="!noteCreateCtrl.clone">
+            <label for="defaultInterpreter">Default Interpreter</label>
+            <select id="defaultInterpreter"
+                    name="defaultInterpreter"
+                    class="form-control"
+                    ng-model="note.defaultInterpreter"
+                    ng-options="option.name for option in interpreterSettings">
+            </select>
+          </div>
+        </div> <!-- end: form-group -->
+        <div class="panel panel-default note-name-desc-panel">
+          <div class="panel-heading">
+            Use '/' to create folders. Example: /NoteDirA/Note1
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="createNoteButton"
+                class="btn btn-primary"
+                data-dismiss="modal" ng-click="noteCreateCtrl.createNote()">
+          <span ng-show="!noteCreateCtrl.clone">Create</span>
+          <span ng-show="noteCreateCtrl.clone">Clone</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
