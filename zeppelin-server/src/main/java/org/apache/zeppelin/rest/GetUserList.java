@@ -212,7 +212,7 @@ public class GetUserList {
     String userquery = "";
     try {
       dataSource = (DataSource) FieldUtils.readField(obj, "dataSource", true);
-      authQuery = (String) FieldUtils.readField(obj, "DEFAULT_AUTHENTICATION_QUERY", true);
+      authQuery = (String) FieldUtils.readField(obj, "authenticationQuery", true);
       LOG.info(authQuery);
       String authQueryLowerCase = authQuery.toLowerCase();
       retval = authQueryLowerCase.split("from", 2);
