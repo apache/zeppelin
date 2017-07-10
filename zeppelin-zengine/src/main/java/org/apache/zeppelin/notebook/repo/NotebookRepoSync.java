@@ -532,14 +532,13 @@ public class NotebookRepoSync implements NotebookRepo {
     return revisionNote;
   }
 
-  @Override
   public FileInfo rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
       throws IOException {
     FileInfo mainFileInfo = FileInfo.EMPTY;
     FileInfo tempFileInfo;
     for (int i = 0; i < repos.size(); i++) {
-      tempFileInfo = repos.get(i).rename(oldFile, newFile, subject);
-      mainFileInfo = (i == 0) ? tempFileInfo : FileInfo.EMPTY;
+      //tempFileInfo = repos.get(i).rename(oldFile, newFile, subject);
+      //mainFileInfo = (i == 0) ? tempFileInfo : FileInfo.EMPTY;
     }
     return mainFileInfo;
   }

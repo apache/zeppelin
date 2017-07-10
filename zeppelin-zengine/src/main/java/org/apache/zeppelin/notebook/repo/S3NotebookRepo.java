@@ -309,10 +309,4 @@ public class S3NotebookRepo implements NotebookRepo {
     return null;
   }
 
-  @Override
-  public FileInfo rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return FileInfo.EMPTY;
-  }
 }

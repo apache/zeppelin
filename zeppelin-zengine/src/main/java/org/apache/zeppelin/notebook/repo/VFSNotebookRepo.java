@@ -333,7 +333,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     return noteFile;
   }
   
-  @Override
   public synchronized FileInfo rename(FileInfo oldFile, FileInfo newFile,
       AuthenticationInfo subject) throws IOException {
     // currently assuming old and new files are in same folder

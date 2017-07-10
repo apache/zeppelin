@@ -260,10 +260,4 @@ public class MongoNotebookRepo implements NotebookRepo {
     LOG.warn("Method not implemented");
   }
 
-  @Override
-  public FileInfo rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return FileInfo.EMPTY;
-  }
 }
