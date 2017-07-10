@@ -89,7 +89,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     super(property);
     this.livyURL = property.getProperty("zeppelin.livy.url");
     this.displayAppInfo = Boolean.parseBoolean(
-        property.getProperty("zeppelin.livy.displayAppInfo", "false"));
+        property.getProperty("zeppelin.livy.displayAppInfo", "true"));
     this.sessionCreationTimeout = Integer.parseInt(
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
