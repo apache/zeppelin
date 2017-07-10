@@ -43,6 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.*;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -54,6 +56,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static final long serialVersionUID = -6328572073497992016L;
 
+  private static final Pattern REPL_PATTERN =
+    Pattern.compile("^%([a-zA-Z0-9-_]+)(\\(([a-zA-Z0-9-_]+)\\))?");
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private transient InterpreterFactory factory;
   private transient InterpreterSettingManager interpreterSettingManager;
@@ -212,25 +216,17 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       return null;
     }
 
-    String trimmed = text.trim();
-    if (!trimmed.startsWith("%")) {
-      return null;
+    Matcher m = REPL_PATTERN.matcher(text);
+    if (m.find()) {
+      String replName = m.group(3);
+      if (replName != null) {
+        return replName;
+      } else {
+        return m.group(1);
+      }
     }
 
-    // get script head
-    int scriptHeadIndex = 0;
-    for (int i = 0; i < trimmed.length(); i++) {
-      char ch = trimmed.charAt(i);
-      if (Character.isWhitespace(ch) || ch == '(' || ch == '\n') {
-        break;
-      }
-      scriptHeadIndex = i;
-    }
-    if (scriptHeadIndex < 1) {
-      return null;
-    }
-    String head = text.substring(1, scriptHeadIndex + 1);
-    return head;
+    return null;
   }
 
   public String getScriptBody() {
@@ -242,16 +238,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       return null;
     }
 
-    String magic = getRequiredReplName(text);
-    if (magic == null) {
-      return text;
+    Matcher m = REPL_PATTERN.matcher(text);
+    if (m.find()) {
+      return text.substring(m.group(0).length());
     }
 
-    String trimmed = text.trim();
-    if (magic.length() + 1 >= trimmed.length()) {
-      return "";
-    }
-    return trimmed.substring(magic.length() + 1).trim();
+    return text;
   }
 
   public Interpreter getRepl(String name) {
