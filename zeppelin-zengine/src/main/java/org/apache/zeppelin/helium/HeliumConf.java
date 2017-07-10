@@ -47,10 +47,6 @@ public class HeliumConf implements JsonSerializable {
     return new HashMap<>(enabled);
   }
 
-  public void enablePackage(HeliumPackage pkg) {
-    enablePackage(pkg.getName(), pkg.getArtifact());
-  }
-
   public void enablePackage(String name, String artifact) {
     enabled.put(name, artifact);
   }
