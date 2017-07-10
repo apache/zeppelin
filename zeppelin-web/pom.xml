@@ -38,6 +38,8 @@
   </prerequisites>
 
   <properties>
+    <web.e2e.disabled>true</web.e2e.disabled>
+    <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -102,6 +104,56 @@
             </configuration>
           </execution>
 
+            <execution>
+              <id>yarn e2e</id>
+              <goals>
+                <goal>yarn</goal>
+              </goals>
+              <phase>integration-test</phase>
+              <configuration>
+                <skip>${web.e2e.disabled}</skip>
+                <arguments>run e2e</arguments>
+              </configuration>
+            </execution>
+
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>start-zeppelin</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="true">
+                  <arg value="start" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>stop-zeppelin</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
+                  <arg value="stop" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
 
@@ -164,6 +216,26 @@
         <web.build.command>run build:ci</web.build.command>
       </properties>
     </profile>
+
+    <profile>
+      <id>web-e2e</id>
+      <properties>
+        <web.e2e.disabled>false</web.e2e.disabled>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>using-packaged-distr</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <zeppelin.daemon.package.base>
+          ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
+        </zeppelin.daemon.package.base>
+      </properties>
+    </profile>
+
   </profiles>
 
 
