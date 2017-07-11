@@ -1,8 +1,10 @@
 exports.config = {
   baseUrl: 'http://localhost:8080/',
   directConnect: true,
+  chromeOnly: true,
   capabilities: {
     browserName: 'chrome',
+    // https://github.com/angular/angular-seed/issues/381
     chromeOptions: {
       'args': ['show-fps-counter=true']
     }
@@ -25,6 +27,7 @@ exports.config = {
     browser.ignoreSynchronization = true;
     browser.manage().timeouts().pageLoadTimeout(80000);
     browser.manage().timeouts().implicitlyWait(50000);
+
 
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
