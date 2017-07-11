@@ -5,7 +5,7 @@ var baseConfig = {
   capabilities: {
     browserName: 'chrome',
   },
-  allScriptsTimeout: 110000,
+  allScriptsTimeout: 300000, // 5 min
 
   framework: 'jasmine',
   specs: ['e2e/**/*.js'],
@@ -14,7 +14,7 @@ var baseConfig = {
     showColors: true,
     isVerbose: true,
     includeStackTrace: false,
-    defaultTimeoutInterval: 400000,
+    defaultTimeoutInterval: 300000, // 5 min
     print: function() {}, // remove protractor dot reporter, we are using jasmine-spec-reporter
   },
 
@@ -36,7 +36,8 @@ var baseConfig = {
 
 if (process.env.TRAVIS) {
   baseConfig.capabilities.chromeOptions = {
-    binary: process.env.CHROME_BIN
+    binary: process.env.CHROME_BIN,
+    args: ['--no-sandbox'],
   };
 }
 
