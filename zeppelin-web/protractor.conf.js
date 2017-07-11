@@ -21,8 +21,8 @@ var baseConfig = {
   onPrepare: function() {
     // waiting for angular app is loaded
     browser.ignoreSynchronization = true;
-    browser.manage().timeouts().pageLoadTimeout(80000);
-    browser.manage().timeouts().implicitlyWait(50000);
+    browser.manage().timeouts().pageLoadTimeout(300000);
+    browser.manage().timeouts().implicitlyWait(60000);
 
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -37,7 +37,6 @@ var baseConfig = {
 if (process.env.TRAVIS) {
   baseConfig.capabilities.chromeOptions = {
     binary: process.env.CHROME_BIN,
-    args: ['--no-sandbox'],
   };
 }
 
