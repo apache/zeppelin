@@ -42,8 +42,6 @@ if (process.env.TRAVIS) {
   chromeOptions.binary = process.env.CHROME_BIN;
 }
 
-if (process.env.TRAVIS) {
-  baseConfig.capabilities.chromeOptions = chromeOptions;
-}
+baseConfig.capabilities.chromeOptions = chromeOptions;
 
 exports.config = baseConfig;
