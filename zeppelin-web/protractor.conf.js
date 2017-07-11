@@ -1,12 +1,9 @@
 exports.config = {
   baseUrl: 'http://localhost:8080/',
   directConnect: true,
-  chromeOnly: true,
+  // chromeOnly: true,
   capabilities: {
     browserName: 'chrome',
-    chromeOptions: {
-      args: ["--headless", 'no-sandbox', "--disable-gpu", "--window-size=800x600"]
-    }
   },
   allScriptsTimeout: 110000,
 

@@ -120,6 +120,8 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
+  - export DISPLAY=:99.0 # required to execute e2e tests in chrome
+  - sh -e /etc/init.d/xvfb start # required to execute e2e tests in chrome
 
 script:
   - if [[ -n $TEST_MODULES ]]; then export MODULES=$TEST_MODULES; fi
