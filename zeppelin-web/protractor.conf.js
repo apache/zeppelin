@@ -35,7 +35,7 @@ var baseConfig = {
 };
 
 var chromeOptions = {
-  args: ['--headless', '--disable-gpu']
+  args: ['--headless', '--disable-gpu', '--no-sandbox']
 }
 
 if (process.env.TRAVIS) {
