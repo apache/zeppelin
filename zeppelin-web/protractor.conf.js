@@ -23,8 +23,8 @@ exports.config = {
   onPrepare: function() {
     // waiting for angular app is loaded
     browser.ignoreSynchronization = true;
-    browser.manage().timeouts().pageLoadTimeout(40000);
-    browser.manage().timeouts().implicitlyWait(25000);
+    browser.manage().timeouts().pageLoadTimeout(80000);
+    browser.manage().timeouts().implicitlyWait(50000);
 
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
