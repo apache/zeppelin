@@ -1,4 +1,4 @@
-exports.config = {
+var baseConfig = {
   baseUrl: 'http://localhost:8080/',
   directConnect: true,
   // chromeOnly: true,
@@ -24,7 +24,6 @@ exports.config = {
     browser.manage().timeouts().pageLoadTimeout(80000);
     browser.manage().timeouts().implicitlyWait(50000);
 
-
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
     jasmine.getEnv().addReporter(new SpecReporter({
@@ -34,3 +33,9 @@ exports.config = {
     }));
   },
 };
+
+if (process.env.TRAVIS) {
+  baseConfig.binary = process.env.CHROME_BIN
+}
+
+exports.config = baseConfig;
