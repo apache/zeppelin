@@ -48,7 +48,7 @@ matrix:
 
     # Run e2e tests (in zeppelin-web)
     - jdk: "oraclejdk7"
-      env: WEB_E2E="true" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Pweb-e2e"
+      env: WEB_E2E="true" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web" TEST_PROJECTS="-Pweb-e2e"
 
     # Test core modules
     # Several tests were excluded from this configuration due to the following issues:
@@ -122,6 +122,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
+  - if [[ -n $TEST_MODULES ]]; then export MODULES=$TEST_MODULES; fi
   - echo "mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS"
   - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
 
