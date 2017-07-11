@@ -60,7 +60,7 @@
       http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
     </spark.src.download.url>
     <spark.bin.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
+      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}-bin-without-hadoop.tgz
     </spark.bin.download.url>
     <spark.py4j.version>0.8.2.1</spark.py4j.version>
 
