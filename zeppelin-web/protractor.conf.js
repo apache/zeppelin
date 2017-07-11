@@ -35,7 +35,9 @@ var baseConfig = {
 };
 
 if (process.env.TRAVIS) {
-  baseConfig.binary = process.env.CHROME_BIN
+  baseConfig.capabilities.chromeOptions = {
+    binary: process.env.CHROME_BIN
+  };
 }
 
 exports.config = baseConfig;
