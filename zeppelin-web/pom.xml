@@ -38,13 +38,10 @@
   </prerequisites>
 
   <properties>
-    <node.version>v6.9.1</node.version>
-    <yarn.version>v0.18.1</yarn.version>
-    <npm.version>4.2.0</npm.version>
+    <web.e2e.disabled>true</web.e2e.disabled>
+    <web.e2e.enabled>false</web.e2e.enabled>
+    <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!--plugin versions-->
-    <plugin.frontned.version>1.3</plugin.frontned.version>
   </properties>
 
   <build>
@@ -83,6 +80,7 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
+              <skip>${web.e2e.enabled}</skip>
               <arguments>install --no-lockfile</arguments>
             </configuration>
           </execution>
@@ -93,6 +91,7 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
+              <skip>${web.e2e.enabled}</skip>
               <arguments>${web.build.command}</arguments>
             </configuration>
           </execution>
@@ -104,10 +103,61 @@
             </goals>
             <phase>test</phase>
             <configuration>
+              <skip>${web.e2e.disabled}</skip>
               <arguments>run test</arguments>
             </configuration>
           </execution>
 
+            <execution>
+              <id>yarn e2e</id>
+              <goals>
+                <goal>yarn</goal>
+              </goals>
+              <phase>integration-test</phase>
+              <configuration>
+                <skip>${web.e2e.disabled}</skip>
+                <arguments>run e2e</arguments>
+              </configuration>
+            </execution>
+
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>start-zeppelin</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="true">
+                  <arg value="start" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>stop-zeppelin</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
+                  <arg value="stop" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
 
@@ -170,7 +220,14 @@
         <web.build.command>run build:ci</web.build.command>
       </properties>
     </profile>
-  </profiles>
 
+    <profile>
+      <id>web-e2e</id>
+      <properties>
+        <web.e2e.disabled>false</web.e2e.disabled>
+        <web.e2e.enabled>true</web.e2e.enabled>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

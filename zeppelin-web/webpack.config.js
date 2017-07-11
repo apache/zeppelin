@@ -195,7 +195,15 @@ module.exports = function makeWebpackConfig () {
           }
         }
       ]})
-    }]
+    }],
+    postLoaders: [
+      {
+        // COVERAGE
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components|\.test\.js)/,
+        loader: 'istanbul-instrumenter'
+      }
+    ]
   };
 
   /**
