@@ -28,12 +28,13 @@ cache:
     -  zeppelin-web/bower_components
 
 addons:
-  chrome: stable
   apt:
     sources:
+    - google-chrome
     - r-packages-precise
     packages:
     - r-base-dev
+    - google-chrome-stable
 
 env:
   global:
