@@ -109,6 +109,7 @@ before_install:
   - source ~/.environ
 
 install:
+  - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
   - mvn $BUILD_FLAG $MODULES $PROFILE -B
 
 before_script:
@@ -121,6 +122,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
+  - echo "mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS"
   - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
 
 after_success:
