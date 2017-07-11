@@ -38,7 +38,7 @@ var chromeOptions = {
 }
 
 if (process.env.TRAVIS) {
-  chromeOptions.binary = process.env.CHROME_BIN;
+  // chromeOptions.binary = process.env.CHROME_BIN;
 }
 
 baseConfig.capabilities.chromeOptions = chromeOptions;

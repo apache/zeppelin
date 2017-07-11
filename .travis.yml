@@ -122,7 +122,7 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
-  - export CHROME_BIN=chromium-browser
+#  - export CHROME_BIN=chromium-browser
   - $CHROME_BIN --version
   - sleep 3
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc
