@@ -18,10 +18,12 @@ var baseConfig = {
   },
 
   onPrepare: function() {
-    // waiting for angular app is loaded
-    browser.ignoreSynchronization = true;
+    // should be false for angular apps
+    // browser.ignoreSynchronization = true;
+
     browser.manage().timeouts().pageLoadTimeout(300000);
-    browser.manage().timeouts().implicitlyWait(5000);
+    // with the implicitlyWait() this will even though you expect the element not to be there
+    browser.manage().timeouts().implicitlyWait(30000);
 
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;

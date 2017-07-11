@@ -8,11 +8,11 @@ describe('Home e2e Test', function() {
 
   it('should have the button for importing notebook', function() {
     var btn = element(by.cssContainingText('a', 'Import note'))
-    expect(btn).toBeDefined()
+    expect(btn.isPresent()).toBe(true)
   })
 
   it('should have the button for creating notebook', function() {
     var btn = element(by.cssContainingText('a', 'Create new note'))
-    expect(btn).toBeDefined()
+    expect(btn.isPresent()).toBe(true)
   })
 })
