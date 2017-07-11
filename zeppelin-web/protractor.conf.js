@@ -6,8 +6,8 @@ exports.config = {
     browserName: 'chrome',
     // https://github.com/angular/angular-seed/issues/381
     chromeOptions: {
-      'args': ['show-fps-counter=true']
     }
+
   },
   allScriptsTimeout: 110000,
 
