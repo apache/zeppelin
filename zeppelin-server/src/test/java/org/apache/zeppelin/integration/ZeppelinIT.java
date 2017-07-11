@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -92,8 +93,9 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // username is displayed and there's no login button anymore
       waitForText("admin", By.xpath("//span[@class=\"username ng-binding\"]"));
 
-      assertEquals(0,
-          driver.findElements(By.xpath("//button[@class=\"btn nav-login-btn\"]")).size());
+      assertFalse(
+        driver.findElement(By.xpath("//button[@class=\"btn nav-login-btn\"]")).isDisplayed()
+      );
 
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testLogin", e);
