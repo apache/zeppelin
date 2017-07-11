@@ -121,7 +121,7 @@ before_script:
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
 #  - export DBUS_SESSION_BUS_ADDRESS=/dev/null
-  - export CHROME_BIN=google-chrome-stable;
+  - export CHROME_BIN=/usr/bin/google-chrome-stable
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3

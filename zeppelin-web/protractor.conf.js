@@ -34,11 +34,16 @@ var baseConfig = {
   },
 };
 
+var chromeOptions = {
+  args: ['--headless', '--disable-gpu']
+}
+
 if (process.env.TRAVIS) {
-  baseConfig.capabilities.chromeOptions = {
-    args: ['--headless', '--disable-gpu'],
-    binary: process.env.CHROME_BIN,
-  };
+  chromeOptions.binary = process.env.CHROME_BIN;
+}
+
+if (process.env.TRAVIS) {
+  baseConfig.capabilities.chromeOptions = chromeOptions;
 }
 
 exports.config = baseConfig;
