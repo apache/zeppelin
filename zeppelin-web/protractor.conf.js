@@ -36,6 +36,7 @@ var baseConfig = {
 
 if (process.env.TRAVIS) {
   baseConfig.capabilities.chromeOptions = {
+    args: ['--headless', '--disable-gpu'],
     binary: process.env.CHROME_BIN,
   };
 }
