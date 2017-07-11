@@ -65,7 +65,7 @@ matrix:
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
 #    - jdk: "oraclejdk7"
 #      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
-#
+
 #    # Test selenium with spark module for 1.6.3
 #    - jdk: "oraclejdk7"
 #      env: TEST_SELENIUM="true" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pspark-1.6 -Phadoop-2.6 -Phelium-dev -Pexamples" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark -Dtest=org.apache.zeppelin.AbstractFunctionalSuite -DfailIfNoTests=false"
@@ -116,8 +116,6 @@ before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1024x16"
   - ./dev/change_scala_version.sh $SCALA_VER
   - source ~/.environ
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start &
 
 install:
   - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
@@ -131,9 +129,8 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
-#  - export CHROME_BIN=chromium-browser
-  - sleep 3
-  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc
+  - if [[ -n $TEST_MODULES ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start &; sleep 3; fi
+  - if [[ -n $TEST_MODULES ]]; then echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc; fi
 
 script:
   - if [[ -n $TEST_MODULES ]]; then export MODULES="${TEST_MODULES}"; fi

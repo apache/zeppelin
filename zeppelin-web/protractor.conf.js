@@ -1,7 +1,6 @@
 var baseConfig = {
   baseUrl: 'http://localhost:8080/',
   directConnect: true,
-  // chromeOnly: true,
   capabilities: {
     browserName: 'chrome',
   },
@@ -22,6 +21,7 @@ var baseConfig = {
     // waiting for angular app is loaded
     browser.ignoreSynchronization = true;
     browser.manage().timeouts().pageLoadTimeout(300000);
+    browser.manage().timeouts().implicitlyWait(5000);
 
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -35,10 +35,6 @@ var baseConfig = {
 
 var chromeOptions = {
   args: ['--disable-gpu', '--no-sandbox']
-}
-
-if (process.env.TRAVIS) {
-  // chromeOptions.binary = process.env.CHROME_BIN;
 }
 
 baseConfig.capabilities.chromeOptions = chromeOptions;
