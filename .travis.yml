@@ -16,7 +16,7 @@
 language: java
 
 dist: trusty
-sudo: false
+sudo: required
 
 cache:
   apt: true
