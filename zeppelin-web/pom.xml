@@ -103,7 +103,7 @@
             </goals>
             <phase>test</phase>
             <configuration>
-              <skip>${web.e2e.enabled}</skip>
+              <skip>${web.e2e.disabled}</skip>
               <arguments>run test</arguments>
             </configuration>
           </execution>
