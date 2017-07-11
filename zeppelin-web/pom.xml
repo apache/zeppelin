@@ -39,6 +39,7 @@
 
   <properties>
     <web.e2e.disabled>true</web.e2e.disabled>
+    <web.e2e.enabled>false</web.e2e.enabled>
     <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -79,6 +80,7 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
+              <skip>${web.e2e.enabled}</skip>
               <arguments>install --no-lockfile</arguments>
             </configuration>
           </execution>
@@ -89,6 +91,7 @@
               <goal>yarn</goal>
             </goals>
             <configuration>
+              <skip>${web.e2e.enabled}</skip>
               <arguments>${web.build.command}</arguments>
             </configuration>
           </execution>
@@ -100,6 +103,7 @@
             </goals>
             <phase>test</phase>
             <configuration>
+              <skip>${web.e2e.enabled}</skip>
               <arguments>run test</arguments>
             </configuration>
           </execution>
@@ -221,6 +225,7 @@
       <id>web-e2e</id>
       <properties>
         <web.e2e.disabled>false</web.e2e.disabled>
+        <web.e2e.enabled>true</web.e2e.enabled>
       </properties>
     </profile>
   </profiles>
