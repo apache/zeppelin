@@ -44,6 +44,7 @@ public class HDFSFileInterpreterTest extends TestCase {
 
     @Test
     public void testMaxLength() {
+
       HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
       t.open();
       InterpreterResult result = t.interpret("ls -l /", null);
