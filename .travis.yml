@@ -15,6 +15,7 @@
 
 language: java
 
+dist: trusty
 sudo: false
 
 cache:
@@ -28,12 +29,13 @@ cache:
     -  zeppelin-web/bower_components
 
 addons:
-  chrome: beta
   apt:
     sources:
-    - r-packages-precise
+    - google-chrome
+    - r-packages-trusty
     packages:
     - r-base-dev
+    - google-chrome-stable
 
 env:
   global:
@@ -120,7 +122,7 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
-  - export CHROME_BIN=/usr/bin/google-chrome-beta
+  - export CHROME_BIN=/usr/bin/google-chrome-stable
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start &
   - sleep 3
