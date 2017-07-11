@@ -22,7 +22,6 @@ var baseConfig = {
     // waiting for angular app is loaded
     browser.ignoreSynchronization = true;
     browser.manage().timeouts().pageLoadTimeout(300000);
-    browser.manage().timeouts().implicitlyWait(60000);
 
     // add reporter to display executed tests in console
     var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -35,7 +34,7 @@ var baseConfig = {
 };
 
 var chromeOptions = {
-  args: ['--headless', '--disable-gpu', '--no-sandbox']
+  args: ['--disable-gpu', '--no-sandbox']
 }
 
 if (process.env.TRAVIS) {

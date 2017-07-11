@@ -28,7 +28,7 @@ cache:
     -  zeppelin-web/bower_components
 
 addons:
-  chrome: beta
+  chrome: stable
   apt:
     sources:
     - r-packages-precise
@@ -124,7 +124,6 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start &
   - sleep 3
-  - ls /usr/bin
 
 script:
   - if [[ -n $TEST_MODULES ]]; then export MODULES="${TEST_MODULES}"; fi
