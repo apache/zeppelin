@@ -1,13 +1,12 @@
 exports.config = {
   baseUrl: 'http://localhost:8080/',
-  // directConnect: true,
+  directConnect: true,
   chromeOnly: true,
   capabilities: {
     browserName: 'chrome',
-    // https://github.com/angular/angular-seed/issues/381
     chromeOptions: {
+      // args: ["--headless", 'no-sandbox', "--disable-gpu", "--window-size=800x600"]
     }
-
   },
   allScriptsTimeout: 110000,
 
