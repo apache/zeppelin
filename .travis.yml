@@ -28,7 +28,7 @@ cache:
     -  zeppelin-web/bower_components
 
 addons:
-  chrome: stable
+  chrome: beta
   apt:
     sources:
     - r-packages-precise
@@ -120,8 +120,7 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
-#  - export DBUS_SESSION_BUS_ADDRESS=/dev/null
-  - export CHROME_BIN=/usr/bin/google-chrome-stable
+  - export CHROME_BIN=/usr/bin/google-chrome-beta
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3
