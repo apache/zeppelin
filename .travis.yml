@@ -124,6 +124,7 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start &
   - sleep 3
+  - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc
 
 script:
   - if [[ -n $TEST_MODULES ]]; then export MODULES="${TEST_MODULES}"; fi
