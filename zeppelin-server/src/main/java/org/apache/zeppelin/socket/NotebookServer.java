@@ -941,7 +941,7 @@ public class NotebookServer extends WebSocketServlet
       note.setName(name);
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note.rename(subject);
+      note.persist(subject);
       broadcastNote(note);
       broadcastNoteList(subject, userAndRoles);
     }

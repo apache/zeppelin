@@ -42,7 +42,6 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.ApplicationState;
-import org.apache.zeppelin.notebook.FileInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -52,6 +51,7 @@ import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 /**
@@ -179,8 +179,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     ins.close();
 
     Note note = Note.fromJson(json);
-//    note.setReplLoader(replLoader);
-//    note.jobListenerFactory = jobListenerFactory;
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
@@ -202,15 +200,9 @@ public class VFSNotebookRepo implements NotebookRepo {
     return note;
   }
 
-  private void setFileInfo(Note note, FileObject noteFile) {
-    FileInfo fileInfo = note.getFileInfo();
-    if (FileInfo.isEmpty(fileInfo)) {
-      fileInfo = FileInfo.createInstance();
-      note.setFileInfo(fileInfo);
-    }
-    fileInfo.setFile(noteFile.getName().getBaseName());
-    // TODO(khalid): integrate it with folder structure
-    fileInfo.setFolder(note.getId());
+  private void setFileInfo(Note note, FileObject noteFile) throws IOException {
+    String relativePath = getRootDir().getName().getRelativeName(noteFile.getName());
+    note.setFilepath(relativePath);
   }
   
   private FileObject getNoteFromDir(FileObject noteDir) throws IOException {
@@ -283,7 +275,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     String json = note.toJson();
 
     FileObject noteDir = getNoteDir(note.getId());
-
     FileObject noteJson = noteDir.resolveFile(".note.zpln", NameScope.CHILD);
     
     // false means not appending. creates file if not exists
@@ -291,24 +282,36 @@ public class VFSNotebookRepo implements NotebookRepo {
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
     out.close();
     
-    String filename = note.getFileInfo().getFile();
+    // save
+    String filename = note.getFilename();
     if (StringUtils.isBlank(filename)) {
       // when creating note
       filename = Util.convertTitleToFilename(note.getName());
+      if (StringUtils.isBlank(note.getDirPath())) {
+        note.setDirPath(note.getId() + File.separator);
+      }
     }
     noteJson.moveTo(noteDir.resolveFile(filename, NameScope.CHILD));
-    note.getFileInfo().setFile(filename);
-    note.getFileInfo().setFolder(note.getId());
-    
-    if (StringUtils.equals(filename, note.getId() + "." + Util.getZeppelinNoteExtension())
-        && !StringUtils.equals(note.getId(), note.getName())) {
-      // rename new note without title
-      FileInfo newFileName = note.getFileInfo().copy();
-      newFileName.setFile(Util.convertTitleToFilename(note.getName()));
-      note.setFileInfo(rename(note.getFileInfo(), newFileName, subject));
+    note.setFilename(filename);
+
+    // rename
+    String targetFilename = Util.convertTitleToFilename(note.getName());
+    if (requiresRename(note)) {
+      rename(note.getFilepath(), note.getDirPath() + targetFilename);
+      note.setFilename(targetFilename);
     }
   }
 
+  private boolean requiresRename(Note note) {
+    String currentFilename = note.getFilename();
+    if (StringUtils.equals(note.getId(), currentFilename)) {
+      // when note created, no need to rename
+      return false;
+    }
+    String targetFilename = Util.convertTitleToFilename(note.getName());
+    return !StringUtils.equals(currentFilename, targetFilename);
+  }
+  
   private FileObject getNoteDir(String dirPath) throws IOException {
     FileObject rootDir = getRootDir();
 
@@ -331,29 +334,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
     
     return noteFile;
-  }
-  
-  public synchronized FileInfo rename(FileInfo oldFile, FileInfo newFile,
-      AuthenticationInfo subject) throws IOException {
-    // currently assuming old and new files are in same folder
-    LOG.info("entered renaming, oldFile is {}, newFile is {}", oldFile, newFile);
-    FileObject noteDir = getNoteDir(newFile.getFolder());
-
-    FileObject oldNoteFile = getNoteFile(noteDir, oldFile.getFile());
-    FileObject newNoteFile = getNoteFile(noteDir, newFile.getFile());
-    
-    if (!oldNoteFile.exists()) {
-      throw new IOException(oldNoteFile.getName().toString() + " doesn't exist");
-    }
-    
-    if (!newNoteFile.exists()) {
-      newNoteFile.createFile();
-    }
-    
-    oldNoteFile.moveTo(newNoteFile);
-
-    LOG.info("File {} was renamed into {}", oldFile.getFile(), newFile.getFile());
-    return newFile;
   }
   
   @Override
@@ -442,6 +422,35 @@ public class VFSNotebookRepo implements NotebookRepo {
       throws IOException {
     // Auto-generated method stub
     return null;
+  }
+
+  public void rename(String oldPath, String newPath)
+      throws IOException {
+    // currently assuming old and new files are in the same folder
+    String oldDirPath = FilenameUtils.getPathNoEndSeparator(oldPath);
+    String newDirPath = FilenameUtils.getPathNoEndSeparator(newPath);
+    // will remove with folder structure
+    Preconditions.checkArgument(StringUtils.equals(oldDirPath, newDirPath));
+    
+    String oldFilename = FilenameUtils.getName(oldPath);
+    String newFilename = FilenameUtils.getName(newPath);
+    
+    FileObject noteDir = getNoteDir(oldDirPath);
+
+    FileObject oldNoteFile = getNoteFile(noteDir, oldFilename);
+    FileObject newNoteFile = getNoteFile(noteDir, newFilename);
+    
+    if (!oldNoteFile.exists()) {
+      throw new IOException(oldNoteFile.getName().toString() + " doesn't exist");
+    }
+    
+    if (!newNoteFile.exists()) {
+      newNoteFile.createFile();
+    }
+    
+    oldNoteFile.moveTo(newNoteFile);
+    
+    LOG.info("Note file {} was renamed into {}", oldFilename, newFilename);
   }
 
 }

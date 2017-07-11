@@ -31,6 +31,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -107,7 +108,9 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
-  private transient FileInfo fileInfo;
+  
+  // relative path to note from notebook dir
+  private transient String filepath = StringUtils.EMPTY;
 
   /*
    * note configurations.
@@ -135,7 +138,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.index = noteIndex;
     this.noteEventListener = noteEventListener;
     this.credentials = credentials;
-    this.fileInfo = FileInfo.createInstance();
     generateId();
   }
 
@@ -216,12 +218,33 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return folderId;
   }
 
-  public FileInfo getFileInfo() {
-    return this.fileInfo;
+  public String getFilepath() {
+    return this.filepath;
   }
   
-  public void setFileInfo(FileInfo fi) {
-    this.fileInfo = fi;
+  public void setFilepath(String filepath) {
+    this.filepath = filepath;
+  }
+  
+  public String getFilename() {
+    return FilenameUtils.getName(filepath);
+  }
+  
+  public void setFilename(String filename) {
+    filepath = FilenameUtils.getPath(filepath) + filename;
+  }
+  
+  public String getFileBasename() {
+    return FilenameUtils.getBaseName(filepath);
+  }
+  
+  public String getDirPath() {
+    return FilenameUtils.getPath(filepath);
+  }
+  
+  public void setDirPath(String dirPath) {
+    // TODO(khalid): handle if not ending with file separator
+    filepath = dirPath + getFilename();
   }
   
   public boolean isNameEmpty() {
@@ -765,20 +788,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     snapshotAngularObjectRegistry(subject.getUser());
     index.updateIndexDoc(this);
     repo.save(this, subject);
-  }
-
-  public void rename(AuthenticationInfo subject) throws IOException {
-    Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
-    stopDelayedPersistTimer();
-    snapshotAngularObjectRegistry(subject.getUser());
-    index.updateIndexDoc(this);
-    
-    FileInfo currentFile = this.getFileInfo().copy();
-    FileInfo newFile = FileInfo.createInstance();
-    // assuming in the same folder
-    newFile.setFolder(currentFile.getFolder());
-    newFile.setFile(Util.convertTitleToFilename(this.getName()));
-    this.setFileInfo(repo.rename(currentFile, newFile, subject));
   }
   
   /**

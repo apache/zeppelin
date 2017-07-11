@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.notebook.FileInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -532,14 +531,4 @@ public class NotebookRepoSync implements NotebookRepo {
     return revisionNote;
   }
 
-  public FileInfo rename(FileInfo oldFile, FileInfo newFile, AuthenticationInfo subject)
-      throws IOException {
-    FileInfo mainFileInfo = FileInfo.EMPTY;
-    FileInfo tempFileInfo;
-    for (int i = 0; i < repos.size(); i++) {
-      //tempFileInfo = repos.get(i).rename(oldFile, newFile, subject);
-      //mainFileInfo = (i == 0) ? tempFileInfo : FileInfo.EMPTY;
-    }
-    return mainFileInfo;
-  }
 }
