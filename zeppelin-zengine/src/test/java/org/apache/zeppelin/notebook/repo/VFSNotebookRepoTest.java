@@ -216,41 +216,17 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     assertThat(note).isNotNull();
     assertThat(note.getId()).isEqualTo(TEST_NOTE_ID);
     assertThat(note.getName()).isEqualTo("Sample note - excerpt from Zeppelin Tutorial");
-    assertThat(note.getFileInfo().getFile()).isEqualTo("note.json");
-    assertThat(note.getFileInfo().getFolder()).isEqualTo(TEST_NOTE_ID);
+    assertThat(note.getFilename()).isEqualTo("note.json");
+    assertThat(note.getDirPath()).isEqualTo(TEST_NOTE_ID + "/");
     
-    String newTitle = "Sample note - advanced example"; 
-    String newNoteName = Util.convertTitleToFilename(newTitle);
+    String newTitle = "Sample note - advanced example";
+    note.setName(newTitle);
     
     // rename
-    FileInfo newFileInfo = FileInfo.createInstance();
-    newFileInfo.setFolder(note.getFileInfo().getFolder());
-    newFileInfo.setFile(newNoteName);
-    note.setFileInfo(
-        notebookRepo.rename(note.getFileInfo(), newFileInfo, AuthenticationInfo.ANONYMOUS));
-    
-    // check if file changed
-    files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
-        TrueFileFilter.INSTANCE);
-    assertThat(files).isNotEmpty();
-    assertThat(files.size()).isEqualTo(1);
-    filepath = Joiner.on(File.separator).join(noteDir, newNoteName);
-    file = FileUtils.getFile(filepath);
-    assertThat(file.exists()).isTrue();
-        
-    // reload note
-    note = notebookRepo.get(TEST_NOTE_ID, AuthenticationInfo.ANONYMOUS);
-    assertThat(note).isNotNull();
-    assertThat(note.getId()).isEqualTo(TEST_NOTE_ID);
-    assertThat(note.getName()).isEqualTo("Sample note - excerpt from Zeppelin Tutorial");
-    assertThat(note.getFileInfo().getFile()).isEqualTo(newNoteName);
-    assertThat(note.getFileInfo().getFolder()).isEqualTo(TEST_NOTE_ID);
-    
-    // change name and persist
-    note.setName(newTitle);
     notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
     
-    // check that one file and unchanged
+    // check if file changed
+    String newNoteName = Util.convertTitleToFilename(newTitle); 
     files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
         TrueFileFilter.INSTANCE);
     assertThat(files).isNotEmpty();
@@ -264,8 +240,34 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     assertThat(note).isNotNull();
     assertThat(note.getId()).isEqualTo(TEST_NOTE_ID);
     assertThat(note.getName()).isEqualTo(newTitle);
-    assertThat(note.getFileInfo().getFile()).isEqualTo(newNoteName);
-    assertThat(note.getFileInfo().getFolder()).isEqualTo(TEST_NOTE_ID);
+    assertThat(note.getFilename()).isEqualTo(newNoteName);
+    assertThat(note.getDirPath()).isEqualTo(TEST_NOTE_ID + "/");
+    
+    // change name and persist
+    newTitle +="2";
+    note.setName(newTitle);
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+    
+    // check that file changed again
+    newNoteName = Util.convertTitleToFilename(newTitle);
+    files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
+        TrueFileFilter.INSTANCE);
+    assertThat(files).isNotEmpty();
+    assertThat(files.size()).isEqualTo(1);
+    filepath = Joiner.on(File.separator).join(noteDir, newNoteName);
+    file = FileUtils.getFile(filepath);
+    assertThat(file.exists()).isTrue();
+        
+    // add paragraph and save
+    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+    
+    Note loadedNote = notebookRepo.get(TEST_NOTE_ID, AuthenticationInfo.ANONYMOUS);
+    assertThat(loadedNote).isNotNull();
+    assertThat(loadedNote.getId()).isEqualTo(TEST_NOTE_ID);
+    assertThat(loadedNote.getName()).isEqualTo(note.getName());
+    assertThat(note.getFilepath()).isEqualTo(note.getFilepath());
+    assertThat(note.getParagraphs().size()).isEqualTo(note.getParagraphs().size());
   }
 
   @Test
@@ -299,11 +301,8 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     
     // rename
     newTitle = "another note title - tutorial 43";
-    String newNoteName = Util.convertTitleToFilename(newTitle);
-    FileInfo newFileInfo = FileInfo.createInstance();
-    newFileInfo.setFolder(note.getFileInfo().getFolder());
-    newFileInfo.setFile(newNoteName);
-    notebookRepo.rename(note.getFileInfo(), newFileInfo, AuthenticationInfo.ANONYMOUS);
+    note.setName(newTitle);
+    note.persist(AuthenticationInfo.ANONYMOUS);
     
     // confirm that file changed
     files = (List<File>) FileUtils.listFiles(new File(noteDir), TrueFileFilter.INSTANCE,
