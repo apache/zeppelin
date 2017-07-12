@@ -231,7 +231,7 @@ public class GetUserList {
         return userlist;
       }
 
-      userquery = "select " + username + " from " + tablename;
+      userquery = "select ? from ?";
 
     } catch (IllegalAccessException e) {
       LOG.error("Error while accessing dataSource for JDBC Realm", e);
@@ -241,6 +241,8 @@ public class GetUserList {
     try {
       Connection con = dataSource.getConnection();
       ps = con.prepareStatement(userquery);
+      ps.setString(1, username);
+      ps.setString(2, tablename);
       rs = ps.executeQuery();
       while (rs.next()) {
         userlist.add(rs.getString(1).trim());
