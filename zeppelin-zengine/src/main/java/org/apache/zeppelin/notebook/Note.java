@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import static java.lang.String.format;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -243,7 +244,9 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
   
   public void setDirPath(String dirPath) {
-    // TODO(khalid): handle if not ending with file separator
+    if (!StringUtils.isBlank(dirPath) && !dirPath.endsWith(File.separator)) {
+      dirPath += File.separator;
+    }
     filepath = dirPath + getFilename();
   }
   
