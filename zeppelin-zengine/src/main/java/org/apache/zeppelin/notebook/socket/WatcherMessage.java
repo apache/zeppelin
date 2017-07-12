@@ -17,11 +17,12 @@
 package org.apache.zeppelin.notebook.socket;
 
 import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  * Zeppelin websocket massage template class for watcher socket.
  */
-public class WatcherMessage {
+public class WatcherMessage implements JsonSerializable {
 
   public String message;
   public String noteId;
@@ -39,10 +40,14 @@ public class WatcherMessage {
     this.subject = builder.subject;
   }
   
-  public String serialize() {
+  public String toJson() {
     return gson.toJson(this);
   }
-  
+
+  public static WatcherMessage fromJson(String json) {
+    return gson.fromJson(json, WatcherMessage.class);
+  }
+
   /**
    * Simple builder.
    */

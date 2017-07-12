@@ -18,87 +18,50 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Represent property of interpreter
+ * Property for instance of interpreter
  */
 public class InterpreterProperty {
-  String envName;
-  String propertyName;
-  String defaultValue;
-  String description;
+  private String name;
+  private Object value;
+  private String type;
 
-  public InterpreterProperty(String envName, String propertyName, String defaultValue,
-                                String description) {
-    this.envName = envName;
-    this.propertyName = propertyName;
-    this.defaultValue = defaultValue;
-    this.description = description;
+  public InterpreterProperty(String name, Object value, String type) {
+    this.name = name;
+    this.value = value;
+    this.type = type;
   }
 
-  public InterpreterProperty(String defaultValue, String description) {
-    this(null, null, defaultValue, description);
+  public InterpreterProperty(String name, Object value) {
+    this.name = name;
+    this.value = value;
   }
 
-  public String getEnvName() {
-    return envName;
+  public String getName() {
+    return name;
   }
 
-  public void setEnvName(String envName) {
-    this.envName = envName;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public String getPropertyName() {
-    return propertyName;
+  public Object getValue() {
+    return value;
   }
 
-  public void setPropertyName(String propertyName) {
-    this.propertyName = propertyName;
+  public void setValue(Object value) {
+    this.value = value;
   }
 
-  public String getDefaultValue() {
-    return defaultValue;
+  public String getType() {
+    return type;
   }
 
-  public void setDefaultValue(String defaultValue) {
-    this.defaultValue = defaultValue;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public int hashCode() {
-    return this.toString().hashCode();
-  }
-
-  public boolean equals(Object o) {
-    if (o == null) return false;
-    return this.toString().equals(o.toString());
-  }
-
-  public String getValue() {
-    if (envName != null && !envName.isEmpty()) {
-      String envValue = System.getenv().get(envName);
-      if (envValue != null) {
-        return envValue;
-      }
-    }
-
-    if (propertyName != null && !propertyName.isEmpty()) {
-      String propValue = System.getProperty(propertyName);
-      if (propValue != null) {
-        return propValue;
-      }
-    }
-    return defaultValue;
+  public void setType(String type) {
+    this.type = type;
   }
 
   @Override
   public String toString() {
-    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s}",
-            envName, propertyName, defaultValue, description);
+    return String.format("{name=%s, value=%s, type=%s}", name, value, type);
   }
 }

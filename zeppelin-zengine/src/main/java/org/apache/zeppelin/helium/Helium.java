@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.resource.DistributedResourcePool;
@@ -45,7 +46,6 @@ public class Helium {
   private final String registryPaths;
   private final File registryCacheDir;
 
-  private final Gson gson;
   private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
 
@@ -63,13 +63,6 @@ public class Helium {
     this.registryCacheDir = registryCacheDir;
     this.bundleFactory = bundleFactory;
     this.applicationFactory = applicationFactory;
-
-    GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    builder.registerTypeAdapter(
-        HeliumRegistry.class, new HeliumRegistrySerializer());
-    gson = builder.create();
-
     heliumConf = loadConf(heliumConfPath);
   }
 
@@ -124,7 +117,7 @@ public class Helium {
       return conf;
     } else {
       String jsonString = FileUtils.readFileToString(heliumConfFile);
-      HeliumConf conf = gson.fromJson(jsonString, HeliumConf.class);
+      HeliumConf conf = HeliumConf.fromJson(jsonString);
       return conf;
     }
   }
@@ -133,7 +126,7 @@ public class Helium {
     String jsonString;
     synchronized (registry) {
       clearNotExistsPackages();
-      jsonString = gson.toJson(heliumConf);
+      jsonString = heliumConf.toJson();
     }
 
     File heliumConfFile = new File(heliumConfPath);

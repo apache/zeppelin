@@ -118,7 +118,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
-  private void authenticationUser(String userName, String password) {
+  public void authenticationUser(String userName, String password) {
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
@@ -147,7 +147,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     }
   }
 
-  private void logoutUser(String userName) throws URISyntaxException {
+  public void logoutUser(String userName) throws URISyntaxException {
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]")).click();
