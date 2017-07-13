@@ -220,6 +220,27 @@
         "defaultValue": true,
         "description": "Cassandra socket TCP no delay. Default = true",
         "type": "checkbox"
+      },
+      "cassandra.ssl.enabled": {
+        "envName": null,
+        "propertyName": "cassandra.ssl.enabled",
+        "defaultValue": "false",
+        "description": "Cassandra SSL",
+        "type": "checkbox"
+      },
+      "cassandra.ssl.truststore.path": {
+        "envName": null,
+        "propertyName": "cassandra.ssl.truststore.path",
+        "defaultValue": "none",
+        "description": "Cassandra truststore path. Default = none",
+        "type": "string"
+      },
+      "cassandra.ssl.truststore.password": {
+        "envName": null,
+        "propertyName": "cassandra.ssl.truststore.password",
+        "defaultValue": "none",
+        "description": "Cassandra truststore password. Default = none",
+        "type": "password"
       }
     },
     "editor": {
