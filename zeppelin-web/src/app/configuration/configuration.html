@@ -35,19 +35,21 @@ limitations under the License.
       <div class="col-md-12">
         <table class="table table-striped">
           <thead>
-          <tr>
-            <th style="width:30%">name</th>
-            <th>value</th>
-          </tr>
+            <tr>
+              <th style="width:30%">name</th>
+              <th>value</th>
+            </tr>
           </thead>
-          <tr ng-repeat="key in configurations | sortByKey" >
-            <td>{{key}}</td>
-            <td>
-              <div class="hiding_overflow">
-                {{configurations[key]}}
-              </div>
-            </td>
-          </tr>
+          <tbody>
+            <tr ng-repeat="key in configurations | sortByKey" >
+              <td>{{key}}</td>
+              <td>
+                <div class="hiding_overflow">
+                  {{configurations[key]}}
+                </div>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
