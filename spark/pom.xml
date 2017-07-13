@@ -43,6 +43,7 @@
     <maven.plugin.api.version>3.0</maven.plugin.api.version>
     <aether.version>1.12</aether.version>
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
+    <spark.scala.version>${scala.version}</spark.scala.version>
     <wagon.version>1.0</wagon.version>
 
     <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
@@ -227,21 +228,21 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
+      <version>${spark.scala.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
+      <version>${spark.scala.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
+      <version>${spark.scala.version}</version>
       <scope>provided</scope>
     </dependency>
 

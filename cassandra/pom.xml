@@ -34,6 +34,7 @@
     <description>Zeppelin cassandra support</description>
 
     <properties>
+        <cassandra.scala.version>${scala.version}</cassandra.scala.version>
         <cassandra.driver.version>3.0.1</cassandra.driver.version>
         <snappy.version>1.0.5.4</snappy.version>
         <lz4.version>1.3.0</lz4.version>
@@ -91,19 +92,19 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
-            <version>${scala.version}</version>
+            <version>${cassandra.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
+            <version>${cassandra.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
-            <version>${scala.version}</version>
+            <version>${cassandra.scala.version}</version>
             <scope>runtime</scope>
         </dependency>
 
