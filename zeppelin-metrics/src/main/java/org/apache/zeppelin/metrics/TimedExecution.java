@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.metrics;
 
+ /**
+  * Capture an execution of a metric (start & end times). This class is not thread-safe.
+  */
 public class TimedExecution {
   private final MetricType type;
   private long start;
@@ -26,7 +29,7 @@ public class TimedExecution {
     this.type = type;
   }
 
-  public void finish() {
+  protected void finish() {
     this.finish = System.currentTimeMillis();
   }
 

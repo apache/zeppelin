@@ -119,7 +119,7 @@ public class NotebookServer extends WebSocketServlet
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
-  private transient Metrics metrics = Metrics.getInstance();
+  private final Metrics metrics = Metrics.getInstance();
 
   /**
    * This is a special endpoint in the notebook websoket, Every connection in this Queue

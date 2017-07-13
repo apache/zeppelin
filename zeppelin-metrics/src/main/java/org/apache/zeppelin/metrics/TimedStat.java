@@ -16,8 +16,12 @@
  */
 package org.apache.zeppelin.metrics;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.HdrHistogram.ConcurrentHistogram;
 import org.HdrHistogram.Histogram;
+import org.apache.commons.lang3.time.DateUtils;
 import org.weakref.jmx.Managed;
 
 /**
@@ -27,14 +31,14 @@ public class TimedStat implements Stat {
   public static final long MAX_MILLIS = 300000;
 
   private final Histogram histogram;
-  private double maxValue;
-  private double p99Millis;
-  private double meanMillis;
-  private double p50Millis;
+
+  private final Histogram oneMinuteHistogram;
+  private long nextMinute;
 
   public TimedStat() {
     // metrics w/ upper bound of 5 minutes
     this.histogram = new ConcurrentHistogram(TimedStat.MAX_MILLIS, 5);
+    this.oneMinuteHistogram = new ConcurrentHistogram(TimedStat.MAX_MILLIS, 5);
   }
 
   @Managed
@@ -45,12 +49,42 @@ public class TimedStat implements Stat {
 
   @Managed
   public double getMaxMillis() {
-    return maxValue;
+    return histogram.getMaxValue();
+  }
+
+  @Managed
+  public double getMeanMillis() {
+    return histogram.getMean();
+  }
+
+  @Managed
+  public double getP50Millis() {
+    return histogram.getValueAtPercentile(50);
   }
 
   @Managed
   public double getP99Millis() {
-    return p99Millis;
+    return histogram.getValueAtPercentile(99);
+  }
+
+  @Managed
+  public double getMeanMillisOneMinute() {
+    return oneMinuteHistogram.getMean();
+  }
+
+  @Managed
+  public double getMaxMillisOneMinute() {
+    return oneMinuteHistogram.getMaxValue();
+  }
+
+  @Managed
+  public double getP50MillisOneMinute() {
+    return oneMinuteHistogram.getValueAtPercentile(50);
+  }
+
+  @Managed
+  public double getP99MillisOneMinute() {
+    return oneMinuteHistogram.getValueAtPercentile(99);
   }
 
   @Managed
@@ -58,39 +92,14 @@ public class TimedStat implements Stat {
   public void record(long duration) {
     histogram.recordValue(duration);
 
-    setMaxValue(histogram.getMaxValueAsDouble());
-    setP99Millis(histogram.getValueAtPercentile(99));
-    setP50Millis(histogram.getValueAtPercentile(50));
-    setMeanMillis(histogram.getMean());
+    if (System.currentTimeMillis() > nextMinute) {
+      oneMinuteHistogram.reset();
+      nextMinute = nearestMinute();
+    }
+    oneMinuteHistogram.recordValue(duration);
   }
 
-  @Managed
-  private void setMaxValue(double maxValue) {
-    this.maxValue = maxValue;
-  }
-
-  @Managed
-  private void setP99Millis(long p99Millis) {
-    this.p99Millis = p99Millis;
-  }
-
-  @Managed
-  public double getMeanMillis() {
-    return meanMillis;
-  }
-
-  @Managed
-  private void setMeanMillis(double meanMillis) {
-    this.meanMillis = meanMillis;
-  }
-
-  @Managed
-  public double getP50Millis() {
-    return p50Millis;
-  }
-
-  @Managed
-  void setP50Millis(long p50Millis) {
-    this.p50Millis = p50Millis;
+  private long nearestMinute() {
+    return DateUtils.round(new Date(), Calendar.MINUTE).getTime();
   }
 }

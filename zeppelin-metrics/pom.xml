@@ -32,10 +32,12 @@
     <name>Zeppelin operational metrics</name>
 
     <properties>
+        <!--library versions -->
+        <commons.lang3.version>3.4</commons.lang3.version>
+        <plugin.hdrhistogram.version>2.1.4</plugin.hdrhistogram.version>
         <!--plugin versions -->
         <plugin.failsafe.version>2.16</plugin.failsafe.version>
         <plugin.jmxutils.version>1.9</plugin.jmxutils.version>
-        <plugin.hdrhistogram.version>2.1.4</plugin.hdrhistogram.version>
     </properties>
 
     <dependencies>
@@ -44,10 +46,17 @@
             <artifactId>jmxutils</artifactId>
             <version>${plugin.jmxutils.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.hdrhistogram</groupId>
             <artifactId>HdrHistogram</artifactId>
             <version>${plugin.hdrhistogram.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
         </dependency>
 
         <dependency>

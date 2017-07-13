@@ -102,7 +102,7 @@ public class Metrics {
     if (stat == null) {
       stat = exported(
         type.name() + "_" + e.getClass().getSimpleName(),
-        new FailureStat(type, e)
+        new FailureStat(e)
       );
       exceptions.put(e, stat);
     }

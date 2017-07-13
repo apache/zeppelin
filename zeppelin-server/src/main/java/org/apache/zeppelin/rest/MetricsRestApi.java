@@ -54,7 +54,7 @@ public class MetricsRestApi {
    * @throws IOException, IllegalArgumentException
    */
   @GET
-  public Response getCredentials(String message) throws
+  public Response getMetrics(String message) throws
     IOException, IllegalArgumentException {
     return new JsonResponse(Status.OK, metricsMap()).build();
   }
@@ -70,6 +70,9 @@ public class MetricsRestApi {
 
       if (val instanceof TimedStat) {
         TimedStat timed = (TimedStat) val;
+        res.put(metricName + "_P99MillisOneMinute", timed.getP99MillisOneMinute());
+        res.put(metricName + "_P50MillisOneMinute", timed.getP50MillisOneMinute());
+        res.put(metricName + "_MaxMillisOneMinute", timed.getMaxMillisOneMinute());
         res.put(metricName + "_P99Millis", timed.getP99Millis());
         res.put(metricName + "_P50Millis", timed.getP50Millis());
         res.put(metricName + "_MaxMillis", timed.getMaxMillis());

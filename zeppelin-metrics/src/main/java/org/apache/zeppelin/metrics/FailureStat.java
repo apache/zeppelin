@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.metrics;
 
+import java.util.concurrent.atomic.AtomicLong;
 import org.weakref.jmx.Managed;
 
 /**
@@ -23,31 +24,26 @@ import org.weakref.jmx.Managed;
  */
 public class FailureStat implements Stat {
   private final Exception exception;
-  private long count;
+  private AtomicLong count = new AtomicLong();
 
-  public FailureStat(MetricType type, Exception ex) {
+  public FailureStat(Exception ex) {
     this.exception = ex;
   }
 
   @Managed
   @Override
   public long getCount() {
-    return count;
+    return count.get();
   }
 
   @Managed
   @Override
   public void record(long q) {
-    setCount(count + q);
+    this.count.addAndGet(q);
   }
 
   @Managed
   public Exception getException() {
     return exception;
-  }
-
-  @Managed
-  public void setCount(long count) {
-    this.count = count;
   }
 }

@@ -19,7 +19,6 @@ package org.apache.zeppelin.rest;
 
 import java.io.IOException;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
@@ -57,7 +56,7 @@ public class MetricsRestApiTest extends AbstractTestRestApi {
     // contains at least some _Count metrics
     assertTrue(Iterators.filter(body.keySet().iterator(), new Predicate<String>() {
         @Override
-        public boolean apply(@Nullable String s) {
+        public boolean apply(String s) {
           return s.endsWith("_Count");
         }
       }).hasNext());
