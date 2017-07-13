@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -339,6 +338,8 @@ public class NotebookAuthorization {
       } else {
         // add current user to owners, readers, writers - private note
         Set<String> entities = getOwners(noteId);
+        Set<String> defaultOwner = conf.getDefaultOwner();
+        entities.addAll(defaultOwner);
         entities.add(subject.getUser());
         setOwners(noteId, entities);
         entities = getReaders(noteId);

@@ -17,25 +17,49 @@
 
 package org.apache.zeppelin.notebook;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
-import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -55,6 +79,9 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class NotebookTest implements JobListenerFactory{
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
@@ -1202,6 +1229,31 @@ public class NotebookTest implements JobListenerFactory{
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     ZeppelinConfiguration.create();
+  }
+
+  @Test
+  public void testNewNoteWithDefaultOwner() throws IOException, SchedulerException {
+    AuthenticationInfo subject = new AuthenticationInfo("user1");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
+    System.setProperty(ConfVars.ZEPPELIN_DEFAULT_OWNER.getVarName(), "admin");
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    Set<String> expect = new HashSet<>();
+    expect.add("admin");
+    assertEquals(expect, conf.getDefaultOwner());
+    Note note = notebook.createNote(subject);
+    Set<String> owners = notebookAuthorization.getOwners(note.getId());
+    expect.add("user1");
+    assertEquals(2, owners.size());
+    assertEquals(expect, owners);
+
+    // default owner is empty
+    System.setProperty(ConfVars.ZEPPELIN_DEFAULT_OWNER.getVarName(), "");
+    note = notebook.createNote(subject);
+    owners = notebookAuthorization.getOwners(note.getId());
+    Set<String> expect2 = new HashSet<>();
+    expect2.add("user1");
+    assertEquals(1, owners.size());
+    assertEquals(expect2, owners);
   }
   
   private void delete(File file){
