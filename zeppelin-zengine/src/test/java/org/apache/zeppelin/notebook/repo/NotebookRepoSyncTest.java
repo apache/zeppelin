@@ -325,7 +325,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     /* check that user1 is the only owner */
     NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
-    Set<String> entity = new HashSet<String>();
+    Set<String> entity = new HashSet<>();
     entity.add(user1.getUser());
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
     assertEquals(1, authInfo.getOwners(note.getId()).size());

@@ -67,8 +67,7 @@ public class ZeppelinhubClient {
   private static Gson gson;
   
   private SchedulerService schedulerService;
-  private Map<String, ZeppelinhubSession> sessionMap = 
-      new ConcurrentHashMap<String, ZeppelinhubSession>();
+  private Map<String, ZeppelinhubSession> sessionMap = new ConcurrentHashMap<>();
 
   public static ZeppelinhubClient initialize(String zeppelinhubUrl, String token) {
     if (instance == null) {

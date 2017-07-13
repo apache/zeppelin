@@ -489,7 +489,7 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   private Set<String> permsFor(Set<String> roleNames) {
-    Set<String> perms = new LinkedHashSet<String>(); // preserve order
+    Set<String> perms = new LinkedHashSet<>(); // preserve order
     for (String role : roleNames) {
       List<String> permsForRole = permissionsByRole.get(role);
       if (log.isDebugEnabled()) {
@@ -638,7 +638,7 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   private Map<String, List<String>> parsePermissionByRoleString(String permissionsByRoleStr) {
-    Map<String, List<String>> perms = new HashMap<String, List<String>>();
+    Map<String, List<String>> perms = new HashMap<>();
 
     // split by semicolon ; then by eq = then by comma ,
     StringTokenizer stSem = new StringTokenizer(permissionsByRoleStr, ";");
@@ -651,7 +651,7 @@ public class LdapRealm extends JndiLdapRealm {
       String role = stEq.nextToken().trim();
       String perm = stEq.nextToken().trim();
       StringTokenizer stCom = new StringTokenizer(perm, ",");
-      List<String> permList = new ArrayList<String>();
+      List<String> permList = new ArrayList<>();
       while (stCom.hasMoreTokens()) {
         permList.add(stCom.nextToken().trim());
       }

@@ -54,7 +54,7 @@ public class StaticRepl {
   public static String execute(String generatedClassName, String code) throws Exception {
 
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
     // Java parasing
     JavaProjectBuilder builder = new JavaProjectBuilder();
