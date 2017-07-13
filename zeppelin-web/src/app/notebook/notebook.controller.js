@@ -65,7 +65,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.$watch('note', function (value) {
     $rootScope.pageTitle = value ? value.name : ''
   }, true)
-  
+
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
       initNotebook()
@@ -447,7 +447,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
       $scope.note.paragraphs[0].focus = true
     }
-    
+
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel)
   }
 
