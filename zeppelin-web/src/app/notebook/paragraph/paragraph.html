@@ -29,14 +29,14 @@ limitations under the License.
            ng-blur="setTitle(paragraph); input.showEditor = false"
            ng-enter="setTitle(paragraph); input.showEditor = false"
            focus-if="input.showEditor" />
-    <div ng-click="input.showEditor = !asIframe && !viewOnly && !revisionView; oldTitle = paragraph.title;"
+    <div ng-click="input.showEditor = !asIframe && !reportMode && !viewOnly && !revisionView; oldTitle = paragraph.title;"
          ng-show="!input.showEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
   </div>
 
   <div>
-    <div ng-if="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
+    <div ng-if="!paragraph.config.editorHide && !reportMode" style="margin-bottom:3px;">
       <code-editor
         paragraph-id="paragraph.id"
         paragraph-context="paragraph"
@@ -66,7 +66,7 @@ limitations under the License.
   <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
 
   <div ng-if="!asIframe" class="paragraphFooter">
-    <div ng-show="!paragraph.config.tableHide && !viewOnly"
+    <div ng-show="!paragraph.config.tableHide && !reportMode"
          id="{{paragraph.id}}_executionTime"
          class="executionTime" ng-bind-html="getExecutionTime(paragraph)">
     </div>

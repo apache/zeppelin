@@ -30,6 +30,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.editorToggled = false
   $scope.tableToggled = false
   $scope.viewOnly = false
+  $scope.reportMode = false
   $scope.showSetting = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
   $scope.cronOption = [
@@ -151,7 +152,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.keyboardShortcut = function (keyEvent) {
     // handle keyevent
-    if (!$scope.viewOnly && !$scope.revisionView) {
+    if (!$scope.viewOnly && !$scope.revisionView && !$scope.reportMode) {
       $scope.$broadcast('keyEvent', keyEvent)
     }
   }
@@ -434,14 +435,18 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   const isViewOnly = function () {
-    return ($scope.note.config.looknfeel === 'report') || (!$scope.isOwner && !$scope.isWriter)
+    return (!$scope.isOwner && !$scope.isWriter)
+  }
+
+  const isReportMode = function () {
+    return ($scope.note.config.looknfeel === 'report')
   }
 
   const initializeLookAndFeel = function () {
     if (!$scope.note.config.looknfeel) {
       $scope.note.config.looknfeel = 'default'
     } else {
-      $scope.viewOnly = isViewOnly()
+      $scope.reportMode = isReportMode()
     }
 
     if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {

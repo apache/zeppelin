@@ -637,7 +637,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     let newParagraphConfig = angular.copy(paragraph.config)
     newParagraphConfig.results = newParagraphConfig.results || []
     newParagraphConfig.results[resultIndex] = config
-    if ($scope.revisionView === true || $scope.viewOnly) {
+    if ($scope.revisionView || $scope.viewOnly || $scope.reportMode) {
       // local update without commit
       updateData({
         type: $scope.type,
