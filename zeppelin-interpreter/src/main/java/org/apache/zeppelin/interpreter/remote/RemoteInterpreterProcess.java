@@ -27,7 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Abstract class for interpreter process
+ * Abstract class for interpreter process. This class actually makes InterpreterProcess for yarn and
+ * pass actual data to interpreter by calling thrift methods.
  */
 public abstract class RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
@@ -48,7 +49,7 @@ public abstract class RemoteInterpreterProcess {
         connectTimeout);
   }
 
-  RemoteInterpreterProcess(RemoteInterpreterEventPoller remoteInterpreterEventPoller,
+  protected RemoteInterpreterProcess(RemoteInterpreterEventPoller remoteInterpreterEventPoller,
                            int connectTimeout) {
     this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     referenceCount = new AtomicInteger(0);
@@ -113,6 +114,13 @@ public abstract class RemoteInterpreterProcess {
       clientPool.invalidateObject(client);
     } catch (Exception e) {
       logger.warn("exception occurred during releasing thrift client", e);
+    } finally {
+      clientPool.clear();
+      clientPool.close();
+
+      logger.info("releaseBrokenClient. Host: {}, port: {}", getHost(), getPort());
+      clientPool = new GenericObjectPool<>(new ClientFactory(getHost(), getPort()));
+      clientPool.setTestOnBorrow(true);
     }
   }
 

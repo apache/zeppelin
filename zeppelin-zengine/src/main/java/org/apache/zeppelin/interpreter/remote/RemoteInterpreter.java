@@ -20,6 +20,8 @@ package org.apache.zeppelin.interpreter.remote;
 import java.util.*;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.cluster.ClusterManager;
+import org.apache.zeppelin.cluster.ClusterManagerFactory;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
@@ -39,15 +41,19 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import static org.apache.zeppelin.cluster.Constants.ZEPPELIN_CLUSTER_MANAGER_KEY;
+
 /**
  * Proxy for Interpreter instance that runs on separate process
  */
 public class RemoteInterpreter extends Interpreter {
+
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
 
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener applicationEventListener;
   private Gson gson = new Gson();
+  private String homeDir;
   private String interpreterRunner;
   private String interpreterPath;
   private String localRepoPath;
@@ -64,19 +70,23 @@ public class RemoteInterpreter extends Interpreter {
   private Boolean isUserImpersonate;
   private int outputLimit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
   private String interpreterGroupName;
+  private ClusterManagerFactory clusterManagerFactory;
+  private String group;
 
   /**
    * Remote interpreter and manage interpreter process
    */
-  public RemoteInterpreter(Properties property, String sessionKey, String className,
+  public RemoteInterpreter(Properties property, String sessionKey, String className, String homeDir,
       String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
       int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
-      int outputLimit, String interpreterGroupName) {
+      int outputLimit, String interpreterGroupName, ClusterManagerFactory clusterManagerFactory,
+      String group) {
     super(property);
     this.sessionKey = sessionKey;
     this.className = className;
     initialized = false;
+    this.homeDir = homeDir;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.localRepoPath = localRepoPath;
@@ -89,6 +99,8 @@ public class RemoteInterpreter extends Interpreter {
     this.isUserImpersonate = isUserImpersonate;
     this.outputLimit = outputLimit;
     this.interpreterGroupName = interpreterGroupName;
+    this.clusterManagerFactory = clusterManagerFactory;
+    this.group = group;
   }
 
 
@@ -175,10 +187,25 @@ public class RemoteInterpreter extends Interpreter {
               host,
               port);
         } else {
-          // create new remote process
-          remoteProcess = new RemoteInterpreterManagedProcess(
-              interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener, interpreterGroupName);
+          String clusterManagerKey = getProperty(ZEPPELIN_CLUSTER_MANAGER_KEY);
+          ClusterManager clusterManager;
+
+          //TODO(jl): Fix the parameter list to unify all methods
+          if (null != clusterManagerFactory
+              && null !=
+              (clusterManager = clusterManagerFactory.getClusterManager(clusterManagerKey))) {
+            remoteProcess = clusterManager
+                .createInterpreter(sessionKey, interpreterGroupName, group, env, property,
+                    connectTimeout, remoteInterpreterProcessListener, applicationEventListener,
+                    homeDir, interpreterPath);
+          } else {
+            // Default is local process
+            // create new remote process
+            remoteProcess = new RemoteInterpreterManagedProcess(
+                interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
+                remoteInterpreterProcessListener, applicationEventListener,
+                interpreterGroupName);
+          }
         }
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);

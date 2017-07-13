@@ -125,3 +125,9 @@ tramp
 
 # Git properties
 **/git.properties
+
+# Yarn related
+**/core-site.xml
+**/hdfs-site.xml
+**/yarn-site.xml
+**/capacity-scheduler.xml

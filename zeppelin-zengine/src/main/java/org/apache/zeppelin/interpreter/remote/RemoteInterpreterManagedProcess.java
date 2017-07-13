@@ -17,17 +17,23 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.commons.exec.*;
-import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteResultHandler;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.LogOutputStream;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  * This class manages start / stop of remote interpreter process
@@ -137,7 +143,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       throw new InterpreterException(e);
     }
 
-
     long startTime = System.currentTimeMillis();
     while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
       if (!running) {
@@ -157,7 +162,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
             Thread.sleep(500);
           } catch (InterruptedException e) {
             logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-                    "Thread.sleep", e);
+                "Thread.sleep", e);
           }
         }
       } catch (Exception e) {

@@ -100,16 +100,17 @@ public class RemoteInterpreterEventPoller extends Thread {
         continue;
       }
 
+      boolean broken = false;
       try {
         client = interpreterProcess.getClient();
       } catch (Exception e1) {
+        interpreterProcess.releaseBrokenClient(client);
         logger.error("Can't get RemoteInterpreterEvent", e1);
         waitQuietly();
         continue;
       }
 
       RemoteInterpreterEvent event = null;
-      boolean broken = false;
       try {
         event = client.getEvent();
       } catch (TException e) {

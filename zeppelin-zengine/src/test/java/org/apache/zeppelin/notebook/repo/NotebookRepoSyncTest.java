@@ -95,7 +95,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
 
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf, depResolver, new InterpreterOption(true));
-    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager);
+    factory = new InterpreterFactory(conf, null, null, null, depResolver, false, interpreterSettingManager, null);
     
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);

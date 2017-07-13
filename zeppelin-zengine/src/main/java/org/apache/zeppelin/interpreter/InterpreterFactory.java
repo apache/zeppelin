@@ -19,20 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang.NullArgumentException;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -47,11 +33,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.lang.NullArgumentException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
+
+import org.apache.zeppelin.cluster.ClusterManagerFactory;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 
 /**
  * Manage interpreters.
  */
 public class InterpreterFactory implements InterpreterGroupFactory {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
 
   private Map<String, URLClassLoader> cleanCl =
@@ -64,6 +66,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private final ApplicationEventListener appEventListener;
 
+  private final ClusterManagerFactory clusterManagerFactory;
+
   private boolean shiroEnabled;
 
   private Map<String, String> env = new HashMap<>();
@@ -74,7 +78,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appEventListener, DependencyResolver depResolver,
-      boolean shiroEnabled, InterpreterSettingManager interpreterSettingManager)
+      boolean shiroEnabled, InterpreterSettingManager interpreterSettingManager,
+      ClusterManagerFactory clusterManagerFactory)
       throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -86,12 +91,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     //TODO(jl): Fix it not to use InterpreterGroupFactory
     interpreterSettingManager.setInterpreterGroupFactory(this);
 
+    this.clusterManagerFactory = clusterManagerFactory;
+
     logger.info("shiroEnabled: {}", shiroEnabled);
   }
 
   /**
    * @param id interpreterGroup id. Combination of interpreterSettingId + noteId/userId/shared
-   * depends on interpreter mode
+   *           depends on interpreter mode
    */
   @Override
   public InterpreterGroup createInterpreterGroup(String id, InterpreterOption option)
@@ -149,6 +156,8 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
     String path = interpreterSetting.getPath();
     InterpreterRunner runner = interpreterSetting.getInterpreterRunner();
+    String name = interpreterSetting.getName();
+    String group = interpreterSetting.getGroup();
     Interpreter interpreter;
     for (InterpreterInfo info : interpreterInfos) {
       if (option.isRemote()) {
@@ -178,6 +187,7 @@ public class InterpreterFactory implements InterpreterGroupFactory {
         }
       }
       logger.info("Interpreter {} {} created", interpreter.getClassName(), interpreter.hashCode());
+
       interpreter.setInterpreterGroup(interpreterGroup);
     }
   }
@@ -254,13 +264,14 @@ public class InterpreterFactory implements InterpreterGroupFactory {
   }
 
   Interpreter createRemoteRepl(String interpreterPath, String interpreterSessionKey,
-      String className, Properties property, String interpreterSettingId,
-      String userName, Boolean isUserImpersonate, InterpreterRunner interpreterRunner) {
+      String className, Properties property, String interpreterSettingId, String userName,
+      Boolean isUserImpersonate, InterpreterRunner interpreterRunner) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterSettingId;
     int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     String interpreterRunnerPath;
     String interpreterGroupName = interpreterSettingManager.get(interpreterSettingId).getName();
+    String interpreterGroupStr = interpreterSettingManager.get(interpreterSettingId).getGroup();
     if (null != interpreterRunner) {
       interpreterRunnerPath = interpreterRunner.getPath();
       Path p = Paths.get(interpreterRunnerPath);
@@ -273,10 +284,11 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     }
 
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(property, interpreterSessionKey, className,
+        new RemoteInterpreter(property, interpreterSessionKey, className, conf.getHome(),
             interpreterRunnerPath, interpreterPath, localRepoPath, connectTimeout, maxPoolSize,
             remoteInterpreterProcessListener, appEventListener, userName, isUserImpersonate,
-            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT), interpreterGroupName);
+            conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT), interpreterGroupName,
+            clusterManagerFactory, interpreterGroupStr);
     remoteInterpreter.addEnv(env);
 
     return new LazyOpenInterpreter(remoteInterpreter);

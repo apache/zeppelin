@@ -202,6 +202,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
                 py4jLibPath + File.pathSeparator + pythonLibPath);
       }
 
+      logger.info("PYTHONPATH: {}", env.get("PYTHONPATH"));
+
       logger.info("cmd = {}", cmd.toString());
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;

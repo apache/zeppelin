@@ -23,10 +23,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Interpreter related constants
- * 
- *
  */
 public class Constants {
+
   public static final String ZEPPELIN_INTERPRETER_PORT = "zeppelin.interpreter.port";
 
   public static final String ZEPPELIN_INTERPRETER_HOST = "zeppelin.interpreter.host";
