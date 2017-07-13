@@ -197,7 +197,8 @@ public class CassandraInterpreter extends Interpreter {
             .withQueryOptions(driverConfig.getQueryOptions(this))
             .withSocketOptions(driverConfig.getSocketOptions(this));
 
-    if (getProperty(CASSANDRA_WITH_SSL).equals("true")) {
+    final String runWithSSL = getProperty(CASSANDRA_WITH_SSL);
+    if (runWithSSL != null && runWithSSL.equals("true")) {
       LOGGER.debug("Cassandra Interpreter: Using SSL");
 
       try {
