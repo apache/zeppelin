@@ -103,6 +103,9 @@ describe('Controller: Credential', function () {
     $httpBackend.flush()
 
     expect($scope.credentialInfo[1]).toEqual(newCredential)
+    
+    $httpBackend.verifyNoOutstandingExpectation()
+    $httpBackend.verifyNoOutstandingRequest()
   })
 
   function createController() {
