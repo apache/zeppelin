@@ -17,19 +17,31 @@ angular.module('zeppelinWebApp').controller('CredentialCtrl', CredentialCtrl)
 function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   'ngInject'
 
-  $scope._ = _
   ngToast.dismiss()
 
   $scope.credentialInfo = []
   $scope.showAddNewCredentialInfo = false
   $scope.availableInterpreters = []
 
+  $scope.hasCredential = () => {
+    return Array.isArray($scope.credentialInfo) && $scope.credentialInfo.length
+  }
+
   let getCredentialInfo = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/credential')
     .success(function (data, status, headers, config) {
-      $scope.credentialInfo = _.map(data.body.userCredentials, function (value, prop) {
-        return {entity: prop, password: value.password, username: value.username}
-      })
+      $scope.credentialInfo.length = 0 // keep the ref while cleaning
+      const returnedCredentials = data.body.userCredentials
+
+      for (let key in returnedCredentials) {
+        const value = returnedCredentials[key]
+        $scope.credentialInfo.push({
+          entity: key,
+          password: value.password,
+          username: value.username,
+        })
+      }
+
       console.log('Success %o %o', status, $scope.credentialInfo)
     })
     .error(function (data, status, headers, config) {
@@ -48,8 +60,8 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   }
 
   $scope.addNewCredentialInfo = function () {
-    if ($scope.entity && _.isEmpty($scope.entity.trim()) &&
-      $scope.username && _.isEmpty($scope.username.trim())) {
+    if ($scope.entity && $scope.entity.trim() !== '' &&
+      $scope.username && $scope.username.trim() !== '') {
       ngToast.danger({
         content: 'Username \\ Entity can not be empty.',
         verticalPosition: 'bottom',
@@ -141,7 +153,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential/', request)
     .success(function (data, status, headers, config) {
-      let index = _.findIndex($scope.credentialInfo, {'entity': entity})
+      const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
       $scope.credentialInfo[index] = request
       return true
     })
@@ -168,7 +180,7 @@ function CredentialCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/credential/' + entity)
           .success(function (data, status, headers, config) {
-            let index = _.findIndex($scope.credentialInfo, {'entity': entity})
+            const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
             $scope.credentialInfo.splice(index, 1)
             console.log('Success %o %o', status, data.message)
           })
