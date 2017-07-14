@@ -44,7 +44,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--plugin versions-->
-    <plugin.frontend.downloadRoot>https://nodejs.org/dist/</plugin.frontend.downloadRoot>
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
     <plugin.frontend.npmDownloadRoot>http://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
     <plugin.frontend.yarnDownloadRoot>https://github.com/yarnpkg/yarn/releases/download/</plugin.frontend.yarnDownloadRoot>
@@ -66,7 +65,6 @@
         <artifactId>frontend-maven-plugin</artifactId>
         <version>${plugin.frontend.version}</version>
         <configuration>
-          <downloadRoot>${plugin.frontend.downloadRoot}</downloadRoot>
           <nodeDownloadRoot>${plugin.frontend.nodeDownloadRoot}</nodeDownloadRoot>
           <npmDownloadRoot>${plugin.frontend.npmDownloadRoot}</npmDownloadRoot>
           <yarnDownloadRoot>${plugin.frontend.yarnDownloadRoot}</yarnDownloadRoot>
