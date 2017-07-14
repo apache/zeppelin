@@ -666,9 +666,6 @@
           <systemProperties>
             <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
           </systemProperties>
-          <environmentVariables>
-            <!--<ZEPPELIN_HOME>..</ZEPPELIN_HOME>-->
-          </environmentVariables>
         </configuration>
       </plugin>
     </plugins>

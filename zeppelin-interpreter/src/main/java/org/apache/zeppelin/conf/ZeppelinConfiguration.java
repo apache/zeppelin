@@ -253,6 +253,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBooleanValue(propertyName, defaultValue);
   }
 
+  public String getZeppelinHome() {
+    return getString(ConfVars.ZEPPELIN_HOME);
+  }
+
   public boolean useSsl() {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
@@ -417,7 +421,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterSettingPath() {
-    return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
+    return getConfigFSDir() + "/interpreter.json";
   }
 
   public String getHeliumConfPath() {
@@ -441,7 +445,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookAuthorizationPath() {
-    return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
+    return getConfigFSDir() + "/notebook-authorization.json";
   }
 
   public Boolean credentialsPersist() {
@@ -506,7 +510,17 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getConfDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_CONF_DIR);
+    return getRelativeDir(getString(ConfVars.ZEPPELIN_CONF_DIR));
+  }
+
+  public String getConfigFSDir() {
+    String fsConfigDir = getString(ConfVars.ZEPPELIN_CONFIG_FS_DIR);
+    if (StringUtils.isBlank(fsConfigDir)) {
+      LOG.warn(ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName + " is not specified, fall back to local " +
+          "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
+      return "file://" + getConfDir();
+    }
+    return fsConfigDir;
   }
 
   public List<String> getAllowedOrigins()
@@ -693,6 +707,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
+    ZEPPELIN_CONFIG_FS_DIR("zeppelin.config.fs.dir", ""),
+    ZEPPELIN_CONFIG_STORAGE_CLASS("zeppelin.config.storage.class",
+        "org.apache.zeppelin.storage.FileSystemConfigStorage"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
     ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",

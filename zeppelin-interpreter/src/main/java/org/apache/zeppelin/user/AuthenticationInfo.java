@@ -19,15 +19,14 @@
 package org.apache.zeppelin.user;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
+import java.util.ArrayList;
+import java.util.List;
 
 /***
  *

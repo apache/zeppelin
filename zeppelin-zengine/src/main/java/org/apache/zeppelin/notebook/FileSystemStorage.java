@@ -40,6 +40,8 @@ public class FileSystemStorage {
   private FileSystemStorage(ZeppelinConfiguration zConf) throws IOException {
     this.zConf = zConf;
     this.hadoopConf = new Configuration();
+    // disable checksum for local file system. because interpreter.json may be updated by
+    // no hadoop filesystem api
     this.hadoopConf.set("fs.file.impl", RawLocalFileSystem.class.getName());
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
 
@@ -72,6 +74,16 @@ public class FileSystemStorage {
 
   public Path makeQualified(Path path) {
     return fs.makeQualified(path);
+  }
+
+  public boolean exists(final Path path) throws IOException {
+    return callHdfsOperation(new HdfsOperation<Boolean>() {
+
+      @Override
+      public Boolean call() throws IOException {
+        return fs.exists(path);
+      }
+    });
   }
 
   public void tryMkDir(final Path dir) throws IOException {
@@ -149,7 +161,6 @@ public class FileSystemStorage {
 
   public synchronized <T> T callHdfsOperation(final HdfsOperation<T> func) throws IOException {
     if (isSecurityEnabled) {
-      UserGroupInformation.getLoginUser().reloginFromKeytab();
       try {
         return UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<T>() {
           @Override
