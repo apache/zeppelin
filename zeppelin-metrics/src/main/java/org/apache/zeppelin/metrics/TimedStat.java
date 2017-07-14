@@ -54,7 +54,7 @@ public class TimedStat implements Stat {
 
   @Managed
   public double getMeanMillis() {
-    return histogram.getMean();
+    return notNan(histogram.getMean());
   }
 
   @Managed
@@ -65,11 +65,6 @@ public class TimedStat implements Stat {
   @Managed
   public double getP99Millis() {
     return histogram.getValueAtPercentile(99);
-  }
-
-  @Managed
-  public double getMeanMillisOneMinute() {
-    return oneMinuteHistogram.getMean();
   }
 
   @Managed
@@ -101,5 +96,9 @@ public class TimedStat implements Stat {
 
   private long nearestMinute() {
     return DateUtils.round(new Date(), Calendar.MINUTE).getTime();
+  }
+
+  private double notNan(double mean) {
+    return Double.isNaN(mean) ? 0.0 : mean;
   }
 }
