@@ -33,30 +33,30 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
 
   let getCredentialInfo = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/credential')
-    .success(function (data, status, headers, config) {
-      $scope.credentialInfo.length = 0 // keep the ref while cleaning
-      const returnedCredentials = data.body.userCredentials
+      .success(function (data, status, headers, config) {
+        $scope.credentialInfo.length = 0 // keep the ref while cleaning
+        const returnedCredentials = data.body.userCredentials
 
-      for (let key in returnedCredentials) {
-        const value = returnedCredentials[key]
-        $scope.credentialInfo.push({
-          entity: key,
-          password: value.password,
-          username: value.username,
-        })
-      }
+        for (let key in returnedCredentials) {
+          const value = returnedCredentials[key]
+          $scope.credentialInfo.push({
+            entity: key,
+            password: value.password,
+            username: value.username,
+          })
+        }
 
-      console.log('Success %o %o', status, $scope.credentialInfo)
-    })
-    .error(function (data, status, headers, config) {
-      if (status === 401) {
-        showToast('You do not have permission on this page', 'danger')
-        setTimeout(function () {
-          window.location = baseUrlSrv.getBase()
-        }, 3000)
-      }
-      console.log('Error %o %o', status, data.message)
-    })
+        console.log('Success %o %o', status, $scope.credentialInfo)
+      })
+      .error(function (data, status, headers, config) {
+        if (status === 401) {
+          showToast('You do not have permission on this page', 'danger')
+          setTimeout(function () {
+            window.location = baseUrlSrv.getBase()
+          }, 3000)
+        }
+        console.log('Error %o %o', status, data.message)
+      })
   }
 
   $scope.isValidCredential = function() {
@@ -76,17 +76,17 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
     }
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential', newCredential)
-    .success(function (data, status, headers, config) {
-      showToast('Successfully saved credentials.', 'success')
-      $scope.credentialInfo.push(newCredential)
-      resetCredentialInfo()
-      $scope.showAddNewCredentialInfo = false
-      console.log('Success %o %o', status, data.message)
-    })
-    .error(function (data, status, headers, config) {
-      showToast('Error saving credentials', 'danger')
-      console.log('Error %o %o', status, data.message)
-    })
+      .success(function (data, status, headers, config) {
+        showToast('Successfully saved credentials.', 'success')
+        $scope.credentialInfo.push(newCredential)
+        resetCredentialInfo()
+        $scope.showAddNewCredentialInfo = false
+        console.log('Success %o %o', status, data.message)
+      })
+      .error(function (data, status, headers, config) {
+        showToast('Error saving credentials', 'danger')
+        console.log('Error %o %o', status, data.message)
+      })
   }
 
   let getAvailableInterpreters = function () {
@@ -103,7 +103,8 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
             return false
           }
         })
-      }).error(function (data, status, headers, config) {
+      })
+      .error(function (data, status, headers, config) {
         showToast(data.message, 'danger')
         console.log('Error %o %o', status, data.message)
       })
@@ -145,16 +146,16 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
     }
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential/', credential)
-    .success(function (data, status, headers, config) {
-      const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
-      $scope.credentialInfo[index] = credential
-      return true
-    })
-    .error(function (data, status, headers, config) {
-      showToast('We could not save the credential', 'danger')
-      console.log('Error %o %o', status, data.message)
-      form.$show()
-    })
+      .success(function (data, status, headers, config) {
+        const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
+        $scope.credentialInfo[index] = credential
+        return true
+      })
+      .error(function (data, status, headers, config) {
+        showToast('We could not save the credential', 'danger')
+        console.log('Error %o %o', status, data.message)
+        form.$show()
+      })
     return false
   }
 
@@ -168,15 +169,15 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
       callback: function (result) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/credential/' + entity)
-          .success(function (data, status, headers, config) {
-            const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
-            $scope.credentialInfo.splice(index, 1)
-            console.log('Success %o %o', status, data.message)
-          })
-          .error(function (data, status, headers, config) {
-            showToast(data.message, 'danger')
-            console.log('Error %o %o', status, data.message)
-          })
+            .success(function (data, status, headers, config) {
+              const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
+              $scope.credentialInfo.splice(index, 1)
+              console.log('Success %o %o', status, data.message)
+            })
+            .error(function (data, status, headers, config) {
+              showToast(data.message, 'danger')
+              console.log('Error %o %o', status, data.message)
+            })
         }
       }
     })
