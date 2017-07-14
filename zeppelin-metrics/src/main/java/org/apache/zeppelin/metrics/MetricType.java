@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.metrics;
 
+/*
+ * Business metrics
+ */
 public enum MetricType {
   ParagraphRun,
   NotebookRun,
