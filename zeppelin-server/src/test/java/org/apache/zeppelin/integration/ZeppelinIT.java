@@ -86,14 +86,13 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // login works
       button.click();
-      setText("//input[@id=\"userName\"]", "admin");
-      setText("//input[@id=\"password\"]", "password1");
+      setText("//input[@id=\"userName\"]", "user1");
+      setText("//input[@id=\"password\"]", "password2");
       driver.findElement(By.xpath("//button[@class=\"btn btn-default btn-primary\"]")).click();
 
       // username is displayed and there's no login button anymore
-      waitForText("admin", By.xpath("//span[@class=\"username ng-binding\"]"));
+      waitForText("user1", By.xpath("//span[@class=\"username ng-binding\"]"));
 
-      ZeppelinITUtils.sleep(1000, true);
       assertFalse(
         driver.findElement(By.xpath("//button[@class=\"btn nav-login-btn\"]")).isDisplayed()
       );
