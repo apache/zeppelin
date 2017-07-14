@@ -72,7 +72,7 @@ limitations under the License.
           </a>
         </li>
         <li class="liVertical">
-          <div ng-include src="'components/repository-create/repository-dialog.html'"></div>
+          <div ng-include src="'app/interpreter/repository-create.html'"></div>
           <div class="btn btn-default"
                data-toggle="modal"
                data-target="#repoModal">
@@ -83,11 +83,11 @@ limitations under the License.
     </div>
   </div>
 
-  <div ng-include src="'app/interpreter/interpreter-create/interpreter-create.html'"></div>
+  <div ng-include src="'app/interpreter/interpreter-create.html'"></div>
 </div>
 
-<div class="box width-full"
-     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter} " interpreter-directive>
+<div interpreter-item class="box width-full"
+     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter}" >
   <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
 
@@ -443,7 +443,7 @@ limitations under the License.
             <td style="vertical-align: middle;" ng-switch on="setting.propertyType">
               <textarea ng-switch-default msd-elastic ng-model="setting.propertyValue"></textarea>
               <input ng-switch-when="string" type="text" msd-elastic ng-model="setting.propertyValue"/>
-              <input ng-switch-when="number" type="text" msd-elastic ng-model="setting.propertyValue" widget-number />
+              <input ng-switch-when="number" type="text" msd-elastic ng-model="setting.propertyValue" number-widget />
               <input ng-switch-when="url" type="text" msd-elastic ng-model="setting.propertyValue" />
               <input ng-switch-when="password" type="password" msd-elastic ng-model="setting.propertyValue" />
               <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="setting.propertyValue" />
