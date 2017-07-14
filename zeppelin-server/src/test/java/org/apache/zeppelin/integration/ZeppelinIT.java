@@ -83,20 +83,6 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       // anonymous should display a Login button
       WebElement button = driver.findElement(By.xpath("//button[@class=\"btn nav-login-btn\"]"));
       assertTrue(button.isDisplayed());
-
-      // login works
-      button.click();
-      setText("//input[@id=\"userName\"]", "user1");
-      setText("//input[@id=\"password\"]", "password2");
-      driver.findElement(By.xpath("//button[@class=\"btn btn-default btn-primary\"]")).click();
-
-      // username is displayed and there's no login button anymore
-      waitForText("user1", By.xpath("//span[@class=\"username ng-binding\"]"));
-
-      assertFalse(
-        driver.findElement(By.xpath("//button[@class=\"btn nav-login-btn\"]")).isDisplayed()
-      );
-
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testLogin", e);
     }
