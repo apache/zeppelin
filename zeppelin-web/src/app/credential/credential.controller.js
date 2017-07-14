@@ -23,6 +23,10 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
   $scope.showAddNewCredentialInfo = false
   $scope.availableInterpreters = []
 
+  $scope.entity = ''
+  $scope.password = ''
+  $scope.username = ''
+
   $scope.hasCredential = () => {
     return Array.isArray($scope.credentialInfo) && $scope.credentialInfo.length
   }
@@ -46,11 +50,7 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
     })
     .error(function (data, status, headers, config) {
       if (status === 401) {
-        ngToast.danger({
-          content: 'You don\'t have permission on this page',
-          verticalPosition: 'bottom',
-          timeout: '3000'
-        })
+        showToast('You do not have permission on this page', 'danger')
         setTimeout(function () {
           window.location = baseUrlSrv.getBase()
         }, 3000)
@@ -65,11 +65,7 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
 
   $scope.addNewCredentialInfo = function () {
     if (!$scope.isValidCredential()) {
-      ngToast.danger({
-        content: 'Username \\ Entity can not be empty.',
-        verticalPosition: 'bottom',
-        timeout: '3000'
-      })
+      showToast('Username \\ Entity can not be empty.', 'danger')
       return
     }
 
@@ -81,22 +77,14 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
 
     $http.put(baseUrlSrv.getRestApiBase() + '/credential', newCredential)
     .success(function (data, status, headers, config) {
-      ngToast.success({
-        content: 'Successfully saved credentials.',
-        verticalPosition: 'bottom',
-        timeout: '3000'
-      })
+      showToast('Successfully saved credentials.', 'success')
       $scope.credentialInfo.push(newCredential)
       resetCredentialInfo()
       $scope.showAddNewCredentialInfo = false
       console.log('Success %o %o', status, data.message)
     })
     .error(function (data, status, headers, config) {
-      ngToast.danger({
-        content: 'Error saving credentials',
-        verticalPosition: 'bottom',
-        timeout: '3000'
-      })
+      showToast('Error saving credentials', 'danger')
       console.log('Error %o %o', status, data.message)
     })
   }
@@ -116,6 +104,7 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
           }
         })
       }).error(function (data, status, headers, config) {
+        showToast(data.message, 'danger')
         console.log('Error %o %o', status, data.message)
       })
   }
@@ -140,20 +129,12 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
   }
 
   $scope.copyOriginCredentialsInfo = function () {
-    ngToast.info({
-      content: 'Since entity is a unique key, you can edit only username & password',
-      verticalPosition: 'bottom',
-      timeout: '3000'
-    })
+    showToast('Since entity is a unique key, you can edit only username & password', 'info')
   }
 
   $scope.updateCredentialInfo = function (form, data, entity) {
     if (!$scope.isValidCredential()) {
-      ngToast.danger({
-        content: 'Username \\ Entity can not be empty.',
-        verticalPosition: 'bottom',
-        timeout: '3000'
-      })
+      showToast('Username \\ Entity can not be empty.', 'danger')
       return
     }
 
@@ -170,12 +151,8 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
       return true
     })
     .error(function (data, status, headers, config) {
+      showToast('We could not save the credential', 'danger')
       console.log('Error %o %o', status, data.message)
-      ngToast.danger({
-        content: 'We couldn\'t save the credential',
-        verticalPosition: 'bottom',
-        timeout: '3000'
-      })
       form.$show()
     })
     return false
@@ -197,11 +174,25 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
             console.log('Success %o %o', status, data.message)
           })
           .error(function (data, status, headers, config) {
+            showToast(data.message, 'danger')
             console.log('Error %o %o', status, data.message)
           })
         }
       }
     })
+  }
+
+  function showToast(message, type) {
+    const verticalPosition = 'bottom'
+    const timeout = '3000'
+
+    if (type === 'success') {
+      ngToast.success({ content: message, verticalPosition: verticalPosition, timeout: timeout, })
+    } else if (type === 'info') {
+      ngToast.info({ content: message, verticalPosition: verticalPosition, timeout: timeout, })
+    } else {
+      ngToast.danger({ content: message, verticalPosition: verticalPosition, timeout: timeout, })
+    }
   }
 
   let init = function () {
