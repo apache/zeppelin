@@ -87,8 +87,9 @@ public class Metrics {
   }
 
   public void save(TimedExecution run) {
-    run.finish();
-    stats.get(run.getMetricType()).record(run.getDuration());
+    stats.get(run.getMetricType()).record(
+      System.currentTimeMillis() - run.getStart()
+    );
   }
 
   public void saveFailure(Exception e, MetricType type) {

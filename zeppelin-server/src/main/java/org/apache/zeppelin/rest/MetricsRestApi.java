@@ -59,8 +59,8 @@ public class MetricsRestApi {
     return new JsonResponse(Status.OK, metricsMap()).build();
   }
 
-  private Map<String, Number> metricsMap() {
-    Map<String, Number> res = new HashMap<>();
+  private Map<String, Object> metricsMap() {
+    Map<String, Object> res = new HashMap<>();
 
     for (Map.Entry<MetricType, Stat> e : metrics.getStats().entrySet()) {
       Stat val = e.getValue();

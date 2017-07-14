@@ -22,22 +22,17 @@ package org.apache.zeppelin.metrics;
 public class TimedExecution {
   private final MetricType type;
   private long start;
-  private long finish;
 
   public TimedExecution(MetricType type) {
     start = System.currentTimeMillis();
     this.type = type;
   }
 
-  protected void finish() {
-    this.finish = System.currentTimeMillis();
-  }
-
   public MetricType getMetricType() {
     return type;
   }
 
-  public long getDuration() {
-    return finish - start;
+  public long getStart() {
+    return start;
   }
 }
