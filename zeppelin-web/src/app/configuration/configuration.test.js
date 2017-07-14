@@ -20,7 +20,7 @@ describe('Controller: Configuration', function () {
     ngToast = _ngToast_
   }))
 
-  afterEach (function () {
+  afterEach(function () {
     $httpBackend.verifyNoOutstandingExpectation()
     $httpBackend.verifyNoOutstandingRequest()
   })
@@ -30,7 +30,9 @@ describe('Controller: Configuration', function () {
     ctrl = $controller('ConfigurationCtrl', { $scope: $scope, baseUrlSrv: baseUrlSrvMock, })
     expect(ctrl).toBeDefined()
 
-    $httpBackend.when("GET", '/configurations/all').respond(200, { body: conf, })
+    $httpBackend
+      .when('GET', '/configurations/all')
+      .respond(200, { body: conf, })
     $httpBackend.expectGET('/configurations/all')
     $httpBackend.flush()
 
@@ -41,7 +43,7 @@ describe('Controller: Configuration', function () {
     ctrl = $controller('ConfigurationCtrl', { $scope: $scope, baseUrlSrv: baseUrlSrvMock, })
     spyOn(ngToast, 'danger')
 
-    $httpBackend.when("GET", '/configurations/all').respond(401, {})
+    $httpBackend.when('GET', '/configurations/all').respond(401, {})
     $httpBackend.expectGET('/configurations/all')
     $httpBackend.flush()
 
