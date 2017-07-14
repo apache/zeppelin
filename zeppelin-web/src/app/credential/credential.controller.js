@@ -148,16 +148,25 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
   }
 
   $scope.updateCredentialInfo = function (form, data, entity) {
-    let request = {
+    if (!$scope.isValidCredential()) {
+      ngToast.danger({
+        content: 'Username \\ Entity can not be empty.',
+        verticalPosition: 'bottom',
+        timeout: '3000'
+      })
+      return
+    }
+
+    let credential = {
       entity: entity,
       username: data.username,
       password: data.password
     }
 
-    $http.put(baseUrlSrv.getRestApiBase() + '/credential/', request)
+    $http.put(baseUrlSrv.getRestApiBase() + '/credential/', credential)
     .success(function (data, status, headers, config) {
       const index = $scope.credentialInfo.findIndex(elem => elem.entity === entity)
-      $scope.credentialInfo[index] = request
+      $scope.credentialInfo[index] = credential
       return true
     })
     .error(function (data, status, headers, config) {
