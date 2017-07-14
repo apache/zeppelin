@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('CredentialCtrl', CredentialCtrl)
+angular.module('zeppelinWebApp').controller('CredentialCtrl', CredentialController)
 
-function CredentialCtrl ($scope, $http, baseUrlSrv, ngToast) {
+function CredentialController($scope, $http, baseUrlSrv, ngToast) {
   'ngInject'
 
   ngToast.dismiss()
@@ -59,9 +59,12 @@ function CredentialCtrl ($scope, $http, baseUrlSrv, ngToast) {
     })
   }
 
+  $scope.isValidCredential = function() {
+    return $scope.entity.trim() !== '' && $scope.username.trim() !== ''
+  }
+
   $scope.addNewCredentialInfo = function () {
-    if ($scope.entity && $scope.entity.trim() !== '' &&
-      $scope.username && $scope.username.trim() !== '') {
+    if (!$scope.isValidCredential()) {
       ngToast.danger({
         content: 'Username \\ Entity can not be empty.',
         verticalPosition: 'bottom',
