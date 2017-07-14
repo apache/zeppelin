@@ -1,3 +1,5 @@
+import angular from 'angular'
+
 describe('Controller: NotenameCtrl', function () {
   beforeEach(angular.mock.module('zeppelinWebApp'))
 

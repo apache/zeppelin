@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
 import moment from 'moment'
 
 import DatasetFactory from '../../../tabledata/datasetfactory'

@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').factory('noteListDataFactory', noteListDataFactory)
 
 function noteListDataFactory (TRASH_FOLDER_ID) {

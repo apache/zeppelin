@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
 
@@ -23,6 +25,23 @@ import 'angular-viewport-watch/angular-viewport-watch.js'
 
 import 'angular-ui-grid/ui-grid.css'
 import 'angular-ui-grid'
+
+import 'angular-cookies'
+import 'angular-sanitize'
+import 'angular-animate'
+import 'angular-touch'
+import 'angular-route'
+import 'angular-resource'
+import 'angular-ui-bootstrap'
+import 'angular-dragdrop'
+import 'angular-elastic'
+import 'angular-elastic-input'
+import 'angular-xeditable'
+import 'angular-filter'
+import 'ng-sortable'
+import 'ngclipboard'
+import 'ng-toast'
+import 'ng-focus-if'
 
 const requiredModules = [
   'ngCookies',

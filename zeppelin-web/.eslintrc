@@ -13,20 +13,15 @@
     "sourceType": "module"
   },
   "globals": {
-    "angular": false,
     "inject": false,
     "_": false,
     "jQuery": false,
     "hljs": false,
-    "confirm": false,
-    "alert": false,
     "nv": false,
     "ace": false,
     "d3": false,
     "MathJax": false,
     "BootstrapDialog": false,
-    "Handsontable": false,
-    "moment": false,
     "zeppelin" : false,
     "process": false
   },

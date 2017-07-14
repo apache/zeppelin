@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
 import TableData from './tabledata'
 import {DatasetType} from './dataset'
 

@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import { HeliumType, } from './helium-type'
 import {
   createAllPackageConfigs,

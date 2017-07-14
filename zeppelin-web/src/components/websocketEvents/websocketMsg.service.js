@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').service('websocketMsgSrv', websocketMsgSrv)
 
 function websocketMsgSrv ($rootScope, websocketEvents) {

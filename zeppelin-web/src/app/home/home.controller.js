@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl)
 
 function HomeCtrl ($scope, noteListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,

@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 import { JobStatus, } from './jobs/job-status'
 
 angular.module('zeppelinWebApp')

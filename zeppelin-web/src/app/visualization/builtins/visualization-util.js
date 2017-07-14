@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 export const Widget = {
   CHECKBOX: 'checkbox',
   INPUT: 'input',

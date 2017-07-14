@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 
+import angular from 'angular'
+
 angular.module('zeppelinWebApp').directive('ngEscape', ngEscape)
 
 function ngEscape () {

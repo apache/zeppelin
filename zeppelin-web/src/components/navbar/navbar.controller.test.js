@@ -1,3 +1,5 @@
+import angular from 'angular'
+
 describe('Controller: NavCtrl', function () {
   // load the controller's module
   beforeEach(angular.mock.module('zeppelinWebApp'))
