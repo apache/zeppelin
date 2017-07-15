@@ -63,7 +63,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.revisionView = isRevisionPath($location.path())
 
   $scope.$watch('note', function (value) {
-    $rootScope.pageTitle = value ? value.name : ''
+    $rootScope.pageTitle = value ? value.name : 'Zeppelin'
   }, true)
 
   $scope.$on('setConnectedStatus', function (event, param) {
