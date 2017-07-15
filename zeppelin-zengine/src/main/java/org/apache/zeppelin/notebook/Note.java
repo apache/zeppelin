@@ -906,7 +906,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public static Note fromJson(String json) {
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
+    note.resetRuntimeInfos();
     return note;
+  }
+
+  public void resetRuntimeInfos() {
+    for (Paragraph p : paragraphs) {
+      p.clearRuntimeInfos();
+    }
   }
 
   private static void convertOldInput(Note note) {
