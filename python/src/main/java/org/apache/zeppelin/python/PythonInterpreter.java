@@ -285,7 +285,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     if (iPythonInterpreter != null) {
       iPythonInterpreter.close();
       return;
@@ -463,7 +463,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return context;
   }
 
-  public void interrupt() throws IOException {
+  public void interrupt() throws IOException, InterpreterException {
     if (pythonPid > -1) {
       logger.info("Sending SIGINT signal to PID : " + pythonPid);
       Runtime.getRuntime().exec("kill -SIGINT " + pythonPid);
@@ -474,7 +474,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     if (iPythonInterpreter != null) {
       iPythonInterpreter.cancel(context);
     }
@@ -491,7 +491,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.getProgress(context);
     }

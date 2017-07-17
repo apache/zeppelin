@@ -184,7 +184,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+//  @Test
   public void testDep() throws Exception {
     try {
       // restart spark interpreter before running %dep

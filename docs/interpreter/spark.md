@@ -199,6 +199,10 @@ Zeppelin support both yarn client and yarn cluster mode (yarn cluster mode is su
 You can either specify them in `zeppelin-env.sh`, or in interpreter setting page. Specifying them in `zeppelin-env.sh` means you can use only one version of `spark` & `hadoop`. Specifying them
 in interpreter setting page means you can use multiple versions of `spark` & `hadoop` in one zeppelin instance.
 
+### 4. New Version of SparkInterpreter
+There's one new version of SparkInterpreter starting with better spark support and code completion from Zeppelin 0.8.0, by default we still use the old version of SparkInterpreter.
+If you want to use the new one, you can configure `zeppelin.spark.useNew` as `true` in its interpreter setting.
+
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
 Staring from 0.6.1 SparkSession is available as variable `spark` when you are using Spark 2.x.
