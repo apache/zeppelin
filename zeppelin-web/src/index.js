@@ -36,7 +36,7 @@ import './app/visualization/builtins/visualization-linechart.js'
 import './app/visualization/builtins/visualization-scatterchart.js'
 
 import './app/jobmanager/jobmanager.controller.js'
-import './app/jobmanager/jobs/job.controller.js'
+import './app/jobmanager/job/job.controller.js'
 import './app/jobmanager/jobmanager.filter.js'
 import './app/interpreter/interpreter.controller.js'
 import './app/interpreter/interpreter.filter.js'
