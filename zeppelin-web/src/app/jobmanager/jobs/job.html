@@ -25,7 +25,7 @@ limitations under the License.
 
       <span
         class="job-control-btn" tooltip-placement="left"
-        uib-tooltip-html="!notebookJob.isRunningJob ? 'Start All Jobs' : 'Stop All Jobs'"
+        uib-tooltip-html="!notebookJob.isRunningJob ? 'Start All Paragraphs' : 'Stop All Paragraphs'"
         ng-click="!notebookJob.isRunningJob ? runNotebookJob(notebookJob.noteId) : stopNotebookJob(notebookJob.noteId)"
         ng-class="!notebookJob.isRunningJob ? 'icon-control-play' : 'icon-control-pause'">
       </span>
