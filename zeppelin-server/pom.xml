@@ -261,6 +261,12 @@
       <artifactId>scalatest_${scala.binary.version}</artifactId>
       <version>${scalatest.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang.modules</groupId>
+          <artifactId>scala-xml_${scala.binary.version}</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
