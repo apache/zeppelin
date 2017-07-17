@@ -45,7 +45,16 @@ limitations under the License.
       <span ng-if="notebookJob.interpreter !== undefined" style="color: black;">
         {{notebookJob.interpreter}}</span>
     </a>
-    <div ng-include src="'app/jobmanager/jobs/job-progress-bar.html'"></div>
+    <!-- job progress bar: start -->
+    <div id="{{notebookJob.noteId}}_runControl" class="runControl">
+      <div id="{{notebookJob.noteId}}_progress" class="progress" ng-if="notebookJob.isRunningJob === true">
+        <div class="progress-bar" role="progressbar"
+             ng-style="showPercentProgressBar ? { 'width': getProgress() } : { 'width': '100%' }"
+             ng-class="showPercentProgressBar ? '' : 'progress-bar-striped active'">
+        </div>
+      </div>
+    </div>
+    <!-- job progress bar: end -->
   </div>
 
   <div>
