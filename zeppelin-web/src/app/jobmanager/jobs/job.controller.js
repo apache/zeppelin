@@ -24,14 +24,14 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
   $scope.progressValue = 0
 
   $scope.getProgress = function () {
-    let statusList = _.pluck($scope.notebookJob.paragraphs, 'status')
-    let runningJob = _.countBy(statusList, status => {
+    let paragraphStatuses = $scope.notebookJob.paragraphs.map(p => p.status)
+    let runningOrFinishedParagraphs = paragraphStatuses.filter(status => {
       return status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED
-        ? 'matchCount' : 'none'
     })
-    let totalCount = statusList.length
-    let runningJobCount = runningJob.matchCount
-    let result = Math.ceil(runningJobCount / totalCount * 100)
+
+    let totalCount = paragraphStatuses.length
+    let runningCount = runningOrFinishedParagraphs.length
+    let result = Math.ceil(runningCount / totalCount * 100)
     result = isNaN(result) ? 0 : result
 
     return `${result}%`
