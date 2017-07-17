@@ -42,6 +42,10 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
     return `${result}%`
   }
 
+  $scope.showPercentProgressBar = function() {
+    return $scope.getProgress() > 0 && $scope.getProgress() < 100
+  }
+
   $scope.runNotebookJob = function (notebookId) {
     BootstrapDialog.confirm({
       closable: true,
