@@ -17,6 +17,7 @@
 package org.apache.zeppelin.metrics;
 
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.weakref.jmx.Managed;
 
 /**

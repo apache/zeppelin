@@ -17,9 +17,17 @@
 package org.apache.zeppelin.metrics;
 
 import java.lang.management.ManagementFactory;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanServer;
+import javax.management.ObjectInstance;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.weakref.jmx.MBeanExporter;
 
 /**
@@ -30,8 +38,12 @@ import org.weakref.jmx.MBeanExporter;
  */
 public class Metrics {
   private static Metrics instance;
+  private final MBeanServer server;
   private MBeanExporter exporter;
 
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private Set<Class> validStatTypes = new HashSet<>();
+  private Set<String> blacklistedAttributes = new HashSet<>();
   private final Map<MetricType, Stat> stats = new HashMap<>();
   private final Map<MetricType, Map<Exception, Stat>> failureStats = new HashMap<>();
 
@@ -44,7 +56,17 @@ public class Metrics {
   }
 
   protected Metrics() {
-    exporter = new MBeanExporter(ManagementFactory.getPlatformMBeanServer());
+    server = ManagementFactory.getPlatformMBeanServer();
+    exporter = new MBeanExporter(server);
+
+    validStatTypes.addAll(Arrays.asList(
+      Boolean.class,
+      Long.class,
+      Integer.class,
+      String.class,
+      Double.class));
+
+    blacklistedAttributes.addAll(Arrays.asList("ClassPath", "BootClassPath", "LibraryPath"));
 
     MetricType[] timedMetrics = {
       MetricType.ParagraphRun,
@@ -74,16 +96,48 @@ public class Metrics {
 
   }
 
-  public Map<MetricType, Stat> getStats() {
+  /*
+   * Get all stat values, with normalized names
+   */
+  public Map<String, Object> getAllStats() {
+    Map<String, Object> stats = new HashMap<>();
+
+    Set<ObjectInstance> objs = server.queryMBeans(null, null);
+    for (ObjectInstance obj : objs) {
+      try {
+        MBeanAttributeInfo[] attrs = server.getMBeanInfo(obj.getObjectName()).getAttributes();
+        for (MBeanAttributeInfo attr : attrs) {
+          if (attrs[0].isReadable()) {
+            Object value = server.getAttribute(obj.getObjectName(), attr.getName());
+            if (shouldExpose(attr, value)) {
+              stats.put(
+                nameFor(obj, attr),
+                value
+              );
+            }
+          }
+        }
+
+      } catch (Exception e) {
+        logger.error("Couldn't process MBean", e);
+      }
+    }
+
     return stats;
   }
 
-  public Map<MetricType, Map<Exception, Stat>> getFailureStats() {
-    return failureStats;
+
+  private boolean shouldExpose(MBeanAttributeInfo attr, Object value) {
+    return !blacklistedAttributes.contains(attr.getName()) &&
+      validStatTypes.contains(value.getClass());
   }
 
-  public void increment(MetricType type) {
-    stats.get(type).record(1);
+  private String nameFor(ObjectInstance obj, MBeanAttributeInfo attr) {
+    return dashed(obj.getObjectName().getCanonicalName()) + "_" + dashed(attr.getName());
+  }
+
+  private String dashed(String name) {
+    return name.replaceAll("[=:.,]", "_");
   }
 
   public void save(TimedExecution run) {

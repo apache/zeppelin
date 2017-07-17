@@ -18,19 +18,14 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.TreeMap;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.zeppelin.metrics.FailureStat;
-import org.apache.zeppelin.metrics.MetricType;
 import org.apache.zeppelin.metrics.Metrics;
-import org.apache.zeppelin.metrics.Stat;
-import org.apache.zeppelin.metrics.TimedStat;
 import org.apache.zeppelin.server.JsonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,37 +51,6 @@ public class MetricsRestApi {
   @GET
   public Response getMetrics(String message) throws
     IOException, IllegalArgumentException {
-    return new JsonResponse(Status.OK, metricsMap()).build();
-  }
-
-  private Map<String, Object> metricsMap() {
-    Map<String, Object> res = new HashMap<>();
-
-    for (Map.Entry<MetricType, Stat> e : metrics.getStats().entrySet()) {
-      Stat val = e.getValue();
-      String metricName = metricName(e.getKey(), val);
-
-      res.put(metricName + "_Count", val.getCount());
-
-      if (val instanceof TimedStat) {
-        TimedStat timed = (TimedStat) val;
-        res.put(metricName + "_P99MillisOneMinute", timed.getP99MillisOneMinute());
-        res.put(metricName + "_P50MillisOneMinute", timed.getP50MillisOneMinute());
-        res.put(metricName + "_MaxMillisOneMinute", timed.getMaxMillisOneMinute());
-        res.put(metricName + "_P99Millis", timed.getP99Millis());
-        res.put(metricName + "_P50Millis", timed.getP50Millis());
-        res.put(metricName + "_MaxMillis", timed.getMaxMillis());
-        res.put(metricName + "_MeanMillis", timed.getMeanMillis());
-      }
-    }
-
-    return res;
-  }
-
-  private String metricName(MetricType type, Stat stat) {
-    if (stat instanceof FailureStat) {
-      return type.name() + "_" + ((FailureStat) stat).getException().getClass().getSimpleName();
-    }
-    return type.name();
+    return new JsonResponse(Status.OK, new TreeMap(metrics.getAllStats())).build();
   }
 }
