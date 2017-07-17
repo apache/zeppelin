@@ -37,7 +37,9 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
     let totalCount = statusList.length
     let runningJobCount = runningJob.matchCount
     let result = Math.ceil(runningJobCount / totalCount * 100)
-    return isNaN(result) ? 0 : result
+    result = isNaN(result) ? 0 : result
+
+    return `${result}%`
   }
 
   $scope.runNotebookJob = function (notebookId) {
