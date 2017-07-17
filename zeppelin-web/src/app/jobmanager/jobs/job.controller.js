@@ -25,12 +25,9 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
 
   $scope.getProgress = function () {
     let statusList = _.pluck($scope.notebookJob.paragraphs, 'status')
-    let runningJob = _.countBy(statusList, function (status) {
-      if (status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED) {
-        return 'matchCount'
-      } else {
-        return 'none'
-      }
+    let runningJob = _.countBy(statusList, status => {
+      return status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED
+        ? 'matchCount' : 'none'
     })
     let totalCount = statusList.length
     let runningJobCount = runningJob.matchCount
@@ -57,19 +54,13 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             }
-          }).then(function successCallback (response) {
+          }).then(response => {
             // success
-          }, function errorCallback (errorResponse) {
-            let errorText = 'SERVER ERROR'
+          }, response => {
+            let errorMessage
             // eslint-disable-next-line no-extra-boolean-cast
-            if (!!errorResponse.data.message) {
-              errorText = errorResponse.data.message
-            }
-            BootstrapDialog.alert({
-              closable: true,
-              title: 'Execution Failure',
-              message: errorText
-            })
+            if (!!response.data.message) { errorMessage = response.data.message }
+            showErrorDialog('Execution Failure', errorMessage)
           })
         }
       }
@@ -89,22 +80,25 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             }
-          }).then(function successCallback (response) {
+          }).then(response => {
             // success
-          }, function errorCallback (errorResponse) {
-            let errorText = 'SERVER ERROR'
+          }, response => {
+            let errorMessage
             // eslint-disable-next-line no-extra-boolean-cast
-            if (!!errorResponse.data.message) {
-              errorText = errorResponse.data.message
-            }
-            BootstrapDialog.alert({
-              closable: true,
-              title: 'Stop Failure',
-              message: errorText
-            })
+            if (!!response.data.message) { errorMessage = response.data.message }
+            showErrorDialog('Stop Failure', errorMessage)
           })
         }
       }
+    })
+  }
+
+  function showErrorDialog(title, errorMessage) {
+    if (!errorMessage) { errorMessage = 'SERVER ERROR' }
+    BootstrapDialog.alert({
+      closable: true,
+      title: title,
+      message: errorMessage
     })
   }
 
