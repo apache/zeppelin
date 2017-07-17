@@ -14,7 +14,24 @@ limitations under the License.
 
 <div class="job" data-ng-init="init(notebookJob)">
   <div>
-    <div ng-include src="'app/jobmanager/jobs/job-control.html'"></div>
+    <!-- job control: start -->
+    <div id="{{notebookJob.noteId}}_control" class="control">
+      <span ng-bind="lastExecuteTime(notebookJob.unixTimeLastRun)"></span>
+      <span>
+        <span ng-bind="notebookJob.isRunningJob ? 'RUNNING' : 'READY'"></span>
+      </span>
+
+      <span ng-if="notebookJob.isRunningJob" ng-bind="getProgress()"></span>
+
+      <span
+        class="job-control-btn" tooltip-placement="left"
+        uib-tooltip-html="!notebookJob.isRunningJob ? 'Start All Jobs' : 'Stop All Jobs'"
+        ng-click="!notebookJob.isRunningJob ? runNotebookJob(notebookJob.noteId) : stopNotebookJob(notebookJob.noteId)"
+        ng-class="!notebookJob.isRunningJob ? 'icon-control-play' : 'icon-control-pause'">
+      </span>
+    </div>
+    <!-- job control: end -->
+
     <span class="job-types"
           ng-switch="notebookJob.noteType">
       <i ng-switch-when="normal" class="icon-doc"></i>
