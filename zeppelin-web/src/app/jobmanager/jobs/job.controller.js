@@ -21,9 +21,7 @@ angular.module('zeppelinWebApp').controller('JobCtrl', JobCtrl)
 function JobCtrl ($scope, $http, baseUrlSrv) {
   'ngInject'
 
-  $scope.init = function (jobInformation) {
-    $scope.progressValue = 0
-  }
+  $scope.progressValue = 0
 
   $scope.getProgress = function () {
     let statusList = _.pluck($scope.notebookJob.paragraphs, 'status')
@@ -112,5 +110,26 @@ function JobCtrl ($scope, $http, baseUrlSrv) {
 
   $scope.lastExecuteTime = function (unixtime) {
     return moment.unix(unixtime / 1000).fromNow()
+  }
+
+  $scope.getInterpreterName = function() {
+    return typeof $scope.notebookJob.interpreter === 'undefined'
+      ? 'interpreter is not set' : $scope.notebookJob.interpreter
+  }
+
+  $scope.getInterpreterNameStyle = function() {
+    return typeof $scope.notebookJob.interpreter === 'undefined'
+      ? { color: 'gray' } : { color: 'black' }
+  }
+
+  $scope.getJobTypeIcon = function() {
+    const noteType = $scope.notebookJob.noteType
+    if (noteType === 'normal') {
+      return 'icon-doc'
+    } else if (noteType === 'cron') {
+      return 'icon-clock'
+    } else {
+      return 'icon-question'
+    }
   }
 }

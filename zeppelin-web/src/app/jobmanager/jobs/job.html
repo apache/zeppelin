@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="job" data-ng-init="init(notebookJob)">
+<div class="job">
   <div>
     <!-- job control: start -->
     <div id="{{notebookJob.noteId}}_control" class="control">
@@ -32,18 +32,14 @@ limitations under the License.
     </div>
     <!-- job control: end -->
 
-    <span class="job-types"
-          ng-switch="notebookJob.noteType">
-      <i ng-switch-when="normal" class="icon-doc"></i>
-      <i ng-switch-when="cron" class="icon-clock"></i>
-      <i ng-switch-default class="icon-question"></i>
+    <span class="job-types">
+      <i ng-class="getJobTypeIcon()"></i>
     </span>
     <a style="text-decoration: none !important;" ng-href="#/notebook/{{notebookJob.noteId}}">
       <span>{{notebookJob.noteName}} - </span>
-      <span ng-if="notebookJob.interpreter === undefined" style="color: gray;">
-        interpreter is not set</span>
-      <span ng-if="notebookJob.interpreter !== undefined" style="color: black;">
-        {{notebookJob.interpreter}}</span>
+      <span ng-style="getInterpreterNameStyle()"
+            ng-bind="getInterpreterName()">
+      </span>
     </a>
     <!-- job progress bar: start -->
     <div id="{{notebookJob.noteId}}_runControl" class="runControl">
