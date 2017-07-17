@@ -341,9 +341,7 @@ public class SparkInterpreter extends Interpreter {
    */
   public Object createSparkSession() {
     // use local mode for embedded spark mode when spark.master is not found
-    if (!conf.contains("spark.master")) {
-      conf.setMaster("local");
-    }
+    conf.setIfMissing("spark.master", "local");
     logger.info("------ Create new SparkSession {} -------", conf.get("spark.master"));
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     if (outputDir != null) {

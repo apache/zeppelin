@@ -151,11 +151,22 @@ public class RemoteInterpreter extends Interpreter {
         sparkConfBuilder.append(" --master " + property.getProperty("master"));
       }
       if (isSparkConf(key, property.getProperty(key))) {
-        sparkConfBuilder.append(" --conf " + key + "=" + property.getProperty(key));
+        sparkConfBuilder.append(" --conf " + key + "=\"" +
+            toShellFormat(property.getProperty(key)) + "\"");
       }
     }
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
     return env;
+  }
+
+  private String toShellFormat(String value) {
+    if (value.contains("\'") && value.contains("\"")) {
+      throw new RuntimeException("Spark property value could not contain both \" and '");
+    } else if (value.contains("\'")) {
+      return "\"" + value + "\"";
+    } else {
+      return "\'" + value + "\'";
+    }
   }
 
   static boolean isSparkConf(String key, String value) {
