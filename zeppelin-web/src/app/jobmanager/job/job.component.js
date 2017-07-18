@@ -17,65 +17,8 @@ import moment from 'moment'
 import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status'
 import { getJobColorByStatus, getJobIconByStatus } from '../job-status'
 
+import jobTemplate from './job.html'
 import './job.css'
-
-// import jobTemplate from './job.html'
-const jobTemplate = `
-<div class="job" >
-  <div>
-    <!-- job control: start -->
-    <div id="{{$ctrl.getNoteId()}}_control" class="control">
-      <span ng-bind="$ctrl.lastExecuteTime()"></span>
-      <span>
-        <span ng-bind="$ctrl.isRunning() ? 'RUNNING' : 'READY'"></span>
-      </span>
-
-      <span ng-if="$ctrl.isRunning()" ng-bind="$ctrl.getProgress()"></span>
-
-      <span
-        class="job-control-btn" tooltip-placement="left"
-        uib-tooltip-html="!$ctrl.isRunning() ? 'Start All Paragraphs' : 'Stop All Paragraphs'"
-        ng-click="!$ctrl.isRunning() ? $ctrl.runJob() : $ctrl.stopJob()"
-        ng-class="!$ctrl.isRunning() ? 'icon-control-play' : 'icon-control-pause'">
-      </span>
-    </div>
-    <!-- job control: end -->
-
-    <span class="job-types">
-      <i ng-class="$ctrl.getJobTypeIcon()"></i>
-    </span>
-    <a style="text-decoration: none !important;" ng-href="#/notebook/{{$ctrl.getNoteId()}}">
-      <span ng-bind="$ctrl.getNoteName() + ' - '"></span>
-      <span ng-style="$ctrl.getInterpreterNameStyle()"
-            ng-bind="$ctrl.getInterpreterName()">
-      </span>
-    </a>
-    <!-- job progress bar: start -->
-    <div id="{{$ctrl.getNoteId()}}_runControl" class="runControl">
-      <div id="{{$ctrl.getNoteId()}}_progress" class="progress" ng-if="$ctrl.isRunning() === true">
-        <div class="progress-bar" role="progressbar"
-             ng-style="$ctrl.showPercentProgressBar() ? { 'width': $ctrl.getProgress() } : { 'width': '100%' }"
-             ng-class="$ctrl.showPercentProgressBar() ? '' : 'progress-bar-striped active'">
-        </div>
-      </div>
-    </div>
-    <!-- job progress bar: end -->
-  </div>
-
-  <div>
-    <span ng-repeat="paragraph in $ctrl.getParagraphs()">
-      <a style="text-decoration: none !important;"
-         ng-href="#/notebook/{{$ctrl.getNoteId()}}?paragraph={{paragraph.id}}">
-        <i ng-style="{'color': $ctrl.getJobColorByStatus(paragraph.status)}"
-           ng-class="$ctrl.getJobIconByStatus(paragraph.status)"
-           tooltip-placement="top-left"
-           uib-tooltip="{{paragraph.name}} is {{paragraph.status}}">
-        </i>
-      </a>
-    </span>
-  </div>
-</div>
-`
 
 class JobController {
   constructor($http, baseUrlSrv) {
