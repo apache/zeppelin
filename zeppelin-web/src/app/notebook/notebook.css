@@ -333,3 +333,27 @@
 }
 .noteAction.headroom--unpinned { top: -100px; }
 .noteAction.headroom--pinned { top: 50px; /** `noteAction` top */ }
+
+.search-group input.no-match {
+  border: 1px solid red;
+  box-shadow: none;
+}
+
+.search-group .input-group-addon {
+  min-width: 64px;
+}
+
+.search-group input,
+.search-group .input-group-addon,
+.search-group .input-group-btn .btn {
+  border-radius: 0;
+}
+
+.search-dropdown {
+  border-radius: 0;
+  padding: 0;
+}
+
+.search-dropdown li {
+  margin: 0;
+}
