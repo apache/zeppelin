@@ -100,56 +100,52 @@ class JobController {
     return this.note.noteName
   }
 
-  runJob() {
+  sendRunJobRequest() {
     const noteId = this.getNoteId()
-    const apiURL = this.baseUrlSrv.getRestApiBase() + '/notebook/job/' + noteId
+    const apiURL = this.baseUrlSrv.getRestApiBase() + `/notebook/job/${noteId}`
+
+    return this.$http({ method: 'POST', url: apiURL, })
+  }
+
+  runJob() {
     BootstrapDialog.confirm({
       closable: true,
       title: 'Job Dialog',
       message: 'Run all paragraphs?',
-      callback: result => {
-        console.log(this.$http)
-        if (result) {
-          this.$http({
-            method: 'POST',
-            url: apiURL,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-          }).then(response => {
-            // success
-          }, response => {
-            let errorMessage
-            // eslint-disable-next-line no-extra-boolean-cast
-            if (!!response.data.message) { errorMessage = response.data.message }
-            this.showErrorDialog('Execution Failure', errorMessage)
+      callback: clickOk => {
+        if (!clickOk) { return }
+
+        this.sendRunJobRequest()
+          .catch(response => {
+            let message = (response.data && response.data.message) ?
+              response.data.message : 'SERVER ERROR'
+            this.showErrorDialog('Execution Failure', message)
           })
-        }
       }
     })
   }
 
-  stopJob() {
+  sendStopJobRequest() {
     const noteId = this.getNoteId()
-    const apiURL = this.baseUrlSrv.getRestApiBase() + '/notebook/job/' + noteId
+    const apiURL = this.baseUrlSrv.getRestApiBase() + `/notebook/job/${noteId}`
 
+    return this.$http({ method: 'DELETE', url: apiURL, })
+  }
+
+  stopJob() {
     BootstrapDialog.confirm({
       closable: true,
       title: 'Job Dialog',
       message: 'Stop all paragraphs?',
-      callback: result => {
-        if (result) {
-          this.$http({
-            method: 'DELETE',
-            url: apiURL,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-          }).then(response => {
-            // success
-          }, response => {
-            let errorMessage
-            // eslint-disable-next-line no-extra-boolean-cast
-            if (!!response.data.message) { errorMessage = response.data.message }
-            this.showErrorDialog('Stop Failure', errorMessage)
+      callback: clickOk => {
+        if (!clickOk) { return }
+
+        this.sendStopJobRequest()
+          .catch(response => {
+            let message = (response.data && response.data.message) ?
+              response.data.message : 'SERVER ERROR'
+            this.showErrorDialog('Stop Failure', message)
           })
-        }
       }
     })
   }
