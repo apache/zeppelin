@@ -97,6 +97,7 @@ limitations under the License.
   * [Shiro Authentication](./setup/security/shiro_authentication.html)
   * [Notebook Authorization](./setup/security/notebook_authorization.html)
   * [Data Source Authorization](./setup/security/datasource_authorization.html)
+  * [HTTP Security Headers](./setup/security/http_security_headers.html)
 * Notebook Storage: a guide about saving notebooks to external storage
   * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
