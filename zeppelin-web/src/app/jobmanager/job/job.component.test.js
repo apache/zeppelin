@@ -1,16 +1,13 @@
 import { ParagraphStatus } from '../../notebook/paragraph/paragraph.status'
 
 describe('JobComponent', () => {
-
   const baseUrlSrvMock = { getRestApiBase: () => '' }
   let $componentController
-  let $compile
   let $httpBackend
 
   beforeEach(angular.mock.module('zeppelinWebApp'))
-  beforeEach(angular.mock.inject((_$componentController_, _$compile_, _$httpBackend_) => {
+  beforeEach(angular.mock.inject((_$componentController_, _$httpBackend_) => {
     $componentController = _$componentController_
-    $compile = _$compile_
     $httpBackend = _$httpBackend_
   }))
 
@@ -88,7 +85,7 @@ describe('JobComponent', () => {
     $httpBackend.expectPOST(url)
     $httpBackend.flush()
 
-    checkUnkownHttpRequests()
+    checkUnknownHttpRequests()
   })
 
   it('should sent valid request to stop a job', () => {

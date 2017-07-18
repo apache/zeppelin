@@ -60,8 +60,8 @@ class JobController {
 
         this.sendRunJobRequest()
           .catch(response => {
-            let message = (response.data && response.data.message) ?
-              response.data.message : 'SERVER ERROR'
+            let message = (response.data && response.data.message)
+              ? response.data.message : 'SERVER ERROR'
             this.showErrorDialog('Execution Failure', message)
           })
       }
@@ -85,8 +85,8 @@ class JobController {
 
         this.sendStopJobRequest()
           .catch(response => {
-            let message = (response.data && response.data.message) ?
-              response.data.message : 'SERVER ERROR'
+            let message = (response.data && response.data.message)
+              ? response.data.message : 'SERVER ERROR'
             this.showErrorDialog('Stop Failure', message)
           })
       }
