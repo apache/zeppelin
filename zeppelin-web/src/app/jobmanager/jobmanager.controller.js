@@ -12,14 +12,9 @@
  * limitations under the License.
  */
 
-export const JobStatus = {
-  READY: 'READY',
-  FINISHED: 'FINISHED',
-  ABORT: 'ABORT',
-  ERROR: 'ERROR',
-  PENDING: 'PENDING',
-  RUNNING: 'RUNNING',
-}
+import { JobModule } from './job/job.component'
+
+import { getJobIconByStatus, getJobColorByStatus } from './job-status'
 
 angular.module('zeppelinWebApp')
   .controller('JobManagerCtrl', JobManagerCtrl)
@@ -67,37 +62,8 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
     asyncNotebookJobFilter($scope.jobInfomations, $scope.filterConfig)
   })
 
-  $scope.getJobIconByStatus = function(jobStatus) {
-    if (jobStatus === JobStatus.READY) {
-      return 'fa fa-circle-o'
-    } else if (jobStatus === JobStatus.FINISHED) {
-      return 'fa fa-circle'
-    } else if (jobStatus === JobStatus.ABORT) {
-      return 'fa fa-circle'
-    } else if (jobStatus === JobStatus.ERROR) {
-      return 'fa fa-circle'
-    } else if (jobStatus === JobStatus.PENDING) {
-      return 'fa fa-circle'
-    } else if (jobStatus === JobStatus.RUNNING) {
-      return 'fa fa-spinner'
-    }
-  }
-
-  $scope.getJobColorByStatus = function(jobStatus) {
-    if (jobStatus === JobStatus.READY) {
-      return 'green'
-    } else if (jobStatus === JobStatus.FINISHED) {
-      return 'green'
-    } else if (jobStatus === JobStatus.ABORT) {
-      return 'orange'
-    } else if (jobStatus === JobStatus.ERROR) {
-      return 'red'
-    } else if (jobStatus === JobStatus.PENDING) {
-      return 'gray'
-    } else if (jobStatus === JobStatus.RUNNING) {
-      return 'blue'
-    }
-  }
+  $scope.getJobIconByStatus = getJobIconByStatus
+  $scope.getJobColorByStatus = getJobColorByStatus
 
   $scope.doFiltering = function (jobInfomations, filterConfig) {
     asyncNotebookJobFilter(jobInfomations, filterConfig)
