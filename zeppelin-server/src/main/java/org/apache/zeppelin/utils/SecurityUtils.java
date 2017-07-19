@@ -26,10 +26,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.naming.NamingException;
+
+import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
@@ -129,7 +133,15 @@ public class SecurityUtils {
           allRoles = ((IniRealm) realm).getIni().get("roles");
           break;
         } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
-          allRoles = ((LdapRealm) realm).getListRoles();
+          try {
+            AuthorizationInfo auth = ((LdapRealm) realm).queryForAuthorizationInfo(
+              new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
+              ((LdapRealm) realm).getContextFactory()
+            );
+            roles = new HashSet<>(auth.getRoles());
+          } catch (NamingException e) {
+            log.error("Can't fetch roles", e);
+          }
           break;
         } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
