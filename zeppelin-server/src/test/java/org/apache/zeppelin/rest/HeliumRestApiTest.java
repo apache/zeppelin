@@ -50,7 +50,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     @Before
     public void setUp() throws IOException {
         HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
-        ZeppelinServer.helium.clearConf();
+        ZeppelinServer.helium.clear();
         ZeppelinServer.helium.addRegistry(registry);
 
         registry.add(new HeliumPackage(
@@ -76,8 +76,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
 
     @After
     public void tearDown() throws Exception {
-        ZeppelinServer.helium.clearRegistries();
-        ZeppelinServer.helium.clearConf();
+        ZeppelinServer.helium.clear();
     }
 
     @Test

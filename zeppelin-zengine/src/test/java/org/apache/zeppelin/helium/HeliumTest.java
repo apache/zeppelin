@@ -135,7 +135,6 @@ public class HeliumTest {
         ""));
 
     // then
-    assertEquals(1, helium.allPackages.size());
     assertEquals(2, helium.getAllPackageInfo(true, null).size());
   }
 }

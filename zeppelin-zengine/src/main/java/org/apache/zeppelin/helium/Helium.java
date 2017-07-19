@@ -39,14 +39,14 @@ public class Helium {
   private List<HeliumRegistry> registry = new LinkedList<>();
 
   private HeliumConf heliumConf;
+  private Map<String, List<HeliumPackageSearchResult>> allPackages = new HashMap<>();
+
   private final String heliumConfPath;
   private final String registryPaths;
   private final File registryCacheDir;
 
   private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
-
-  Map<String, List<HeliumPackageSearchResult>> allPackages = new HashMap<>();
 
   public Helium(
       String heliumConfPath,
@@ -61,6 +61,7 @@ public class Helium {
     this.bundleFactory = bundleFactory;
     this.applicationFactory = applicationFactory;
     heliumConf = loadConf(heliumConfPath);
+    allPackages = getAllPackageInfo();
   }
 
   /**
@@ -74,22 +75,10 @@ public class Helium {
     }
   }
 
-  public void clearRegistries() {
+  public void clear() {
     this.registry.clear();
-  }
-
-  public void clearConf() {
     this.heliumConf = new HeliumConf();
-  }
-
-  public List<HeliumRegistry> getAllRegistry() {
-    synchronized (this.registry) {
-      List list = new LinkedList<>();
-      for (HeliumRegistry r : registry) {
-        list.add(r);
-      }
-      return list;
-    }
+    this.allPackages = new HashMap<>();
   }
 
   public HeliumApplicationFactory getApplicationFactory() {
@@ -394,7 +383,8 @@ public class Helium {
   public List<HeliumPackage> getBundlePackagesToBundle() {
     List<String> visOrder = heliumConf.getBundleDisplayOrder();
 
-    List<HeliumPackage> orderedBundlePackages = new LinkedList<>();
+    Set<HeliumPackage> orderedBundlePackages = new HashSet<>();
+    List<HeliumPackage> output = new LinkedList<>();
 
     // add enabled packages in visOrder
     for (String name : visOrder) {
@@ -405,7 +395,6 @@ public class Helium {
       for (HeliumPackageSearchResult pkgInfo : versions) {
         if (canBundle(pkgInfo)) {
           orderedBundlePackages.add(pkgInfo.getPkg());
-          allPackages.remove(name);
           break;
         }
       }
@@ -420,8 +409,8 @@ public class Helium {
         }
       }
     }
-
-    return orderedBundlePackages;
+    new LinkedList<>().addAll(orderedBundlePackages);
+    return output;
   }
 
   private boolean canBundle(HeliumPackageSearchResult pkgInfo) {
