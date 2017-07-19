@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter)
-
-function jobManagerFilter () {
+export function JobManagerFilter() {
   function filterContext (jobs, filterConfig) {
     let interpreter = filterConfig.interpreterFilterValue
     let noteName = filterConfig.noteNameFilterValue

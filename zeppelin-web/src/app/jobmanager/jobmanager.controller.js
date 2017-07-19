@@ -13,11 +13,13 @@
  */
 
 import './job/job.component'
+import { JobManagerFilter } from './jobmanager.filter'
 
 import { getJobIconByStatus, getJobColorByStatus } from './job-status'
 
 angular.module('zeppelinWebApp')
   .controller('JobManagerCtrl', JobManagerController)
+  .filter('jobManager', JobManagerFilter)
 
 const JobDateSorter = {
   RECENTLY_UPDATED: 'Recently Update',
