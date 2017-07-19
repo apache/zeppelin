@@ -30,13 +30,13 @@ Apache Zeppelin can be configured to include HTTP Headers which aids in preventi
 Enabling HSTS Response Header prevents Man-in-the-middle attacks by automatically redirecting HTTP requests to HTTPS when Zeppelin Server is running on SSL. Read on how to configure SSL for Zeppelin [here] (../operation/configuration.html). Even if web page contains any resource which gets served over HTTP or any HTTP links, it will automatically be redirected to HTTPS for the target domain. 
 It also prevents MITM attack by not allowing User to override the invalid certificate message, when Attacker presents invalid SSL certificate to the User.  
 
-The following properties needs to be updated in the zeppelin-site.xml in order to enable HSTS. You can choose appropriate value for "max-age".
+The following property needs to be updated in the zeppelin-site.xml in order to enable HSTS. You can choose appropriate value for "max-age".
 
 ```
 <property>
   <name>zeppelin.server.strict.transport</name>
   <value>max-age=631138519</value>
-  <description>The HTTP Strict-Transport-Security response header is a security feature that lets a web site tell browsers that it should only be communicated with using HTTPS, instead of using HTTP. Enable this when Zeppelin is running on HTTPS.Set value is in Seconds equivalent to 20 years.</description>
+  <description>The HTTP Strict-Transport-Security response header is a security feature that lets a web site tell browsers that it should only be communicated with using HTTPS, instead of using HTTP. Enable this when Zeppelin is running on HTTPS. Value is in Seconds, the default value is equivalent to 20 years.</description>
 </property>
 ```
 
@@ -53,7 +53,7 @@ Read more about HSTS [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/He
 
 The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari Web browsers that initiates configured action when they detect reflected cross-site scripting (XSS) attacks.
  
-The following properties needs to be updated in the zeppelin-site.xml in order to set X-XSS-PROTECTION header. 
+The following property needs to be updated in the zeppelin-site.xml in order to set X-XSS-PROTECTION header. 
 
 ```
 <property>
@@ -74,9 +74,9 @@ Read more about HTTP X-XSS-Protection response header [here](https://developer.m
 
 ## Setting up X-Frame-Options Header
 
-The X-Frame-Options HTTP response header can indicate browser to avoid clickjacking attacks, by ensuring that their content is not embedded into other sites in a \<frame>,\<iframe> or \<object>.
+The X-Frame-Options HTTP response header can indicate browser to avoid clickjacking attacks, by ensuring that their content is not embedded into other sites in a `<frame>`,`<iframe>` or `<object>`.
 
-The following properties needs to be updated in the zeppelin-site.xml in order to set X-Frame-Options header.
+The following property needs to be updated in the zeppelin-site.xml in order to set X-Frame-Options header.
 
 ```
 <property>
@@ -95,9 +95,9 @@ You can choose appropriate value from below.
 
 ## Setting up Server Header
 
-Security conscious organisations does not want to reveal the Application Server name and version to prevent Script-kiddies from finding the information easily when fingerprinting the Application. The exact version number can tell an Attacker if the current Application Server is patched for or vulnerable to certain publicly known CVE associated to it.
+Security conscious organisations does not want to reveal the Application Server name and version to prevent finding this information easily by Attacker while fingerprinting the Application. The exact version number can tell an Attacker if the current Application Server is patched for or vulnerable to certain publicly known CVE associated to it.
 
-The following properties needs to be updated in the zeppelin-site.xml in order to set Server header.
+The following property needs to be updated in the zeppelin-site.xml in order to set Server header.
 
 ```
 <property>
