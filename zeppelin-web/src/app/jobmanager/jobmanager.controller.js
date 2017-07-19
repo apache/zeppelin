@@ -110,7 +110,6 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
       interpreterFilterValue: '*',
       isSortByAsc: $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED,
     }
-    $scope.sortTooltipMsg = 'Switch to sort by desc'
 
     websocketMsgSrv.getNoteJobsList()
 
