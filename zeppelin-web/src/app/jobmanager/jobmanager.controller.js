@@ -27,6 +27,8 @@ const JobDateSorter = {
 function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFilter) {
   'ngInject'
 
+  ngToast.dismiss()
+
   $scope.pagination = {
     currentPage: 1,
     itemsPerPage: 10,
@@ -34,7 +36,7 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
   }
 
   $scope.sorter = {
-    AvailableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key] }),
+    availableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key] }),
     currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
   }
 
@@ -48,27 +50,26 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
     return jobs.slice((cp - 1) * itp, (cp * itp))
   }
 
-  ngToast.dismiss()
-  let asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
+  let asyncNotebookJobFilter = function (jobs, filterConfig) {
     return $q(function (resolve, reject) {
-      $scope.JobInfomationsByFilter = $scope.jobTypeFilter(jobInfomations, filterConfig)
-      resolve($scope.JobInfomationsByFilter)
+      $scope.filteredJobs = jobManagerFilter(jobs, filterConfig)
+      resolve($scope.filteredJobs)
     })
   }
 
   $scope.$watch('sorter.currentDateSorter', function() {
     $scope.filterConfig.isSortByAsc =
       $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED
-    asyncNotebookJobFilter($scope.jobInfomations, $scope.filterConfig)
+    asyncNotebookJobFilter($scope.jobs, $scope.filterConfig)
   })
 
   $scope.getJobIconByStatus = getJobIconByStatus
   $scope.getJobColorByStatus = getJobColorByStatus
 
-  $scope.doFiltering = function (jobInfomations, filterConfig) {
-    asyncNotebookJobFilter(jobInfomations, filterConfig)
+  $scope.doFiltering = function (jobs, filterConfig) {
+    asyncNotebookJobFilter(jobs, filterConfig)
       .then(
-        () => { $scope.isLoadingFilter = false },
+        () => { $scope.isFilterLoaded = true },
         (error) => {
           console.error('Failed to search jobs from server', error)
         }
@@ -76,39 +77,38 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
   }
 
   $scope.filterValueToName = function (filterValue, maxStringLength) {
-    if ($scope.activeInterpreters === undefined) {
+    if (typeof $scope.defaultInterpreters === 'undefined') {
       return
     }
 
-    let index = $scope.activeInterpreters.findIndex(intp => intp.value === filterValue)
-    if (typeof $scope.activeInterpreters[index].name !== 'undefined') {
+    let index = $scope.defaultInterpreters.findIndex(intp => intp.value === filterValue)
+    if (typeof $scope.defaultInterpreters[index].name !== 'undefined') {
       if (typeof maxStringLength !== 'undefined' &&
-        maxStringLength > $scope.activeInterpreters[index].name) {
-        return $scope.activeInterpreters[index].name.substr(0, maxStringLength - 3) + '...'
+        maxStringLength > $scope.defaultInterpreters[index].name) {
+        return $scope.defaultInterpreters[index].name.substr(0, maxStringLength - 3) + '...'
       }
-      return $scope.activeInterpreters[index].name
+      return $scope.defaultInterpreters[index].name
     } else {
       return 'NONE'
     }
   }
 
   $scope.setFilterValue = function (filterValue) {
-    $scope.filterConfig.filterValueInterpreter = filterValue
-    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
+    $scope.filterConfig.interpreterFilterValue = filterValue
+    $scope.doFiltering($scope.jobs, $scope.filterConfig)
   }
 
   $scope.init = function () {
-    $scope.isLoadingFilter = true
-    $scope.jobInfomations = []
-    $scope.JobInfomationsByFilter = $scope.jobInfomations
+    $scope.isFilterLoaded = false
+    $scope.jobs = []
+    $scope.filteredJobs = $scope.jobs
     $scope.filterConfig = {
       isRunningAlwaysTop: true,
-      filterValueNotebookName: '',
-      filterValueInterpreter: '*',
+      noteNameFilterValue: '',
+      interpreterFilterValue: '*',
       isSortByAsc: $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED,
     }
     $scope.sortTooltipMsg = 'Switch to sort by desc'
-    $scope.jobTypeFilter = jobManagerFilter
 
     websocketMsgSrv.getNoteJobsList()
 
@@ -122,57 +122,55 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
    */
 
   $scope.$on('setNoteJobs', function (event, responseData) {
-    $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime
-    $scope.jobInfomations = responseData.jobs
-    $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig)
-    $scope.activeInterpreters = [ { name: 'ALL', value: '*' } ]
+    $scope.jobs = responseData.jobs
+    jobManagerFilter($scope.jobs, $scope.filterConfig)
+    $scope.defaultInterpreters = [ { name: 'ALL', value: '*' } ]
 
-    let interpreters = $scope.jobInfomations
+    let interpreters = $scope.jobs
       .filter(j => typeof j.interpreter !== 'undefined')
       .map(j => j.interpreter)
     interpreters = [...new Set(interpreters)] // remove duplicated interpreters
 
     for (let i = 0; i < interpreters.length; i++) {
-      $scope.activeInterpreters.push({ name: interpreters[i], value: interpreters[i] })
+      $scope.defaultInterpreters.push({ name: interpreters[i], value: interpreters[i] })
     }
-    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
+    $scope.doFiltering($scope.jobs, $scope.filterConfig)
   })
 
   $scope.$on('setUpdateNoteJobs', function (event, responseData) {
-    let jobInfos = $scope.jobInfomations
-    let jobByNoteId = $scope.jobInfomations.reduce((acc, j) => {
+    let jobs = $scope.jobs
+    let jobByNoteId = jobs.reduce((acc, j) => {
       const noteId = j.noteId
       acc[noteId] = j
       return acc
     }, {})
-    $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime
 
     let notes = responseData.jobs
-    notes.map(changedItem => {
-      if (typeof jobByNoteId[changedItem.noteId] === 'undefined') {
-        let newItem = angular.copy(changedItem)
-        jobInfos.push(newItem)
-        jobByNoteId[changedItem.noteId] = newItem
+    notes.map(updatedJob => {
+      if (typeof jobByNoteId[updatedJob.noteId] === 'undefined') {
+        let newItem = angular.copy(updatedJob)
+        jobs.push(newItem)
+        jobByNoteId[updatedJob.noteId] = newItem
       } else {
-        let changeOriginTarget = jobByNoteId[changedItem.noteId]
+        let job = jobByNoteId[updatedJob.noteId]
 
-        if (changedItem.isRemoved === true) {
-          delete jobByNoteId[changedItem.noteId]
-          let removeIndex = jobInfos.findIndex(j => j.noteId === changedItem.noteId)
+        if (updatedJob.isRemoved === true) {
+          delete jobByNoteId[updatedJob.noteId]
+          let removeIndex = jobs.findIndex(j => j.noteId === updatedJob.noteId)
           if (removeIndex) {
-            jobInfos.splice(removeIndex, 1)
+            jobs.splice(removeIndex, 1)
           }
         } else {
-          // change value for item.
-          changeOriginTarget.isRunningJob = changedItem.isRunningJob
-          changeOriginTarget.noteName = changedItem.noteName
-          changeOriginTarget.noteType = changedItem.noteType
-          changeOriginTarget.interpreter = changedItem.interpreter
-          changeOriginTarget.unixTimeLastRun = changedItem.unixTimeLastRun
-          changeOriginTarget.paragraphs = changedItem.paragraphs
+          // update the job
+          job.isRunningJob = updatedJob.isRunningJob
+          job.noteName = updatedJob.noteName
+          job.noteType = updatedJob.noteType
+          job.interpreter = updatedJob.interpreter
+          job.unixTimeLastRun = updatedJob.unixTimeLastRun
+          job.paragraphs = updatedJob.paragraphs
         }
       }
     })
-    $scope.doFiltering(jobInfos, $scope.filterConfig)
+    $scope.doFiltering(jobs, $scope.filterConfig)
   })
 }
