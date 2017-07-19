@@ -203,7 +203,7 @@ public class Authentication implements Runnable {
       byte[] enCodeFormat = secretKey.getEncoded();
       return new SecretKeySpec(enCodeFormat, CIPHER_ALGORITHM);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Cannot generate key for decryption", e);
     }
     return null;
   }
