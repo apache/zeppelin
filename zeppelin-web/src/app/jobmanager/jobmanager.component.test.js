@@ -1,125 +1,30 @@
-import { ParagraphStatus } from '../../notebook/paragraph/paragraph.status'
-
-describe('JobComponent', () => {
-  const baseUrlSrvMock = { getRestApiBase: () => '' }
-  let $componentController
+describe('JobManagerComponent', () => {
+  let $scope
+  let $controller
   let $httpBackend
+  let websocketMsgSrv
 
   beforeEach(angular.mock.module('zeppelinWebApp'))
-  beforeEach(angular.mock.inject((_$componentController_, _$httpBackend_) => {
-    $componentController = _$componentController_
+  beforeEach(angular.mock.inject((_$rootScope_, _$controller_, _$httpBackend_, _websocketMsgSrv_) => {
+    $scope = _$rootScope_.$new()
+    $controller = _$controller_
     $httpBackend = _$httpBackend_
+    websocketMsgSrv = _websocketMsgSrv_
   }))
 
-  it('should get progress when there is a finished paragraph', () => {
-    const paragraphs = [
-      { status: ParagraphStatus.FINISHED },
-    ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', null, bindings)
+  it('should set jobs using `setJobs`', () => {
+    let ctrl = $controller('JobManagerCtrl', { $scope: $scope, })
     expect(ctrl).toBeDefined()
 
-    const progress1 = ctrl.getProgress()
-    expect(progress1).toBe('100%')
-  })
-
-  it('should get progress when there is pending and finished paragraphs', () => {
-    const paragraphs = [
-      { status: ParagraphStatus.PENDING },
-      { status: ParagraphStatus.FINISHED},
+    const mockJobs = [
+      { noteId: 'TN01', interpreter: 'spark', },
+      { noteId: 'TN02', interpreter: 'spark', },
     ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
 
-    const ctrl = $componentController('job', null, bindings)
-
-    const progress1 = ctrl.getProgress()
-    expect(progress1).toBe('50%')
+    $scope.setJobs(mockJobs)
+    expect($scope.defaultInterpreters).toEqual([
+      { name: 'ALL', value: '*', },
+      { name: 'spark', value: 'spark', },
+    ])
   })
-
-  it('should get proper job type icons', () => {
-    const paragraphs = [
-      { status: ParagraphStatus.PENDING },
-      { status: ParagraphStatus.FINISHED},
-    ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', null, bindings)
-
-    const progress1 = ctrl.getProgress()
-    expect(progress1).toBe('50%')
-  })
-
-  it('should get proper job type icons', () => {
-    const paragraphs = [ { status: ParagraphStatus.PENDING }, ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', null, bindings)
-
-    let icon = ctrl.getJobTypeIcon()
-    expect(icon).toBe('icon-doc')
-
-    mockNote.noteType = 'cron'
-    icon = ctrl.getJobTypeIcon()
-    expect(icon).toBe('icon-clock')
-  })
-
-  it('should sent valid request to run a job', () => {
-    const paragraphs = [ { status: ParagraphStatus.PENDING }, ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', { baseUrlSrv: baseUrlSrvMock, }, bindings)
-    ctrl.sendRunJobRequest()
-
-    const noteId = mockNote.noteId
-    const url = `/notebook/job/${noteId}`
-
-    $httpBackend
-      .when('POST', url)
-      .respond(200, { /** return nothing */ })
-    $httpBackend.expectPOST(url)
-    $httpBackend.flush()
-
-    checkUnknownHttpRequests()
-  })
-
-  it('should sent valid request to stop a job', () => {
-    const paragraphs = [ { status: ParagraphStatus.PENDING }, ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', { baseUrlSrv: baseUrlSrvMock, }, bindings)
-    ctrl.sendStopJobRequest()
-
-    const noteId = mockNote.noteId
-    const url = `/notebook/job/${noteId}`
-
-    $httpBackend
-      .when('DELETE', url)
-      .respond(200, { /** return nothing */ })
-    $httpBackend.expectDELETE(url)
-    $httpBackend.flush()
-
-    checkUnknownHttpRequests()
-  })
-
-  function checkUnknownHttpRequests() {
-    $httpBackend.verifyNoOutstandingExpectation()
-    $httpBackend.verifyNoOutstandingRequest()
-  }
-
-  function createMockNote(paragraphs) {
-    return {
-      isRunningJob: false,
-      paragraphs: paragraphs,
-      noteId: 'NT01',
-      noteName: 'TestNote01',
-      noteType: 'normal',
-    }
-  }
 })

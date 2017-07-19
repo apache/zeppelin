@@ -41,7 +41,7 @@ limitations under the License.
                    type="text"
                    ng-model="filterConfig.noteNameFilterValue"
                    ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 300, 'blur': 0 } }"
-                   ng-change="doFiltering(jobs, filterConfig)" />
+                   ng-change="filterJobs(jobs, filterConfig)" />
           </div>
 
           <!-- search tool: default interpreter dropdown -->
@@ -96,8 +96,9 @@ limitations under the License.
       <span ng-repeat="jobStatus in ['READY', 'FINISHED', 'ABORT', 'ERROR','PENDING','RUNNING']">
         <span style="margin-right: 2px;">
           <i class="job-desc-icon"
-            ng-style="{'color': getJobColorByStatus(jobStatus)}"
-            ng-class="getJobIconByStatus(jobStatus)" ></i>{{jobStatus}}
+             ng-style="{'color': getJobColorByStatus(jobStatus)}"
+             ng-class="getJobIconByStatus(jobStatus)" ></i>
+          {{jobStatus}}
         </span>
       </span>
     </div>
@@ -111,7 +112,8 @@ limitations under the License.
   <div class="note-jump"></div>
   <div ng-if="!isFilterLoaded" class="paragraph-col">
     <div class="job-space box job-margin text-center">
-      <i style="color: blue" class="fa fa-spinner spinAnimation"></i>Loading...
+      <i style="color: blue" class="fa fa-spinner spinAnimation"></i>
+      Loading...
     </div>
   </div>
   <div ng-if="filteredJobs.length > 0"

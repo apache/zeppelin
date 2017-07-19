@@ -80,7 +80,7 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
   $scope.getJobIconByStatus = getJobIconByStatus
   $scope.getJobColorByStatus = getJobColorByStatus
 
-  $scope.doFiltering = function (jobs, filterConfig) {
+  $scope.filterJobs = function (jobs, filterConfig) {
     asyncNotebookJobFilter(jobs, filterConfig)
       .then(
         () => { $scope.isFilterLoaded = true },
@@ -109,7 +109,20 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
 
   $scope.setFilterValue = function (filterValue) {
     $scope.filterConfig.interpreterFilterValue = filterValue
-    $scope.doFiltering($scope.jobs, $scope.filterConfig)
+    $scope.filterJobs($scope.jobs, $scope.filterConfig)
+  }
+
+  $scope.setJobs = function(jobs) {
+    $scope.jobs = jobs
+    let interpreters = $scope.jobs
+      .filter(j => typeof j.interpreter !== 'undefined')
+      .map(j => j.interpreter)
+    interpreters = [...new Set(interpreters)] // remove duplicated interpreters
+
+    $scope.defaultInterpreters = [ { name: 'ALL', value: '*' } ]
+    for (let i = 0; i < interpreters.length; i++) {
+      $scope.defaultInterpreters.push({ name: interpreters[i], value: interpreters[i] })
+    }
   }
 
   function init() {
@@ -125,19 +138,8 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
    */
 
   $scope.$on('setNoteJobs', function (event, responseData) {
-    $scope.jobs = responseData.jobs
-    jobManagerFilter($scope.jobs, $scope.filterConfig)
-    $scope.defaultInterpreters = [ { name: 'ALL', value: '*' } ]
-
-    let interpreters = $scope.jobs
-      .filter(j => typeof j.interpreter !== 'undefined')
-      .map(j => j.interpreter)
-    interpreters = [...new Set(interpreters)] // remove duplicated interpreters
-
-    for (let i = 0; i < interpreters.length; i++) {
-      $scope.defaultInterpreters.push({ name: interpreters[i], value: interpreters[i] })
-    }
-    $scope.doFiltering($scope.jobs, $scope.filterConfig)
+    $scope.setJobs(responseData.jobs)
+    $scope.filterJobs($scope.jobs, $scope.filterConfig)
   })
 
   $scope.$on('setUpdateNoteJobs', function (event, responseData) {
@@ -174,6 +176,6 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
         }
       }
     })
-    $scope.doFiltering(jobs, $scope.filterConfig)
+    $scope.filterJobs(jobs, $scope.filterConfig)
   })
 }
