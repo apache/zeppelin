@@ -173,11 +173,15 @@ limitations under the License.
         <li>
           <div class="input-group input-group-sm search-group">
             <span class="input-group-addon">Find</span>
-            <input type="text" class="form-control"
-                   ng-class="{'no-match': !search.occurrencesExists && search.searchText !== ''}"
+            <input type="text" class="form-control" id="findInput"
+                   ng-class="{'no-match': !hasMatches() && search.searchText !== ''}"
                    ng-change="markAllOccurrencesAndHighlightFirst()"
-                   ng-click="markAllOccurrences()"
+                   ng-click="markAllOccurrencesAndHighlightFirst()" ng-keypress="onPressOnFindInput($event)"
                    ng-model="search.searchText"  ng-trim="false"/>
+            <span class="input-group-addon after-input" ng-show="search.searchText !== ''"
+                  ng-class="{'no-match': !hasMatches() && search.searchText !== ''}">
+              {{search.currentOccurrence}} of {{search.occurrencesCount}}
+            </span>
             <div class="input-group-btn">
               <button class="btn btn-default" ng-click="prevOccurrence()">
                 <i class="fa fa-angle-left" aria-hidden="true"></i>

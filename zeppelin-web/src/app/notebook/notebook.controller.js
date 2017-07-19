@@ -68,7 +68,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     needHighlightFirst: false,
     occurrencesHidden: false,
     replaceText: '',
-    needToSendNextOccurrenceAfterReplace: false
+    needToSendNextOccurrenceAfterReplace: false,
+    occurrencesCount: 0,
+    currentOccurrence: 0
   }
   let currentSearchParagraph = 0
 
@@ -734,16 +736,16 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove()
   }
 
+  $scope.hasMatches = function() {
+    return $scope.search.occurrencesCount > 0
+  }
+
   const markAllOccurrences = function() {
-    $scope.search.occurrencesExists = false
+    $scope.search.occurrencesCount = 0
     $scope.search.occurrencesHidden = false
     currentSearchParagraph = 0
     $scope.$broadcast('markAllOccurrences', $scope.search.searchText)
-  }
-
-  $scope.markAllOccurrences = function() {
-    $scope.search.needHighlightFirst = false
-    markAllOccurrences()
+    $scope.search.currentOccurrence = $scope.search.occurrencesCount > 0 ? 1 : 0
   }
 
   $scope.markAllOccurrencesAndHighlightFirst = function() {
@@ -751,10 +753,24 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     markAllOccurrences()
   }
 
+  const increaseCurrentOccurence = function() {
+    ++$scope.search.currentOccurrence
+    if ($scope.search.currentOccurrence > $scope.search.occurrencesCount) {
+      $scope.search.currentOccurrence = 1
+    }
+  }
+
+  const decreaseCurrentOccurence = function() {
+    --$scope.search.currentOccurrence
+    if ($scope.search.currentOccurrence === 0) {
+      $scope.search.currentOccurrence = $scope.search.occurrencesCount
+    }
+  }
+
   const sendNextOccurrenceMessage = function() {
-    if (!$scope.search.occurrencesExists) {
+    if ($scope.search.occurrencesCount === 0) {
       markAllOccurrences()
-      if (!$scope.search.occurrencesExists) {
+      if ($scope.search.occurrencesCount === 0) {
         return
       }
     }
@@ -765,9 +781,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   const sendPrevOccurrenceMessage = function() {
-    if (!$scope.search.occurrencesExists) {
+    if ($scope.search.occurrencesCount === 0) {
       markAllOccurrences()
-      if (!$scope.search.occurrencesExists) {
+      if ($scope.search.occurrencesCount === 0) {
         return
       }
     }
@@ -792,18 +808,17 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
-  $scope.$on('occurrencesExists', function(event) {
-    if ($scope.search.occurrencesExists) {
-      return
-    }
-    $scope.search.occurrencesExists = true
+  $scope.$on('occurrencesExists', function(event, count) {
+    $scope.search.occurrencesCount += count
     if ($scope.search.needHighlightFirst) {
       sendNextOccurrenceMessage()
+      $scope.search.needHighlightFirst = false
     }
   })
 
   $scope.nextOccurrence = function() {
     sendNextOccurrenceMessage()
+    increaseCurrentOccurence()
   }
 
   $scope.$on('noNextOccurrence', function(event) {
@@ -813,6 +828,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.prevOccurrence = function() {
     sendPrevOccurrenceMessage()
+    decreaseCurrentOccurence()
   }
 
   $scope.$on('noPrevOccurrence', function(event) {
@@ -826,9 +842,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   })
 
   $scope.replace = function() {
-    if (!$scope.search.occurrencesExists) {
+    if ($scope.search.occurrencesCount === 0) {
       $scope.markAllOccurrencesAndHighlightFirst()
-      if (!$scope.search.occurrencesExists) {
+      if ($scope.search.occurrencesCount === 0) {
         return
       }
     }
@@ -839,30 +855,49 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('replaceCurrent', $scope.search.searchText, $scope.search.replaceText)
     if ($scope.search.needToSendNextOccurrenceAfterReplace) {
       sendNextOccurrenceMessage()
+      $scope.search.needToSendNextOccurrenceAfterReplace = false
     }
   }
 
+  $scope.$on('occurrencesCountChanged', function(event, cnt) {
+    $scope.search.occurrencesCount += cnt
+    if ($scope.search.occurrencesCount === 0) {
+      $scope.search.currentOccurrence = 0
+    } else {
+      $scope.search.currentOccurrence += cnt + 1
+      if ($scope.search.currentOccurrence > $scope.search.occurrencesCount) {
+        $scope.search.currentOccurrence = 1
+      }
+    }
+  })
+
   $scope.replaceAll = function() {
-    if (!$scope.search.occurrencesExists) {
+    if ($scope.search.occurrencesCount === 0) {
       return
     }
     if ($scope.search.occurrencesHidden) {
-      $scope.markAllOccurrences()
+      $scope.markAllOccurrencesAndHighlightFirst()
     }
     $scope.$broadcast('replaceAll', $scope.search.searchText, $scope.search.replaceText)
-    $scope.$broadcast('markAllOccurrences', $scope.search.searchText)
+    $scope.markAllOccurrencesAndHighlightFirst()
   }
 
   $scope.$on('noNextOccurrenceAfterReplace', function() {
-    $scope.search.occurrencesExists = false
+    $scope.search.occurrencesCount = 0
     $scope.search.needHighlightFirst = false
     $scope.search.needToSendNextOccurrenceAfterReplace = false
     $scope.$broadcast('checkOccurrences')
     increaseCurrentSearchParagraph()
-    if ($scope.search.occurrencesExists) {
+    if ($scope.search.occurrencesCount > 0) {
       $scope.search.needToSendNextOccurrenceAfterReplace = true
     }
   })
+
+  $scope.onPressOnFindInput = function(event) {
+    if (event.keyCode === 13) {
+      $scope.nextOccurrence()
+    }
+  }
 
   $scope.restartInterpreter = function(interpreter) {
     const thisConfirm = BootstrapDialog.confirm({

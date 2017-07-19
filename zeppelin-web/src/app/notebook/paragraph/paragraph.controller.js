@@ -1601,7 +1601,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.$on('markAllOccurrences', function(event, text) {
     markAllOccurrences(text)
     if (searchRanges.length > 0) {
-      $scope.$emit('occurrencesExists')
+      $scope.$emit('occurrencesExists', searchRanges.length)
     }
   })
 
@@ -1649,11 +1649,14 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     if (currentRange.id === -1) {
       return
     }
-    let numberFromEnd = searchRanges.length - currentRange.id - 1
+    let indexFromEnd = searchRanges.length - currentRange.id - 1
+    let prevId = currentRange.id
     $scope.editor.session.removeMarker(currentRange.markerId)
     $scope.editor.session.replace(searchRanges[currentRange.id].range, to)
     markAllOccurrences(from)
-    currentRange.id = searchRanges.length - numberFromEnd
+    let currentIndex = searchRanges.length - indexFromEnd
+    $scope.$emit('occurrencesCountChanged', currentIndex - prevId - 1)
+    currentRange.id = currentIndex
     if (currentRange.id === searchRanges.length) {
       currentRange.id = -1
       $scope.$emit('noNextOccurrenceAfterReplace')
@@ -1670,7 +1673,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.$on('checkOccurrences', function() {
     if (searchRanges.length > 0) {
-      $scope.$emit('occurrencesExists')
+      $scope.$emit('occurrencesExists', searchRanges.length)
     }
   })
 }
