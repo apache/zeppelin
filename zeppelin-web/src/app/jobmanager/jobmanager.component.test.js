@@ -1,15 +1,11 @@
 describe('JobManagerComponent', () => {
   let $scope
   let $controller
-  let $httpBackend
-  let websocketMsgSrv
 
   beforeEach(angular.mock.module('zeppelinWebApp'))
-  beforeEach(angular.mock.inject((_$rootScope_, _$controller_, _$httpBackend_, _websocketMsgSrv_) => {
+  beforeEach(angular.mock.inject((_$rootScope_, _$controller_) => {
     $scope = _$rootScope_.$new()
     $controller = _$controller_
-    $httpBackend = _$httpBackend_
-    websocketMsgSrv = _websocketMsgSrv_
   }))
 
   it('should set jobs using `setJobs`', () => {

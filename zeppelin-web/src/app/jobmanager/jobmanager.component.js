@@ -26,7 +26,7 @@ const JobDateSorter = {
   OLDEST_UPDATED: 'Oldest Updated',
 }
 
-function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFilter) {
+function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter) {
   'ngInject'
 
   $scope.isFilterLoaded = false
@@ -65,7 +65,7 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
   }
 
   let asyncNotebookJobFilter = function (jobs, filterConfig) {
-    return $q(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       $scope.filteredJobs = jobManagerFilter(jobs, filterConfig)
       resolve($scope.filteredJobs)
     })
@@ -82,12 +82,12 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
 
   $scope.filterJobs = function (jobs, filterConfig) {
     asyncNotebookJobFilter(jobs, filterConfig)
-      .then(
-        () => { $scope.isFilterLoaded = true },
-        (error) => {
-          console.error('Failed to search jobs from server', error)
-        }
-      )
+      .then(() => {
+        $scope.isFilterLoaded = true
+      })
+      .catch(error => {
+        console.error('Failed to search jobs from server', error)
+      })
   }
 
   $scope.filterValueToName = function (filterValue, maxStringLength) {
