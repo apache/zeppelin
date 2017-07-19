@@ -12,19 +12,19 @@
  * limitations under the License.
  */
 
-import { JobModule } from './job/job.component'
+import './job/job.component'
 
 import { getJobIconByStatus, getJobColorByStatus } from './job-status'
 
 angular.module('zeppelinWebApp')
-  .controller('JobManagerCtrl', JobManagerCtrl)
+  .controller('JobManagerCtrl', JobManagerController)
 
 const JobDateSorter = {
   RECENTLY_UPDATED: 'Recently Update',
   OLDEST_UPDATED: 'Oldest Updated',
 }
 
-function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
+function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFilter) {
   'ngInject'
 
   $scope.pagination = {
@@ -79,9 +79,11 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
     if ($scope.activeInterpreters === undefined) {
       return
     }
-    let index = _.findIndex($scope.activeInterpreters, {value: filterValue})
-    if ($scope.activeInterpreters[index].name !== undefined) {
-      if (maxStringLength !== undefined && maxStringLength > $scope.activeInterpreters[index].name) {
+
+    let index = $scope.activeInterpreters.findIndex(intp => intp.value === filterValue)
+    if (typeof $scope.activeInterpreters[index].name !== 'undefined') {
+      if (typeof maxStringLength !== 'undefined' &&
+        maxStringLength > $scope.activeInterpreters[index].name) {
         return $scope.activeInterpreters[index].name.substr(0, maxStringLength - 3) + '...'
       }
       return $scope.activeInterpreters[index].name
@@ -122,47 +124,43 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
   $scope.$on('setNoteJobs', function (event, responseData) {
     $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime
     $scope.jobInfomations = responseData.jobs
-    $scope.jobInfomationsIndexs = $scope.jobInfomations ? _.indexBy($scope.jobInfomations, 'noteId') : {}
     $scope.jobTypeFilter($scope.jobInfomations, $scope.filterConfig)
-    $scope.activeInterpreters = [
-      {
-        name: 'ALL',
-        value: '*'
-      }
-    ]
-    let interpreterLists = _.uniq(_.pluck($scope.jobInfomations, 'interpreter'), false)
-    for (let index = 0, length = interpreterLists.length; index < length; index++) {
-      $scope.activeInterpreters.push({
-        name: interpreterLists[index],
-        value: interpreterLists[index]
-      })
+    $scope.activeInterpreters = [ { name: 'ALL', value: '*' } ]
+
+    let interpreters = $scope.jobInfomations
+      .filter(j => typeof j.interpreter !== 'undefined')
+      .map(j => j.interpreter)
+    interpreters = [...new Set(interpreters)] // remove duplicated interpreters
+
+    for (let i = 0; i < interpreters.length; i++) {
+      $scope.activeInterpreters.push({ name: interpreters[i], value: interpreters[i] })
     }
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
   })
 
   $scope.$on('setUpdateNoteJobs', function (event, responseData) {
-    let jobInfomations = $scope.jobInfomations
-    let indexStore = $scope.jobInfomationsIndexs
+    let jobInfos = $scope.jobInfomations
+    let jobByNoteId = $scope.jobInfomations.reduce((acc, j) => {
+      const noteId = j.noteId
+      acc[noteId] = j
+      return acc
+    }, {})
     $scope.lastJobServerUnixTime = responseData.lastResponseUnixTime
+
     let notes = responseData.jobs
-    notes.map(function (changedItem) {
-      if (indexStore[changedItem.noteId] === undefined) {
+    notes.map(changedItem => {
+      if (typeof jobByNoteId[changedItem.noteId] === 'undefined') {
         let newItem = angular.copy(changedItem)
-        jobInfomations.push(newItem)
-        indexStore[changedItem.noteId] = newItem
+        jobInfos.push(newItem)
+        jobByNoteId[changedItem.noteId] = newItem
       } else {
-        let changeOriginTarget = indexStore[changedItem.noteId]
+        let changeOriginTarget = jobByNoteId[changedItem.noteId]
 
-        if (changedItem.isRemoved !== undefined && changedItem.isRemoved === true) {
-          // remove Item.
-          let removeIndex = _.findIndex(indexStore, changedItem.noteId)
-          if (removeIndex > -1) {
-            indexStore.splice(removeIndex, 1)
-          }
-
-          removeIndex = _.findIndex(jobInfomations, {'noteId': changedItem.noteId})
+        if (changedItem.isRemoved === true) {
+          delete jobByNoteId[changedItem.noteId]
+          let removeIndex = jobInfos.findIndex(j => j.noteId === changedItem.noteId)
           if (removeIndex) {
-            jobInfomations.splice(removeIndex, 1)
+            jobInfos.splice(removeIndex, 1)
           }
         } else {
           // change value for item.
@@ -175,6 +173,6 @@ function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
         }
       }
     })
-    $scope.doFiltering(jobInfomations, $scope.filterConfig)
+    $scope.doFiltering(jobInfos, $scope.filterConfig)
   })
 }
