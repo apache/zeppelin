@@ -29,7 +29,19 @@ const JobDateSorter = {
 function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFilter) {
   'ngInject'
 
-  ngToast.dismiss()
+  $scope.isFilterLoaded = false
+  $scope.jobs = []
+  $scope.sorter = {
+    availableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key] }),
+    currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
+  }
+  $scope.filteredJobs = $scope.jobs
+  $scope.filterConfig = {
+    isRunningAlwaysTop: true,
+    noteNameFilterValue: '',
+    interpreterFilterValue: '*',
+    isSortByAsc: true,
+  }
 
   $scope.pagination = {
     currentPage: 1,
@@ -37,10 +49,10 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
     maxPageCount: 5,
   }
 
-  $scope.sorter = {
-    availableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key] }),
-    currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
-  }
+  ngToast.dismiss()
+  init()
+
+  /** functions */
 
   $scope.setJobDateSorter = function(dateSorter) {
     $scope.sorter.currentDateSorter = dateSorter
@@ -100,17 +112,7 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, $q, jobManagerFi
     $scope.doFiltering($scope.jobs, $scope.filterConfig)
   }
 
-  $scope.init = function () {
-    $scope.isFilterLoaded = false
-    $scope.jobs = []
-    $scope.filteredJobs = $scope.jobs
-    $scope.filterConfig = {
-      isRunningAlwaysTop: true,
-      noteNameFilterValue: '',
-      interpreterFilterValue: '*',
-      isSortByAsc: $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED,
-    }
-
+  function init() {
     websocketMsgSrv.getNoteJobsList()
 
     $scope.$on('$destroy', function () {
