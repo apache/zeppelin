@@ -101,7 +101,7 @@ public class JupyterUtil {
     }
     note.setName(name);
 
-    String lineSeparator = System.lineSeparator();
+    String lineSeparator = "";
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
     String interpreterName;
