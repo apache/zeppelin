@@ -4,15 +4,6 @@ This is Zeppelin's frontend project.
 
 ## Development Guide 
 
-### Packaging 
-
-If you want to package the zeppelin-web only, simply run this command in this folder.  
-This will download all the dependencies including node (the binaries in the folder `zeppelin-web/node`)
-
-```
-$ mvn package 
-```
-
 ### Local Development
 
 It is recommended to install node 6.0.0+ since Zeppelin uses 6.9.1+ (see [creationix/nvm](https://github.com/creationix/nvm))
@@ -30,10 +21,8 @@ $ yarn run build
 # run frontend application only in dev mode (localhost:9000) 
 # you need to run zeppelin backend instance also
 $ yarn run dev
-
-# execute tests
-$ yarn run test
 ```
+
 Supports the following options with using npm environment variable when running the web development mode.
 
 ```
@@ -44,7 +33,28 @@ $ SERVER_PORT=YOUR_ZEPPELIN_PORT yarn run dev
 # if you want to use a web dev port instead of default(9000), 
 # you can use the 'WEB_PORT' variable
 $ WEB_PORT=YOUR_WEB_DEV_PORT yarn run dev
+```
 
+### Testing
+
+```sh
+# running unit tests
+$ yarn run test
+
+# running e2e tests: make sure that zeppelin instance started (localhost:8080)
+$ yarn run e2e
+```
+
+- to write unit tests, please refer [Angular Test Patterns](https://github.com/daniellmb/angular-test-patterns)
+- to write e2e tests, please refer [Protractor Tutorial](http://www.protractortest.org/#/tutorial#step-1-interacting-with-elements)
+
+### Packaging 
+
+If you want to package the zeppelin-web only, simply run this command in this folder.  
+This will download all the dependencies including node (the binaries in the folder `zeppelin-web/node`)
+
+```
+$ mvn package 
 ```
 
 ## Troubleshooting

@@ -195,7 +195,15 @@ module.exports = function makeWebpackConfig () {
           }
         }
       ]})
-    }]
+    }],
+    postLoaders: [
+      {
+        // COVERAGE
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components|\.test\.js)/,
+        loader: 'istanbul-instrumenter'
+      }
+    ]
   };
 
   /**
@@ -236,6 +244,7 @@ module.exports = function makeWebpackConfig () {
           HELIUM_BUNDLE_DEV: process.env.HELIUM_BUNDLE_DEV,
           SERVER_PORT: serverPort,
           WEB_PORT: webPort,
+          PROD: isProd,
           BUILD_CI: (isCI) ? JSON.stringify(true) : JSON.stringify(false)
         }
       })

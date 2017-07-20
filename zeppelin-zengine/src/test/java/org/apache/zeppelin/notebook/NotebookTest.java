@@ -97,14 +97,14 @@ public class NotebookTest implements JobListenerFactory{
     ArrayList<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(new InterpreterInfo(MockInterpreter1.class.getName(), "mock1", true, new HashMap<String, Object>()));
     interpreterSettingManager.add("mock1", interpreterInfos, new ArrayList<Dependency>(), new InterpreterOption(),
-        Maps.<String, InterpreterProperty>newHashMap(), "mock1", null);
-    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
+        Maps.<String, DefaultInterpreterProperty>newHashMap(), "mock1", null);
+    interpreterSettingManager.createNewSetting("mock1", "mock1", new ArrayList<Dependency>(), new InterpreterOption(), new HashMap<String, InterpreterProperty>());
 
     ArrayList<InterpreterInfo> interpreterInfos2 = new ArrayList<>();
     interpreterInfos2.add(new InterpreterInfo(MockInterpreter2.class.getName(), "mock2", true, new HashMap<String, Object>()));
     interpreterSettingManager.add("mock2", interpreterInfos2, new ArrayList<Dependency>(), new InterpreterOption(),
-        Maps.<String, InterpreterProperty>newHashMap(), "mock2", null);
-    interpreterSettingManager.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new Properties());
+        Maps.<String, DefaultInterpreterProperty>newHashMap(), "mock2", null);
+    interpreterSettingManager.createNewSetting("mock2", "mock2", new ArrayList<Dependency>(), new InterpreterOption(), new HashMap<String, InterpreterProperty>());
 
 
     SearchService search = mock(SearchService.class);
@@ -195,7 +195,15 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notes.size(), 2);
     assertEquals(notes.get(1).getId(), copiedNote.getId());
     assertEquals(notes.get(1).getName(), copiedNote.getName());
-    assertEquals(notes.get(1).getParagraphs(), copiedNote.getParagraphs());
+    // format has make some changes due to
+    // Notebook.convertFromSingleResultToMultipleResultsFormat
+    assertEquals(notes.get(1).getParagraphs().size(), copiedNote.getParagraphs().size());
+    assertEquals(notes.get(1).getParagraphs().get(0).getText(),
+        copiedNote.getParagraphs().get(0).getText());
+    assertEquals(notes.get(1).getParagraphs().get(0).settings,
+        copiedNote.getParagraphs().get(0).settings);
+    assertEquals(notes.get(1).getParagraphs().get(0).title,
+        copiedNote.getParagraphs().get(0).title);
 
     // delete the notebook
     for (String note : noteNames) {

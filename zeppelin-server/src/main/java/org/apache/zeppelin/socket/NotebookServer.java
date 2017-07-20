@@ -50,13 +50,13 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.json.NotebookTypeAdapterFactory;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookEventListener;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
@@ -116,20 +116,10 @@ public class NotebookServer extends WebSocketServlet
 
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
-  Gson gson = new GsonBuilder()
-      .registerTypeAdapterFactory(new NotebookTypeAdapterFactory<Paragraph>(Paragraph.class) {
-        @Override
-        protected void beforeWrite(Paragraph source, JsonElement toSerialize) {
-          Map<String, ParagraphRuntimeInfo> runtimeInfos = source.getRuntimeInfos();
-          if (runtimeInfos != null) {
-            JsonElement jsonTree = gson.toJsonTree(runtimeInfos);
-            if (toSerialize instanceof JsonObject) {
-              JsonObject jsonObj = (JsonObject) toSerialize;
-              jsonObj.add("runtimeInfos", jsonTree);
-            }
-          }
-        }
-      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+  private static Gson gson = new GsonBuilder()
+      .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
@@ -2497,7 +2487,7 @@ public class NotebookServer extends WebSocketServlet
         try {
           watcher.send(
               WatcherMessage.builder(noteId).subject(subject).message(serializeMessage(message))
-                  .build().serialize());
+                  .build().toJson());
         } catch (IOException e) {
           LOG.error("Cannot broadcast message to watcher", e);
         }

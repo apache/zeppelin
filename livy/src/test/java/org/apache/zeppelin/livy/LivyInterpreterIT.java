@@ -51,6 +51,7 @@ public class LivyInterpreterIT {
     properties.setProperty("zeppelin.livy.url", cluster.livyEndpoint());
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "100");
+    properties.setProperty("zeppelin.livy.displayAppInfo", "false");
   }
 
   @AfterClass

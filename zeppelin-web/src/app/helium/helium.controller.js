@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { HeliumType, } from '../../components/helium/helium-type'
+import { HeliumType, } from './helium-type'
 
 export default function HeliumCtrl ($scope, $rootScope, $sce,
                                    baseUrlSrv, ngToast, heliumService) {

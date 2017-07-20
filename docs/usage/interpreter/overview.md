@@ -34,12 +34,12 @@ Zeppelin Interpreter is a plug-in which enables Zeppelin users to use a specific
 
 When you click the ```+Create``` button in the interpreter page, the interpreter drop-down list box will show all the available interpreters on your server.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_create.png" width="280px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_create.png" width="280px">
 
 ## What is interpreter setting?
 Zeppelin interpreter setting is the configuration of a given interpreter on Zeppelin server. For example, the properties are required for hive JDBC interpreter to connect to the Hive server.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
 Properties are exported as environment variables when property name is consisted of upper characters, numbers and underscore ([A-Z_0-9]). Otherwise set properties as JVM property. 
 
@@ -71,12 +71,12 @@ You may use parameters from the context of interpreter by add #{contextParameter
 
 If context parameter is null then replaced by empty string.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting_with_context_parameters.png" width="800px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_setting_with_context_parameters.png" width="800px">
 
 <br>
 Each notebook can be bound to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
 
 
 
@@ -88,7 +88,7 @@ Technically, Zeppelin interpreters from the same group are running in the same J
 
 Each interpreters is belonged to a single group and registered together. All of their properties are listed in the interpreter setting like below image.
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png" width="500px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png" width="500px">
 
 
 ## Interpreter binding mode
@@ -98,7 +98,7 @@ In 'shared' mode, every notebook bound to the Interpreter Setting will share the
 
 For more information, check [Interpreter Binding Mode](./interpreter_binding_mode.html).
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
 
 
 ## Connecting to the existing remote interpreter
@@ -114,12 +114,12 @@ interpreter.start()
 
 The above code will start interpreter thread inside your process. Once the interpreter is started you can configure zeppelin to connect to RemoteInterpreter by checking **Connect to existing process** checkbox and then provide **Host** and **Port** on which interpreter process is listening as shown in the image below:
 
-<img src="/assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="450px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/existing_interpreter.png" width="450px">
 
 ## Precode
 
 Snippet of code (language of interpreter) that executes after initialization of the interpreter depends on [Binding mode](#interpreter-binding-mode). To configure add parameter with class of interpreter (`zeppelin.<ClassName>.precode`) except JDBCInterpreter ([JDBC precode](../../interpreter/jdbc.html#usage-precode)). 
 
-<img src="/assets/themes/zeppelin/img/screenshots/interpreter_precode.png" width="800px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_precode.png" width="800px">
 
  

@@ -51,7 +51,8 @@ const requiredModules = [
   'ui.grid.cellNav', 'ui.grid.pinning',
   'ui.grid.grouping',
   'ui.grid.emptyBaseLayer',
-  'ui.grid.resizeColumns', 'ui.grid.moveColumns',
+  'ui.grid.resizeColumns',
+  'ui.grid.moveColumns',
   'ui.grid.pagination',
   'ui.grid.saveState',
 ]
@@ -112,8 +113,8 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
         controller: 'InterpreterCtrl'
       })
       .when('/notebookRepos', {
-        templateUrl: 'app/notebookRepos/notebookRepos.html',
-        controller: 'NotebookReposCtrl',
+        templateUrl: 'app/notebook-repository/notebook-repository.html',
+        controller: 'NotebookRepositoryCtrl',
         controllerAs: 'noterepo'
       })
       .when('/credential', {
@@ -145,23 +146,25 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
   })
 
   // handel logout on API failure
-  .config(function ($httpProvider, $provide) {
-    $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
-    $provide.factory('httpInterceptor', function ($q, $rootScope) {
-      return {
-        'responseError': function (rejection) {
-          if (rejection.status === 405) {
-            let data = {}
-            data.info = ''
-            $rootScope.$broadcast('session_logout', data)
-          }
-          $rootScope.$broadcast('httpResponseError', rejection)
-          return $q.reject(rejection)
-        }
+    .config(function ($httpProvider, $provide) {
+      if (process.env.PROD) {
+        $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
       }
+      $provide.factory('httpInterceptor', function ($q, $rootScope) {
+        return {
+          'responseError': function (rejection) {
+            if (rejection.status === 405) {
+              let data = {}
+              data.info = ''
+              $rootScope.$broadcast('session_logout', data)
+            }
+            $rootScope.$broadcast('httpResponseError', rejection)
+            return $q.reject(rejection)
+          }
+        }
+      })
+      $httpProvider.interceptors.push('httpInterceptor')
     })
-    $httpProvider.interceptors.push('httpInterceptor')
-  })
   .constant('TRASH_FOLDER_ID', '~Trash')
 
 function auth () {
@@ -176,7 +179,7 @@ function auth () {
     },
     crossDomain: true
   })
-  let config = {headers: { 'X-Requested-With': 'XMLHttpRequest' }}
+  let config = (process.env.PROD) ? {headers: { 'X-Requested-With': 'XMLHttpRequest' }} : {}
   return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket', config).then(function (response) {
     zeppelinWebApp.run(function ($rootScope) {
       $rootScope.ticket = angular.fromJson(response.data).body
@@ -200,6 +203,7 @@ function auth () {
 function bootstrapApplication () {
   zeppelinWebApp.run(function ($rootScope, $location) {
     $rootScope.$on('$routeChangeStart', function (event, next, current) {
+      $rootScope.pageTitle = 'Zeppelin'
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
         $location.path('/')
       }

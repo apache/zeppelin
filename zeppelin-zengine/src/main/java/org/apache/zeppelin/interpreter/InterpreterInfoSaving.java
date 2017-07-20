@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.sonatype.aether.repository.RemoteRepository;
 
 import java.util.List;
@@ -25,8 +28,19 @@ import java.util.Map;
 /**
  *
  */
-public class InterpreterInfoSaving {
+public class InterpreterInfoSaving implements JsonSerializable {
+
+  private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
   public Map<String, InterpreterSetting> interpreterSettings;
   public Map<String, List<String>> interpreterBindings;
   public List<RemoteRepository> interpreterRepositories;
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static InterpreterInfoSaving fromJson(String json) {
+    return gson.fromJson(json, InterpreterInfoSaving.class);
+  }
 }

@@ -297,6 +297,14 @@ z.load("groupId:artifactId:version").local()
 ## ZeppelinContext
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
 
+### Exploring Spark DataFrames
+`ZeppelinContext` provides a `show` method, which, using Zeppelin's `table` feature, can be used to nicely display a Spark DataFrame:
+
+```
+df = spark.read.csv('/path/to/csv')
+z.show(df)
+```
+
 ### Object Exchange
 `ZeppelinContext` extends map and it's shared between Scala and Python environment.
 So you can put some objects from Scala and read it from Python, vice versa.
@@ -398,7 +406,7 @@ a popular plotting library for python. More details can be found in the [python 
 since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through 
 utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/angular_backend.html), as shown below:
 
-<img class="img-responsive" src="/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 
@@ -410,7 +418,7 @@ It creates separated SparkContext per each notebook in `isolated` mode.
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
-<img src="/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 ### Configuration Setup
 

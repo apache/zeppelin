@@ -52,11 +52,8 @@ public class SecurityUtils {
   private static boolean isEnabled = false;
   private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
   
-  public static void initSecurityManager(String shiroPath) {
-    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
-    SecurityManager securityManager = factory.getInstance();
-    org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
-    isEnabled = true;
+  public static void setIsEnabled(boolean value) {
+    isEnabled = value;
   }
 
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)

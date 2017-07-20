@@ -36,7 +36,8 @@ public class NotebookImportDeserializer implements JsonDeserializer<Date> {
   private static final String[] DATE_FORMATS = new String[] {
     "yyyy-MM-dd'T'HH:mm:ssZ",
     "MMM d, yyyy h:mm:ss a",
-    "MMM dd, yyyy HH:mm:ss"
+    "MMM dd, yyyy HH:mm:ss",
+    "yyyy-MM-dd HH:mm:ss.SSS"
   };
 
   @Override

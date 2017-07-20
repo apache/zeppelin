@@ -29,7 +29,7 @@ Apache Zeppelin Interpreter is a language backend. For example to use scala code
 Every Interpreters belongs to an **InterpreterGroup**.
 Interpreters in the same InterpreterGroup can reference each other. For example, SparkSqlInterpreter can reference SparkInterpreter to get SparkContext from it while they're in the same group.
 
-<img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/interpreter.png" />
+<img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="{{BASE_PATH}}/assets/themes/zeppelin/img/interpreter.png" />
 
 [InterpreterSetting](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/interpreter/InterpreterSetting.java) is configuration of a given [InterpreterGroup](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/InterpreterGroup.java) and a unit of start/stop interpreter.
 All Interpreters in the same InterpreterSetting are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via **[Thrift](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/thrift/RemoteInterpreterService.thrift)**.
@@ -61,13 +61,15 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
         "envName": null,
         "propertyName": "property.1.name",
         "defaultValue": "propertyDefaultValue",
-        "description": "Property description"
+        "description": "Property description",
+        "type": "textarea"
       },
       "properties2": {
         "envName": PROPERTIES_2,
         "propertyName": null,
         "defaultValue": "property2DefaultValue",
-        "description": "Property 2 description"
+        "description": "Property 2 description",
+        "type": "textarea"
       }, ...
     },
     "editor": {

@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl)
 
 function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                      ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID,
+                      ngToast, noteActionService, noteVarShareService, TRASH_FOLDER_ID,
                       heliumService) {
   'ngInject'
 
@@ -61,6 +61,17 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.noteRevisions = []
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
+
+  $scope.$watch('note', function (value) {
+    $rootScope.pageTitle = value ? value.name : 'Zeppelin'
+  }, true)
+
+  $scope.$on('setConnectedStatus', function (event, param) {
+    if (connectedOnce && param) {
+      initNotebook()
+    }
+    connectedOnce = true
+  })
 
   $scope.getCronOptionNameFromValue = function (value) {
     if (!value) {
@@ -158,12 +169,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   // Move the note to trash and go back to the main page
   $scope.moveNoteToTrash = function (noteId) {
-    noteActionSrv.moveNoteToTrash(noteId, true)
+    noteActionService.moveNoteToTrash(noteId, true)
   }
 
   // Remove the note permanently if it's in the trash
   $scope.removeNote = function (noteId) {
-    noteActionSrv.removeNote(noteId, true)
+    noteActionService.removeNote(noteId, true)
   }
 
   $scope.isTrash = function (note) {
@@ -302,7 +313,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.clearAllParagraphOutput = function (noteId) {
-    noteActionSrv.clearAllParagraphOutput(noteId)
+    noteActionService.clearAllParagraphOutput(noteId)
   }
 
   $scope.toggleAllEditor = function () {

@@ -43,6 +43,27 @@ import java.lang.String;
 public class HDFSFileInterpreterTest extends TestCase {
 
     @Test
+    public void testMaxLength() {
+
+      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+      t.open();
+      InterpreterResult result = t.interpret("ls -l /", null);
+      String lineSeparator = "\n";
+      int fileStatusLength = MockFileSystem.fileStatuses.split(lineSeparator).length;
+      assertEquals(result.message().get(0).getData().split(lineSeparator).length, fileStatusLength);
+      t.close();
+
+      Properties properties = new Properties();
+      final int maxLength = fileStatusLength - 2;
+      properties.setProperty("hdfs.maxlength", String.valueOf(maxLength));
+      HDFSFileInterpreter t1 = new MockHDFSFileInterpreter(properties);
+      t1.open();
+      InterpreterResult result1 = t1.interpret("ls -l /", null);
+      assertEquals(result1.message().get(0).getData().split(lineSeparator).length, maxLength);
+      t1.close();
+    }
+
+    @Test
     public void test() {
       HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
       t.open();
@@ -126,16 +147,17 @@ public class HDFSFileInterpreterTest extends TestCase {
    */
   class MockFileSystem {
     HashMap<String, String> mfs = new HashMap<>();
+    static final String fileStatuses =
+            "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16389,\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1438548219672,\"owner\":\"yarn\",\"pathSuffix\":\"app-logs\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16395,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548030045,\"owner\":\"hdfs\",\"pathSuffix\":\"hdp\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16390,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985336,\"owner\":\"mapred\",\"pathSuffix\":\"mapred\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":2,\"fileId\":16392,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985346,\"owner\":\"hdfs\",\"pathSuffix\":\"mr-history\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16400,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548089725,\"owner\":\"hdfs\",\"pathSuffix\":\"system\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16386,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548150089,\"owner\":\"hdfs\",\"pathSuffix\":\"tmp\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16387,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547921792,\"owner\":\"hdfs\",\"pathSuffix\":\"user\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"}\n";
     void addListStatusData() {
       mfs.put("/?op=LISTSTATUS",
-          "{\"FileStatuses\":{\"FileStatus\":[\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16389,\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1438548219672,\"owner\":\"yarn\",\"pathSuffix\":\"app-logs\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16395,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548030045,\"owner\":\"hdfs\",\"pathSuffix\":\"hdp\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16390,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985336,\"owner\":\"mapred\",\"pathSuffix\":\"mapred\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":2,\"fileId\":16392,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985346,\"owner\":\"hdfs\",\"pathSuffix\":\"mr-history\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16400,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548089725,\"owner\":\"hdfs\",\"pathSuffix\":\"system\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16386,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548150089,\"owner\":\"hdfs\",\"pathSuffix\":\"tmp\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16387,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547921792,\"owner\":\"hdfs\",\"pathSuffix\":\"user\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"}\n" +
+          "{\"FileStatuses\":{\"FileStatus\":[\n" + fileStatuses +
               "]}}"
       );
       mfs.put("/user?op=LISTSTATUS",
@@ -183,11 +205,15 @@ public class HDFSFileInterpreterTest extends TestCase {
   class MockHDFSCommand extends HDFSCommand {
     MockFileSystem fs = null;
 
-    public MockHDFSCommand(String url, String user, Logger logger) {
-      super(url, user, logger, 1000);
+    public MockHDFSCommand(String url, String user, Logger logger, int maxLength) {
+      super(url, user, logger, maxLength);
       fs = new MockFileSystem();
       fs.addMockData(getFileStatus);
       fs.addMockData(listStatus);
+    }
+
+    public MockHDFSCommand(String url, String user, Logger logger) {
+      this(url, user, logger, 1000);
     }
 
     @Override
@@ -215,7 +241,9 @@ public class HDFSFileInterpreterTest extends TestCase {
     @Override
     public void prepare() {
       // Run commands against mock File System instead of WebHDFS
-      cmd = new MockHDFSCommand("", "", logger);
+      int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH) == null ? "1000"
+              : getProperty(HDFS_MAXLENGTH));
+      cmd = new MockHDFSCommand("", "", logger, i);
       gson = new Gson();
     }
 

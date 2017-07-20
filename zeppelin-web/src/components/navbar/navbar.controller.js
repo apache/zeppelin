@@ -15,7 +15,7 @@
 angular.module('zeppelinWebApp').controller('NavCtrl', NavCtrl)
 
 function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
-                 noteListDataFactory, baseUrlSrv, websocketMsgSrv,
+                 noteListFactory, baseUrlSrv, websocketMsgSrv,
                  arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
   'ngInject'
 
@@ -24,7 +24,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   vm.connected = websocketMsgSrv.isConnected()
   vm.isActive = isActive
   vm.logout = logout
-  vm.notes = noteListDataFactory
+  vm.notes = noteListFactory
   vm.search = search
   vm.searchForm = searchService
   vm.showLoginWindow = showLoginWindow
@@ -127,7 +127,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
    */
 
   $scope.$on('setNoteMenu', function (event, notes) {
-    noteListDataFactory.setNotes(notes)
+    noteListFactory.setNotes(notes)
     initNotebookListEventListener()
   })
 

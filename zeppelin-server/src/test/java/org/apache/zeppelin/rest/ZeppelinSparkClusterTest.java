@@ -39,14 +39,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.gson.Gson;
-
 /**
  * Test against spark cluster.
  * Spark cluster is started by CI server using testing/startSparkCluster.sh
  */
 public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
-    Gson gson = new Gson();
     AuthenticationInfo anonymous;
 
     @BeforeClass

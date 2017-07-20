@@ -195,7 +195,7 @@ public class ZeppelinhubClient {
   }
 
   public void handleMsgFromZeppelinHub(String message) {
-    ZeppelinhubMessage hubMsg = ZeppelinhubMessage.deserialize(message);
+    ZeppelinhubMessage hubMsg = ZeppelinhubMessage.fromJson(message);
     if (hubMsg.equals(ZeppelinhubMessage.EMPTY)) {
       LOG.error("Cannot handle ZeppelinHub message is empty");
       return;
