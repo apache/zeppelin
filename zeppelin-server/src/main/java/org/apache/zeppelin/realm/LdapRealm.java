@@ -179,7 +179,7 @@ public class LdapRealm extends JndiLdapRealm {
 
   private String groupIdAttribute = "cn";
 
-  private String memberAttributeValuePrefix = "uid={0}";
+  private String memberAttributeValuePrefix = "uid=";
   private String memberAttributeValueSuffix = "";
 
   private final Map<String, String> rolesByGroup = new LinkedHashMap<String, String>();
