@@ -40,20 +40,6 @@ describe('JobComponent', () => {
   })
 
   it('should get proper job type icons', () => {
-    const paragraphs = [
-      { status: ParagraphStatus.PENDING },
-      { status: ParagraphStatus.FINISHED},
-    ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', null, bindings)
-
-    const progress1 = ctrl.getProgress()
-    expect(progress1).toBe('50%')
-  })
-
-  it('should get proper job type icons', () => {
     const paragraphs = [ { status: ParagraphStatus.PENDING }, ]
     const mockNote = createMockNote(paragraphs)
     const bindings = { note: mockNote, }
