@@ -402,7 +402,7 @@ public class HeliumBundleFactory {
 
     String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
     if (moduleNameVersion == null) {
-      logger.error("Can't get module name and version of package " + pkg.getName());
+      logger.warn("Can't get module name and version of package " + pkg.getName());
       return null;
     }
 
