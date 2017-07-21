@@ -20,7 +20,7 @@ import { getJobIconByStatus, getJobColorByStatus } from './job-status'
 
 angular.module('zeppelinWebApp')
   .controller('JobManagerCtrl', JobManagerController)
-  .filter('jobManager', JobManagerFilter)
+  .filter('JobManager', JobManagerFilter)
   .service('JobManagerService', JobManagerService)
 
 const JobDateSorter = {
@@ -28,10 +28,8 @@ const JobDateSorter = {
   OLDEST_UPDATED: 'Oldest Updated',
 }
 
-function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter, JobManagerService) {
+function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerService) {
   'ngInject'
-
-  const websocketMessageService = websocketMsgSrv
 
   $scope.isFilterLoaded = false
   $scope.jobs = []
@@ -70,7 +68,7 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter
 
   let asyncNotebookJobFilter = function (jobs, filterConfig) {
     return new Promise((resolve, reject) => {
-      $scope.filteredJobs = jobManagerFilter(jobs, filterConfig)
+      $scope.filteredJobs = JobManagerFilter(jobs, filterConfig)
       resolve($scope.filteredJobs)
     })
   }
