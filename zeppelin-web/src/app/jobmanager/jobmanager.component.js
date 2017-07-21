@@ -28,8 +28,10 @@ const JobDateSorter = {
   OLDEST_UPDATED: 'Oldest Updated',
 }
 
-function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter) {
+function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter, JobManagerService) {
   'ngInject'
+
+  const websocketMessageService = websocketMsgSrv
 
   $scope.isFilterLoaded = false
   $scope.jobs = []
@@ -128,10 +130,12 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter
   }
 
   function init() {
-    websocketMsgSrv.getNoteJobsList()
+    JobManagerService.getJobs()
+    JobManagerService.subscribeSetJobs($scope, setJobsCallback)
+    JobManagerService.subscribeUpdateJobs($scope, updateJobsCallback)
 
     $scope.$on('$destroy', function () {
-      websocketMsgSrv.unsubscribeJobManager()
+      JobManagerService.disconnect()
     })
   }
 
@@ -139,12 +143,13 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter
    ** $scope.$on functions below
    */
 
-  $scope.$on('setNoteJobs', function (event, responseData) {
-    $scope.setJobs(responseData.jobs)
+  function setJobsCallback(event, response) {
+    const jobs = response.jobs
+    $scope.setJobs(jobs)
     $scope.filterJobs($scope.jobs, $scope.filterConfig)
-  })
+  }
 
-  $scope.$on('setUpdateNoteJobs', function (event, responseData) {
+  function updateJobsCallback(event, response) {
     let jobs = $scope.jobs
     let jobByNoteId = jobs.reduce((acc, j) => {
       const noteId = j.noteId
@@ -152,8 +157,8 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter
       return acc
     }, {})
 
-    let notes = responseData.jobs
-    notes.map(updatedJob => {
+    let updatedJobs = response.jobs
+    updatedJobs.map(updatedJob => {
       if (typeof jobByNoteId[updatedJob.noteId] === 'undefined') {
         let newItem = angular.copy(updatedJob)
         jobs.push(newItem)
@@ -179,5 +184,5 @@ function JobManagerController($scope, websocketMsgSrv, ngToast, jobManagerFilter
       }
     })
     $scope.filterJobs(jobs, $scope.filterConfig)
-  })
+  }
 }

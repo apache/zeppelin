@@ -13,20 +13,52 @@
  */
 
 export class JobManagerService {
-  constructor($http, baseUrlSrv) {
+  constructor($http, $rootScope, baseUrlSrv, websocketMsgSrv) {
     'ngInject'
 
     this.$http = $http
-    this.baseUrlService = baseUrlSrv
+    this.$rootScope = $rootScope
+    this.BaseUrlService = baseUrlSrv
+    this.WebsocketMessageService = websocketMsgSrv
   }
 
   sendStopJobRequest(noteId) {
-    const apiURL = this.baseUrlService.getRestApiBase() + `/notebook/job/${noteId}`
+    const apiURL = this.BaseUrlService.getRestApiBase() + `/notebook/job/${noteId}`
     return this.$http({ method: 'DELETE', url: apiURL, })
   }
 
   sendRunJobRequest(noteId) {
-    const apiURL = this.baseUrlService.getRestApiBase() + `/notebook/job/${noteId}`
+    const apiURL = this.BaseUrlService.getRestApiBase() + `/notebook/job/${noteId}`
     return this.$http({ method: 'POST', url: apiURL, })
+  }
+
+  getJobs() {
+    this.WebsocketMessageService.getJobs()
+  }
+
+  disconnect() {
+    this.WebsocketMessageService.disconnectJobEvent()
+  }
+
+  subscribeSetJobs(controllerScope, receiveCallback) {
+    const event = 'jobmanager:set-jobs'
+    console.log(`(Event) Subscribed: ${event}`)
+    const unsubscribeHandler = this.$rootScope.$on(event, receiveCallback)
+
+    controllerScope.$on('$destroy', () => {
+      console.log(`(Event) Unsubscribed: ${event}`)
+      unsubscribeHandler()
+    })
+  }
+
+  subscribeUpdateJobs(controllerScope, receiveCallback) {
+    const event = 'jobmanager:update-jobs'
+    console.log(`(Event) Subscribed: ${event}`)
+    const unsubscribeHandler = this.$rootScope.$on(event, receiveCallback)
+
+    controllerScope.$on('$destroy', () => {
+      console.log(`(Event) Unsubscribed: ${event}`)
+      unsubscribeHandler()
+    })
   }
 }
