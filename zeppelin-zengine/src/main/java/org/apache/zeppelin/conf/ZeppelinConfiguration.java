@@ -424,8 +424,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_REGISTRY);
   }
 
-  public String getHeliumNpmRegistry() {
-    return getString(ConfVars.ZEPPELIN_HELIUM_NPM_REGISTRY);
+  public String getHeliumNodeInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_NODE_INSTALLER_URL);
+  }
+
+  public String getHeliumNpmInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_NPM_INSTALLER_URL);
+  }
+
+  public String getHeliumYarnInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL);
   }
 
   public String getNotebookAuthorizationPath() {
@@ -501,6 +509,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getJettyName() {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
+
+
+  public String getXFrameOptions() {
+    return getString(ConfVars.ZEPPELIN_SERVER_XFRAME_OPTIONS);
+  }
+
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
@@ -643,7 +657,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
-    ZEPPELIN_HELIUM_NPM_REGISTRY("zeppelin.helium.npm.registry", "http://registry.npmjs.org/"),
+    ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
+            "https://nodejs.org/dist/"),
+    ZEPPELIN_HELIUM_NPM_INSTALLER_URL("zeppelin.helium.npm.installer.url",
+            "http://registry.npmjs.org/"),
+    ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL("zeppelin.helium.yarnpkg.installer.url",
+            "https://github.com/yarnpkg/yarn/releases/download/"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
@@ -651,6 +670,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
+    ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null);
 
     private String varName;

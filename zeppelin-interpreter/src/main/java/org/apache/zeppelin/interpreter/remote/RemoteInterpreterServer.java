@@ -24,6 +24,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -80,6 +82,11 @@ public class RemoteInterpreterServer
   private Map<String, Object> remoteWorksResponsePool;
   private ZeppelinRemoteWorksController remoteWorksController;
 
+  private final long DEFAULT_SHUTDOWN_TIMEOUT = 2000;
+
+  // Hold information for manual progress update
+  private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
+
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
 
@@ -99,7 +106,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void shutdown() throws TException {
-    eventClient.waitForEventQueueBecomesEmpty();
+    eventClient.waitForEventQueueBecomesEmpty(DEFAULT_SHUTDOWN_TIMEOUT);
     if (interpreterGroup != null) {
       interpreterGroup.close();
     }
@@ -111,7 +118,8 @@ public class RemoteInterpreterServer
     // this case, need to force kill the process
 
     long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < 2000 && server.isServing()) {
+    while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
+        server.isServing()) {
       try {
         Thread.sleep(300);
       } catch (InterruptedException e) {
@@ -218,7 +226,7 @@ public class RemoteInterpreterServer
 
   private void setSystemProperty(Properties properties) {
     for (Object key : properties.keySet()) {
-      if (!RemoteInterpreter.isEnvString((String) key)) {
+      if (!RemoteInterpreterUtils.isEnvString((String) key)) {
         String value = properties.getProperty((String) key);
         if (value == null || value.isEmpty()) {
           System.clearProperty((String) key);
@@ -327,6 +335,8 @@ public class RemoteInterpreterServer
       }
     }
 
+    progressMap.remove(interpreterContext.getParagraphId());
+
     InterpreterResult result;
     if (job.getStatus() == Status.ERROR) {
       result = new InterpreterResult(Code.ERROR, Job.getStack(job.getException()));
@@ -345,9 +355,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void onReceivedZeppelinResource(String responseJson) throws TException {
-    RemoteZeppelinServerResource response = gson.fromJson(
-        responseJson, RemoteZeppelinServerResource.class);
-
+    RemoteZeppelinServerResource response = RemoteZeppelinServerResource.fromJson(responseJson);
     if (response == null) {
       throw new TException("Bad response for remote resource");
     }
@@ -554,8 +562,13 @@ public class RemoteInterpreterServer
   public int getProgress(String noteId, String className,
                          RemoteInterpreterContext interpreterContext)
       throws TException {
-    Interpreter intp = getInterpreter(noteId, className);
-    return intp.getProgress(convert(interpreterContext, null));
+    Integer manuallyProvidedProgress = progressMap.get(interpreterContext.getParagraphId());
+    if (manuallyProvidedProgress != null) {
+      return manuallyProvidedProgress;
+    } else {
+      Interpreter intp = getInterpreter(noteId, className);
+      return intp.getProgress(convert(interpreterContext, null));
+    }
   }
 
 
@@ -594,13 +607,13 @@ public class RemoteInterpreterServer
         ric.getReplName(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
-        gson.fromJson(ric.getAuthenticationInfo(), AuthenticationInfo.class),
+        AuthenticationInfo.fromJson(ric.getAuthenticationInfo()),
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
         GUI.fromJson(ric.getGui()),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners, output, remoteWorksController, eventClient);
+        contextRunners, output, remoteWorksController, eventClient, progressMap);
   }
 
 
@@ -927,11 +940,8 @@ public class RemoteInterpreterServer
     }
 
     ResourceSet resourceSet = resourcePool.getAll(false);
-
-    Gson gson = new Gson();
-
     for (Resource r : resourceSet) {
-      result.add(gson.toJson(r));
+      result.add(r.toJson());
     }
 
     return result;
@@ -966,7 +976,7 @@ public class RemoteInterpreterServer
   public ByteBuffer resourceInvokeMethod(
       String noteId, String paragraphId, String resourceName, String invokeMessage) {
     InvokeResourceMethodEventMessage message =
-        gson.fromJson(invokeMessage, InvokeResourceMethodEventMessage.class);
+        InvokeResourceMethodEventMessage.fromJson(invokeMessage);
 
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
     if (resource == null || resource.get() == null) {
@@ -1015,7 +1025,7 @@ public class RemoteInterpreterServer
   public void resourceResponseInvokeMethod(
       String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
     InvokeResourceMethodEventMessage message =
-        gson.fromJson(invokeResourceMethodEventMessage, InvokeResourceMethodEventMessage.class);
+        InvokeResourceMethodEventMessage.fromJson(invokeResourceMethodEventMessage);
 
     if (message.shouldPutResultIntoResourcePool()) {
       Resource resource = resourcePool.get(
@@ -1087,7 +1097,7 @@ public class RemoteInterpreterServer
       logger.warn("Application instance {} is already running");
       return new RemoteApplicationResult(true, "");
     }
-    HeliumPackage pkgInfo = gson.fromJson(packageInfo, HeliumPackage.class);
+    HeliumPackage pkgInfo = HeliumPackage.fromJson(packageInfo);
     ApplicationContext context = getApplicationContext(
         pkgInfo, noteId, paragraphId, applicationInstanceId);
     try {

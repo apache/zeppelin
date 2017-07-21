@@ -11,41 +11,60 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-All fields:
-<div class="allFields row">
-  <ul class="noDot">
-    <li class="liVertical" ng-repeat="col in tableDataColumns">
-      <div class="btn btn-default btn-xs"
-           data-drag="true"
-           data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
-           ng-model="tableDataColumns"
-           jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
-        {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
-      </div>
-    </li>
-  </ul>
-</div>
 
-<div class="row">
-  <div class="col-md-3"
-       ng-repeat="prop in props">
-    <span class="columns lightBold">
-      {{prop.name}}
-      <a tabindex="0" class="fa fa-info-circle" role="button" popover-placement="top"
-         ng-if="prop.tooltip"
-         popover-trigger="focus"
-         popover-html-unsafe="{{prop.tooltip}}"></a>
-      <ul data-drop="true"
-          ng-model="config[prop.name]"
-          jqyoui-droppable="{onDrop:'save()'}"
-          class="list-unstyled"
-          style="height:36px">
-        <li ng-if="config[prop.name]">
-          <div class="btn btn-primary btn-xs">
-            {{config[prop.name].name}} <span class="fa fa-close" ng-click="remove(prop.name)"></span>
-          </div>
-        </li>
-      </ul>
-    </span>
+<div class="panel panel-default" style="margin-top: 10px; margin-bottom: 11px;">
+  <div class="panel-heading"
+       style="padding: 6px 12px 6px 12px; font-size: 13px;">
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Available Fields</span>
+    <div style="clear: both;"></div>
+    <!-- to fix previous span which has float: right -->
   </div>
-</div>
+  <!-- panel-body: columns -->
+  <div class="panel-body"
+       style="padding: 8px; margin-top: 3px;">
+    <ul class="noDot">
+      <li class="liVertical" ng-repeat="col in tableDataColumns">
+        <div class="btn btn-default btn-xs"
+             style="background-color: #EFEFEF;"
+             data-drag="true"
+             data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+             ng-model="tableDataColumns"
+             jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+          {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- panel-body: axis -->
+  <hr style="margin: 1px;" />
+  <div class="panel-body"
+       style="margin-top: 7px; padding-top: 9px; padding-bottom: 4px;">
+    <div class="col-sm-3"
+         ng-repeat="prop in props">
+      <span class="columns lightBold">
+        <span class="label label-default"
+              style="font-weight: 300; font-size: 13px; margin-left: 1px;"
+              ng-style="prop.name === 'xAxis' ? { 'background-color': '#906ebd' } : prop.name === 'yAxis' ? { 'background-color': '#cd5c5c' } : prop.name === 'group' ? { 'background-color': '#5782bd' } : ''">
+        {{prop.name}}
+        <a tabindex="0" class="fa fa-info-circle" role="button"
+           ng-if="prop.tooltip" style="color: white;"
+           tooltip-placement="top" tooltip-append-to-body="true"
+           uib-tooltip="{{prop.tooltip}}"></a>
+        </span>
+        <ul data-drop="true"
+            ng-model="config[prop.name]"
+            jqyoui-droppable="{onDrop:'save()'}"
+            class="list-unstyled"
+            style="height:36px; border-radius: 6px; margin-top: 7px; overflow: visible !important;">
+          <li ng-if="config[prop.name]">
+            <div class="btn btn-default btn-xs"
+                 style="background-color: #EFEFEF;">
+              {{config[prop.name].name}} <span class="fa fa-close" ng-click="remove(prop.name)"></span>
+            </div>
+          </li>
+        </ul>
+      </span>
+    </div>
+  </div> <!-- panel-body -->
+</div> <!-- panel -->

@@ -195,7 +195,7 @@ public class ZeppelinhubClient {
   }
 
   public void handleMsgFromZeppelinHub(String message) {
-    ZeppelinhubMessage hubMsg = ZeppelinhubMessage.deserialize(message);
+    ZeppelinhubMessage hubMsg = ZeppelinhubMessage.fromJson(message);
     if (hubMsg.equals(ZeppelinhubMessage.EMPTY)) {
       LOG.error("Cannot handle ZeppelinHub message is empty");
       return;
@@ -220,12 +220,12 @@ public class ZeppelinhubClient {
       return;
     }
     switch (op) {
-        case RUN_NOTEBOOK:
-          runAllParagraph(hubMsg.meta.get("noteId"), msg);
-          break;
-        default:
-          LOG.debug("Received {} from ZeppelinHub, not handled", op);
-          break;
+      case RUN_NOTEBOOK:
+        runAllParagraph(hubMsg.meta.get("noteId"), msg);
+        break;
+      default:
+        LOG.debug("Received {} from ZeppelinHub, not handled", op);
+        break;
     }
   }
 

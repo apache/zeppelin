@@ -12,24 +12,30 @@
  * limitations under the License.
  */
 
-import TableData from '../../../tabledata/tabledata'
+import moment from 'moment'
+
+import DatasetFactory from '../../../tabledata/datasetfactory'
 import TableVisualization from '../../../visualization/builtins/visualization-table'
 import BarchartVisualization from '../../../visualization/builtins/visualization-barchart'
 import PiechartVisualization from '../../../visualization/builtins/visualization-piechart'
 import AreachartVisualization from '../../../visualization/builtins/visualization-areachart'
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart'
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart'
+import NetworkVisualization from '../../../visualization/builtins/visualization-d3network'
 import {
   DefaultDisplayType,
   SpellResult,
 } from '../../../spell'
 import { ParagraphStatus, } from '../paragraph.status'
 
+const TableGridFilterTemplate = require('../../../visualization/builtins/visualization-table-grid-filter.html')
+
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl)
 
 function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
-                    $timeout, $compile, $http, $q, $templateRequest, $sce, websocketMsgSrv,
-                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService) {
+                    $timeout, $compile, $http, $q, $templateCache, $templateRequest, $sce, websocketMsgSrv,
+                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService,
+                    uiGridConstants) {
   'ngInject'
 
   /**
@@ -39,36 +45,48 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     {
       id: 'table',   // paragraph.config.graph.mode
       name: 'Table', // human readable name. tooltip
-      icon: '<i class="fa fa-table"></i>'
+      icon: '<i class="fa fa-table"></i>',
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'multiBarChart',
       name: 'Bar Chart',
       icon: '<i class="fa fa-bar-chart"></i>',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'pieChart',
       name: 'Pie Chart',
       icon: '<i class="fa fa-pie-chart"></i>',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'stackedAreaChart',
       name: 'Area Chart',
       icon: '<i class="fa fa-area-chart"></i>',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'lineChart',
       name: 'Line Chart',
       icon: '<i class="fa fa-line-chart"></i>',
-      transformation: 'pivot'
+      transformation: 'pivot',
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
     },
     {
       id: 'scatterChart',
       name: 'Scatter Chart',
-      icon: '<i class="cf cf-scatter-chart"></i>'
+      icon: '<i class="cf cf-scatter-chart"></i>',
+      supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
+    },
+    {
+      id: 'network',
+      name: 'Network',
+      icon: '<i class="fa fa-share-alt"></i>',
+      supports: [DefaultDisplayType.NETWORK]
     }
   ]
 
@@ -98,6 +116,10 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     },
     'scatterChart': {
       class: ScatterchartVisualization,
+      instance: undefined
+    },
+    'network': {
+      class: NetworkVisualization,
       instance: undefined
     }
   }
@@ -148,18 +170,25 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   }
 
   $scope.init = function (result, config, paragraph, index) {
-    // register helium plugin vis
-    let visBundles = heliumService.getVisualizationBundles()
-    visBundles.forEach(function (vis) {
-      $scope.builtInTableDataVisualizationList.push({
-        id: vis.id,
-        name: vis.name,
-        icon: $sce.trustAsHtml(vis.icon)
+    // register helium plugin vis packages
+    let visPackages = heliumService.getVisualizationCachedPackages()
+    const visPackageOrder = heliumService.getVisualizationCachedPackageOrder()
+
+    // push the helium vis packages following the order
+    visPackageOrder.map(visName => {
+      visPackages.map(vis => {
+        if (vis.name !== visName) { return }
+        $scope.builtInTableDataVisualizationList.push({
+          id: vis.id,
+          name: vis.name,
+          icon: $sce.trustAsHtml(vis.icon),
+          supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK]
+        })
+        builtInVisualizations[vis.id] = {
+          class: vis.class
+        }
       })
-      builtInVisualizations[vis.id] = {
-        class: vis.class
-      };
-    });
+    })
 
     updateData(result, config, paragraph, index)
     renderResult($scope.type)
@@ -248,18 +277,23 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     // enable only when it is last result
     enableHelium = (index === paragraphRef.results.msg.length - 1)
 
-    if ($scope.type === 'TABLE') {
-      tableData = new TableData()
+    if ($scope.type === 'TABLE' || $scope.type === 'NETWORK') {
+      tableData = new DatasetFactory().createDataset($scope.type)
       tableData.loadParagraphResult({type: $scope.type, msg: data})
       $scope.tableDataColumns = tableData.columns
       $scope.tableDataComment = tableData.comment
+      if ($scope.type === 'NETWORK') {
+        $scope.networkNodes = tableData.networkNodes
+        $scope.networkRelationships = tableData.networkRelationships
+        $scope.networkProperties = tableData.networkProperties
+      }
     } else if ($scope.type === 'IMG') {
       $scope.imageData = data
     }
   }
 
   $scope.createDisplayDOMId = function (baseDOMId, type) {
-    if (type === DefaultDisplayType.TABLE) {
+    if (type === DefaultDisplayType.TABLE || type === DefaultDisplayType.NETWORK) {
       return `${baseDOMId}_graph`
     } else if (type === DefaultDisplayType.HTML) {
       return `${baseDOMId}_html`
@@ -276,7 +310,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
 
   $scope.renderDefaultDisplay = function (targetElemId, type, data, refresh) {
     const afterLoaded = () => {
-      if (type === DefaultDisplayType.TABLE) {
+      if (type === DefaultDisplayType.TABLE || type === DefaultDisplayType.NETWORK) {
         renderGraph(targetElemId, $scope.graphMode, refresh)
       } else if (type === DefaultDisplayType.HTML) {
         renderHtml(targetElemId, data)
@@ -536,7 +570,14 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           }
           builtInViz.instance._emitter = emitter
           builtInViz.instance._compile = $compile
+
+          // ui-grid related
+          $templateCache.put('ui-grid/ui-grid-filter', TableGridFilterTemplate)
+          builtInViz.instance._uiGridConstants = uiGridConstants
+          builtInViz.instance._timeout = $timeout
+
           builtInViz.instance._createNewScope = createNewScope
+          builtInViz.instance._templateRequest = $templateRequest
           const transformation = builtInViz.instance.getTransformation()
           transformation._emitter = emitter
           transformation._templateRequest = $templateRequest
@@ -624,8 +665,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     } else {
       newConfig.graph.optionOpen = true
     }
-    let newParams = angular.copy(paragraph.settings.params)
 
+    let newParams = angular.copy(paragraph.settings.params)
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
   }
 
@@ -654,7 +695,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         }
       }
     }
-    console.log('getVizConfig', config)
+    console.debug('getVizConfig', config)
     return config
   }
 
@@ -683,7 +724,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       newConfig.graph.values = newConfig.graph.commonSetting.pivot.values
       delete newConfig.graph.commonSetting.pivot
     }
-    console.log('committVizConfig', newConfig)
+    console.debug('committVizConfig', newConfig)
     let newParams = angular.copy(paragraph.settings.params)
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
   }

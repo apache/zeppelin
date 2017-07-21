@@ -78,6 +78,7 @@
     <module>scio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
+    <module>zeppelin-jupyter</module>
     <module>zeppelin-distribution</module>
   </modules>
 
@@ -88,6 +89,12 @@
     <scalatest.version>2.2.4</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
 
+    <!-- frontend maven plugin related versions-->
+    <node.version>v6.9.1</node.version>
+    <yarn.version>v0.18.1</yarn.version>
+    <npm.version>4.2.0</npm.version>
+    <plugin.frontned.version>1.3</plugin.frontned.version>
+
     <!-- common library versions -->
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
@@ -96,8 +103,8 @@
     <gson-extras.version>0.2.1</gson-extras.version>
     <guava.version>15.0</guava.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
-    <httpcomponents.core.version>4.3.3</httpcomponents.core.version>
-    <httpcomponents.client.version>4.3.6</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.lang.version>2.5</commons.lang.version>
     <commons.configuration.version>1.9</commons.configuration.version>
@@ -105,7 +112,8 @@
     <commons.io.version>2.4</commons.io.version>
     <commons.collections.version>3.2.1</commons.collections.version>
     <commons.logging.version>1.1.1</commons.logging.version>
-    <shiro.version>1.2.3</shiro.version>
+    <commons.cli.version>1.3.1</commons.cli.version>
+    <shiro.version>1.3.2</shiro.version>
 
     <!-- test library versions -->
     <junit.version>4.12</junit.version>
@@ -134,6 +142,9 @@
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
+
+    <!-- to be able to exclude some tests using command line -->
+    <tests.to.exclude/>
   </properties>
 
   <dependencyManagement>
@@ -227,6 +238,12 @@
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
         <version>${commons.logging.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>${commons.cli.version}</version>
       </dependency>
 
       <dependency>
@@ -516,6 +533,27 @@
         <version>${plugin.deploy.version}</version>
       </plugin>
 
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>2.2.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skipPoms>false</skipPoms>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+        </configuration>
+      </plugin>
+
     <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
@@ -555,6 +593,9 @@
           <version>${plugin.surefire.version}</version>
           <configuration combine.children="append">
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+            <excludes>
+              <exclude>${tests.to.exclude}</exclude>
+            </excludes>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
@@ -949,6 +990,7 @@
               <exclude>**/.bowerrc</exclude>
               <exclude>.editorconfig</exclude>
               <exclude>.eslintrc</exclude>
+              <exclude>protractor.conf.js</exclude>
               <exclude>**/.tmp/**</exclude>
               <exclude>**/target/**</exclude>
               <exclude>**/node/**</exclude>
@@ -972,6 +1014,7 @@
               <exclude>**/src/fonts/Source-Code-Pro*</exclude>
               <exclude>**/src/fonts/source-code-pro*</exclude>
               <exclude>**/src/**/**.test.js</exclude>
+              <exclude>**/e2e/**/**.spec.js</exclude>
 
               <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>

@@ -43,7 +43,7 @@ public class HeliumPackageTest {
         "  }\n" +
         "}";
 
-    HeliumPackage p = gson.fromJson(examplePackage, HeliumPackage.class);
+    HeliumPackage p = HeliumPackage.fromJson(examplePackage);
     assertEquals(p.getSpellInfo().getMagic(), "%echo");
     assertEquals(p.getSpellInfo().getUsage(), "%echo <TEXT>");
   }
@@ -70,7 +70,7 @@ public class HeliumPackageTest {
         "  }\n" +
         "}";
 
-    HeliumPackage p = gson.fromJson(examplePackage, HeliumPackage.class);
+    HeliumPackage p = HeliumPackage.fromJson(examplePackage);
     Map<String, Object> config = p.getConfig();
     Map<String, Object> accessToken = (Map<String, Object>) config.get("access-token");
 

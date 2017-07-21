@@ -59,6 +59,7 @@ module.exports = function(config) {
       'bower_components/ace-builds/src-noconflict/mode-python.js',
       'bower_components/ace-builds/src-noconflict/mode-sql.js',
       'bower_components/ace-builds/src-noconflict/mode-markdown.js',
+      'bower_components/ace-builds/src-noconflict/mode-pig.js',
       'bower_components/ace-builds/src-noconflict/mode-sh.js',
       'bower_components/ace-builds/src-noconflict/mode-r.js',
       'bower_components/ace-builds/src-noconflict/keybinding-emacs.js',
@@ -81,11 +82,6 @@ module.exports = function(config) {
       'bower_components/ngtoast/dist/ngToast.js',
       'bower_components/ng-focus-if/focusIf.js',
       'bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js',
-      'bower_components/zeroclipboard/dist/ZeroClipboard.js',
-      'bower_components/moment/moment.js',
-      'bower_components/pikaday/pikaday.js',
-      'bower_components/handsontable/dist/handsontable.js',
-      'bower_components/moment-duration-format/lib/moment-duration-format.js',
       'bower_components/select2/dist/js/select2.js',
       'bower_components/MathJax/MathJax.js',
       'bower_components/clipboard/dist/clipboard.js',
@@ -94,8 +90,7 @@ module.exports = function(config) {
       // endbower
 
       'src/index.js',
-      // 'test/spec/**/*.js',
-      {pattern: 'src/**/*.test.js', watched: false},
+      { pattern: 'src/**/*.test.js', watched: false },
     ],
 
     // list of files / patterns to exclude
@@ -114,11 +109,9 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: [
-      'PhantomJS'
-    ],
+    browsers: [ 'PhantomJS' ],
 
-    reporters: ['coverage','progress'],
+    reporters: ['spec', 'coverage'],
 
     webpack: webpackConfig,
     webpackMiddleware: {
@@ -126,24 +119,16 @@ module.exports = function(config) {
     },
 
     preprocessors: {
-      'src/*/{*.js,!(test)/**/*.js}': 'coverage',
-      'src/**/*.js': ['webpack', 'sourcemap',],
+      'src/**/*.js': ['webpack', 'sourcemap'],
     },
 
     coverageReporter: {
-      type: 'html',
-      dir: './reports/zeppelin-web-coverage',
-      subdir: '.'
+      dir: 'reports/coverage',
+      reporters: [
+        { type: 'html' },
+        { type: 'text-summary' },
+      ]
     },
-
-    // Which plugins to enable
-    plugins: [
-      'karma-phantomjs-launcher',
-      'karma-jasmine',
-      'karma-coverage',
-      'karma-webpack',
-      'karma-sourcemap-loader',
-    ],
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit

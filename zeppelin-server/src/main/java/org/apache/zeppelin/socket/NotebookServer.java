@@ -19,15 +19,9 @@ package org.apache.zeppelin.socket;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
@@ -56,13 +50,13 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.json.NotebookTypeAdapterFactory;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookEventListener;
+import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
@@ -121,20 +115,10 @@ public class NotebookServer extends WebSocketServlet
 
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
-  Gson gson = new GsonBuilder()
-      .registerTypeAdapterFactory(new NotebookTypeAdapterFactory<Paragraph>(Paragraph.class) {
-        @Override
-        protected void beforeWrite(Paragraph source, JsonElement toSerialize) {
-          Map<String, ParagraphRuntimeInfo> runtimeInfos = source.getRuntimeInfos();
-          if (runtimeInfos != null) {
-            JsonElement jsonTree = gson.toJsonTree(runtimeInfos);
-            if (toSerialize instanceof JsonObject) {
-              JsonObject jsonObj = (JsonObject) toSerialize;
-              jsonObj.add("runtimeInfos", jsonTree);
-            }
-          }
-        }
-      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+  private static Gson gson = new GsonBuilder()
+      .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
@@ -232,152 +216,153 @@ public class NotebookServer extends WebSocketServlet
         addUserConnection(messagereceived.principal, conn);
       }
       AuthenticationInfo subject =
-          new AuthenticationInfo(messagereceived.principal, messagereceived.ticket);
+          new AuthenticationInfo(messagereceived.principal, messagereceived.roles,
+              messagereceived.ticket);
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
-          case LIST_NOTES:
-            unicastNoteList(conn, subject, userAndRoles);
-            break;
-          case RELOAD_NOTES_FROM_REPO:
-            broadcastReloadedNoteList(subject, userAndRoles);
-            break;
-          case GET_HOME_NOTE:
-            sendHomeNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case GET_NOTE:
-            sendNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case NEW_NOTE:
-            createNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case DEL_NOTE:
-            removeNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case REMOVE_FOLDER:
-            removeFolder(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case MOVE_NOTE_TO_TRASH:
-            moveNoteToTrash(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case MOVE_FOLDER_TO_TRASH:
-            moveFolderToTrash(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case EMPTY_TRASH:
-            emptyTrash(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case RESTORE_FOLDER:
-            restoreFolder(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case RESTORE_NOTE:
-            restoreNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case RESTORE_ALL:
-            restoreAll(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case CLONE_NOTE:
-            cloneNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case IMPORT_NOTE:
-            importNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case COMMIT_PARAGRAPH:
-            updateParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case RUN_PARAGRAPH:
-            runParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PARAGRAPH_EXECUTED_BY_SPELL:
-            broadcastSpellExecution(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case RUN_ALL_PARAGRAPHS:
-            runAllParagraphs(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case CANCEL_PARAGRAPH:
-            cancelParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case MOVE_PARAGRAPH:
-            moveParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case INSERT_PARAGRAPH:
-            insertParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case COPY_PARAGRAPH:
-            copyParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PARAGRAPH_REMOVE:
-            removeParagraph(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PARAGRAPH_CLEAR_OUTPUT:
-            clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PARAGRAPH_CLEAR_ALL_OUTPUT:
-            clearAllParagraphOutput(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case NOTE_UPDATE:
-            updateNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case NOTE_RENAME:
-            renameNote(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case FOLDER_RENAME:
-            renameFolder(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case UPDATE_PERSONALIZED_MODE:
-            updatePersonalizedMode(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case COMPLETION:
-            completion(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case PING:
-            break; //do nothing
-          case ANGULAR_OBJECT_UPDATED:
-            angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case ANGULAR_OBJECT_CLIENT_BIND:
-            angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case ANGULAR_OBJECT_CLIENT_UNBIND:
-            angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case LIST_CONFIGURATIONS:
-            sendAllConfigurations(conn, userAndRoles, notebook);
-            break;
-          case CHECKPOINT_NOTE:
-            checkpointNote(conn, notebook, messagereceived);
-            break;
-          case LIST_REVISION_HISTORY:
-            listRevisionHistory(conn, notebook, messagereceived);
-            break;
-          case SET_NOTE_REVISION:
-            setNoteRevision(conn, userAndRoles, notebook, messagereceived);
-            break;
-          case NOTE_REVISION:
-            getNoteByRevision(conn, notebook, messagereceived);
-            break;
-          case LIST_NOTE_JOBS:
-            unicastNoteJobInfo(conn, messagereceived);
-            break;
-          case UNSUBSCRIBE_UPDATE_NOTE_JOBS:
-            unsubscribeNoteJobInfo(conn);
-            break;
-          case GET_INTERPRETER_BINDINGS:
-            getInterpreterBindings(conn, messagereceived);
-            break;
-          case SAVE_INTERPRETER_BINDINGS:
-            saveInterpreterBindings(conn, messagereceived);
-            break;
-          case EDITOR_SETTING:
-            getEditorSetting(conn, messagereceived);
-            break;
-          case GET_INTERPRETER_SETTINGS:
-            getInterpreterSettings(conn, subject);
-            break;
-          case WATCHER:
-            switchConnectionToWatcher(conn, messagereceived);
-            break;
-          default:
-            break;
+        case LIST_NOTES:
+          unicastNoteList(conn, subject, userAndRoles);
+          break;
+        case RELOAD_NOTES_FROM_REPO:
+          broadcastReloadedNoteList(subject, userAndRoles);
+          break;
+        case GET_HOME_NOTE:
+          sendHomeNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case GET_NOTE:
+          sendNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case NEW_NOTE:
+          createNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case DEL_NOTE:
+          removeNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case REMOVE_FOLDER:
+          removeFolder(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case MOVE_NOTE_TO_TRASH:
+          moveNoteToTrash(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case MOVE_FOLDER_TO_TRASH:
+          moveFolderToTrash(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case EMPTY_TRASH:
+          emptyTrash(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case RESTORE_FOLDER:
+          restoreFolder(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case RESTORE_NOTE:
+          restoreNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case RESTORE_ALL:
+          restoreAll(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case CLONE_NOTE:
+          cloneNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case IMPORT_NOTE:
+          importNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case COMMIT_PARAGRAPH:
+          updateParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case RUN_PARAGRAPH:
+          runParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case PARAGRAPH_EXECUTED_BY_SPELL:
+          broadcastSpellExecution(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case RUN_ALL_PARAGRAPHS:
+          runAllParagraphs(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case CANCEL_PARAGRAPH:
+          cancelParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case MOVE_PARAGRAPH:
+          moveParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case INSERT_PARAGRAPH:
+          insertParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case COPY_PARAGRAPH:
+          copyParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case PARAGRAPH_REMOVE:
+          removeParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case PARAGRAPH_CLEAR_OUTPUT:
+          clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case PARAGRAPH_CLEAR_ALL_OUTPUT:
+          clearAllParagraphOutput(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case NOTE_UPDATE:
+          updateNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case NOTE_RENAME:
+          renameNote(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case FOLDER_RENAME:
+          renameFolder(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case UPDATE_PERSONALIZED_MODE:
+          updatePersonalizedMode(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case COMPLETION:
+          completion(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case PING:
+          break; //do nothing
+        case ANGULAR_OBJECT_UPDATED:
+          angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case ANGULAR_OBJECT_CLIENT_BIND:
+          angularObjectClientBind(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case ANGULAR_OBJECT_CLIENT_UNBIND:
+          angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case LIST_CONFIGURATIONS:
+          sendAllConfigurations(conn, userAndRoles, notebook);
+          break;
+        case CHECKPOINT_NOTE:
+          checkpointNote(conn, notebook, messagereceived);
+          break;
+        case LIST_REVISION_HISTORY:
+          listRevisionHistory(conn, notebook, messagereceived);
+          break;
+        case SET_NOTE_REVISION:
+          setNoteRevision(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case NOTE_REVISION:
+          getNoteByRevision(conn, notebook, messagereceived);
+          break;
+        case LIST_NOTE_JOBS:
+          unicastNoteJobInfo(conn, messagereceived);
+          break;
+        case UNSUBSCRIBE_UPDATE_NOTE_JOBS:
+          unsubscribeNoteJobInfo(conn);
+          break;
+        case GET_INTERPRETER_BINDINGS:
+          getInterpreterBindings(conn, messagereceived);
+          break;
+        case SAVE_INTERPRETER_BINDINGS:
+          saveInterpreterBindings(conn, messagereceived);
+          break;
+        case EDITOR_SETTING:
+          getEditorSetting(conn, messagereceived);
+          break;
+        case GET_INTERPRETER_SETTINGS:
+          getInterpreterSettings(conn, subject);
+          break;
+        case WATCHER:
+          switchConnectionToWatcher(conn, messagereceived);
+          break;
+        default:
+          break;
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
@@ -1592,8 +1577,15 @@ public class NotebookServer extends WebSocketServlet
         userAndRoles, fromMessage.principal, "write")) {
       return null;
     }
+    Map<String, Object> config;
+    if (fromMessage.get("config") != null) {
+      config = (Map<String, Object>) fromMessage.get("config");
+    } else {
+      config = new HashMap<>();
+    }
 
     Paragraph newPara = note.insertNewParagraph(index, subject);
+    newPara.setConfig(config);
     note.persist(subject);
     broadcastNewParagraph(note, newPara);
 
@@ -1696,6 +1688,23 @@ public class NotebookServer extends WebSocketServlet
     p.setErrorMessage((String) fromMessage.get("errorMessage"));
     p.setStatusWithoutNotification(status);
 
+    // Spell uses ISO 8601 formatted string generated from moment
+    String dateStarted = (String) fromMessage.get("dateStarted");
+    String dateFinished = (String) fromMessage.get("dateFinished");
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
+    try {
+      p.setDateStarted(df.parse(dateStarted));
+    } catch (ParseException e) {
+      LOG.error("Failed parse dateStarted", e);
+    }
+
+    try {
+      p.setDateFinished(df.parse(dateFinished));
+    } catch (ParseException e) {
+      LOG.error("Failed parse dateFinished", e);
+    }
+
     addNewParagraphIfLastParagraphIsExecuted(note, p);
     if (!persistNoteWithAuthInfo(conn, note, p)) {
       return;
@@ -1742,10 +1751,10 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
-    // if it's the last paragraph and empty, let's add a new one
+    // if it's the last paragraph and not empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
-    if (!(p.getText().trim().equals(p.getMagic()) ||
-        Strings.isNullOrEmpty(p.getText())) &&
+    if (!(Strings.isNullOrEmpty(p.getText()) ||
+        p.getText().trim().equals(p.getMagic())) &&
         isTheLastParagraph) {
       Paragraph newPara = note.addNewParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);
@@ -1796,7 +1805,7 @@ public class NotebookServer extends WebSocketServlet
     p.setText(text);
     p.setTitle(title);
     AuthenticationInfo subject =
-        new AuthenticationInfo(fromMessage.principal, fromMessage.ticket);
+        new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
     p.setAuthenticationInfo(subject);
     p.settings.setParams(params);
     p.setConfig(config);
@@ -2413,7 +2422,7 @@ public class NotebookServer extends WebSocketServlet
         try {
           watcher.send(
               WatcherMessage.builder(noteId).subject(subject).message(serializeMessage(message))
-                  .build().serialize());
+                  .build().toJson());
         } catch (IOException e) {
           LOG.error("Cannot broadcast message to watcher", e);
         }

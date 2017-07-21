@@ -41,7 +41,10 @@ limitations under the License.
     <div class="row">
       <div class="col-md-4">
         <div class="input-group" style="margin-top: 10px">
-          <input type="text" ng-model="searchInterpreter" class="form-control ng-pristine ng-untouched ng-valid ng-empty" placeholder="Search interpreters"/>
+          <input type="text" ng-model="searchInterpreter"
+                 class="form-control ng-pristine ng-untouched ng-valid ng-empty"
+                 ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 300, 'blur': 0 } }"
+                 placeholder="Search interpreters"/>
           <span class="input-group-btn">
             <button type="submit" class="btn btn-default" ng-disabled="!navbar.connected">
               <i class="glyphicon glyphicon-search"></i>
@@ -60,14 +63,8 @@ limitations under the License.
       <ul class="noDot">
         <li class="liVertical" ng-repeat="repo in repositories">
           <a tabindex="0" class="btn btn-info" role="button"
-             popover-trigger="focus"
-             popover-placement="right"
-             popover-html-unsafe="<label>URL: </label>
-               {{repo.url}}<br>
-               <label>Username: </label>
-               {{repo.authentication.username}}<br>
-               <label>Proxy host: </label>
-               {{repo.proxy.host}}">
+             tooltip-append-to-body="true" tooltip-placement="top-left"
+             uib-tooltip="{{repo.url}}">
             <span class="fa fa-database"></span>
             {{repo.id}}&nbsp;
             <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"
@@ -75,7 +72,7 @@ limitations under the License.
           </a>
         </li>
         <li class="liVertical">
-          <div ng-include src="'components/repository-create/repository-dialog.html'"></div>
+          <div ng-include src="'app/interpreter/repository-create.html'"></div>
           <div class="btn btn-default"
                data-toggle="modal"
                data-target="#repoModal">
@@ -86,11 +83,11 @@ limitations under the License.
     </div>
   </div>
 
-  <div ng-include src="'app/interpreter/interpreter-create/interpreter-create.html'"></div>
+  <div ng-include src="'app/interpreter/interpreter-create.html'"></div>
 </div>
 
-<div class="box width-full"
-     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter} " interpreter-directive>
+<div interpreter-item class="box width-full"
+     ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter}" >
   <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
 
@@ -237,7 +234,11 @@ limitations under the License.
                 </li>
               </ul>
             </span>
-            process.
+            process
+            <a class="fa fa-info-circle interpreter-binding-mode-info-link"
+               aria-hidden="true"
+               uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
+               ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
             <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
               <span ng-if="getPerNoteOption(setting.id) === 'shared'">
                 <button type="button" class="btn btn-default btn-xs"
@@ -248,9 +249,6 @@ limitations under the License.
                 </button>
               </span>
             </span>
-          </div>
-          <div class="col-md-6">
-            &nbsp;
           </div>
         </div>
         <div class="row interpreter"
@@ -299,7 +297,11 @@ limitations under the License.
                   </li>
                 </ul>
               </span>
-              process.
+              process
+              <a class="fa fa-info-circle interpreter-binding-mode-info-link"
+                 aria-hidden="true"
+                 uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
+                 ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
               <button type="button" class="btn btn-default btn-xs"
                       ng-disabled="!valueform.$visible"
                       ng-click="setPerNoteOption(setting.id, 'shared')"
@@ -369,14 +371,14 @@ limitations under the License.
         <div ng-show="setting.option.setPermission" class="permissionsForm">
           <div>
             <p>
-              Enter comma separated users in the fields. <br />
+              Enter comma separated users and groups in the fields. <br />
               Empty field (*) implies anyone can run this interpreter.
             </p>
             <div>
 
             <span class="owners">Owners </span>
-            <select id="{{setting.name}}Users" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
-              <option ng-repeat="user in setting.option.users" selected="selected">{{user}}</option>
+            <select id="{{setting.name}}Owners" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
+              <option ng-repeat="owner in setting.option.owners" selected="selected">{{owner}}</option>
             </select>
             </div>
           </div>
@@ -401,8 +403,29 @@ limitations under the License.
           <tr ng-repeat="key in setting.properties | sortByKey" >
             <td style="vertical-align: middle;">{{key}}</td>
             <td style="vertical-align: middle;">
-              <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key] | breakFilter}}
+              <span ng-if="setting.properties[key].type === 'textarea'"
+                    editable-textarea="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                 {{setting.properties[key].value | breakFilter}}
+              </span>
+              <span ng-if="setting.properties[key].type === 'string'"
+                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                {{setting.properties[key].value}}
+              </span>
+              <span ng-if="setting.properties[key].type === 'number'"
+                    editable-text="setting.properties[key].value" e-widget-number e-form="valueform" e-msd-elastic>
+                {{setting.properties[key].value}}
+              </span>
+              <span ng-if="setting.properties[key].type === 'url'"
+                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                <a ng-href="{{setting.properties[key].value}}">{{setting.properties[key].value}}</a>
+              </span>
+              <span ng-if="setting.properties[key].type === 'password'"
+                    editable-password="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                {{setting.properties[key].value ? '***' : ''}}
+              </span>
+              <span ng-if="setting.properties[key].type === 'checkbox'"
+                    editable-checkbox="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                {{setting.properties[key].value}}
               </span>
             </td>
             <td style="vertical-align: middle;" ng-if="valueform.$visible">
@@ -416,12 +439,22 @@ limitations under the License.
               <input ng-model="setting.propertyKey"
                      pu-elastic-input pu-elastic-input-minwidth="180px" />
             </td>
-            <td style="vertical-align: middle;">
-              <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
+
+            <td style="vertical-align: middle;" ng-switch on="setting.propertyType">
+              <textarea ng-switch-default msd-elastic ng-model="setting.propertyValue"></textarea>
+              <input ng-switch-when="string" type="text" msd-elastic ng-model="setting.propertyValue"/>
+              <input ng-switch-when="number" type="text" msd-elastic ng-model="setting.propertyValue" number-widget />
+              <input ng-switch-when="url" type="text" msd-elastic ng-model="setting.propertyValue" />
+              <input ng-switch-when="password" type="password" msd-elastic ng-model="setting.propertyValue" />
+              <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="setting.propertyValue" />
             </td>
             <td style="vertical-align: middle;">
+              <select ng-model="setting.propertyType" ng-init="setting.propertyType=interpreterPropertyTypes[0]"
+                      ng-options="item for item in interpreterPropertyTypes" ng-change="defaultValueByType(setting)">
+              </select>
+
               <button class="btn btn-default btn-sm fa fa-plus"
-                   ng-click="addNewInterpreterProperty(setting.id)">
+                      ng-click="addNewInterpreterProperty(setting.id)">
               </button>
             </td>
           </tr>

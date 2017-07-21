@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.tools.pigscript.parser.ParseException;
 import org.apache.pig.tools.pigstats.*;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -98,6 +99,10 @@ public class PigInterpreter extends BasePigInterpreter {
       listenerMap.put(contextInterpreter.getParagraphId(), scriptListener);
       pigServer.registerScript(tmpFile.getAbsolutePath());
     } catch (IOException e) {
+      // 1. catch FrontendException, FrontendException happens in the query compilation phase.
+      // 2. catch ParseException for syntax error
+      // 3. PigStats, This is execution error
+      // 4. Other errors.
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
@@ -107,9 +112,12 @@ public class PigInterpreter extends BasePigInterpreter {
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }
+      if (e.getCause() instanceof ParseException) {
+        return new InterpreterResult(Code.ERROR, e.getCause().getMessage());
+      }
       PigStats stats = PigStats.get();
       if (stats != null) {
-        String errorMsg = PigUtils.extactJobStats(stats);
+        String errorMsg = stats.getDisplayString();
         if (errorMsg != null) {
           LOGGER.error("Fail to run pig script, " + errorMsg);
           return new InterpreterResult(Code.ERROR, errorMsg);
@@ -127,7 +135,7 @@ public class PigInterpreter extends BasePigInterpreter {
     StringBuilder outputBuilder = new StringBuilder();
     PigStats stats = PigStats.get();
     if (stats != null && includeJobStats) {
-      String jobStats = PigUtils.extactJobStats(stats);
+      String jobStats = stats.getDisplayString();
       if (jobStats != null) {
         outputBuilder.append(jobStats);
       }

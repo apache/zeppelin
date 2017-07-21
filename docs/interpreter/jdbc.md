@@ -33,7 +33,7 @@ By now, it has been tested with:
 
 <div class="row" style="margin: 30px auto;">
   <div class="col-md-6">
-    <img src="../assets/themes/zeppelin/img/docs-img/tested_databases.png" width="300px"/>
+    <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/tested_databases.png" width="300px"/>
   </div>
   <div class="col-md-6">
     <li style="padding-bottom: 5px; list-style: circle">
@@ -76,12 +76,13 @@ If you are using other databases not in the above list, please feel free to shar
 
 First, click `+ Create` button at the top-right corner in the interpreter setting page.
 
-<img src="../assets/themes/zeppelin/img/docs-img/click_create_button.png" width="600px"/>
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/click_create_button.png" width="600px"/>
 
-Fill `Interpreter name` field with whatever you want to use as the alias(e.g. mysql, mysql2, hive, redshift, and etc..). Please note that this alias will be used as `%interpreter_name` to call the interpreter in the paragraph. 
+Fill `Interpreter name` field with whatever you want to use as the alias(e.g. mysql, mysql2, hive, redshift, and etc..). 
+Please note that this alias will be used as `%interpreter_name` to call the interpreter in the paragraph. 
 Then select `jdbc` as an `Interpreter group`. 
 
-<img src="../assets/themes/zeppelin/img/docs-img/select_name_and_group.png" width="200px"/>
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/select_name_and_group.png" width="200px"/>
 
 The default driver of JDBC interpreter is set as `PostgreSQL`. It means Zeppelin includes `PostgreSQL` driver jar in itself.
 So you don't need to add any dependencies(e.g. the artifact name or path for `PostgreSQL` driver jar) for `PostgreSQL` connection.
@@ -121,27 +122,37 @@ The JDBC interpreter properties are defined by default like below.
   <tr>
     <td>default.precode</td>
     <td></td>
-    <td>Some SQL which executes every time after initialization of the interpreter (see [Binding mode](../manual/interpreters.md#interpreter-binding-mode))</td>
+    <td>Some SQL which executes every time after initialization of the interpreter (see <a href="../usage/interpreter/overview.html#interpreter-binding-mode">Binding mode</a>)</td>
   </tr>
   <tr>
     <td>default.completer.schemaFilters</td>
     <td></td>
     <td>Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)</td>
   </tr>
+  <tr>
+    <td>default.completer.ttlInSeconds</td>
+    <td>120</td>
+    <td>Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)</td>
+  </tr>
+  <tr>
+    <td>default.splitQueries</td>
+    <td>false</td>
+    <td>Each query is executed apart and returns the result</td>
+  </tr>
 </table>
 
 If you want to connect other databases such as `Mysql`, `Redshift` and `Hive`, you need to edit the property values.
-You can also use [Credential](../security/datasource_authorization.html) for JDBC authentication.
+You can also use [Credential](../setup/security/datasource_authorization.html) for JDBC authentication.
 If `default.user` and `default.password` properties are deleted(using X button) for database connection in the interpreter setting page,
-the JDBC interpreter will get the account information from [Credential](../security/datasource_authorization.html).
+the JDBC interpreter will get the account information from [Credential](../setup/security/datasource_authorization.html).
 
 The below example is for `Mysql` connection.
 
-<img src="../assets/themes/zeppelin/img/docs-img/edit_properties.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_properties.png" width="600px" />
 
 The last step is **Dependency Setting**. Since Zeppelin only includes `PostgreSQL` driver jar by default, you need to add each driver's maven coordinates or JDBC driver's jar file path for the other databases.
 
-<img src="../assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/edit_dependencies.png" width="600px" />
 
 That's it. You can find more JDBC connection setting examples([Mysql](#mysql), [MariaDB](#mariadb), [Redshift](#redshift), [Apache Hive](#apache-hive), [Apache Phoenix](#apache-phoenix), and [Apache Tajo](#apache-tajo)) in [this section](#examples).
 
@@ -200,13 +211,13 @@ For example, if a connection needs a schema parameter, it would have to add the 
 ## Binding JDBC interpter to notebook
 To bind the interpreters created in the interpreter setting page, click the gear icon at the top-right corner.
 
-<img src="../assets/themes/zeppelin/img/docs-img/click_interpreter_binding_button.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/click_interpreter_binding_button.png" width="600px" />
 
 Select(blue) or deselect(white) the interpreter buttons depending on your use cases.
 If you need to use more than one interpreter in the notebook, activate several buttons.
 Don't forget to click `Save` button, or you will face `Interpreter *** is not found` error.
 
-<img src="../assets/themes/zeppelin/img/docs-img/jdbc_interpreter_binding.png" width="550px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/jdbc_interpreter_binding.png" width="550px" />
 
 ## How to use
 ### Run the paragraph with JDBC interpreter
@@ -219,11 +230,11 @@ show databases
 If the paragraph is `FINISHED` without any errors, a new paragraph will be automatically added after the previous one with `%jdbc_interpreter_name`.
 So you don't need to type this prefix in every paragraphs' header.
 
-<img src="../assets/themes/zeppelin/img/docs-img/run_paragraph_with_jdbc.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/run_paragraph_with_jdbc.png" width="600px" />
 
 ### Apply Zeppelin Dynamic Forms
 
-You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features.
+You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html) inside your queries. You can use both the `text input` and `select form` parametrization features.
 
 ```sql
 %jdbc_interpreter_name
@@ -306,7 +317,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 ### Postgres
 
-<img src="../assets/themes/zeppelin/img/docs-img/postgres_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/postgres_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -350,7 +361,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 ### Mysql
 
-<img src="../assets/themes/zeppelin/img/docs-img/mysql_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/mysql_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -394,7 +405,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 ### MariaDB
 
-<img src="../assets/themes/zeppelin/img/docs-img/mariadb_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/mariadb_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -438,7 +449,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 ### Redshift
 
-<img src="../assets/themes/zeppelin/img/docs-img/redshift_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/redshift_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -482,7 +493,7 @@ Here are some examples you can refer to. Including the below connectors, you can
 
 ### Apache Hive
 
-<img src="../assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/hive_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -534,23 +545,44 @@ Here are some examples you can refer to. Including the below connectors, you can
 [Maven Repository : org.apache.hive:hive-jdbc](https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc)
 
 ##### Impersonation
-When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). This is particularly useful when multiple users are sharing a notebooks.
+When Zeppelin server is running with authentication enabled, then the interpreter can utilize Hive's user proxy feature 
+i.e. send extra parameter for creating and running a session ("hive.server2.proxy.user=": "${loggedInUser}"). 
+This is particularly useful when multiple users are sharing a notebook.
 
 To enable this set following:
+
   - `zeppelin.jdbc.auth.type` as `SIMPLE` or `KERBEROS` (if required) in the interpreter setting.
   - `${prefix}.proxy.user.property` as `hive.server2.proxy.user`
-  Example configuration
+  
+See [User Impersonation in interpreter](../usage/interpreter/user_impersonation.html) for more information.
 
-  *Properties*
-
-  | name                      | value                                                                                             |
-  |:------------------------- |:--------------------------------------------------------------------------------------------------|
-  | hive.driver               | org.apache.hive.jdbc.HiveDriver                                                                   |
-  | hive.password             |                                                                                                   |
-  | hive.url                  | jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2 |
-  | hive.proxy.user.property  | hive.proxy.user.property                                                                          |
-  | zeppelin.jdbc.auth.type   | SIMPLE                                                                                            |
-
+##### Sample configuration
+<table class="table-configuration">
+  <tr>
+    <th>Name</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>hive.driver</td>
+    <td>org.apache.hive.jdbc.HiveDriver</td>
+  </tr>
+  <tr>
+    <td>hive.password</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>hive.url</td>
+    <td>jdbc:hive2://hive-server-host:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</td>
+  </tr>
+  <tr>
+    <td>hive.proxy.user.property</td>
+    <td>hive.server2.proxy.user</td>
+  </tr>
+  <tr>
+    <td>zeppelin.jdbc.auth.type</td>
+    <td>SIMPLE</td>
+  </tr>
+</table>
 
 
 ### Apache Phoenix
@@ -564,7 +596,7 @@ Use the appropriate `default.driver`, `default.url`, and the dependency artifact
 
 #### Thick client connection
 
-<img src="../assets/themes/zeppelin/img/docs-img/phoenix_thick_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/phoenix_thick_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -606,7 +638,7 @@ Use the appropriate `default.driver`, `default.url`, and the dependency artifact
 
 #### Thin client connection
 
-<img src="../assets/themes/zeppelin/img/docs-img/phoenix_thin_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/phoenix_thin_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">
@@ -658,7 +690,7 @@ Before Adding one of the below dependencies, check the Phoenix version first.
 
 ### Apache Tajo
 
-<img src="../assets/themes/zeppelin/img/docs-img/tajo_setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/tajo_setting.png" width="600px" />
 
 ##### Properties
 <table class="table-configuration">

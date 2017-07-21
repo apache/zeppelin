@@ -21,6 +21,8 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Very simple ticket container
@@ -30,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class TicketContainer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TicketContainer.class);
+
   private static class Entry {
     public final String ticket;
     // lastAccessTime still unused
@@ -78,5 +83,19 @@ public class TicketContainer {
     entry = new Entry(ticket);
     sessions.put(principal, entry);
     return ticket;
+  }
+
+  /**
+   * Remove ticket from session cache.
+   * @param principal
+   */
+  public synchronized void removeTicket(String principal) {
+    try {
+      if (sessions.get(principal) != null) {
+        sessions.remove(principal);
+      }
+    } catch (Exception e) {
+      LOGGER.error("Error removing ticket", e);
+    }
   }
 }

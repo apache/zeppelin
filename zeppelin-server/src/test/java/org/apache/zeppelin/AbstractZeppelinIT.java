@@ -42,7 +42,7 @@ abstract public class AbstractZeppelinIT {
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
   protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
-  protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
+  protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
@@ -107,7 +107,7 @@ abstract public class AbstractZeppelinIT {
         " note')]"));
 
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteCreateModal")));
     clickAndWait(By.id("createNoteButton"));
     block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
   }

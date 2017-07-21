@@ -43,6 +43,8 @@ module.exports = {
       { test: /\.eot(\?\S*)?$/, loader: 'url-loader', }, {
         test: /\.ttf(\?\S*)?$/, loader: 'url-loader', }, {
         test: /\.svg(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.png(\?\S*)?$/, loader: 'url-loader', }, {
+        test: /\.jpg(\?\S*)?$/, loader: 'url-loader', }, {
         test: /\.json$/, loader: 'json-loader' }, ],
   }
 }

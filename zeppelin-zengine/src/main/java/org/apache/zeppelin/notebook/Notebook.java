@@ -182,14 +182,11 @@ public class Notebook implements NoteEventListener {
    * @throws IOException, IllegalArgumentException
    */
   public String exportNote(String noteId) throws IOException, IllegalArgumentException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
     Note note = getNote(noteId);
     if (note == null) {
       throw new IllegalArgumentException(noteId + " not found");
     }
-    return gson.toJson(note);
+    return note.toJson();
   }
 
   /**
@@ -202,16 +199,9 @@ public class Notebook implements NoteEventListener {
    */
   public Note importNote(String sourceJson, String noteName, AuthenticationInfo subject)
       throws IOException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-
-    Gson gson =
-        gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer()).create();
-    JsonReader reader = new JsonReader(new StringReader(sourceJson));
-    reader.setLenient(true);
     Note newNote;
     try {
-      Note oldNote = gson.fromJson(reader, Note.class);
+      Note oldNote = Note.fromJson(sourceJson);
       convertFromSingleResultToMultipleResultsFormat(oldNote);
       newNote = createNote(subject);
       if (noteName != null)

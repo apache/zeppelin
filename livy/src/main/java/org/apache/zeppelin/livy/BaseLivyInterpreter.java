@@ -21,9 +21,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.auth.AuthSchemeProvider;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.auth.SPNegoSchemeFactory;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.*;
@@ -38,11 +49,11 @@ import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import javax.net.ssl.SSLContext;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +61,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 
 /**
@@ -79,7 +89,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     super(property);
     this.livyURL = property.getProperty("zeppelin.livy.url");
     this.displayAppInfo = Boolean.parseBoolean(
-        property.getProperty("zeppelin.livy.displayAppInfo", "false"));
+        property.getProperty("zeppelin.livy.displayAppInfo", "true"));
     this.sessionCreationTimeout = Integer.parseInt(
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
@@ -331,7 +341,17 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, stmtInfo.output.evalue);
+      InterpreterResult result = new InterpreterResult(InterpreterResult.Code.ERROR);
+      StringBuilder sb = new StringBuilder();
+      sb.append(stmtInfo.output.evalue);
+      // in case evalue doesn't have newline char
+      if (!stmtInfo.output.evalue.contains("\n"))
+        sb.append("\n");
+      if (stmtInfo.output.traceback != null) {
+        sb.append(StringUtils.join(stmtInfo.output.traceback));
+      }
+      result.add(sb.toString());
+      return result;
     } else if (stmtInfo.isCancelled()) {
       // corner case, output might be null if it is cancelled.
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
@@ -407,6 +427,11 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
 
   private RestTemplate createRestTemplate() {
+    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
+    String principal = property.getProperty("zeppelin.livy.principal");
+    boolean isSpnegoEnabled = StringUtils.isNotEmpty(keytabLocation) &&
+        StringUtils.isNotEmpty(principal);
+
     HttpClient httpClient = null;
     if (livyURL.startsWith("https:")) {
       String keystoreFile = property.getProperty("zeppelin.livy.ssl.trustStore");
@@ -427,7 +452,37 @@ public abstract class BaseLivyInterpreter extends Interpreter {
             .loadTrustMaterial(trustStore)
             .build();
         SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
-        httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+        HttpClientBuilder httpClientBuilder = HttpClients.custom().setSSLSocketFactory(csf);
+        RequestConfig reqConfig = new RequestConfig() {
+          @Override
+          public boolean isAuthenticationEnabled() {
+            return true;
+          }
+        };
+        httpClientBuilder.setDefaultRequestConfig(reqConfig);
+        Credentials credentials = new Credentials() {
+          @Override
+          public String getPassword() {
+            return null;
+          }
+
+          @Override
+          public Principal getUserPrincipal() {
+            return null;
+          }
+        };
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(AuthScope.ANY, credentials);
+        httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
+        if (isSpnegoEnabled) {
+          Registry<AuthSchemeProvider> authSchemeProviderRegistry =
+              RegistryBuilder.<AuthSchemeProvider>create()
+                  .register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory())
+                  .build();
+          httpClientBuilder.setDefaultAuthSchemeRegistry(authSchemeProviderRegistry);
+        }
+
+        httpClient = httpClientBuilder.build();
       } catch (Exception e) {
         throw new RuntimeException("Failed to create SSL HttpClient", e);
       } finally {
@@ -441,9 +496,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       }
     }
 
-    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
-    String principal = property.getProperty("zeppelin.livy.principal");
-    if (StringUtils.isNotEmpty(keytabLocation) && StringUtils.isNotEmpty(principal)) {
+
+    if (isSpnegoEnabled) {
       if (httpClient == null) {
         return new KerberosRestTemplate(keytabLocation, principal);
       } else {
@@ -615,7 +669,18 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
     public static StatementInfo fromJson(String json) {
-      return gson.fromJson(json, StatementInfo.class);
+      String right_json = "";
+      try {
+        gson.fromJson(json, StatementInfo.class);
+        right_json = json;
+      } catch (Exception e) {
+        if (json.contains("\"traceback\":{}")) {
+          LOGGER.debug("traceback type mismatch, replacing the mismatching part ");
+          right_json = json.replace("\"traceback\":{}", "\"traceback\":[]");
+          LOGGER.debug("new json string is {}", right_json);
+        }
+      }
+      return gson.fromJson(right_json, StatementInfo.class);
     }
 
     public boolean isAvailable() {
@@ -632,7 +697,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       public Data data;
       public String ename;
       public String evalue;
-      public Object traceback;
+      public String[] traceback;
       public TableMagic tableMagic;
 
       public boolean isError() {

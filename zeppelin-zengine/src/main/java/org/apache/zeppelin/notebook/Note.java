@@ -26,8 +26,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -52,12 +56,14 @@ import com.google.gson.Gson;
 /**
  * Binded interpreters for a note
  */
-public class Note implements Serializable, ParagraphJobListener {
+public class Note implements ParagraphJobListener, JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
-  private static final Gson gson = new GsonBuilder()
-      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-      .create();
+  private static Gson gson = new GsonBuilder()
+      .setPrettyPrinting()
+      .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
@@ -323,7 +329,7 @@ public class Note implements Serializable, ParagraphJobListener {
     try {
       Gson gson = new Gson();
       String resultJson = gson.toJson(srcParagraph.getReturn());
-      InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
+      InterpreterResult result = InterpreterResult.fromJson(resultJson);
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
       // 'result' part of Note consists of exception, instead of actual interpreter results
@@ -353,7 +359,6 @@ public class Note implements Serializable, ParagraphJobListener {
   private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
     p.setAuthenticationInfo(authenticationInfo);
-    p.addUser(p, p.getUser());
     setParagraphMagic(p, index);
     return p;
   }
@@ -589,12 +594,16 @@ public class Note implements Serializable, ParagraphJobListener {
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo();
+    authenticationInfo.setUser(cronExecutingUser);
+    runAll(authenticationInfo);
+  }
+
+  public void runAll(AuthenticationInfo authenticationInfo) {
     for (Paragraph p : getParagraphs()) {
       if (!p.isEnabled()) {
         continue;
       }
-      AuthenticationInfo authenticationInfo = new AuthenticationInfo();
-      authenticationInfo.setUser(cronExecutingUser);
       p.setAuthenticationInfo(authenticationInfo);
       run(p.getId());
     }
@@ -897,12 +906,65 @@ public class Note implements Serializable, ParagraphJobListener {
   public static Note fromJson(String json) {
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
+    note.resetRuntimeInfos();
     return note;
+  }
+
+  public void resetRuntimeInfos() {
+    for (Paragraph p : paragraphs) {
+      p.clearRuntimeInfos();
+    }
   }
 
   private static void convertOldInput(Note note) {
     for (Paragraph p : note.paragraphs) {
       p.settings.convertOldInput();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Note note = (Note) o;
+
+    if (paragraphs != null ? !paragraphs.equals(note.paragraphs) : note.paragraphs != null) {
+      return false;
+    }
+    //TODO(zjffdu) exclude name because FolderView.index use Note as key and consider different name
+    //as same note
+    //    if (name != null ? !name.equals(note.name) : note.name != null) return false;
+    if (id != null ? !id.equals(note.id) : note.id != null) {
+      return false;
+    }
+    if (angularObjects != null ?
+        !angularObjects.equals(note.angularObjects) : note.angularObjects != null) {
+      return false;
+    }
+    if (config != null ? !config.equals(note.config) : note.config != null) {
+      return false;
+    }
+    return info != null ? info.equals(note.info) : note.info == null;
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result = paragraphs != null ? paragraphs.hashCode() : 0;
+    //    result = 31 * result + (name != null ? name.hashCode() : 0);
+    result = 31 * result + (id != null ? id.hashCode() : 0);
+    result = 31 * result + (angularObjects != null ? angularObjects.hashCode() : 0);
+    result = 31 * result + (config != null ? config.hashCode() : 0);
+    result = 31 * result + (info != null ? info.hashCode() : 0);
+    return result;
+  }
+
+  @VisibleForTesting
+  public static Gson getGson() {
+    return gson;
   }
 }

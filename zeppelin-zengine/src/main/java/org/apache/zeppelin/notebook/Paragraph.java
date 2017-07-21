@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import com.google.common.collect.Maps;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -49,7 +50,7 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Paragraph is a representation of an execution unit.
  */
-public class Paragraph extends Job implements Serializable, Cloneable {
+public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static final long serialVersionUID = -6328572073497992016L;
 
@@ -342,17 +343,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
-  private boolean hasPermission(String user, List<String> intpUsers) {
-    if (1 > intpUsers.size()) {
+  private boolean hasPermission(List<String> userAndRoles, List<String> intpUsersAndRoles) {
+    if (1 > intpUsersAndRoles.size()) {
       return true;
     }
-
-    for (String u : intpUsers) {
-      if (user.trim().equals(u.trim())) {
-        return true;
-      }
-    }
-    return false;
+    Set<String> intersection = new HashSet<>(intpUsersAndRoles);
+    intersection.retainAll(userAndRoles);
+    return (intpUsersAndRoles.isEmpty() || (intersection.size() > 0));
   }
 
   public boolean isBlankParagraph() {
@@ -441,12 +438,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean interpreterHasUser(InterpreterSetting intp) {
-    return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
+    return intp.getOption().permissionIsSet() && intp.getOption().getOwners() != null;
   }
 
   private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt) {
-    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUser(),
-        intpOpt.getUsers());
+    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUsersAndRoles(),
+        intpOpt.getOwners());
   }
 
   private InterpreterSetting getInterpreterSettingById(String id) {
@@ -756,7 +753,81 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
+  public void clearRuntimeInfos() {
+    if (this.runtimeInfos != null) {
+      this.runtimeInfos.clear();
+    }
+  }
+
   public Map<String, ParagraphRuntimeInfo> getRuntimeInfos() {
     return runtimeInfos;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+
+    Paragraph paragraph = (Paragraph) o;
+
+    if (title != null ? !title.equals(paragraph.title) : paragraph.title != null) {
+      return false;
+    }
+    if (text != null ? !text.equals(paragraph.text) : paragraph.text != null) {
+      return false;
+    }
+    if (user != null ? !user.equals(paragraph.user) : paragraph.user != null) {
+      return false;
+    }
+    if (dateUpdated != null ?
+        !dateUpdated.equals(paragraph.dateUpdated) : paragraph.dateUpdated != null) {
+      return false;
+    }
+    if (config != null ? !config.equals(paragraph.config) : paragraph.config != null) {
+      return false;
+    }
+    if (settings != null ? !settings.equals(paragraph.settings) : paragraph.settings != null) {
+      return false;
+    }
+    if (results != null ? !results.equals(paragraph.results) : paragraph.results != null) {
+      return false;
+    }
+    if (result != null ? !result.equals(paragraph.result) : paragraph.result != null) {
+      return false;
+    }
+    return runtimeInfos != null ?
+        runtimeInfos.equals(paragraph.runtimeInfos) : paragraph.runtimeInfos == null;
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result1 = super.hashCode();
+    result1 = 31 * result1 + (title != null ? title.hashCode() : 0);
+    result1 = 31 * result1 + (text != null ? text.hashCode() : 0);
+    result1 = 31 * result1 + (user != null ? user.hashCode() : 0);
+    result1 = 31 * result1 + (dateUpdated != null ? dateUpdated.hashCode() : 0);
+    result1 = 31 * result1 + (config != null ? config.hashCode() : 0);
+    result1 = 31 * result1 + (settings != null ? settings.hashCode() : 0);
+    result1 = 31 * result1 + (results != null ? results.hashCode() : 0);
+    result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
+    result1 = 31 * result1 + (runtimeInfos != null ? runtimeInfos.hashCode() : 0);
+    return result1;
+  }
+
+  public String toJson() {
+    return Note.getGson().toJson(this);
+  }
+
+  public static Paragraph fromJson(String json) {
+    return Note.getGson().fromJson(json, Paragraph.class);
+  }
+
 }

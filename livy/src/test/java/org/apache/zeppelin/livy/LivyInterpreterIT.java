@@ -51,6 +51,7 @@ public class LivyInterpreterIT {
     properties.setProperty("zeppelin.livy.url", cluster.livyEndpoint());
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "100");
+    properties.setProperty("zeppelin.livy.displayAppInfo", "false");
   }
 
   @AfterClass
@@ -308,6 +309,8 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("tableName"));
+      int r = sqlInterpreter.getProgress(context);
+      assertTrue(r == 0);
     } finally {
       sqlInterpreter.close();
     }
@@ -521,7 +524,7 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  public void testPySparkInterpreter() {
+  public void testPySparkInterpreter() throws LivyException {
     if (!checkPreCondition()) {
       return;
     }
@@ -533,6 +536,24 @@ public class LivyInterpreterIT {
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
         "title", "text", authInfo, null, null, null, null, null, output);
     pysparkInterpreter.open();
+
+    // test traceback msg
+    try {
+      pysparkInterpreter.getLivyVersion();
+      // for livy version >=0.3 , input some erroneous spark code, check the shown result is more than one line
+      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2)).count()", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(result.message().get(0).getData().split("\n").length>1);
+      assertTrue(result.message().get(0).getData().contains("Traceback"));
+    } catch (APINotFoundException e) {
+      // only livy 0.2 can throw this exception since it doesn't have /version endpoint
+      // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
+      // traceback
+      InterpreterResult result = pysparkInterpreter.interpret("print(a)", context);
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
+      assertTrue(result.message().get(0).getData().split("\n").length>1);
+      assertTrue(result.message().get(0).getData().contains("Traceback"));
+    }
 
     try {
       InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
@@ -760,6 +781,7 @@ public class LivyInterpreterIT {
       sqlInterpreter.close();
     }
   }
+
 
   private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
     InterpreterResult result = null;

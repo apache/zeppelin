@@ -32,6 +32,8 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class SparkParagraphIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(SparkParagraphIT.class);
 
@@ -182,10 +184,16 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         );
       }
 
-      WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[contains(@id,\"_graph\")]/div/div/div/div/div[1]"));
+      // Age, Job, Marital, Education, Balance
+      List<WebElement> tableHeaders = driver.findElements(By.cssSelector("span.ui-grid-header-cell-label"));
+      String headerNames = "";
+
+      for(WebElement header : tableHeaders) {
+        headerNames += header.getText().toString() + "|";
+      }
+
       collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
-          paragraph1Result.getText().toString(), CoreMatchers.equalTo("age\n▼\njob\n▼\nmarital\n▼\neducation\n▼\nbalance\n▼\n30 unemployed married primary 1787"));
+          headerNames, CoreMatchers.equalTo("age|job|marital|education|balance|"));
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testSqlSpark", e);
     }

@@ -18,6 +18,12 @@
 import 'headroom.js'
 import 'headroom.js/dist/angular.headroom'
 
+import 'scrollmonitor/scrollMonitor.js'
+import 'angular-viewport-watch/angular-viewport-watch.js'
+
+import 'angular-ui-grid/ui-grid.css'
+import 'angular-ui-grid'
+
 const requiredModules = [
   'ngCookies',
   'ngAnimate',
@@ -37,6 +43,18 @@ const requiredModules = [
   'focus-if',
   'ngResource',
   'ngclipboard',
+  'angularViewportWatch',
+  'ui.grid',
+  'ui.grid.exporter',
+  'ui.grid.edit', 'ui.grid.rowEdit',
+  'ui.grid.selection',
+  'ui.grid.cellNav', 'ui.grid.pinning',
+  'ui.grid.grouping',
+  'ui.grid.emptyBaseLayer',
+  'ui.grid.resizeColumns',
+  'ui.grid.moveColumns',
+  'ui.grid.pagination',
+  'ui.grid.saveState',
 ]
 
 // headroom should not be used for CI, since we have to execute some integration tests.
@@ -88,15 +106,15 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
       })
       .when('/jobmanager', {
         templateUrl: 'app/jobmanager/jobmanager.html',
-        controller: 'JobmanagerCtrl'
+        controller: 'JobManagerCtrl'
       })
       .when('/interpreter', {
         templateUrl: 'app/interpreter/interpreter.html',
         controller: 'InterpreterCtrl'
       })
       .when('/notebookRepos', {
-        templateUrl: 'app/notebookRepos/notebookRepos.html',
-        controller: 'NotebookReposCtrl',
+        templateUrl: 'app/notebook-repository/notebook-repository.html',
+        controller: 'NotebookRepositoryCtrl',
         controllerAs: 'noterepo'
       })
       .when('/credential', {
@@ -128,22 +146,25 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
   })
 
   // handel logout on API failure
-  .config(function ($httpProvider, $provide) {
-    $provide.factory('httpInterceptor', function ($q, $rootScope) {
-      return {
-        'responseError': function (rejection) {
-          if (rejection.status === 405) {
-            let data = {}
-            data.info = ''
-            $rootScope.$broadcast('session_logout', data)
-          }
-          $rootScope.$broadcast('httpResponseError', rejection)
-          return $q.reject(rejection)
-        }
+    .config(function ($httpProvider, $provide) {
+      if (process.env.PROD) {
+        $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
       }
+      $provide.factory('httpInterceptor', function ($q, $rootScope) {
+        return {
+          'responseError': function (rejection) {
+            if (rejection.status === 405) {
+              let data = {}
+              data.info = ''
+              $rootScope.$broadcast('session_logout', data)
+            }
+            $rootScope.$broadcast('httpResponseError', rejection)
+            return $q.reject(rejection)
+          }
+        }
+      })
+      $httpProvider.interceptors.push('httpInterceptor')
     })
-    $httpProvider.interceptors.push('httpInterceptor')
-  })
   .constant('TRASH_FOLDER_ID', '~Trash')
 
 function auth () {
@@ -158,18 +179,31 @@ function auth () {
     },
     crossDomain: true
   })
-  return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket').then(function (response) {
+  let config = (process.env.PROD) ? {headers: { 'X-Requested-With': 'XMLHttpRequest' }} : {}
+  return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket', config).then(function (response) {
     zeppelinWebApp.run(function ($rootScope) {
       $rootScope.ticket = angular.fromJson(response.data).body
+
+      $rootScope.ticket.screenUsername = $rootScope.ticket.principal
+      if ($rootScope.ticket.principal.startsWith('#Pac4j')) {
+        let re = ', name=(.*?),'
+        $rootScope.ticket.screenUsername = $rootScope.ticket.principal.match(re)[1]
+      }
     })
   }, function (errorResponse) {
     // Handle error case
+    let redirect = errorResponse.headers('Location')
+    if (errorResponse.status === 401 && redirect !== undefined) {
+      // Handle page redirect
+      window.location.href = redirect
+    }
   })
 }
 
 function bootstrapApplication () {
   zeppelinWebApp.run(function ($rootScope, $location) {
     $rootScope.$on('$routeChangeStart', function (event, next, current) {
+      $rootScope.pageTitle = 'Zeppelin'
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
         $location.path('/')
       }

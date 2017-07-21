@@ -252,9 +252,21 @@
 </property>
 
 <property>
-  <name>zeppelin.helium.npm.registry</name>
+  <name>zeppelin.helium.node.installer.url</name>
+  <value>https://nodejs.org/dist/</value>
+  <description>Remote Node installer url for Helium dependency loader</description>
+</property>
+
+<property>
+  <name>zeppelin.helium.npm.installer.url</name>
   <value>http://registry.npmjs.org/</value>
-  <description>Remote Npm registry for Helium dependency loader</description>
+  <description>Remote Npm installer url for Helium dependency loader</description>
+</property>
+
+<property>
+  <name>zeppelin.helium.yarnpkg.installer.url</name>
+  <value>https://github.com/yarnpkg/yarn/releases/download/</value>
+  <description>Remote Yarn package installer url for Helium dependency loader</description>
 </property>
 
 <property>
@@ -374,6 +386,13 @@
     <name>zeppelin.server.jetty.name</name>
     <value>Jetty(7.6.0.v20120127)</value>
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
+</property>
+-->
+<!--
+<property>
+  <name>zeppelin.server.xframe.options</name>
+  <value>SAMEORIGIN</value>
+  <description>The X-Frame-Options HTTP response header can be used to indicate whether or not a browser should be allowed to render a page in a frame/iframe/object.</description>
 </property>
 -->
 

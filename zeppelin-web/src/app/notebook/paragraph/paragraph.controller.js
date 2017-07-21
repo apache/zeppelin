@@ -17,6 +17,9 @@ import {
   ParagraphStatus, isParagraphRunning,
 } from './paragraph.status'
 
+import moment from 'moment'
+require('moment-duration-format')
+
 const ParagraphExecutor = {
   SPELL: 'SPELL',
   INTERPRETER: 'INTERPRETER',
@@ -27,7 +30,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl)
 
 function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
-                       baseUrlSrv, ngToast, saveAsService, noteVarShareService,
+                       baseUrlSrv, ngToast, noteVarShareService,
                        heliumService) {
   'ngInject'
 
@@ -126,6 +129,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.chart = {}
     $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain']
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    $scope.fontSizeOption = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     $scope.paragraphFocused = false
     if (newParagraph.focus) {
       $scope.paragraphFocused = true
@@ -144,6 +148,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
     if (!config.colWidth) {
       config.colWidth = 12
+    }
+
+    if (!config.fontSize) {
+      config.fontSize = 9
     }
 
     if (config.enabled === undefined) {
@@ -251,12 +259,15 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.propagateSpellResult = function (paragraphId, paragraphTitle,
                                          paragraphText, paragraphResults,
                                          paragraphStatus, paragraphErrorMessage,
-                                         paragraphConfig, paragraphSettingsParam) {
+                                         paragraphConfig, paragraphSettingsParam,
+                                         paragraphDateStarted, paragraphDateFinished) {
     websocketMsgSrv.paragraphExecutedBySpell(
       paragraphId, paragraphTitle,
       paragraphText, paragraphResults,
       paragraphStatus, paragraphErrorMessage,
-      paragraphConfig, paragraphSettingsParam)
+      paragraphConfig, paragraphSettingsParam,
+      paragraphDateStarted, paragraphDateFinished
+    )
   }
 
   $scope.handleSpellError = function (paragraphText, error,
@@ -267,10 +278,15 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     console.error('Failed to execute interpret() in spell\n', error)
 
     if (!propagated) {
+      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
+    }
+
+    if (!propagated) {
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
         paragraphText, [], $scope.paragraph.status, errorMessage,
-        $scope.paragraph.config, $scope.paragraph.settings.params)
+        $scope.paragraph.config, $scope.paragraph.settings.params,
+        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished)
     }
   }
 
@@ -306,11 +322,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     const paragraphText = $scope.spellTransaction.paragraphText
 
     if (!propagated) {
+      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime()
+    }
+
+    if (!propagated) {
       const propagable = SpellResult.createPropagable(resultsMsg)
       $scope.propagateSpellResult(
         $scope.paragraph.id, $scope.paragraph.title,
         paragraphText, propagable, status, '',
-        $scope.paragraph.config, $scope.paragraph.settings.params)
+        $scope.paragraph.config, $scope.paragraph.settings.params,
+        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished)
     }
   }
 
@@ -327,6 +348,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       const splited = paragraphText.split(magic)
       // remove leading spaces
       const textWithoutMagic = splited[1].replace(/^\s+/g, '')
+
+      if (!propagated) {
+        $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime()
+      }
 
       // handle actual result message in promise
       heliumService.executeSpell(magic, textWithoutMagic)
@@ -583,6 +608,18 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     commitParagraph(paragraph)
   }
 
+  $scope.changeFontSize = function (paragraph, fontSize) {
+    angular.element('.navbar-right.open').removeClass('open')
+    if ($scope.editor) {
+      $scope.editor.setOptions({
+        fontSize: fontSize + 'pt'
+      })
+      autoAdjustEditorHeight($scope.editor)
+      paragraph.config.fontSize = fontSize
+      commitParagraph(paragraph)
+    }
+  }
+
   $scope.toggleOutput = function (paragraph) {
     paragraph.config.tableHide = !paragraph.config.tableHide
     commitParagraph(paragraph)
@@ -610,7 +647,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     let session = editor.getSession()
     let dirtyText = session.getValue()
     $scope.dirtyText = dirtyText
-    $scope.startSaveTimer()
+    if ($scope.dirtyText !== $scope.originalText) {
+      $scope.startSaveTimer()
+    }
     setParagraphMode(session, dirtyText, editor.getCursorPosition())
   }
 
@@ -625,10 +664,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers)
       $scope.editor.setShowFoldWidgets(false)
       $scope.editor.setHighlightActiveLine(false)
-      $scope.editor.setHighlightGutterLine(false)
       $scope.editor.getSession().setUseWrapMode(true)
       $scope.editor.setTheme('ace/theme/chrome')
       $scope.editor.setReadOnly($scope.isRunning($scope.paragraph))
+      $scope.editor.setHighlightActiveLine($scope.paragraphFocused)
 
       if ($scope.paragraphFocused) {
         let prefix = '%' + getInterpreterName($scope.paragraph.text)
@@ -721,6 +760,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         langTools.textCompleter])
 
       $scope.editor.setOptions({
+        fontSize: $scope.paragraph.config.fontSize + 'pt',
         enableBasicAutocompletion: true,
         enableSnippets: false,
         enableLiveAutocompletion: false
@@ -813,20 +853,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
           switch (keyCode) {
             case 38:
-              keyBindingEditorFocusAction(ROW_UP)
+              if (!e.shiftKey) { keyBindingEditorFocusAction(ROW_UP) }
               break
             case 80:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_UP)
-              }
+              if (e.ctrlKey && !e.altKey) { keyBindingEditorFocusAction(ROW_UP) }
               break
             case 40:
-              keyBindingEditorFocusAction(ROW_DOWN)
+              if (!e.shiftKey) { keyBindingEditorFocusAction(ROW_DOWN) }
               break
             case 78:
-              if (e.ctrlKey && !e.altKey) {
-                keyBindingEditorFocusAction(ROW_DOWN)
-              }
+              if (e.ctrlKey && !e.altKey) { keyBindingEditorFocusAction(ROW_DOWN) }
               break
           }
         }
@@ -835,8 +871,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   }
 
-  const handleFocus = function (value, isDigestPass) {
-    $scope.paragraphFocused = value
+  const handleFocus = function (focused, isDigestPass) {
+    $scope.paragraphFocused = focused
+
+    if ($scope.editor) { $scope.editor.setHighlightActiveLine(focused) }
+
     if (isDigestPass === false || isDigestPass === undefined) {
       // Protect against error in case digest is already running
       $timeout(function () {
@@ -848,14 +887,16 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   let getEditorSetting = function (paragraph, interpreterName) {
     let deferred = $q.defer()
-    websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
-    $timeout(
-      $scope.$on('editorSetting', function (event, data) {
-        if (paragraph.id === data.paragraphId) {
-          deferred.resolve(data)
+    if (!$scope.revisionView) {
+      websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
+      $timeout(
+        $scope.$on('editorSetting', function (event, data) {
+          if (paragraph.id === data.paragraphId) {
+            deferred.resolve(data)
+          }
         }
-      }
       ), 1000)
+    }
     return deferred.promise
   }
 
@@ -978,20 +1019,29 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     return $scope.currentProgress || 0
   }
 
+  $scope.getFormattedParagraphTime = () => {
+    return moment().toISOString()
+  }
+
   $scope.getExecutionTime = function (pdata) {
-    let timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted)
+    const end = pdata.dateFinished
+    const start = pdata.dateStarted
+    let timeMs = Date.parse(end) - Date.parse(start)
     if (isNaN(timeMs) || timeMs < 0) {
       if ($scope.isResultOutdated(pdata)) {
         return 'outdated'
       }
       return ''
     }
+
+    const durationFormat = moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]')
+    const endFormat = moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A')
+
     let user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user
-    let desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.'
-    if ($scope.isResultOutdated(pdata)) {
-      desc += ' (outdated)'
-    }
+    let desc = `Took ${durationFormat}. Last updated by ${user} at ${endFormat}.`
+
+    if ($scope.isResultOutdated(pdata)) { desc += ' (outdated)' }
+
     return desc
   }
 
@@ -1214,8 +1264,12 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   $scope.updateParagraphObjectWhenUpdated = function (newPara) {
     // resize col width
-    if ($scope.paragraph.config.colWidth !== newPara.colWidth) {
-      $rootScope.$broadcast('paragraphResized', $scope.paragraph.id)
+    if ($scope.paragraph.config.colWidth !== newPara.config.colWidth) {
+      $scope.$broadcast('paragraphResized', $scope.paragraph.id)
+    }
+
+    if ($scope.paragraph.config.fontSize !== newPara.config.fontSize) {
+      $rootScope.$broadcast('fontSizeChanged', newPara.config.fontSize)
     }
 
     /** push the rest */
@@ -1230,6 +1284,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.paragraph.title = newPara.title
     $scope.paragraph.lineNumbers = newPara.lineNumbers
     $scope.paragraph.status = newPara.status
+    $scope.paragraph.fontSize = newPara.fontSize
     if (newPara.status !== ParagraphStatus.RUNNING) {
       $scope.paragraph.results = newPara.results
     }
@@ -1250,23 +1305,28 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.updateParagraph = function (oldPara, newPara, updateCallback) {
-     // 1. get status, refreshed
+     // 1. can't update on revision view
+    if ($scope.revisionView === true) {
+      return
+    }
+
+     // 2. get status, refreshed
     const statusChanged = (newPara.status !== oldPara.status)
     const resultRefreshed = (newPara.dateFinished !== oldPara.dateFinished) ||
        isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
        newPara.status === ParagraphStatus.ERROR ||
        (newPara.status === ParagraphStatus.FINISHED && statusChanged)
 
-     // 2. update texts managed by $scope
+     // 3. update texts managed by $scope
     $scope.updateAllScopeTexts(oldPara, newPara)
 
-     // 3. execute callback to update result
+     // 4. execute callback to update result
     updateCallback()
 
-     // 4. update remaining paragraph objects
+     // 5. update remaining paragraph objects
     $scope.updateParagraphObjectWhenUpdated(newPara)
 
-     // 5. handle scroll down by key properly if new paragraph is added
+     // 6. handle scroll down by key properly if new paragraph is added
     if (statusChanged || resultRefreshed) {
        // when last paragraph runs, zeppelin automatically appends new paragraph.
        // this broadcast will focus to the newly inserted paragraph
@@ -1476,5 +1536,13 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
 
     $scope.cleanupSpellTransaction()
+  })
+
+  $scope.$on('fontSizeChanged', function (event, fontSize) {
+    if ($scope.editor) {
+      $scope.editor.setOptions({
+        fontSize: fontSize + 'pt'
+      })
+    }
   })
 }

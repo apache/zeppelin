@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<headroom class="noteAction"
+<headroom tolerance="10" offset="30" class="noteAction"
           ng-show="note.id && !paragraphUrl">
   <h3>
     <div style="float: left; width: auto; max-width: 40%"
@@ -60,7 +60,7 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Clone this note" data-source-note-name="{{note.name}}"
-              data-toggle="modal" data-target="#noteNameModal" data-clone="true"
+              data-toggle="modal" data-target="#noteCreateModal" data-clone="true"
               ng-disabled="revisionView">
         <i class="fa fa-copy"></i>
       </button>
@@ -131,6 +131,8 @@ limitations under the License.
                         ng-hide="viewOnly"
                         ng-click="checkpointNote(note.checkpoint.message)"
                         style="margin-left: 4px;"
+                        tooltip-append-to-body="true"
+                        tooltip-class="revisionTooltip"
                         tooltip-placement="bottom" uib-tooltip="Commit this note">Commit
                 </button>
               </div>
@@ -154,7 +156,7 @@ limitations under the License.
                 <strong>{{revision.message}}</strong>
               </span>
               <span class="revisionDate">
-                <em>{{moment.unix(revision.time).format('MMMM Do YYYY, h:mm a')}}</em>
+                <em>{{formatRevisionDate(revision.time)}}</em>
               </span>
             </a>
           </li>
