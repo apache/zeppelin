@@ -18,6 +18,8 @@
 package org.apache.zeppelin.web;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.web.env.EnvironmentLoaderListener;
+import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.CorsFilter;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -47,7 +49,7 @@ public class DefaultWebSecurity implements WebSecurity {
   }
 
   @Override
-  public void addSecurityFilter(WebAppContext webApp) {
+  public void addSecurityFilter(WebAppContext webapp) {
 
     String shiroIniPath = conf.getShiroPath();
  
@@ -58,7 +60,6 @@ public class DefaultWebSecurity implements WebSecurity {
               .setInitParameter("staticSecurityManagerEnabled", "true");
       webapp.addEventListener(new EnvironmentLoaderListener());
     }
-
 
   }
 
