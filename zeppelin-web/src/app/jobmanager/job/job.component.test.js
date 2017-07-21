@@ -1,14 +1,11 @@
 import { ParagraphStatus } from '../../notebook/paragraph/paragraph.status'
 
 describe('JobComponent', () => {
-  const baseUrlSrvMock = { getRestApiBase: () => '' }
   let $componentController
-  let $httpBackend
 
   beforeEach(angular.mock.module('zeppelinWebApp'))
-  beforeEach(angular.mock.inject((_$componentController_, _$httpBackend_) => {
+  beforeEach(angular.mock.inject((_$componentController_) => {
     $componentController = _$componentController_
-    $httpBackend = _$httpBackend_
   }))
 
   it('should get progress when there is a finished paragraph', () => {
@@ -53,51 +50,6 @@ describe('JobComponent', () => {
     icon = ctrl.getJobTypeIcon()
     expect(icon).toBe('icon-clock')
   })
-
-  it('should sent valid request to run a job', () => {
-    const paragraphs = [ { status: ParagraphStatus.PENDING }, ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', { baseUrlSrv: baseUrlSrvMock, }, bindings)
-    ctrl.sendRunJobRequest()
-
-    const noteId = mockNote.noteId
-    const url = `/notebook/job/${noteId}`
-
-    $httpBackend
-      .when('POST', url)
-      .respond(200, { /** return nothing */ })
-    $httpBackend.expectPOST(url)
-    $httpBackend.flush()
-
-    checkUnknownHttpRequests()
-  })
-
-  it('should sent valid request to stop a job', () => {
-    const paragraphs = [ { status: ParagraphStatus.PENDING }, ]
-    const mockNote = createMockNote(paragraphs)
-    const bindings = { note: mockNote, }
-
-    const ctrl = $componentController('job', { baseUrlSrv: baseUrlSrvMock, }, bindings)
-    ctrl.sendStopJobRequest()
-
-    const noteId = mockNote.noteId
-    const url = `/notebook/job/${noteId}`
-
-    $httpBackend
-      .when('DELETE', url)
-      .respond(200, { /** return nothing */ })
-    $httpBackend.expectDELETE(url)
-    $httpBackend.flush()
-
-    checkUnknownHttpRequests()
-  })
-
-  function checkUnknownHttpRequests() {
-    $httpBackend.verifyNoOutstandingExpectation()
-    $httpBackend.verifyNoOutstandingRequest()
-  }
 
   function createMockNote(paragraphs) {
     return {
