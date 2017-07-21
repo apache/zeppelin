@@ -141,7 +141,7 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   // isset id assignments
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
     tmpMap.put(_Fields.CODE, new org.apache.thrift.meta_data.FieldMetaData("code", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.MSG, new org.apache.thrift.meta_data.FieldMetaData("msg", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -179,7 +179,7 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       this.code = other.code;
     }
     if (other.isSetMsg()) {
-      List<RemoteInterpreterResultMessage> __this__msg = new ArrayList<RemoteInterpreterResultMessage>(other.msg.size());
+      List<RemoteInterpreterResultMessage> __this__msg = new ArrayList<>(other.msg.size());
       for (RemoteInterpreterResultMessage other_element : other.msg) {
         __this__msg.add(new RemoteInterpreterResultMessage(other_element));
       }
@@ -444,7 +444,7 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
 
   @Override
   public int hashCode() {
-    List<Object> list = new ArrayList<Object>();
+    List<Object> list = new ArrayList<>();
 
     boolean present_code = true && (isSetCode());
     list.add(present_code);

@@ -279,7 +279,7 @@ public class ZeppelinClient {
 
   private Message zeppelinGetNoteMsg(String noteId, String principal, String ticket) {
     Message getNoteMsg = new Message(Message.OP.GET_NOTE);
-    HashMap<String, Object> data = new HashMap<String, Object>();
+    HashMap<String, Object> data = new HashMap<>();
     data.put("id", noteId);
     getNoteMsg.data = data;
     getNoteMsg.principal = principal;

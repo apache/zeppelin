@@ -220,7 +220,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   private String runCondaList() throws IOException, InterruptedException {
-    List<String> commands = new ArrayList<String>();
+    List<String> commands = new ArrayList<>();
     commands.add("conda");
     commands.add("list");
 
@@ -237,7 +237,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   private String runCondaInfo() throws IOException, InterruptedException {
-    List<String> commands = new ArrayList<String>();
+    List<String> commands = new ArrayList<>();
     commands.add("conda");
     commands.add("info");
 
@@ -311,7 +311,7 @@ public class PythonCondaInterpreter extends Interpreter {
   public static Map<String, String> parseCondaCommonStdout(String out)
       throws IOException, InterruptedException {
 
-    Map<String, String> kv = new LinkedHashMap<String, String>();
+    Map<String, String> kv = new LinkedHashMap<>();
     String[] lines = out.split("\n");
     for (String s : lines) {
       if (s == null || s.isEmpty() || s.startsWith("#")) {

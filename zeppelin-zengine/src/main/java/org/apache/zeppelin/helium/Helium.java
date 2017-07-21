@@ -209,8 +209,7 @@ public class Helium {
 
           List<HeliumPackageSearchResult> pkgs = allPackages.get(name);
           String artifact = enabledPackageInfo.get(name);
-          LinkedList<HeliumPackageSearchResult> newResults =
-              new LinkedList<HeliumPackageSearchResult>();
+          LinkedList<HeliumPackageSearchResult> newResults = new LinkedList<>();
 
           for (HeliumPackageSearchResult pkg : pkgs) {
             boolean enabled = (artifact != null && artifact.equals(pkg.getPkg().getArtifact()));
