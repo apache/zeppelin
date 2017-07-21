@@ -1,5 +1,5 @@
 import { ParagraphStatus } from '../notebook/paragraph/paragraph.status'
-import { JobManagerService } from "./jobmanager.service"
+import { JobManagerService } from './jobmanager.service'
 
 describe('JobManagerService', () => {
   const baseUrlSrvMock = { getRestApiBase: () => '' }
