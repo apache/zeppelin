@@ -36,10 +36,10 @@ limitations under the License.
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-            <h5 ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;" ng-click="notenamectrl.getInterpreterSettings()">
+            <h5 ng-controller="NoteCreateCtrl as noteCreateCtrl"><a href="" data-toggle="modal" data-target="#noteCreateModal" style="text-decoration: none;" ng-click="noteCreateCtrl.getInterpreterSettings()">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
-              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
+              <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
               <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:node:false:home.arrayOrderingSrv.noteComparator track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>

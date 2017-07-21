@@ -424,6 +424,7 @@
         <artifactId>maven-scala-plugin</artifactId>
         <version>${plugin.scala.version}</version>
         <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
           <excludes>
             <exclude>**/ZeppelinR.scala</exclude>
             <exclude>**/SparkRBackend.scala</exclude>
@@ -550,20 +551,28 @@
         <spark.version>2.0.2</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <spark.py4j.version>0.10.3</spark.py4j.version>
-        <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
 
     <profile>
       <id>spark-2.1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <spark.version>2.1.0</spark.version>
         <protobuf.version>2.5.0</protobuf.version>
         <spark.py4j.version>0.10.4</spark.py4j.version>
         <scala.version>2.11.8</scala.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-2.2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <spark.version>2.2.0</spark.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <spark.py4j.version>0.10.4</spark.py4j.version>
       </properties>
     </profile>
 

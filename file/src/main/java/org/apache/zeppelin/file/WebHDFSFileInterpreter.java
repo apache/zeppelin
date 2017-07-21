@@ -32,26 +32,91 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  * HDFS implementation of File interpreter for Zeppelin.
  *
  */
-public class WebHDFSFileInterpreter extends FileInterpreter {
-  public static final String HDFS_URL = "hdfs.url";
-  public static final String HDFS_USER = "hdfs.user";
-  public static final String HDFS_MAXLENGTH = "hdfs.maxlength";
+public class HDFSFileInterpreter extends FileInterpreter {
+  static final String HDFS_URL = "hdfs.url";
+  static final String HDFS_USER = "hdfs.user";
+  static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
   Exception exceptionOnConnect = null;
-  WebHDFSCommand cmd = null;
+  HDFSCommand cmd = null;
   Gson gson = null;
 
   public void prepare() {
     String userName = getProperty(HDFS_USER);
     String hdfsUrl = getProperty(HDFS_URL);
     int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH));
-    cmd = new WebHDFSCommand(hdfsUrl, userName, logger, i);
+    cmd = new HDFSCommand(hdfsUrl, userName, logger, i);
     gson = new Gson();
   }
 
-  public WebHDFSFileInterpreter(Properties property){
+  public HDFSFileInterpreter(Properties property){
     super(property);
     prepare();
+  }
+
+  /**
+   * Status of one file
+   *
+   * matches returned JSON
+   */
+  public class OneFileStatus {
+    public long accessTime;
+    public int blockSize;
+    public int childrenNum;
+    public int fileId;
+    public String group;
+    public long length;
+    public long modificationTime;
+    public String owner;
+    public String pathSuffix;
+    public String permission;
+    public int replication;
+    public int storagePolicy;
+    public String type;
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("\nAccessTime = ").append(accessTime);
+      sb.append("\nBlockSize = ").append(blockSize);
+      sb.append("\nChildrenNum = ").append(childrenNum);
+      sb.append("\nFileId = ").append(fileId);
+      sb.append("\nGroup = ").append(group);
+      sb.append("\nLength = ").append(length);
+      sb.append("\nModificationTime = ").append(modificationTime);
+      sb.append("\nOwner = ").append(owner);
+      sb.append("\nPathSuffix = ").append(pathSuffix);
+      sb.append("\nPermission = ").append(permission);
+      sb.append("\nReplication = ").append(replication);
+      sb.append("\nStoragePolicy = ").append(storagePolicy);
+      sb.append("\nType = ").append(type);
+      return sb.toString();
+    }
+  }
+
+  /**
+   * Status of one file
+   *
+   * matches returned JSON
+   */
+  public class SingleFileStatus {
+    public OneFileStatus FileStatus;
+  }
+
+  /**
+   * Status of all files in a directory
+   *
+   * matches returned JSON
+   */
+  public class MultiFileStatus {
+    public OneFileStatus[] FileStatus;
+  }
+
+  /**
+   * Status of all files in a directory
+   *
+   * matches returned JSON
+   */
+  public class AllFileStatus {
+    public MultiFileStatus FileStatuses;
   }
 
   // tests whether we're able to connect to HDFS
@@ -79,7 +144,7 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
     return cmd.runCommand(cmd.listStatus, path, null);
   }
 
-  private String listPermission(HDFSStatus.OneFileStatus fs){
+  private String listPermission(OneFileStatus fs){
     StringBuilder sb = new StringBuilder();
     sb.append(fs.type.equalsIgnoreCase("Directory") ? 'd' : '-');
     int p = Integer.parseInt(fs.permission, 16);
@@ -94,10 +159,10 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
     sb.append(((p & 0x1)   == 0) ? '-' : 'x');
     return sb.toString();
   }
-  private String listDate(HDFSStatus.OneFileStatus fs) {
+  private String listDate(OneFileStatus fs) {
     return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(fs.modificationTime));
   }
-  private String listOne(String path, HDFSStatus.OneFileStatus fs) {
+  private String listOne(String path, OneFileStatus fs) {
     if (args.flags.contains(new Character('l'))) {
       StringBuilder sb = new StringBuilder();
       sb.append(listPermission(fs) + "\t");
@@ -127,7 +192,7 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
   public String listFile(String filePath) {
     try {
       String str = cmd.runCommand(cmd.getFileStatus, filePath, null);
-      HDFSStatus.SingleFileStatus sfs = gson.fromJson(str, HDFSStatus.SingleFileStatus.class);
+      SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
       if (sfs != null) {
         return listOne(filePath, sfs.FileStatus);
       }
@@ -146,14 +211,18 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
       if (isDirectory(path)) {
         String sfs = listDir(path);
         if (sfs != null) {
-          HDFSStatus.AllFileStatus allFiles = gson.fromJson(sfs, HDFSStatus.AllFileStatus.class);
+          AllFileStatus allFiles = gson.fromJson(sfs, AllFileStatus.class);
 
           if (allFiles != null &&
-              allFiles.FileStatuses != null &&
-              allFiles.FileStatuses.FileStatus != null)
+                  allFiles.FileStatuses != null &&
+                  allFiles.FileStatuses.FileStatus != null)
           {
-            for (HDFSStatus.OneFileStatus fs : allFiles.FileStatuses.FileStatus)
+            int length = cmd.maxLength < allFiles.FileStatuses.FileStatus.length ? cmd.maxLength :
+                    allFiles.FileStatuses.FileStatus.length;
+            for (int index = 0; index < length; index++) {
+              OneFileStatus fs = allFiles.FileStatuses.FileStatus[index];
               all = all + listOne(path, fs) + '\n';
+            }
           }
         }
         return all;
@@ -172,7 +241,7 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
       return ret;
     try {
       String str = cmd.runCommand(cmd.getFileStatus, path, null);
-      HDFSStatus.SingleFileStatus sfs = gson.fromJson(str, HDFSStatus.SingleFileStatus.class);
+      SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
       if (sfs != null)
         return sfs.FileStatus.type.equals("DIRECTORY");
     } catch (Exception e) {
@@ -185,7 +254,7 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
@@ -226,14 +295,13 @@ public class WebHDFSFileInterpreter extends FileInterpreter {
       try {
         String fileStatusString = listDir(globalPath);
         if (fileStatusString != null) {
-          HDFSStatus.AllFileStatus allFiles = gson.fromJson(fileStatusString,
-              HDFSStatus.AllFileStatus.class);
+          AllFileStatus allFiles = gson.fromJson(fileStatusString, AllFileStatus.class);
 
           if (allFiles != null &&
-              allFiles.FileStatuses != null &&
-              allFiles.FileStatuses.FileStatus != null)
+                  allFiles.FileStatuses != null &&
+                  allFiles.FileStatuses.FileStatus != null)
           {
-            for (HDFSStatus.OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
+            for (OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
               if (fs.pathSuffix.contains(unfinished)) {
 
                 //only suggest the text after the last .

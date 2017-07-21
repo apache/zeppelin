@@ -40,11 +40,32 @@ import java.lang.String;
  * Tests Interpreter by running pre-determined commands against mock file system
  *
  */
-public class WebHDFSFileInterpreterTest extends TestCase {
+public class HDFSFileInterpreterTest extends TestCase {
+
+    @Test
+    public void testMaxLength() {
+
+      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+      t.open();
+      InterpreterResult result = t.interpret("ls -l /", null);
+      String lineSeparator = "\n";
+      int fileStatusLength = MockFileSystem.fileStatuses.split(lineSeparator).length;
+      assertEquals(result.message().get(0).getData().split(lineSeparator).length, fileStatusLength);
+      t.close();
+
+      Properties properties = new Properties();
+      final int maxLength = fileStatusLength - 2;
+      properties.setProperty("hdfs.maxlength", String.valueOf(maxLength));
+      HDFSFileInterpreter t1 = new MockHDFSFileInterpreter(properties);
+      t1.open();
+      InterpreterResult result1 = t1.interpret("ls -l /", null);
+      assertEquals(result1.message().get(0).getData().split(lineSeparator).length, maxLength);
+      t1.close();
+    }
 
     @Test
     public void test() {
-      WebHDFSFileInterpreter t = new MockWebHDFSFileInterpreter(new Properties());
+      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
       t.open();
 
       // We have info for /, /user, /tmp, /mr-history/done
@@ -126,16 +147,17 @@ public class WebHDFSFileInterpreterTest extends TestCase {
    */
   class MockFileSystem {
     HashMap<String, String> mfs = new HashMap<>();
+    static final String fileStatuses =
+            "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16389,\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1438548219672,\"owner\":\"yarn\",\"pathSuffix\":\"app-logs\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16395,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548030045,\"owner\":\"hdfs\",\"pathSuffix\":\"hdp\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16390,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985336,\"owner\":\"mapred\",\"pathSuffix\":\"mapred\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":2,\"fileId\":16392,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985346,\"owner\":\"hdfs\",\"pathSuffix\":\"mr-history\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16400,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548089725,\"owner\":\"hdfs\",\"pathSuffix\":\"system\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16386,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548150089,\"owner\":\"hdfs\",\"pathSuffix\":\"tmp\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
+                    "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16387,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547921792,\"owner\":\"hdfs\",\"pathSuffix\":\"user\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"}\n";
     void addListStatusData() {
       mfs.put("/?op=LISTSTATUS",
-          "{\"FileStatuses\":{\"FileStatus\":[\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16389,\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1438548219672,\"owner\":\"yarn\",\"pathSuffix\":\"app-logs\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16395,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548030045,\"owner\":\"hdfs\",\"pathSuffix\":\"hdp\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16390,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985336,\"owner\":\"mapred\",\"pathSuffix\":\"mapred\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":2,\"fileId\":16392,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547985346,\"owner\":\"hdfs\",\"pathSuffix\":\"mr-history\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16400,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548089725,\"owner\":\"hdfs\",\"pathSuffix\":\"system\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16386,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438548150089,\"owner\":\"hdfs\",\"pathSuffix\":\"tmp\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"},\n" +
-              "{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16387,\"group\":\"hdfs\",\"length\":0,\"modificationTime\":1438547921792,\"owner\":\"hdfs\",\"pathSuffix\":\"user\",\"permission\":\"755\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"}\n" +
+          "{\"FileStatuses\":{\"FileStatus\":[\n" + fileStatuses +
               "]}}"
       );
       mfs.put("/user?op=LISTSTATUS",
@@ -164,7 +186,7 @@ public class WebHDFSFileInterpreterTest extends TestCase {
       mfs.put("/mr-history/done?op=GETFILESTATUS",
           "{\"FileStatus\":{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16393,\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1441253197480,\"owner\":\"mapred\",\"pathSuffix\":\"\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"}}");
     }
-    public void addMockData(WebHDFSCommand.Op op) {
+    public void addMockData(HDFSCommand.Op op) {
       if (op.op.equals("LISTSTATUS")) {
         addListStatusData();
       } else if (op.op.equals("GETFILESTATUS")) {
@@ -180,14 +202,18 @@ public class WebHDFSFileInterpreterTest extends TestCase {
   /**
    * Run commands against mock file system that simulates webhdfs responses
    */
-  class MockWebHDFSCommand extends WebHDFSCommand {
+  class MockHDFSCommand extends HDFSCommand {
     MockFileSystem fs = null;
 
-    public MockWebHDFSCommand(String url, String user, Logger logger) {
-      super(url, user, logger, 1000);
+    public MockHDFSCommand(String url, String user, Logger logger, int maxLength) {
+      super(url, user, logger, maxLength);
       fs = new MockFileSystem();
       fs.addMockData(getFileStatus);
       fs.addMockData(listStatus);
+    }
+
+    public MockHDFSCommand(String url, String user, Logger logger) {
+      this(url, user, logger, 1000);
     }
 
     @Override
@@ -210,16 +236,18 @@ public class WebHDFSFileInterpreterTest extends TestCase {
   /**
    * Mock Interpreter - uses Mock HDFS command
    */
-  class MockWebHDFSFileInterpreter extends WebHDFSFileInterpreter {
+  class MockHDFSFileInterpreter extends HDFSFileInterpreter {
 
     @Override
     public void prepare() {
       // Run commands against mock File System instead of WebHDFS
-      cmd = new MockWebHDFSCommand("", "", logger);
+      int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH) == null ? "1000"
+              : getProperty(HDFS_MAXLENGTH));
+      cmd = new MockHDFSCommand("", "", logger, i);
       gson = new Gson();
     }
 
-    public MockWebHDFSFileInterpreter(Properties property) {
+    public MockHDFSFileInterpreter(Properties property) {
       super(property);
     }
 

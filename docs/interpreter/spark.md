@@ -297,6 +297,14 @@ z.load("groupId:artifactId:version").local()
 ## ZeppelinContext
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
 
+### Exploring Spark DataFrames
+`ZeppelinContext` provides a `show` method, which, using Zeppelin's `table` feature, can be used to nicely display a Spark DataFrame:
+
+```
+df = spark.read.csv('/path/to/csv')
+z.show(df)
+```
+
 ### Object Exchange
 `ZeppelinContext` extends map and it's shared between Scala and Python environment.
 So you can put some objects from Scala and read it from Python, vice versa.

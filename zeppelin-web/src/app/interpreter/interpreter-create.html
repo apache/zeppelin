@@ -1,0 +1,383 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div>
+  <div class="row interpreter">
+    <div class="col-md-12" ng-show="showAddNewSetting">
+      <hr />
+      <div class="interpreterSettingAdd">
+        <h4>Create new interpreter</h4>
+
+        <div class="form-group" style="width:200px">
+          <b>Interpreter Name</b>
+          <input id="newInterpreterSettingName" input pu-elastic-input
+                 pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.name" />
+        </div>
+
+        <b>Interpreter group</b>
+        <div class="form-group"
+             style="width:180px">
+          <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
+                  ng-change="newInterpreterGroupChange()">
+            <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'name'| orderBy: 'name'" value="{{availableInterpreter.name}}">
+              {{availableInterpreter.name}}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <h5>Option</h5>
+          <div class="row interpreter" style="margin-top: 5px;">
+            <div class="col-md-6">
+              The interpreter will be instantiated
+              <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                      data-toggle="dropdown">
+                {{getInterpreterRunningOption(setting.id)}} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li>
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, 'shared', 'shared')">
+                    Globally
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, 'scoped', '')">
+                    Per Note
+                  </a>
+                </li>
+                <li ng-if="ticket.principal !== 'anonymous'">
+                  <a style="cursor:pointer"
+                     ng-click="setInterpreterRunningOption(setting.id, 'shared', 'scoped')">
+                    Per User
+                  </a>
+                </li>
+              </ul>
+            </span>
+              in
+              <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                      data-toggle="dropdown"
+                      ng-disabled="getInterpreterRunningOption(setting.id) === 'Globally'">
+                <span ng-if="getInterpreterRunningOption(setting.id) !== 'Per User'">
+                  {{getPerNoteOption(setting.id)}}
+                </span>
+                <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User'">
+                  {{getPerUserOption(setting.id)}}
+                </span>
+                  <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li
+                  ng-if="getInterpreterRunningOption(setting.id) === 'Globally'">
+                  <a style="cursor:pointer"
+                     uib-tooltip="Single interpreter instance are shared across notes"
+                     ng-click="setPerNoteOption(setting.id, 'shared')">
+                    shared per note
+                  </a>
+                </li>
+
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per Note'"
+                     uib-tooltip="Separate Interpreter instance for each note"
+                     ng-click="setPerNoteOption(setting.id, 'scoped')">
+                    scoped per note
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
+                     uib-tooltip="Separate Interpreter instance for each note"
+                     ng-click="setPerUserOption(setting.id, 'scoped')">
+                    scoped per user
+                  </a>
+                </li>
+
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per Note'"
+                     uib-tooltip="Separate Interpreter process for each note"
+                     ng-click="setPerNoteOption(setting.id, 'isolated')">
+                    isolated per note
+                  </a>
+                </li>
+                <li>
+                  <a style="cursor:pointer"
+                     ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
+                     uib-tooltip="Separate Interpreter process for each note"
+                     ng-click="setPerUserOption(setting.id, 'isolated')">
+                    isolated per user
+                  </a>
+                </li>
+              </ul>
+            </span>
+              process
+              <a class="fa fa-info-circle interpreter-binding-mode-info-link"
+                 aria-hidden="true"
+                 uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
+                 ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
+            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
+              <span ng-if="getPerNoteOption(setting.id) === 'shared'">
+                <button type="button" class="btn btn-default btn-xs"
+                        ng-click="setPerNoteOption(setting.id, 'scoped')"
+                        data-toggle="dropdown">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </span>
+            </span>
+            </div>
+          </div>
+          <div class="row interpreter"
+               style="margin-top: 6px;"
+               ng-if="getInterpreterRunningOption(setting.id) === 'Per User'
+                      && ticket.principal !== 'anonymous'
+                      && getPerNoteOption(setting.id) !== 'shared'">
+            <div class="col-md-12">
+              <span>
+                <span class="hidden-xs" style="padding-left: 190px;">And </span>
+                <span class="visible-xs" style="padding-left: 0px;">And </span>
+                <span class="btn-group">
+                  <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                          data-toggle="dropdown"
+                          ng-disabled="true">
+                    <span>
+                      Per Note
+                    </span>
+                    <span class="caret"></span>
+                  </button>
+                </span>
+                in
+                <span class="btn-group">
+                  <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+                          data-toggle="dropdown">
+                    <span>
+                      {{getPerNoteOption(setting.id)}}
+                    </span>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu">
+                    <li>
+                      <a style="cursor:pointer"
+                         uib-tooltip="Separate Interpreter instance for each note"
+                         ng-click="setPerNoteOption(setting.id, 'scoped')">
+                        scoped per note
+                      </a>
+                    </li>
+                    <li>
+                      <a style="cursor:pointer"
+                         uib-tooltip="Separate Interpreter process for each note"
+                         ng-click="setPerNoteOption(setting.id, 'isolated')">
+                        isolated per note
+                      </a>
+                    </li>
+                  </ul>
+                </span>
+                process.
+                <button type="button" class="btn btn-default btn-xs"
+                        ng-click="setPerNoteOption(setting.id, 'shared')"
+                        data-toggle="dropdown">
+                  <i class="fa fa-minus"></i>
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="row interpreter" style="margin-top: 5px;"
+             ng-show="getInterpreterRunningOption(setting.id)=='Per User' && getPerUserOption(setting.id)=='isolated'">
+          <div class="col-md-12">
+            <div class="checkbox remove-margin-top-bottom">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px" ng-model="newInterpreterSetting.option.isUserImpersonate" />
+                User Impersonate
+            </label>
+          </span>
+            </div>
+          </div>
+        </div>
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <div class="checkbox remove-margin-top-bottom">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px" id="isExistingProcess" ng-model="newInterpreterSetting.option.isExistingProcess"/>
+              Connect to existing process
+            </label>
+          </span>
+            </div>
+          </div>
+        </div>
+        <div class="row interpreter" ng-show="newInterpreterSetting.option.isExistingProcess" >
+          <div class="col-md-12">
+            <b>Host</b>
+            <input id="newInterpreterSettingHost" input pu-elastic-input
+                   pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.host"/>
+          </div>
+          <div class="col-md-12">
+            <b>Port</b>
+            <input id="newInterpreterSettingPort" input pu-elastic-input
+                   pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.option.port"/>
+          </div>
+        </div>
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <div class="checkbox remove-margin-top-bottom">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px !important" id="idShowPermission" ng-click="togglePermissions('newInterpreter')" ng-model="newInterpreterSetting.option.setPermission"/>
+               Set permission
+            </label>
+          </span>
+            </div>
+          </div>
+        </div>
+        <br/>
+
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <!-- permissions -->
+            <div ng-show="newInterpreterSetting.option.setPermission" class="permissionsForm">
+              <div>
+                <p>
+                  Enter comma separated users and groups in the fields. <br />
+                  Empty field (*) implies anyone can run this interpreter.
+                </p>
+                <div>
+                  <span class="owners">Owners </span>
+                  <select id="newInterpreterOwners" class="form-control" multiple="multiple">
+                    <option ng-repeat="owner in newInterpreterSetting.option.owners" selected="selected">{{owner}}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h5>Properties</h5>
+          <table class="table table-striped properties">
+            <tr>
+              <th>name</th>
+              <th>value</th>
+              <th>action</th>
+              <th>description</th>
+            </tr>
+            <tr ng-repeat="key in newInterpreterSetting.properties | sortByKey">
+              <td>{{key}}</td>
+              <td style="vertical-align: middle;">
+                <textarea ng-if="newInterpreterSetting.properties[key].type === 'textarea'"
+                          msd-elastic ng-model="newInterpreterSetting.properties[key].value"></textarea>
+                <input ng-if="newInterpreterSetting.properties[key].type === 'string'"
+                       type="text" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+                <input ng-if="newInterpreterSetting.properties[key].type === 'number'"
+                       type="text" number-widget msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+                <input ng-if="newInterpreterSetting.properties[key].type === 'url'"
+                       type="text" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+                <input ng-if="newInterpreterSetting.properties[key].type === 'password'"
+                       type="password" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+                <input ng-if="newInterpreterSetting.properties[key].type === 'checkbox'"
+                       type="checkbox" msd-elastic ng-model="newInterpreterSetting.properties[key].value" />
+              </td>
+              <td style="vertical-align: middle;">
+                <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
+                </button>
+              </td>
+              <td style="vertical-align: middle;">
+                {{newInterpreterSetting.properties[key].description}}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="vertical-align: middle;">
+                <input pu-elastic-input pu-elastic-input-minwidth="180px"
+                       ng-model="newInterpreterSetting.propertyKey" />
+              </td>
+              <td style="vertical-align: middle;" ng-switch on="newInterpreterSetting.propertyType">
+                <textarea ng-switch-default msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea>
+                <input ng-switch-when="string" type="text" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="number" type="text" number-widget msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="url" type="text" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="password" type="password" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+                <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="newInterpreterSetting.propertyValue" />
+              </td>
+              <td style="vertical-align: middle;">
+                <select msd-elastic ng-model="newInterpreterSetting.propertyType" ng-init="newInterpreterSetting.propertyType=interpreterPropertyTypes[0]"
+                        ng-options="item for item in interpreterPropertyTypes" ng-change="defaultValueByType(newInterpreterSetting)">
+                </select>
+                <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
+                </button>
+              </td>
+              <td></td>
+            </tr>
+          </table>
+        </div>
+
+        <div>
+          <h5>Dependencies</h5>
+          <table class="table table-striped properties">
+            <tr>
+              <th>artifact</th>
+              <th>exclude</th>
+              <th>action</th>
+            </tr>
+
+            <tr ng-repeat="dep in newInterpreterSetting.dependencies">
+              <td>
+                <input ng-model="dep.groupArtifactVersion" style="width:100%" />
+              </td>
+              <td>
+                <textarea msd-elastic ng-model="dep.exclusions"
+                          ng-list
+                          placeholder="(Optional) comma separated groupId:artifactId list">
+                </textarea>
+              </td>
+              <td>
+                <button class="btn btn-default btn-sm fa fa-remove"
+                     ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <input ng-model="newInterpreterSetting.depArtifact"
+                       placeholder="groupId:artifactId:version or local file path"
+                       style="width: 100%" />
+              </td>
+              <td>
+                <textarea msd-elastic ng-model="newInterpreterSetting.depExclude"
+                          ng-list
+                          placeholder="(Optional) comma separated groupId:artifactId list">
+                </textarea>
+              </td>
+              <td>
+                <button class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <span class="btn btn-primary" ng-click="addNewInterpreterSetting()">
+          Save
+        </span>
+        <span class="btn btn-default" ng-click="cancelInterpreterSetting()">
+          Cancel
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -39,7 +39,6 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.json.NotebookTypeAdapterFactory;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
@@ -62,21 +61,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private static final long serialVersionUID = 7920699076577612429L;
   private static Gson gson = new GsonBuilder()
       .setPrettyPrinting()
-      .registerTypeAdapterFactory(new NotebookTypeAdapterFactory<Paragraph>(Paragraph.class) {
-        @Override
-        protected void beforeWrite(Paragraph source, JsonElement toSerialize) {
-          Map<String, ParagraphRuntimeInfo> runtimeInfos = source.getRuntimeInfos();
-          if (runtimeInfos != null) {
-            JsonElement jsonTree = gson.toJsonTree(runtimeInfos);
-            if (toSerialize instanceof JsonObject) {
-              JsonObject jsonObj = (JsonObject) toSerialize;
-              jsonObj.add("runtimeInfos", jsonTree);
-            }
-          }
-        }
-      }).setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+      .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-      .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   // threadpool for delayed persist of note
@@ -920,7 +906,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public static Note fromJson(String json) {
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
+    note.resetRuntimeInfos();
     return note;
+  }
+
+  public void resetRuntimeInfos() {
+    for (Paragraph p : paragraphs) {
+      p.clearRuntimeInfos();
+    }
   }
 
   private static void convertOldInput(Note note) {

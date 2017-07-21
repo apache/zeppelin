@@ -47,10 +47,6 @@ public class HeliumConf implements JsonSerializable {
     return new HashMap<>(enabled);
   }
 
-  public void enablePackage(HeliumPackage pkg) {
-    enablePackage(pkg.getName(), pkg.getArtifact());
-  }
-
   public void enablePackage(String name, String artifact) {
     enabled.put(name, artifact);
   }
@@ -61,7 +57,6 @@ public class HeliumConf implements JsonSerializable {
       packageConfig.put(artifact,
           Collections.synchronizedMap(new HashMap<String, Object>()));
     }
-
     packageConfig.put(artifact, newConfig);
   }
 
@@ -91,7 +86,7 @@ public class HeliumConf implements JsonSerializable {
 
   public List<String> getBundleDisplayOrder() {
     if (bundleDisplayOrder == null) {
-      return new LinkedList<String>();
+      return new LinkedList<>();
     } else {
       return bundleDisplayOrder;
     }
