@@ -21,10 +21,10 @@ import jobTemplate from './job.html'
 import './job.css'
 
 class JobController {
-  constructor($http, baseUrlSrv) {
+  constructor($http, JobManagerService) {
     'ngInject'
     this.$http = $http
-    this.baseUrlSrv = baseUrlSrv
+    this.JobManagerService = JobManagerService
   }
 
   isRunning() {
@@ -43,13 +43,6 @@ class JobController {
     return this.note.noteName
   }
 
-  sendRunJobRequest() {
-    const noteId = this.getNoteId()
-    const apiURL = this.baseUrlSrv.getRestApiBase() + `/notebook/job/${noteId}`
-
-    return this.$http({ method: 'POST', url: apiURL, })
-  }
-
   runJob() {
     BootstrapDialog.confirm({
       closable: true,
@@ -58,8 +51,9 @@ class JobController {
       callback: clickOk => {
         if (!clickOk) { return }
 
+        const noteId = this.getNoteId()
         // if the request is handled successfully, the job page will get updated using websocket
-        this.sendRunJobRequest()
+        this.JobManagerService.sendRunJobRequest(noteId)
           .catch(response => {
             let message = (response.data && response.data.message)
               ? response.data.message : 'SERVER ERROR'
@@ -67,13 +61,6 @@ class JobController {
           })
       }
     })
-  }
-
-  sendStopJobRequest() {
-    const noteId = this.getNoteId()
-    const apiURL = this.baseUrlSrv.getRestApiBase() + `/notebook/job/${noteId}`
-
-    return this.$http({ method: 'DELETE', url: apiURL, })
   }
 
   stopJob() {
@@ -84,8 +71,9 @@ class JobController {
       callback: clickOk => {
         if (!clickOk) { return }
 
+        const noteId = this.getNoteId()
         // if the request is handled successfully, the job page will get updated using websocket
-        this.sendStopJobRequest()
+        this.JobManagerService.sendStopJobRequest(noteId)
           .catch(response => {
             let message = (response.data && response.data.message)
               ? response.data.message : 'SERVER ERROR'
