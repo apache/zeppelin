@@ -167,7 +167,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
         assertEquals("paragraph col width check failed", 9.0, p.getConfig().get("colWidth"));
         assertTrue("paragraph show title check failed", ((boolean) p.getConfig().get("title")));
         Map graph = ((List<Map>)p.getConfig().get("results")).get(0);
-        String mode = graph.get("mode").toString();
+        String mode = ((Map)graph.get("graph")).get("mode").toString();
         assertEquals("paragraph graph mode check failed", "pieChart", mode);
       }
     }

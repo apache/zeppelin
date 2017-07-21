@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.helium;
 
-import com.google.gson.Gson;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
@@ -38,7 +37,6 @@ import java.util.concurrent.ExecutorService;
 public class HeliumApplicationFactory implements ApplicationEventListener, NotebookEventListener {
   private final Logger logger = LoggerFactory.getLogger(HeliumApplicationFactory.class);
   private final ExecutorService executor;
-  private final Gson gson = new Gson();
   private Notebook notebook;
   private ApplicationEventListener applicationEventListener;
 
@@ -117,7 +115,7 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
 
         try {
           appStatusChange(paragraph, appState.getId(), ApplicationState.Status.LOADING);
-          String pkgInfo = gson.toJson(pkg);
+          String pkgInfo = pkg.toJson();
           String appId = appState.getId();
 
           client = intpProcess.getClient();

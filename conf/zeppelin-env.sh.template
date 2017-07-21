@@ -44,12 +44,19 @@
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
 # export ZEPPELIN_INTERPRETER_DEP_MVNREPO       # Remote principal repository for interpreter's additional dependency loading
-# export ZEPPELIN_HELIUM_NPM_REGISTRY           # Remote Npm registry for Helium dependency loader
+# export ZEPPELIN_HELIUM_NODE_INSTALLER_URL     # Remote Node installer url for Helium dependency loader
+# export ZEPPELIN_HELIUM_NPM_INSTALLER_URL      # Remote Npm installer url for Helium dependency loader
+# export ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL  # Remote Yarn package installer url for Helium dependency loader
 # export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 # export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
 # export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
 
 #### Spark interpreter configuration ####
+
+## Kerberos ticket refresh setting
+##
+#export KINIT_FAIL_THRESHOLD                    # (optional) How many times should kinit retry. The default value is 5.
+#export KERBEROS_REFRESH_INTERVAL               # (optional) The refresh interval for Kerberos ticket. The default value is 1d.
 
 ## Use provided spark installation ##
 ## defining SPARK_HOME makes Zeppelin run spark interpreter process using spark-submit

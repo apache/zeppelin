@@ -28,11 +28,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.google.gson.annotations.SerializedName;
+import org.apache.zeppelin.dep.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.zeppelin.dep.Dependency;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.StringMap;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
 
@@ -54,14 +58,14 @@ public class InterpreterSetting {
   private transient Map<String, Set<String>> runtimeInfosToBeCleared;
 
   /**
-   * properties can be either Properties or Map<String, InterpreterProperty>
+   * properties can be either Map<String, DefaultInterpreterProperty> or
+   * Map<String, InterpreterProperty>
    * properties should be:
-   * - Properties when Interpreter instances are saved to `conf/interpreter.json` file
-   * - Map<String, InterpreterProperty> when Interpreters are registered
+   * - Map<String, InterpreterProperty> when Interpreter instances are saved to
+   * `conf/interpreter.json` file
+   * - Map<String, DefaultInterpreterProperty> when Interpreters are registered
    * : this is needed after https://github.com/apache/zeppelin/pull/1145
    * which changed the way of getting default interpreter setting AKA interpreterSettingsRef
-   * Note(mina): In order to simplify the implementation, I chose to change properties
-   * from Properties to Object instead of creating new classes.
    */
   private Object properties;
   private Status status;
@@ -274,6 +278,19 @@ public class InterpreterSetting {
     return properties;
   }
 
+  public Properties getFlatProperties() {
+    Properties p = new Properties();
+    if (properties != null) {
+      Map<String, InterpreterProperty> propertyMap = (Map<String, InterpreterProperty>) properties;
+      for (String key : propertyMap.keySet()) {
+        InterpreterProperty tmp = propertyMap.get(key);
+        p.put(tmp.getName() != null ? tmp.getName() : key,
+            tmp.getValue() != null ? tmp.getValue().toString() : null);
+      }
+    }
+    return p;
+  }
+
   public List<Dependency> getDependencies() {
     if (dependencies == null) {
       return new LinkedList<>();
@@ -325,7 +342,7 @@ public class InterpreterSetting {
     this.option = interpreterOption;
   }
 
-  public void setProperties(Properties p) {
+  public void setProperties(Map<String, InterpreterProperty> p) {
     this.properties = p;
   }
 
@@ -396,5 +413,47 @@ public class InterpreterSetting {
 
   public void clearNoteIdAndParaMap() {
     runtimeInfosToBeCleared = null;
+  }
+
+  // For backward compatibility of interpreter.json format after ZEPPELIN-2654
+  public void convertPermissionsFromUsersToOwners(JsonObject jsonObject) {
+    if (jsonObject != null) {
+      JsonObject option = jsonObject.getAsJsonObject("option");
+      if (option != null) {
+        JsonArray users = option.getAsJsonArray("users");
+        if (users != null) {
+          if (this.option.getOwners() == null) {
+            this.option.owners = new LinkedList<>();
+          }
+          for (JsonElement user : users) {
+            this.option.getOwners().add(user.getAsString());
+          }
+        }
+      }
+    }
+  }
+
+  // For backward compatibility of interpreter.json format after ZEPPELIN-2403
+  public void convertFlatPropertiesToPropertiesWithWidgets() {
+    StringMap newProperties = new StringMap();
+    if (properties != null && properties instanceof StringMap) {
+      StringMap p = (StringMap) properties;
+
+      for (Object o : p.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
+        if (!(entry.getValue() instanceof StringMap)) {
+          StringMap newProperty = new StringMap();
+          newProperty.put("name", entry.getKey());
+          newProperty.put("value", entry.getValue());
+          newProperty.put("type", InterpreterPropertyType.TEXTAREA.getValue());
+          newProperties.put(entry.getKey().toString(), newProperty);
+        } else {
+          // already converted
+          return;
+        }
+      }
+
+      this.properties = newProperties;
+    }
   }
 }

@@ -34,12 +34,12 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       },
       {
         name: 'size',
-        tooltip: `<li>Size option is valid only when you drop numeric field here.</li>
-                  <li>When data in each axis are discrete,
-                  'number of values in corresponding coordinate' will be used as size.</li>
-                  <li>Zeppelin consider values as discrete when the values contain string value
-                  or the number of distinct values are bigger than 5% of total number of values.</li>
-                  <li>Size field button turns to grey when the option you chose is not valid.</li>`
+        tooltip: `This option is only valid for numeric fields.
+          When data in each axis is discrete, 
+          'number of values in corresponding coordinate' will be used.
+          Zeppelin considers values as discrete when input values contain a string
+          or the number of distinct values is greater than 5% of the total number of values.
+          This field turns grey when the selected option is invalid.`
       }
     ]
     this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps)

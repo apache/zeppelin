@@ -200,7 +200,7 @@ Staring from 0.6.1 SparkSession is available as variable `spark` when you are us
 There are two ways to load external libraries in Spark interpreter. First is using interpreter setting menu and second is loading Spark properties.
 
 ### 1. Setting Dependencies via Interpreter Setting
-Please see [Dependency Management](../manual/dependencymanagement.html) for the details.
+Please see [Dependency Management](../usage/interpreter/dependency_management.html) for the details.
 
 ### 2. Loading Spark Properties
 Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. 
@@ -297,6 +297,14 @@ z.load("groupId:artifactId:version").local()
 ## ZeppelinContext
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
 
+### Exploring Spark DataFrames
+`ZeppelinContext` provides a `show` method, which, using Zeppelin's `table` feature, can be used to nicely display a Spark DataFrame:
+
+```
+df = spark.read.csv('/path/to/csv')
+z.show(df)
+```
+
 ### Object Exchange
 `ZeppelinContext` extends map and it's shared between Scala and Python environment.
 So you can put some objects from Scala and read it from Python, vice versa.
@@ -389,23 +397,28 @@ In sql environment, you can create form in simple template.
 select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
-To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
+To learn more about dynamic form, checkout [Dynamic Form](../usage/dynamic_form/intro.html).
 
 
 ## Matplotlib Integration (pyspark)
-Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through utilizing Zeppelin's built-in [Angular Display System](../displaysystem/back-end-angular.html), as shown below:
+Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, 
+a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), 
+since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through 
+utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/angular_backend.html), as shown below:
 
-<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 
-You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). It creates separated SparkContext per each notebook in `isolated` mode.
+You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. 
+Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). 
+It creates separated SparkContext per each notebook in `isolated` mode.
 
 
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
-<img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 ### Configuration Setup
 

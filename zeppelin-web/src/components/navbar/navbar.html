@@ -37,23 +37,23 @@ limitations under the License.
             <span>Notebook</span>
             <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li ng-controller="NotenameCtrl as notenamectrl">
-              <a href="" data-toggle="modal" data-target="#noteNameModal" ng-click="notenamectrl.getInterpreterSettings()">
+            <li ng-controller="NoteCreateCtrl as noteCreateCtrl">
+              <a href="" data-toggle="modal" data-target="#noteCreateModal" ng-click="noteCreateCtrl.getInterpreterSettings()">
                 <i class="fa fa-plus"></i>
                 Create new note
               </a>
             </li>
             <li class="divider hidden-xs"></li>
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
-              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
+              <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
               <div ng-if="!query.q || query.q === ''">
               <li ng-repeat="node in navbar.notes.root.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by node.id"
-                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
             <div ng-if="query.q">
               <li ng-repeat="node in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering track by node.id"
-                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-noteList-elem.html'">
+                  ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
             </div>
@@ -90,7 +90,7 @@ limitations under the License.
             <i ng-if="!navbar.connected" class="fa fa-circle server-disconnected"
                uib-tooltip="WebSocket Disconnected" tooltip-placement="bottom" style="margin-top: 7px; vertical-align: top"></i>
             <button ng-if="ticket" class="nav-btn dropdown-toggle" type="button" data-toggle="dropdown" style="margin:11px 5px 0 0; padding-left: 0px;">
-              <span class="username">{{ticket.principal}}</span>
+              <span class="username">{{ticket.screenUsername}}</span>
               <span class="caret" style="margin-bottom: 8px"></span>
             </button>
             <span ng-if="!ticket" style="margin: 5px;"></span>

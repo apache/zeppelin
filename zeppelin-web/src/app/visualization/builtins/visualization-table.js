@@ -63,6 +63,16 @@ export default class TableVisualization extends Visualization {
     initializeTableConfig(config, TABLE_OPTION_SPECS)
   }
 
+  getColumnMinWidth(colName) {
+    let width = 150 // default
+    const calculatedWidth = colName.length * 10
+
+    // use the broad one
+    if (calculatedWidth > width) { width = calculatedWidth }
+
+    return width
+  }
+
   createGridOptions(tableData, onRegisterApiCallback, config) {
     const rows = tableData.rows
     const columnNames = tableData.columns.map(c => c.name)
@@ -86,6 +96,7 @@ export default class TableVisualization extends Visualization {
 
       columnDefs: columnNames.map(colName => {
         return {
+          displayName: colName,
           name: colName,
           type: DefaultTableColumnType,
           cellTemplate: `
@@ -98,6 +109,8 @@ export default class TableVisualization extends Visualization {
                  class="ui-grid-cell-contents">
             </div>
           `,
+          minWidth: this.getColumnMinWidth(colName),
+          width: '*',
         }
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
@@ -244,7 +257,8 @@ export default class TableVisualization extends Visualization {
               ui-grid-selection
               ui-grid-cellNav ui-grid-pinning
               ui-grid-empty-base-layer
-              ui-grid-resize-columns ui-grid-move-columns
+              ui-grid-resize-columns 
+              ui-grid-move-columns
               ui-grid-grouping
               ui-grid-save-state
               ui-grid-exporter></div>`)
@@ -276,6 +290,7 @@ export default class TableVisualization extends Visualization {
         gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config) })
         gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.colResizable.on.columnSizeChanged(scope, () => { self.persistConfigWithGridState(self.config) })
 
         // pagination doesn't follow usual life-cycle in ui-grid v4.0.4
         // gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })

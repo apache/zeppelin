@@ -24,7 +24,9 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Overview
-[Elasticsearch](https://www.elastic.co/products/elasticsearch) is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
+[Elasticsearch](https://www.elastic.co/products/elasticsearch) is a highly scalable open-source full-text search and analytics engine. 
+It allows you to store, search, and analyze big volumes of data quickly and in near real time. 
+It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
 
 ## Configuration
 <table class="table-configuration">
@@ -71,7 +73,7 @@ limitations under the License.
 </table>
 
 <center>
-  ![Interpreter configuration](../assets/themes/zeppelin/img/docs-img/elasticsearch-config.png)
+  ![Interpreter configuration]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-config.png)
 </center>
 
 > **Note #1 :** You can add more properties to configure the Elasticsearch client.
@@ -82,7 +84,8 @@ limitations under the License.
 In a notebook, to enable the **Elasticsearch** interpreter, click the **Gear** icon and select **Elasticsearch**.
 
 ## Using the Elasticsearch Interpreter
-In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands. To get the list of available commands, use `help`.
+In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands. 
+To get the list of available commands, use `help`.
 
 ```bash
 %elasticsearch
@@ -118,7 +121,7 @@ get /index/type/id
 ```
 
 Example:
-![Elasticsearch - Get](../assets/themes/zeppelin/img/docs-img/elasticsearch-get.png)
+![Elasticsearch - Get]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-get.png)
 
 ### Search
 With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
@@ -142,7 +145,8 @@ size 50
 search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
 
-> A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
+> A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). 
+If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
 
 Examples:
 
@@ -202,25 +206,25 @@ content_length | date | request.headers[0] | request.headers[1] | request.method
 Examples:
 
 * With a table containing the results:
-![Elasticsearch - Search - table](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-table.png)
+![Elasticsearch - Search - table]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-search-table.png)
 
 * You can also use a predefined diagram:
-![Elasticsearch - Search - diagram](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-pie.png)
+![Elasticsearch - Search - diagram]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-search-pie.png)
 
 * With a JSON query:
-![Elasticsearch - Search with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-json-query-table.png)
+![Elasticsearch - Search with query]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-search-json-query-table.png)
 
 * With a JSON query containing a `fields` parameter (for filtering the fields in the response): in this case, all the fields values in the response are arrays, so, after flattening the result, the format of all the field names is `field_name[x]`
-![Elasticsearch - Search with query and a fields param](../assets/themes/zeppelin/img/docs-img/elasticsearch-query-with-fields-param.png)
+![Elasticsearch - Search with query and a fields param]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-query-with-fields-param.png)
 
 * With a query string:
-![Elasticsearch - Search with query string](../assets/themes/zeppelin/img/docs-img/elasticsearch-query-string.png)
+![Elasticsearch - Search with query string]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-query-string.png)
 
 * With a query containing a multi-value metric aggregation:
-![Elasticsearch - Search with aggregation (multi-value metric)](../assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-value-metric.png)
+![Elasticsearch - Search with aggregation (multi-value metric)]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-value-metric.png)
 
 * With a query containing a multi-bucket aggregation:
-![Elasticsearch - Search with aggregation (multi-bucket)](../assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-bucket-pie.png)
+![Elasticsearch - Search with aggregation (multi-bucket)]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-bucket-pie.png)
 
 ### Count
 With the `count` command, you can count documents available in some indices and types. You can also provide a query.
@@ -233,10 +237,10 @@ count /index1,index2,.../type1,type2,... <JSON document containing the query OR 
 Examples:
 
 * Without query:
-![Elasticsearch - Count](../assets/themes/zeppelin/img/docs-img/elasticsearch-count.png)
+![Elasticsearch - Count]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-count.png)
 
 * With a query:
-![Elasticsearch - Count with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-count-with-query.png)
+![Elasticsearch - Count with query]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-count-with-query.png)
 
 ### Index
 With the `index` command, you can insert/update a document in Elasticsearch.
@@ -258,7 +262,7 @@ delete /index/type/id
 ```
 
 ### Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```bash
 %elasticsearch

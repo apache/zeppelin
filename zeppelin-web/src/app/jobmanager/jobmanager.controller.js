@@ -12,11 +12,39 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp')
-  .controller('JobmanagerCtrl', JobmanagerCtrl)
+import { JobStatus, } from './jobs/job-status'
 
-function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
+angular.module('zeppelinWebApp')
+  .controller('JobManagerCtrl', JobManagerCtrl)
+
+const JobDateSorter = {
+  RECENTLY_UPDATED: 'Recently Update',
+  OLDEST_UPDATED: 'Oldest Updated',
+}
+
+function JobManagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeout, jobManagerFilter) {
   'ngInject'
+
+  $scope.pagination = {
+    currentPage: 1,
+    itemsPerPage: 10,
+    maxPageCount: 5,
+  }
+
+  $scope.sorter = {
+    AvailableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key] }),
+    currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
+  }
+
+  $scope.setJobDateSorter = function(dateSorter) {
+    $scope.sorter.currentDateSorter = dateSorter
+  }
+
+  $scope.getJobsInCurrentPage = function(jobs) {
+    const cp = $scope.pagination.currentPage
+    const itp = $scope.pagination.itemsPerPage
+    return jobs.slice((cp - 1) * itp, (cp * itp))
+  }
 
   ngToast.dismiss()
   let asyncNotebookJobFilter = function (jobInfomations, filterConfig) {
@@ -26,15 +54,52 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
     })
   }
 
+  $scope.$watch('sorter.currentDateSorter', function() {
+    $scope.filterConfig.isSortByAsc =
+      $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED
+    asyncNotebookJobFilter($scope.jobInfomations, $scope.filterConfig)
+  })
+
+  $scope.getJobIconByStatus = function(jobStatus) {
+    if (jobStatus === JobStatus.READY) {
+      return 'fa fa-circle-o'
+    } else if (jobStatus === JobStatus.FINISHED) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.ABORT) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.ERROR) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.PENDING) {
+      return 'fa fa-circle'
+    } else if (jobStatus === JobStatus.RUNNING) {
+      return 'fa fa-spinner'
+    }
+  }
+
+  $scope.getJobColorByStatus = function(jobStatus) {
+    if (jobStatus === JobStatus.READY) {
+      return 'green'
+    } else if (jobStatus === JobStatus.FINISHED) {
+      return 'green'
+    } else if (jobStatus === JobStatus.ABORT) {
+      return 'orange'
+    } else if (jobStatus === JobStatus.ERROR) {
+      return 'red'
+    } else if (jobStatus === JobStatus.PENDING) {
+      return 'gray'
+    } else if (jobStatus === JobStatus.RUNNING) {
+      return 'blue'
+    }
+  }
+
   $scope.doFiltering = function (jobInfomations, filterConfig) {
-    asyncNotebookJobFilter(jobInfomations, filterConfig).then(
-      function () {
-        // success
-        $scope.isLoadingFilter = false
-      },
-      function () {
-        // failed
-      })
+    asyncNotebookJobFilter(jobInfomations, filterConfig)
+      .then(
+        () => { $scope.isLoadingFilter = false },
+        (error) => {
+          console.error('Failed to search jobs from server', error)
+        }
+      )
   }
 
   $scope.filterValueToName = function (filterValue, maxStringLength) {
@@ -48,44 +113,13 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
       }
       return $scope.activeInterpreters[index].name
     } else {
-      return 'Interpreter is not set'
+      return 'NONE'
     }
   }
 
   $scope.setFilterValue = function (filterValue) {
     $scope.filterConfig.filterValueInterpreter = filterValue
     $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
-  }
-
-  $scope.onChangeRunJobToAlwaysTopToggle = function () {
-    $scope.filterConfig.isRunningAlwaysTop = !$scope.filterConfig.isRunningAlwaysTop
-    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
-  }
-
-  $scope.onChangeSortAsc = function () {
-    $scope.filterConfig.isSortByAsc = !$scope.filterConfig.isSortByAsc
-    $scope.doFiltering($scope.jobInfomations, $scope.filterConfig)
-  }
-
-  $scope.doFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
-    let RETURN_KEY_CODE = 13
-    $timeout.cancel($scope.dofilterTimeoutObject)
-    $scope.isActiveSearchTimer = true
-    $scope.dofilterTimeoutObject = $timeout(function () {
-      $scope.doFiltering(jobInfomations, filterConfig)
-      $scope.isActiveSearchTimer = false
-    }, 10000)
-    if (keyEvent.which === RETURN_KEY_CODE) {
-      $timeout.cancel($scope.dofilterTimeoutObject)
-      $scope.doFiltering(jobInfomations, filterConfig)
-      $scope.isActiveSearchTimer = false
-    }
-  }
-
-  $scope.doForceFilterInputTyping = function (keyEvent, jobInfomations, filterConfig) {
-    $timeout.cancel($scope.dofilterTimeoutObject)
-    $scope.doFiltering(jobInfomations, filterConfig)
-    $scope.isActiveSearchTimer = false
   }
 
   $scope.init = function () {
@@ -96,20 +130,12 @@ function JobmanagerCtrl ($scope, websocketMsgSrv, $interval, ngToast, $q, $timeo
       isRunningAlwaysTop: true,
       filterValueNotebookName: '',
       filterValueInterpreter: '*',
-      isSortByAsc: true
+      isSortByAsc: $scope.sorter.currentDateSorter === JobDateSorter.OLDEST_UPDATED,
     }
     $scope.sortTooltipMsg = 'Switch to sort by desc'
     $scope.jobTypeFilter = jobManagerFilter
 
     websocketMsgSrv.getNoteJobsList()
-
-    $scope.$watch('filterConfig.isSortByAsc', function (value) {
-      if (value) {
-        $scope.sortTooltipMsg = 'Switch to sort by desc'
-      } else {
-        $scope.sortTooltipMsg = 'Switch to sort by asc'
-      }
-    })
 
     $scope.$on('$destroy', function () {
       websocketMsgSrv.unsubscribeJobManager()

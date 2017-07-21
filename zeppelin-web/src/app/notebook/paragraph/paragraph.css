@@ -174,12 +174,19 @@
 }
 
 .paragraph .control {
-  display: inline-block;
+  position: absolute;
   float: right;
   background: rgba(255,255,255,0.85);
   color: #999;
+  margin-top: 1px;
+  margin-right: 5px;
+  position: absolute;
+  clear: both;
+  right: 15px;
+  top: 16px;
+  text-align: right;
   font-size: 12px;
-  margin-top: 5px;
+  padding: 4px;
 }
 
 .paragraph .control li {
@@ -268,11 +275,8 @@ table.table-shortcut {
 */
 
 .paragraph .title {
-  display: inline-block;
-  float: left;
+  margin: 0;
   font-size: 12px;
-  margin-bottom: 7px;
-  min-height: 24px;
 }
 
 .paragraph .title div {
@@ -559,4 +563,8 @@ table.table-striped {
 
 .markdown-body h4 {
   font-size: 16px;
+}
+
+.network-labels {
+  margin: 0.2em;
 }

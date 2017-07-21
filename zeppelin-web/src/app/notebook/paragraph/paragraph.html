@@ -15,29 +15,24 @@ limitations under the License.
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
-  <div>
-    <div ng-if="paragraph.config.title"
-         id="{{paragraph.id}}_title"
-         ng-controller="ElasticInputCtrl as input"
-         class="title">
-      <input type="text"
-             pu-elastic-input
-             style="min-width: 400px; max-width: 80%;"
-             placeholder="Untitled"
-             ng-model="paragraph.title"
-             ng-if="input.showEditor"
-             ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
-             ng-blur="setTitle(paragraph); input.showEditor = false"
-             ng-enter="setTitle(paragraph); input.showEditor = false"
-             focus-if="input.showEditor" />
-      <div ng-click="input.showEditor = !asIframe && !viewOnly && !revisionView; oldTitle = paragraph.title;"
-           ng-show="!input.showEditor"
-           ng-bind-html="paragraph.title || 'Untitled'">
-      </div>
+  <div ng-if="paragraph.config.title"
+       id="{{paragraph.id}}_title"
+       ng-controller="ElasticInputCtrl as input"
+       class="title">
+    <input type="text"
+           pu-elastic-input
+           style="min-width: 400px; max-width: 80%;"
+           placeholder="Untitled"
+           ng-model="paragraph.title"
+           ng-if="input.showEditor"
+           ng-escape="input.showEditor = false; paragraph.title = oldTitle;"
+           ng-blur="setTitle(paragraph); input.showEditor = false"
+           ng-enter="setTitle(paragraph); input.showEditor = false"
+           focus-if="input.showEditor" />
+    <div ng-click="input.showEditor = !asIframe && !viewOnly && !revisionView; oldTitle = paragraph.title;"
+         ng-show="!input.showEditor"
+         ng-bind-html="paragraph.title || 'Untitled'">
     </div>
-
-    <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
-    <div style="display: inline-block; clear: both;"></div>
   </div>
 
   <div>
@@ -52,8 +47,8 @@ limitations under the License.
       ></code-editor>
     </div>
 
-    <div ng-include src="'app/notebook/paragraph/paragraph-progressBar.html'"></div>
-    <div ng-include src="'app/notebook/paragraph/paragraph-parameterizedQueryForm.html'"></div>
+    <div ng-include src="'app/notebook/paragraph/paragraph-progress-bar.html'"></div>
+    <div ng-include src="'app/notebook/paragraph/paragraph-parameterized-query-form.html'"></div>
 
     <!-- Rendering -->
     <div class="tableDisplay"
@@ -67,6 +62,8 @@ limitations under the License.
          ng-bind="paragraph.errorMessage">
     </div>
   </div>
+
+  <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
 
   <div ng-if="!asIframe" class="paragraphFooter">
     <div ng-show="!paragraph.config.tableHide && !viewOnly"

@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl)
 
 function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                      ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID,
+                      ngToast, noteActionService, noteVarShareService, TRASH_FOLDER_ID,
                       heliumService) {
   'ngInject'
 
@@ -61,6 +61,10 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.noteRevisions = []
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
+
+  $scope.$watch('note', function (value) {
+    $rootScope.pageTitle = value ? value.name : 'Zeppelin'
+  }, true)
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
@@ -165,12 +169,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   // Move the note to trash and go back to the main page
   $scope.moveNoteToTrash = function (noteId) {
-    noteActionSrv.moveNoteToTrash(noteId, true)
+    noteActionService.moveNoteToTrash(noteId, true)
   }
 
   // Remove the note permanently if it's in the trash
   $scope.removeNote = function (noteId) {
-    noteActionSrv.removeNote(noteId, true)
+    noteActionService.removeNote(noteId, true)
   }
 
   $scope.isTrash = function (note) {
@@ -309,7 +313,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.clearAllParagraphOutput = function (noteId) {
-    noteActionSrv.clearAllParagraphOutput(noteId)
+    noteActionService.clearAllParagraphOutput(noteId)
   }
 
   $scope.toggleAllEditor = function () {
@@ -443,6 +447,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
       $scope.note.paragraphs[0].focus = true
     }
+
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel)
   }
 
@@ -761,7 +766,40 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.savePermissions = function () {
+    if ($scope.isAnonymous || $rootScope.ticket.principal.trim().length === 0) {
+      $scope.blockAnonUsers()
+    }
     convertPermissionsToArray()
+    if ($scope.isOwnerEmpty()) {
+      BootstrapDialog.show({
+        closable: false,
+        title: 'Setting Owners Permissions',
+        message: 'Please fill the [Owners] field. If not, it will set as current user.\n\n' +
+          'Current user : [ ' + $rootScope.ticket.principal + ']',
+        buttons: [
+          {
+            label: 'Set',
+            action: function(dialog) {
+              dialog.close()
+              $scope.permissions.owners = [$rootScope.ticket.principal]
+              $scope.setPermissions()
+            }
+          },
+          {
+            label: 'Cancel',
+            action: function(dialog) {
+              dialog.close()
+              $scope.openPermissions()
+            }
+          }
+        ]
+      })
+    } else {
+      $scope.setPermissions()
+    }
+  }
+
+  $scope.setPermissions = function() {
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
       $scope.permissions, {withCredentials: true})
     .success(function (data, status, headers, config) {
@@ -769,7 +807,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         console.log('Note permissions %o saved', $scope.permissions)
         BootstrapDialog.alert({
           closable: true,
-          title: 'Permissions Saved Successfully!!!',
+          title: 'Permissions Saved Successfully',
           message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
           $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
         })
@@ -876,6 +914,20 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   angular.element(document).click(function () {
     angular.element('.ace_autocomplete').hide()
   })
+
+  $scope.isOwnerEmpty = function() {
+    if ($scope.permissions.owners.length > 0) {
+      for (let i = 0; i < $scope.permissions.owners.length; i++) {
+        if ($scope.permissions.owners[i].trim().length > 0) {
+          return false
+        } else if (i === $scope.permissions.owners.length - 1) {
+          return true
+        }
+      }
+    } else {
+      return true
+    }
+  }
 
   /*
    ** $scope.$on functions below

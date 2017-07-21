@@ -16,7 +16,7 @@ import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl)
 
-function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
   'ngInject'
 
   let interpreterSettingsTmp = []
@@ -26,6 +26,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   $scope.showRepositoryInfo = false
   $scope.searchInterpreter = ''
   $scope._ = _
+  $scope.interpreterPropertyTypes = []
   ngToast.dismiss()
 
   $scope.openPermissions = function () {
@@ -38,10 +39,10 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
 
   let getSelectJson = function () {
     let selectJson = {
-      tags: false,
+      tags: true,
+      minimumInputLength: 3,
       multiple: true,
       tokenSeparators: [',', ' '],
-      minimumInputLength: 2,
       ajax: {
         url: function (params) {
           if (!params.term) {
@@ -51,17 +52,36 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
         },
         delay: 250,
         processResults: function (data, params) {
-          let users = []
+          let results = []
+
           if (data.body.users.length !== 0) {
-            for (let i = 0; i < data.body.users.length; i++) {
+            let users = []
+            for (let len = 0; len < data.body.users.length; len++) {
               users.push({
-                'id': data.body.users[i],
-                'text': data.body.users[i]
+                'id': data.body.users[len],
+                'text': data.body.users[len]
               })
             }
+            results.push({
+              'text': 'Users :',
+              'children': users
+            })
+          }
+          if (data.body.roles.length !== 0) {
+            let roles = []
+            for (let len = 0; len < data.body.roles.length; len++) {
+              roles.push({
+                'id': data.body.roles[len],
+                'text': data.body.roles[len]
+              })
+            }
+            results.push({
+              'text': 'Roles :',
+              'children': roles
+            })
           }
           return {
-            results: users,
+            results: results,
             pagination: {
               more: false
             }
@@ -74,7 +94,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   }
 
   $scope.togglePermissions = function (intpName) {
-    angular.element('#' + intpName + 'Users').select2(getSelectJson())
+    angular.element('#' + intpName + 'Owners').select2(getSelectJson())
     if ($scope.showInterpreterAuth) {
       $scope.closePermissions()
     } else {
@@ -84,7 +104,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
 
   $scope.$on('ngRenderFinished', function (event, data) {
     for (let setting = 0; setting < $scope.interpreterSettings.length; setting++) {
-      angular.element('#' + $scope.interpreterSettings[setting].name + 'Users').select2(getSelectJson())
+      angular.element('#' + $scope.interpreterSettings[setting].name + 'Owners').select2(getSelectJson())
     }
   })
 
@@ -101,7 +121,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
             timeout: '3000'
           })
           setTimeout(function () {
-            window.location.replace('/')
+            window.location = baseUrlSrv.getBase()
           }, 3000)
         }
         console.log('Error %o %o', status, data.message)
@@ -142,8 +162,17 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     })
   }
 
-  let emptyNewProperty = function (object) {
-    angular.extend(object, {propertyValue: '', propertyKey: ''})
+  let getAvailableInterpreterPropertyWidgets = function () {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
+      .success(function (data, status, headers, config) {
+        $scope.interpreterPropertyTypes = data.body
+      }).error(function (data, status, headers, config) {
+        console.log('Error %o %o', status, data.message)
+      })
+  }
+
+  let emptyNewProperty = function(object) {
+    angular.extend(object, {propertyValue: '', propertyKey: '', propertyType: $scope.interpreterPropertyTypes[0]})
   }
 
   let emptyNewDependency = function (object) {
@@ -182,6 +211,15 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       option.session = false
       option.process = false
     }
+  }
+
+  $scope.defaultValueByType = function (setting) {
+    if (setting.propertyType === 'checkbox') {
+      setting.propertyValue = false
+      return
+    }
+
+    setting.propertyValue = ''
   }
 
   $scope.setPerUserOption = function (settingId, sessionOption) {
@@ -340,7 +378,7 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
             // remote always true for now
             setting.option.remote = true
           }
-          setting.option.users = angular.element('#' + setting.name + 'Users').val()
+          setting.option.owners = angular.element('#' + setting.name + 'Owners').val()
 
           let request = {
             option: angular.copy(setting.option),
@@ -409,7 +447,8 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       for (let key in intpInfo) {
         properties[key] = {
           value: intpInfo[key].defaultValue,
-          description: intpInfo[key].description
+          description: intpInfo[key].description,
+          type: intpInfo[key].type
         }
       }
     }
@@ -478,15 +517,21 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     if (newSetting.option.setPermission === undefined) {
       newSetting.option.setPermission = false
     }
-    newSetting.option.users = angular.element('#newInterpreterUsers').val()
+    newSetting.option.owners = angular.element('#newInterpreterOwners').val()
 
     let request = angular.copy($scope.newInterpreterSetting)
 
     // Change properties to proper request format
     let newProperties = {}
+
     for (let p in newSetting.properties) {
-      newProperties[p] = newSetting.properties[p].value
+      newProperties[p] = {
+        value: newSetting.properties[p].value,
+        type: newSetting.properties[p].type,
+        name: p
+      }
     }
+
     request.properties = newProperties
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
@@ -554,9 +599,9 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
         return
       }
-
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
-        value: $scope.newInterpreterSetting.propertyValue
+        value: $scope.newInterpreterSetting.propertyValue,
+        type: $scope.newInterpreterSetting.propertyType
       }
       emptyNewProperty($scope.newInterpreterSetting)
     } else {
@@ -567,7 +612,10 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
       if (!setting.propertyKey || setting.propertyKey === '') {
         return
       }
-      setting.properties[setting.propertyKey] = setting.propertyValue
+
+      setting.properties[setting.propertyKey] =
+        {value: setting.propertyValue, type: setting.propertyType}
+
       emptyNewProperty(setting)
     }
   }
@@ -694,7 +742,9 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
     })
   }
 
-  let init = function () {
+  let init = function() {
+    getAvailableInterpreterPropertyWidgets()
+
     $scope.resetNewInterpreterSetting()
     $scope.resetNewRepositorySetting()
 
@@ -704,19 +754,29 @@ function InterpreterCtrl ($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeo
   }
 
   $scope.showSparkUI = function (settingId) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/getmetainfos/' + settingId + '?propName=url')
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
       .success(function (data, status, headers, config) {
-        let url = data.body.url
-        if (!url) {
+        if (data.body === undefined) {
           BootstrapDialog.alert({
             message: 'No spark application running'
           })
           return
         }
-        window.open(url, '_blank')
+        if (data.body.url) {
+          window.open(data.body.url, '_blank')
+        } else {
+          BootstrapDialog.alert({
+            message: data.body.message
+          })
+        }
       }).error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message)
       })
+  }
+
+  $scope.getInterpreterBindingModeDocsLink = function() {
+    const currentVersion = $rootScope.zeppelinVersion
+    return `https://zeppelin.apache.org/docs/${currentVersion}/usage/interpreter/interpreter_binding_mode.html`
   }
 
   init()

@@ -89,7 +89,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     super(property);
     this.livyURL = property.getProperty("zeppelin.livy.url");
     this.displayAppInfo = Boolean.parseBoolean(
-        property.getProperty("zeppelin.livy.displayAppInfo", "false"));
+        property.getProperty("zeppelin.livy.displayAppInfo", "true"));
     this.sessionCreationTimeout = Integer.parseInt(
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
@@ -341,7 +341,17 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, stmtInfo.output.evalue);
+      InterpreterResult result = new InterpreterResult(InterpreterResult.Code.ERROR);
+      StringBuilder sb = new StringBuilder();
+      sb.append(stmtInfo.output.evalue);
+      // in case evalue doesn't have newline char
+      if (!stmtInfo.output.evalue.contains("\n"))
+        sb.append("\n");
+      if (stmtInfo.output.traceback != null) {
+        sb.append(StringUtils.join(stmtInfo.output.traceback));
+      }
+      result.add(sb.toString());
+      return result;
     } else if (stmtInfo.isCancelled()) {
       // corner case, output might be null if it is cancelled.
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Job is cancelled");
@@ -659,7 +669,18 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
     public static StatementInfo fromJson(String json) {
-      return gson.fromJson(json, StatementInfo.class);
+      String right_json = "";
+      try {
+        gson.fromJson(json, StatementInfo.class);
+        right_json = json;
+      } catch (Exception e) {
+        if (json.contains("\"traceback\":{}")) {
+          LOGGER.debug("traceback type mismatch, replacing the mismatching part ");
+          right_json = json.replace("\"traceback\":{}", "\"traceback\":[]");
+          LOGGER.debug("new json string is {}", right_json);
+        }
+      }
+      return gson.fromJson(right_json, StatementInfo.class);
     }
 
     public boolean isAvailable() {
@@ -676,7 +697,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       public Data data;
       public String ename;
       public String evalue;
-      public Object traceback;
+      public String[] traceback;
       public TableMagic tableMagic;
 
       public boolean isError() {

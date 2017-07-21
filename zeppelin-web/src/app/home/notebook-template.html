@@ -58,8 +58,8 @@ limitations under the License.
       <a style="text-decoration: none; cursor: pointer;" ng-click="toggleFolderNode(node)">
         <i style="font-size: 10px;" ng-class="node.hidden ? 'fa fa-folder' : 'fa fa-folder-open'"></i> {{getNoteName(node)}}
       </a>
-      <a ng-if="!node.isTrash" href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;"
-         ng-controller="NotenameCtrl as notenamectrl" ng-click="notenamectrl.getInterpreterSettings()" data-path="{{node.id}}">
+      <a ng-if="!node.isTrash" href="" data-toggle="modal" data-target="#noteCreateModal" style="text-decoration: none;"
+         ng-controller="NoteCreateCtrl as noteCreateCtrl" ng-click="noteCreateCtrl.getInterpreterSettings()" data-path="{{node.id}}">
         <i style="margin-left: 10px;"
            class="fa fa-plus notebook-list-btn" ng-show="showFolderButton"
            tooltip-placement="bottom" uib-tooltip="Create new note">

@@ -298,6 +298,7 @@ while True :
   try:
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
+    jobDesc = req.jobDescription()
     
     # Get post-execute hooks
     try:
@@ -318,7 +319,7 @@ while True :
     if stmts:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
-      sc.setJobGroup(jobGroup, "Zeppelin")
+      sc.setJobGroup(jobGroup, jobDesc)
       code = compile('\n'.join(stmts), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
       to_run_hooks = []
       if (nhooks > 0):

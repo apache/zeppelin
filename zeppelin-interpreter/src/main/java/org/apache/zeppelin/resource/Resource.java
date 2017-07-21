@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.resource;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,9 @@ import java.nio.ByteBuffer;
 /**
  * Information and reference to the resource
  */
-public class Resource {
+public class Resource implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   private final transient Object r;
   private final transient LocalResourcePool pool;
   private final boolean serializable;
@@ -202,5 +206,13 @@ public class Resource {
   private void logException(Exception e) {
     Logger logger = LoggerFactory.getLogger(Resource.class);
     logger.error(e.getMessage(), e);
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static Resource fromJson(String json) {
+    return gson.fromJson(json, Resource.class);
   }
 }

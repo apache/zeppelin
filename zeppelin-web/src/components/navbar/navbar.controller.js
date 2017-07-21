@@ -15,7 +15,7 @@
 angular.module('zeppelinWebApp').controller('NavCtrl', NavCtrl)
 
 function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
-                 noteListDataFactory, baseUrlSrv, websocketMsgSrv,
+                 noteListFactory, baseUrlSrv, websocketMsgSrv,
                  arrayOrderingSrv, searchService, TRASH_FOLDER_ID) {
   'ngInject'
 
@@ -24,7 +24,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   vm.connected = websocketMsgSrv.isConnected()
   vm.isActive = isActive
   vm.logout = logout
-  vm.notes = noteListDataFactory
+  vm.notes = noteListFactory
   vm.search = search
   vm.searchForm = searchService
   vm.showLoginWindow = showLoginWindow
@@ -38,7 +38,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   function getZeppelinVersion () {
     $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
       function (data, status, headers, config) {
-        $rootScope.zeppelinVersion = data.body
+        $rootScope.zeppelinVersion = data.body.version
       }).error(
       function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message)
@@ -95,13 +95,14 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
       $http.post(logoutURL).error(function () {
         $rootScope.userName = ''
         $rootScope.ticket.principal = ''
+        $rootScope.ticket.screenUsername = ''
         $rootScope.ticket.ticket = ''
         $rootScope.ticket.roles = ''
         BootstrapDialog.show({
           message: 'Logout Success'
         })
         setTimeout(function () {
-          window.location.replace('/')
+          window.location = baseUrlSrv.getBase()
         }, 1000)
       })
     })
@@ -122,7 +123,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
    */
 
   $scope.$on('setNoteMenu', function (event, notes) {
-    noteListDataFactory.setNotes(notes)
+    noteListFactory.setNotes(notes)
     initNotebookListEventListener()
   })
 
@@ -131,6 +132,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   })
 
   $scope.$on('loginSuccess', function (event, param) {
+    $rootScope.ticket.screenUsername = $rootScope.ticket.principal
     listConfigurations()
     loadNotes()
     getHomeNote()

@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -33,7 +34,7 @@ import com.google.gson.JsonSyntaxException;
  * Zeppelinhub message class.
  *
  */
-public class ZeppelinhubMessage {
+public class ZeppelinhubMessage implements JsonSerializable {
   private static final Gson gson = new Gson();
   private static final Logger LOG = LoggerFactory.getLogger(Client.class);
   public static final ZeppelinhubMessage EMPTY = new ZeppelinhubMessage();
@@ -64,11 +65,11 @@ public class ZeppelinhubMessage {
     return new ZeppelinhubMessage(zeppelinMsg.op, zeppelinMsg.data, meta);
   }
 
-  public String serialize() {
+  public String toJson() {
     return gson.toJson(this, ZeppelinhubMessage.class);
   }
 
-  public static ZeppelinhubMessage deserialize(String zeppelinhubMessage) {
+  public static ZeppelinhubMessage fromJson(String zeppelinhubMessage) {
     if (StringUtils.isBlank(zeppelinhubMessage)) {
       return EMPTY;
     }
@@ -76,7 +77,7 @@ public class ZeppelinhubMessage {
     try {
       msg = gson.fromJson(zeppelinhubMessage, ZeppelinhubMessage.class);
     } catch (JsonSyntaxException ex) {
-      LOG.error("Cannot deserialize zeppelinhub message", ex);
+      LOG.error("Cannot fromJson zeppelinhub message", ex);
       msg = EMPTY;
     }
     return msg;

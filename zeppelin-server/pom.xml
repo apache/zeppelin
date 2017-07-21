@@ -33,6 +33,7 @@
   <name>Zeppelin: Server</name>
 
   <properties>
+
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.22.2</jersey.version>
@@ -495,7 +496,6 @@
         </dependencies>
       </dependencyManagement>
     </profile>
-    
     <profile>
       <id>using-source-tree</id>
       <activation>

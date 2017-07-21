@@ -27,15 +27,12 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 /**
  * Zeppelin Watcher that will forward user note to ZeppelinHub.
  *
  */
 public class WatcherWebsocket implements WebSocketListener {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinWebsocket.class);
-  private static final Gson GSON = new Gson();
   private static final String watcherPrincipal = "watcher";
   public Session connection;
   
@@ -59,7 +56,7 @@ public class WatcherWebsocket implements WebSocketListener {
     Message watcherMsg = new Message(OP.WATCHER);
     watcherMsg.principal = watcherPrincipal;
     watcherMsg.ticket = TicketContainer.instance.getTicket(watcherPrincipal);
-    session.getRemote().sendStringByFuture(GSON.toJson(watcherMsg));
+    session.getRemote().sendStringByFuture(watcherMsg.toJson());
   }
 
   @Override
@@ -69,7 +66,7 @@ public class WatcherWebsocket implements WebSocketListener {
 
   @Override
   public void onWebSocketText(String message) {
-    WatcherMessage watcherMsg = GSON.fromJson(message, WatcherMessage.class);
+    WatcherMessage watcherMsg = WatcherMessage.fromJson(message);
     if (StringUtils.isBlank(watcherMsg.noteId)) {
       return;
     }

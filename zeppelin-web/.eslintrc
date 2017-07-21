@@ -58,6 +58,7 @@
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
     "strict": [2, "global"],
-    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}],
+	"linebreak-style": 0
   }
 }

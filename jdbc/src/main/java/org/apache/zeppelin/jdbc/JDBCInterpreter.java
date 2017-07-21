@@ -23,6 +23,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.KerberosInterpreter;
 import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
@@ -88,7 +90,7 @@ import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMeth
  * }
  * </p>
  */
-public class JDBCInterpreter extends Interpreter {
+public class JDBCInterpreter extends KerberosInterpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
@@ -106,6 +108,7 @@ public class JDBCInterpreter extends Interpreter {
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
   static final String DEFAULT_COMPLETER_TTL = "120";
+  static final String SPLIT_QURIES_KEY = "splitQueries";
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
@@ -145,12 +148,29 @@ public class JDBCInterpreter extends Interpreter {
     maxLineResults = MAX_LINE_DEFAULT;
   }
 
+  @Override
+  protected boolean runKerberosLogin() {
+    try {
+      if (UserGroupInformation.isLoginKeytabBased()) {
+        UserGroupInformation.getLoginUser().reloginFromKeytab();
+        return true;
+      } else if (UserGroupInformation.isLoginTicketBased()) {
+        UserGroupInformation.getLoginUser().reloginFromTicketCache();
+        return true;
+      }
+    } catch (Exception e) {
+      logger.error("Unable to run kinit for zeppelin", e);
+    }
+    return false;
+  }
+
   public HashMap<String, Properties> getPropertiesMap() {
     return basePropretiesMap;
   }
 
   @Override
   public void open() {
+    super.open();
     for (String propertyKey : property.stringPropertyNames()) {
       logger.debug("propertyKey: {}", propertyKey);
       String[] keyValue = propertyKey.split("\\.", 2);
@@ -187,6 +207,18 @@ public class JDBCInterpreter extends Interpreter {
 
     setMaxLineResults();
   }
+
+
+  protected boolean isKerboseEnabled() {
+    if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
+      if (authType.equals(KERBEROS)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   private void setMaxLineResults() {
     if (basePropretiesMap.containsKey(COMMON_KEY) &&
@@ -257,6 +289,7 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    super.close();
     try {
       initStatementMap();
       initConnectionPoolMap();
@@ -538,7 +571,6 @@ public class JDBCInterpreter extends Interpreter {
     StringBuilder query = new StringBuilder();
     char character;
 
-    Boolean antiSlash = false;
     Boolean multiLineComment = false;
     Boolean singleLineComment = false;
     Boolean quoteString = false;
@@ -561,14 +593,8 @@ public class JDBCInterpreter extends Interpreter {
         continue;
       }
 
-      if (character == '\\') {
-        antiSlash = true;
-      }
-
       if (character == '\'') {
-        if (antiSlash) {
-          antiSlash = false;
-        } else if (quoteString) {
+        if (quoteString) {
           quoteString = false;
         } else if (!doubleQuoteString) {
           quoteString = true;
@@ -576,9 +602,7 @@ public class JDBCInterpreter extends Interpreter {
       }
 
       if (character == '"') {
-        if (antiSlash) {
-          antiSlash = false;
-        } else if (doubleQuoteString) {
+        if (doubleQuoteString && item > 0) {
           doubleQuoteString = false;
         } else if (!quoteString) {
           doubleQuoteString = true;
@@ -598,7 +622,7 @@ public class JDBCInterpreter extends Interpreter {
         }
       }
 
-      if (character == ';' && !antiSlash && !quoteString && !doubleQuoteString) {
+      if (character == ';' && !quoteString && !doubleQuoteString) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
@@ -635,18 +659,35 @@ public class JDBCInterpreter extends Interpreter {
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
-    InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    boolean splitQuery = false;
+    String splitQueryProperty = getProperty(String.format("%s.%s", propertyKey, SPLIT_QURIES_KEY));
+    if (StringUtils.isNotBlank(splitQueryProperty) && splitQueryProperty.equalsIgnoreCase("true")) {
+      splitQuery = true;
+    }
 
+    InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
     try {
       connection = getConnection(propertyKey, interpreterContext);
       if (connection == null) {
         return new InterpreterResult(Code.ERROR, "Prefix not found.");
       }
 
-      ArrayList<String> multipleSqlArray = splitSqlQueries(sql);
-      for (int i = 0; i < multipleSqlArray.size(); i++) {
-        String sqlToExecute = multipleSqlArray.get(i);
+
+      List<String> sqlArray;
+      if (splitQuery) {
+        sqlArray = splitSqlQueries(sql);
+      } else {
+        sqlArray = Arrays.asList(sql);
+      }
+
+      for (int i = 0; i < sqlArray.size(); i++) {
+        String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
+
+        // fetch n+1 rows in order to indicate there's more rows available (for large selects)
+        statement.setFetchSize(getMaxResult());
+        statement.setMaxRows(getMaxResult() + 1);
+
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
         }
@@ -704,49 +745,17 @@ public class JDBCInterpreter extends Interpreter {
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
     } catch (Throwable e) {
-      if (e.getCause() instanceof TTransportException &&
-          Throwables.getStackTraceAsString(e).contains("GSS") &&
-          getJDBCConfiguration(user).isConnectionInDBDriverPoolSuccessful(propertyKey)) {
-        return reLoginFromKeytab(propertyKey, sql, interpreterContext, interpreterResult);
-      } else {
-        logger.error("Cannot run " + sql, e);
-        String errorMsg = Throwables.getStackTraceAsString(e);
-        try {
-          closeDBPool(user, propertyKey);
-        } catch (SQLException e1) {
-          logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
-        }
-        interpreterResult.add(errorMsg);
-        return new InterpreterResult(Code.ERROR, interpreterResult.message());
+      logger.error("Cannot run " + sql, e);
+      String errorMsg = Throwables.getStackTraceAsString(e);
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
       }
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
     }
     return interpreterResult;
-  }
-
-  private InterpreterResult reLoginFromKeytab(String propertyKey, String sql,
-     InterpreterContext interpreterContext, InterpreterResult interpreterResult) {
-    String user = interpreterContext.getAuthenticationInfo().getUser();
-    try {
-      closeDBPool(user, propertyKey);
-    } catch (SQLException e) {
-      logger.error("Error, could not close DB pool in reLoginFromKeytab ", e);
-    }
-    UserGroupInformation.AuthenticationMethod authType =
-        JDBCSecurityImpl.getAuthtype(property);
-    if (authType.equals(KERBEROS)) {
-      try {
-        if (UserGroupInformation.isLoginKeytabBased()) {
-          UserGroupInformation.getLoginUser().reloginFromKeytab();
-        } else if (UserGroupInformation.isLoginTicketBased()) {
-          UserGroupInformation.getLoginUser().reloginFromTicketCache();
-        }
-      } catch (IOException e) {
-        logger.error("Cannot reloginFromKeytab " + sql, e);
-        interpreterResult.add(e.getMessage());
-        return new InterpreterResult(Code.ERROR, interpreterResult.message());
-      }
-    }
-    return executeSql(propertyKey, sql, interpreterContext);
   }
 
   /**

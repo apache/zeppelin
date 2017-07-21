@@ -134,7 +134,7 @@ public class HeliumRestApi {
       return new JsonResponse(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
           .build();
     }
-    HeliumPackage pkg = gson.fromJson(heliumPackage, HeliumPackage.class);
+    HeliumPackage pkg = HeliumPackage.fromJson(heliumPackage);
 
     String appId = helium.getApplicationFactory().loadAndRun(pkg, paragraph);
     return new JsonResponse(Response.Status.OK, "", appId).build();
@@ -208,13 +208,6 @@ public class HeliumRestApi {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
-  }
-
-  @GET
-  @Path("order/visualization")
-  public Response getVisualizationPackageOrder() {
-    List<String> order = helium.setVisualizationPackageOrder();
-    return new JsonResponse(Response.Status.OK, order).build();
   }
 
   @GET
@@ -309,9 +302,16 @@ public class HeliumRestApi {
     return new JsonResponse(Response.Status.OK, packageConfig).build();
   }
 
+  @GET
+  @Path("order/visualization")
+  public Response getVisualizationPackageOrder() {
+    List<String> order = helium.getVisualizationPackageOrder();
+    return new JsonResponse(Response.Status.OK, order).build();
+  }
+
   @POST
   @Path("order/visualization")
-  public Response getVisualizationPackageOrder(String orderedPackageNameList) {
+  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
     List<String> orderedList = gson.fromJson(
         orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
 

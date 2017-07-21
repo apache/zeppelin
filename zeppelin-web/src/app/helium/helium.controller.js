@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { HeliumType, } from '../../components/helium/helium-type'
+import { HeliumType, } from './helium-type'
 
 export default function HeliumCtrl ($scope, $rootScope, $sce,
                                    baseUrlSrv, ngToast, heliumService) {
@@ -50,14 +50,16 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
       })
       .then(defaultPackageConfigs => {
         $scope.defaultPackageConfigs = defaultPackageConfigs
+        return heliumService.getVisualizationPackageOrder()
       })
-
-    // 2. get vis package order
-    heliumService.getVisualizationPackageOrder()
       .then(visPackageOrder => {
-        $scope.bundleOrder = visPackageOrder
-        $scope.bundleOrderChanged = false
+        setVisPackageOrder(visPackageOrder)
       })
+  }
+
+  const setVisPackageOrder = function(visPackageOrder) {
+    $scope.bundleOrder = visPackageOrder
+    $scope.bundleOrderChanged = false
   }
 
   let orderPackageByPubDate = function (a, b) {
@@ -133,18 +135,18 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
           confirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling')
           heliumService.setVisualizationPackageOrder($scope.bundleOrder)
-          .success(function (data, status) {
-            init()
-            confirm.close()
-          })
-          .error(function (data, status) {
-            confirm.close()
-            console.log('Failed to save order')
-            BootstrapDialog.show({
-              title: 'Error on saving order ',
-              message: data.message
+            .success(function (data, status) {
+              setVisPackageOrder($scope.bundleOrder)
+              confirm.close()
             })
-          })
+            .error(function (data, status) {
+              confirm.close()
+              console.log('Failed to save order')
+              BootstrapDialog.show({
+                title: 'Error on saving order ',
+                message: data.message
+              })
+            })
           return false
         }
       }
@@ -177,9 +179,9 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
 
   const getHeliumTypeText = function (type) {
     if (type === HeliumType.VISUALIZATION) {
-      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/writingzeppelinvisualization.html">${type}</a>` // eslint-disable-line max-len
+      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_visualization.html">${type}</a>` // eslint-disable-line max-len
     } else if (type === HeliumType.SPELL) {
-      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/writingzeppelinspell.html">${type}</a>` // eslint-disable-line max-len
+      return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_spell.html">${type}</a>` // eslint-disable-line max-len
     } else {
       return type
     }

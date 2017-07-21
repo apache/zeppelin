@@ -17,16 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.internal.StringMap;
-import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +35,6 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +47,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -71,12 +62,23 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.internal.StringMap;
+import com.google.gson.reflect.TypeToken;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * TBD
@@ -154,25 +156,38 @@ public class InterpreterSettingManager {
   /**
    * Remember this method doesn't keep current connections after being called
    */
-  private void  loadFromFile() {
+  private void loadFromFile() {
     if (!Files.exists(interpreterBindingPath)) {
       // nothing to read
       return;
     }
     InterpreterInfoSaving infoSaving;
-    try (BufferedReader json =
+    try (BufferedReader jsonReader =
         Files.newBufferedReader(interpreterBindingPath, StandardCharsets.UTF_8)) {
-      infoSaving = gson.fromJson(json, InterpreterInfoSaving.class);
+      JsonParser jsonParser = new JsonParser();
+      JsonObject jsonObject = jsonParser.parse(jsonReader).getAsJsonObject();
+      infoSaving = gson.fromJson(jsonObject.toString(), InterpreterInfoSaving.class);
 
       for (String k : infoSaving.interpreterSettings.keySet()) {
         InterpreterSetting setting = infoSaving.interpreterSettings.get(k);
+
+        setting.convertFlatPropertiesToPropertiesWithWidgets();
+
         List<InterpreterInfo> infos = setting.getInterpreterInfos();
 
         // Convert json StringMap to Properties
-        StringMap<String> p = (StringMap<String>) setting.getProperties();
-        Properties properties = new Properties();
+        StringMap<StringMap> p = (StringMap<StringMap>) setting.getProperties();
+        Map<String, InterpreterProperty> properties = new HashMap();
         for (String key : p.keySet()) {
-          properties.put(key, p.get(key));
+          StringMap<String> fields = (StringMap<String>) p.get(key);
+          String type = InterpreterPropertyType.TEXTAREA.getValue();
+          try {
+            type = InterpreterPropertyType.byValue(fields.get("type")).getValue();
+          } catch (Exception e) {
+            logger.warn("Incorrect type of property {} in settings {}", key,
+                setting.getId());
+          }
+          properties.put(key, new InterpreterProperty(key, fields.get("value"), type));
         }
         setting.setProperties(properties);
 
@@ -181,6 +196,9 @@ public class InterpreterSettingManager {
         // enable/disable option on GUI).
         // previously created setting should turn this feature on here.
         setting.getOption().setRemote(true);
+
+        setting.convertPermissionsFromUsersToOwners(
+            jsonObject.getAsJsonObject("interpreterSettings").getAsJsonObject(setting.getId()));
 
         // Update transient information from InterpreterSettingRef
         InterpreterSetting interpreterSettingObject =
@@ -230,7 +248,7 @@ public class InterpreterSettingManager {
       info.interpreterSettings = interpreterSettings;
       info.interpreterRepositories = interpreterRepositories;
 
-      jsonString = gson.toJson(info);
+      jsonString = info.toJson();
     }
 
     if (!Files.exists(interpreterBindingPath)) {
@@ -242,7 +260,7 @@ public class InterpreterSettingManager {
       } catch (UnsupportedOperationException e) {
         // File system does not support Posix file permissions (likely windows) - continue anyway.
         logger.warn("unable to setPosixFilePermissions on '{}'.", interpreterBindingPath);
-      };
+      }
     }
 
     FileOutputStream fos = new FileOutputStream(interpreterBindingPath.toFile(), false);
@@ -479,8 +497,8 @@ public class InterpreterSettingManager {
         new ArrayList<InterpreterInfo>() : new ArrayList<>(o.getInterpreterInfos());
     List<Dependency> deps = (null == o.getDependencies()) ?
         new ArrayList<Dependency>() : new ArrayList<>(o.getDependencies());
-    Properties props =
-        convertInterpreterProperties((Map<String, InterpreterProperty>) o.getProperties());
+    Map<String, InterpreterProperty> props =
+        convertInterpreterProperties((Map<String, DefaultInterpreterProperty>) o.getProperties());
     InterpreterOption option = InterpreterOption.fromInterpreterOption(o.getOption());
 
     InterpreterSetting setting = new InterpreterSetting(o.getName(), o.getName(),
@@ -489,10 +507,14 @@ public class InterpreterSettingManager {
     return setting;
   }
 
-  private Properties convertInterpreterProperties(Map<String, InterpreterProperty> p) {
-    Properties properties = new Properties();
-    for (String key : p.keySet()) {
-      properties.put(key, p.get(key).getValue());
+  private Map<String, InterpreterProperty> convertInterpreterProperties(
+      Map<String, DefaultInterpreterProperty> defaultProperties) {
+    Map<String, InterpreterProperty> properties = new HashMap<>();
+
+    for (String key : defaultProperties.keySet()) {
+      DefaultInterpreterProperty defaultInterpreterProperty = defaultProperties.get(key);
+      properties.put(key, new InterpreterProperty(key, defaultInterpreterProperty.getValue(),
+          defaultInterpreterProperty.getType()));
     }
     return properties;
   }
@@ -678,7 +700,8 @@ public class InterpreterSettingManager {
   }
 
   public InterpreterSetting createNewSetting(String name, String group,
-      List<Dependency> dependencies, InterpreterOption option, Properties p) throws IOException {
+      List<Dependency> dependencies, InterpreterOption option, Map<String, InterpreterProperty> p)
+      throws IOException {
     if (name.indexOf(".") >= 0) {
       throw new IOException("'.' is invalid for InterpreterSetting name.");
     }
@@ -696,8 +719,8 @@ public class InterpreterSettingManager {
   }
 
   private InterpreterSetting add(String group, InterpreterInfo interpreterInfo,
-      Map<String, InterpreterProperty> interpreterProperties, InterpreterOption option, String path,
-      InterpreterRunner runner)
+      Map<String, DefaultInterpreterProperty> interpreterProperties, InterpreterOption option,
+      String path, InterpreterRunner runner)
       throws InterpreterException, IOException, RepositoryException {
     ArrayList<InterpreterInfo> infos = new ArrayList<>();
     infos.add(interpreterInfo);
@@ -710,7 +733,7 @@ public class InterpreterSettingManager {
    */
   public InterpreterSetting add(String group, ArrayList<InterpreterInfo> interpreterInfos,
       List<Dependency> dependencies, InterpreterOption option,
-      Map<String, InterpreterProperty> interpreterProperties, String path,
+      Map<String, DefaultInterpreterProperty> interpreterProperties, String path,
       InterpreterRunner runner) {
     Preconditions.checkNotNull(group, "name should not be null");
     Preconditions.checkNotNull(interpreterInfos, "interpreterInfos should not be null");
@@ -747,8 +770,8 @@ public class InterpreterSettingManager {
         }
 
         // Append properties
-        Map<String, InterpreterProperty> properties =
-            (Map<String, InterpreterProperty>) interpreterSetting.getProperties();
+        Map<String, DefaultInterpreterProperty> properties =
+            (Map<String, DefaultInterpreterProperty>) interpreterSetting.getProperties();
         for (String key : interpreterProperties.keySet()) {
           if (!properties.containsKey(key)) {
             properties.put(key, interpreterProperties.get(key));
@@ -906,7 +929,8 @@ public class InterpreterSettingManager {
   /**
    * Change interpreter property and restart
    */
-  public void setPropertyAndRestart(String id, InterpreterOption option, Properties properties,
+  public void setPropertyAndRestart(String id, InterpreterOption option,
+      Map<String, InterpreterProperty> properties,
       List<Dependency> dependencies) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpSetting = interpreterSettings.get(id);

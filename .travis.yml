@@ -45,14 +45,28 @@ matrix:
     - jdk: "oraclejdk7"
       env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
+    # Run e2e tests (in zeppelin-web)
+    # chrome dropped the support for precise (ubuntu 12.04), so need to use trusty
+    # also, can't use JDK 7 in trusty: https://github.com/travis-ci/travis-ci/issues/7884
+    - os: linux
+      sudo: false
+      dist: trusty
+      jdk: "oraclejdk8"
+      env: WEB_E2E="true" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web" TEST_PROJECTS="-Pweb-e2e"
+      addons:
+        apt:
+          sources:
+          - r-packages-trusty
+          packages:
+          - google-chrome-stable
+          - r-base-dev
+
     # Test core modules
-    #
     # Several tests were excluded from this configuration due to the following issues:
     # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
-    # ZeppelinRestApiTest          - https://issues.apache.org/jira/browse/ZEPPELIN-2473
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
-    - jdk: "oraclejdk7"
-      env: SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumApplicationFactoryTest.java,**/ZeppelinRestApiTest.java -DfailIfNoTests=false"
+    - jdk: "oraclejdk8"
+      env: SCALA_VER="2.11" SPARK_VER="2.2.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.2 -Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for 1.6.3
     - jdk: "oraclejdk7"
@@ -60,7 +74,11 @@ matrix:
 
     # Test interpreter modules
     - jdk: "oraclejdk7"
-      env: SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat -Pr" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+
+    # Test spark module for 2.2.0 with scala 2.11, livy
+    - jdk: "oraclejdk8"
+      env: SCALA_VER="2.11" SPARK_VER="2.2.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pspark-2.2 -Phadoop-2.6 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark-dependencies,spark,livy" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.*,org.apache.zeppelin.livy.* -DfailIfNoTests=false"
 
     # Test spark module for 2.1.0 with scala 2.11, livy
     - jdk: "oraclejdk7"
@@ -94,7 +112,7 @@ before_install:
   - changedfiles=$(git diff --name-only $TRAVIS_COMMIT_RANGE 2>/dev/null) || changedfiles=""
   - echo $changedfiles
   - hasbowerchanged=$(echo $changedfiles | grep -c "bower.json" || true);
-  - gitlog=$(git log $TRAVIS_COMMIT_RANGE 2>/dev/null) || gitlog="" 
+  - gitlog=$(git log $TRAVIS_COMMIT_RANGE 2>/dev/null) || gitlog=""
   - clearcache=$(echo $gitlog | grep -c -E "clear bower|bower clear" || true)
   - if [ "$hasbowerchanged" -gt 0 ] || [ "$clearcache" -gt 0 ]; then echo "Clearing bower_components cache"; rm -r zeppelin-web/bower_components; npm cache clear; else echo "Using cached bower_components."; fi
   - echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=warn'" >> ~/.mavenrc
@@ -106,6 +124,7 @@ before_install:
   - source ~/.environ
 
 install:
+  - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
   - mvn $BUILD_FLAG $MODULES $PROFILE -B
 
 before_script:
@@ -116,8 +135,14 @@ before_script:
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
+  # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
+  - if [[ -n $TEST_MODULES ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; sleep 3; fi
+  # display info log for debugging
+  - if [[ -n $TEST_MODULES ]]; then echo "MAVEN_OPTS='-Xms1024M -Xmx2048M -XX:MaxPermSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.defaultLogLevel=info'" > ~/.mavenrc; fi
 
 script:
+  - if [[ -n $TEST_MODULES ]]; then export MODULES="${TEST_MODULES}"; fi
+  - echo "mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS"
   - mvn $TEST_FLAG $MODULES $PROFILE -B $TEST_PROJECTS
 
 after_success:

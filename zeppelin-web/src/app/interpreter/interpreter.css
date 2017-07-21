@@ -123,3 +123,10 @@
   margin-top: 0px !important;
   margin-bottom: 0px !important;
 }
+
+.interpreter-binding-mode-info-link {
+  color: #3071a9;
+  vertical-align: middle;
+  margin-left: 2px;
+  text-decoration: none !important;
+}

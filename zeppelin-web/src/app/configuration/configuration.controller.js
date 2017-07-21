@@ -14,11 +14,10 @@
 
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
 
-function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast) {
   'ngInject'
 
   $scope.configrations = []
-  $scope._ = _
   ngToast.dismiss()
 
   let getConfigurations = function () {
@@ -34,7 +33,7 @@ function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
           timeout: '3000'
         })
         setTimeout(function () {
-          window.location.replace('/')
+          window.location = baseUrlSrv.getBase()
         }, 3000)
       }
       console.log('Error %o %o', status, data.message)

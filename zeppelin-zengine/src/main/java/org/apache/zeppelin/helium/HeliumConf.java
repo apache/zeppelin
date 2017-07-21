@@ -16,12 +16,21 @@
  */
 package org.apache.zeppelin.helium;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.common.JsonSerializable;
+
 import java.util.*;
 
 /**
  * Helium config. This object will be persisted to conf/helium.conf
  */
-public class HeliumConf {
+public class HeliumConf implements JsonSerializable {
+  private static final Gson gson =  new GsonBuilder()
+    .setPrettyPrinting()
+    .registerTypeAdapter(HeliumRegistry.class, new HeliumRegistrySerializer())
+    .create();
+
   // enabled packages {name, version}
   private Map<String, String> enabled = Collections.synchronizedMap(new HashMap<String, String>());
 
@@ -31,7 +40,8 @@ public class HeliumConf {
           new HashMap<String, Map<String, Object>>());
 
   // enabled visualization package display order
-  private List<String> bundleDisplayOrder = new LinkedList<>();
+  private List<String> bundleDisplayOrder =
+          Collections.synchronizedList(new LinkedList<String>());
 
   public Map<String, String> getEnabledPackages() {
     return new HashMap<>(enabled);
@@ -88,6 +98,14 @@ public class HeliumConf {
   }
 
   public void setBundleDisplayOrder(List<String> orderedPackageList) {
-    bundleDisplayOrder = orderedPackageList;
+    bundleDisplayOrder = Collections.synchronizedList(orderedPackageList);
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static HeliumConf fromJson(String json) {
+    return gson.fromJson(json, HeliumConf.class);
   }
 }
