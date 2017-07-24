@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -31,6 +32,7 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SparkSqlInterpreterTest {
@@ -159,6 +161,41 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
     assertEquals("name\tage\ngates\tnull\n", ret.message().get(0).getData());
+  }
+
+  private SparkInterpreter getSparkInterpreter() {
+    LazyOpenInterpreter lazy = null;
+    SparkInterpreter spark = null;
+    Interpreter p = sql.getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    spark = (SparkInterpreter) p;
+
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
+  }
+
+  @Test
+  public void testVariableInterpolation() {
+    context = new InterpreterContext("NoteId", "ParaId", null,
+            "testVariableInterpolation", "",
+            null, null, null, null,
+            new LocalResourcePool("testVariableInterpolation"),
+            null, null);
+    SparkZeppelinContext zc = getSparkInterpreter().getZeppelinContext();
+    zc.setInterpreterContext(context);
+    zc.put("n", "100");
+    zc.put("table", "name");
+    String commandWithVariables = "select * from {table} where count = {n}";
+    String resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("select * from name where count = 100", resultString);
   }
 
   @Test

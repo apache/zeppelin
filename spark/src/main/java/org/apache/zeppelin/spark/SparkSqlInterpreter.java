@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
@@ -33,6 +35,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -85,6 +89,37 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void close() {}
 
+  String interpolateVariable(String originalCommand) {
+
+    Pattern variablePattern = Pattern.compile("([^{]*)([{][^}]+[}]).*");
+    Matcher variableMatcher;
+
+    StringBuilder newCommandBuffer = new StringBuilder();
+
+    SparkZeppelinContext sparkZeppelinContext = getSparkInterpreter().getZeppelinContext();
+
+    String residualCommand = originalCommand;
+    // iterate while there is any pattern left in the residual-command text
+    while ((variableMatcher = variablePattern.matcher(residualCommand)).matches()) {
+      // get any characters until the next pattern, add to new-command buffer
+      newCommandBuffer.append(variableMatcher.group(1));
+      // get the variable pattern
+      String variableSpec = variableMatcher.group(2);
+      // extract variable-name from pattern
+      String variableName = variableSpec.substring(1, variableSpec.length() - 1);
+      // get variable-value from interpreter's context
+      Object variableValue = sparkZeppelinContext.get(variableName);
+      // add substitution-text into new-command buffer
+      newCommandBuffer.append(variableValue == null ? variableSpec : variableValue.toString());
+      // update residual-command text
+      residualCommand = residualCommand.substring(variableMatcher.end(2));
+    }
+    // add any remaining text without patterns to the new-command buffer
+    newCommandBuffer.append(residualCommand);
+
+    return newCommandBuffer.toString();
+  }
+
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
@@ -114,7 +149,8 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      rdd = sqlMethod.invoke(sqlc, st);
+      String interpolatedSt = interpolateVariable(st);
+      rdd = sqlMethod.invoke(sqlc, interpolatedSt);
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);
