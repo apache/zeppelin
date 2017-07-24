@@ -56,7 +56,7 @@ public class HeliumTest {
     assertFalse(heliumConf.exists());
 
     // when
-    helium.save();
+    helium.saveConfig();
 
     // then
     assertTrue(heliumConf.exists());
@@ -101,7 +101,6 @@ public class HeliumTest {
     assertEquals(2, helium.getAllPackageInfo().size());
   }
 
-
   @Test
   public void testRefresh() throws IOException, URISyntaxException, TaskRunnerException {
     File heliumConf = new File(tmpDir, "helium.conf");
@@ -122,7 +121,7 @@ public class HeliumTest {
         ""));
 
     // then
-    assertEquals(1, helium.getAllPackageInfoWithoutRefresh().size());
+    assertEquals(1, helium.getAllPackageInfo().size());
 
     // when
     registry1.add(new HeliumPackage(
@@ -136,7 +135,6 @@ public class HeliumTest {
         ""));
 
     // then
-    assertEquals(1, helium.getAllPackageInfoWithoutRefresh().size());
     assertEquals(2, helium.getAllPackageInfo(true, null).size());
   }
 }

@@ -29,7 +29,8 @@
         "envName": null,
         "propertyName": "default.completer.ttlInSeconds",
         "defaultValue": "120",
-        "description": "Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)"
+        "description": "Time to live sql completer in seconds (-1 to update everytime, 0 to disable update)",
+        "type": "number"
       },
       "default.driver": {
         "envName": null,
@@ -55,8 +56,9 @@
       "default.splitQueries": {
         "envName": null,
         "propertyName": "default.splitQueries",
-        "defaultValue": "false",
-        "description": "Each query is executed apart and returns the result"
+        "defaultValue": false,
+        "description": "Each query is executed apart and returns the result",
+        "type": "checkbox"
       },
       "common.max_count": {
         "envName": null,

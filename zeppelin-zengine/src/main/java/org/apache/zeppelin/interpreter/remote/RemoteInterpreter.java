@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -140,13 +141,36 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
-    Map<String, String> env = new HashMap<>();
-    for (Object key : property.keySet()) {
-      if (RemoteInterpreterUtils.isEnvString((String) key)) {
-        env.put((String) key, property.getProperty((String) key));
+    Map<String, String> env = new HashMap<String, String>();
+    StringBuilder sparkConfBuilder = new StringBuilder();
+    for (String key : property.stringPropertyNames()) {
+      if (RemoteInterpreterUtils.isEnvString(key)) {
+        env.put(key, property.getProperty(key));
+      }
+      if (key.equals("master")) {
+        sparkConfBuilder.append(" --master " + property.getProperty("master"));
+      }
+      if (isSparkConf(key, property.getProperty(key))) {
+        sparkConfBuilder.append(" --conf " + key + "=\"" +
+            toShellFormat(property.getProperty(key)) + "\"");
       }
     }
+    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
     return env;
+  }
+
+  private String toShellFormat(String value) {
+    if (value.contains("\'") && value.contains("\"")) {
+      throw new RuntimeException("Spark property value could not contain both \" and '");
+    } else if (value.contains("\'")) {
+      return "\"" + value + "\"";
+    } else {
+      return "\'" + value + "\'";
+    }
+  }
+
+  static boolean isSparkConf(String key, String value) {
+    return !StringUtils.isEmpty(key) && key.startsWith("spark.") && !StringUtils.isEmpty(value);
   }
 
   @Override
@@ -557,10 +581,6 @@ public class RemoteInterpreter extends Interpreter {
 
   public Map<String, String> getEnv() {
     return env;
-  }
-
-  public void setEnv(Map<String, String> env) {
-    this.env = env;
   }
 
   public void addEnv(Map<String, String> env) {
