@@ -174,7 +174,8 @@ limitations under the License.
           <div class="input-group input-group-sm search-group">
             <span class="input-group-addon">Find</span>
             <input type="text" class="form-control" id="findInput"
-                   ng-class="{'no-match': !hasMatches() && search.searchText !== ''}"
+                   ng-class="{'no-match': !hasMatches() && search.searchText !== '',
+                    'has-match': search.searchText !== ''}"
                    ng-change="markAllOccurrencesAndHighlightFirst()"
                    ng-click="markAllOccurrencesAndHighlightFirst()" ng-keypress="onPressOnFindInput($event)"
                    ng-model="search.searchText"  ng-trim="false"/>
@@ -194,13 +195,16 @@ limitations under the License.
             </div>
           </div>
           <div class="input-group input-group-sm search-group">
-            <span class="input-group-addon">Replace</span>
-            <input type="text" class="form-control" ng-model="search.replaceText" ng-trim="false"/>
+            <span class="input-group-addon" style="border-top-width: inherit">Replace</span>
+            <input type="text" class="form-control" ng-model="search.replaceText" ng-trim="false"
+                   style="border-top-width: inherit"/>
             <div class="input-group-btn">
-              <button class="btn btn-default" ng-click="replace()">Replace</button>
+              <button class="btn btn-default" ng-click="replace()"
+                      style="border-top-width: inherit">Replace</button>
             </div>
             <div class="input-group-btn">
-              <button class="btn btn-default" ng-click="replaceAll()">All</button>
+              <button class="btn btn-default" ng-click="replaceAll()"
+                      style="border-top-width: inherit">All</button>
             </div>
           </div>
         </li>
