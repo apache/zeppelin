@@ -427,7 +427,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       clickAndWait(By.xpath(noteXPath + "//..//a//i[@uib-tooltip='Rename note']"));
       WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      block.until(ExpectedConditions.visibilityOfElementLocated(By.id("renameModal")));
+      block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteRenameModal")));
 
       //rename
       String newName = "SomeNewName";
@@ -496,7 +496,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
           " note')]"));
       WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+      block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteCreateModal")));
       String folderName = "folderName";
       String newName = folderName + "/note";
       WebElement inputField = driver.findElement(By.xpath("//input[@ng-model='note.notename']"));
