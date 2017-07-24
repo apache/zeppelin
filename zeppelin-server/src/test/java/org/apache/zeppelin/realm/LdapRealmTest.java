@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
@@ -120,7 +121,7 @@ public class LdapRealmTest {
     group3.put(realm.getMemberAttribute(), "principal");
 
     NamingEnumeration<SearchResult> results = enumerationOf(group1, group2, group3);
-    when(ldapCtx.search(any(String.class), any(String.class), any())).thenReturn(results);
+    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class))).thenReturn(results);
 
 
     Set<String> roles = realm.rolesFor(
@@ -144,7 +145,7 @@ public class LdapRealmTest {
   }
 
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {
-    Iterator<BasicAttributes> iterator = Arrays.asList(attrs).iterator();
+    final Iterator<BasicAttributes> iterator = Arrays.asList(attrs).iterator();
     return new NamingEnumeration<SearchResult>() {
       @Override
       public SearchResult next() throws NamingException {
