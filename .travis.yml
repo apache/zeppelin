@@ -17,6 +17,8 @@ language: java
 
 sudo: false
 
+dist: precise
+
 cache:
   apt: true
   directories:
@@ -50,7 +52,7 @@ matrix:
     # also, can't use JDK 7 in trusty: https://github.com/travis-ci/travis-ci/issues/7884
     - os: linux
       sudo: false
-      dist: precise
+      dist: trusty
       jdk: "oraclejdk8"
       env: WEB_E2E="true" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pscala-2.11" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web" TEST_PROJECTS="-Pweb-e2e"
       addons:
