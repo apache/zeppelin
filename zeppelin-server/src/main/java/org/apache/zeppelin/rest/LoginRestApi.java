@@ -63,7 +63,8 @@ public class LoginRestApi {
   @POST
   @ZeppelinApi
   public Response postLogin(@FormParam("userName") String userName,
-                            @FormParam("password") String password) {
+                            @FormParam("password") String password,
+                            @FormParam("rememberMe") boolean rememberMe) {
     JsonResponse response = null;
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
@@ -72,8 +73,7 @@ public class LoginRestApi {
     }
     if (!currentUser.isAuthenticated()) {
       try {
-        UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
-        //      token.setRememberMe(true);
+        UsernamePasswordToken token = new UsernamePasswordToken(userName, password, rememberMe);
 
         currentUser.getSession().stop();
         currentUser.getSession(true);

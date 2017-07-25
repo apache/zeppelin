@@ -29,7 +29,8 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
       },
       data: $httpParamSerializer({
         'userName': $scope.loginParams.userName,
-        'password': $scope.loginParams.password
+        'password': $scope.loginParams.password,
+        'rememberMe': $scope.loginParams.rememberMe,
       })
     }).then(function successCallback (response) {
       $rootScope.ticket = response.data.body
@@ -55,7 +56,8 @@ function LoginCtrl ($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv,
   let initValues = function () {
     $scope.loginParams = {
       userName: '',
-      password: ''
+      password: '',
+      rememberMe: false,
     }
   }
 

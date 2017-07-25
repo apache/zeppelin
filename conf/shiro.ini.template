@@ -46,6 +46,12 @@ user3 = password4, role2
 #ldapRealm.userDnTemplate = uid={0},ou=Users,dc=COMPANY,dc=COM
 #ldapRealm.contextFactory.authenticationMechanism = simple
 
+### If you want "remember me" to keep used logged in between sessions
+# securityManager = org.apache.zeppelin.security.CookieBasedSecurityManager
+# rememberMeManager = org.apache.shiro.web.mgt.CookieRememberMeManager
+# securityManager.rememberMeManager = $rememberMeManager
+# securityManager.rememberMeManager.cipherKey = <generate a cypher key here>
+
 ### A sample PAM configuration
 #pamRealm=org.apache.zeppelin.realm.PamRealm
 #pamRealm.service=sshd
