@@ -184,13 +184,13 @@ public class SparkSqlInterpreterTest {
 
   @Test
   public void testVariableInterpolation() {
-    context = new InterpreterContext("NoteId", "ParaId", null,
+    InterpreterContext newContext = new InterpreterContext("NoteId", "ParaId", null,
             "testVariableInterpolation", "",
             null, null, null, null,
             new LocalResourcePool("testVariableInterpolation"),
             null, null);
     SparkZeppelinContext zc = getSparkInterpreter().getZeppelinContext();
-    zc.setInterpreterContext(context);
+    zc.setInterpreterContext(newContext);
     zc.put("n", "100");
     zc.put("table", "name");
     String commandWithVariables = "select * from {table} where count = {n}";
