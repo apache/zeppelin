@@ -203,6 +203,7 @@ function auth () {
 function bootstrapApplication () {
   zeppelinWebApp.run(function ($rootScope, $location) {
     $rootScope.$on('$routeChangeStart', function (event, next, current) {
+      $rootScope.pageTitle = 'Zeppelin'
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
         $location.path('/')
       }

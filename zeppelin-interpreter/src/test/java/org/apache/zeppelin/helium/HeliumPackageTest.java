@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.helium;
 
-import com.google.gson.Gson;
 import org.junit.Test;
 
 import java.util.Map;
@@ -25,8 +24,6 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class HeliumPackageTest {
-
-  private Gson gson = new Gson();
 
   @Test
   public void parseSpellPackageInfo() {
