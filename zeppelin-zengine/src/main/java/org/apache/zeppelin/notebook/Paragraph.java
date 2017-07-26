@@ -314,10 +314,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     String replName = getRequiredReplName(buffer);
     if (replName != null && cursor > replName.length()) {
-      Matcher m = Pattern.compile(String.format("%%%s\\s*", replName)).matcher(buffer);
-      if (m.find()) {
-        cursor -= m.group().length();
-      }
+      String body = buffer.substring(replName.length() + 1);
+      cursor -= replName.length() + 1 + body.indexOf(body.trim());
     }
 
     String body = getScriptBody(buffer);
