@@ -71,7 +71,8 @@ describe('Search block e2e Test', function() {
 
   /*Require: focus on any paragraph editor*/
   let openSearchBoxByShortcut = function() {
-    browser.switchTo().activeElement().sendKeys(protractor.Key.chord(protractor.Key.CONTROL, "f"))
+    browser.switchTo().activeElement().sendKeys(protractor.Key.chord(protractor.Key.CONTROL,
+      protractor.Key.ALT, "f"))
   }
 
   let countSubstringOccurrence = function(s, subs) {
