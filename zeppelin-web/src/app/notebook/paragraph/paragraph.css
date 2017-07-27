@@ -382,8 +382,9 @@ table.table-shortcut {
 
 /** set cursor color */
 #main .emacs-mode .ace_cursor {
-  background: #C0C0C0!important;
+  background: #000 !important;
   border: none !important;
+  width: 1px !important;
 }
 
 .ace_text-input, .ace_gutter, .ace_layer,
@@ -394,11 +395,6 @@ table.table-shortcut {
 
 .ace_text-input.ace_composition {
  opacity: 0 !important;
-}
-
-#main .emacs-mode .ace_cursor {
-  background: #C0C0C0!important;
-  border: none !important;
 }
 
 /*
