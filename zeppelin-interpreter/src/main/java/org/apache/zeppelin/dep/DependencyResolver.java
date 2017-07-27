@@ -177,8 +177,9 @@ public class DependencyResolver extends AbstractDependencyResolver {
             DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
     try {
       return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
-    } catch (NullPointerException ex) {
-      throw new RepositoryException(String.format("Cannot fetch dependencies for %s", dependency));
+    } catch (Exception ex) {
+      throw new RepositoryException(
+              String.format("Cannot fetch dependencies for %s", dependency), ex);
     }
   }
 }

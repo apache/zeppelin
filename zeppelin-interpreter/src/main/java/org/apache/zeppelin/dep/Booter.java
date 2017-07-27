@@ -18,7 +18,10 @@
 package org.apache.zeppelin.dep;
 
 import org.apache.commons.lang.Validate;
+import org.apache.log4j.lf5.LogLevel;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
@@ -30,6 +33,8 @@ import java.nio.file.Paths;
  * Manage mvn repository.
  */
 public class Booter {
+  private static Logger logger = LoggerFactory.getLogger(Booter.class);
+
   public static RepositorySystem newRepositorySystem() {
     return RepositorySystemFactory.newRepositorySystem();
   }
@@ -43,8 +48,10 @@ public class Booter {
     LocalRepository localRepo = new LocalRepository(resolveLocalRepoPath(localRepoPath));
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
 
-    // session.setTransferListener(new ConsoleTransferListener());
-    // session.setRepositoryListener(new ConsoleRepositoryListener());
+    if (logger.isDebugEnabled()) {
+      session.setTransferListener(new TransferListener());
+      session.setRepositoryListener(new RepositoryListener());
+    }
 
     // uncomment to generate dirty trees
     // session.setDependencyGraphTransformer( null );
