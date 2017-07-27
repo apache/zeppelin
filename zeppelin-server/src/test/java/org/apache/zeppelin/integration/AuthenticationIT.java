@@ -249,9 +249,16 @@ public class AuthenticationIT extends AbstractZeppelinIT {
               "//div[contains(.,'Insufficient privileges')]"));
       collector.checkThat("Check is user has permission to view this note", 0,
           CoreMatchers.equalTo(privilegesModal.size()));
-      deleteTestNotebook(driver);
-      authenticationIT.logoutUser("finance2");
 
+      // delete option not available for non-writer/owner
+      collector.checkThat(
+        driver.findElement(
+          By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']")
+        ).isDisplayed(),
+        CoreMatchers.is(false)
+      );
+
+      authenticationIT.logoutUser("finance2");
 
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testGroupPermission ", e);

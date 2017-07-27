@@ -46,7 +46,7 @@ limitations under the License.
 </div>
 
 <div id="{{paragraph.id}}_helium"
-     ng-if="(suggestion.available && suggestion.available.length > 0) && !asIframe && !viewOnly"
+     ng-if="(suggestion.available && suggestion.available.length > 0) && !asIframe && !reportMode"
      class="btn-group"
      style="margin-bottom: 10px;">
   <button type="button"
@@ -74,7 +74,7 @@ limitations under the License.
 </div>
 
 <div class="btn-group"
-     ng-if="(type == 'TABLE' || type == 'NETWORK') && !asIframe && !viewOnly"
+     ng-if="(type == 'TABLE' || type == 'NETWORK') && !asIframe && !reportMode"
      style="margin-bottom: 10px;">
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
@@ -94,7 +94,7 @@ limitations under the License.
 </div>
 
 <span
-   ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && !asIframe && !viewOnly"
+   ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && !asIframe && !reportMode"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphSetting()">
     settings <span ng-class="config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>

@@ -76,6 +76,7 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
 
       // make it read only
       vm.viewOnly = true
+      vm.reportMode = false
 
       vm.notebookHome = true
       vm.staticHome = false

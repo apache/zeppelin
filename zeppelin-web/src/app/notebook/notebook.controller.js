@@ -30,6 +30,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.editorToggled = false
   $scope.tableToggled = false
   $scope.viewOnly = false
+  $scope.reportMode = false
   $scope.showSetting = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
   $scope.cronOption = [
@@ -155,7 +156,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.keyboardShortcut = function (keyEvent) {
     // handle keyevent
-    if (!$scope.viewOnly && !$scope.revisionView) {
+    if (!$scope.viewOnly && !$scope.revisionView && !$scope.reportMode) {
       $scope.$broadcast('keyEvent', keyEvent)
     }
   }
@@ -437,11 +438,19 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
+  const isViewOnly = function () {
+    return (!$scope.isOwner && !$scope.isWriter)
+  }
+
+  const isReportMode = function () {
+    return ($scope.note.config.looknfeel === 'report')
+  }
+
   const initializeLookAndFeel = function () {
     if (!$scope.note.config.looknfeel) {
       $scope.note.config.looknfeel = 'default'
     } else {
-      $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false
+      $scope.reportMode = isReportMode()
     }
 
     if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
@@ -683,7 +692,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         minimumInputLength: 3
       }
 
-      $scope.setIamOwner()
+      $scope.setRelationships()
       angular.element('#selectOwners').select2(selectJson)
       angular.element('#selectReaders').select2(selectJson)
       angular.element('#selectWriters').select2(selectJson)
@@ -862,14 +871,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
-  $scope.setIamOwner = function () {
-    if ($scope.permissions.owners.length > 0 &&
-      _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0) {
-      $scope.isOwner = false
-      return false
-    }
-    $scope.isOwner = true
-    return true
+  $scope.setRelationships = function () {
+    $scope.isOwner = !($scope.permissions.owners.length > 0 &&
+      _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0)
+
+    $scope.isWriter = !($scope.permissions.writers.length > 0 &&
+      _.indexOf($scope.permissions.writers, $rootScope.ticket.principal) < 0)
+
+    $scope.viewOnly = isViewOnly()
   }
 
   $scope.toggleNotePersonalizedMode = function () {

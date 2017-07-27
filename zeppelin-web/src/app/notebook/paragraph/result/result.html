@@ -20,14 +20,14 @@ limitations under the License.
     id="p{{id}}_resize"
     ng-if="!config.helium.activeApp"
     style="padding-bottom: 5px;"
-    resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
+    resize='{"allowresize": "{{!asIframe && !reportMode}}", "graphType": "{{type}}"}'
     resizable on-resize="resize(width, height);">
 
     <div ng-if="type=='TABLE' || type == 'NETWORK'"
          ng-style="getPointerEvent()">
       <!-- setting -->
       <div class="option lightBold" style="overflow: visible;"
-           ng-show="config.graph.optionOpen && !asIframe && !viewOnly">
+           ng-show="config.graph.optionOpen && !asIframe && !reportMode">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="trsetting{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>
