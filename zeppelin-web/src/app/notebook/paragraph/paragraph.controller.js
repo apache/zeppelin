@@ -1453,13 +1453,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 87) { // Ctrl + Alt + w
         $scope.goToSingleParagraph()
       } else if (keyEvent.ctrlKey && keyCode === 70) { // Ctrl + f
-        let elem = angular.element('#searchGroup')
-        let openClass = 'open'
-        if (elem.hasClass(openClass)) {
-          elem.removeClass(openClass)
-        } else {
-          elem.addClass(openClass)
-        }
+        $scope.$emit('toggleSearchBox')
       } else {
         noShortcutDefined = true
       }

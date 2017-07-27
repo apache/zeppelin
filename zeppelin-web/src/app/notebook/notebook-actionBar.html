@@ -166,10 +166,12 @@ limitations under the License.
 
     <span class="labelBtn btn-group" id="searchGroup" style="vertical-align:middle; display:inline-block;">
       <button type="button" class="btn btn-default btn-xs dropdown-toggle"
-              data-toggle="dropdown" tooltip-placement="bottom" uib-tooltip="Search code">
+              data-toggle="dropdown" tooltip-placement="bottom" uib-tooltip="Search code"
+      ng-click="searchClicked()">
         <i class="fa fa-search"></i>
       </button>
-      <ul class="dropdown-menu search-dropdown" ng-click="$event.stopPropagation()" style="width: 350px">
+      <ul class="dropdown-menu search-dropdown" ng-click="$event.stopPropagation()"
+          ng-style="{left : search.left}" style="width: 350px">
         <li>
           <div class="input-group input-group-sm search-group">
             <span class="input-group-addon">Find</span>

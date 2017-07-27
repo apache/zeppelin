@@ -70,7 +70,10 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     replaceText: '',
     needToSendNextOccurrenceAfterReplace: false,
     occurrencesCount: 0,
-    currentOccurrence: 0
+    currentOccurrence: 0,
+    searchBoxOpened: false,
+    searchBoxWidth: 350,
+    left: '0px'
   }
   let currentSearchParagraph = 0
 
@@ -902,6 +905,37 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       $scope.nextOccurrence()
     }
   }
+
+  let makeSearchBoxVisible = function() {
+    if ($scope.search.searchBoxOpened) {
+      $scope.search.searchBoxOpened = false
+      console.log('make 0')
+      $scope.search.left = '0px'
+    } else {
+      $scope.search.searchBoxOpened = true
+      let searchGroupRect = angular.element('#searchGroup')[0].getBoundingClientRect()
+      console.log('make visible')
+      let dropdownRight = searchGroupRect.left + $scope.search.searchBoxWidth
+      console.log(dropdownRight + ' ' + window.innerWidth)
+      if (dropdownRight + 5 > window.innerWidth) {
+        $scope.search.left = window.innerWidth - dropdownRight - 15 + 'px'
+      }
+    }
+  }
+
+  $scope.searchClicked = function() {
+    makeSearchBoxVisible()
+  }
+
+  $scope.$on('toggleSearchBox', function() {
+    let elem = angular.element('#searchGroup')
+    if ($scope.search.searchBoxOpened) {
+      elem.removeClass('open')
+    } else {
+      elem.addClass('open')
+    }
+    $timeout(makeSearchBoxVisible())
+  })
 
   $scope.restartInterpreter = function(interpreter) {
     const thisConfirm = BootstrapDialog.confirm({
