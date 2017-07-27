@@ -294,6 +294,17 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
+    getNoteByRevisionForCompare: function (noteId, revisionId, position) {
+      websocketEvents.sendNewEvent({
+        op: 'NOTE_REVISION_FOR_COMPARE',
+        data: {
+          noteId: noteId,
+          revisionId: revisionId,
+          position: position
+        }
+      })
+    },
+
     getEditorSetting: function (paragraphId, replName) {
       websocketEvents.sendNewEvent({
         op: 'EDITOR_SETTING',

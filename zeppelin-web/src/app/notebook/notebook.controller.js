@@ -59,6 +59,11 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.noteRevisions = []
+  $scope.firstNoteRevisionForCompare = null
+  $scope.secondNoteRevisionForCompare = null
+  $scope.mergeNoteRevisionsForCompare = null
+  $scope.currentFirstRevisionForCompare = 'Choose...'
+  $scope.currentSecondRevisionForCompare = 'Choose...'
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
 
@@ -231,13 +236,24 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     })
   }
 
+  $scope.preVisibleRevisionsComparator = function() {
+    $scope.mergeNoteRevisionsForCompare = null
+    $scope.firstNoteRevisionForCompare = null
+    $scope.secondNoteRevisionForCompare = null
+    $scope.currentFirstRevisionForCompare = 'Choose...'
+    $scope.currentSecondRevisionForCompare = 'Choose...'
+    $scope.$apply()
+  }
+
   $scope.$on('listRevisionHistory', function (event, data) {
     console.debug('received list of revisions %o', data)
     $scope.noteRevisions = data.revisionList
-    $scope.noteRevisions.splice(0, 0, {
-      id: 'Head',
-      message: 'Head'
-    })
+    if ($scope.noteRevisions.length === 0 || $scope.noteRevisions[0].id !== 'Head') {
+      $scope.noteRevisions.splice(0, 0, {
+        id: 'Head',
+        message: 'Head'
+      })
+    }
     if ($routeParams.revisionId) {
       let index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId})
       if (index > -1) {
@@ -277,6 +293,99 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       })
     }
   }
+
+  // compare revisions
+  $scope.compareRevisions = function () {
+    if ($scope.firstNoteRevisionForCompare && $scope.secondNoteRevisionForCompare) {
+      let paragraphs1 = $scope.firstNoteRevisionForCompare.note.paragraphs
+      let paragraphs2 = $scope.secondNoteRevisionForCompare.note.paragraphs
+      let merge = {
+        added: [],
+        deleted: [],
+        compared: []
+      }
+      for (let p1 of paragraphs1) {
+        let p2 = null
+        for (let p of paragraphs2) {
+          if (p1.id === p.id) {
+            p2 = p
+            break
+          }
+        }
+        if (p2 === null) {
+          merge.deleted.push({paragraph: p1, firstString: (p1.text || '').split('\n')[0]})
+        } else {
+          let colorClass = ''
+          let span = null
+          let text1 = p1.text || ''
+          let text2 = p2.text || ''
+
+          let diff = window.JsDiff.diffLines(text1, text2)
+          let diffHtml = document.createDocumentFragment()
+          let identical = true
+          let identicalClass = 'color-black'
+
+          diff.forEach(function(part) {
+            colorClass = part.added ? 'color-green' : part.removed ? 'color-red' : identicalClass
+            span = document.createElement('span')
+            span.className = colorClass
+            if (identical && colorClass !== identicalClass) {
+              identical = false
+            }
+            span.appendChild(document.createTextNode(part.value))
+            diffHtml.appendChild(span)
+          })
+
+          let pre = document.createElement('pre')
+          pre.appendChild(diffHtml)
+
+          merge.compared.push(
+            {paragraph: p1, diff: pre.innerHTML, identical: identical, firstString: (p1.text || '').split('\n')[0]})
+        }
+      }
+
+      for (let p2 of paragraphs2) {
+        let p1 = null
+        for (let p of paragraphs1) {
+          if (p2.id === p.id) {
+            p1 = p
+            break
+          }
+        }
+        if (p1 === null) {
+          merge.added.push({paragraph: p2, firstString: (p2.text || '').split('\n')[0]})
+        }
+      }
+      $scope.mergeNoteRevisionsForCompare = merge
+    }
+  }
+
+  $scope.getNoteRevisionForReview = function (revision, position) {
+    if (position) {
+      if (position === 'first') {
+        $scope.currentFirstRevisionForCompare = revision.message
+      } else {
+        $scope.currentSecondRevisionForCompare = revision.message
+      }
+      websocketMsgSrv.getNoteByRevisionForCompare($routeParams.noteId, revision.id, position)
+    }
+  }
+
+  $scope.$on('noteRevisionForCompare', function (event, data) {
+    console.debug('received note revision for compare %o', data)
+    if (data.note && data.position) {
+      if (data.position === 'first') {
+        $scope.firstNoteRevisionForCompare = data
+      } else {
+        $scope.secondNoteRevisionForCompare = data
+      }
+
+      if ($scope.firstNoteRevisionForCompare !== null && $scope.secondNoteRevisionForCompare !== null &&
+        $scope.firstNoteRevisionForCompare.revisionId !== $scope.secondNoteRevisionForCompare.revisionId) {
+        $scope.compareRevisions()
+      }
+    }
+  })
 
   $scope.runAllParagraphs = function (noteId) {
     BootstrapDialog.confirm({
