@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -100,8 +101,9 @@ public class JupyterUtil {
       name = "Note converted from Jupyter";
     }
     note.setName(name);
-
+    
     String lineSeparator = System.lineSeparator();
+    String emptyString = "";
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
     String interpreterName;
@@ -119,7 +121,8 @@ public class JupyterUtil {
           TypeData typeData;
           if (output instanceof Stream) {
             type = TypeData.TEXT;
-            result = Joiner.on(lineSeparator).join(((Stream) output).getText());
+            List<String> text = verifyEndOfLine(((Stream) output).getText(), lineSeparator);
+            result = Joiner.on(emptyString).join(text);
             typeData = new TypeData(type, result);
             typeDataList.add(typeData);
           } else if (output instanceof ExecuteResult || output instanceof DisplayData) {
@@ -129,7 +132,8 @@ public class JupyterUtil {
             for (Map.Entry<String, Object> datum : data.entrySet()) {
               if (TEXT_PLAIN.equals(datum.getKey())) {
                 type = TypeData.TEXT;
-                result = Joiner.on(lineSeparator).join((List<String>) datum.getValue());
+                List<String> text = verifyEndOfLine((List<String>) datum.getValue(), lineSeparator);
+                result = Joiner.on(emptyString).join(text);
               } else if (IMAGE_PNG.equals(datum.getKey())) {
                 type = TypeData.HTML;
                 result = makeHTML(((String) datum.getValue()).replace("\n", ""));
@@ -144,8 +148,9 @@ public class JupyterUtil {
             // Error
             Error error = (Error) output;
             type = TypeData.TEXT;
-            result =
-                Joiner.on(lineSeparator).join(new String[] {error.getEname(), error.getEvalue()});
+            List<String> text = verifyEndOfLine(Arrays.asList(error.getEname(), error.getEvalue()),
+                lineSeparator);
+            result = Joiner.on(emptyString).join(text);
             typeData = new TypeData(type, result);
             typeDataList.add(typeData);
           }
@@ -156,8 +161,8 @@ public class JupyterUtil {
         interpreterName = "";
       }
 
-      paragraph.setText(
-          interpreterName + lineSeparator + Joiner.on(lineSeparator).join(cell.getSource()));
+      List<String> source = verifyEndOfLine(cell.getSource(), lineSeparator);
+      paragraph.setText(interpreterName + lineSeparator + Joiner.on(emptyString).join(source));
       paragraph.setResults(new Result(Result.SUCCESS, typeDataList));
 
       paragraphs.add(paragraph);
@@ -168,6 +173,21 @@ public class JupyterUtil {
     return note;
   }
 
+  private List<String> verifyEndOfLine(List<String> content, String lineSeparator) {
+    if (null == content || content.size() == 1) {
+      // one-liners don't have line separator
+      return content;
+    }
+    for (int i = 0; i < content.size(); i++) {
+      String line = content.get(i);
+      // verify to end with line separator except the last element
+      if (null != line && !line.endsWith(lineSeparator) && i != (content.size() - 1)) {
+        content.set(i, line + lineSeparator);
+      }
+    }
+    return content;
+  }
+  
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();

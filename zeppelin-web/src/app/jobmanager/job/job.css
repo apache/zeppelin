@@ -80,6 +80,11 @@
   z-index: 10003;
 }
 
+.job .control .job-control-btn {
+  cursor: pointer;
+  color: #3071A9;
+}
+
 @-webkit-keyframes spinnerRotateAnimation
 {
   from{-webkit-transform:rotate(0deg);}

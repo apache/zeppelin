@@ -14,11 +14,10 @@
 
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
 
-function ConfigurationCtrl ($scope, $rootScope, $http, baseUrlSrv, ngToast) {
+function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast) {
   'ngInject'
 
   $scope.configrations = []
-  $scope._ = _
   ngToast.dismiss()
 
   let getConfigurations = function () {
