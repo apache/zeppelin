@@ -312,11 +312,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       }
     }
 
+    cursor = calculateCursorPosition(buffer, cursor);
+
+    buffer = buffer.trim();
     String replName = getRequiredReplName(buffer);
-    if (replName != null && cursor > replName.length()) {
-      String body = buffer.substring(replName.length() + 1);
-      cursor -= replName.length() + 1 + body.indexOf(body.trim());
-    }
 
     String body = getScriptBody(buffer);
     Interpreter repl = getRepl(replName);
@@ -328,6 +327,23 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     List completion = repl.completion(body, cursor, interpreterContext);
     return completion;
+  }
+
+  public int calculateCursorPosition(String buffer, int cursor) {
+    int countWhitespacesAtStart = buffer.indexOf(buffer.trim());
+    if (countWhitespacesAtStart > 0) {
+      cursor -= countWhitespacesAtStart;
+    }
+
+    buffer = buffer.trim();
+
+    String replName = getRequiredReplName(buffer);
+    if (replName != null && cursor > replName.length()) {
+      String body = buffer.substring(replName.length() + 1);
+      cursor -= replName.length() + 1 + body.indexOf(body.trim());
+    }
+
+    return cursor;
   }
 
   public void setInterpreterFactory(InterpreterFactory factory) {
