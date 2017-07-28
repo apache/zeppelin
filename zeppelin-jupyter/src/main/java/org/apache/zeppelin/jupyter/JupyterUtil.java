@@ -60,9 +60,6 @@ import org.apache.zeppelin.jupyter.zformat.TypeData;
  */
 public class JupyterUtil {
 
-  private static final String TEXT_PLAIN = "text/plain";
-  private static final String IMAGE_PNG = "image/png";
-
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
 
@@ -173,20 +170,7 @@ public class JupyterUtil {
     return note;
   }
 
-  private List<String> verifyEndOfLine(List<String> content, String lineSeparator) {
-    if (null == content || content.size() == 1) {
-      // one-liners don't have line separator
-      return content;
-    }
-    for (int i = 0; i < content.size(); i++) {
-      String line = content.get(i);
-      // verify to end with line separator except the last element
-      if (null != line && !line.endsWith(lineSeparator) && i != (content.size() - 1)) {
-        content.set(i, line + lineSeparator);
-      }
-    }
-    return content;
-  }
+
   
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
