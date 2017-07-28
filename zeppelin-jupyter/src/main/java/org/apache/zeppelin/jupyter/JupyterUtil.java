@@ -54,6 +54,7 @@ import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
+import org.markdown4j.Markdown4jProcessor;
 
 /**
  *
@@ -63,6 +64,8 @@ public class JupyterUtil {
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
 
+  private final Markdown4jProcessor markdownProcessor;
+
   public JupyterUtil() {
     this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
         .registerSubtype(MarkdownCell.class, "markdown").registerSubtype(CodeCell.class, "code")
@@ -71,6 +74,7 @@ public class JupyterUtil {
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
         .registerSubtype(Error.class, "error");
+    this.markdownProcessor = new Markdown4jProcessor();
   }
 
   public Nbformat getNbformat(Reader in) {
@@ -100,67 +104,50 @@ public class JupyterUtil {
     note.setName(name);
     
     String lineSeparator = System.lineSeparator();
-    String emptyString = "";
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
     String interpreterName;
     List<TypeData> typeDataList;
-    String type;
-    String result;
 
     for (Cell cell : nbformat.getCells()) {
+      String status = Result.SUCCESS;
       paragraph = new Paragraph();
       typeDataList = new ArrayList<>();
+      List<String> source = Output.verifyEndOfLine(cell.getSource());
+      String codeText = Joiner.on("").join(source);
 
       if (cell instanceof CodeCell) {
         interpreterName = codeReplaced;
         for (Output output : ((CodeCell) cell).getOutputs()) {
           TypeData typeData;
-          if (output instanceof Stream) {
-            type = TypeData.TEXT;
-            List<String> text = verifyEndOfLine(((Stream) output).getText(), lineSeparator);
-            result = Joiner.on(emptyString).join(text);
-            typeData = new TypeData(type, result);
-            typeDataList.add(typeData);
-          } else if (output instanceof ExecuteResult || output instanceof DisplayData) {
-            Map<String, Object> data = (output instanceof ExecuteResult) ?
-                ((ExecuteResult) output).getData() :
-                ((DisplayData) output).getData();
-            for (Map.Entry<String, Object> datum : data.entrySet()) {
-              if (TEXT_PLAIN.equals(datum.getKey())) {
-                type = TypeData.TEXT;
-                List<String> text = verifyEndOfLine((List<String>) datum.getValue(), lineSeparator);
-                result = Joiner.on(emptyString).join(text);
-              } else if (IMAGE_PNG.equals(datum.getKey())) {
-                type = TypeData.HTML;
-                result = makeHTML(((String) datum.getValue()).replace("\n", ""));
-              } else {
-                type = TypeData.TEXT;
-                result = datum.getValue().toString();
-              }
-              typeData = new TypeData(type, result);
-              typeDataList.add(typeData);
-            }
-          } else {
+          if (output instanceof Error) {
             // Error
-            Error error = (Error) output;
-            type = TypeData.TEXT;
-            List<String> text = verifyEndOfLine(Arrays.asList(error.getEname(), error.getEvalue()),
-                lineSeparator);
-            result = Joiner.on(emptyString).join(text);
-            typeData = new TypeData(type, result);
-            typeDataList.add(typeData);
+            typeDataList.add(output.toZeppelinResult());
+          } else {
+            typeDataList.add(output.toZeppelinResult());
+            if (output instanceof Stream) {
+              Stream streamOutput = (Stream) output;
+              if (streamOutput.isError()) {
+                status = Result.ERROR;
+              }
+            }
           }
         }
       } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
         interpreterName = markdownReplaced;
+        try {
+          String markdownContent = markdownProcessor.process(codeText);
+          typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
+        } catch (IOException e) {
+          // pass
+        }
+        // clover
       } else {
         interpreterName = "";
       }
 
-      List<String> source = verifyEndOfLine(cell.getSource(), lineSeparator);
-      paragraph.setText(interpreterName + lineSeparator + Joiner.on(emptyString).join(source));
-      paragraph.setResults(new Result(Result.SUCCESS, typeDataList));
+      paragraph.setText(interpreterName + lineSeparator + codeText);
+      paragraph.setResults(new Result(status, typeDataList));
 
       paragraphs.add(paragraph);
     }
@@ -175,11 +162,6 @@ public class JupyterUtil {
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();
-  }
-
-  private String makeHTML(String image) {
-    return "<div style='width:auto;height:auto'><img src=data:image/png;base64," + image
-        + " style='width=auto;height:auto'/></div>";
   }
 
   public static void main(String[] args) throws ParseException, IOException {

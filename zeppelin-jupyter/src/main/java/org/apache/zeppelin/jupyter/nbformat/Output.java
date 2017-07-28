@@ -33,9 +33,9 @@ public abstract class Output {
   @SerializedName("output_type")
   private String outputType;
 
-  private final transient String lineSeparator = System.lineSeparator();
+  private static final transient String lineSeparator = System.lineSeparator();
 
-  protected List<String> verifyEndOfLine(List<String> content) {
+  public static List<String> verifyEndOfLine(List<String> content) {
     if (null == content || content.size() == 1) {
       // one-liners don't have line separator
       return content;
@@ -75,7 +75,8 @@ public abstract class Output {
     TypeData result = null;
 
     if (type == JupyterOutputType.IMAGE_PNG) {
-      String base64Code = (String) data.get(type.toString());
+      String base64CodeRaw = (String) data.get(type.toString());
+      String base64Code = base64CodeRaw.replace("\n", "");
       result = new TypeData(
               type.getZeppelinType().toString(),
               ZeppelinResultGenerator.toBase64ImageHtmlElement(base64Code)
@@ -89,7 +90,7 @@ public abstract class Output {
                 type.getZeppelinType().toString(),
                 ZeppelinResultGenerator.toLatex(outputData)
         );
-      } else if (type == JupyterOutputType.TEXT_PLAIN) {
+      } else {
         result = new TypeData(type.getZeppelinType().toString(), outputData);
       }
     }

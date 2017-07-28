@@ -39,6 +39,13 @@ public class Stream extends Output {
     return text;
   }
 
+  public boolean isError() {
+    if (name == null) {
+      return true;
+    }
+    return name.equals("stderr");
+  }
+
   @Override
   public ZeppelinOutputType getTypeOfZeppelin() {
     return ZeppelinOutputType.TEXT;
