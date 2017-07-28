@@ -21,6 +21,8 @@ import static java.lang.String.format;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +66,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
       new ScheduledThreadPoolExecutor(0);
+  // Executor service for sequential paragraph run
+  private static final ExecutorService runAllExecutorService = Executors.newCachedThreadPool();
 
   static {
     delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
@@ -87,6 +91,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
+  private SequentialNoteRunInfo sequentialNoteRunInfo = new SequentialNoteRunInfo();
 
   /*
    * note configurations.
@@ -222,6 +227,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   public void setNoteNameListener(NoteNameListener listener) {
     this.noteNameListener = listener;
+  }
+
+  public SequentialNoteRunInfo getSequentialNoteRunInfo() {
+    return sequentialNoteRunInfo;
   }
 
   void setInterpreterFactory(InterpreterFactory factory) {
@@ -638,6 +647,15 @@ public class Note implements ParagraphJobListener, JsonSerializable {
       p.setAuthenticationInfo(p.getAuthenticationInfo());
       intp.getScheduler().submit(p);
     }
+  }
+
+  /**
+   * Run all paragraphs sequentially.
+   */
+  public void runAllSequentially() {
+    this.getSequentialNoteRunInfo().setRunningSequentially(true);
+    SequentialNoteRunner sequentialRunner = new SequentialNoteRunner(this);
+    runAllExecutorService.execute(sequentialRunner);
   }
 
   /**
