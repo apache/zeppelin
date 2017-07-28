@@ -138,6 +138,7 @@ public class JupyterUtil {
         try {
           String markdownContent = markdownProcessor.process(codeText);
           typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
+          paragraph.setUpMarkdownConfig(true);
         } catch (IOException e) {
           // pass
         }

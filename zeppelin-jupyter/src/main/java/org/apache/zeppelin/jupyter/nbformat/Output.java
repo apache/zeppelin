@@ -60,7 +60,7 @@ public abstract class Output {
     for (String dataType : data.keySet()) {
       if (!dataType.equals(JupyterOutputType.TEXT_PLAIN.toString())) {
         try {
-          jupyterOutputType = JupyterOutputType.valueOf(dataType);
+          jupyterOutputType = JupyterOutputType.getByValue(dataType);
         } catch (IllegalArgumentException e) {
           // pass
         }
@@ -90,6 +90,11 @@ public abstract class Output {
                 type.getZeppelinType().toString(),
                 ZeppelinResultGenerator.toLatex(outputData)
         );
+      } else if (type == JupyterOutputType.APPLICATION_JAVASCRIPT) {
+        result = new TypeData(
+                type.getZeppelinType().toString(),
+                ZeppelinResultGenerator.toJavascript(outputData)
+        );
       } else {
         result = new TypeData(type.getZeppelinType().toString(), outputData);
       }
@@ -108,11 +113,11 @@ public abstract class Output {
     public static String toLatex(String latexCode) {
       String latexContents = latexCode;
       return "<div>" +
-              "<div class='class=\"alert alert-warning\"'>" +
-              "<strong>Warning!</strong> Currently, Latex is not supported." +
-              "</div>" +
               "<div>" + latexContents + "</div>" +
               "</div>";
+    }
+    public static String toJavascript(String javascriptCode) {
+      return "<script type='application/javascript'>" + javascriptCode + "</script>";
     }
   }
 }

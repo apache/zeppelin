@@ -6,7 +6,10 @@ package org.apache.zeppelin.jupyter.types;
 public enum JupyterOutputType {
   TEXT_PLAIN("text/plain"),
   IMAGE_PNG("image/png"),
-  LATEX("text/latex")
+  LATEX("text/latex"),
+  SVG_XML("image/svg+xml"),
+  TEXT_HTML("text/html"),
+  APPLICATION_JAVASCRIPT("application/javascript")
   ;
 
   private final String type;
@@ -18,6 +21,15 @@ public enum JupyterOutputType {
     return Convertor.ToZeppelin.getType(type);
   }
 
+  public static JupyterOutputType getByValue(String value) {
+    for (JupyterOutputType type : JupyterOutputType.values()) {
+      if (type.toString().equals(value)) {
+        return type;
+      }
+    }
+    return JupyterOutputType.TEXT_PLAIN;
+  }
+
   @Override
   public String toString() {
     return type;
@@ -27,17 +39,13 @@ public enum JupyterOutputType {
     ToZeppelin;
 
     public ZeppelinOutputType getType(String typeValue) {
-      JupyterOutputType type = JupyterOutputType.valueOf(typeValue);
+      JupyterOutputType type = JupyterOutputType.getByValue(typeValue);
       ZeppelinOutputType outputType;
 
       if (JupyterOutputType.TEXT_PLAIN == type) {
         outputType = ZeppelinOutputType.TEXT;
-      } else if (JupyterOutputType.IMAGE_PNG == type) {
-        outputType = ZeppelinOutputType.HTML;
-      } else if (JupyterOutputType.LATEX == type) {
-        outputType = ZeppelinOutputType.HTML;
       } else {
-        outputType = ZeppelinOutputType.TEXT;
+        outputType = ZeppelinOutputType.HTML;
       }
 
       return outputType;

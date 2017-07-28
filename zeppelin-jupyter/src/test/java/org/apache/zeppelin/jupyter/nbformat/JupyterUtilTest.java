@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import com.google.gson.Gson;
 import org.apache.zeppelin.jupyter.JupyterUtil;
 import org.apache.zeppelin.jupyter.zformat.Note;
 import org.junit.Test;
@@ -43,6 +45,14 @@ public class JupyterUtilTest {
   public void getNote() {
     InputStream resource = getClass().getResourceAsStream("/examples.ipynb");
     Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "%python", "%md");
+  }
+
+  @Test
+  public void getNote2() {
+    InputStream resource = getClass().getResourceAsStream("/iruby.ipynb");
+    Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "%python", "%md");
+    Gson gson = new Gson();
+    System.out.println(gson.toJson(n));
   }
 
 }
