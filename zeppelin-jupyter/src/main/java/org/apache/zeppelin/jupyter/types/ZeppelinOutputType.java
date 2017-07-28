@@ -1,5 +1,8 @@
 package org.apache.zeppelin.jupyter.types;
 
+/**
+ * Zeppelin Output Types.
+ */
 public enum ZeppelinOutputType {
   TEXT("TEXT"),
   HTML("HTML"),

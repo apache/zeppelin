@@ -1,5 +1,8 @@
 package org.apache.zeppelin.jupyter.types;
 
+/**
+ * Jupyter Output Types.
+ */
 public enum JupyterOutputType {
   TEXT_PLAIN("text/plain"),
   IMAGE_PNG("image/png"),
