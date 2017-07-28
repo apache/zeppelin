@@ -246,8 +246,11 @@ public class ParagraphTest {
         Triple.of("%another\n\n schema.", 18, 7),
         Triple.of("\n\n schema.", 10, 7),
         Triple.of("schema.", 7, 7),
-        Triple.of("schema. \n", 7, 7)
-
+        Triple.of("schema. \n", 7, 7),
+        Triple.of("  \n   %jdbc", 11, 0),
+        Triple.of("\n   %jdbc", 9, 0),
+        Triple.of("%jdbc  \n  schema", 16, 6),
+        Triple.of("%jdbc  \n  \n   schema", 20, 6)
     );
 
     for (Triple<String, Integer, Integer> data : dataSet) {
