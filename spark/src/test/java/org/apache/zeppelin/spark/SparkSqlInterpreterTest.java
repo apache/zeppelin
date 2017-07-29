@@ -191,11 +191,44 @@ public class SparkSqlInterpreterTest {
             null, null);
     SparkZeppelinContext zc = getSparkInterpreter().getZeppelinContext();
     zc.setInterpreterContext(newContext);
+
     zc.put("n", "100");
     zc.put("table", "name");
+
+    // Correct variable substitutions ...
     String commandWithVariables = "select * from {table} where count = {n}";
     String resultString = sql.interpolateVariable(commandWithVariables);
     assertEquals("select * from name where count = 100", resultString);
+
+    // Correct escaping of { and } characters ...
+    commandWithVariables = "select * from names where name rlike 'a{{2}}'";
+    resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("select * from names where name rlike 'a{2}'", resultString);
+
+    // Error due to unknown variable ...
+    commandWithVariables = "select * from names where count = {n2}";
+    resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("ERROR:unknown variable 'n2'", resultString);
+
+    // Error due to bad pattern (1) ...
+    commandWithVariables = "select * from names where name rlike 'a{2}}'";
+    resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("ERROR:bad pattern '{2}}'", resultString);
+
+    // Error due to bad pattern (2) ...
+    commandWithVariables = "select * from names where name rlike 'a{{2}'";
+    resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("ERROR:bad pattern '{{2}'", resultString);
+
+    // Error due to bad pattern (3) ...
+    commandWithVariables = "select * from names where name rlike 'a{{{2}}}'";
+    resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("ERROR:bad pattern '{{{2}}}'", resultString);
+
+    // Error due to unpaired { ...
+    commandWithVariables = "select * from names where name = {alpha";
+    resultString = sql.interpolateVariable(commandWithVariables);
+    assertEquals("ERROR:unpaired '{' in '{alpha'", resultString);
   }
 
   @Test

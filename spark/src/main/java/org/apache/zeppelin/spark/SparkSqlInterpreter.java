@@ -91,30 +91,51 @@ public class SparkSqlInterpreter extends Interpreter {
 
   String interpolateVariable(String originalCommand) {
 
-    Pattern variablePattern = Pattern.compile("([^{]*)([{][^}]+[}]).*");
-    Matcher variableMatcher;
+    // Pattern allows errors in number of '{' and '}' characters
+    Pattern pattern = Pattern.compile("([^{]*)([{]+[^}]+[}]*).*");
+    Matcher matcher;
 
     StringBuilder newCommandBuffer = new StringBuilder();
 
     SparkZeppelinContext sparkZeppelinContext = getSparkInterpreter().getZeppelinContext();
 
     String residualCommand = originalCommand;
-    // iterate while there is any pattern left in the residual-command text
-    while ((variableMatcher = variablePattern.matcher(residualCommand)).matches()) {
-      // get any characters until the next pattern, add to new-command buffer
-      newCommandBuffer.append(variableMatcher.group(1));
-      // get the variable pattern
-      String variableSpec = variableMatcher.group(2);
-      // extract variable-name from pattern
-      String variableName = variableSpec.substring(1, variableSpec.length() - 1);
-      // get variable-value from interpreter's context
-      Object variableValue = sparkZeppelinContext.get(variableName);
-      // add substitution-text into new-command buffer
-      newCommandBuffer.append(variableValue == null ? variableSpec : variableValue.toString());
-      // update residual-command text
-      residualCommand = residualCommand.substring(variableMatcher.end(2));
+    // Iterate while there is any pattern left in the residual-command text
+    while ((matcher = pattern.matcher(residualCommand)).matches()) {
+      // Get any characters until the next pattern, add to new-command buffer
+      newCommandBuffer.append(matcher.group(1));
+      // Get the variable pattern
+      String template = matcher.group(2);
+      if (template.matches("[{][^{}][^}]*[}]")) {
+        // Handle variable substitution pattern ...
+        // Extract variable-name from template
+        String variableName = template.substring(1, template.length() - 1);
+        // Get variable-value from interpreter's context
+        Object variableValue = sparkZeppelinContext.get(variableName);
+        if (variableValue == null) {
+          // No such variable - Error!
+          return String.format("ERROR:unknown variable '%s'", variableName);
+        } else {
+          // Append value to new-command buffer
+          newCommandBuffer.append(variableValue.toString());
+        }
+      } else if (template.matches("[{]{2}[^{}][^}]*[}]{2}")) {
+        // Handle '{' escaping pattern ...
+        // Extract escaped sub-string from template
+        String escapedSubString = template.substring(1, template.length() - 1);
+        // Append escaped sub-string to new-command buffer
+        newCommandBuffer.append(escapedSubString);
+      } else {
+        // Unknown pattern - Error!
+        if (template.endsWith("}"))
+          return String.format("ERROR:bad pattern '%s'", template);
+        else
+          return String.format("ERROR:unpaired '{' in '%s'", template);
+      }
+      // Update residual-command text
+      residualCommand = residualCommand.substring(matcher.end(2));
     }
-    // add any remaining text without patterns to the new-command buffer
+    // Add any remaining text without patterns to the new-command buffer
     newCommandBuffer.append(residualCommand);
 
     return newCommandBuffer.toString();
@@ -149,8 +170,11 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      String interpolatedSt = interpolateVariable(st);
-      rdd = sqlMethod.invoke(sqlc, interpolatedSt);
+      String interpolateResult = interpolateVariable(st);
+      if (interpolateResult.startsWith("ERROR:"))
+        return new InterpreterResult(Code.ERROR, interpolateResult.substring("ERROR:".length()));
+      else
+        rdd = sqlMethod.invoke(sqlc, interpolateResult);
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);
