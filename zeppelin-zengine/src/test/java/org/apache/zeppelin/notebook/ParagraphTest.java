@@ -254,7 +254,7 @@ public class ParagraphTest {
     );
 
     for (Triple<String, Integer, Integer> data : dataSet) {
-      Integer actual = paragraph.calculateCursorPosition(data.getLeft(), data.getMiddle());
+      Integer actual = paragraph.calculateCursorPosition(data.getLeft(), data.getLeft().trim(), data.getMiddle());
       assertEquals(data.getRight(), actual);
     }
   }

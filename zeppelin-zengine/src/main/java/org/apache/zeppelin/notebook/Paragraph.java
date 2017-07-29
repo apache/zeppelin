@@ -227,7 +227,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(text);
+    return getRequiredReplName(text != null ? text.trim() : text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -235,15 +235,14 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       return null;
     }
 
-    String trimmed = text.trim();
-    if (!trimmed.startsWith("%")) {
+    if (!text.startsWith("%")) {
       return null;
     }
 
     // get script head
     int scriptHeadIndex = 0;
-    for (int i = 0; i < trimmed.length(); i++) {
-      char ch = trimmed.charAt(i);
+    for (int i = 0; i < text.length(); i++) {
+      char ch = text.charAt(i);
       if (Character.isWhitespace(ch) || ch == '(' || ch == '\n') {
         break;
       }
@@ -270,11 +269,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       return text;
     }
 
-    String trimmed = text.trim();
-    if (magic.length() + 1 >= trimmed.length()) {
+    if (magic.length() + 1 >= text.length()) {
       return "";
     }
-    return trimmed.substring(magic.length() + 1).trim();
+    return text.substring(magic.length() + 1).trim();
   }
 
   public Interpreter getRepl(String name) {
@@ -311,13 +309,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return getInterpreterCompletion();
       }
     }
+    String trimmedBuffer = buffer != null ? buffer.trim() : null;
+    cursor = calculateCursorPosition(buffer, trimmedBuffer, cursor);
 
-    cursor = calculateCursorPosition(buffer, cursor);
+    String replName = getRequiredReplName(trimmedBuffer);
 
-    buffer = buffer.trim();
-    String replName = getRequiredReplName(buffer);
-
-    String body = getScriptBody(buffer);
+    String body = getScriptBody(trimmedBuffer);
     Interpreter repl = getRepl(replName);
     if (repl == null) {
       return null;
@@ -329,17 +326,15 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return completion;
   }
 
-  public int calculateCursorPosition(String buffer, int cursor) {
-    int countWhitespacesAtStart = buffer.indexOf(buffer.trim());
+  public int calculateCursorPosition(String buffer, String trimmedBuffer, int cursor) {
+    int countWhitespacesAtStart = buffer.indexOf(trimmedBuffer);
     if (countWhitespacesAtStart > 0) {
       cursor -= countWhitespacesAtStart;
     }
 
-    buffer = buffer.trim();
-
-    String replName = getRequiredReplName(buffer);
+    String replName = getRequiredReplName(trimmedBuffer);
     if (replName != null && cursor > replName.length()) {
-      String body = buffer.substring(replName.length() + 1);
+      String body = trimmedBuffer.substring(replName.length() + 1);
       cursor -= replName.length() + 1 + body.indexOf(body.trim());
     }
 
