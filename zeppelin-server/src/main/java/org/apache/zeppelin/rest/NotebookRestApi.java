@@ -370,9 +370,13 @@ public class NotebookRestApi {
       }
     }
     note.addNewParagraph(subject); // add one paragraph to the last
-    String noteName = request.getName();
-    if (noteName.isEmpty()) {
-      noteName = "Note " + note.getId();
+
+    //deal with possible empty note name
+    String noteName = "Note " + note.getId();
+    if (request != null && request.getName() != null) {
+      if (!request.getName().isEmpty()) {
+        noteName = request.getName();
+      }
     }
 
     note.setName(noteName);
