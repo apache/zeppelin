@@ -383,7 +383,7 @@ public class NotebookRestApi {
     note.persist(subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
-    return new JsonResponse<>(Status.OK, "", note.getId()).build();
+    return new JsonResponse<>(Status.CREATED, "", note.getId()).build();
   }
 
   /**
