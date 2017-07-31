@@ -16,7 +16,12 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
+import com.google.common.base.Joiner;
 import com.google.gson.annotations.SerializedName;
+import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
+import org.apache.zeppelin.jupyter.zformat.TypeData;
+
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,5 +47,17 @@ public class Error extends Output {
 
   public List<String> getTraceback() {
     return traceback;
+  }
+
+  @Override
+  public ZeppelinOutputType getTypeOfZeppelin() {
+    return ZeppelinOutputType.TEXT;
+  }
+
+  @Override
+  public TypeData toZeppelinResult() {
+    List<String> text = verifyEndOfLine(Arrays.asList(getEname(), getEvalue()));
+    String result = Joiner.on("").join(text);
+    return new TypeData(getTypeOfZeppelin().toString(), result);
   }
 }
