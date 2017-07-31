@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Joiner;
@@ -111,7 +112,16 @@ public class JupyterUtil {
       String status = Result.SUCCESS;
       paragraph = new Paragraph();
       typeDataList = new ArrayList<>();
-      List<String> source = Output.verifyEndOfLine(cell.getSource());
+      Object cellSource = cell.getSource();
+      List<String> sourceRaws = new ArrayList<>();
+
+      if (cellSource instanceof String) {
+        sourceRaws.add((String) cellSource);
+      } else {
+        sourceRaws.addAll((List<String>) cellSource);
+      }
+
+      List<String> source = Output.verifyEndOfLine(sourceRaws);
       String codeText = Joiner.on("").join(source);
 
       if (cell instanceof CodeCell) {
