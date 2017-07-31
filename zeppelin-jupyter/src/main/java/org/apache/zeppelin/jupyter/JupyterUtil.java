@@ -24,9 +24,7 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
@@ -54,7 +52,7 @@ import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
-import org.markdown4j.Markdown4jProcessor;
+import org.pegdown.PegDownProcessor;
 
 /**
  *
@@ -64,7 +62,7 @@ public class JupyterUtil {
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
 
-  private final Markdown4jProcessor markdownProcessor;
+  private final PegDownProcessor markdownProcessor;
 
   public JupyterUtil() {
     this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
@@ -74,7 +72,7 @@ public class JupyterUtil {
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
         .registerSubtype(Error.class, "error");
-    this.markdownProcessor = new Markdown4jProcessor();
+    this.markdownProcessor = new PegDownProcessor();
   }
 
   public Nbformat getNbformat(Reader in) {
@@ -119,9 +117,7 @@ public class JupyterUtil {
       if (cell instanceof CodeCell) {
         interpreterName = codeReplaced;
         for (Output output : ((CodeCell) cell).getOutputs()) {
-          TypeData typeData;
           if (output instanceof Error) {
-            // Error
             typeDataList.add(output.toZeppelinResult());
           } else {
             typeDataList.add(output.toZeppelinResult());
@@ -135,14 +131,9 @@ public class JupyterUtil {
         }
       } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
         interpreterName = markdownReplaced;
-        try {
-          String markdownContent = markdownProcessor.process(codeText);
-          typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
-          paragraph.setUpMarkdownConfig(true);
-        } catch (IOException e) {
-          // pass
-        }
-        // clover
+        String markdownContent = markdownProcessor.markdownToHtml(codeText);
+        typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
+        paragraph.setUpMarkdownConfig(true);
       } else {
         interpreterName = "";
       }
