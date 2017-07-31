@@ -88,4 +88,8 @@ public class Paragraph {
   public String getStatus() {
     return status;
   }
+
+  public Map<String, Object> getConfig() {
+    return config;
+  }
 }
