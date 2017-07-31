@@ -22,6 +22,7 @@ import org.apache.zeppelin.jupyter.types.JupyterOutputType;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -73,31 +74,34 @@ public abstract class Output {
 
   protected TypeData getZeppelinResult(Map<String, Object> data, JupyterOutputType type) {
     TypeData result = null;
-
+    Object outputsObject = data.get(type.toString());
+    List<String> outputsRaws = new ArrayList<>();
+    if (outputsObject instanceof String) {
+      outputsRaws.add((String) outputsObject);
+    } else {
+      outputsRaws.addAll((List<String>) outputsObject);
+    }
+    List<String> outputs = verifyEndOfLine(outputsRaws);
+    String outputData = Joiner.on("").join(outputs);
     if (type == JupyterOutputType.IMAGE_PNG) {
-      String base64CodeRaw = (String) data.get(type.toString());
+      String base64CodeRaw = outputData;
       String base64Code = base64CodeRaw.replace("\n", "");
       result = new TypeData(
               type.getZeppelinType().toString(),
               ZeppelinResultGenerator.toBase64ImageHtmlElement(base64Code)
       );
+    } else if (type == JupyterOutputType.LATEX) {
+      result = new TypeData(
+              type.getZeppelinType().toString(),
+              ZeppelinResultGenerator.toLatex(outputData)
+      );
+    } else if (type == JupyterOutputType.APPLICATION_JAVASCRIPT) {
+      result = new TypeData(
+              type.getZeppelinType().toString(),
+              ZeppelinResultGenerator.toJavascript(outputData)
+      );
     } else {
-      List<String> outputsRaw = (List<String>) data.get(type.toString());
-      List<String> outputs = verifyEndOfLine(outputsRaw);
-      String outputData = Joiner.on("").join(outputs);
-      if (type == JupyterOutputType.LATEX) {
-        result = new TypeData(
-                type.getZeppelinType().toString(),
-                ZeppelinResultGenerator.toLatex(outputData)
-        );
-      } else if (type == JupyterOutputType.APPLICATION_JAVASCRIPT) {
-        result = new TypeData(
-                type.getZeppelinType().toString(),
-                ZeppelinResultGenerator.toJavascript(outputData)
-        );
-      } else {
-        result = new TypeData(type.getZeppelinType().toString(), outputData);
-      }
+      result = new TypeData(type.getZeppelinType().toString(), outputData);
     }
     return result;
   }
