@@ -184,7 +184,7 @@ public class JupyterUtil {
 
     try (BufferedReader in = new BufferedReader(new FileReader(jupyterPath.toFile()));
         FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
-      Note note = new JupyterUtil().getNote(in, "python", "md");
+      Note note = new JupyterUtil().getNote(in, "%python", "%md");
       Gson gson = new GsonBuilder().setPrettyPrinting().create();
       gson.toJson(note, fw);
     }
