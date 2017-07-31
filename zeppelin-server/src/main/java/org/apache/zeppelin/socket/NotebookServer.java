@@ -50,7 +50,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.json.NotebookTypeAdapterFactory;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
@@ -117,19 +116,7 @@ public class NotebookServer extends WebSocketServlet
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static Gson gson = new GsonBuilder()
-      .registerTypeAdapterFactory(new NotebookTypeAdapterFactory<Paragraph>(Paragraph.class) {
-        @Override
-        protected void beforeWrite(Paragraph source, JsonElement toSerialize) {
-          Map<String, ParagraphRuntimeInfo> runtimeInfos = source.getRuntimeInfos();
-          if (runtimeInfos != null) {
-            JsonElement jsonTree = gson.toJsonTree(runtimeInfos);
-            if (toSerialize instanceof JsonObject) {
-              JsonObject jsonObj = (JsonObject) toSerialize;
-              jsonObj.add("runtimeInfos", jsonTree);
-            }
-          }
-        }
-      }).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
@@ -486,40 +473,45 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void broadcast(String noteId, Message m) {
+    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {
       broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.debug("SEND >> " + m);
-      for (NotebookSocket conn : socketLists) {
-        try {
-          conn.send(serializeMessage(m));
-        } catch (IOException e) {
-          LOG.error("socket error", e);
-        }
+      socketsToBroadcast = new ArrayList<>(socketLists);
+    }
+    LOG.debug("SEND >> " + m);
+    for (NotebookSocket conn : socketsToBroadcast) {
+      try {
+        conn.send(serializeMessage(m));
+      } catch (IOException e) {
+        LOG.error("socket error", e);
       }
     }
   }
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
+    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {
       broadcastToWatchers(noteId, StringUtils.EMPTY, m);
       List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.debug("SEND >> " + m);
-      for (NotebookSocket conn : socketLists) {
-        if (exclude.equals(conn)) {
-          continue;
-        }
-        try {
-          conn.send(serializeMessage(m));
-        } catch (IOException e) {
-          LOG.error("socket error", e);
-        }
+      socketsToBroadcast = new ArrayList<>(socketLists);
+    }
+
+    LOG.debug("SEND >> " + m);
+    for (NotebookSocket conn : socketsToBroadcast) {
+      if (exclude.equals(conn)) {
+        continue;
+      }
+      try {
+        conn.send(serializeMessage(m));
+      } catch (IOException e) {
+        LOG.error("socket error", e);
       }
     }
   }
