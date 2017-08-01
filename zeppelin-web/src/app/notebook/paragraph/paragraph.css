@@ -384,7 +384,7 @@ table.table-shortcut {
 #main .emacs-mode .ace_cursor {
   background: #000 !important;
   border: none !important;
-  width: 1px !important;
+  width: 2px !important;
 }
 
 .ace_text-input, .ace_gutter, .ace_layer,
