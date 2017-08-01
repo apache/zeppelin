@@ -140,10 +140,10 @@ limitations under the License.
           </li>
         </ul>
         <button type="button"
-                ng-if="noteRevisions.length > 1"
                 class="btn btn-default btn-xs"
                 id="compareRevisions"
                 data-toggle="modal"
+                ng-disabled="noteRevisions.length < 2"
                 data-target="#revisionsComparatorModal"
                 tooltip-placement="bottom" uib-tooltip="Compare revisions">
           <i class="fa fa-exchange"></i>

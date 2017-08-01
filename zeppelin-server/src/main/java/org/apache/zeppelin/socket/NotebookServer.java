@@ -1929,7 +1929,7 @@ public class NotebookServer extends WebSocketServlet
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     Note revisionNote;
     if (revisionId.equals("Head")) {
-      revisionNote = notebook.loadNoteFromRepo(noteId, subject);
+      revisionNote = notebook.getNote(noteId);
     } else {
       revisionNote = notebook.getNoteByRevision(noteId, revisionId, subject);
     }
