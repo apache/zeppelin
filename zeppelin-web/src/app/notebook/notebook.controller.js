@@ -381,11 +381,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }, 10000)
   }
 
-  angular.element(window).on('beforeunload', function (e) {
-    $scope.killSaveTimer()
-    $scope.saveNote()
-  })
-
   $scope.setLookAndFeel = function (looknfeel) {
     $scope.note.config.looknfeel = looknfeel
     if ($scope.revisionView === true) {
@@ -1069,8 +1064,52 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     $scope.note.config.personalizedMode = isPersonalized
   })
 
+  $scope.$on('$routeChangeStart', function (event, next, current) {
+    if ($scope.note && $scope.note.paragraphs) {
+      _.forEach($scope.note.paragraphs, function (par) {
+        if ($scope.allowLeave === true) {
+          return
+        }
+        let thisScope = angular.element(
+          '#' + par.id + '_paragraphColumn_main').scope()
+
+        if (thisScope.dirtyText !== undefined ||
+          thisScope.dirtyText !== thisScope.originalText) {
+          event.preventDefault()
+
+          BootstrapDialog.show({
+            closable: false,
+            closeByBackdrop: false,
+            closeByKeyboard: false,
+            title: 'Do you want to leave this site?',
+            message: 'Changes that you made may not be saved.',
+            buttons: [{
+              label: 'Stay',
+              action: function (dialog) {
+                dialog.close()
+              }
+            }, {
+              label: 'Leave',
+              action: function (dialog) {
+                dialog.close()
+                angular.element(window).off('beforeunload')
+                let locationToRedirect = next['$$route']['originalPath']
+                _.forEach(next.pathParams, function (value, key) {
+                  locationToRedirect = locationToRedirect.replace(':' + key,
+                    value)
+                })
+                $scope.allowLeave = true
+                $location.path(locationToRedirect)
+              }
+            }]
+          })
+          return false
+        }
+      })
+    }
+  })
+
   $scope.$on('$destroy', function () {
-    angular.element(window).off('beforeunload')
     $scope.killSaveTimer()
     $scope.saveNote()
 

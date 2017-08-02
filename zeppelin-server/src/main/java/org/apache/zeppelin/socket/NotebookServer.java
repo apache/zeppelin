@@ -1185,7 +1185,7 @@ public class NotebookServer extends WebSocketServlet
 
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
-    String noteId = getOpenNoteId(conn);
+    String noteId = (String) fromMessage.get("noteId");
 
     if (!hasParagraphWriterPermission(conn, notebook, noteId,
         userAndRoles, fromMessage.principal, "write")) {
