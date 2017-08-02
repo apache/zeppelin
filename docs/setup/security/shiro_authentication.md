@@ -227,14 +227,14 @@ In this case, only who have `admin` role can see **Interpreter Setting**, **Cred
 If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
 
 ### Apply multiple roles in Shiro configuration
-By default, Shiro will allow access to a URL if only user is part of all the roles defined like this:
+By default, Shiro will allow access to a URL if only user is part of "**all the roles**" defined like this:
 ```
 [urls]
 
 /api/interpreter/** = authc, roles[admin, role1]
 ```
 
-If there is a need that user with "any of the defined roles" should be allowed, then following Shiro configuration can be used:
+If there is a need that user with "**any of the defined roles**" should be allowed, then following Shiro configuration can be used:
 ```
 [main]
 anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
