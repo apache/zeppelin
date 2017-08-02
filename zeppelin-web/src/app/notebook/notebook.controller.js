@@ -1073,8 +1073,11 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         let thisScope = angular.element(
           '#' + par.id + '_paragraphColumn_main').scope()
 
-        if (thisScope.dirtyText !== undefined ||
-          thisScope.dirtyText !== thisScope.originalText) {
+        if (thisScope.dirtyText === undefined ||
+          thisScope.originalText === undefined ||
+          thisScope.dirtyText === thisScope.originalText) {
+          return true
+        } else {
           event.preventDefault()
 
           BootstrapDialog.show({
