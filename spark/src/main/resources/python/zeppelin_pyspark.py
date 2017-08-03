@@ -120,6 +120,11 @@ class PyZeppelinContext(dict):
     # If we don't have matplotlib installed don't bother continuing
     try:
       import matplotlib
+
+      #matplotlib.rcParams['savefig.format'] is only avail in version 1.2.0 and above
+      from distutils.version import LooseVersion
+      if LooseVersion("1.2.0") >= LooseVersion(matplotlib.__version__):
+        return
     except ImportError:
       return
     
