@@ -247,6 +247,7 @@ anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
 ```
 
 <br/>
+
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
 
 
