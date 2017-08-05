@@ -792,7 +792,7 @@ Below are the configuration parameters and their default value.
      <td>cassandra.ssl.enabled</td>
      <td>
         Enable support for connecting to Cassandra configured with SSL.
-        To connect to Cassandra configured with SSL use <strong>true</string>
+        To connect to Cassandra configured with SSL use <strong>true</strong>
         and provide a truststore file and password with following options.
      </td>
      <td>false</td>
