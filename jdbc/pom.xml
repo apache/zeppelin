@@ -35,7 +35,6 @@
   <properties>
     <!--library versions-->
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
-    <jline.version>2.12.1</jline.version>
     <hadoop.common.version>2.7.2</hadoop.common.version>
     <h2.version>1.4.190</h2.version>
     <commons.dbcp2.version>2.0.1</commons.dbcp2.version>
@@ -68,17 +67,6 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 	
-	<dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
-      <version>${jline.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>

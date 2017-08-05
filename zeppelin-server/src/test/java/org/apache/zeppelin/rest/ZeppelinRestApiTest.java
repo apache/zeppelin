@@ -27,7 +27,6 @@ import com.google.common.collect.Sets;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -88,7 +87,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -133,8 +132,11 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteName = "test";
     String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
         "{\"title\": \"title1\", \"text\": \"text1\"}," +
-        "{\"title\": \"title2\", \"text\": \"text2\"}" +
-        "]}";
+        "{\"title\": \"title2\", \"text\": \"text2\"}," +
+        "{\"title\": \"titleConfig\", \"text\": \"text3\", " +
+        "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
+        "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}] "+
+        "}}]} ";
     PostMethod post = httpPost("/notebook/", jsonRequest);
     LOG.info("testNoteCreate \n" + post.getResponseBodyAsString());
     assertThat("test note create method:", post, isAllowed());
@@ -154,13 +156,20 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       expectedNoteName = "Note " + newNoteId;
     }
     assertEquals("compare note name", expectedNoteName, newNoteName);
-    assertEquals("initial paragraph check failed", 3, newNote.getParagraphs().size());
+    assertEquals("initial paragraph check failed", 4, newNote.getParagraphs().size());
     for (Paragraph p : newNote.getParagraphs()) {
       if (StringUtils.isEmpty(p.getText())) {
         continue;
       }
       assertTrue("paragraph title check failed", p.getTitle().startsWith("title"));
       assertTrue("paragraph text check failed", p.getText().startsWith("text"));
+      if ( p.getTitle().equals("titleConfig")){
+        assertEquals("paragraph col width check failed", 9.0, p.getConfig().get("colWidth"));
+        assertTrue("paragraph show title check failed", ((boolean) p.getConfig().get("title")));
+        Map graph = ((List<Map>)p.getConfig().get("results")).get(0);
+        String mode = ((Map)graph.get("graph")).get("mode").toString();
+        assertEquals("paragraph graph mode check failed", "pieChart", mode);
+      }
     }
     // cleanup
     ZeppelinServer.notebook.removeNote(newNoteId, anonymous);
@@ -213,12 +222,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
 
   @Test
-  public void testexportNote() throws IOException {
-    LOG.info("testexportNote");
+  public void testExportNote() throws IOException {
+    LOG.info("testExportNote");
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for export");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -246,12 +255,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testImportNotebook() throws IOException {
     Map<String, Object> resp;
     String noteName = "source note for import";
-    LOG.info("testImortNote");
+    LOG.info("testImportNote");
     // create test note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName(noteName);
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -313,7 +322,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for clone");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
     paragraph.setConfig(config);
@@ -364,7 +373,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -419,7 +428,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -473,7 +482,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -517,7 +526,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%md This is test paragraph.");
     
     Map config = paragraph.getConfig();
@@ -566,7 +575,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
     note.setName("note for run test");
-    Paragraph paragraph = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
 
     note.persist(anonymous);
@@ -620,6 +629,25 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("title2", paragraphAtIdx0.getTitle());
     assertEquals("text2", paragraphAtIdx0.getText());
 
+    //append paragraph providing graph
+    String jsonRequest3 = "{\"title\": \"title3\", \"text\": \"text3\", "+
+                          "\"config\": {\"colWidth\": 9.0, \"title\": true, "+
+                          "\"results\": [{\"graph\": {\"mode\": \"pieChart\"}}]}}";
+    PostMethod post3 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest3);
+    LOG.info("testInsertParagraph response4\n" + post3.getResponseBodyAsString());
+    assertThat("Test insert method:", post3, isAllowed());
+    post3.releaseConnection();
+
+    Paragraph p = note.getLastParagraph();
+    assertEquals("title3", p.getTitle());
+    assertEquals("text3", p.getText());
+    Map result = ((List<Map>)p.getConfig().get("results")).get(0);
+    String mode = ((Map)result.get("graph")).get("mode").toString();
+    assertEquals("pieChart", mode);
+    assertEquals(9.0, p.getConfig().get("colWidth"));
+    assertTrue(((boolean) p.getConfig().get("title")));
+
+
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -627,7 +655,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetParagraph() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("hello");
     p.setText("world");
     note.persist(anonymous);
@@ -656,11 +684,11 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testMoveParagraph() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("title1");
     p.setText("text1");
 
-    Paragraph p2 = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setTitle("title2");
     p2.setText("text2");
 
@@ -688,7 +716,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testDeleteParagraph() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("title1");
     p.setText("text1");
 

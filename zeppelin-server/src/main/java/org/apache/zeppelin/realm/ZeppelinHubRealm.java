@@ -37,7 +37,9 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +63,6 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
 
   private final HttpClient httpClient;
-  private final Gson gson;
 
   private String zeppelinhubUrl;
   private String name;
@@ -72,7 +73,6 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     //TODO(anthonyc): think about more setting for this HTTP client.
     //                eg: if user uses proxy etcetc...
     httpClient = new HttpClient();
-    gson = new Gson();
     name = getClass().getName() + "_" + INSTANCE_COUNT.getAndIncrement();
   }
 
@@ -149,21 +149,14 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     
     User account = null;
     try {
-      account = gson.fromJson(responseBody, User.class);
+      account = User.fromJson(responseBody);
     } catch (JsonParseException e) {
-      LOG.error("Cannot deserialize ZeppelinHub response to User instance", e);
+      LOG.error("Cannot fromJson ZeppelinHub response to User instance", e);
       throw new AuthenticationException("Cannot login to ZeppelinHub");
     }
 
-    // Add ZeppelinHub user_session token this singleton map, this will help ZeppelinHubRepo
-    // to get specific information about the current user.
-    UserSessionContainer.instance.setSession(account.login, userSession);
-
-    /* TODO(khalid): add proper roles and add listener */
-    HashSet<String> userAndRoles = new HashSet<String>();
-    userAndRoles.add(account.login);
-    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
-        new org.apache.zeppelin.user.AuthenticationInfo(account.login), userAndRoles);
+    onLoginSuccess(account.login, userSession);
+    
     return account;
   }
 
@@ -206,11 +199,37 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   }
 
   /**
-   * Helper class that will be use to deserialize ZeppelinHub response.
+   * Helper class that will be use to fromJson ZeppelinHub response.
    */
-  protected class User {
+  protected static class User implements JsonSerializable {
+    private static final Gson gson = new Gson();
     public String login;
     public String email;
     public String name;
+
+    public String toJson() {
+      return gson.toJson(this);
+    }
+
+    public static User fromJson(String json) {
+      return gson.fromJson(json, User.class);
+    }
+  }
+  
+  public void onLoginSuccess(String username, String session) {
+    UserSessionContainer.instance.setSession(username, session);
+
+    /* TODO(xxx): add proper roles */
+    HashSet<String> userAndRoles = new HashSet<String>();
+    userAndRoles.add(username);
+    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
+        new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
+
+    ZeppelinhubUtils.userLoginRoutine(username);
+  }
+  
+  @Override
+  public void onLogout(PrincipalCollection principals) {
+    ZeppelinhubUtils.userLogoutRoutine((String) principals.getPrimaryPrincipal());
   }
 }

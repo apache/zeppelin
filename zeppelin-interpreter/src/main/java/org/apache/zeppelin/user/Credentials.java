@@ -20,13 +20,21 @@ package org.apache.zeppelin.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * Class defining credentials for data source authorization
@@ -111,7 +119,7 @@ public class Credentials {
       fis.close();
 
       String json = sb.toString();
-      CredentialsInfoSaving info = gson.fromJson(json, CredentialsInfoSaving.class);
+      CredentialsInfoSaving info = CredentialsInfoSaving.fromJson(json);
       this.credentialsMap = info.credentialsMap;
     } catch (IOException e) {
       LOG.error("Error loading credentials file", e);
@@ -131,6 +139,9 @@ public class Credentials {
     try {
       if (!credentialsFile.exists()) {
         credentialsFile.createNewFile();
+
+        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+        Files.setPosixFilePermissions(credentialsFile.toPath(), permissions);
       }
 
       FileOutputStream fos = new FileOutputStream(credentialsFile, false);

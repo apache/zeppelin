@@ -131,10 +131,10 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     // create AngularFunction in current paragraph
     val functionName = eventName.replaceAll("-", "_") + "_" + uniqueId
     val elem = this % Attribute(None, eventName,
-      Text(s"${functionName}=$$event.timeStamp"),
+      Text(s"${functionName}=${functionName} + 1"),
       Null)
 
-    val angularObject = addAngularObject(functionName, "")
+    val angularObject = addAngularObject(functionName, 0)
 
     angularObject.addWatcher(new AngularObjectWatcher(interpreterContext) {
       override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext)

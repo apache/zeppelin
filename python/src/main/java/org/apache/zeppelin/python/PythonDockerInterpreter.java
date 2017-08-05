@@ -21,10 +21,8 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +35,7 @@ public class PythonDockerInterpreter extends Interpreter {
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
+  private File zeppelinHome;
 
   public PythonDockerInterpreter(Properties property) {
     super(property);
@@ -44,7 +43,11 @@ public class PythonDockerInterpreter extends Interpreter {
 
   @Override
   public void open() {
-
+    if (System.getenv("ZEPPELIN_HOME") != null) {
+      zeppelinHome = new File(System.getenv("ZEPPELIN_HOME"));
+    } else {
+      zeppelinHome = Paths.get("..").toAbsolutePath().toFile();
+    }
   }
 
   @Override
@@ -54,6 +57,7 @@ public class PythonDockerInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    File pythonScript = new File(getPythonInterpreter().getScriptPath());
     InterpreterOutput out = context.out;
 
     Matcher activateMatcher = activatePattern.matcher(st);
@@ -66,7 +70,28 @@ public class PythonDockerInterpreter extends Interpreter {
     } else if (activateMatcher.matches()) {
       String image = activateMatcher.group(1);
       pull(out, image);
-      setPythonCommand("docker run -i --rm " + image + " python -iu");
+
+      // mount pythonscript dir
+      String mountPythonScript = "-v " +
+          pythonScript.getParentFile().getAbsolutePath() +
+          ":/_zeppelin_tmp ";
+
+      // mount zeppelin dir
+      String mountPy4j = "-v " +
+          zeppelinHome.getAbsolutePath() +
+          ":/_zeppelin ";
+
+      // set PYTHONPATH
+      String pythonPath = ":/_zeppelin/" + PythonInterpreter.ZEPPELIN_PY4JPATH + ":" +
+          ":/_zeppelin/" + PythonInterpreter.ZEPPELIN_PYTHON_LIBS;
+
+      setPythonCommand("docker run -i --rm " +
+          mountPythonScript +
+          mountPy4j +
+          "-e PYTHONPATH=\"" + pythonPath + "\" " +
+          image + " " +
+          getPythonInterpreter().getPythonBindPath() + " " +
+          "/_zeppelin_tmp/" + pythonScript.getName());
       restartPythonProcess();
       out.clear();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + image + "\" activated");
@@ -78,6 +103,7 @@ public class PythonDockerInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
     }
   }
+
 
   public void setPythonCommand(String cmd) {
     PythonInterpreter python = getPythonInterpreter();

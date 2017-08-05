@@ -16,10 +16,12 @@
  */
 package org.apache.zeppelin.interpreter;
 
+import java.io.Serializable;
+
 /**
  * Interpreter result message
  */
-public class InterpreterResultMessage {
+public class InterpreterResultMessage implements Serializable {
   InterpreterResult.Type type;
   String data;
 

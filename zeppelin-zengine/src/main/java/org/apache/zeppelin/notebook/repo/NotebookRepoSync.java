@@ -75,7 +75,6 @@ public class NotebookRepoSync implements NotebookRepo {
     }
 
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
-      @SuppressWarnings("static-access")
       Class<?> notebookStorageClass;
       try {
         notebookStorageClass = getClass().forName(storageClassNames[i].trim());

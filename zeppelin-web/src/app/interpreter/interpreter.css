@@ -39,6 +39,15 @@
   display: block;
   height: 23px;
   border: 1px solid #CCCCCC;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.interpreter textarea {
+  min-height: 23px;
+  border-radius: 3px;
+  vertical-align: middle;
 }
 
 .interpreter .interpreter-title {
@@ -113,4 +122,11 @@
 .remove-margin-top-bottom {
   margin-top: 0px !important;
   margin-bottom: 0px !important;
+}
+
+.interpreter-binding-mode-info-link {
+  color: #3071a9;
+  vertical-align: middle;
+  margin-left: 2px;
+  text-decoration: none !important;
 }

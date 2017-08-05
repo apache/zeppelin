@@ -91,11 +91,29 @@ public class FlinkInterpreter extends Interpreter {
       startFlinkMiniCluster();
     }
 
+    String[] externalJars = new String[0];
+    String localRepo = getProperty("zeppelin.interpreter.localRepo");
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
+        if (files != null) {
+          externalJars = new String[files.length];
+          for (int i = 0; i < files.length; i++) {
+            if (externalJars.length > 0) {
+              externalJars[i] = files[i].getAbsolutePath();
+            }
+          }
+        }
+      }
+    }
+
     flinkIloop = new FlinkILoop(getHost(),
-                                getPort(),
-                                flinkConf,
-                                (BufferedReader) null,
-                                new PrintWriter(out));
+        getPort(),
+        flinkConf,
+        new Some<>(externalJars),
+        (BufferedReader) null,
+        new PrintWriter(out));
 
     flinkIloop.settings_$eq(createSettings());
     flinkIloop.createInterpreter();
@@ -373,7 +391,8 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 

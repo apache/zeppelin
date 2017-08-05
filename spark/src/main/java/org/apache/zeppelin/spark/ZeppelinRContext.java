@@ -18,6 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 
 /**
@@ -26,14 +27,15 @@ import org.apache.spark.sql.SQLContext;
 public class ZeppelinRContext {
   private static SparkContext sparkContext;
   private static SQLContext sqlContext;
-  private static ZeppelinContext zeppelinContext;
+  private static SparkZeppelinContext zeppelinContext;
   private static Object sparkSession;
+  private static JavaSparkContext javaSparkContext;
 
   public static void setSparkContext(SparkContext sparkContext) {
     ZeppelinRContext.sparkContext = sparkContext;
   }
 
-  public static void setZeppelinContext(ZeppelinContext zeppelinContext) {
+  public static void setZeppelinContext(SparkZeppelinContext zeppelinContext) {
     ZeppelinRContext.zeppelinContext = zeppelinContext;
   }
 
@@ -53,11 +55,15 @@ public class ZeppelinRContext {
     return sqlContext;
   }
 
-  public static ZeppelinContext getZeppelinContext() {
+  public static SparkZeppelinContext getZeppelinContext() {
     return zeppelinContext;
   }
 
   public static Object getSparkSession() {
     return sparkSession;
   }
+
+  public static void setJavaSparkContext(JavaSparkContext jsc) { javaSparkContext = jsc; }
+
+  public static JavaSparkContext getJavaSparkContext() { return javaSparkContext; }
 }

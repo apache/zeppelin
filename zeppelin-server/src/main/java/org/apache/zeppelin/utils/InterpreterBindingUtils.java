@@ -37,7 +37,7 @@ public class InterpreterBindingUtils {
           setting.getInterpreterInfos(), true));
     }
 
-    List<InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
+    List<InterpreterSetting> availableSettings = notebook.getInterpreterSettingManager().get();
     for (InterpreterSetting setting : availableSettings) {
       boolean selected = false;
       for (InterpreterSetting selectedSetting : selectedSettings) {

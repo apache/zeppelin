@@ -21,15 +21,7 @@ from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
-from pyspark.rdd import RDD
-from pyspark.files import SparkFiles
-from pyspark.storagelevel import StorageLevel
-from pyspark.accumulators import Accumulator, AccumulatorParam
-from pyspark.broadcast import Broadcast
-from pyspark.serializers import MarshalSerializer, PickleSerializer
-import warnings
 import ast
-import traceback
 import warnings
 
 # for back compatibility
@@ -57,7 +49,7 @@ class PyZeppelinContext(dict):
   def show(self, obj):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
-      print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
+      print(self.z.showData(obj._jdf))
     else:
       print(str(obj))
 
@@ -83,6 +75,9 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
+  def getInterpreterContext(self):
+    return self.z.getInterpreterContext()
+
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
@@ -94,13 +89,15 @@ class PyZeppelinContext(dict):
 
   def checkbox(self, name, options, defaultChecked=None):
     if defaultChecked is None:
-      defaultChecked = list(map(lambda items: items[0], options))
+      defaultChecked = []
     optionTuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
     optionIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(optionTuples)
     defaultCheckedIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
-
-    checkedIterables = self.z.checkbox(name, defaultCheckedIterables, optionIterables)
-    return gateway.jvm.scala.collection.JavaConversions.asJavaCollection(checkedIterables)
+    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.checkbox(name, defaultCheckedIterables, optionIterables))
+    result = []
+    for checkedItem in checkedItems:
+      result.append(checkedItem)
+    return result;
 
   def registerHook(self, event, cmd, replName=None):
     if replName is None:
@@ -226,19 +223,12 @@ class PySparkCompletion:
       result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
       self.interpreterObject.setStatementsFinished(result, False)
 
-
-output = Logger()
-sys.stdout = output
-sys.stderr = output
-
 client = GatewayClient(port=int(sys.argv[1]))
 sparkVersion = SparkVersion(int(sys.argv[2]))
-
 if sparkVersion.isSpark2():
   from pyspark.sql import SparkSession
 else:
   from pyspark.sql import SchemaRDD
-
 
 if sparkVersion.isAutoConvertEnabled():
   gateway = JavaGateway(client, auto_convert = True)
@@ -252,7 +242,10 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
-intp.onPythonScriptInitialized()
+output = Logger()
+sys.stdout = output
+sys.stderr = output
+intp.onPythonScriptInitialized(os.getpid())
 
 jsc = intp.getJavaSparkContext()
 
@@ -268,26 +261,44 @@ else:
 
 java_import(gateway.jvm, "scala.Tuple2")
 
+_zcUserQueryNameSpace = {}
+
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
-sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-if sparkVersion.isSpark2():
-  spark = SparkSession(sc, intp.getSparkSession())
-  sqlc = spark._wrapped
-else:
-  sqlc = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
-sqlContext = sqlc
+sc = _zsc_ = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
+_zcUserQueryNameSpace["_zsc_"] = _zsc_
+_zcUserQueryNameSpace["sc"] = sc
 
-completion = PySparkCompletion(intp)
-z = PyZeppelinContext(intp.getZeppelinContext())
-z._setup_matplotlib()
+if sparkVersion.isSpark2():
+  spark = __zSpark__ = SparkSession(sc, intp.getSparkSession())
+  sqlc = __zSqlc__ = __zSpark__._wrapped
+  _zcUserQueryNameSpace["sqlc"] = sqlc
+  _zcUserQueryNameSpace["__zSqlc__"] = __zSqlc__
+  _zcUserQueryNameSpace["spark"] = spark
+  _zcUserQueryNameSpace["__zSpark__"] = __zSpark__
+else:
+  sqlc = __zSqlc__ = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
+  _zcUserQueryNameSpace["sqlc"] = sqlc
+  _zcUserQueryNameSpace["__zSqlc__"] = sqlc
+
+sqlContext = __zSqlc__
+_zcUserQueryNameSpace["sqlContext"] = sqlContext
+
+completion = __zeppelin_completion__ = PySparkCompletion(intp)
+_zcUserQueryNameSpace["completion"] = completion
+_zcUserQueryNameSpace["__zeppelin_completion__"] = __zeppelin_completion__
+
+z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
+__zeppelin__._setup_matplotlib()
+_zcUserQueryNameSpace["z"] = z
+_zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
 
 while True :
   req = intp.getStatements()
   try:
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
-    final_code = []
+    jobDesc = req.jobDescription()
     
     # Get post-execute hooks
     try:
@@ -296,7 +307,7 @@ while True :
       global_hook = None
       
     try:
-      user_hook = z.getHook('post_exec')
+      user_hook = __zeppelin__.getHook('post_exec')
     except:
       user_hook = None
       
@@ -305,22 +316,11 @@ while True :
       if hook:
         nhooks += 1
 
-    for s in stmts:
-      if s == None:
-        continue
-
-      # skip comment
-      s_stripped = s.strip()
-      if len(s_stripped) == 0 or s_stripped.startswith("#"):
-        continue
-
-      final_code.append(s)
-
-    if final_code:
+    if stmts:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
-      sc.setJobGroup(jobGroup, "Zeppelin")
-      code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
+      sc.setJobGroup(jobGroup, jobDesc)
+      code = compile('\n'.join(stmts), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
       to_run_hooks = []
       if (nhooks > 0):
         to_run_hooks = code.body[-nhooks:]
@@ -331,21 +331,34 @@ while True :
         for node in to_run_exec:
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
 
         for node in to_run_single:
           mod = ast.Interactive([node])
           code = compile(mod, '<stdin>', 'single')
-          exec(code)
+          exec(code, _zcUserQueryNameSpace)
           
         for node in to_run_hooks:
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
-          exec(code)
-      except:
-        raise Exception(traceback.format_exc())
+          exec(code, _zcUserQueryNameSpace)
 
-    intp.setStatementsFinished("", False)
+        intp.setStatementsFinished("", False)
+      except Py4JJavaError:
+        # raise it to outside try except
+        raise
+      except:
+        exception = traceback.format_exc()
+        m = re.search("File \"<stdin>\", line (\d+).*", exception)
+        if m:
+          line_no = int(m.group(1))
+          intp.setStatementsFinished(
+            "Fail to execute line {}: {}\n".format(line_no, stmts[line_no - 1]) + exception, True)
+        else:
+          intp.setStatementsFinished(exception, True)
+    else:
+      intp.setStatementsFinished("", False)
+
   except Py4JJavaError:
     excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
     innerErrorStart = excInnerError.find("Py4JJavaError:")

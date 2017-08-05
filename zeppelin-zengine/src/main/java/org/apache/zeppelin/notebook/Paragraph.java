@@ -20,6 +20,8 @@ package org.apache.zeppelin.notebook;
 import com.google.common.collect.Maps;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.common.JsonSerializable;
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -48,11 +50,13 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Paragraph is a representation of an execution unit.
  */
-public class Paragraph extends Job implements Serializable, Cloneable {
+public class Paragraph extends Job implements Cloneable, JsonSerializable {
+
   private static final long serialVersionUID = -6328572073497992016L;
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private transient InterpreterFactory factory;
+  private transient InterpreterSettingManager interpreterSettingManager;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
   private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap(); // personalized
@@ -85,10 +89,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph(String paragraphId, Note note, JobListener listener,
-      InterpreterFactory factory) {
+      InterpreterFactory factory, InterpreterSettingManager interpreterSettingManager) {
     super(paragraphId, generateId(), listener);
     this.note = note;
     this.factory = factory;
+    this.interpreterSettingManager = interpreterSettingManager;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -98,10 +103,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     config = new HashMap<>();
   }
 
-  public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
+  public Paragraph(Note note, JobListener listener, InterpreterFactory factory,
+      InterpreterSettingManager interpreterSettingManager) {
     super(generateId(), listener);
     this.note = note;
     this.factory = factory;
+    this.interpreterSettingManager = interpreterSettingManager;
     title = null;
     text = null;
     authenticationInfo = null;
@@ -120,6 +127,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Paragraph getUserParagraph(String user) {
+    if (!userParagraphMap.containsKey(user)) {
+      cloneParagraphForUser(user);
+    }
     return userParagraphMap.get(user);
   }
 
@@ -131,17 +141,23 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public Paragraph cloneParagraphForUser(String user) {
     Paragraph p = new Paragraph();
     p.settings.setParams(Maps.newHashMap(settings.getParams()));
-    p.settings.setForms(Maps.newHashMap(settings.getForms()));
+    p.settings.setForms(Maps.newLinkedHashMap(settings.getForms()));
     p.setConfig(Maps.newHashMap(config));
     p.setTitle(getTitle());
     p.setText(getText());
     p.setResult(getReturn());
-    p.setStatus(getStatus());
+    p.setStatus(Status.READY);
     p.setId(getId());
-
-    userParagraphMap.put(user, p);
-
+    addUser(p, user);
     return p;
+  }
+
+  public void clearUserParagraphs() {
+    userParagraphMap.clear();
+  }
+
+  public void addUser(Paragraph p, String user) {
+    userParagraphMap.put(user, p);
   }
 
   public String getUser() {
@@ -248,15 +264,16 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public List<InterpreterCompletion> getInterpreterCompletion() {
     List<InterpreterCompletion> completion = new LinkedList();
-    for (InterpreterSetting intp : factory.getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting intp : interpreterSettingManager.getInterpreterSettings(note.getId())) {
       List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
       if (intInfo.size() > 1) {
         for (InterpreterInfo info : intInfo) {
           String name = intp.getName() + "." + info.getName();
-          completion.add(new InterpreterCompletion(name, name));
+          completion.add(new InterpreterCompletion(name, name, CompletionType.setting.name()));
         }
       } else {
-        completion.add(new InterpreterCompletion(intp.getName(), intp.getName()));
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName(),
+            CompletionType.setting.name()));
       }
     }
     return completion;
@@ -283,12 +300,18 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    List completion = repl.completion(body, cursor);
+    InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
+
+    List completion = repl.completion(body, cursor, interpreterContext);
     return completion;
   }
 
   public void setInterpreterFactory(InterpreterFactory factory) {
     this.factory = factory;
+  }
+
+  public void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
+    this.interpreterSettingManager = interpreterSettingManager;
   }
 
   public InterpreterResult getResult() {
@@ -320,17 +343,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return null;
   }
 
-  private boolean hasPermission(String user, List<String> intpUsers) {
-    if (1 > intpUsers.size()) {
+  private boolean hasPermission(List<String> userAndRoles, List<String> intpUsersAndRoles) {
+    if (1 > intpUsersAndRoles.size()) {
       return true;
     }
-
-    for (String u : intpUsers) {
-      if (user.trim().equals(u.trim())) {
-        return true;
-      }
-    }
-    return false;
+    Set<String> intersection = new HashSet<>(intpUsersAndRoles);
+    intersection.retainAll(userAndRoles);
+    return (intpUsersAndRoles.isEmpty() || (intersection.size() > 0));
   }
 
   public boolean isBlankParagraph() {
@@ -361,14 +380,18 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     }
 
+    for (Paragraph p : userParagraphMap.values()) {
+      p.setText(getText());
+    }
+
     String script = getScriptBody();
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {
       settings.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
-      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
-      // from script body
+      // inputs will be built from script body
+      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(scriptBody);
 
       final AngularObjectRegistry angularRegistry =
           repl.getInterpreterGroup().getAngularObjectRegistry();
@@ -392,13 +415,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
       resultMessages.addAll(ret.message());
 
-      for (Paragraph p : userParagraphMap.values()) {
-        p.setText(getText());
-      }
-
       InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
 
-      Paragraph p = userParagraphMap.get(getUser());
+      Paragraph p = getUserParagraph(getUser());
       if (null != p) {
         p.setResult(res);
         p.settings.setParams(settings.getParams());
@@ -415,21 +434,21 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private boolean noteHasInterpreters() {
-    return !factory.getInterpreterSettings(note.getId()).isEmpty();
+    return !interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty();
   }
 
   private boolean interpreterHasUser(InterpreterSetting intp) {
-    return intp.getOption().permissionIsSet() && intp.getOption().getUsers() != null;
+    return intp.getOption().permissionIsSet() && intp.getOption().getOwners() != null;
   }
 
   private boolean isUserAuthorizedToAccessInterpreter(InterpreterOption intpOpt) {
-    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUser(),
-        intpOpt.getUsers());
+    return intpOpt.permissionIsSet() && hasPermission(authenticationInfo.getUsersAndRoles(),
+        intpOpt.getOwners());
   }
 
   private InterpreterSetting getInterpreterSettingById(String id) {
     InterpreterSetting setting = null;
-    for (InterpreterSetting i : factory.getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting i : interpreterSettingManager.getInterpreterSettings(note.getId())) {
       if (id.startsWith(i.getId())) {
         setting = i;
         break;
@@ -503,8 +522,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
-    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
-      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
+    if (!interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup =
+          interpreterSettingManager.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
@@ -514,14 +534,16 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
-    if (authenticationInfo != null) {
+    setAuthenticationInfo(new AuthenticationInfo(getUser()));
+
+    if (authenticationInfo.getUser() != null) {
       UserCredentials userCredentials =
-              credentials.getUserCredentials(authenticationInfo.getUser());
+          credentials.getUserCredentials(authenticationInfo.getUser());
       authenticationInfo.setUserCredentials(userCredentials);
     }
 
     InterpreterContext interpreterContext =
-            new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
+        new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
             this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
             resourcePool, runners, output);
     return interpreterContext;
@@ -531,8 +553,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
-    if (!factory.getInterpreterSettings(note.getId()).isEmpty()) {
-      InterpreterSetting intpGroup = factory.getInterpreterSettings(note.getId()).get(0);
+    if (!interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty()) {
+      InterpreterSetting intpGroup =
+          interpreterSettingManager.getInterpreterSettings(note.getId()).get(0);
       registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
       resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
     }
@@ -563,7 +586,15 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return new ParagraphRunner(note, note.getId(), getId());
   }
 
+  public void setStatusToUserParagraph(Status status) {
+    String user = getUser();
+    if (null != user) {
+      getUserParagraph(getUser()).setStatus(status);
+    }
+  }
+
   static class ParagraphRunner extends InterpreterContextRunner {
+
     private transient Note note;
 
     public ParagraphRunner(Note note, String noteId, String paragraphId) {
@@ -688,7 +719,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       for (String key : infos.keySet()) {
         ParagraphRuntimeInfo info = this.runtimeInfos.get(key);
         if (info == null) {
-          info = new ParagraphRuntimeInfo(key, label, tooltip,  group, intpSettingId);
+          info = new ParagraphRuntimeInfo(key, label, tooltip, group, intpSettingId);
           this.runtimeInfos.put(key, info);
         }
         info.addValue(infos.get(key));
@@ -722,7 +753,81 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
+  public void clearRuntimeInfos() {
+    if (this.runtimeInfos != null) {
+      this.runtimeInfos.clear();
+    }
+  }
+
   public Map<String, ParagraphRuntimeInfo> getRuntimeInfos() {
     return runtimeInfos;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+
+    Paragraph paragraph = (Paragraph) o;
+
+    if (title != null ? !title.equals(paragraph.title) : paragraph.title != null) {
+      return false;
+    }
+    if (text != null ? !text.equals(paragraph.text) : paragraph.text != null) {
+      return false;
+    }
+    if (user != null ? !user.equals(paragraph.user) : paragraph.user != null) {
+      return false;
+    }
+    if (dateUpdated != null ?
+        !dateUpdated.equals(paragraph.dateUpdated) : paragraph.dateUpdated != null) {
+      return false;
+    }
+    if (config != null ? !config.equals(paragraph.config) : paragraph.config != null) {
+      return false;
+    }
+    if (settings != null ? !settings.equals(paragraph.settings) : paragraph.settings != null) {
+      return false;
+    }
+    if (results != null ? !results.equals(paragraph.results) : paragraph.results != null) {
+      return false;
+    }
+    if (result != null ? !result.equals(paragraph.result) : paragraph.result != null) {
+      return false;
+    }
+    return runtimeInfos != null ?
+        runtimeInfos.equals(paragraph.runtimeInfos) : paragraph.runtimeInfos == null;
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result1 = super.hashCode();
+    result1 = 31 * result1 + (title != null ? title.hashCode() : 0);
+    result1 = 31 * result1 + (text != null ? text.hashCode() : 0);
+    result1 = 31 * result1 + (user != null ? user.hashCode() : 0);
+    result1 = 31 * result1 + (dateUpdated != null ? dateUpdated.hashCode() : 0);
+    result1 = 31 * result1 + (config != null ? config.hashCode() : 0);
+    result1 = 31 * result1 + (settings != null ? settings.hashCode() : 0);
+    result1 = 31 * result1 + (results != null ? results.hashCode() : 0);
+    result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
+    result1 = 31 * result1 + (runtimeInfos != null ? runtimeInfos.hashCode() : 0);
+    return result1;
+  }
+
+  public String toJson() {
+    return Note.getGson().toJson(this);
+  }
+
+  public static Paragraph fromJson(String json) {
+    return Note.getGson().fromJson(json, Paragraph.class);
+  }
+
 }

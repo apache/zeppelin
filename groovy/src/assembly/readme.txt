@@ -1,0 +1,1 @@
+to assemble groovy interpreter separately

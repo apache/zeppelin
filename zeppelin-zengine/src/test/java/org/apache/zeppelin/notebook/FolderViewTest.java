@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.search.SearchService;
@@ -61,6 +62,9 @@ public class FolderViewTest {
   @Mock
   InterpreterFactory interpreterFactory;
 
+  @Mock
+  InterpreterSettingManager interpreterSettingManager;
+
   FolderView folderView;
 
   Note note1;
@@ -85,7 +89,7 @@ public class FolderViewTest {
   Note abNote2;
 
   private Note createNote() {
-    Note note = new Note(repo, interpreterFactory, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
     note.setNoteNameListener(folderView);
     return note;
   }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -41,6 +42,7 @@ public class LuceneSearchTest {
 
   private static NotebookRepo notebookRepoMock;
   private static InterpreterFactory interpreterFactory;
+  private static InterpreterSettingManager interpreterSettingManager;
   
   private SearchService noteSearchService;
   private AuthenticationInfo anonymous;
@@ -49,6 +51,7 @@ public class LuceneSearchTest {
   public static void beforeStartUp() {
     notebookRepoMock = mock(NotebookRepo.class);
     interpreterFactory = mock(InterpreterFactory.class);
+    interpreterSettingManager = mock(InterpreterSettingManager.class);
 
 //    when(replLoaderMock.getInterpreterSettings())
 //      .thenReturn(ImmutableList.<InterpreterSetting>of());
@@ -275,20 +278,20 @@ public class LuceneSearchTest {
   }
 
   private Paragraph addParagraphWithText(Note note, String text) {
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(text);
     return p;
   }
 
   private Paragraph addParagraphWithTextAndTitle(Note note, String text, String title) {
-    Paragraph p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(text);
     p.setTitle(title);
     return p;
   }
 
   private Note newNote(String name) {
-    Note note = new Note(notebookRepoMock, interpreterFactory, null, noteSearchService, null, null);
+    Note note = new Note(notebookRepoMock, interpreterFactory, interpreterSettingManager, null, noteSearchService, null, null);
     note.setName(name);
     return note;
   }

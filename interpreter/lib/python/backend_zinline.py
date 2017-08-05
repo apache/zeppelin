@@ -18,6 +18,7 @@
 
 from __future__ import print_function
 
+import sys
 import uuid
 import warnings
 import base64
@@ -94,7 +95,10 @@ class FigureCanvasZInline(FigureCanvasAgg):
         buf = BytesIO()
         self.print_figure(buf, **kwargs)
         fmt = fmt.encode()
-        byte_str = b"data:image/%s;base64," %fmt
+        if sys.version_info >= (3, 4) and sys.version_info < (3, 5):
+            byte_str = bytes("data:image/%s;base64," %fmt, "utf-8")
+        else:
+            byte_str = b"data:image/%s;base64," %fmt
         byte_str += base64.b64encode(buf.getvalue())
             
         # Python3 forces all strings to default to unicode, but for raster image

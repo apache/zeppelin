@@ -31,7 +31,7 @@ public class InterpreterInfo {
   private boolean defaultInterpreter = false;
   private Map<String, Object> editor;
 
-  InterpreterInfo(String className, String name, boolean defaultInterpreter,
+  public InterpreterInfo(String className, String name, boolean defaultInterpreter,
       Map<String, Object> editor) {
     this.className = className;
     this.name = name;

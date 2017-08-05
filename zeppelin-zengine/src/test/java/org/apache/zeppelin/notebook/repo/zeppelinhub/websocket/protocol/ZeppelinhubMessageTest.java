@@ -17,7 +17,7 @@ public class ZeppelinhubMessageTest {
   public void testThatCanSerializeZeppelinHubMessage() {
     Map<String,String> meta = Maps.newHashMap();
     meta.put("key1", "val1");
-    String zeppelinHubMsg = ZeppelinhubMessage.newMessage(OP.LIST_NOTES, "my data", meta).serialize();
+    String zeppelinHubMsg = ZeppelinhubMessage.newMessage(OP.LIST_NOTES, "my data", meta).toJson();
 
     assertEquals(msg, zeppelinHubMsg);
   }
@@ -27,7 +27,7 @@ public class ZeppelinhubMessageTest {
     Map<String,String> meta = Maps.newHashMap();
     meta.put("key1", "val1");
     ZeppelinhubMessage expected = ZeppelinhubMessage.newMessage(OP.LIST_NOTES.toString(), "my data", meta);
-    ZeppelinhubMessage zeppelinHubMsg = ZeppelinhubMessage.deserialize(msg);
+    ZeppelinhubMessage zeppelinHubMsg = ZeppelinhubMessage.fromJson(msg);
 
     assertEquals(expected.op, zeppelinHubMsg.op);
     assertEquals(expected.data, zeppelinHubMsg.data);
@@ -36,8 +36,8 @@ public class ZeppelinhubMessageTest {
   
   @Test
   public void testThatInvalidStringReturnEmptyZeppelinhubMessage() {
-    assertEquals(ZeppelinhubMessage.EMPTY, ZeppelinhubMessage.deserialize(""));
-    assertEquals(ZeppelinhubMessage.EMPTY, ZeppelinhubMessage.deserialize("dwfewewrewr"));
+    assertEquals(ZeppelinhubMessage.EMPTY, ZeppelinhubMessage.fromJson(""));
+    assertEquals(ZeppelinhubMessage.EMPTY, ZeppelinhubMessage.fromJson("dwfewewrewr"));
   }
 
 }

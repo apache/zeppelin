@@ -23,7 +23,7 @@ import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -43,6 +44,8 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
@@ -51,7 +54,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -65,7 +67,6 @@ public abstract class AbstractTestRestApi {
   protected static final boolean wasRunning = checkIfServerIsRunning();
   static boolean pySpark = false;
   static boolean sparkR = false;
-  static Gson gson = new Gson();
   static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;
@@ -84,7 +85,7 @@ public abstract class AbstractTestRestApi {
       "role1 = *\n" +
       "role2 = *\n" +
       "role3 = *\n" +
-      "admin = *" +
+      "admin = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
       "/** = authc";
@@ -127,6 +128,11 @@ public abstract class AbstractTestRestApi {
     if (!wasRunning) {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
+
+      // some test profile does not build zeppelin-web.
+      // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
+      new File("../zeppelin-web/dist").mkdirs();
+
       LOG.info("Staring test Zeppelin up...");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
@@ -183,44 +189,55 @@ public abstract class AbstractTestRestApi {
 
       // assume first one is spark
       InterpreterSetting sparkIntpSetting = null;
-      for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+      for(InterpreterSetting intpSetting :
+          ZeppelinServer.notebook.getInterpreterSettingManager().get()) {
         if (intpSetting.getName().equals("spark")) {
           sparkIntpSetting = intpSetting;
         }
       }
 
-      Properties sparkProperties = (Properties) sparkIntpSetting.getProperties();
+      Map<String, InterpreterProperty> sparkProperties =
+          (Map<String, InterpreterProperty>) sparkIntpSetting.getProperties();
       // ci environment runs spark cluster for testing
       // so configure zeppelin use spark cluster
       if ("true".equals(System.getenv("CI"))) {
         // set spark master and other properties
-        sparkProperties.setProperty("master", "local[2]");
-        sparkProperties.setProperty("spark.cores.max", "2");
-        sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
+        sparkProperties.put("master",
+            new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
+        sparkProperties.put("spark.cores.max",
+            new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
+        sparkProperties.put("zeppelin.spark.useHiveContext",
+            new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
         // set spark home for pyspark
-        sparkProperties.setProperty("spark.home", getSparkHome());
+        sparkProperties.put("spark.home",
+            new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.TEXTAREA.getValue()));
 
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
         sparkR = true;
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       } else {
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
           if (System.getenv("SPARK_MASTER") != null) {
-            sparkProperties.setProperty("master", System.getenv("SPARK_MASTER"));
+            sparkProperties.put("master",
+                new InterpreterProperty("master", System.getenv("SPARK_MASTER"), InterpreterPropertyType.TEXTAREA.getValue()));
           } else {
-            sparkProperties.setProperty("master", "local[2]");
+            sparkProperties.put("master",
+                new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
           }
-          sparkProperties.setProperty("spark.cores.max", "2");
+          sparkProperties.put("spark.cores.max",
+              new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
           // set spark home for pyspark
-          sparkProperties.setProperty("spark.home", sparkHome);
-          sparkProperties.setProperty("zeppelin.spark.useHiveContext", "false");
+          sparkProperties.put("spark.home",
+              new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.TEXTAREA.getValue()));
+          sparkProperties.put("zeppelin.spark.useHiveContext",
+              new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
           pySpark = true;
           sparkR = true;
         }
 
-        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.getId());
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
       }
     }
   }
@@ -287,10 +304,10 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
+      List<String> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
           .getDefaultInterpreterSettingList();
       for (String setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting);
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);
@@ -327,7 +344,7 @@ public abstract class AbstractTestRestApi {
     GetMethod request = null;
     boolean isRunning = true;
     try {
-      request = httpGet("/");
+      request = httpGet("/version");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
       LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
@@ -421,8 +438,20 @@ public abstract class AbstractTestRestApi {
     httpClient.executeMethod(postMethod);
     LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
     Pattern pattern = Pattern.compile("JSESSIONID=([a-zA-Z0-9-]*)");
-    java.util.regex.Matcher matcher = pattern.matcher(postMethod.getResponseHeaders("Set-Cookie")[0].toString());
-    return matcher.find()? matcher.group(1) : StringUtils.EMPTY;
+    Header[] setCookieHeaders = postMethod.getResponseHeaders("Set-Cookie");
+    String jsessionId = null;
+    for (Header setCookie : setCookieHeaders) {
+      java.util.regex.Matcher matcher = pattern.matcher(setCookie.toString());
+      if (matcher.find()) {
+        jsessionId = matcher.group(1);
+      }
+    }
+
+    if (jsessionId != null) {
+      return jsessionId;
+    } else {
+      return StringUtils.EMPTY;
+    }
   }
 
   protected static boolean userAndPasswordAreNotBlank(String user, String pwd) {

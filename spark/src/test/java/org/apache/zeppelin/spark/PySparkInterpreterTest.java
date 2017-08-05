@@ -23,10 +23,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
@@ -36,22 +33,24 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
 
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
-  public static SparkInterpreter sparkInterpreter;
-  public static PySparkInterpreter pySparkInterpreter;
-  public static InterpreterGroup intpGroup;
-  public static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
-  private InterpreterContext context;
+  static SparkInterpreter sparkInterpreter;
+  static PySparkInterpreter pySparkInterpreter;
+  static InterpreterGroup intpGroup;
+  static Logger LOGGER = LoggerFactory.getLogger(PySparkInterpreterTest.class);
+  static InterpreterContext context;
 
-  private Properties getPySparkTestProperties() throws IOException {
+  private static Properties getPySparkTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty("master", "local[*]");
     p.setProperty("spark.app.name", "Zeppelin Test");
@@ -77,24 +76,20 @@ public class PySparkInterpreterTest {
     return version;
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    if (sparkInterpreter == null) {
-      sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
-      intpGroup.get("note").add(sparkInterpreter);
-      sparkInterpreter.setInterpreterGroup(intpGroup);
-      sparkInterpreter.open();
-    }
+    sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
+    intpGroup.get("note").add(sparkInterpreter);
+    sparkInterpreter.setInterpreterGroup(intpGroup);
+    sparkInterpreter.open();
 
-    if (pySparkInterpreter == null) {
-      pySparkInterpreter = new PySparkInterpreter(getPySparkTestProperties());
-      intpGroup.get("note").add(pySparkInterpreter);
-      pySparkInterpreter.setInterpreterGroup(intpGroup);
-      pySparkInterpreter.open();
-    }
+    pySparkInterpreter = new PySparkInterpreter(getPySparkTestProperties());
+    intpGroup.get("note").add(pySparkInterpreter);
+    pySparkInterpreter.setInterpreterGroup(intpGroup);
+    pySparkInterpreter.open();
 
     context = new InterpreterContext("note", "id", null, "title", "text",
       new AuthenticationInfo(),
@@ -104,6 +99,12 @@ public class PySparkInterpreterTest {
       new LocalResourcePool("id"),
       new LinkedList<InterpreterContextRunner>(),
       new InterpreterOutput(null));
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    pySparkInterpreter.close();
+    sparkInterpreter.close();
   }
 
   @Test
@@ -117,8 +118,51 @@ public class PySparkInterpreterTest {
   @Test
   public void testCompletion() {
     if (getSparkVersionNumber() > 11) {
-      List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length());
+      List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length(), null);
       assertTrue(completions.size() > 0);
+    }
+  }
+
+  @Test
+  public void testRedefinitionZeppelinContext() {
+    if (getSparkVersionNumber() > 11) {
+      String redefinitionCode = "z = 1\n";
+      String restoreCode = "z = __zeppelin__\n";
+      String validCode = "z.input(\"test\")\n";
+
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(redefinitionCode, context).code());
+      assertEquals(InterpreterResult.Code.ERROR, pySparkInterpreter.interpret(validCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(restoreCode, context).code());
+      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
+    }
+  }
+
+  private class infinityPythonJob implements Runnable {
+    @Override
+    public void run() {
+      String code = "import time\nwhile True:\n  time.sleep(1)" ;
+      InterpreterResult ret = pySparkInterpreter.interpret(code, context);
+      assertNotNull(ret);
+      Pattern expectedMessage = Pattern.compile("KeyboardInterrupt");
+      Matcher m = expectedMessage.matcher(ret.message().toString());
+      assertTrue(m.find());
+    }
+  }
+
+  @Test
+  public void testCancelIntp() throws InterruptedException {
+    if (getSparkVersionNumber() > 11) {
+      assertEquals(InterpreterResult.Code.SUCCESS,
+        pySparkInterpreter.interpret("a = 1\n", context).code());
+
+      Thread t = new Thread(new infinityPythonJob());
+      t.start();
+      Thread.sleep(5000);
+      pySparkInterpreter.cancel(context);
+      assertTrue(t.isAlive());
+      t.join(2000);
+      assertFalse(t.isAlive());
     }
   }
 }

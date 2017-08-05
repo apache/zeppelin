@@ -23,6 +23,8 @@ import java.util.*;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
@@ -215,8 +217,12 @@ public class HDFSFileInterpreter extends FileInterpreter {
                   allFiles.FileStatuses != null &&
                   allFiles.FileStatuses.FileStatus != null)
           {
-            for (OneFileStatus fs : allFiles.FileStatuses.FileStatus)
+            int length = cmd.maxLength < allFiles.FileStatuses.FileStatus.length ? cmd.maxLength :
+                    allFiles.FileStatuses.FileStatus.length;
+            for (int index = 0; index < length; index++) {
+              OneFileStatus fs = allFiles.FileStatuses.FileStatus[index];
               all = all + listOne(path, fs) + '\n';
+            }
           }
         }
         return all;
@@ -247,21 +253,25 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
-      suggestions.add(new InterpreterCompletion("ls", "ls"));
-      suggestions.add(new InterpreterCompletion("cd", "cd"));
-      suggestions.add(new InterpreterCompletion("pwd", "pwd"));
+      suggestions.add(new InterpreterCompletion("ls", "ls", CompletionType.command.name()));
+      suggestions.add(new InterpreterCompletion("cd", "cd", CompletionType.command.name()));
+      suggestions.add(new InterpreterCompletion("pwd", "pwd", CompletionType.command.name()));
       return suggestions;
     }
 
     //part of a command == no spaces
     if (buf.split(" ").length == 1){
-      if ("cd".contains(buf)) suggestions.add(new InterpreterCompletion("cd", "cd"));
-      if ("ls".contains(buf)) suggestions.add(new InterpreterCompletion("ls", "ls"));
-      if ("pwd".contains(buf)) suggestions.add(new InterpreterCompletion("pwd", "pwd"));
+      if ("cd".contains(buf)) suggestions.add(new InterpreterCompletion("cd", "cd",
+          CompletionType.command.name()));
+      if ("ls".contains(buf)) suggestions.add(new InterpreterCompletion("ls", "ls",
+          CompletionType.command.name()));
+      if ("pwd".contains(buf)) suggestions.add(new InterpreterCompletion("pwd", "pwd",
+          CompletionType.command.name()));
 
       return suggestions;
     }
@@ -298,7 +308,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
                 String beforeLastPeriod = unfinished.substring(0, unfinished.lastIndexOf('.') + 1);
                 //beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.
                 String suggestedFinish = fs.pathSuffix.substring(beforeLastPeriod.length());
-                suggestions.add(new InterpreterCompletion(suggestedFinish, suggestedFinish));
+                suggestions.add(new InterpreterCompletion(suggestedFinish, suggestedFinish,
+                    CompletionType.path.name()));
               }
             }
             return suggestions;

@@ -17,23 +17,12 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
  */
-public class LivySparkInterpreter extends BaseLivyInterprereter {
+public class LivySparkInterpreter extends BaseLivyInterpreter {
 
   public LivySparkInterpreter(Properties property) {
     super(property);
@@ -70,7 +59,7 @@ public class LivySparkInterpreter extends BaseLivyInterprereter {
    * @param result
    * @return
    */
-  private String extractStatementResult(String result) {
+  public String extractStatementResult(String result) {
     int pos = -1;
     if ((pos = result.indexOf("=")) >= 0) {
       return result.substring(pos + 1).trim();

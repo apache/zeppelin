@@ -190,43 +190,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>lib/**</exclude>
-            <exclude>**/r/lib/**</exclude>
-            <!--The following files are subject to the BSD-license or variants,
-            as shown in the file headers-->
-            <exclude>**/R/rzeppelin/R/globals.R</exclude>
-            <exclude>**/R/rzeppelin/R/common.R</exclude>
-            <exclude>**/R/rzeppelin/R/protocol.R</exclude>
-            <exclude>**/R/rzeppelin/R/rServer.R</exclude>
-            <exclude>**/R/rzeppelin/R/scalaInterpreter.R</exclude>
-            <exclude>**/R/rzeppelin/R/zzz.R</exclude>
-            <exclude>**/scala/Console.scala</exclude>
-            <exclude>**/zeppelin/rinterpreter/rscala/Package.scala</exclude>
-            <exclude>**/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
-            <!--End of files subject to BSD-license.-->
-            <exclude>**/.idea/</exclude>
-            <!--The following files are mechanical-->
-            <exclude>**/R/rzeppelin/DESCRIPTION</exclude>
-            <exclude>**/R/rzeppelin/NAMESPACE</exclude>
-            <!--End of mechanical R files-->
-            <exclude>**/*.iml</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>**/.settings/*</exclude>
-            <exclude>**/.classpath</exclude>
-            <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>
-            <exclude>**/derby.log</exclude>
-            <exclude>**/metastore_db/</exclude>
-            <exclude>**/README.md</exclude>
-            <exclude>**/dependency-reduced-pom.xml</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>

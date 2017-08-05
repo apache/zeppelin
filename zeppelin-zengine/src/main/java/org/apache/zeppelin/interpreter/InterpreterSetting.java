@@ -28,11 +28,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.google.gson.annotations.SerializedName;
+import org.apache.zeppelin.dep.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.zeppelin.dep.Dependency;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.StringMap;
 
 import static org.apache.zeppelin.notebook.utility.IdHashes.generateId;
 
@@ -54,14 +58,14 @@ public class InterpreterSetting {
   private transient Map<String, Set<String>> runtimeInfosToBeCleared;
 
   /**
-   * properties can be either Properties or Map<String, InterpreterProperty>
+   * properties can be either Map<String, DefaultInterpreterProperty> or
+   * Map<String, InterpreterProperty>
    * properties should be:
-   * - Properties when Interpreter instances are saved to `conf/interpreter.json` file
-   * - Map<String, InterpreterProperty> when Interpreters are registered
+   * - Map<String, InterpreterProperty> when Interpreter instances are saved to
+   * `conf/interpreter.json` file
+   * - Map<String, DefaultInterpreterProperty> when Interpreters are registered
    * : this is needed after https://github.com/apache/zeppelin/pull/1145
    * which changed the way of getting default interpreter setting AKA interpreterSettingsRef
-   * Note(mina): In order to simplify the implementation, I chose to change properties
-   * from Properties to Object instead of creating new classes.
    */
   private Object properties;
   private Status status;
@@ -70,7 +74,7 @@ public class InterpreterSetting {
   @SerializedName("interpreterGroup")
   private List<InterpreterInfo> interpreterInfos;
   private final transient Map<String, InterpreterGroup> interpreterGroupRef = new HashMap<>();
-  private List<Dependency> dependencies;
+  private List<Dependency> dependencies = new LinkedList<>();
   private InterpreterOption option;
   private transient String path;
 
@@ -145,8 +149,8 @@ public class InterpreterSetting {
       key = SHARED_PROCESS;
     }
 
-    logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
-        key, getId(), getName());
+    //logger.debug("getInterpreterProcessKey: {} for InterpreterSetting Id: {}, Name: {}",
+    //    key, getId(), getName());
     return key;
   }
 
@@ -177,7 +181,7 @@ public class InterpreterSetting {
     }
   }
 
-  private String getInterpreterSessionKey(String user, String noteId) {
+  String getInterpreterSessionKey(String user, String noteId) {
     InterpreterOption option = getOption();
     String key;
     if (option.isExistingProcess()) {
@@ -226,81 +230,65 @@ public class InterpreterSetting {
     }
   }
 
-  void closeAndRemoveInterpreterGroupByNoteId(String noteId) {
-    String processKey = getInterpreterProcessKey("", noteId);
-    List<InterpreterGroup> closeToGroupList = new LinkedList<>();
-    InterpreterGroup groupKey;
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
-        interpreterGroupWriteLock.lock();
-        groupKey = interpreterGroupRef.remove(intpKey);
-        interpreterGroupWriteLock.unlock();
-        closeToGroupList.add(groupKey);
-      }
-    }
-
-    for (InterpreterGroup groupToRemove : closeToGroupList) {
-      groupToRemove.close();
-    }
-  }
-
-  void closeAndRemoveInterpreterGroupByUser(String user) {
+  void closeAndRemoveInterpreterGroup(String noteId, String user) {
     if (user.equals("anonymous")) {
       user = "";
     }
-    String processKey = getInterpreterProcessKey(user, "");
-    String sessionKey = getInterpreterSessionKey(user, "");
+    String processKey = getInterpreterProcessKey(user, noteId);
+    String sessionKey = getInterpreterSessionKey(user, noteId);
     List<InterpreterGroup> groupToRemove = new LinkedList<>();
     InterpreterGroup groupItem;
     for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
       if (isEqualInterpreterKeyProcessKey(intpKey, processKey)) {
         interpreterGroupWriteLock.lock();
-        groupItem = interpreterGroupRef.remove(intpKey);
+        // TODO(jl): interpreterGroup has two or more sessionKeys inside it. thus we should not
+        // remove interpreterGroup if it has two or more values.
+        groupItem = interpreterGroupRef.get(intpKey);
         interpreterGroupWriteLock.unlock();
         groupToRemove.add(groupItem);
       }
+      for (InterpreterGroup groupToClose : groupToRemove) {
+        // TODO(jl): Fix the logic removing session. Now, it's handled into groupToClose.clsose()
+        groupToClose.close(interpreterGroupRef, intpKey, sessionKey);
+      }
+      groupToRemove.clear();
     }
 
-    for (InterpreterGroup groupToClose : groupToRemove) {
-      groupToClose.close(sessionKey);
-    }
+    //Remove session because all interpreters in this session are closed
+    //TODO(jl): Change all code to handle interpreter one by one or all at once
+
   }
 
   void closeAndRemoveAllInterpreterGroups() {
-    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
-    for (String key : groupsToRemove) {
-      closeAndRemoveInterpreterGroupByNoteId(key);
-    }
-  }
-
-  void shutdownAndRemoveInterpreterGroup(String interpreterGroupKey) {
-    String key = getInterpreterProcessKey("", interpreterGroupKey);
-
-    List<InterpreterGroup> groupToRemove = new LinkedList<>();
-    InterpreterGroup groupItem;
-    for (String intpKey : new HashSet<>(interpreterGroupRef.keySet())) {
-      if (isEqualInterpreterKeyProcessKey(intpKey, key)) {
-        interpreterGroupWriteLock.lock();
-        groupItem = interpreterGroupRef.remove(intpKey);
-        interpreterGroupWriteLock.unlock();
-        groupToRemove.add(groupItem);
+    for (String processKey : new HashSet<>(interpreterGroupRef.keySet())) {
+      InterpreterGroup interpreterGroup = interpreterGroupRef.get(processKey);
+      for (String sessionKey : new HashSet<>(interpreterGroup.keySet())) {
+        interpreterGroup.close(interpreterGroupRef, processKey, sessionKey);
       }
-    }
-
-    for (InterpreterGroup groupToClose : groupToRemove) {
-      groupToClose.shutdown();
     }
   }
 
   void shutdownAndRemoveAllInterpreterGroups() {
-    HashSet<String> groupsToRemove = new HashSet<>(interpreterGroupRef.keySet());
-    for (String interpreterGroupKey : groupsToRemove) {
-      shutdownAndRemoveInterpreterGroup(interpreterGroupKey);
+    for (InterpreterGroup interpreterGroup : interpreterGroupRef.values()) {
+      interpreterGroup.shutdown();
     }
   }
 
   public Object getProperties() {
     return properties;
+  }
+
+  public Properties getFlatProperties() {
+    Properties p = new Properties();
+    if (properties != null) {
+      Map<String, InterpreterProperty> propertyMap = (Map<String, InterpreterProperty>) properties;
+      for (String key : propertyMap.keySet()) {
+        InterpreterProperty tmp = propertyMap.get(key);
+        p.put(tmp.getName() != null ? tmp.getName() : key,
+            tmp.getValue() != null ? tmp.getValue().toString() : null);
+      }
+    }
+    return p;
   }
 
   public List<Dependency> getDependencies() {
@@ -354,7 +342,7 @@ public class InterpreterSetting {
     this.option = interpreterOption;
   }
 
-  public void setProperties(Properties p) {
+  public void setProperties(Map<String, InterpreterProperty> p) {
     this.properties = p;
   }
 
@@ -425,5 +413,47 @@ public class InterpreterSetting {
 
   public void clearNoteIdAndParaMap() {
     runtimeInfosToBeCleared = null;
+  }
+
+  // For backward compatibility of interpreter.json format after ZEPPELIN-2654
+  public void convertPermissionsFromUsersToOwners(JsonObject jsonObject) {
+    if (jsonObject != null) {
+      JsonObject option = jsonObject.getAsJsonObject("option");
+      if (option != null) {
+        JsonArray users = option.getAsJsonArray("users");
+        if (users != null) {
+          if (this.option.getOwners() == null) {
+            this.option.owners = new LinkedList<>();
+          }
+          for (JsonElement user : users) {
+            this.option.getOwners().add(user.getAsString());
+          }
+        }
+      }
+    }
+  }
+
+  // For backward compatibility of interpreter.json format after ZEPPELIN-2403
+  public void convertFlatPropertiesToPropertiesWithWidgets() {
+    StringMap newProperties = new StringMap();
+    if (properties != null && properties instanceof StringMap) {
+      StringMap p = (StringMap) properties;
+
+      for (Object o : p.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
+        if (!(entry.getValue() instanceof StringMap)) {
+          StringMap newProperty = new StringMap();
+          newProperty.put("name", entry.getKey());
+          newProperty.put("value", entry.getValue());
+          newProperty.put("type", InterpreterPropertyType.TEXTAREA.getValue());
+          newProperties.put(entry.getKey().toString(), newProperty);
+        } else {
+          // already converted
+          return;
+        }
+      }
+
+      this.properties = newProperties;
+    }
   }
 }

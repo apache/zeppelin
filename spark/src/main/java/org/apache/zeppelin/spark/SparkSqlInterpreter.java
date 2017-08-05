@@ -42,7 +42,10 @@ import org.slf4j.LoggerFactory;
  * Spark SQL interpreter for Zeppelin.
  */
 public class SparkSqlInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
+  private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
+
+  public static final String MAX_RESULTS = "zeppelin.spark.maxResult";
+
   AtomicInteger num = new AtomicInteger(0);
 
   private int maxResult;
@@ -53,7 +56,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    this.maxResult = Integer.parseInt(getProperty(MAX_RESULTS));
   }
 
   private SparkInterpreter getSparkInterpreter() {
@@ -87,13 +90,14 @@ public class SparkSqlInterpreter extends Interpreter {
     SQLContext sqlc = null;
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
 
-    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+    if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
 
     sparkInterpreter.populateSparkWebUrl(context);
-    sqlc = getSparkInterpreter().getSQLContext();
+    sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
+    sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
       sc.setLocalProperty("spark.scheduler.pool", "fair");
@@ -101,7 +105,8 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
-    sc.setJobGroup(Utils.buildJobGroupId(context), "Zeppelin", false);
+    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
     Object rdd = null;
     try {
       // method signature of sqlc.sql() is changed
@@ -123,7 +128,7 @@ public class SparkSqlInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
 
-    String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
+    String msg = sparkInterpreter.getZeppelinContext().showData(rdd);
     sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
   }
@@ -174,7 +179,8 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 }

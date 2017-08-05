@@ -33,13 +33,6 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  * Dummy interpreter to support development mode for Zeppelin app
  */
 public class DevInterpreter extends Interpreter {
-  static {
-    Interpreter.register(
-        "dev",
-        "dev",
-        DevInterpreter.class.getName(),
-        new InterpreterPropertyBuilder().build());
-  }
 
   private InterpreterEvent interpreterEvent;
   private InterpreterContext context;
@@ -105,7 +98,8 @@ public class DevInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 

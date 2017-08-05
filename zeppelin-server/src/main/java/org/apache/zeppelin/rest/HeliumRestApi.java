@@ -18,10 +18,13 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.helium.HeliumPackageSearchResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -34,6 +37,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Helium Rest Api
@@ -47,22 +51,58 @@ public class HeliumRestApi {
   private Notebook notebook;
   private Gson gson = new Gson();
 
-  public HeliumRestApi() {
-  }
-
   public HeliumRestApi(Helium helium, Notebook notebook) {
     this.helium  = helium;
     this.notebook = notebook;
   }
 
   /**
-   * Get all packages
-   * @return
+   * Get all packages info
    */
   @GET
-  @Path("all")
-  public Response getAll() {
-    return new JsonResponse(Response.Status.OK, "", helium.getAllPackageInfo()).build();
+  @Path("package")
+  public Response getAllPackageInfo() {
+    try {
+      return new JsonResponse<>(Response.Status.OK, "", helium.getAllPackageInfo()).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  /**
+   * Get all enabled packages info
+   */
+  @GET
+  @Path("enabledPackage")
+  public Response getAllEnabledPackageInfo() {
+    try {
+      return new JsonResponse<>(Response.Status.OK, "", helium.getAllEnabledPackages()).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  /**
+   * Get single package info
+   */
+  @GET
+  @Path("package/{packageName}")
+  public Response getSinglePackageInfo(@PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(
+          Response.Status.BAD_REQUEST,
+          "Can't get package info for empty name").build();
+    }
+
+    try {
+      return new JsonResponse<>(
+          Response.Status.OK, "", helium.getSinglePackageInfo(packageName)).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
   }
 
   @GET
@@ -79,13 +119,19 @@ public class HeliumRestApi {
       return new JsonResponse(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
           .build();
     }
+    try {
+      return new JsonResponse<>(Response.Status.OK, "", helium.suggestApp(paragraph)).build();
+    }
+    catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
 
-    return new JsonResponse(Response.Status.OK, "", helium.suggestApp(paragraph)).build();
   }
 
   @POST
   @Path("load/{noteId}/{paragraphId}")
-  public Response suggest(@PathParam("noteId") String noteId,
+  public Response load(@PathParam("noteId") String noteId,
                           @PathParam("paragraphId") String paragraphId,
                           String heliumPackage) {
 
@@ -99,33 +145,55 @@ public class HeliumRestApi {
       return new JsonResponse(Response.Status.NOT_FOUND, "Paragraph " + paragraphId + " not found")
           .build();
     }
-    HeliumPackage pkg = gson.fromJson(heliumPackage, HeliumPackage.class);
-
-    String appId = helium.getApplicationFactory().loadAndRun(pkg, paragraph);
-    return new JsonResponse(Response.Status.OK, "", appId).build();
+    HeliumPackage pkg = HeliumPackage.fromJson(heliumPackage);
+    try {
+      return new JsonResponse<>(Response.Status.OK, "",
+              helium.getApplicationFactory().loadAndRun(pkg, paragraph)).build();
+    }
+    catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
   }
 
   @GET
-  @Path("bundle/load")
+  @Path("bundle/load/{packageName}")
   @Produces("text/javascript")
-  public Response bundleLoad(@QueryParam("refresh") String refresh) {
+  public Response bundleLoad(@QueryParam("refresh") String refresh,
+                             @PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(
+          Response.Status.BAD_REQUEST,
+          "Can't get bundle due to empty package name").build();
+    }
+
+    HeliumPackageSearchResult psr = null;
+    List<HeliumPackageSearchResult> enabledPackages = helium.getAllEnabledPackages();
+    for (HeliumPackageSearchResult e : enabledPackages) {
+      if (e.getPkg().getName().equals(packageName)) {
+        psr = e;
+        break;
+      }
+    }
+
+    if (psr == null) {
+      // return empty to specify
+      return Response.ok().build();
+    }
+
     try {
       File bundle;
-      if (refresh != null && refresh.equals("true")) {
-        bundle = helium.recreateBundle();
-      } else {
-        bundle = helium.getBundleFactory().getCurrentCacheBundle();
-      }
+      boolean rebuild = (refresh != null && refresh.equals("true"));
+      bundle = helium.getBundle(psr.getPkg(), rebuild);
 
       if (bundle == null) {
         return Response.ok().build();
       } else {
-        String stringifiedBundle = FileUtils.readFileToString(bundle);
-        return Response.ok(stringifiedBundle).build();
+        String stringified = FileUtils.readFileToString(bundle);
+        return Response.ok(stringified).build();
       }
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
-
       // returning error will prevent zeppelin front-end render any notebook.
       // visualization load fail doesn't need to block notebook rendering work.
       // so it's better return ok instead of any error.
@@ -138,8 +206,12 @@ public class HeliumRestApi {
   public Response enablePackage(@PathParam("packageName") String packageName,
                                 String artifact) {
     try {
-      helium.enable(packageName, artifact);
-      return new JsonResponse(Response.Status.OK).build();
+      if (helium.enable(packageName, artifact)) {
+        return new JsonResponse(Response.Status.OK).build();
+      }
+      else {
+        return new JsonResponse(Response.Status.NOT_FOUND).build();
+      }
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
@@ -148,10 +220,14 @@ public class HeliumRestApi {
 
   @POST
   @Path("disable/{packageName}")
-  public Response enablePackage(@PathParam("packageName") String packageName) {
+  public Response disablePackage(@PathParam("packageName") String packageName) {
     try {
-      helium.disable(packageName);
-      return new JsonResponse(Response.Status.OK).build();
+      if (helium.disable(packageName)) {
+        return new JsonResponse(Response.Status.OK).build();
+      }
+      else {
+        return new JsonResponse(Response.Status.NOT_FOUND).build();
+      }
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
@@ -159,24 +235,117 @@ public class HeliumRestApi {
   }
 
   @GET
+  @Path("spell/config/{packageName}")
+  public Response getSpellConfigUsingMagic(@PathParam("packageName") String packageName) {
+    if (StringUtils.isEmpty(packageName)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "packageName is empty" ).build();
+    }
+
+    try {
+      Map<String, Map<String, Object>> config =
+          helium.getSpellConfig(packageName);
+
+      if (config == null) {
+        return new JsonResponse(Response.Status.BAD_REQUEST,
+            "Failed to find enabled package for " + packageName).build();
+      }
+
+      return new JsonResponse<>(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("config")
+  public Response getAllPackageConfigs() {
+    try {
+      Map<String, Map<String, Object>> config = helium.getAllPackageConfig();
+      return new JsonResponse<>(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @GET
+  @Path("config/{packageName}/{artifact}")
+  public Response getPackageConfig(@PathParam("packageName") String packageName,
+                                   @PathParam("artifact") String artifact) {
+    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(artifact)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "package name or artifact is empty"
+      ).build();
+    }
+
+    try {
+      Map<String, Map<String, Object>> config =
+          helium.getPackageConfig(packageName, artifact);
+
+      if (config == null) {
+        return new JsonResponse(Response.Status.BAD_REQUEST,
+            "Failed to find package for " + artifact).build();
+      }
+
+      return new JsonResponse<>(Response.Status.OK, config).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
+  }
+
+  @POST
+  @Path("config/{packageName}/{artifact}")
+  public Response updatePackageConfig(@PathParam("packageName") String packageName,
+                                      @PathParam("artifact") String artifact,
+                                      String rawConfig) {
+
+    if (StringUtils.isEmpty(packageName) || StringUtils.isEmpty(artifact)) {
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          "package name or artifact is empty"
+      ).build();
+    }
+
+    try {
+      Map<String, Object> packageConfig = gson.fromJson(
+          rawConfig, new TypeToken<Map<String, Object>>(){}.getType());
+      helium.updatePackageConfig(artifact, packageConfig);
+      return new JsonResponse<>(Response.Status.OK, packageConfig).build();
+    } catch (JsonParseException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.BAD_REQUEST,
+          e.getMessage()).build();
+    } catch (IOException | RuntimeException e) {
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR,
+          e.getMessage()).build();
+    }
+  }
+
+  @GET
   @Path("order/visualization")
   public Response getVisualizationPackageOrder() {
-    List<String> order = helium.setVisualizationPackageOrder();
-    return new JsonResponse(Response.Status.OK, order).build();
+    try {
+      List<String> order = helium.getVisualizationPackageOrder();
+      return new JsonResponse<>(Response.Status.OK, order).build();
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+    }
   }
 
   @POST
   @Path("order/visualization")
-  public Response getVisualizationPackageOrder(String orderedPackageNameList) {
+  public Response setVisualizationPackageOrder(String orderedPackageNameList) {
     List<String> orderedList = gson.fromJson(
         orderedPackageNameList, new TypeToken<List<String>>(){}.getType());
-
     try {
       helium.setVisualizationPackageOrder(orderedList);
+      return new JsonResponse(Response.Status.OK).build();
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new JsonResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
     }
-    return new JsonResponse(Response.Status.OK).build();
   }
 }

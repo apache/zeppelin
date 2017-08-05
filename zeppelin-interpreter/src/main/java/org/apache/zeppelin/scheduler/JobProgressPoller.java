@@ -21,48 +21,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Polls job progress with given interval
+ *
+ * @see Job#progress()
+ * @see JobListener#onProgressUpdate(org.apache.zeppelin.scheduler.Job, int)
+ *
  * TODO(moon) : add description.
  */
 public class JobProgressPoller extends Thread {
   public static final long DEFAULT_INTERVAL_MSEC = 500;
-  Logger logger = LoggerFactory.getLogger(JobProgressPoller.class);
+  private static final Logger logger = LoggerFactory.getLogger(JobProgressPoller.class);
+
   private Job job;
   private long intervalMs;
-  boolean terminate = false;
 
   public JobProgressPoller(Job job, long intervalMs) {
+    super("JobProgressPoller, jobId=" + job.getId());
     this.job = job;
-    this.intervalMs = intervalMs;
+    if (intervalMs < 0) {
+      throw new IllegalArgumentException("polling interval can't be " + intervalMs);
+    }
+    this.intervalMs = intervalMs == 0 ? DEFAULT_INTERVAL_MSEC : intervalMs;
   }
 
   @Override
   public void run() {
-    if (intervalMs < 0) {
-      return;
-    } else if (intervalMs == 0) {
-      intervalMs = DEFAULT_INTERVAL_MSEC;
-    }
-
-    while (terminate == false) {
-      JobListener listener = job.getListener();
-      if (listener != null) {
-        try {
-          if (job.isRunning()) {
-            listener.onProgressUpdate(job, job.progress());
+    try {
+      while (!Thread.interrupted()) {
+        JobListener listener = job.getListener();
+        if (listener != null) {
+          try {
+            if (job.isRunning()) {
+              listener.onProgressUpdate(job, job.progress());
+            }
+          } catch (Exception e) {
+            logger.error("Can not get or update progress", e);
           }
-        } catch (Exception e) {
-          logger.error("Can not get or update progress", e);
         }
-      }
-      try {
         Thread.sleep(intervalMs);
-      } catch (InterruptedException e) {
-        logger.error("Exception in JobProgressPoller while run Thread.sleep", e);
       }
-    }
-  }
-
-  public void terminate() {
-    terminate = true;
+    } catch (InterruptedException ignored) {}
   }
 }

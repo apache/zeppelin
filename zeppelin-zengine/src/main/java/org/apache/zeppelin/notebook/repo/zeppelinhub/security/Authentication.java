@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Map;
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -134,7 +137,6 @@ public class Authentication implements Runnable {
 
   // returns login:password
   private String getAuthKey(String userKey) {
-    LOG.debug("Encrypted user key is {}", userKey);
     if (StringUtils.isBlank(userKey)) {
       LOG.warn("ZEPPELINHUB_USER_KEY is blank");
       return StringUtils.EMPTY;
@@ -145,7 +147,6 @@ public class Authentication implements Runnable {
   }
 
   private String decrypt(String value, String initVector) {
-    LOG.debug("IV is {}, IV length is {}", initVector, initVector.length());
     if (StringUtils.isBlank(value) || StringUtils.isBlank(initVector)) {
       LOG.error("String to decode or salt is not provided");
       return StringUtils.EMPTY;
@@ -195,7 +196,16 @@ public class Authentication implements Runnable {
   }
 
   private Key generateKey() {
-    return new SecretKeySpec(toBytes(KEY), CIPHER_ALGORITHM);
+    try {
+      KeyGenerator kgen = KeyGenerator.getInstance(CIPHER_ALGORITHM);
+      kgen.init(128, new SecureRandom(toBytes(KEY)));
+      SecretKey secretKey = kgen.generateKey();
+      byte[] enCodeFormat = secretKey.getEncoded();
+      return new SecretKeySpec(enCodeFormat, CIPHER_ALGORITHM);
+    } catch (Exception e) {
+      LOG.warn("Cannot generate key for decryption", e);
+    }
+    return null;
   }
 
   private byte[] toBytes(String value) {

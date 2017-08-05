@@ -30,16 +30,27 @@ import java.util.Properties;
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
  */
-public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
+public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
+
+  public static final String ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE =
+      "zeppelin.livy.spark.sql.field.truncate";
+
+  public static final String ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT =
+      "zeppelin.livy.spark.sql.maxResult";
 
   private LivySparkInterpreter sparkInterpreter;
 
   private boolean isSpark2 = false;
   private int maxResult = 1000;
+  private boolean truncate = true;
 
   public LivySparkSQLInterpreter(Properties property) {
     super(property);
-    this.maxResult = Integer.parseInt(property.getProperty("zeppelin.livy.spark.sql.maxResult"));
+    this.maxResult = Integer.parseInt(property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT));
+    if (property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE) != null) {
+      this.truncate =
+          Boolean.parseBoolean(property.getProperty(ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE));
+    }
   }
 
   @Override
@@ -111,9 +122,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
       // use triple quote so that we don't need to do string escape.
       String sqlQuery = null;
       if (isSpark2) {
-        sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
+        sqlQuery = "spark.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
+            truncate + ")";
       } else {
-        sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ")";
+        sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
+            truncate + ")";
       }
       InterpreterResult result = sparkInterpreter.interpret(sqlQuery, context.getParagraphId(),
           this.displayAppInfo, true);
@@ -128,8 +141,8 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
             List<String> rows = parseSQLOutput(message.getData());
             result2.add(InterpreterResult.Type.TABLE, StringUtils.join(rows, "\n"));
             if (rows.size() >= (maxResult + 1)) {
-              result2.add(InterpreterResult.Type.HTML,
-                  "<font color=red>Results are limited by " + maxResult + ".</font>");
+              result2.add(ResultMessages.getExceedsLimitRowsMessage(maxResult,
+                  ZEPPELIN_LIVY_SPARK_SQL_MAX_RESULT));
             }
           } else {
             result2.add(message.getType(), message.getData());
@@ -217,8 +230,22 @@ public class LivySparkSQLInterpreter extends BaseLivyInterprereter {
   }
 
   @Override
+  public void cancel(InterpreterContext context) {
+    sparkInterpreter.cancel(context);
+  }
+
+  @Override
   public void close() {
     this.sparkInterpreter.close();
+  }
+
+  @Override
+  public int getProgress(InterpreterContext context) {
+    if (this.sparkInterpreter != null) {
+      return this.sparkInterpreter.getProgress(context);
+    } else {
+      return 0;
+    }
   }
 
   @Override

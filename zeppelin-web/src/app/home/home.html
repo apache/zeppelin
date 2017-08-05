@@ -29,27 +29,27 @@ limitations under the License.
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
               ng-click="reloadNoteList();"
-              tooltip-placement="bottom" tooltip="Reload notes from storage">
+              tooltip-placement="bottom" uib-tooltip="Reload notes from storage">
             </i>
           </h4>
 
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-            <h5 ng-controller="NotenameCtrl as notenamectrl"><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;" ng-click="notenamectrl.getInterpreterSettings()">
+            <h5 ng-controller="NoteCreateCtrl as noteCreateCtrl"><a href="" data-toggle="modal" data-target="#noteCreateModal" style="text-decoration: none;" ng-click="noteCreateCtrl.getInterpreterSettings()">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
-              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index">
+              <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
+              <li ng-repeat="note in home.notes.list | filter:query.q | orderBy:node:false:home.arrayOrderingSrv.noteComparator track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{noteName(note)}}</a>
               </li>
               <div ng-if="!query.q || query.q === ''">
-                <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                <li ng-repeat="node in home.notes.root.children | orderBy:node:false:home.arrayOrderingSrv.noteComparator track by $index"
                     ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
               </div>
               <div ng-if="query.q">
-                <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+                <li ng-repeat="node in home.notes.flatList| filter:query.q | orderBy:home.arrayOrderingSrv.noteFlatListOrdering track by $index"
                     ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
              </div>
             </ul>
@@ -82,7 +82,7 @@ limitations under the License.
        ng-controller="ParagraphCtrl"
        ng-init="init(currentParagraph, home.note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
-       class="paragraph-col">
+       style="margin: 0; padding: 0;">
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-if="currentParagraph.results"
          ng-include src="'app/notebook/paragraph/paragraph.html'"

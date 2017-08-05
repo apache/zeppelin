@@ -212,7 +212,7 @@ public class GetUserList {
     String userquery = "";
     try {
       dataSource = (DataSource) FieldUtils.readField(obj, "dataSource", true);
-      authQuery = (String) FieldUtils.readField(obj, "DEFAULT_AUTHENTICATION_QUERY", true);
+      authQuery = (String) FieldUtils.readField(obj, "authenticationQuery", true);
       LOG.info(authQuery);
       String authQueryLowerCase = authQuery.toLowerCase();
       retval = authQueryLowerCase.split("from", 2);
@@ -231,7 +231,7 @@ public class GetUserList {
         return userlist;
       }
 
-      userquery = "select " + username + " from " + tablename;
+      userquery = "select ? from ?";
 
     } catch (IllegalAccessException e) {
       LOG.error("Error while accessing dataSource for JDBC Realm", e);
@@ -241,6 +241,8 @@ public class GetUserList {
     try {
       Connection con = dataSource.getConnection();
       ps = con.prepareStatement(userquery);
+      ps.setString(1, username);
+      ps.setString(2, tablename);
       rs = ps.executeQuery();
       while (rs.next()) {
         userlist.add(rs.getString(1).trim());

@@ -25,6 +25,7 @@ import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.tools.pigscript.parser.ParseException;
 import org.apache.pig.tools.pigstats.PigStats;
 import org.apache.pig.tools.pigstats.ScriptState;
 import org.apache.zeppelin.interpreter.*;
@@ -45,6 +46,7 @@ import java.util.Properties;
 public class PigQueryInterpreter extends BasePigInterpreter {
 
   private static Logger LOGGER = LoggerFactory.getLogger(PigQueryInterpreter.class);
+  private static final String MAX_RESULTS = "zeppelin.pig.maxResult";
   private PigServer pigServer;
   private int maxResult;
 
@@ -55,7 +57,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
   @Override
   public void open() {
     pigServer = getPigInterpreter().getPigServer();
-    maxResult = Integer.parseInt(getProperty("zeppelin.pig.maxResult"));
+    maxResult = Integer.parseInt(getProperty(MAX_RESULTS));
   }
 
   @Override
@@ -104,7 +106,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
       Iterator<Tuple> iter = pigServer.openIterator(alias);
       boolean firstRow = true;
       int index = 0;
-      while (iter.hasNext() && index <= maxResult) {
+      while (iter.hasNext() && index < maxResult) {
         index++;
         Tuple tuple = iter.next();
         if (firstRow && !schemaKnown) {
@@ -118,13 +120,15 @@ public class PigQueryInterpreter extends BasePigInterpreter {
         resultBuilder.append("\n");
       }
       if (index >= maxResult && iter.hasNext()) {
-        resultBuilder.append("\n<font color=red>Results are limited by " + maxResult + ".</font>");
+        resultBuilder.append("\n");
+        resultBuilder.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, MAX_RESULTS));
       }
     } catch (IOException e) {
       // Extract error in the following order
       // 1. catch FrontendException, FrontendException happens in the query compilation phase.
-      // 2. PigStats, This is execution error
-      // 3. Other errors.
+      // 2. catch ParseException for syntax error
+      // 3. PigStats, This is execution error
+      // 4. Other errors.
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
@@ -132,9 +136,12 @@ public class PigQueryInterpreter extends BasePigInterpreter {
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }
+      if (e.getCause() instanceof ParseException) {
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
       PigStats stats = PigStats.get();
       if (stats != null) {
-        String errorMsg = PigUtils.extactJobStats(stats);
+        String errorMsg = stats.getDisplayString();
         if (errorMsg != null) {
           return new InterpreterResult(Code.ERROR, errorMsg);
         }

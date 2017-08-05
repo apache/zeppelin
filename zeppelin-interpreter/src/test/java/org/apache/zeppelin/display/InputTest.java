@@ -20,15 +20,18 @@ package org.apache.zeppelin.display;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
-
-import org.apache.zeppelin.display.Input.ParamOption;
 
 public class InputTest {
 
@@ -42,58 +45,65 @@ public class InputTest {
 
 	@Test
 	public void testFormExtraction() {
-		// input form
+		// textbox form
 		String script = "${input_form=}";
-		Map<String, Input> forms = Input.extractSimpleQueryParam(script);
+		Map<String, Input> forms = Input.extractSimpleQueryForm(script);
 		assertEquals(1, forms.size());
 		Input form = forms.get("input_form");
 		assertEquals("input_form", form.name);
 		assertNull(form.displayName);
 		assertEquals("", form.defaultValue);
-		assertNull(form.options);
+		assertTrue(form instanceof TextBox);
 
-		// input form with display name & default value
+		// textbox form with display name & default value
 		script = "${input_form(Input Form)=xxx}";
-		forms = Input.extractSimpleQueryParam(script);
+		forms = Input.extractSimpleQueryForm(script);
 		form = forms.get("input_form");
 		assertEquals("xxx", form.defaultValue);
+		assertTrue(form instanceof TextBox);
 
 		// selection form
 		script = "${select_form(Selection Form)=op1,op1|op2(Option 2)|op3}";
-		form = Input.extractSimpleQueryParam(script).get("select_form");
+		form = Input.extractSimpleQueryForm(script).get("select_form");
 		assertEquals("select_form", form.name);
 		assertEquals("op1", form.defaultValue);
+		assertTrue(form instanceof Select);
 		assertArrayEquals(new ParamOption[]{new ParamOption("op1", null),
-				new ParamOption("op2", "Option 2"), new ParamOption("op3", null)}, form.options);
+				new ParamOption("op2", "Option 2"), new ParamOption("op3", null)},
+				((Select) form).getOptions());
 
 		// checkbox form
 		script = "${checkbox:checkbox_form=op1,op1|op2|op3}";
-		form = Input.extractSimpleQueryParam(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
-		assertEquals("checkbox", form.type);
+		assertTrue(form instanceof CheckBox);
+
 		assertArrayEquals(new Object[]{"op1"}, (Object[]) form.defaultValue);
 		assertArrayEquals(new ParamOption[]{new ParamOption("op1", null),
-				new ParamOption("op2", null), new ParamOption("op3", null)}, form.options);
+				new ParamOption("op2", null), new ParamOption("op3", null)},
+				((CheckBox) form).getOptions());
 
 		// checkbox form with multiple default checks
 		script = "${checkbox:checkbox_form(Checkbox Form)=op1|op3,op1(Option 1)|op2|op3}";
-		form = Input.extractSimpleQueryParam(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("Checkbox Form", form.displayName);
-		assertEquals("checkbox", form.type);
+		assertTrue(form instanceof CheckBox);
 		assertArrayEquals(new Object[]{"op1", "op3"}, (Object[]) form.defaultValue);
 		assertArrayEquals(new ParamOption[]{new ParamOption("op1", "Option 1"),
-				new ParamOption("op2", null), new ParamOption("op3", null)}, form.options);
+				new ParamOption("op2", null), new ParamOption("op3", null)},
+				((CheckBox) form).getOptions());
 
 		// checkbox form with no default check
 		script = "${checkbox:checkbox_form(Checkbox Form)=,op1(Option 1)|op2(Option 2)|op3(Option 3)}";
-		form = Input.extractSimpleQueryParam(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("Checkbox Form", form.displayName);
-		assertEquals("checkbox", form.type);
+		assertTrue(form instanceof CheckBox);
 		assertArrayEquals(new Object[]{}, (Object[]) form.defaultValue);
 		assertArrayEquals(new ParamOption[]{new ParamOption("op1", "Option 1"),
-				new ParamOption("op2", "Option 2"), new ParamOption("op3", "Option 3")}, form.options);
+				new ParamOption("op2", "Option 2"), new ParamOption("op3", "Option 3")},
+				((CheckBox) form).getOptions());
 	}
 
 
@@ -125,4 +135,5 @@ public class InputTest {
 		assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1\n" +
 				"NEW_CHECKED=nc_a and nc_c", replaced);
 	}
+
 }

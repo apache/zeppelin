@@ -18,21 +18,21 @@ limitations under the License.
         <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
            ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
            ng-click="reloadNoteList();"
-           tooltip-placement="bottom" tooltip="Reload notes from storage">
+           tooltip-placement="bottom" uib-tooltip="Reload notes from storage">
          </i>
       </h4>
         <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
            <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
-         <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+         <h5><a href="" data-toggle="modal" data-target="#noteCreateModal" style="text-decoration: none;">
            <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
        <ul id="notebook-names">
-         <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
+         <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
          <div ng-if="!query.q || query.q === ''">
-           <li ng-repeat="node in home.notes.root.children | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+           <li ng-repeat="node in home.notes.root.children | orderBy:node:false:home.arrayOrderingSrv.noteComparator track by $index"
                ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
          </div>
          <div ng-if="query.q">
-           <li ng-repeat="node in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteListOrdering track by $index"
+           <li ng-repeat="node in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteFlatListOrdering track by $index"
                ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
          </div>
        </ul>

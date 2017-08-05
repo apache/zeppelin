@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -117,14 +118,14 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
-  private void authenticationUser(String userName, String password) {
+  public void authenticationUser(String userName, String password) {
     pollingWait(By.xpath(
         "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
     ZeppelinITUtils.sleep(1000, false);
     pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    pollingWait(By.xpath("//*[@id='NoteImportCtrl']//button[contains(.,'Login')]"),
+    pollingWait(By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
     ZeppelinITUtils.sleep(1000, false);
   }
@@ -146,14 +147,20 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     }
   }
 
-  private void logoutUser(String userName) {
+  public void logoutUser(String userName) throws URISyntaxException {
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]")).click();
     ZeppelinITUtils.sleep(500, false);
     driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
         userName + "')]//a[@ng-click='navbar.logout()']")).click();
-    ZeppelinITUtils.sleep(5000, false);
+    ZeppelinITUtils.sleep(2000, false);
+    if (driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"))
+        .isDisplayed()) {
+      driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
+    }
+    driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
+    ZeppelinITUtils.sleep(500, false);
   }
 
   //  @Test
@@ -187,7 +194,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
 
-      pollingWait(By.xpath("//span[@tooltip='Note permissions']"),
+      pollingWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");

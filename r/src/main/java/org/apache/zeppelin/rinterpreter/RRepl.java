@@ -34,12 +34,6 @@ import java.util.Properties;
 public class RRepl extends Interpreter implements WrappedInterpreter {
   RReplInterpreter intp;
 
-  static {
-    Interpreter.register("r", "spark", RRepl.class.getName(),
-            RInterpreter.getProps()
-    );
-  }
-
   public RRepl(Properties property, Boolean startSpark) {
     super(property);
     intp = new RReplInterpreter(property, startSpark);
@@ -83,8 +77,9 @@ public class RRepl extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
-    List completion = intp.completion(s, i);
+  public List<InterpreterCompletion> completion(String s, int i,
+      InterpreterContext interpreterContext) {
+    List completion = intp.completion(s, i, interpreterContext);
     return completion;
   }
 

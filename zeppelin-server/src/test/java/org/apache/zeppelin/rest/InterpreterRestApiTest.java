@@ -54,8 +54,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InterpreterRestApiTest extends AbstractTestRestApi {
-  Gson gson = new Gson();
-  AuthenticationInfo anonymous;
+  private Gson gson = new Gson();
+  private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -80,7 +80,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // then
     assertThat(get, isAllowed());
-    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getAvailableInterpreterSettings().size(),
+    assertEquals(ZeppelinServer.notebook.getInterpreterSettingManager().getAvailableInterpreterSettings().size(),
         body.entrySet().size());
     get.releaseConnection();
   }
@@ -110,7 +110,8 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testSettingsCRUD() throws IOException {
     // when: call create setting API
-    String rawRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String rawRequest = "{\"name\":\"md2\",\"group\":\"md\"," +
+        "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
         "\"option\": { \"remote\": true, \"session\": false }}";
@@ -135,7 +136,11 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
     // when: call update setting API
-    jsonRequest.getAsJsonObject("properties").addProperty("propname2", "this is new prop");
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.addProperty("name", "propname2");
+    jsonObject.addProperty("value", "this is new prop");
+    jsonObject.addProperty("type", "textarea");
+    jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
     PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
     LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
     // then: call update setting API
@@ -160,7 +165,8 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     String md1Dep = "org.apache.drill.exec:drill-jdbc:jar:1.7.0";
     String md2Dep = "org.apache.drill.exec:drill-jdbc:jar:1.6.0";
 
-    String reqBody1 = "{\"name\":\"" + md1Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String reqBody1 = "{\"name\":\"" + md1Name + "\",\"group\":\"md\"," +
+        "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[ {\n" +
         "      \"groupArtifactVersion\": \"" + md1Dep + "\",\n" +
@@ -171,7 +177,8 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertThat("test create method:", post, isAllowed());
     post.releaseConnection();
 
-    String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+    String reqBody2 = "{\"name\":\"" + md2Name + "\",\"group\":\"md\"," +
+        "\"properties\": {\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[ {\n" +
         "      \"groupArtifactVersion\": \"" + md2Dep + "\",\n" +
@@ -242,7 +249,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // when: create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
-    note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
     config.put("enabled", true);
@@ -258,7 +265,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertEquals(p.getResult().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
     // when: restart interpreter
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         // call restart interpreter API
         PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
@@ -269,7 +276,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     }
 
     // when: run markdown paragraph, again
-    p = note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setConfig(config);
     p.setText("%md markdown restarted");
     p.setAuthenticationInfo(anonymous);
@@ -287,7 +294,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     // when: create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);
-    note.addParagraph(AuthenticationInfo.ANONYMOUS);
+    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
     config.put("enabled", true);
@@ -304,7 +311,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // when: get md interpreter
     InterpreterSetting mdIntpSetting = null;
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterFactory().getInterpreterSettings(note.getId())) {
+    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         mdIntpSetting = setting;
         break;
@@ -358,21 +365,48 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     delete.releaseConnection();
   }
 
-  public JsonObject getBodyFieldFromResponse(String rawResponse) {
+  @Test
+  public void testGetMetadataInfo() throws IOException {
+    String jsonRequest = "{\"name\":\"spark\",\"group\":\"spark\"," +
+            "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
+            "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+            "\"dependencies\":[]," +
+            "\"option\": { \"remote\": true, \"session\": false }}";
+    PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
+    InterpreterSetting created = convertResponseToInterpreterSetting(post.getResponseBodyAsString());
+    String settingId = created.getId();
+    Map<String, String> infos = new java.util.HashMap<>();
+    infos.put("key1", "value1");
+    infos.put("key2", "value2");
+    ZeppelinServer.notebook.getInterpreterSettingManager().get(settingId).setInfos(infos);
+    GetMethod get = httpGet("/interpreter/metadata/" + settingId);
+    assertThat(get, isAllowed());
+    JsonObject body = getBodyFieldFromResponse(get.getResponseBodyAsString());
+    assertEquals(body.entrySet().size(), infos.size());
+    java.util.Map.Entry<String, JsonElement> item = body.entrySet().iterator().next();
+    if (item.getKey().equals("key1")) {
+      assertEquals(item.getValue().getAsString(), "value1");
+    } else {
+      assertEquals(item.getValue().getAsString(), "value2");
+    }
+    get.releaseConnection();
+  }
+
+  private JsonObject getBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonObject("body");
   }
 
-  public JsonArray getArrayBodyFieldFromResponse(String rawResponse) {
+  private JsonArray getArrayBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonArray("body");
   }
 
-  public InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
+  private InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
     return gson.fromJson(getBodyFieldFromResponse(rawResponse), InterpreterSetting.class);
   }
 
-  public static String getSimulatedMarkdownResult(String markdown) {
+  private static String getSimulatedMarkdownResult(String markdown) {
     return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n</div>", markdown);
   }
 }

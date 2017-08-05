@@ -108,7 +108,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         conf = new ZeppelinConfiguration();
       }
     }
-    
+
     LOG.info("Server Host: " + conf.getServerAddress());
     if (conf.useSsl() == false) {
       LOG.info("Server Port: " + conf.getServerPort());
@@ -355,7 +355,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-  
+
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -363,7 +363,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getBucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
-  
+
   public String getEndpoint() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT);
   }
@@ -375,13 +375,29 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getS3KMSKeyRegion() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION);
   }
-  
+
   public String getS3EncryptionMaterialsProviderClass() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_EMP);
   }
 
   public boolean isS3ServerSideEncryption() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_SSE);
+  }
+
+  public String getMongoUri() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI);
+  }
+
+  public String getMongoDatabase() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_DATABASE);
+  }
+
+  public String getMongoCollection() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_COLLECTION);
+  }
+
+  public boolean getMongoAutoimport() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT);
   }
 
   public String getInterpreterListPath() {
@@ -406,6 +422,18 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getHeliumRegistry() {
     return getRelativeDir(ConfVars.ZEPPELIN_HELIUM_REGISTRY);
+  }
+
+  public String getHeliumNodeInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_NODE_INSTALLER_URL);
+  }
+
+  public String getHeliumNpmInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_NPM_INSTALLER_URL);
+  }
+
+  public String getHeliumYarnInstallerUrl() {
+    return getString(ConfVars.ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL);
   }
 
   public String getNotebookAuthorizationPath() {
@@ -433,6 +461,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO);
   }
 
+  public String getInterpreterMvnRepoPath() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
+  }
+
   public String getRelativeDir(ConfVars c) {
     return getRelativeDir(getString(c));
   }
@@ -448,7 +480,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
   }
-  
+
   public boolean isAnonymousAllowed() {
     return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
@@ -456,7 +488,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public boolean isNotebokPublic() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
-  
+
   public String getConfDir() {
     return getString(ConfVars.ZEPPELIN_CONF_DIR);
   }
@@ -473,6 +505,24 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getWebsocketMaxTextMessageSize() {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
   }
+
+  public String getJettyName() {
+    return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
+  }
+
+
+  public String getXFrameOptions() {
+    return getString(ConfVars.ZEPPELIN_SERVER_XFRAME_OPTIONS);
+  }
+
+  public String getXxssProtection() {
+    return getString(ConfVars.ZEPPELIN_SERVER_X_XSS_PROTECTION);
+  }
+
+  public String getStrictTransport() {
+    return getString(ConfVars.ZEPPELIN_SERVER_STRICT_TRANSPORT);
+  }
+
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
@@ -569,15 +619,19 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.hbase.HbaseInterpreter,"
         + "org.apache.zeppelin.bigquery.BigQueryInterpreter,"
         + "org.apache.zeppelin.beam.BeamInterpreter,"
-        + "org.apache.zeppelin.scio.ScioInterpreter"),
+        + "org.apache.zeppelin.scio.ScioInterpreter,"
+        + "org.apache.zeppelin.groovy.GroovyInterpreter"
+        ),
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
+    ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
+        "http://repo1.maven.org/maven2/"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
     ZEPPELIN_INTERPRETER_GROUP_ORDER("zeppelin.interpreter.group.order", "spark,md,angular,sh,"
         + "livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,"
-        + "scalding,jdbc,hbase,bigquery,beam,pig,scio"),
+        + "scalding,jdbc,hbase,bigquery,beam,pig,scio,groovy"),
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
@@ -595,6 +649,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
+    ZEPPELIN_NOTEBOOK_MONGO_DATABASE("zeppelin.notebook.mongo.database", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_MONGO_COLLECTION("zeppelin.notebook.mongo.collection", "notes"),
+    ZEPPELIN_NOTEBOOK_MONGO_URI("zeppelin.notebook.mongo.uri", "mongodb://localhost"),
+    ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT("zeppelin.notebook.mongo.autoimport", false),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", GitNotebookRepo.class.getName()),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
     // whether by default note is public or private
@@ -607,13 +665,23 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
+    ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
+            "https://nodejs.org/dist/"),
+    ZEPPELIN_HELIUM_NPM_INSTALLER_URL("zeppelin.helium.npm.installer.url",
+            "http://registry.npmjs.org/"),
+    ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL("zeppelin.helium.yarnpkg.installer.url",
+            "https://github.com/yarnpkg/yarn/releases/download/"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
-    ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false);
+    ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
+    ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
+    ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
+    ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
+    ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1");
 
     private String varName;
     @SuppressWarnings("rawtypes")

@@ -159,7 +159,9 @@ public class InstallInterpreter {
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {
-      System.err.println("Directory " + installDir.getAbsolutePath() + " already exists. Skipping");
+      System.err.println("Directory " + installDir.getAbsolutePath()
+        + " already exists"
+        + "\n\nSkipped");
       return;
     }
 
@@ -170,6 +172,7 @@ public class InstallInterpreter {
       depResolver.load(artifact, installDir);
       System.out.println("Interpreter " + name + " installed under " +
           installDir.getAbsolutePath() + ".");
+      startTip();
     } catch (RepositoryException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -221,43 +224,43 @@ public class InstallInterpreter {
     for (int i = 0; i < args.length; i++) {
       String arg = args[i].toLowerCase(Locale.US);
       switch (arg) {
-          case "--list":
-          case "-l":
-            installer.list();
-            System.exit(0);
-            break;
-          case "--all":
-          case "-a":
-            all = true;
-            break;
-          case "--name":
-          case "-n":
-            names = args[++i];
-            break;
-          case "--artifact":
-          case "-t":
-            artifacts = args[++i];
-            break;
-          case "--version":
-          case "-v":
-            Util.getVersion();
-            break;
-          case "--proxy-url":
-            proxyUrl = new URL(args[++i]);
-            break;
-          case "--proxy-user":
-            proxyUser = args[++i];
-            break;
-          case "--proxy-password":
-            proxyPassword = args[++i];
-            break;
-          case "--help":
-          case "-h":
-            usage();
-            System.exit(0);
-            break;
-          default:
-            System.out.println("Unknown option " + arg);
+        case "--list":
+        case "-l":
+          installer.list();
+          System.exit(0);
+          break;
+        case "--all":
+        case "-a":
+          all = true;
+          break;
+        case "--name":
+        case "-n":
+          names = args[++i];
+          break;
+        case "--artifact":
+        case "-t":
+          artifacts = args[++i];
+          break;
+        case "--version":
+        case "-v":
+          Util.getVersion();
+          break;
+        case "--proxy-url":
+          proxyUrl = new URL(args[++i]);
+          break;
+        case "--proxy-user":
+          proxyUser = args[++i];
+          break;
+        case "--proxy-password":
+          proxyPassword = args[++i];
+          break;
+        case "--help":
+        case "-h":
+          usage();
+          System.exit(0);
+          break;
+        default:
+          System.out.println("Unknown option " + arg);
       }
     }
 
@@ -273,29 +276,15 @@ public class InstallInterpreter {
     if (names != null) {
       if (artifacts != null) {
         installer.install(names.split(","), artifacts.split(","));
-        startTip();
-        configurationTip();
-        interpreterSettingTip();
       } else {
         installer.install(names.split(","));
-        startTip();
-        interpreterSettingTip();
       }
     }
   }
 
   private static void startTip() {
-    System.out.println("");
-  }
-
-  private static void configurationTip() {
-    System.out.println("Add interpreter class name to '"
-        + ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName() + "' property "
-        + "in your conf/zeppelin-site.xml file");
-  }
-
-  private static void interpreterSettingTip() {
-    System.out.println("Create interpreter setting in 'Interpreter' menu on GUI."
-        + " And then you can bind interpreter on your notebook");
+    System.out.println("\n1. Restart Zeppelin"
+      + "\n2. Create interpreter setting in 'Interpreter' menu on Zeppelin GUI"
+      + "\n3. Then you can bind the interpreter on your note");
   }
 }

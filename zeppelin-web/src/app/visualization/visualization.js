@@ -13,45 +13,50 @@
  */
 
 /**
- * Base class for visualization
+ * Base class for visualization.
  */
 export default class Visualization {
-  constructor(targetEl, config) {
-    this.targetEl = targetEl;
-    this.config = config;
-    this._dirty = false;
-    this._active = false;
-    this._emitter;
-  };
+  constructor (targetEl, config) {
+    this.targetEl = targetEl
+    this.config = config
+    this._dirty = false
+    this._active = false
+    this._emitter = () => {}
+  }
 
   /**
-   * get transformation
+   * Get transformation.
+   * @abstract
+   * @return {Transformation}
    */
-  getTransformation() {
+  getTransformation () {
     // override this
-  };
+    throw new TypeError('Visualization.getTransformation() should be overrided')
+  }
 
   /**
-   * Method will be invoked when data or configuration changed
+   * Method will be invoked when data or configuration changed.
+   * @abstract
    */
-  render(tableData) {
+  render (tableData) {
     // override this
-  };
+    throw new TypeError('Visualization.render() should be overrided')
+  }
 
   /**
    * Refresh visualization.
    */
-  refresh() {
+  refresh () {
     // override this
-  };
+  }
 
   /**
-   * method will be invoked when visualization need to be destroyed.
+   * Method will be invoked when visualization need to be destroyed.
    * Don't need to destroy this.targetEl.
    */
-  destroy() {
+  destroy () {
     // override this
-  };
+  }
 
   /**
    * return {
@@ -59,113 +64,113 @@ export default class Visualization {
    *   scope : an object to bind to template scope
    * }
    */
-  getSetting() {
+  getSetting () {
     // override this
-  };
+  }
 
   /**
-   * Activate. invoked when visualization is selected
+   * Activate. Invoked when visualization is selected.
    */
-  activate() {
+  activate () {
     if (!this._active || this._dirty) {
-      this.refresh();
-      this._dirty = false;
+      this.refresh()
+      this._dirty = false
     }
-    this._active = true;
-  };
+    this._active = true
+  }
 
   /**
-   * Activate. invoked when visualization is de selected
+   * Deactivate. Invoked when visualization is de selected.
    */
-  deactivate() {
-    this._active = false;
-  };
+  deactivate () {
+    this._active = false
+  }
 
   /**
-   * Is active
+   * Is active.
    */
-  isActive() {
-    return this._active;
-  };
+  isActive () {
+    return this._active
+  }
 
   /**
-   * When window or paragraph is resized
+   * When window or paragraph is resized.
    */
-  resize() {
+  resize () {
     if (this.isActive()) {
-      this.refresh();
+      this.refresh()
     } else {
-      this._dirty = true;
+      this._dirty = true
     }
-  };
+  }
 
   /**
-   * Set new config
+   * Set new config.
    */
-  setConfig(config) {
-    this.config = config;
+  setConfig (config) {
+    this.config = config
     if (this.isActive()) {
-      this.refresh();
+      this.refresh()
     } else {
-      this._dirty = true;
+      this._dirty = true
     }
-  };
+  }
 
   /**
    * Emit config. config will sent to server and saved.
    */
-  emitConfig(config) {
-    this._emitter(config);
-  };
+  emitConfig (config) {
+    this._emitter(config)
+  }
 
   /**
-   * render setting
+   * Render setting.
    */
-  renderSetting(targetEl) {
-    var setting = this.getSetting();
+  renderSetting (targetEl) {
+    let setting = this.getSetting()
     if (!setting) {
-      return;
+      return
     }
 
     // already readered
     if (this._scope) {
-      var self = this;
-      this._scope.$apply(function() {
-        for (var k in setting.scope) {
-          self._scope[k] = setting.scope[k];
+      let self = this
+      this._scope.$apply(function () {
+        for (let k in setting.scope) {
+          self._scope[k] = setting.scope[k]
         }
 
-        for (var k in self._prevSettingScope) {
+        for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
-            self._scope[k] = setting.scope[k];
+            self._scope[k] = setting.scope[k]
           }
         }
-      });
-      return;
+      })
+      return
     } else {
-      this._prevSettingScope = setting.scope;
+      this._prevSettingScope = setting.scope
     }
 
-    var scope = this._createNewScope();
-    for (var k in setting.scope) {
-      scope[k] = setting.scope[k];
+    let scope = this._createNewScope()
+    for (let k in setting.scope) {
+      scope[k] = setting.scope[k]
     }
-    var template = setting.template;
+    let template = setting.template
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
       this._templateRequest(template).then(t =>
       _renderSetting(this, targetEl, t, scope)
-      );
+      )
     } else {
-      _renderSetting(this, targetEl, template, scope);
+      _renderSetting(this, targetEl, template, scope)
     }
-  };
+  }
 }
 
-function _renderSetting(instance, targetEl, template, scope) {
-  instance._targetEl = targetEl;
-  targetEl.html(template);
-  instance._compile(targetEl.contents())(scope);
-  instance._scope = scope;
-};
+function _renderSetting (instance, targetEl, template, scope) {
+  instance._targetEl = targetEl
+  targetEl.html(template)
+  instance._compile(targetEl.contents())(scope)
+  instance._scope = scope
+}
