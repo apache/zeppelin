@@ -18,7 +18,6 @@
 package org.apache.zeppelin.dep;
 
 import org.apache.commons.lang.Validate;
-import org.apache.log4j.lf5.LogLevel;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,6 @@ public class Booter {
       session.setTransferListener(new TransferListener());
       session.setRepositoryListener(new RepositoryListener());
     }
-
     // uncomment to generate dirty trees
     // session.setDependencyGraphTransformer( null );
 

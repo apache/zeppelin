@@ -133,7 +133,7 @@ public class TransferListener extends AbstractTransferListener {
 
   @Override
   public void transferCorrupted(TransferEvent event) {
-    logger.error(event.getException().getMessage());
+    logger.error("Corrupted transfer", event.getException());
   }
 
   private long toKB(long bytes) {
