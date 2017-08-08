@@ -120,7 +120,7 @@ public class TransferListener extends AbstractTransferListener {
   @Override
   public void transferFailed(TransferEvent event) {
     transferCompleted(event);
-    logger.warn(event.getException().getMessage());
+    logger.warn("Unsuccessful transfer", event.getException());
   }
 
   private void transferCompleted(TransferEvent event) {
