@@ -71,7 +71,11 @@ def _on_config_change():
     supported_formats = _config['supported_formats']
     if fmt not in supported_formats:
         raise ValueError("Unsupported format %s" %fmt)
-    matplotlib.rcParams['savefig.format'] = fmt
+
+    if matplotlib.__version__ < '1.2.0':
+        matplotlib.rcParams.update({'savefig.format': fmt})
+    else:
+        matplotlib.rcParams['savefig.format'] = fmt
     
     # Interactive mode
     interactive = _config['interactive']
@@ -80,6 +84,8 @@ def _on_config_change():
     
 def _init_config():
     dpi = matplotlib.rcParams['figure.dpi']
+    if matplotlib.__version__ < '1.2.0':
+        matplotlib.rcParams.update({'savefig.format': 'png'})
     fmt = matplotlib.rcParams['savefig.format']
     width, height = matplotlib.rcParams['figure.figsize']
     fontsize = matplotlib.rcParams['font.size']
