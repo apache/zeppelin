@@ -86,7 +86,14 @@ public class JupyterUtilTest {
     assertTrue(((boolean) markdownConfig.get("editorHide")) == true);
     assertTrue(markdownParagraph.getResults().getCode().equals("SUCCESS"));
     List<TypeData> results = markdownParagraph.getResults().getMsg();
-    assertTrue(results.get(0).getData().equals("\u003cdiv class\u003d\"alert\" style\u003d\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\"\u003e\n\u003cdiv class\u003d\"row\"\u003e\n    \u003cdiv class\u003d\"col-sm-1\"\u003e\u003cimg src\u003d\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style\u003d\"margin-top: -6px\"/\u003e\u003c/div\u003e\n    \u003cdiv class\u003d\"col-sm-11\"\u003eThis notebook was created using \u003ca href\u003d\"https://knowledgeanyhow.org\"\u003eIBM Knowledge Anyhow Workbench\u003c/a\u003e.  To learn more, visit us at \u003ca href\u003d\"https://knowledgeanyhow.org\"\u003ehttps://knowledgeanyhow.org\u003c/a\u003e.\u003c/div\u003e\n    \u003c/div\u003e\n\u003c/div\u003e"));
+    assertTrue(results.get(0).getData().equals("<div class=\"markdown-body\">\n" +
+            "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n" +
+            "<div class=\"row\">\n" +
+            "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n" +
+            "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n" +
+            "    </div>\n" +
+            "</div>\n" +
+            "</div>"));
     assertTrue(results.get(0).getType().equals("HTML"));
   }
 }
