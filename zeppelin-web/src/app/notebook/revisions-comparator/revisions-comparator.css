@@ -1,0 +1,115 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.revisions-comparator {
+  background: white;
+  padding: 10px 15px 15px 15px;
+  margin-left: -10px;
+  margin-right: -10px;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.revisions-comparator-panel-heading {
+  padding: 10px 0px;
+}
+
+.revisions-comparator-code-panel {
+  display: inline-block;
+  width: 50%;
+  float: left;
+  height: 300px;
+  overflow-y: auto;
+  max-height: 300px
+}
+
+.revisions-comparator-code-panel-title {
+  width: 50%;
+  float: left;
+  font-size: 14px;
+  padding: 5px;
+  background-color: #f5f5f5;
+}
+
+.revisions-comparator-bar {
+  width: 400px;
+  padding-bottom: 10px;
+}
+
+.revisions-comparator-status {
+  font-size: 12px;
+  padding-left: 10px;
+}
+
+#diffPanel {
+  height: 100%;
+}
+
+#diffPanel .panel-group {
+  height: inherit;
+  overflow: auto;
+}
+
+.revision-name-for-compare {
+  cursor: default;
+  overflow: hidden;
+  vertical-align: bottom;
+  display: inline-block;
+  max-width: 100px;
+  padding: 1px 5px;
+}
+
+.revisions-comparator-caret {
+  padding-bottom: 5px;
+}
+
+.revisions-comparator-link, .revisions-comparator-link:hover,
+.revisions-comparator-link:visited, .revisions-comparator-link:focus {
+  text-decoration: none;
+  outline: none;
+  color: #000;
+}
+
+.revisions-comparator-first-string {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: grey;
+}
+
+.revisions-comparator-dropdown {
+  padding: 5px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.color-green {
+  color: green;
+}
+
+.color-red {
+  color: red;
+}
+
+.color-black {
+  color: black;
+}
+
+.color-orange {
+  color: orange;
+}
+

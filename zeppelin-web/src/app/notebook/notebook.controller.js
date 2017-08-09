@@ -31,6 +31,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.tableToggled = false
   $scope.viewOnly = false
   $scope.showSetting = false
+  $scope.showRevisionsComparator = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
   $scope.cronOption = [
     {name: 'None', value: undefined},
@@ -59,11 +60,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.noteRevisions = []
-  $scope.firstNoteRevisionForCompare = null
-  $scope.secondNoteRevisionForCompare = null
-  $scope.mergeNoteRevisionsForCompare = null
-  $scope.currentFirstRevisionForCompare = 'Choose...'
-  $scope.currentSecondRevisionForCompare = 'Choose...'
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
 
@@ -293,99 +289,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       })
     }
   }
-
-  // compare revisions
-  $scope.compareRevisions = function () {
-    if ($scope.firstNoteRevisionForCompare && $scope.secondNoteRevisionForCompare) {
-      let paragraphs1 = $scope.firstNoteRevisionForCompare.note.paragraphs
-      let paragraphs2 = $scope.secondNoteRevisionForCompare.note.paragraphs
-      let merge = {
-        added: [],
-        deleted: [],
-        compared: []
-      }
-      for (let p1 of paragraphs1) {
-        let p2 = null
-        for (let p of paragraphs2) {
-          if (p1.id === p.id) {
-            p2 = p
-            break
-          }
-        }
-        if (p2 === null) {
-          merge.deleted.push({paragraph: p1, firstString: (p1.text || '').split('\n')[0]})
-        } else {
-          let colorClass = ''
-          let span = null
-          let text1 = p1.text || ''
-          let text2 = p2.text || ''
-
-          let diff = window.JsDiff.diffLines(text1, text2)
-          let diffHtml = document.createDocumentFragment()
-          let identical = true
-          let identicalClass = 'color-black'
-
-          diff.forEach(function(part) {
-            colorClass = part.added ? 'color-green' : part.removed ? 'color-red' : identicalClass
-            span = document.createElement('span')
-            span.className = colorClass
-            if (identical && colorClass !== identicalClass) {
-              identical = false
-            }
-            span.appendChild(document.createTextNode(part.value))
-            diffHtml.appendChild(span)
-          })
-
-          let pre = document.createElement('pre')
-          pre.appendChild(diffHtml)
-
-          merge.compared.push(
-            {paragraph: p1, diff: pre.innerHTML, identical: identical, firstString: (p1.text || '').split('\n')[0]})
-        }
-      }
-
-      for (let p2 of paragraphs2) {
-        let p1 = null
-        for (let p of paragraphs1) {
-          if (p2.id === p.id) {
-            p1 = p
-            break
-          }
-        }
-        if (p1 === null) {
-          merge.added.push({paragraph: p2, firstString: (p2.text || '').split('\n')[0]})
-        }
-      }
-      $scope.mergeNoteRevisionsForCompare = merge
-    }
-  }
-
-  $scope.getNoteRevisionForReview = function (revision, position) {
-    if (position) {
-      if (position === 'first') {
-        $scope.currentFirstRevisionForCompare = revision.message
-      } else {
-        $scope.currentSecondRevisionForCompare = revision.message
-      }
-      websocketMsgSrv.getNoteByRevisionForCompare($routeParams.noteId, revision.id, position)
-    }
-  }
-
-  $scope.$on('noteRevisionForCompare', function (event, data) {
-    console.debug('received note revision for compare %o', data)
-    if (data.note && data.position) {
-      if (data.position === 'first') {
-        $scope.firstNoteRevisionForCompare = data
-      } else {
-        $scope.secondNoteRevisionForCompare = data
-      }
-
-      if ($scope.firstNoteRevisionForCompare !== null && $scope.secondNoteRevisionForCompare !== null &&
-        $scope.firstNoteRevisionForCompare.revisionId !== $scope.secondNoteRevisionForCompare.revisionId) {
-        $scope.compareRevisions()
-      }
-    }
-  })
 
   $scope.runAllParagraphs = function (noteId) {
     BootstrapDialog.confirm({
@@ -678,6 +581,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     orderChanged: function (event) {}
   }
 
+  $scope.closeAdditionalBoards = function() {
+    $scope.closeSetting()
+    $scope.closePermissions()
+    $scope.closeRevisionsComparator()
+  }
+
   $scope.openSetting = function () {
     $scope.showSetting = true
     getInterpreterBindings()
@@ -727,8 +636,26 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.showSetting) {
       $scope.closeSetting()
     } else {
+      $scope.closeAdditionalBoards()
       $scope.openSetting()
-      $scope.closePermissions()
+      angular.element('html, body').animate({ scrollTop: 0 }, 'slow')
+    }
+  }
+
+  $scope.openRevisionsComparator = function () {
+    $scope.showRevisionsComparator = true
+  }
+
+  $scope.closeRevisionsComparator = function () {
+    $scope.showRevisionsComparator = false
+  }
+
+  $scope.toggleRevisionsComparator = function () {
+    if ($scope.showRevisionsComparator) {
+      $scope.closeRevisionsComparator()
+    } else {
+      $scope.closeAdditionalBoards()
+      $scope.openRevisionsComparator()
       angular.element('html, body').animate({ scrollTop: 0 }, 'slow')
     }
   }
@@ -965,8 +892,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         angular.element('#selectReaders').select2({})
         angular.element('#selectWriters').select2({})
       } else {
+        $scope.closeAdditionalBoards()
         $scope.openPermissions()
-        $scope.closeSetting()
       }
     }
   }
