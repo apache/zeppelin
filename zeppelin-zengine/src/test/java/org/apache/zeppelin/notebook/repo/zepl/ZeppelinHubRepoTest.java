@@ -12,7 +12,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.repo.zepl.ZeppelinHubRepo;
+import org.apache.zeppelin.notebook.repo.zepl.ZeplRepo;
 import org.apache.zeppelin.notebook.repo.zepl.rest.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
@@ -26,17 +26,17 @@ public class ZeppelinHubRepoTest {
   final String testAddr = "http://zeppelinhub.ltd";
   final AuthenticationInfo auth = new AuthenticationInfo("anthony");
 
-  private ZeppelinHubRepo repo;
+  private ZeplRepo repo;
   private File pathOfNotebooks = new File(System.getProperty("user.dir") + "/src/test/resources/list_of_notes");
   private File pathOfNotebook = new File(System.getProperty("user.dir") + "/src/test/resources/note");
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_TOKEN, token);
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_TOKEN, token);
 
     ZeppelinConfiguration conf = new ZeppelinConfiguration();
-    repo = new ZeppelinHubRepo(conf);
+    repo = new ZeplRepo(conf);
     repo.setZeppelinhubRestApiHandler(getMockedZeppelinHandler());
   }
 
@@ -56,73 +56,73 @@ public class ZeppelinHubRepoTest {
 
   @Test
   public void testGetZeppelinhubUrl() {
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
     
     ZeppelinConfiguration config = new ZeppelinConfiguration();
-    ZeppelinHubRepo repository = new ZeppelinHubRepo(config);
+    ZeplRepo repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("https://www.zeppelinhub.com");
     
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd:4242");
     
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:0");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:0");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinHubUrl(config)).isEqualTo("http://zeppelinhub.ltd");
   }
 
   @Test
   public void testGetZeppelinHubWsEndpoint() {
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, testAddr);
 
     ZeppelinConfiguration config = new ZeppelinConfiguration();
-    ZeppelinHubRepo repository = new ZeppelinHubRepo(config);
+    ZeplRepo repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://zeppelinhub.ltd:80/async");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://zeppelinhub.ltd");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://zeppelinhub.ltd");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://zeppelinhub.ltd:443/async");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "yolow");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:443/async");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://zeppelinhub.ltd:4242");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://zeppelinhub.ltd:4242/async");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:443/async");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://www.zeppelinhub.com");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "http://www.zeppelinhub.com");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("ws://www.zeppelinhub.com:80/async");
 
-    System.setProperty(ZeppelinHubRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com:4242");
+    System.setProperty(ZeplRepo.ZEPPELIN_CONF_PROP_NAME_SERVER, "https://www.zeppelinhub.com:4242");
 
     config = new ZeppelinConfiguration();
-    repository = new ZeppelinHubRepo(config);
+    repository = new ZeplRepo(config);
     assertThat(repository.getZeppelinhubWebsocketUri(config)).isEqualTo("wss://www.zeppelinhub.com:4242/async");
   }
 

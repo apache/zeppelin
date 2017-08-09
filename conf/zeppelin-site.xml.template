@@ -173,12 +173,12 @@
 </property>
 -->
 
-<!-- For connecting your Zeppelin with ZeppelinHub -->
+<!-- For connecting your Zeppelin with Zepl -->
 <!--
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
-  <description>two notebook persistence layers (versioned local + ZeppelinHub)</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zepl.ZeplRepo</value>
+  <description>two notebook persistence layers (versioned local + Zepl)</description>
 </property>
 -->
 

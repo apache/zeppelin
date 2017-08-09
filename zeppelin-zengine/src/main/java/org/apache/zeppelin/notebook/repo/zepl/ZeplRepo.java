@@ -48,8 +48,8 @@ import com.google.gson.reflect.TypeToken;
 /**
  * ZeppelinHub repo class.
  */
-public class ZeppelinHubRepo implements NotebookRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRepo.class);
+public class ZeplRepo implements NotebookRepo {
+  private static final Logger LOG = LoggerFactory.getLogger(ZeplRepo.class);
   private static final String DEFAULT_SERVER = "https://www.zepl.com";
   static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zepl.api.address";
   static final String ZEPPELIN_CONF_PROP_NAME_TOKEN = "zeppelinhub.api.token";
@@ -64,7 +64,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   
   private final ZeppelinConfiguration conf;
   
-  public ZeppelinHubRepo(ZeppelinConfiguration conf) {
+  public ZeplRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing Zepl integration module");

@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.notebook.repo.zepl.ZeppelinHubRepo;
+import org.apache.zeppelin.notebook.repo.zepl.ZeplRepo;
 import org.apache.zeppelin.notebook.repo.zepl.websocket.listener.ZeppelinhubWebsocket;
 import org.apache.zeppelin.notebook.repo.zepl.websocket.protocol.ZeppelinHubOp;
 import org.apache.zeppelin.notebook.repo.zepl.websocket.protocol.ZeppelinhubMessage;
@@ -177,7 +177,7 @@ public class ZeppelinhubClient {
 
   private ClientUpgradeRequest getConnectionRequest(String token) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
-    request.setCookies(Lists.newArrayList(new HttpCookie(ZeppelinHubRepo.TOKEN_HEADER, token)));
+    request.setCookies(Lists.newArrayList(new HttpCookie(ZeplRepo.TOKEN_HEADER, token)));
     return request;
   }
   
