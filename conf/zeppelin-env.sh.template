@@ -92,8 +92,8 @@
 # export HBASE_HOME=                    # (require) Under which HBase scripts and configuration should be
 # export HBASE_CONF_DIR=                # (optional) Alternatively, configuration directory can be set to point to the directory that has hbase-site.xml
 
-#### ZeppelinHub connection configuration ####
-# export ZEPPELINHUB_API_ADDRESS		# Refers to the address of the ZeppelinHub service in use
+#### Zepl connection configuration ####
+# export ZEPL_API_ADDRESS		# Refers to the address of the Zepl service in use
 # export ZEPPELINHUB_API_TOKEN			# Refers to the Zeppelin instance token of the user
 # export ZEPPELINHUB_USER_KEY			# Optional, when using Zeppelin with authentication.
 

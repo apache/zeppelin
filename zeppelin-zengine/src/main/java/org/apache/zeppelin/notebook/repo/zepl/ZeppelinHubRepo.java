@@ -50,8 +50,8 @@ import com.google.gson.reflect.TypeToken;
  */
 public class ZeppelinHubRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRepo.class);
-  private static final String DEFAULT_SERVER = "https://www.zeppelinhub.com";
-  static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zeppelinhub.api.address";
+  private static final String DEFAULT_SERVER = "https://www.zepl.com";
+  static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zepl.api.address";
   static final String ZEPPELIN_CONF_PROP_NAME_TOKEN = "zeppelinhub.api.token";
   public static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final Gson GSON = new Gson();
@@ -67,7 +67,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
-    LOG.info("Initializing ZeppelinHub integration module");
+    LOG.info("Initializing Zepl integration module");
 
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl);
@@ -88,7 +88,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
 
     if (scheme == null) {
-      LOG.info("{} is not a valid zeppelinhub server address. proceed with default address {}",
+      LOG.info("{} is not a valid Zepl server address. proceed with default address {}",
           apiRoot, DEFAULT_SERVER);
       apiRoot = new URI(DEFAULT_SERVER);
       scheme = apiRoot.getScheme();
@@ -104,10 +104,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
   String getZeppelinhubWebsocketUri(ZeppelinConfiguration conf) {
     String zeppelinHubUri = StringUtils.EMPTY;
     try {
-      zeppelinHubUri = getZeppelinHubWsUri(new URI(conf.getString("ZEPPELINHUB_API_ADDRESS",
+      zeppelinHubUri = getZeppelinHubWsUri(new URI(conf.getString("ZEPL_API_ADDRESS",
           ZEPPELIN_CONF_PROP_NAME_SERVER, DEFAULT_SERVER)));
     } catch (URISyntaxException e) {
-      LOG.error("Cannot get ZeppelinHub URI", e);
+      LOG.error("Cannot get Zepl URI", e);
     }
     return zeppelinHubUri;
   }
@@ -134,12 +134,12 @@ public class ZeppelinHubRepo implements NotebookRepo {
     URI apiRoot;
     String zeppelinhubUrl;
     try {
-      String url = conf.getString("ZEPPELINHUB_API_ADDRESS",
+      String url = conf.getString("ZEPL_API_ADDRESS",
                                   ZEPPELIN_CONF_PROP_NAME_SERVER,
                                   DEFAULT_SERVER);
       apiRoot = new URI(url);
     } catch (URISyntaxException e) {
-      LOG.error("Invalid zeppelinhub url, using default address {}", DEFAULT_SERVER, e);
+      LOG.error("Invalid Zepl url, using default address {}", DEFAULT_SERVER, e);
       return DEFAULT_SERVER;
     }
 
@@ -175,7 +175,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (notes == null) {
       return Collections.emptyList();
     }
-    LOG.info("ZeppelinHub REST API listing notes ");
+    LOG.info("Zepl REST API listing notes ");
     return notes;
   }
 
@@ -190,7 +190,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (note == null) {
       return EMPTY_NOTE;
     }
-    LOG.info("ZeppelinHub REST API get note {} ", noteId);
+    LOG.info("Zepl REST API get note {} ", noteId);
     return note;
   }
 
@@ -201,7 +201,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String jsonNote = note.toJson();
     String token = getUserToken(subject.getUser());
-    LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
+    LOG.info("Zepl REST API saving note {} ", note.getId());
     restApiClient.put(token, jsonNote);
   }
 
@@ -211,7 +211,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
       throw new IOException("Zeppelinhub failed to remove note");
     }
     String token = getUserToken(subject.getUser());
-    LOG.info("ZeppelinHub REST API removing note {} ", noteId);
+    LOG.info("Zepl REST API removing note {} ", noteId);
     restApiClient.del(token, noteId);
   }
 
@@ -249,7 +249,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (note == null) {
       return EMPTY_NOTE;
     }
-    LOG.info("ZeppelinHub REST API get note {} revision {}", noteId, revId);
+    LOG.info("Zepl REST API get note {} revision {}", noteId, revId);
     return note;
   }
 
@@ -347,11 +347,11 @@ public class ZeppelinHubRepo implements NotebookRepo {
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     if (!isSubjectValid(subject)) {
-      LOG.error("Invalid subject, cannot update Zeppelinhub settings");
+      LOG.error("Invalid subject, cannot update Zepl settings");
       return;
     }
     if (settings == null || settings.isEmpty()) {
-      LOG.error("Cannot update ZeppelinHub repo settings because of invalid settings");
+      LOG.error("Cannot update Zepl repo settings because of invalid settings");
       return;
     }
 
@@ -360,7 +360,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
       try {
         instanceId = Integer.parseInt(settings.get("Instance"));
       } catch (NumberFormatException e) {
-        LOG.error("ZeppelinHub Instance Id in not a valid integer", e);
+        LOG.error("Zepl Instance Id in not a valid integer", e);
       }
     }
     changeToken(instanceId, subject.getUser());
