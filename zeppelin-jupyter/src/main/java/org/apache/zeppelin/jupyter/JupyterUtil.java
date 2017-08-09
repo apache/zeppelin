@@ -53,7 +53,8 @@ import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
-import org.pegdown.PegDownProcessor;
+import org.apache.zeppelin.markdown.MarkdownParser;
+import org.apache.zeppelin.markdown.PegdownParser;
 
 /**
  *
@@ -63,7 +64,7 @@ public class JupyterUtil {
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
 
-  private final PegDownProcessor markdownProcessor;
+  private final MarkdownParser markdownProcessor;
 
   public JupyterUtil() {
     this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
@@ -73,7 +74,7 @@ public class JupyterUtil {
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
         .registerSubtype(Error.class, "error");
-    this.markdownProcessor = new PegDownProcessor();
+    this.markdownProcessor = new PegdownParser();
   }
 
   public Nbformat getNbformat(Reader in) {
@@ -141,7 +142,7 @@ public class JupyterUtil {
         }
       } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
         interpreterName = markdownReplaced;
-        String markdownContent = markdownProcessor.markdownToHtml(codeText);
+        String markdownContent = markdownProcessor.render(codeText);
         typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
         paragraph.setUpMarkdownConfig(true);
       } else {
