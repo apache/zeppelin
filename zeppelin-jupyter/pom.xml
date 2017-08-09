@@ -35,7 +35,7 @@
   <description>Jupyter support for Apache Zeppelin</description>
 
   <properties>
-    <pegdown.version>1.6.0</pegdown.version>
+    <zeppelin.version>0.8.0-SNAPSHOT</zeppelin.version>
   </properties>
 
   <dependencies>
@@ -60,9 +60,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.pegdown</groupId>
-      <artifactId>pegdown</artifactId>
-      <version>${pegdown.version}</version>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-markdown</artifactId>
+      <version>${zeppelin.version}</version>
     </dependency>
 
     <!-- Test -->
