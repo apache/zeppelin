@@ -52,7 +52,7 @@ public class ZeplRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(ZeplRepo.class);
   private static final String DEFAULT_SERVER = "https://www.zepl.com";
   static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zepl.api.address";
-  static final String ZEPPELIN_CONF_PROP_NAME_TOKEN = "zeppelinhub.api.token";
+  static final String ZEPPELIN_CONF_PROP_NAME_TOKEN = "zepl.api.token";
   public static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final Gson GSON = new Gson();
   private static final Note EMPTY_NOTE = new Note();
@@ -69,7 +69,7 @@ public class ZeplRepo implements NotebookRepo {
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
     LOG.info("Initializing Zepl integration module");
 
-    token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
+    token = conf.getString("ZEPL_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl);
     //TODO(khalid): check which realm for authentication, pass to token manager
     tokenManager = UserTokenContainer.init(restApiClient, token);
