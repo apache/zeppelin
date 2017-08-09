@@ -226,7 +226,28 @@ Since Shiro provides **url-based security**, you can hide the information by com
 In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information.
 If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
 
+### Apply multiple roles in Shiro configuration
+By default, Shiro will allow access to a URL if only user is part of "**all the roles**" defined like this:
+```
+[urls]
+
+/api/interpreter/** = authc, roles[admin, role1]
+```
+
+If there is a need that user with "**any of the defined roles**" should be allowed, then following Shiro configuration can be used:
+```
+[main]
+anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
+
+[urls]
+
+/api/interpreter/** = authc, anyofroles[admin, role1]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
+```
+
 <br/>
+
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
 
 

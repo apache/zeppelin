@@ -2,7 +2,7 @@
 layout: page
 title: "How to Build Zeppelin from source"
 description: "How to build Zeppelin from source"
-group: setup/basics 
+group: setup/basics
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -207,8 +207,39 @@ Scalding Interpreter
 mvn clean package -Pscalding -DskipTests
 ```
 
+### Optional configurations
+
+Here are additional configurations that could be optionally tuned using the trailing `-D` option for maven commands
 
 
+Spark package
+
+```bash
+spark.archive # default spark-${spark.version}
+spark.src.download.url # default http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
+spark.bin.download.url # default http://d3kbcqa49mib13.cloudfront.net/${spark.archive}-bin-without-hadoop.tgz
+```
+
+Py4J package
+
+```bash
+python.py4j.version # default 0.9.2
+pypi.repo.url # default https://pypi.python.org/packages
+python.py4j.repo.folder # default /64/5c/01e13b68e8caafece40d549f232c9b5677ad1016071a48d04cc3895acaa3
+```
+
+final URL location for Py4J package will be produced as following:
+
+`${pypi.repo.url}${python.py4j.repo.folder}py4j-${python.py4j.version}.zip`
+
+
+Frontend Maven Plugin configurations
+
+```
+plugin.frontend.nodeDownloadRoot # default https://nodejs.org/dist/
+plugin.frontend.npmDownloadRoot # default http://registry.npmjs.org/npm/-/
+plugin.frontend.yarnDownloadRoot # default https://github.com/yarnpkg/yarn/releases/download/
+```
 
 ## Build requirements
 
