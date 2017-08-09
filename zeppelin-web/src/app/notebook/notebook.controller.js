@@ -1085,7 +1085,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
             closeByBackdrop: false,
             closeByKeyboard: false,
             title: 'Do you want to leave this site?',
-            message: 'Changes that you made may not be saved.',
+            message: 'Changes that you have made will not be saved.',
             buttons: [{
               label: 'Stay',
               action: function (dialog) {
