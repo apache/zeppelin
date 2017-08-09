@@ -19,13 +19,13 @@
       "neo4j.auth.user": {
         "envName": null,
         "propertyName": "neo4j.auth.user",
-        "defaultValue": "neo4j",
+        "defaultValue": "",
         "description": "The Neo4j user name."
       },
       "neo4j.auth.password": {
         "envName": null,
         "propertyName": "neo4j.auth.password",
-        "defaultValue": "neo4j",
+        "defaultValue": "",
         "description": "The Neo4j user password."
       },
       "neo4j.max.concurrency": {

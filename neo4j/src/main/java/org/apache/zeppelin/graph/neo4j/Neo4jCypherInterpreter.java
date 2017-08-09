@@ -117,8 +117,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cypherQuery, InterpreterContext interpreterContext) {
     logger.info("Opening session");
-    if (StringUtils.isEmpty(cypherQuery)) {
-      return new InterpreterResult(Code.ERROR, "Cypher query is Empty");
+    if (StringUtils.isBlank(cypherQuery)) {
+      return new InterpreterResult(Code.SUCCESS);
     }
     try {
       StatementResult result = this.neo4jConnectionManager.execute(cypherQuery,
@@ -173,7 +173,6 @@ public class Neo4jCypherInterpreter extends Interpreter {
         addValueToLine(key, columns, line, value);
       }
     } else if (obj instanceof Map) {
-      @SuppressWarnings("unchecked")
       Map<String, Object> map = (Map<String, Object>) obj;
       for (Entry<String, Object> entry : map.entrySet()) {
         setTabularResult(String.format(MAP_KEY_TEMPLATE, key, entry.getKey()), entry.getValue(),

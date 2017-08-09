@@ -24,7 +24,7 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Overview
-[Neo4j](https://neo4j.com/product/) is a native graph database, designed to store and process graphs from bottom to top. On the other hand, non-native solutions only add a shallow graph processing layer to an RDBMS or other NoSQL data stores, resulting in sub-optimal performance.
+[Neo4j](https://neo4j.com/product/) is a native graph database, designed to store and process graphs from bottom to top.
 
 
 ![Neo4j - Interpreter - Video]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/neo4j-interpreter-video.gif)

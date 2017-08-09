@@ -82,8 +82,6 @@ public class Neo4jConnectionManager {
       case BASIC:
         String username = properties.getProperty(NEO4J_AUTH_USER);
         String password = properties.getProperty(NEO4J_AUTH_PASSWORD);
-        LOGGER.debug("Creating a BASIC authentication to neo4j with user '{}' and password '{}'",
-                username, password);
         this.authToken = AuthTokens.basic(username, password);
         break;
       case NONE:
