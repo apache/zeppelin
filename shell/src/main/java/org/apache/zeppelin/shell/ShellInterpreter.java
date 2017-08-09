@@ -20,6 +20,7 @@ package org.apache.zeppelin.shell;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,6 +99,7 @@ public class ShellInterpreter extends KerberosInterpreter {
         contextInterpreter.out, contextInterpreter.out));
       executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
+      executor.setWorkingDirectory(new File(System.getProperty("user.home")));
       int exitVal = executor.execute(cmdLine);
       LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 
         + " return with exit value: " + exitVal);
