@@ -42,7 +42,7 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
       data.roles = ''
     }
     console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data)
-    websocketCalls.ws.send(JSON.stringify(data))
+    return websocketCalls.ws.send(JSON.stringify(data))
   }
 
   websocketCalls.isConnected = function () {

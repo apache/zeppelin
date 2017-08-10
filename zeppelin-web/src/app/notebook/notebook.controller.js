@@ -51,6 +51,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.interpreterBindings = []
   $scope.isNoteDirty = null
   $scope.saveTimer = null
+  $scope.paragraphWarningDialog = {}
 
   let connectedOnce = false
   let isRevisionPath = function (path) {
@@ -395,11 +396,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       $scope.saveNote()
     }, 10000)
   }
-
-  angular.element(window).on('beforeunload', function (e) {
-    $scope.killSaveTimer()
-    $scope.saveNote()
-  })
 
   $scope.setLookAndFeel = function (looknfeel) {
     $scope.note.config.looknfeel = looknfeel
@@ -1276,6 +1272,60 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     isPersonalized = isPersonalized === undefined ? 'false' : isPersonalized
     $scope.note.config.personalizedMode = isPersonalized
   })
+
+  $scope.$on('$routeChangeStart', function (event, next, current) {
+    if (!$scope.note || !$scope.note.paragraphs) {
+      return
+    }
+    if ($scope.note && $scope.note.paragraphs) {
+      $scope.note.paragraphs.map(par => {
+        if ($scope.allowLeave === true) {
+          return
+        }
+        let thisScope = angular.element(
+          '#' + par.id + '_paragraphColumn_main').scope()
+
+        if (thisScope.dirtyText === undefined ||
+          thisScope.originalText === undefined ||
+          thisScope.dirtyText === thisScope.originalText) {
+          return true
+        } else {
+          event.preventDefault()
+          $scope.showParagraphWarning(next)
+        }
+      })
+    }
+  })
+
+  $scope.showParagraphWarning = function (next) {
+    if ($scope.paragraphWarningDialog.opened !== true) {
+      $scope.paragraphWarningDialog = BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Do you want to leave this site?',
+        message: 'Changes that you have made will not be saved.',
+        buttons: [{
+          label: 'Stay',
+          action: function (dialog) {
+            dialog.close()
+          }
+        }, {
+          label: 'Leave',
+          action: function (dialog) {
+            dialog.close()
+            let locationToRedirect = next['$$route']['originalPath']
+            Object.keys(next.pathParams).map(key => {
+              locationToRedirect = locationToRedirect.replace(':' + key,
+                next.pathParams[key])
+            })
+            $scope.allowLeave = true
+            $location.path(locationToRedirect)
+          }
+        }]
+      })
+    }
+  }
 
   $scope.$on('$destroy', function () {
     angular.element(window).off('beforeunload')
