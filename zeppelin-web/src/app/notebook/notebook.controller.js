@@ -51,6 +51,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.interpreterBindings = []
   $scope.isNoteDirty = null
   $scope.saveTimer = null
+  $scope.paragraphWarningDialog = {}
 
   let connectedOnce = false
   let isRevisionPath = function (path) {
@@ -1065,8 +1066,11 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   })
 
   $scope.$on('$routeChangeStart', function (event, next, current) {
+    if (!$scope.note || !$scope.note.paragraphs) {
+      return
+    }
     if ($scope.note && $scope.note.paragraphs) {
-      _.forEach($scope.note.paragraphs, function (par) {
+      $scope.note.paragraphs.map(par => {
         if ($scope.allowLeave === true) {
           return
         }
@@ -1079,40 +1083,44 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
           return true
         } else {
           event.preventDefault()
-
-          BootstrapDialog.show({
-            closable: false,
-            closeByBackdrop: false,
-            closeByKeyboard: false,
-            title: 'Do you want to leave this site?',
-            message: 'Changes that you have made will not be saved.',
-            buttons: [{
-              label: 'Stay',
-              action: function (dialog) {
-                dialog.close()
-              }
-            }, {
-              label: 'Leave',
-              action: function (dialog) {
-                dialog.close()
-                angular.element(window).off('beforeunload')
-                let locationToRedirect = next['$$route']['originalPath']
-                _.forEach(next.pathParams, function (value, key) {
-                  locationToRedirect = locationToRedirect.replace(':' + key,
-                    value)
-                })
-                $scope.allowLeave = true
-                $location.path(locationToRedirect)
-              }
-            }]
-          })
-          return false
+          $scope.showParagraphWarning(next)
         }
       })
     }
   })
 
+  $scope.showParagraphWarning = function (next) {
+    if ($scope.paragraphWarningDialog.opened !== true) {
+      $scope.paragraphWarningDialog = BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Do you want to leave this site?',
+        message: 'Changes that you have made will not be saved.',
+        buttons: [{
+          label: 'Stay',
+          action: function (dialog) {
+            dialog.close()
+          }
+        }, {
+          label: 'Leave',
+          action: function (dialog) {
+            dialog.close()
+            let locationToRedirect = next['$$route']['originalPath']
+            Object.keys(next.pathParams).map(key => {
+              locationToRedirect = locationToRedirect.replace(':' + key,
+                next.pathParams[key])
+            })
+            $scope.allowLeave = true
+            $location.path(locationToRedirect)
+          }
+        }]
+      })
+    }
+  }
+
   $scope.$on('$destroy', function () {
+    angular.element(window).off('beforeunload')
     $scope.killSaveTimer()
     $scope.saveNote()
 
