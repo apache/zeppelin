@@ -90,7 +90,11 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>Success code</td>
-      <td>200</td>
+      <td>201</td>
+    </tr>
+    <tr>
+      <td>Not Found code</td>
+      <td>404</td>
     </tr>
     <tr>
       <td> Fail code</td>
