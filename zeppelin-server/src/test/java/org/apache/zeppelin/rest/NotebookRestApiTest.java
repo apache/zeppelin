@@ -217,7 +217,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     // prepare data
     Map<String, Object> data = Maps.newHashMap();
     data.put("name", "test");
-    data.put("interpreter", "spark");
+    data.put("interpreter", "python");
     Map<String, String> paragraph = Maps.newHashMap();
     paragraph.put("title", "title");
     paragraph.put("text", "text");
@@ -227,7 +227,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     PostMethod post = httpPost("/notebook", gson.toJson(data));
 
     // test create response
-    assertThat(post, isCreated());
+    assertThat(post, isAllowed());
     LOG.info("Notebook create response {}", post.getResponseBodyAsString());
     Map<String, String> response = (Map<String, String>) gson.fromJson(post.getResponseBodyAsString(), data.getClass());
     String noteId = response.get("body");

@@ -90,7 +90,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>Success code</td>
-      <td>201</td>
+      <td>200</td>
     </tr>
     <tr>
       <td>Not Found code</td>
@@ -108,8 +108,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON input (with interpreter) </td>
       <td><pre>
 {
-"name": "name of new note",
-"interpreter": "python"
+  "name": "name of new note",
+  "interpreter": "python"
 }</pre></td>
     </tr>
     <tr>
@@ -146,7 +146,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
