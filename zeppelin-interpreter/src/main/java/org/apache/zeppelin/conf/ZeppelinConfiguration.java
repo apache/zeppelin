@@ -711,7 +711,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
         "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
-        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L);
+        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
+    ZEPPELIN_OWNER_ROLE("zeppelin.owner.role", "admin");
 
     private String varName;
     @SuppressWarnings("rawtypes")
