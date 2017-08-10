@@ -354,8 +354,8 @@ public class NotebookRestApi {
         interpreterIDs.add(0, defaultId);
         note = notebook.createNote(interpreterIDs, subject);
       } else {
-        String errorMsg = String.format("interpreter %s doesn't exist", interpreter);
-        return new JsonResponse<>(Status.BAD_REQUEST, errorMsg).build();
+        String errorMsg = String.format("interpreter %s not found", interpreter);
+        return new JsonResponse<>(Status.NOT_FOUND, errorMsg).build();
       }
     } else {
       note = notebook.createNote(subject);
