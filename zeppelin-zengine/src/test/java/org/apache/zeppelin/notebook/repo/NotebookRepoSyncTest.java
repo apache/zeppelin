@@ -330,6 +330,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
     assertEquals(1, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
+    assertEquals(0, authInfo.getRunners(note.getId()).size());
     assertEquals(0, authInfo.getWriters(note.getId()).size());
     
     /* update note and save on secondary storage */
@@ -354,6 +355,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
     assertEquals(1, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
+    assertEquals(0, authInfo.getRunners(note.getId()).size());
     assertEquals(0, authInfo.getWriters(note.getId()).size());
     
     /* scenario 2 - note doesn't exist on main storage */
@@ -364,6 +366,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     authInfo.removeNote(note.getId());
     assertEquals(0, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
+    assertEquals(0, authInfo.getRunners(note.getId()).size());
     assertEquals(0, authInfo.getWriters(note.getId()).size());
     
     /* now sync - should bring note from secondary storage with added acl */
@@ -372,9 +375,11 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(1, notebookRepoSync.list(1, null).size());
     assertEquals(1, authInfo.getOwners(note.getId()).size());
     assertEquals(1, authInfo.getReaders(note.getId()).size());
+    assertEquals(1, authInfo.getRunners(note.getId()).size());
     assertEquals(1, authInfo.getWriters(note.getId()).size());
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
     assertEquals(true, authInfo.isReader(note.getId(), entity));
+    assertEquals(true, authInfo.isRunner(note.getId(), entity));
     assertEquals(true, authInfo.isWriter(note.getId(), entity));
   }
 

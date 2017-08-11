@@ -721,6 +721,8 @@ public class NotebookTest implements JobListenerFactory{
             new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
             new HashSet<>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isRunner(note.getId(),
+            new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
             new HashSet<>(Arrays.asList("user2"))), true);
 
@@ -728,6 +730,8 @@ public class NotebookTest implements JobListenerFactory{
             new HashSet<>(Arrays.asList("user1")));
     notebookAuthorization.setReaders(note.getId(),
             new HashSet<>(Arrays.asList("user1", "user2")));
+      notebookAuthorization.setRunners(note.getId(),
+              new HashSet<>(Arrays.asList("user3")));
     notebookAuthorization.setWriters(note.getId(),
             new HashSet<>(Arrays.asList("user1")));
 
@@ -737,21 +741,26 @@ public class NotebookTest implements JobListenerFactory{
             new HashSet<>(Arrays.asList("user1"))), true);
 
     assertEquals(notebookAuthorization.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user3"))), false);
+        new HashSet<>(Arrays.asList("user4"))), false);
     assertEquals(notebookAuthorization.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
+
+    assertEquals(notebookAuthorization.isRunner(note.getId(),
+            new HashSet<>(Arrays.asList("user3"))), true);
+    assertEquals(notebookAuthorization.isRunner(note.getId(),
+            new HashSet<>(Arrays.asList("user2"))), false);
 
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         new HashSet<>(Arrays.asList("user1"))), true);
 
-    // Test clearing of permssions
+    // Test clearing of permissions
     notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
     assertEquals(notebookAuthorization.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-        new HashSet<>(Arrays.asList("user3"))), true);
+        new HashSet<>(Arrays.asList("user4"))), true);
 
     notebook.removeNote(note.getId(), anonymous);
   }
@@ -767,11 +776,13 @@ public class NotebookTest implements JobListenerFactory{
     
     Note note = notebook.createNote(new AuthenticationInfo(user1));
     
-    // check that user1 is owner, reader and writer
+    // check that user1 is owner, reader, runner and writer
     assertEquals(notebookAuthorization.isOwner(note.getId(),
         Sets.newHashSet(user1)), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
         Sets.newHashSet(user1)), true);
+    assertEquals(notebookAuthorization.isRunner(note.getId(),
+        Sets.newHashSet(user2)), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         Sets.newHashSet(user1)), true);
     
@@ -779,6 +790,8 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(notebookAuthorization.isOwner(note.getId(),
         Sets.newHashSet(user2)), false);
     assertEquals(notebookAuthorization.isReader(note.getId(),
+        Sets.newHashSet(user2)), true);
+    assertEquals(notebookAuthorization.isRunner(note.getId(),
         Sets.newHashSet(user2)), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         Sets.newHashSet(user2)), true);
@@ -790,7 +803,7 @@ public class NotebookTest implements JobListenerFactory{
     assertEquals(user1Notes.size(), 1);
     assertEquals(user1Notes.get(0).getId(), note.getId());
     
-    // check that user2 has note listed in his workbech because of admin role
+    // check that user2 has note listed in his workbench because of admin role
     Set<String> user2AndRoles = notebookAuthorization.getRoles(user2);
     user2AndRoles.add(user2);
     List<Note> user2Notes = notebook.getAllNotes(user2AndRoles);
@@ -1094,6 +1107,7 @@ public class NotebookTest implements JobListenerFactory{
 
     notebook.getNotebookAuthorization().setOwners(note1.getId(), Sets.newHashSet("user1"));
     notebook.getNotebookAuthorization().setWriters(note1.getId(), Sets.newHashSet("user1"));
+    notebook.getNotebookAuthorization().setRunners(note1.getId(), Sets.newHashSet("user1"));
     notebook.getNotebookAuthorization().setReaders(note1.getId(), Sets.newHashSet("user1"));
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
     assertEquals(2, notebook.getAllNotes(Sets.newHashSet("user1")).size());
@@ -1101,6 +1115,7 @@ public class NotebookTest implements JobListenerFactory{
     notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
+      notebook.getNotebookAuthorization().setRunners(note1.getId(), Sets.newHashSet("user2"));
     assertEquals(0, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user1")).size());
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user2")).size());
@@ -1129,6 +1144,12 @@ public class NotebookTest implements JobListenerFactory{
     
     notebook.getNotebookAuthorization().setReaders(note.getId(), Sets.newHashSet("user1"));
     //note is public since writers empty
+    notes1 = notebook.getAllNotes(user1);
+    notes2 = notebook.getAllNotes(user2);
+    assertEquals(notes1.size(), 1);
+    assertEquals(notes2.size(), 1);
+
+    notebook.getNotebookAuthorization().setRunners(note.getId(), Sets.newHashSet("user1"));
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 1);
@@ -1169,6 +1190,7 @@ public class NotebookTest implements JobListenerFactory{
     // user1 is only owner
     assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePublic.getId()).size(), 0);
+    assertEquals(notebookAuthorization.getRunners(notePublic.getId()).size(), 0);
     assertEquals(notebookAuthorization.getWriters(notePublic.getId()).size(), 0);
 
     // case of private note
@@ -1197,6 +1219,7 @@ public class NotebookTest implements JobListenerFactory{
     // user1 have all rights
     assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
+    assertEquals(notebookAuthorization.getRunners(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 1);
     
     //set back public to true
