@@ -348,6 +348,25 @@ some interpreters also support inline interpolation of such objects
 into command lines by using substitution patterns of the form `{object-key}`.
 The following example shows how the value of an object `put` from Scala is included within a SQL command.
 
+<div class="codetabs">
+  <div data-lang="scala" markdown="1">
+
+{% highlight scala %}
+// Put object from scala
+%spark
+val tableName = ...
+z.put("tableName", tableName)
+
+  </div>
+  <div data-lang="sql" markdown="1">
+
+{% highlight sql %}
+# Inline interpolate into SQL command
+%spark.sql
+select * from {tableName}
+
+  </div>
+</div>
 
 The escaping pattern `{{anything}}` may be used in situations where `{` and `}` are needed 
 in the command line. The pattern `{{anything}}` is translated into `{anything}` and spliced 
