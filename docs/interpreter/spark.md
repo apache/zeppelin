@@ -343,31 +343,22 @@ myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
   </div>
 </div>
 
+#### Alternative Object Retrieval Mechanism
 In addition to the programmatic access using `z.get()` shown above, 
 some interpreters also support inline interpolation of such objects
 into command lines by using substitution patterns of the form `{object-key}`.
-The following example shows how the value of an object `put` from Scala is included within a SQL command.
+The following example shows how the value of an object `put` into `ZeppelinContext` 
+by the Scala interpreter is spliced into a command of the SQL interpreter.
 
-<div class="codetabs">
-  <div data-lang="scala" markdown="1">
-
-{% highlight scala %}
-// Put object from scala
-%spark
+__In Scala interpreter:__
+```
 val tableName = ...
 z.put("tableName", tableName)
-
-  </div>
-  <div data-lang="sql" markdown="1">
-
-{% highlight sql %}
-# Inline interpolate into SQL command
-%spark.sql
+```
+__In SQL interpreter:__
+```
 select * from {tableName}
-
-  </div>
-</div>
-
+```
 The escaping pattern `{{anything}}` may be used in situations where `{` and `}` are needed 
 in the command line. The pattern `{{anything}}` is translated into `{anything}` and spliced 
 into the containing command.
