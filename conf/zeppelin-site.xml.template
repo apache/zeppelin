@@ -173,6 +173,23 @@
 </property>
 -->
 
+
+<!-- Notebook storage layer using Hadoop file system api
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.HDFSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.hadoop.uri</name>
+  <value>hdfs://localhost:8020</value>
+  <description>The scheme of the URI determines a configuration property name, fs.scheme.class whose value names the FileSystem class.
+  e.g. `hdfs://localhost:8020`, or `file:///`
+  </description>
+</property>
+-->
+
 <!-- For connecting your Zeppelin with ZeppelinHub -->
 <!--
 <property>
