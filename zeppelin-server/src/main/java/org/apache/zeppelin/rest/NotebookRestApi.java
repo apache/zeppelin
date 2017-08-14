@@ -338,8 +338,8 @@ public class NotebookRestApi {
     Note note;
 
     //set default interpreter
-    if (request != null && request.getInterpreter() != null) {
-      String interpreter = request.getInterpreter();
+    if (request != null && request.getDefaultInterpreter() != null) {
+      String interpreter = request.getDefaultInterpreter();
       InterpreterSettingManager manager = notebook.getInterpreterSettingManager();
       List<String> interpreterIDs = manager.getDefaultInterpreterSettingList();
       String defaultId = null;

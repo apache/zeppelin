@@ -217,7 +217,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     // prepare data
     Map<String, Object> data = Maps.newHashMap();
     data.put("name", "test");
-    data.put("interpreter", "python");
+    data.put("defaultInterpreter", "python");
     Map<String, String> paragraph = Maps.newHashMap();
     paragraph.put("title", "title");
     paragraph.put("text", "text");
@@ -246,7 +246,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     // test default interpreter
     String interpreter = ZeppelinServer.notebook.getInterpreterSettingManager().getDefaultInterpreterSetting(noteId).getName();
-    assertEquals(interpreter, data.get("interpreter"));
+    assertEquals(interpreter, data.get("defaultInterpreter"));
 
     // test paragraphs
     List<Paragraph> paragraphs = ZeppelinServer.notebook.getNote(noteId).getParagraphs();

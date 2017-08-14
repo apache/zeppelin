@@ -109,7 +109,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td><pre>
 {
   "name": "name of new note",
-  "interpreter": "python"
+  "defaultInterpreter": "python"
 }</pre></td>
     </tr>
     <tr>
@@ -117,7 +117,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td><pre>
 {
   "name": "name of new note",
-  "interpreter": "python",
+  "defaultInterpreter": "python",
   "paragraphs": [
     {
       "title": "paragraph title1",

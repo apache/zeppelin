@@ -29,7 +29,7 @@ public class NewNoteRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 
   private String name;
-  private String interpreter;
+  private String defaultInterpreter;
   private List<NewParagraphRequest> paragraphs;
 
   public NewNoteRequest() {
@@ -40,8 +40,8 @@ public class NewNoteRequest implements JsonSerializable {
     return name;
   }
 
-  public String getInterpreter() {
-    return interpreter;
+  public String getDefaultInterpreter() {
+    return defaultInterpreter;
   }
 
   public List<NewParagraphRequest> getParagraphs() {
