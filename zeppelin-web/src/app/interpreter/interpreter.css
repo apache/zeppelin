@@ -130,3 +130,27 @@
   margin-left: 2px;
   text-decoration: none !important;
 }
+
+.interpreter-box .interpreter-title .fa-caret-down {
+    display: none;
+}
+
+.interpreter-box > .expanded .interpreter-title .fa-caret-right {
+    display: none;
+}
+
+.interpreter-box > .expanded .interpreter-title .fa-caret-down {
+    display: inline;
+}
+
+.interpreter-box .interpreter:not(.interpreter-header) {
+    display: none;
+}
+
+.interpreter-box > .expanded .interpreter:not(.interpreter-header) {
+    display: block
+}
+
+a.toggle-interpreter {
+    text-decoration: none;
+}

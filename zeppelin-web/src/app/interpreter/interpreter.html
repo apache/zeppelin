@@ -86,13 +86,18 @@ limitations under the License.
   <div ng-include src="'app/interpreter/interpreter-create/interpreter-create.html'"></div>
 </div>
 
-<div class="box width-full"
+<div class="box width-full interpreter-box"
      ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter} " interpreter-directive>
-  <div id="{{setting.name | lowercase}}">
-    <div class="row interpreter">
+  <div id="{{setting.name | lowercase}}" ng-class="{'expanded': setting.isExpanded}">
+    <div class="row interpreter interpreter-header">
 
       <div class="col-md-12">
-        <h3 class="interpreter-title">{{setting.name}}
+        <h3 class="interpreter-title">
+          <a class="toggle-interpreter" href="javascript: void(0);" ng-click="setting.isExpanded = !setting.isExpanded">
+            <i class="fa fa-caret-right"></i>
+            <i class="fa fa-caret-down"></i>
+            {{setting.name}}
+          </a>
           <small>
             <span style="display:inline-block" ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
