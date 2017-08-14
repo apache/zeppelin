@@ -1115,7 +1115,7 @@ public class NotebookTest implements JobListenerFactory{
     notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
-      notebook.getNotebookAuthorization().setRunners(note1.getId(), Sets.newHashSet("user2"));
+      notebook.getNotebookAuthorization().setRunners(note2.getId(), Sets.newHashSet("user2"));
     assertEquals(0, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user1")).size());
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user2")).size());
