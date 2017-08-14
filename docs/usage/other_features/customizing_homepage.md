@@ -92,10 +92,6 @@ To display the recent notes on your custom homepage
 add the following code to a paragraph in your Apache Zeppelin note and run it.
 
 ```javascript
-%spark
-
-println(
-"""%angular
+%angular
   <div ng-include="'app/home/recent-notes.html'"></div>
-""")
 ```
