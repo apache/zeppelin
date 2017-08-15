@@ -969,7 +969,7 @@ public class NotebookServer extends WebSocketServlet
     }
 
     if (!hasParagraphOwnerPermission(conn, notebook, noteId,
-        userAndRoles, fromMessage.principal, "rename")) {
+        userAndRoles, fromMessage.principal, op)) {
       return;
     }
 
