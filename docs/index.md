@@ -123,11 +123,6 @@ limitations under the License.
   * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)
   * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
   * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
-
-#### External Resources
-  * [Mailing List](https://zeppelin.apache.org/community.html)
-  * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
-  * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
   
 #### Available Interpreters 
   * [Alluxio](./interpreter/alluxio.html)
@@ -156,3 +151,7 @@ limitations under the License.
   * [Shell](./interpreter/Shell.html)
   * [Spark](./interpreter/spark.html)
   
+#### External Resources
+  * [Mailing List](https://zeppelin.apache.org/community.html)
+  * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
+  * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
