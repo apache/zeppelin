@@ -39,14 +39,11 @@ RUN echo "$LOG_TAG install tini related packages" && \
     dpkg -i tini.deb && \
     rm tini.deb
 
-ENV JAVA_HOME=/usr/lib/jvm/java-8-oracle
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 RUN echo "$LOG_TAG Install java8" && \
-    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-    add-apt-repository -y ppa:webupd8team/java && \
     apt-get -y update && \
-    apt-get install -y oracle-java8-installer && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /var/cache/oracle-jdk8-installer
+    apt-get install -y openjdk-8-jdk && \
+    rm -rf /var/lib/apt/lists/*
 
 # should install conda first before numpy, matploylib since pip and python will be installed by conda
 RUN echo "$LOG_TAG Install miniconda2 related packages" && \
