@@ -19,12 +19,17 @@ package org.apache.zeppelin.jupyter.zformat;
 import com.google.gson.annotations.SerializedName;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  */
 public class Paragraph {
   public static final String FINISHED = "FINISHED";
+
+  @SerializedName("config")
+  private Map<String, Object> config;
 
   @SerializedName("text")
   private String text;
@@ -42,6 +47,22 @@ public class Paragraph {
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
     this.id = dateFormat.format(new Date()) + "_" + super.hashCode();
     this.status = FINISHED;
+    initializeConfig();
+  }
+
+  private void initializeConfig() {
+    this.config = new HashMap<>();
+    this.config.put("editorHide", false);
+    this.config.put("editorMode", "ace/mode/python");
+  }
+
+  public void setUpMarkdownConfig(boolean toActiveEditOnDblClickMode) {
+    Map<String, Object> editorSetting = new HashMap<>();
+    editorSetting.put("language", "markdown");
+    editorSetting.put("editOnDblClick", toActiveEditOnDblClickMode);
+    this.config.put("editorHide", toActiveEditOnDblClickMode);
+    this.config.put("editorSetting", editorSetting);
+    this.config.put("editorMode", "ace/mode/markdown");
   }
 
   public String getText() {
@@ -66,5 +87,9 @@ public class Paragraph {
 
   public String getStatus() {
     return status;
+  }
+
+  public Map<String, Object> getConfig() {
+    return config;
   }
 }

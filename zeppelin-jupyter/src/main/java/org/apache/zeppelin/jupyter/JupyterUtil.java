@@ -24,8 +24,8 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
@@ -53,17 +53,18 @@ import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
+import org.apache.zeppelin.markdown.MarkdownParser;
+import org.apache.zeppelin.markdown.PegdownParser;
 
 /**
  *
  */
 public class JupyterUtil {
 
-  private static final String TEXT_PLAIN = "text/plain";
-  private static final String IMAGE_PNG = "image/png";
-
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
+
+  private final MarkdownParser markdownProcessor;
 
   public JupyterUtil() {
     this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
@@ -73,6 +74,7 @@ public class JupyterUtil {
         .registerSubtype(ExecuteResult.class, "execute_result")
         .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
         .registerSubtype(Error.class, "error");
+    this.markdownProcessor = new PegdownParser();
   }
 
   public Nbformat getNbformat(Reader in) {
@@ -100,65 +102,55 @@ public class JupyterUtil {
       name = "Note converted from Jupyter";
     }
     note.setName(name);
-
+    
     String lineSeparator = System.lineSeparator();
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
     String interpreterName;
     List<TypeData> typeDataList;
-    String type;
-    String result;
 
     for (Cell cell : nbformat.getCells()) {
+      String status = Result.SUCCESS;
       paragraph = new Paragraph();
       typeDataList = new ArrayList<>();
+      Object cellSource = cell.getSource();
+      List<String> sourceRaws = new ArrayList<>();
+
+      if (cellSource instanceof String) {
+        sourceRaws.add((String) cellSource);
+      } else {
+        sourceRaws.addAll((List<String>) cellSource);
+      }
+
+      List<String> source = Output.verifyEndOfLine(sourceRaws);
+      String codeText = Joiner.on("").join(source);
 
       if (cell instanceof CodeCell) {
         interpreterName = codeReplaced;
         for (Output output : ((CodeCell) cell).getOutputs()) {
-          TypeData typeData;
-          if (output instanceof Stream) {
-            type = TypeData.TEXT;
-            result = Joiner.on(lineSeparator).join(((Stream) output).getText());
-            typeData = new TypeData(type, result);
-            typeDataList.add(typeData);
-          } else if (output instanceof ExecuteResult || output instanceof DisplayData) {
-            Map<String, Object> data = (output instanceof ExecuteResult) ?
-                ((ExecuteResult) output).getData() :
-                ((DisplayData) output).getData();
-            for (Map.Entry<String, Object> datum : data.entrySet()) {
-              if (TEXT_PLAIN.equals(datum.getKey())) {
-                type = TypeData.TEXT;
-                result = Joiner.on(lineSeparator).join((List<String>) datum.getValue());
-              } else if (IMAGE_PNG.equals(datum.getKey())) {
-                type = TypeData.HTML;
-                result = makeHTML(((String) datum.getValue()).replace("\n", ""));
-              } else {
-                type = TypeData.TEXT;
-                result = datum.getValue().toString();
-              }
-              typeData = new TypeData(type, result);
-              typeDataList.add(typeData);
-            }
+          if (output instanceof Error) {
+            typeDataList.add(output.toZeppelinResult());
           } else {
-            // Error
-            Error error = (Error) output;
-            type = TypeData.TEXT;
-            result =
-                Joiner.on(lineSeparator).join(new String[] {error.getEname(), error.getEvalue()});
-            typeData = new TypeData(type, result);
-            typeDataList.add(typeData);
+            typeDataList.add(output.toZeppelinResult());
+            if (output instanceof Stream) {
+              Stream streamOutput = (Stream) output;
+              if (streamOutput.isError()) {
+                status = Result.ERROR;
+              }
+            }
           }
         }
       } else if (cell instanceof MarkdownCell || cell instanceof HeadingCell) {
         interpreterName = markdownReplaced;
+        String markdownContent = markdownProcessor.render(codeText);
+        typeDataList.add(new TypeData(TypeData.HTML, markdownContent));
+        paragraph.setUpMarkdownConfig(true);
       } else {
         interpreterName = "";
       }
 
-      paragraph.setText(
-          interpreterName + lineSeparator + Joiner.on(lineSeparator).join(cell.getSource()));
-      paragraph.setResults(new Result(Result.SUCCESS, typeDataList));
+      paragraph.setText(interpreterName + lineSeparator + codeText);
+      paragraph.setResults(new Result(status, typeDataList));
 
       paragraphs.add(paragraph);
     }
@@ -168,14 +160,11 @@ public class JupyterUtil {
     return note;
   }
 
+
+  
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();
-  }
-
-  private String makeHTML(String image) {
-    return "<div style='width:auto;height:auto'><img src=data:image/png;base64," + image
-        + " style='width=auto;height:auto'/></div>";
   }
 
   public static void main(String[] args) throws ParseException, IOException {
@@ -196,7 +185,7 @@ public class JupyterUtil {
 
     try (BufferedReader in = new BufferedReader(new FileReader(jupyterPath.toFile()));
         FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
-      Note note = new JupyterUtil().getNote(in, "python", "md");
+      Note note = new JupyterUtil().getNote(in, "%python", "%md");
       Gson gson = new GsonBuilder().setPrettyPrinting().create();
       gson.toJson(note, fw);
     }

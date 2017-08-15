@@ -14,37 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.jupyter.nbformat;
-
-import com.google.gson.annotations.SerializedName;
-import org.apache.zeppelin.jupyter.types.JupyterOutputType;
-import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
-import org.apache.zeppelin.jupyter.zformat.TypeData;
-
-import java.util.Map;
+package org.apache.zeppelin.jupyter.types;
 
 /**
- *
+ * Zeppelin Output Types.
  */
-public class ExecuteResult extends Output {
+public enum ZeppelinOutputType {
+  TEXT("TEXT"),
+  HTML("HTML"),
+  TABLE("TABLE")
+  ;
 
-  @SerializedName("execution_count")
-  private int executionCount;
-
-  @SerializedName("data")
-  private Map<String, Object> data;
-
-  public Map<String, Object> getData() {
-    return data;
+  private final String type;
+  private ZeppelinOutputType(final String type) {
+    this.type = type;
   }
 
   @Override
-  public ZeppelinOutputType getTypeOfZeppelin() {
-    return getType(data).getZeppelinType();
-  }
-
-  @Override
-  public TypeData toZeppelinResult() {
-    return getZeppelinResult(data, getType(data));
+  public String toString() {
+    return type;
   }
 }

@@ -24,6 +24,7 @@ import ast
 import traceback
 import warnings
 import signal
+import base64
 
 from io import BytesIO
 try:

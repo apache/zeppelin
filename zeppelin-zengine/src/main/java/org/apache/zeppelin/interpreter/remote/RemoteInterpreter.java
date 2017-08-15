@@ -151,8 +151,8 @@ public class RemoteInterpreter extends Interpreter {
         sparkConfBuilder.append(" --master " + property.getProperty("master"));
       }
       if (isSparkConf(key, property.getProperty(key))) {
-        sparkConfBuilder.append(" --conf " + key + "=\"" +
-            toShellFormat(property.getProperty(key)) + "\"");
+        sparkConfBuilder.append(" --conf " + key + "=" +
+            toShellFormat(property.getProperty(key)));
       }
     }
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());

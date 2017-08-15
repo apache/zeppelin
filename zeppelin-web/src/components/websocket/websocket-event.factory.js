@@ -66,9 +66,9 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes)
     } else if (op === 'LIST_NOTE_JOBS') {
-      $rootScope.$broadcast('setNoteJobs', data.noteJobs)
+      $rootScope.$emit('jobmanager:set-jobs', data.noteJobs)
     } else if (op === 'LIST_UPDATE_NOTE_JOBS') {
-      $rootScope.$broadcast('setUpdateNoteJobs', data.noteRunningJobs)
+      $rootScope.$emit('jobmanager:update-jobs', data.noteRunningJobs)
     } else if (op === 'AUTH_INFO') {
       let btn = []
       if ($rootScope.ticket.roles === '[]') {
