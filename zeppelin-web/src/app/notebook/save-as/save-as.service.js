@@ -38,7 +38,10 @@ function SaveAsService (browserDetectService) {
       }
       angular.element('body > iframe#SaveAsId').remove()
     } else {
-      content = 'data:image/svg;charset=utf-8,' + BOM + encodeURIComponent(content)
+      let binaryData = []
+      binaryData.push(content)
+      content = window.URL.createObjectURL(new Blob(binaryData))
+
       angular.element('body').append('<a id="SaveAsId"></a>')
       let saveAsElement = angular.element('body > a#SaveAsId')
       saveAsElement.attr('href', content)
