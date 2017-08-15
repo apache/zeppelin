@@ -413,7 +413,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterSettingPath() {
-    return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
+    return getRelativeDir(String.format("%s/interpreter.json", getNotebookDir()));
   }
 
   public String getHeliumConfPath() {
@@ -437,7 +437,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookAuthorizationPath() {
-    return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
+    return getRelativeDir(String.format("%s/notebook-authorization.json", getNotebookDir()));
   }
 
   public Boolean credentialsPersist() {
