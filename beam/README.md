@@ -11,6 +11,9 @@ You have to first build the Beam interpreter by enable the **beam** profile as f
 mvn clean package -Pbeam -DskipTests -Pscala-2.10
 ```
 
+### Notice
+- Flink runner comes with binary compiled for scala 2.10. So, currently we support only Scala 2.10
+
 ### Technical overview
 
  * Upon starting an interpreter, an instance of `JavaCompiler` is created. 
