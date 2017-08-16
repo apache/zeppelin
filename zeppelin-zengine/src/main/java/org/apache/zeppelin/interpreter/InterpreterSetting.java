@@ -62,7 +62,7 @@ public class InterpreterSetting {
    * Map<String, InterpreterProperty>
    * properties should be:
    * - Map<String, InterpreterProperty> when Interpreter instances are saved to
-   * `conf/interpreter.json` file
+   * `notebook/interpreter.json` file
    * - Map<String, DefaultInterpreterProperty> when Interpreters are registered
    * : this is needed after https://github.com/apache/zeppelin/pull/1145
    * which changed the way of getting default interpreter setting AKA interpreterSettingsRef

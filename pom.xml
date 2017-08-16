@@ -970,8 +970,8 @@
               <exclude>Roadmap.md</exclude>
               <exclude>**/licenses/**</exclude>
               <exclude>**/zeppelin-distribution/src/bin_license/**</exclude>
-              <exclude>conf/interpreter.json</exclude>
-              <exclude>conf/notebook-authorization.json</exclude>
+              <exclude>notebook/interpreter.json</exclude>
+              <exclude>notebook/notebook-authorization.json</exclude>
               <exclude>conf/credentials.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>conf/helium.json</exclude>

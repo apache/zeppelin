@@ -77,8 +77,6 @@
       <directory>../conf</directory>
       <excludes>
         <exclude>credentials.json</exclude>
-        <exclude>interpreter.json</exclude>
-        <exclude>notebook-authorization.json</exclude>
         <exclude>shiro.ini</exclude>
         <exclude>zeppelin-env.cmd</exclude>
         <exclude>zeppelin-env.sh</exclude>
@@ -90,6 +88,10 @@
     </fileSet>
     <fileSet>
       <directory>../notebook</directory>
+      <excludes>
+        <exclude>interpreter.json</exclude>
+        <exclude>notebook-authorization.json</exclude>
+      </excludes>
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/interpreter</outputDirectory>

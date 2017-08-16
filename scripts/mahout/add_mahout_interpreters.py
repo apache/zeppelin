@@ -186,7 +186,7 @@ if not valid_zeppelin_home(zeppelin_home):
 else:
     print "ZEPPELIN_HOME validated"
 
-interpreter_json_path = zeppelin_home + "/conf/interpreter.json"
+interpreter_json_path = zeppelin_home + "/notebook/interpreter.json"
 
 if not isfile(interpreter_json_path):
     print "interpreter.json doesn't exist. Checking weather Zeppelin is running."
@@ -204,7 +204,7 @@ if not isfile(interpreter_json_path):
 if isfile(interpreter_json_path):
     z = ZeppelinTerpWrangler(interpreter_json_path)
 else:
-    print "'interpreter.json' not found in %s/conf" % args.zeppelin_home
+    print "'interpreter.json' not found in %s/notebook" % args.zeppelin_home
     exit(1)
 
 #######################################################################################################################
