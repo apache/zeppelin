@@ -56,7 +56,7 @@ public class NoteInterpreterLoaderTest {
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
-    new File(tmpDir, "conf").mkdirs();
+    new File(tmpDir, "notebook").mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
 
