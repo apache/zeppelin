@@ -857,6 +857,29 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete')
 
+      // Show autocomplete on tab
+      $scope.editor.commands.addCommand({
+        name: 'tabAutocomplete',
+        bindKey: {
+          win: 'tab',
+          mac: 'tab',
+          sender: 'editor|cli'
+        },
+        exec: function(env, args, request) {
+          let iColumnPosition = $scope.editor.selection.getCursor().column
+
+          // If user has pressed tab on first line char or if editor mode is %md, keep existing behavior
+          // If user has pressed tab anywhere in between and editor mode is not %md, show autocomplete
+          if (iColumnPosition && $scope.paragraph.config.editorMode !== 'ace/mode/markdown') {
+            $scope.editor.execCommand('startAutocomplete')
+          } else {
+            ace.config.loadModule('ace/ext/language_tools', function () {
+              $scope.editor.insertSnippet('\t')
+            })
+          }
+        }
+      })
+
       let keyBindingEditorFocusAction = function (scrollValue) {
         let numRows = $scope.editor.getSession().getLength()
         let currentRow = $scope.editor.getCursorPosition().row
