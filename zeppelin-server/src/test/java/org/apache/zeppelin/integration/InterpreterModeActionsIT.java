@@ -85,7 +85,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
-      interpreterOptionPath = conf.getRelativeDir(String.format("%s/interpreter.json", conf.getNotebooDir()));
+      interpreterOptionPath = conf.getRelativeDir(String.format("%s/interpreter.json", conf.getNotebookDir()));
       File shiroFile = new File(shiroPath);
       if (shiroFile.exists()) {
         originalShiro = StringUtils.join(FileUtils.readLines(shiroFile, "UTF-8"), "\n");
