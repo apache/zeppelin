@@ -90,7 +90,7 @@ public class InterpreterFactoryTest {
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
-    new File(tmpDir, "conf").mkdirs();
+    new File(tmpDir, "notebook").mkdirs();
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), new File(tmpDir, "interpreter"));
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
