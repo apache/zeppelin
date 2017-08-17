@@ -183,11 +183,11 @@ public class RemoteInterpreterEventPoller extends Thread {
           String paragraphId = (String) outputUpdate.get("paragraphId");
 
           // clear the output
-          listener.onOutputClear(noteId, paragraphId);
           List<Map<String, String>> messages =
               (List<Map<String, String>>) outputUpdate.get("messages");
 
           if (messages != null) {
+            listener.onOutputClear(noteId, paragraphId);
             for (int i = 0; i < messages.size(); i++) {
               Map<String, String> m = messages.get(i);
               InterpreterResult.Type type =
