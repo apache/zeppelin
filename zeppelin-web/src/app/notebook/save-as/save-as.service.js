@@ -39,6 +39,7 @@ function SaveAsService (browserDetectService) {
       angular.element('body > iframe#SaveAsId').remove()
     } else {
       let binaryData = []
+      binaryData.push(BOM)
       binaryData.push(content)
       content = window.URL.createObjectURL(new Blob(binaryData))
 
@@ -49,6 +50,7 @@ function SaveAsService (browserDetectService) {
       saveAsElement.attr('target', '_blank')
       saveAsElement[0].click()
       saveAsElement.remove()
+      window.URL.revokeObjectURL(content)
     }
   }
 }
