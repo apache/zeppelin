@@ -92,7 +92,7 @@ public class SparkSqlInterpreter extends Interpreter {
   String interpolateVariable(String originalCommand) {
 
     // Pattern allows errors in number of '{' and '}' characters
-    Pattern pattern = Pattern.compile("([^{]*)([{]+[^}]+[}]*).*");
+    Pattern pattern = Pattern.compile("([^{]*)([{]+[^}]+[}]*).*", Pattern.DOTALL);
     Matcher matcher;
 
     StringBuilder newCommandBuffer = new StringBuilder();
