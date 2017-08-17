@@ -31,7 +31,7 @@ public abstract class Cell {
   private CellMetadata metadata;
 
   @SerializedName("source")
-  private List<String> source;
+  private Object source;
 
   public String getCellType() {
     return cellType;
@@ -41,7 +41,7 @@ public abstract class Cell {
     return metadata;
   }
 
-  public List<String> getSource() {
+  public Object getSource() {
     return source;
   }
 }

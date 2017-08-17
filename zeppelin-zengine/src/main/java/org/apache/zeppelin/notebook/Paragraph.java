@@ -753,6 +753,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
   }
 
+  public void clearRuntimeInfos() {
+    if (this.runtimeInfos != null) {
+      this.runtimeInfos.clear();
+    }
+  }
+
   public Map<String, ParagraphRuntimeInfo> getRuntimeInfos() {
     return runtimeInfos;
   }

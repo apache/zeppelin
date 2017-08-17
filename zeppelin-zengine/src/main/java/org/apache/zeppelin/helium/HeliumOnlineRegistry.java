@@ -51,7 +51,7 @@ import java.util.UUID;
  * ]
  */
 public class HeliumOnlineRegistry extends HeliumRegistry {
-  Logger logger = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
+  private Logger logger = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
   private final Gson gson;
   private final File registryCacheFile;
 

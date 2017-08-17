@@ -12,36 +12,37 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter)
-
-function jobManagerFilter () {
-  function filterContext (jobItems, filterConfig) {
-    let filterValueInterpreter = filterConfig.filterValueInterpreter
-    let filterValueNotebookName = filterConfig.filterValueNotebookName
+export function JobManagerFilter() {
+  function filterContext (jobs, filterConfig) {
+    let interpreter = filterConfig.interpreterFilterValue
+    let noteName = filterConfig.noteNameFilterValue
     let isSortByAsc = filterConfig.isSortByAsc
-    let filterItems = jobItems
+    let filteredJobs = jobs
 
-    if (filterValueInterpreter === undefined) {
-      filterItems = filterItems.filter((jobItem) => {
-        return jobItem.interpreter === undefined
+    if (typeof interpreter === 'undefined') {
+      filteredJobs = filteredJobs.filter((jobItem) => {
+        return typeof jobItem.interpreter === 'undefined'
       })
-    } else if (filterValueInterpreter !== '*') {
-      filterItems = _.where(filterItems, {interpreter: filterValueInterpreter})
+    } else if (interpreter !== '*') {
+      filteredJobs = filteredJobs.filter(j => j.interpreter === interpreter)
     }
 
-    if (filterValueNotebookName !== '') {
-      filterItems = filterItems.filter((jobItem) => {
-        let lowerFilterValue = filterValueNotebookName.toLocaleLowerCase()
+    // filter by note name
+    if (noteName !== '') {
+      filteredJobs = filteredJobs.filter((jobItem) => {
+        let lowerFilterValue = noteName.toLocaleLowerCase()
         let lowerNotebookName = jobItem.noteName.toLocaleLowerCase()
         return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'))
       })
     }
 
-    filterItems = filterItems.sort((jobItem) => {
+    // sort by name
+    filteredJobs = filteredJobs.sort((jobItem) => {
       return jobItem.noteName.toLowerCase()
     })
 
-    filterItems = filterItems.sort((x, y) => {
+    // sort by timestamp
+    filteredJobs = filteredJobs.sort((x, y) => {
       if (isSortByAsc) {
         return x.unixTimeLastRun - y.unixTimeLastRun
       } else {
@@ -49,7 +50,7 @@ function jobManagerFilter () {
       }
     })
 
-    return filterItems
+    return filteredJobs
   }
   return filterContext
 }
