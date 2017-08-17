@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
+
 import com.google.common.collect.Lists;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -27,6 +29,12 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -34,7 +42,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -58,12 +68,141 @@ public class HDFSNotebookRepo implements NotebookRepo {
   private Path notebookDirPath;
   private ZeppelinConfiguration conf;
 
+  private Integer kinitFailCount = 0;
+  private ScheduledExecutorService scheduledExecutorService;
+
   public HDFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
+    if (isKerboseEnabled()) {
+      startKerberosLoginThread();
+    }
     uri = URI.create(conf.getZeppelinHadoopUri());
     hadoopConfig = new Configuration();
     fileSystem = FileSystem.get(uri, hadoopConfig);
     setNotebookDirectory(conf.getNotebookDir());
+  }
+
+  private Long getKerberosRefreshInterval() {
+    Long refreshInterval;
+    String refreshIntervalString = "1d";
+    //defined in zeppelin-env.sh, if not initialized then the default value is one day.
+    if (StringUtils.isEmpty(conf.getKerberosRefreshInterval())) {
+      refreshIntervalString = conf.getKerberosRefreshInterval();
+    }
+    try {
+      refreshInterval = getTimeAsMs(refreshIntervalString);
+    } catch (IllegalArgumentException e) {
+      LOG.error("Cannot get time in MS for the given string, " + refreshIntervalString
+          + " defaulting to 1d ", e);
+      refreshInterval = getTimeAsMs("1d");
+    }
+
+    return refreshInterval;
+  }
+
+  private Long getTimeAsMs(String time) {
+    if (time == null) {
+      LOG.error("Cannot convert to time value.", time);
+      time = "1d";
+    }
+
+    Matcher m = Pattern.compile("(-?[0-9]+)([a-z]+)?").matcher(time.toLowerCase());
+    if (!m.matches()) {
+      throw new IllegalArgumentException("Invalid time string: " + time);
+    }
+
+    long val = Long.parseLong(m.group(1));
+    String suffix = m.group(2);
+
+    if (suffix != null && !Constants.TIME_SUFFIXES.containsKey(suffix)) {
+      throw new IllegalArgumentException("Invalid suffix: \"" + suffix + "\"");
+    }
+
+    return TimeUnit.MILLISECONDS.convert(val,
+        suffix != null ? Constants.TIME_SUFFIXES.get(suffix) : TimeUnit.MILLISECONDS);
+  }
+
+  private Integer kinitFailThreshold() {
+    Integer kinitFailThreshold = 5;
+    //defined in zeppelin-env.sh, if not initialized then the default value is 5.
+    if (!StringUtils.isEmpty(conf.getKinitFailThreshold())) {
+      try {
+        kinitFailThreshold = new Integer(conf.getKinitFailThreshold());
+      } catch (Exception e) {
+        LOG.error("Cannot get integer value from the given string, " + System
+            .getenv("KINIT_FAIL_THRESHOLD") + " defaulting to " + kinitFailThreshold, e);
+      }
+    }
+    return kinitFailThreshold;
+  }
+
+  private ScheduledExecutorService startKerberosLoginThread() {
+    scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
+    scheduledExecutorService.submit(new Callable() {
+      public Object call() throws Exception {
+
+        if (runKerberosLogin()) {
+          LOG.info("Ran runKerberosLogin command successfully.");
+          kinitFailCount = 0;
+          // schedule another kinit run with a fixed delay.
+          scheduledExecutorService
+              .schedule(this, getKerberosRefreshInterval(), TimeUnit.MILLISECONDS);
+        } else {
+          kinitFailCount++;
+          LOG.info("runKerberosLogin failed for " + kinitFailCount + " time(s).");
+          // schedule another retry at once or close the interpreter if too many times kinit fails
+          if (kinitFailCount >= kinitFailThreshold()) {
+            LOG.error("runKerberosLogin failed for  max attempts, calling close interpreter.");
+            close();
+          } else {
+            scheduledExecutorService.submit(this);
+          }
+        }
+        return null;
+      }
+    });
+
+    return scheduledExecutorService;
+  }
+
+  protected boolean isKerboseEnabled() {
+    if (!StringUtils.isEmpty(conf.getKerberosPrincipal()) &&
+        !StringUtils.isEmpty(conf.getKerberoskeyTab())) {
+      return true;
+    }
+    return false;
+  }
+
+  protected boolean runKerberosLogin() {
+    try {
+      Configuration conf = new
+          org.apache.hadoop.conf.Configuration();
+      conf.set("hadoop.security.authentication", KERBEROS.toString());
+      UserGroupInformation.setConfiguration(conf);
+      try {
+        UserGroupInformation.loginUserFromKeytab(
+            this.conf.getKerberosPrincipal(),
+            this.conf.getKerberoskeyTab()
+        );
+
+        if (UserGroupInformation.isLoginKeytabBased()) {
+          UserGroupInformation.getLoginUser().reloginFromKeytab();
+          return true;
+        } else if (UserGroupInformation.isLoginTicketBased()) {
+          UserGroupInformation.getLoginUser().reloginFromTicketCache();
+          return true;
+        }
+
+      } catch (IOException e) {
+        LOG.error("Failed to get either keytab location or principal name in the " +
+            "interpreter", e);
+      }
+      return true;
+    } catch (Exception e) {
+      LOG.error("Unable to run kinit for zeppelin", e);
+    }
+    return false;
   }
 
   private void setNotebookDirectory(String notebookDirPath) throws IOException {

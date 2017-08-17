@@ -82,6 +82,34 @@ Notes may be stored in HDFS, so that multiple Zeppelin instance can share the sa
 
 </br>
 
+**(optional) Configuration if kerberos is enabled on a HDFS cluster**
+
+```
+<property>
+  <name>kerberos.principal</name>
+  <value>zeppelin@EXAMPLE.COM</value>
+  <description>The principal name to load from the keytab</description>
+</property>
+<property>
+  <name>kerberos.keytab</name>
+  <value>/etc/security/keytabs/zeppelin.server.kerberos.keytab</value>
+  <description>The path to the keytab file</description>
+</property>
+
+<property>
+  <name>kerberos.refresh.interval</name>
+  <value>1d</value>
+  <description>(optional) The refresh interval for Kerberos ticket. The default value is 1d.</description>
+</property>
+<property>
+  <name>kinit.fail.threshold</name>
+  <value>5</value>
+  <description>(optional) How many times should kinit retry. The default value is 5.</description>
+</property>
+```
+
+</br>
+
 ## Notebook Storage in S3 <a name="S3"></a>
 
 Notebooks may be stored in S3, and optionally encrypted.  The [``DefaultAWSCredentialsProviderChain``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) credentials provider is used for credentials and checks the following:

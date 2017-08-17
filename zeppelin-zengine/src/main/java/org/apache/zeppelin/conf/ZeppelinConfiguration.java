@@ -527,6 +527,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_STRICT_TRANSPORT);
   }
 
+  public String getKerberosRefreshInterval(){
+    return getString(ConfVars.KERBEROS_REFRESH_INTERVAL);
+  }
+
+  public String getKinitFailThreshold(){
+    return getString(ConfVars.KINIT_FAIL_THRESHOLD);
+  }
+
+  public String getKerberosPrincipal(){
+    return getString(ConfVars.KERBEROS_PRINCIPAL);
+  }
+
+  public String getKerberoskeyTab(){
+    return getString(ConfVars.KERBEROS_KEYTAB);
+  }
+
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
@@ -686,7 +702,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
     ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
-    ZEPPELIN_HADOOP_URI("zeppelin.hadoop.uri", "hdfs://localhost:8020");
+    ZEPPELIN_HADOOP_URI("zeppelin.hadoop.uri", "hdfs://localhost:8020"),
+    KERBEROS_REFRESH_INTERVAL("kerberos.refresh.interval", "1d"),
+    KINIT_FAIL_THRESHOLD("kinit.fail.threshold", 5),
+    KERBEROS_PRINCIPAL("kerberos.principal", null),
+    KERBEROS_KEYTAB("kerberos.keytab", null);
 
     private String varName;
     @SuppressWarnings("rawtypes")
