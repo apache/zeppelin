@@ -829,9 +829,7 @@ public class Notebook implements NoteEventListener {
 
         // get data for the job manager.
         Map<String, Object> paragraphItem = getParagraphForJobManagerItem(paragraph);
-        if (lastRunningUnixTime == 0) {
-          lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
-        }
+        lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
 
         // is update note for last server update time.
         if (lastRunningUnixTime > lastUpdateServerUnixTime) {
