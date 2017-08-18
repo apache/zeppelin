@@ -8,43 +8,50 @@
         "envName": "ELASTICSEARCH_HOST",
         "propertyName": "elasticsearch.host",
         "defaultValue": "localhost",
-        "description": "The host for Elasticsearch"
+        "description": "The host for Elasticsearch",
+        "type": "string"
       },
       "elasticsearch.port": {
         "envName": "ELASTICSEARCH_PORT",
         "propertyName": "elasticsearch.port",
         "defaultValue": "9300",
-        "description": "The port for Elasticsearch"
+        "description": "The port for Elasticsearch",
+        "type": "number"
       },
       "elasticsearch.client.type": {
         "envName": "ELASTICSEARCH_CLIENT_TYPE",
         "propertyName": "elasticsearch.client.type",
         "defaultValue": "transport",
-        "description": "The type of client for Elasticsearch (transport or http)"
+        "description": "The type of client for Elasticsearch (transport or http)",
+        "type": "string"
       },
       "elasticsearch.cluster.name": {
         "envName": "ELASTICSEARCH_CLUSTER_NAME",
         "propertyName": "elasticsearch.cluster.name",
         "defaultValue": "elasticsearch",
-        "description": "The cluster name for Elasticsearch"
+        "description": "The cluster name for Elasticsearch",
+        "type": "string"
       },
       "elasticsearch.result.size": {
         "envName": "ELASTICSEARCH_RESULT_SIZE",
         "propertyName": "elasticsearch.result.size",
         "defaultValue": "10",
-        "description": "The size of the result set of a search query"
+        "description": "The size of the result set of a search query",
+        "type": "number"
       },
       "elasticsearch.basicauth.username": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_USERNAME",
         "propertyName": "elasticsearch.basicauth.username",
         "defaultValue": "",
-        "description": "Username for a basic authentication"
+        "description": "Username for a basic authentication",
+        "type": "string"
       },
       "elasticsearch.basicauth.password": {
         "envName": "ELASTICSEARCH_BASIC_AUTH_PASSWORD",
         "propertyName": "elasticsearch.basicauth.password",
         "defaultValue": "",
-        "description": "Password for a basic authentication"
+        "description": "Password for a basic authentication",
+        "type": "password"
       }
     },
     "editor": {

@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl)
 
 function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
-                      ngToast, noteActionSrv, noteVarShareService, TRASH_FOLDER_ID,
+                      ngToast, noteActionService, noteVarShareService, TRASH_FOLDER_ID,
                       heliumService) {
   'ngInject'
 
@@ -61,6 +61,25 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.noteRevisions = []
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
+
+  $scope.search = {
+    searchText: '',
+    occurrencesExists: false,
+    needHighlightFirst: false,
+    occurrencesHidden: false,
+    replaceText: '',
+    needToSendNextOccurrenceAfterReplace: false,
+    occurrencesCount: 0,
+    currentOccurrence: 0,
+    searchBoxOpened: false,
+    searchBoxWidth: 350,
+    left: '0px'
+  }
+  let currentSearchParagraph = 0
+
+  $scope.$watch('note', function (value) {
+    $rootScope.pageTitle = value ? value.name : 'Zeppelin'
+  }, true)
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
@@ -165,12 +184,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   // Move the note to trash and go back to the main page
   $scope.moveNoteToTrash = function (noteId) {
-    noteActionSrv.moveNoteToTrash(noteId, true)
+    noteActionService.moveNoteToTrash(noteId, true)
   }
 
   // Remove the note permanently if it's in the trash
   $scope.removeNote = function (noteId) {
-    noteActionSrv.removeNote(noteId, true)
+    noteActionService.removeNote(noteId, true)
   }
 
   $scope.isTrash = function (note) {
@@ -309,7 +328,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.clearAllParagraphOutput = function (noteId) {
-    noteActionSrv.clearAllParagraphOutput(noteId)
+    noteActionService.clearAllParagraphOutput(noteId)
   }
 
   $scope.toggleAllEditor = function () {
@@ -723,6 +742,200 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     $scope.permissions.writers = angular.element('#selectWriters').val()
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove()
   }
+
+  $scope.hasMatches = function() {
+    return $scope.search.occurrencesCount > 0
+  }
+
+  const markAllOccurrences = function() {
+    $scope.search.occurrencesCount = 0
+    $scope.search.occurrencesHidden = false
+    currentSearchParagraph = 0
+    $scope.$broadcast('markAllOccurrences', $scope.search.searchText)
+    $scope.search.currentOccurrence = $scope.search.occurrencesCount > 0 ? 1 : 0
+  }
+
+  $scope.markAllOccurrencesAndHighlightFirst = function() {
+    $scope.search.needHighlightFirst = true
+    markAllOccurrences()
+  }
+
+  const increaseCurrentOccurence = function() {
+    ++$scope.search.currentOccurrence
+    if ($scope.search.currentOccurrence > $scope.search.occurrencesCount) {
+      $scope.search.currentOccurrence = 1
+    }
+  }
+
+  const decreaseCurrentOccurence = function() {
+    --$scope.search.currentOccurrence
+    if ($scope.search.currentOccurrence === 0) {
+      $scope.search.currentOccurrence = $scope.search.occurrencesCount
+    }
+  }
+
+  const sendNextOccurrenceMessage = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      markAllOccurrences()
+      if ($scope.search.occurrencesCount === 0) {
+        return
+      }
+    }
+    if ($scope.search.occurrencesHidden) {
+      markAllOccurrences()
+    }
+    $scope.$broadcast('nextOccurrence', $scope.note.paragraphs[currentSearchParagraph].id)
+  }
+
+  const sendPrevOccurrenceMessage = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      markAllOccurrences()
+      if ($scope.search.occurrencesCount === 0) {
+        return
+      }
+    }
+    if ($scope.search.occurrencesHidden) {
+      markAllOccurrences()
+      currentSearchParagraph = $scope.note.paragraphs.length - 1
+    }
+    $scope.$broadcast('prevOccurrence', $scope.note.paragraphs[currentSearchParagraph].id)
+  }
+
+  const increaseCurrentSearchParagraph = function() {
+    ++currentSearchParagraph
+    if (currentSearchParagraph >= $scope.note.paragraphs.length) {
+      currentSearchParagraph = 0
+    }
+  }
+
+  const decreaseCurrentSearchParagraph = function () {
+    --currentSearchParagraph
+    if (currentSearchParagraph === -1) {
+      currentSearchParagraph = $scope.note.paragraphs.length - 1
+    }
+  }
+
+  $scope.$on('occurrencesExists', function(event, count) {
+    $scope.search.occurrencesCount += count
+    if ($scope.search.needHighlightFirst) {
+      sendNextOccurrenceMessage()
+      $scope.search.needHighlightFirst = false
+    }
+  })
+
+  $scope.nextOccurrence = function() {
+    sendNextOccurrenceMessage()
+    increaseCurrentOccurence()
+  }
+
+  $scope.$on('noNextOccurrence', function(event) {
+    increaseCurrentSearchParagraph()
+    sendNextOccurrenceMessage()
+  })
+
+  $scope.prevOccurrence = function() {
+    sendPrevOccurrenceMessage()
+    decreaseCurrentOccurence()
+  }
+
+  $scope.$on('noPrevOccurrence', function(event) {
+    decreaseCurrentSearchParagraph()
+    sendPrevOccurrenceMessage()
+  })
+
+  $scope.$on('editorClicked', function() {
+    $scope.search.occurrencesHidden = true
+    $scope.$broadcast('unmarkAll')
+  })
+
+  $scope.replace = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      $scope.markAllOccurrencesAndHighlightFirst()
+      if ($scope.search.occurrencesCount === 0) {
+        return
+      }
+    }
+    if ($scope.search.occurrencesHidden) {
+      $scope.markAllOccurrencesAndHighlightFirst()
+      return
+    }
+    $scope.$broadcast('replaceCurrent', $scope.search.searchText, $scope.search.replaceText)
+    if ($scope.search.needToSendNextOccurrenceAfterReplace) {
+      sendNextOccurrenceMessage()
+      $scope.search.needToSendNextOccurrenceAfterReplace = false
+    }
+  }
+
+  $scope.$on('occurrencesCountChanged', function(event, cnt) {
+    $scope.search.occurrencesCount += cnt
+    if ($scope.search.occurrencesCount === 0) {
+      $scope.search.currentOccurrence = 0
+    } else {
+      $scope.search.currentOccurrence += cnt + 1
+      if ($scope.search.currentOccurrence > $scope.search.occurrencesCount) {
+        $scope.search.currentOccurrence = 1
+      }
+    }
+  })
+
+  $scope.replaceAll = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      return
+    }
+    if ($scope.search.occurrencesHidden) {
+      $scope.markAllOccurrencesAndHighlightFirst()
+    }
+    $scope.$broadcast('replaceAll', $scope.search.searchText, $scope.search.replaceText)
+    $scope.markAllOccurrencesAndHighlightFirst()
+  }
+
+  $scope.$on('noNextOccurrenceAfterReplace', function() {
+    $scope.search.occurrencesCount = 0
+    $scope.search.needHighlightFirst = false
+    $scope.search.needToSendNextOccurrenceAfterReplace = false
+    $scope.$broadcast('checkOccurrences')
+    increaseCurrentSearchParagraph()
+    if ($scope.search.occurrencesCount > 0) {
+      $scope.search.needToSendNextOccurrenceAfterReplace = true
+    }
+  })
+
+  $scope.onPressOnFindInput = function(event) {
+    if (event.keyCode === 13) {
+      $scope.nextOccurrence()
+    }
+  }
+
+  let makeSearchBoxVisible = function() {
+    if ($scope.search.searchBoxOpened) {
+      $scope.search.searchBoxOpened = false
+      console.log('make 0')
+      $scope.search.left = '0px'
+    } else {
+      $scope.search.searchBoxOpened = true
+      let searchGroupRect = angular.element('#searchGroup')[0].getBoundingClientRect()
+      console.log('make visible')
+      let dropdownRight = searchGroupRect.left + $scope.search.searchBoxWidth
+      console.log(dropdownRight + ' ' + window.innerWidth)
+      if (dropdownRight + 5 > window.innerWidth) {
+        $scope.search.left = window.innerWidth - dropdownRight - 15 + 'px'
+      }
+    }
+  }
+
+  $scope.searchClicked = function() {
+    makeSearchBoxVisible()
+  }
+
+  $scope.$on('toggleSearchBox', function() {
+    let elem = angular.element('#searchGroup')
+    if ($scope.search.searchBoxOpened) {
+      elem.removeClass('open')
+    } else {
+      elem.addClass('open')
+    }
+    $timeout(makeSearchBoxVisible())
+  })
 
   $scope.restartInterpreter = function(interpreter) {
     const thisConfirm = BootstrapDialog.confirm({
