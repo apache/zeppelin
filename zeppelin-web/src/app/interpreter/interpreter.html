@@ -52,6 +52,9 @@ limitations under the License.
           </span>
         </div>
       </div>
+      <div class="col-md-4 pull-right expand-collapse-all" style="text-align: right;">
+        <a href="javascript: void(0);" ng-click="toggleAllInterpreters('expand')">Expand all</a> / <a href="javascript: void(0);" ng-click="toggleAllInterpreters('collapse')">Collapse all</a>
+      </div>
     </div>
   </div>
 
@@ -133,7 +136,7 @@ limitations under the License.
                   ng-click="showSparkUI(setting.id)"
                   ng-show="setting.group == 'spark'">
             <span class="fa fa-external-link"></span> spark ui</button>
-          <button class="btn btn-default btn-xs"
+          <button class="btn btn-default btn-xs edit-interpreter-settings"
                   ng-click="valueform.$show();
                   copyOriginInterpreterSettingProperties(setting.id)">
             <span class="fa fa-pencil"></span> edit</button>

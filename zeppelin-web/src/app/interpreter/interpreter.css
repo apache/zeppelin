@@ -143,7 +143,8 @@
     display: inline;
 }
 
-.interpreter-box .interpreter:not(.interpreter-header) {
+.interpreter-box .interpreter:not(.interpreter-header),
+.interpreter-box .edit-interpreter-settings {
     display: none;
 }
 
@@ -151,6 +152,14 @@
     display: block
 }
 
+.interpreter-box > .expanded .edit-interpreter-settings {
+    display: inline-block;
+}
+
 a.toggle-interpreter {
     text-decoration: none;
+}
+
+.expand-collapse-all > a {
+  text-decoration: none;
 }
