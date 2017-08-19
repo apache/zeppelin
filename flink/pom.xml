@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-flink_2.10</artifactId>
+  <artifactId>zeppelin-flink_${scala.binary.version}</artifactId>
   <packaging>jar</packaging>
   <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Flink</name>
@@ -35,6 +35,7 @@
 
   <properties>
     <!--library versions-->
+    <flink.scala.version>${scala.version}</flink.scala.version>
     <flink.version>1.1.3</flink.version>
     <flink.akka.version>2.3.7</flink.akka.version>
     <scala.macros.version>2.0.1</scala.macros.version>
@@ -126,19 +127,19 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
+      <version>${flink.scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
+      <version>${flink.scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
+      <version>${flink.scala.version}</version>
     </dependency>
 
     <dependency>
@@ -185,7 +186,7 @@
 	  <compilerPlugins combine.children="append">
 	    <compilerPlugin>
 	      <groupId>org.scalamacros</groupId>
-	      <artifactId>paradise_${scala.version}</artifactId>
+	      <artifactId>paradise_${flink.scala.version}</artifactId>
 	      <version>${scala.macros.version}</version>
 	    </compilerPlugin>
 	  </compilerPlugins>

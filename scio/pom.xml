@@ -27,7 +27,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-scio_2.10</artifactId>
+  <artifactId>zeppelin-scio_${scala.binary.version}</artifactId>
   <packaging>jar</packaging>
   <version>0.8.0-SNAPSHOT</version>
   <name>Zeppelin: Scio</name>
@@ -37,6 +37,7 @@
     <!--library versions-->
     <scio.version>0.2.4</scio.version>
     <guava.version>14.0.1</guava.version> <!-- update needed -->
+    <scio.scala.version>${scala.version}</scio.scala.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
@@ -71,19 +72,19 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
+      <version>${scio.scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
+      <version>${scio.scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
+      <version>${scio.scala.version}</version>
     </dependency>
 
     <!-- test libraries -->

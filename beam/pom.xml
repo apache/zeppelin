@@ -52,7 +52,7 @@
     
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_2.10</artifactId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${beam.spark.version}</version>
       <exclusions>
         <exclusion>
@@ -64,15 +64,15 @@
           <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>akka-actor_2.10</artifactId>
+          <artifactId>akka-actor_${scala.binary.version}</artifactId>
           <groupId>org.spark-project.akka</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>akka-remote_2.10</artifactId>
+          <artifactId>akka-remote_${scala.binary.version}</artifactId>
           <groupId>org.spark-project.akka</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>akka-slf4j_2.10</artifactId>
+          <artifactId>akka-slf4j_${scala.binary.version}</artifactId>
           <groupId>org.spark-project.akka</groupId>
         </exclusion>
       </exclusions>
@@ -80,7 +80,7 @@
   
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_2.10</artifactId>
+      <artifactId>spark-streaming_${scala.binary.version}</artifactId>
       <version>${beam.spark.version}</version>
     </dependency>
 
