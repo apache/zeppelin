@@ -46,7 +46,7 @@ If the form is empty (*), it means that any users can perform that operation.
 If someone who doesn't have **read** permission is trying to access the notebook or someone who doesn't have **write** permission is trying to edit the notebook,
 or someone who doesn't have **run** permission is trying to run a paragraph Zeppelin will ask to login or block the user.
 
-By default, owners and writers have **write** permissions, owners, writers and runners have **run** permissions, owners, writers, runners and readers have read permission
+By default, owners and writers have **write** permission, owners, writers and runners have **run** permission, owners, writers, runners and readers have **read** permission
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/insufficient_privileges.png"></center>
 
