@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
@@ -487,4 +489,64 @@ public abstract class Interpreter {
     }
     return null;
   }
+
+  public String interpolateZeppelinContextObjects(String originalCommand, BaseZeppelinContext sparkZeppelinContext) {
+
+    // Pattern allows mismatch in number of '{' and '}' characters
+    Pattern pattern = Pattern.compile("([^}{]*)(([{]+)([^}]*)([}]+)).*", Pattern.DOTALL);
+    Matcher matcher;
+
+    StringBuilder newCommandBuffer = new StringBuilder();
+
+    String residualCommand = originalCommand;
+    Boolean allBracePairsBalanced = true;
+    // Iterate while the residual text matches the pattern
+    while (!residualCommand.isEmpty() && (matcher = pattern.matcher(residualCommand)).matches()) {
+      // Get characters prefixing the next pattern, add to new-command buffer
+      newCommandBuffer.append(matcher.group(1));
+      // Handle variable substitution pattern ...
+      // Get parts of the variable pattern
+      int openingBraceCount = matcher.group(3).length();
+      int closingBraceCount = matcher.group(5).length();
+      if (openingBraceCount != closingBraceCount) {
+        allBracePairsBalanced = false;
+        // No need to perform any substitutions if any braces are mismatched
+        break;
+      }
+
+      String substitutedText = null;
+      String objectName = matcher.group(4);
+      // Substitution performed only for odd number of braces
+      if (openingBraceCount % 2 == 1) {
+        Object variableValue = sparkZeppelinContext.get(objectName);
+        if (variableValue == null)
+          // No corresponding value, use pattern itself ...
+          substitutedText = String.format("{%s}", objectName);
+        else
+          // Substitute corresponding value if found ...
+          substitutedText = variableValue.toString();
+      } else
+        // No substitution is to be performed ...
+        substitutedText = objectName;
+
+      // Escape each '{{' ... '}}' pair into '{' ... '}'
+      while (openingBraceCount >= 2) {
+        substitutedText = String.format("{%s}", substitutedText);
+        openingBraceCount -= 2;
+      }
+
+      newCommandBuffer.append(substitutedText);
+
+      // Update residual-command text
+      residualCommand = residualCommand.substring(matcher.end(2));
+    }
+    // Add any remaining non-matching characters
+    newCommandBuffer.append(residualCommand);
+
+    if (allBracePairsBalanced && residualCommand.matches("[^}{]*"))
+      return newCommandBuffer.toString();
+    else
+      return originalCommand;
+  }
+
 }

@@ -35,8 +35,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.resource.Resource;
-import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -89,60 +87,11 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void close() {}
 
-  String interpolateVariable(String originalCommand) {
-
-    // Pattern allows errors in number of '{' and '}' characters
-    Pattern pattern = Pattern.compile("([^{]*)([{]+[^}]+[}]*).*", Pattern.DOTALL);
-    Matcher matcher;
-
-    StringBuilder newCommandBuffer = new StringBuilder();
-
-    SparkZeppelinContext sparkZeppelinContext = getSparkInterpreter().getZeppelinContext();
-
-    String residualCommand = originalCommand;
-    // Iterate while there is any pattern left in the residual-command text
-    while ((matcher = pattern.matcher(residualCommand)).matches()) {
-      // Get any characters until the next pattern, add to new-command buffer
-      newCommandBuffer.append(matcher.group(1));
-      // Get the variable pattern
-      String template = matcher.group(2);
-      if (template.matches("[{][^{}][^}]*[}]")) {
-        // Handle variable substitution pattern ...
-        // Extract variable-name from template
-        String variableName = template.substring(1, template.length() - 1);
-        // Get variable-value from interpreter's context
-        Object variableValue = sparkZeppelinContext.get(variableName);
-        if (variableValue == null) {
-          // No such variable - Error!
-          return String.format("ERROR:unknown variable '%s'", variableName);
-        } else {
-          // Append value to new-command buffer
-          newCommandBuffer.append(variableValue.toString());
-        }
-      } else if (template.matches("[{]{2}[^{}][^}]*[}]{2}")) {
-        // Handle '{' escaping pattern ...
-        // Extract escaped sub-string from template
-        String escapedSubString = template.substring(1, template.length() - 1);
-        // Append escaped sub-string to new-command buffer
-        newCommandBuffer.append(escapedSubString);
-      } else {
-        // Unknown pattern - Error!
-        if (template.endsWith("}"))
-          return String.format("ERROR:bad pattern '%s'", template);
-        else
-          return String.format("ERROR:unpaired '{' in '%s'", template);
-      }
-      // Update residual-command text
-      residualCommand = residualCommand.substring(matcher.end(2));
-    }
-    // Add any remaining text without patterns to the new-command buffer
-    newCommandBuffer.append(residualCommand);
-
-    return newCommandBuffer.toString();
-  }
-
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    SparkZeppelinContext sparkZeppelinContext = getSparkInterpreter().getZeppelinContext();
+
+    String interpolatedCommand = interpolateZeppelinContextObjects(st, sparkZeppelinContext);
     SQLContext sqlc = null;
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
 
@@ -170,11 +119,7 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      String interpolateResult = interpolateVariable(st);
-      if (interpolateResult.startsWith("ERROR:"))
-        return new InterpreterResult(Code.ERROR, interpolateResult.substring("ERROR:".length()));
-      else
-        rdd = sqlMethod.invoke(sqlc, interpolateResult);
+      rdd = sqlMethod.invoke(sqlc, interpolatedCommand);
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);

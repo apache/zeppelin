@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -197,38 +196,44 @@ public class SparkSqlInterpreterTest {
 
     // Correct variable substitutions ...
     String commandWithVariables = "select * from {table} where count = {n}";
-    String resultString = sql.interpolateVariable(commandWithVariables);
+    String  resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
     assertEquals("select * from name where count = 100", resultString);
 
-    // Correct escaping of { and } characters ...
+    // Correct escaping of { and } characters (1) ...
     commandWithVariables = "select * from names where name rlike 'a{{2}}'";
-    resultString = sql.interpolateVariable(commandWithVariables);
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
     assertEquals("select * from names where name rlike 'a{2}'", resultString);
+
+    // Correct escaping of { and } characters (2) ...
+    commandWithVariables = "this: {table}, {{{{{{any}}}}}} is not SQL";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("this: name, {{{any}}} is not SQL", resultString);
 
     // Error due to unknown variable ...
     commandWithVariables = "select * from names where count = {n2}";
-    resultString = sql.interpolateVariable(commandWithVariables);
-    assertEquals("ERROR:unknown variable 'n2'", resultString);
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from names where count = {n2}", resultString);
 
-    // Error due to bad pattern (1) ...
-    commandWithVariables = "select * from names where name rlike 'a{2}}'";
-    resultString = sql.interpolateVariable(commandWithVariables);
-    assertEquals("ERROR:bad pattern '{2}}'", resultString);
+    // Incorrect pairing of { and } characters (1) ...
+    commandWithVariables = "these: {{2}}, {{{{{{any}}}}} are not SQL";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("these: {{2}}, {{{{{{any}}}}} are not SQL", resultString);
 
-    // Error due to bad pattern (2) ...
-    commandWithVariables = "select * from names where name rlike 'a{{2}'";
-    resultString = sql.interpolateVariable(commandWithVariables);
-    assertEquals("ERROR:bad pattern '{{2}'", resultString);
+    // Incorrect pairing of { and } characters (2) ...
+    commandWithVariables = "select * from {table} where count = {n}}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from {table} where count = {n}}", resultString);
 
-    // Error due to bad pattern (3) ...
-    commandWithVariables = "select * from names where name rlike 'a{{{2}}}'";
-    resultString = sql.interpolateVariable(commandWithVariables);
-    assertEquals("ERROR:bad pattern '{{{2}}}'", resultString);
+    // Incorrect pairing of { and } characters (3) ...
+    commandWithVariables = "select * from {table} where count = {n}}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from {table} where count = {n}}", resultString);
 
-    // Error due to unpaired { ...
-    commandWithVariables = "select * from names where name = {alpha";
-    resultString = sql.interpolateVariable(commandWithVariables);
-    assertEquals("ERROR:unpaired '{' in '{alpha'", resultString);
+    // Combined substitution and escaping ...
+    commandWithVariables = "select * from {{{table}}} where count = {n}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from {name} where count = 100", resultString);
+
   }
 
   @Test
