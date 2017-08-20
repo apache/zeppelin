@@ -44,18 +44,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
-import org.apache.spark.api.java.*;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.SparkConf;
-import org.apache.spark.streaming.*;
-import org.apache.spark.SparkContext;
 import org.apache.beam.runners.direct.*;
 import org.apache.beam.sdk.runners.*;
 import org.apache.beam.sdk.options.*;
-import org.apache.beam.runners.spark.*;
-import org.apache.beam.runners.spark.io.ConsoleIO;
 import org.apache.beam.runners.flink.*;
-import org.apache.beam.runners.flink.examples.WordCount.Options;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -89,12 +81,12 @@ public class MinimalWordCount {
 	};  
   static final List<String> SENTENCES = Arrays.asList(SENTENCES_ARRAY);
   public static void main(String[] args) {
-    Options options = PipelineOptionsFactory.create().as(Options.class);
+    PipelineOptions options = PipelineOptionsFactory.create().as(PipelineOptions.class);
     options.setRunner(FlinkRunner.class);
     Pipeline p = Pipeline.create(options);
     p.apply(Create.of(SENTENCES).withCoder(StringUtf8Coder.of()))
          .apply("ExtractWords", ParDo.of(new DoFn<String, String>() {
-           @Override
+           @ProcessElement
            public void processElement(ProcessContext c) {
              for (String word : c.element().split("[^a-zA-Z']+")) {
                if (!word.isEmpty()) {
@@ -105,7 +97,7 @@ public class MinimalWordCount {
          }))
         .apply(Count.<String> perElement())
         .apply("FormatResults", ParDo.of(new DoFn<KV<String, Long>, String>() {
-          @Override
+          @ProcessElement
           public void processElement(DoFn<KV<String, Long>, String>.ProcessContext arg0)
             throws Exception {
             s.add("\n" + arg0.element().getKey() + "\t" + arg0.element().getValue());
