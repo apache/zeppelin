@@ -49,13 +49,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 /**
- * A {@code Realm} implementation that uses the ZeppelinHub to authenticate users.
+ * A {@code Realm} implementation that uses the Zepl(ZeppelinHub) to authenticate users.
  *
  */
-public class ZeppelinHubRealm extends AuthorizingRealm {
+public class ZeplRealm extends AuthorizingRealm {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRealm.class);
-  private static final String DEFAULT_ZEPPELINHUB_URL = "https://www.zeppelinhub.com";
+  private static final Logger LOG = LoggerFactory.getLogger(ZeplRealm.class);
+  private static final String DEFAULT_ZEPPELINHUB_URL = "https://www.zepl.com";
   private static final String USER_LOGIN_API_ENDPOINT = "api/v1/users/login";
   private static final String JSON_CONTENT_TYPE = "application/json";
   private static final String UTF_8_ENCODING = "UTF-8";
@@ -67,9 +67,9 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   private String zeppelinhubUrl;
   private String name;
 
-  public ZeppelinHubRealm() {
+  public ZeplRealm() {
     super();
-    LOG.debug("Init ZeppelinhubRealm");
+    LOG.debug("Init ZeplRealm");
     //TODO(anthonyc): think about more setting for this HTTP client.
     //                eg: if user uses proxy etcetc...
     httpClient = new HttpClient();
