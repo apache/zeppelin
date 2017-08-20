@@ -64,7 +64,7 @@ public class ZeplRealm extends AuthorizingRealm {
 
   private final HttpClient httpClient;
 
-  private String zeppelinhubUrl;
+  private String zeplUrl;
   private String name;
 
   public ZeplRealm() {
@@ -107,13 +107,13 @@ public class ZeplRealm extends AuthorizingRealm {
    * 
    * @param url
    */
-  public void setZeppelinhubUrl(String url) {
+  public void setZeplUrl(String url) {
     if (StringUtils.isBlank(url)) {
-      LOG.warn("Zeppelinhub url is empty, setting up default url {}", DEFAULT_ZEPPELINHUB_URL);
-      zeppelinhubUrl = DEFAULT_ZEPPELINHUB_URL;
+      LOG.warn("Zepl url is empty, setting up default url {}", DEFAULT_ZEPPELINHUB_URL);
+      zeplUrl = DEFAULT_ZEPPELINHUB_URL;
     } else {
-      zeppelinhubUrl = (isZeppelinHubUrlValid(url) ? url : DEFAULT_ZEPPELINHUB_URL);
-      LOG.info("Setting up Zeppelinhub url to {}", zeppelinhubUrl);
+      zeplUrl = (isZeppelinHubUrlValid(url) ? url : DEFAULT_ZEPPELINHUB_URL);
+      LOG.info("Setting up Zepl url to {}", zeplUrl);
     }
   }
 
@@ -126,7 +126,7 @@ public class ZeplRealm extends AuthorizingRealm {
    * @throws AuthenticationException if fail to login.
    */
   protected User authenticateUser(String requestBody) {
-    PutMethod put = new PutMethod(Joiner.on("/").join(zeppelinhubUrl, USER_LOGIN_API_ENDPOINT));
+    PutMethod put = new PutMethod(Joiner.on("/").join(zeplUrl, USER_LOGIN_API_ENDPOINT));
     String responseBody = StringUtils.EMPTY;
     String userSession = StringUtils.EMPTY;
     try {

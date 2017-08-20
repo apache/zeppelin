@@ -195,20 +195,20 @@ either reuse one of these services or create your own for Zeppelin. Activiting P
  pamRealm.service=sshd
 ```
 
-### ZeppelinHub
-[ZeppelinHub](https://www.zeppelinhub.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easily.
+### ZEPL
+[Zepl](https://www.zepl.com) is a service that synchronize your Apache Zeppelin notebooks and enables you to collaborate easily.
 
-To enable login with your ZeppelinHub credential, apply the following change in `conf/shiro.ini` under `[main]` section.
+To enable login with your ZEPL credential, apply the following change in `conf/shiro.ini` under `[main]` section.
 
 ```
 ### A sample for configuring ZeppelinHub Realm
-zeppelinHubRealm = org.apache.zeppelin.realm.ZeppelinHubRealm
-## Url of ZeppelinHub
-zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
-securityManager.realms = $zeppelinHubRealm
+zeplRealm = org.apache.zeppelin.realm.ZeplRealm
+## Url of Zepl
+zeplRealm.zeplUrl = https://www.zepl.com
+securityManager.realms = $zeplRealm
 ```
 
-> Note: ZeppelinHub is not releated to Apache Zeppelin project.
+> Note: Zepl is not releated to Apache Zeppelin project.
 
 ## Secure your Zeppelin information (optional)
 By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin.
