@@ -114,6 +114,7 @@
     <commons.logging.version>1.1.1</commons.logging.version>
     <commons.cli.version>1.3.1</commons.cli.version>
     <shiro.version>1.3.2</shiro.version>
+    <hadoop-common.version>2.6.0</hadoop-common.version>
 
     <!-- test library versions -->
     <junit.version>4.12</junit.version>

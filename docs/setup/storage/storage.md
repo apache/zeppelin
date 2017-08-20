@@ -30,6 +30,7 @@ There are few notebook storage systems available for a use out of the box:
 
   * (default) use local file system and version it using local Git repository - `GitNotebookRepo`
   * all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
+  * all notes are saved in the notebook folder in HDFS - `HDFSNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
@@ -48,6 +49,62 @@ To enable versioning for all your local notebooks though a standard Git reposito
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
+</property>
+```
+
+</br>
+
+## Notebook Storage in HDFS repository <a name="HDFS"></a>
+
+Notes may be stored in HDFS, so that multiple Zeppelin instance can share the same notes. It supports all the versions of hadoop 2.x. If you use `HdfsNotebookRepo`, then `zeppelin.notebook.dir` is the path on HDFS.
+ 
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.HDFSNotebookRepo</value>
+  <description>hdfs notebook persistence layer implementation</description>
+</property>
+
+<property>
+    <name>zeppelin.hadoop.uri</name>
+    <value>hdfs://localhost.novalocal:8020</value>
+    <description>The scheme of the URI determines a configuration property name, fs.scheme.class whose value names the FileSystem class.
+          e.g. `hdfs://localhost.novalocal:8020`, or `file:///`
+    </description>    
+</property>
+
+<property>
+  <name>zeppelin.notebook.dir</name>
+  <value>notebook</value>
+  <description>path or URI for notebook persist</description>
+</property>
+```
+
+</br>
+
+**(optional) Configuration if kerberos is enabled on a HDFS cluster**
+
+```
+<property>
+  <name>kerberos.principal</name>
+  <value>zeppelin@EXAMPLE.COM</value>
+  <description>The principal name to load from the keytab</description>
+</property>
+<property>
+  <name>kerberos.keytab</name>
+  <value>/etc/security/keytabs/zeppelin.server.kerberos.keytab</value>
+  <description>The path to the keytab file</description>
+</property>
+
+<property>
+  <name>kerberos.refresh.interval</name>
+  <value>1d</value>
+  <description>(optional) The refresh interval for Kerberos ticket. The default value is 1d.</description>
+</property>
+<property>
+  <name>kinit.fail.threshold</name>
+  <value>5</value>
+  <description>(optional) How many times should kinit retry. The default value is 5.</description>
 </property>
 ```
 
