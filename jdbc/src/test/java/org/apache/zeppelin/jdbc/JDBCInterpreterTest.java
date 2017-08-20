@@ -99,25 +99,33 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   public void testForParsePropertyKey() throws IOException {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
 
-    assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
-        "fake");
+    assertEquals("fake",
+      t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"));
 
-    assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
-        "");
+    assertEquals("default",
+      t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"));
 
-    assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
-        "default");
+    // test extra parenthesis around sql -> should not cause sql to be treated as property key
+    assertEquals("default",
+      t.getPropertyKey("(select max(cant) from test_table where id >= 2452640)"));
+
+    // no spaces are allowed in property key
+    assertEquals("default",
+      t.getPropertyKey("(bad property) select max(cant) from test_table where id >= 2452640"));
+
+    assertEquals("default",
+      t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"));
 
     // when you use a %jdbc(prefix1), prefix1 is the propertyKey as form part of the cmd string
-    assertEquals(t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"),
-        "prefix1");
+    assertEquals("prefix1",
+      t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"));
 
-    assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
-            "prefix2");
+    assertEquals("prefix2",
+      t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"));
 
     // when you use a %jdbc, prefix is the default
-    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
-            "default");
+    assertEquals("default",
+      t.getPropertyKey("select max(cant) from test_table where id >= 2452640"));
   }
 
   @Test
@@ -138,7 +146,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     // if prefix not found return ERROR and Prefix not found.
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Prefix not found.", interpreterResult.message().get(0).getData());
+    String errMsg = String.format("Prefix(fake) not found in %s.", interpreterContext.getReplName());
+    assertEquals(errMsg, interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -362,7 +371,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3, interpreterContext);
+    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 4, interpreterContext);
 
     InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select", "select", CompletionType.keyword.name());
 
@@ -432,8 +441,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbc2.interpret("", ctx2);
 
     JDBCUserConfigurations user1JDBC2Conf = jdbc2.getJDBCConfiguration("user1");
-    assertNull(user1JDBC2Conf.getPropertyMap("default").get("user"));
-    assertNull(user1JDBC2Conf.getPropertyMap("default").get("password"));
+    assertEquals("user1", user1JDBC2Conf.getPropertyMap("default").get("user"));
+    assertEquals("", user1JDBC2Conf.getPropertyMap("default").get("password"));
     jdbc2.close();
 
     // user2 runs jdbc1

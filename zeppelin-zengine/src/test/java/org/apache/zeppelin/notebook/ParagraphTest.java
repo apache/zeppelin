@@ -70,6 +70,18 @@ public class ParagraphTest {
 
     text = "%table 1234567";
     assertEquals("1234567", Paragraph.getScriptBody(text));
+
+    text = "%presto (testPropertyKey) 1234567";
+    assertEquals("(testPropertyKey) 1234567", Paragraph.getScriptBody(text));
+
+    text = "%spark (1234567)";
+    assertEquals("(1234567)", Paragraph.getScriptBody(text));
+
+    text = "%jdbc(presto) (testPropertyKey) 1234567";
+    assertEquals("(testPropertyKey) 1234567", Paragraph.getScriptBody(text));
+
+    text = "%jdbc(presto) (testPropertyKey) (select 1234567)";
+    assertEquals("(testPropertyKey) (select 1234567)", Paragraph.getScriptBody(text));
   }
 
   @Test

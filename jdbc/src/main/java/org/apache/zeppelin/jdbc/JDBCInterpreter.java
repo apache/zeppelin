@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
@@ -94,6 +96,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
+  static final Pattern PROPERTY_KEY_PATTERN = Pattern.compile("^\\(([a-zA-Z0-9-_]+)\\)");
   static final String INTERPRETER_NAME = "jdbc";
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
@@ -669,7 +672,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       connection = getConnection(propertyKey, interpreterContext);
       if (connection == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+        return new InterpreterResult(Code.ERROR,
+          String.format("Prefix(%s) not found in %s.",
+            propertyKey, interpreterContext.getReplName()));
       }
 
 
@@ -689,7 +694,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement.setMaxRows(getMaxResult() + 1);
 
         if (statement == null) {
-          return new InterpreterResult(Code.ERROR, "Prefix not found.");
+          return new InterpreterResult(Code.ERROR,
+            String.format("Prefix(%s) not found in %s.",
+              propertyKey, interpreterContext.getReplName()));
+
         }
 
         try {
@@ -796,19 +804,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   public String getPropertyKey(String cmd) {
-    boolean firstLineIndex = cmd.startsWith("(");
+    Matcher m = PROPERTY_KEY_PATTERN.matcher(cmd);
 
-    if (firstLineIndex) {
-      int configStartIndex = cmd.indexOf("(");
-      int configLastIndex = cmd.indexOf(")");
-      if (configStartIndex != -1 && configLastIndex != -1) {
-        return cmd.substring(configStartIndex + 1, configLastIndex);
-      } else {
-        return null;
-      }
-    } else {
-      return DEFAULT_KEY;
+    if (m.find()) {
+      return m.group(1);
     }
+
+    return DEFAULT_KEY;
   }
 
   @Override
