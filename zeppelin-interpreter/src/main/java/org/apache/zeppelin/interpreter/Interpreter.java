@@ -490,7 +490,8 @@ public abstract class Interpreter {
     return null;
   }
 
-  public String interpolateZeppelinContextObjects(String originalCommand, BaseZeppelinContext sparkZeppelinContext) {
+  public String interpolateZeppelinContextObjects(String originalCommand,
+                                                  BaseZeppelinContext sparkZeppelinContext) {
 
     // Pattern allows mismatch in number of '{' and '}' characters
     Pattern pattern = Pattern.compile("([^}{]*)(([{]+)([^}]*)([}]+)).*", Pattern.DOTALL);
@@ -501,7 +502,8 @@ public abstract class Interpreter {
     String residualCommand = originalCommand;
     Boolean allBracePairsBalanced = true;
     // Iterate while the residual text matches the pattern
-    while (!residualCommand.isEmpty() && (matcher = pattern.matcher(residualCommand)).matches()) {
+    while (!residualCommand.isEmpty() &&
+            (matcher = pattern.matcher(residualCommand)).matches()) {
       // Get characters prefixing the next pattern, add to new-command buffer
       newCommandBuffer.append(matcher.group(1));
       // Handle variable substitution pattern ...
