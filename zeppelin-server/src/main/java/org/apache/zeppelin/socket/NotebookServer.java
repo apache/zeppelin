@@ -118,7 +118,7 @@ public class NotebookServer extends WebSocketServlet
       .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
-  final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
+  final Map<String, List<NotebookSocket>> noteSocketMap = new ConcurrentHashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
@@ -414,14 +414,21 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void addConnectionToNote(String noteId, NotebookSocket socket) {
+    // make sure a socket relates only a single note.
+    removeConnectionFromAllNote(socket);
+
+    // TODO(sadhen): should use computeIfAbsent when switching to Java 8
+    // and remove the synchronized keyword on noteSocketMap
+    List<NotebookSocket> socketList = null;
     synchronized (noteSocketMap) {
-      removeConnectionFromAllNote(socket); // make sure a socket relates only a
-      // single note.
-      List<NotebookSocket> socketList = noteSocketMap.get(noteId);
+      socketList = noteSocketMap.get(noteId);
       if (socketList == null) {
         socketList = new LinkedList<>();
         noteSocketMap.put(noteId, socketList);
       }
+    }
+
+    synchronized (socketList) {
       if (!socketList.contains(socket)) {
         socketList.add(socket);
       }
@@ -429,9 +436,9 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void removeConnectionFromNote(String noteId, NotebookSocket socket) {
-    synchronized (noteSocketMap) {
-      List<NotebookSocket> socketList = noteSocketMap.get(noteId);
-      if (socketList != null) {
+    List<NotebookSocket> socketList = noteSocketMap.get(noteId);
+    if (socketList != null) {
+      synchronized (socketList) {
         socketList.remove(socket);
       }
     }
@@ -439,31 +446,25 @@ public class NotebookServer extends WebSocketServlet
 
   private void removeNote(String noteId) {
     synchronized (noteSocketMap) {
-      List<NotebookSocket> socketList = noteSocketMap.remove(noteId);
+      noteSocketMap.remove(noteId);
     }
   }
 
   private void removeConnectionFromAllNote(NotebookSocket socket) {
-    synchronized (noteSocketMap) {
-      Set<String> keys = noteSocketMap.keySet();
-      for (String noteId : keys) {
-        removeConnectionFromNote(noteId, socket);
-      }
+    for (String noteId : noteSocketMap.keySet()) {
+      removeConnectionFromNote(noteId, socket);
     }
   }
 
   private String getOpenNoteId(NotebookSocket socket) {
     String id = null;
-    synchronized (noteSocketMap) {
-      Set<String> keys = noteSocketMap.keySet();
-      for (String noteId : keys) {
-        List<NotebookSocket> sockets = noteSocketMap.get(noteId);
-        if (sockets.contains(socket)) {
-          id = noteId;
-        }
+    for (Map.Entry<String, List<NotebookSocket>> entry: noteSocketMap.entrySet()) {
+      String noteId = entry.getKey();
+      List<NotebookSocket> socketList = entry.getValue();
+      if (socketList != null && socketList.contains(socket)) {
+        id = noteId;
       }
     }
-
     return id;
   }
 
@@ -482,12 +483,13 @@ public class NotebookServer extends WebSocketServlet
 
   private void sendMessageForSocketsExcept(final String noteId,
                                            final Message m,
-                                           List<NotebookSocket> socketList,
                                            final NotebookSocket exclude) {
-
-    if (socketList == null)
+    final List<NotebookSocket> socketList = noteSocketMap.get(noteId);
+    if (socketList == null || socketList.size() == 0) {
       return;
+    }
 
+    LOG.debug("SEND >> " + m);
     LOG.debug("SEND >> " + m.op);
 
     long startTime = System.currentTimeMillis();
@@ -555,33 +557,13 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void broadcast(String noteId, Message m) {
-    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
-    synchronized (noteSocketMap) {
-      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
-      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0) {
-        return;
-      }
-      socketsToBroadcast = new ArrayList<>(socketLists);
-    }
-
-    LOG.debug("SEND >> " + m);
-    sendMessageForSocketsExcept(noteId, m, socketsToBroadcast, null);
+    broadcastToWatchers(noteId, StringUtils.EMPTY, m);
+    sendMessageForSocketsExcept(noteId, m, null);
   }
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
-    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
-    synchronized (noteSocketMap) {
-      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
-      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0) {
-        return;
-      }
-      socketsToBroadcast = new ArrayList<>(socketLists);
-    }
-
-    LOG.debug("SEND >> " + m);
-    sendMessageForSocketsExcept(noteId, m, socketsToBroadcast, exclude);
+    broadcastToWatchers(noteId, StringUtils.EMPTY, m);
+    sendMessageForSocketsExcept(noteId, m, exclude);
   }
 
   private void multicastToUser(String user, Message m) {
