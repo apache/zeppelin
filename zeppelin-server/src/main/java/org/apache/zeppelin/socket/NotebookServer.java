@@ -22,14 +22,14 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
@@ -59,7 +59,6 @@ import org.apache.zeppelin.notebook.NotebookEventListener;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -86,8 +85,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Queues;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -133,6 +130,13 @@ public class NotebookServer extends WebSocketServlet
    */
   final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
 
+  private static final int THREAD_POOL_SIZE = 100;
+  private final ExecutorService cancellableExecutor = new CancellableExecutor(THREAD_POOL_SIZE,
+          THREAD_POOL_SIZE,
+          0L,
+          TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<Runnable>());
+
   private Notebook notebook() {
     return ZeppelinServer.notebook;
   }
@@ -161,7 +165,9 @@ public class NotebookServer extends WebSocketServlet
   public void onOpen(NotebookSocket conn) {
     LOG.info("New connection from {} : {}", conn.getRequest().getRemoteAddr(),
         conn.getRequest().getRemotePort());
+    LOG.info("we have {} connections before open", connectedSockets.size());
     connectedSockets.add(conn);
+    LOG.info("we have {} connections after open", connectedSockets.size());
   }
 
   @Override
@@ -373,9 +379,11 @@ public class NotebookServer extends WebSocketServlet
   public void onClose(NotebookSocket conn, int code, String reason) {
     LOG.info("Closed connection to {} : {}. ({}) {}", conn.getRequest().getRemoteAddr(),
         conn.getRequest().getRemotePort(), code, reason);
+    LOG.info("we have {} connections before close", connectedSockets.size());
     removeConnectionFromAllNote(conn);
     connectedSockets.remove(conn);
     removeUserConnection(conn.getUser(), conn);
+    LOG.info("we have {} connections after close", connectedSockets.size());
   }
 
   private void removeUserConnection(String user, NotebookSocket conn) {
@@ -472,6 +480,80 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
+  private void sendMessageForSocketsExcept(final String noteId,
+                                           final Message m,
+                                           List<NotebookSocket> socketList,
+                                           final NotebookSocket exclude) {
+
+    if (socketList == null)
+      return;
+
+    LOG.debug("SEND >> " + m.op);
+
+    long startTime = System.currentTimeMillis();
+    final String serializedMessage = serializeMessage(m);
+
+    synchronized (socketList) {
+      List<NotebookSocket> socketListToSend = Lists.newArrayList();
+      for (NotebookSocket conn : socketList)
+        if (!conn.equals(exclude)) {
+          socketListToSend.add(conn);
+        }
+      int size = socketListToSend.size();
+
+      final CountDownLatch end = new CountDownLatch(size);
+
+      List<Future<Integer>> socketListSended = Lists.newArrayList();
+      for (final NotebookSocket conn : socketListToSend) {
+        NotebookSocketTask<Integer> task = new NotebookSocketTask<Integer>() {
+          @Override
+          public Integer call() throws Exception {
+            try {
+              long innerStartTime = System.currentTimeMillis();
+              conn.send(serializedMessage);
+              LOG.info("{} sends op {} to connection used {}",
+                      noteId,
+                      m.op,
+                      System.currentTimeMillis() - innerStartTime);
+              return 0;
+            } catch (IOException e) {
+              LOG.error("socket error", e);
+              return 1;
+            } catch (Exception e) {
+              LOG.warn("broadcast error", e);
+              return 1;
+            } finally {
+              end.countDown();
+            }
+          }
+        };
+        task.setSocket(conn);
+        socketListSended.add(cancellableExecutor.submit(task));
+      }
+
+      try {
+        if (!end.await(3, TimeUnit.SECONDS)) {
+          long canceledCount = 0;
+          for (Future<Integer> future : socketListSended)
+            if (!future.isDone()) {
+              future.cancel(true);
+              canceledCount += 1;
+            }
+          LOG.info("There are timeout send tasks and {}" +
+                  "of connections have been successfully canceled",
+                  canceledCount);
+        }
+      } catch (InterruptedException e) {
+        LOG.error("Unexpected interruption", e);
+      }
+    }
+    LOG.info("broadcast {} op {} to {} connections used {}",
+            noteId,
+            m.op,
+            socketList.size(),
+            System.currentTimeMillis() - startTime);
+  }
+
   private void broadcast(String noteId, Message m) {
     List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {
@@ -482,14 +564,9 @@ public class NotebookServer extends WebSocketServlet
       }
       socketsToBroadcast = new ArrayList<>(socketLists);
     }
+
     LOG.debug("SEND >> " + m);
-    for (NotebookSocket conn : socketsToBroadcast) {
-      try {
-        conn.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("socket error", e);
-      }
-    }
+    sendMessageForSocketsExcept(noteId, m, socketsToBroadcast, null);
   }
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
@@ -504,16 +581,7 @@ public class NotebookServer extends WebSocketServlet
     }
 
     LOG.debug("SEND >> " + m);
-    for (NotebookSocket conn : socketsToBroadcast) {
-      if (exclude.equals(conn)) {
-        continue;
-      }
-      try {
-        conn.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("socket error", e);
-      }
-    }
+    sendMessageForSocketsExcept(noteId, m, socketsToBroadcast, exclude);
   }
 
   private void multicastToUser(String user, Message m) {
