@@ -57,6 +57,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +96,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   protected LivyVersion livyVersion;
   private RestTemplate restTemplate;
   private Map<String, String> customHeaders = new HashMap<>();
+
+  // delegate to sharedInterpreter when it is available
+  protected LivySharedInterpreter sharedInterpreter;
 
   Set<Object> paragraphsToCancel = Collections.newSetFromMap(
       new ConcurrentHashMap<Object, Boolean>());
@@ -144,7 +149,13 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   @Override
   public void open() throws InterpreterException {
     try {
-      initLivySession();
+      this.livyVersion = getLivyVersion();
+      if (this.livyVersion.isSharedSupported()) {
+        sharedInterpreter = getLivySharedInterpreter();
+      }
+      if (sharedInterpreter == null || !sharedInterpreter.isSupported()) {
+        initLivySession();
+      }
     } catch (LivyException e) {
       String msg = "Fail to create session, please check livy interpreter log and " +
           "livy server log";
@@ -152,8 +163,32 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
   }
 
+  protected LivySharedInterpreter getLivySharedInterpreter() throws InterpreterException {
+    LazyOpenInterpreter lazy = null;
+    LivySharedInterpreter sharedInterpreter = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(
+        LivySharedInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    sharedInterpreter = (LivySharedInterpreter) p;
+
+    if (lazy != null) {
+      lazy.open();
+    }
+    return sharedInterpreter;
+  }
+
   @Override
   public void close() {
+    if (sharedInterpreter != null && sharedInterpreter.isSupported()) {
+      sharedInterpreter.close();
+      return;
+    }
     if (sessionInfo != null) {
       closeSession(sessionInfo.id);
       // reset sessionInfo to null so that we won't close it twice.
@@ -181,14 +216,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     } else {
       LOGGER.info("Create livy session successfully with sessionId: {}", this.sessionInfo.id);
     }
-    // check livy version
-    try {
-      this.livyVersion = getLivyVersion();
-      LOGGER.info("Use livy " + livyVersion);
-    } catch (APINotFoundException e) {
-      this.livyVersion = new LivyVersion("0.2.0");
-      LOGGER.info("Use livy 0.2.0");
-    }
   }
 
   protected abstract String extractAppId() throws LivyException;
@@ -196,17 +223,30 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   protected abstract String extractWebUIAddress() throws LivyException;
 
   public SessionInfo getSessionInfo() {
+    if (sharedInterpreter != null && sharedInterpreter.isSupported()) {
+      return sharedInterpreter.getSessionInfo();
+    }
     return sessionInfo;
+  }
+
+  public String getCodeType() {
+    if (getSessionKind().equalsIgnoreCase("pyspark3")) {
+      return "pyspark";
+    }
+    return getSessionKind();
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    if (sharedInterpreter != null && sharedInterpreter.isSupported()) {
+      return sharedInterpreter.interpret(st, getCodeType(), context);
+    }
     if (StringUtils.isEmpty(st)) {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
     }
 
     try {
-      return interpret(st, context.getParagraphId(), this.displayAppInfo, true);
+      return interpret(st, null, context.getParagraphId(), this.displayAppInfo, true);
     } catch (LivyException e) {
       LOGGER.error("Fail to interpret:" + st, e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -245,6 +285,10 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (sharedInterpreter != null && sharedInterpreter.isSupported()) {
+      sharedInterpreter.cancel(context);
+      return;
+    }
     paragraphsToCancel.add(context.getParagraphId());
     LOGGER.info("Added paragraph " + context.getParagraphId() + " for cancellation.");
   }
@@ -256,6 +300,10 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (sharedInterpreter != null && sharedInterpreter.isSupported()) {
+      return sharedInterpreter.getProgress(context);
+    }
+
     if (livyVersion.isGetProgressSupported()) {
       String paraId = context.getParagraphId();
       Integer progress = paragraphId2StmtProgressMap.get(paraId);
@@ -312,11 +360,20 @@ public abstract class BaseLivyInterpreter extends Interpreter {
                                      String paragraphId,
                                      boolean displayAppInfo,
                                      boolean appendSessionExpired) throws LivyException {
+    return interpret(code, sharedInterpreter.isSupported() ? getSessionKind() : null,
+        paragraphId, displayAppInfo, appendSessionExpired);
+  }
+
+  public InterpreterResult interpret(String code,
+                                     String codeType,
+                                     String paragraphId,
+                                     boolean displayAppInfo,
+                                     boolean appendSessionExpired) throws LivyException {
     StatementInfo stmtInfo = null;
     boolean sessionExpired = false;
     try {
       try {
-        stmtInfo = executeStatement(new ExecuteRequest(code));
+        stmtInfo = executeStatement(new ExecuteRequest(code, codeType));
       } catch (SessionNotFoundException e) {
         LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
         sessionExpired = true;
@@ -328,7 +385,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
             initLivySession();
           }
         }
-        stmtInfo = executeStatement(new ExecuteRequest(code));
+        stmtInfo = executeStatement(new ExecuteRequest(code, codeType));
       }
 
       // pull the statement status
@@ -731,11 +788,12 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
   }
 
-  private static class ExecuteRequest {
+  static class ExecuteRequest {
     public final String code;
-
-    public ExecuteRequest(String code) {
+    public final String kind;
+    public ExecuteRequest(String code, String kind) {
       this.code = code;
+      this.kind = kind;
     }
 
     public String toJson() {
