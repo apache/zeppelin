@@ -645,7 +645,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       }, newParagraphConfig.results[resultIndex], paragraph, resultIndex)
       renderResult($scope.type, true)
     } else {
-      websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params)
+      return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params)
     }
   }
 
