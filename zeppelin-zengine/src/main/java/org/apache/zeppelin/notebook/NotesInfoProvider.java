@@ -17,31 +17,22 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.apache.zeppelin.common.JsonSerializable;
-
 import java.util.Map;
-import java.util.Set;
 
-/**
- * Only used for saving NotebookAuthorization info
- */
-public class NotebookAuthorizationInfoSaving implements JsonSerializable {
+public class NotesInfoProvider {
+  private final Map<String, Note> notes;
+  private final FolderView folders;
 
-  private static final Gson gson = new GsonBuilder()
-      .setPrettyPrinting()
-      .enableComplexMapKeySerialization()
-      .create();
-
-  public Map<String, Map<NotebookAuthorization.PermissionType, Set<String>>> authInfo;
-
-  public String toJson() {
-    return gson.toJson(this);
+  public NotesInfoProvider(Map<String, Note> notes, FolderView folders) {
+    this.notes = notes;
+    this.folders = folders;
   }
 
-  public static NotebookAuthorizationInfoSaving fromJson(String json) {
-    return gson.fromJson(json, NotebookAuthorizationInfoSaving.class);
+  public Folder getFolderByNoteId(String noteId){
+    return folders.getFolderOf(notes.get(noteId));
+  }
+
+  public Folder getFolder(String folderId){
+    return folders.getFolder(folderId);
   }
 }

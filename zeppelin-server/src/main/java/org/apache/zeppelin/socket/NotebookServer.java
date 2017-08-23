@@ -628,6 +628,22 @@ public class NotebookServer extends WebSocketServlet
     broadcast(note.getId(), new Message(OP.NOTE).put("note", note));
   }
 
+  public void broadcastFolderPermissions(String folderId, AuthenticationInfo subject) {
+    if (subject == null) {
+      subject = new AuthenticationInfo(StringUtils.EMPTY);
+    }
+    Message message = new Message(OP.FOLDER_PERMISSIONS);
+    message.put("folderId", folderId);
+    multicastToUser(subject.getUser(), message);
+    Set<String> usersToSend = userConnectedSockets.keySet();
+    for (String user : usersToSend) {
+      if (subject.getUser().equals(user)) {
+        continue;
+      }
+      multicastToUser(user, message);
+    }
+  }
+
   public void broadcastInterpreterBindings(String noteId, List settingList) {
     broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
   }

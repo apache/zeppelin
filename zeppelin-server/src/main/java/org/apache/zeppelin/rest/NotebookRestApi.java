@@ -56,7 +56,6 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
@@ -90,7 +89,6 @@ public class NotebookRestApi {
   @Path("{noteId}/permissions")
   @ZeppelinApi
   public Response getNotePermissions(@PathParam("noteId") String noteId) throws IOException {
-
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot get the list of permissions for this note");
@@ -98,6 +96,25 @@ public class NotebookRestApi {
     permissionsMap.put("owners", notebookAuthorization.getOwners(noteId));
     permissionsMap.put("readers", notebookAuthorization.getReaders(noteId));
     permissionsMap.put("writers", notebookAuthorization.getWriters(noteId));
+    return new JsonResponse<>(Status.OK, "", permissionsMap).build();
+  }
+
+  /**
+   * get folder authorization information
+   */
+  @GET
+  @Path("folder/{folderId}/permissions")
+  @ZeppelinApi
+  public Response getFolderPermissions(@PathParam("folderId") String folderId) throws IOException {
+    if (folderId.charAt(0) != '/')
+      folderId = '/' + folderId;
+    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+    checkIfUserCanRead(folderId,
+        "Insufficient privileges you cannot get the list of permissions for this folder");
+    HashMap<String, Set<String>> permissionsMap = new HashMap<>();
+    permissionsMap.put("owners", notebookAuthorization.getOwners(folderId));
+    permissionsMap.put("readers", notebookAuthorization.getReaders(folderId));
+    permissionsMap.put("writers", notebookAuthorization.getWriters(folderId));
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
   }
 
@@ -133,11 +150,9 @@ public class NotebookRestApi {
   /**
    * Check if the current user own the given note.
    */
-  private void checkIfUserIsOwner(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
-    if (!notebookAuthorization.isOwner(userAndRoles, noteId)) {
+  private void checkIfUserIsOwner(String resourseId, String errorMsg) {
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
+    if (!notebookAuthorization.isOwner(userAndRoles, resourseId)) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -145,11 +160,9 @@ public class NotebookRestApi {
   /**
    * Check if the current user is either Owner or Writer for the given note.
    */
-  private void checkIfUserCanWrite(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
-    if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, noteId)) {
+  private void checkIfUserCanWrite(String resourseId, String errorMsg) {
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
+    if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, resourseId)) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -157,11 +170,9 @@ public class NotebookRestApi {
   /**
    * Check if the current user can access (at least he have to be reader) the given note.
    */
-  private void checkIfUserCanRead(String noteId, String errorMsg) {
-    Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
-    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
+  private void checkIfUserCanRead(String resourseId, String errorMsg) {
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
+    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, resourseId)) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -186,21 +197,16 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
-    String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getRoles();
-    HashSet<String> userAndRoles = new HashSet<>();
-    userAndRoles.add(principal);
-    userAndRoles.addAll(roles);
-
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserIsOwner(noteId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
-    
+
     HashMap<String, HashSet<String>> permMap =
         gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {}.getType());
     Note note = notebook.getNote(noteId);
-    
-    LOG.info("Set permissions {} {} {} {} {}", noteId, principal, permMap.get("owners"),
+
+    LOG.info("Set permissions {} {} {} {} {}", noteId, SecurityUtils.getPrincipal(), permMap.get("owners"),
         permMap.get("readers"), permMap.get("writers"));
 
     HashSet<String> readers = permMap.get("readers");
@@ -209,13 +215,15 @@ public class NotebookRestApi {
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+        owners = new HashSet<>();
+        owners.add(SecurityUtils.getPrincipal());
       }
     }
     // Set writers, if owners is empty -> set to user requesting the change
     if (writers != null && !writers.isEmpty()) {
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(SecurityUtils.getPrincipal());
+        owners = new HashSet<>();
+        owners.add(SecurityUtils.getPrincipal());
       }
     }
 
@@ -227,6 +235,43 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.persist(subject);
     notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList(subject, userAndRoles);
+    return new JsonResponse<>(Status.OK).build();
+  }
+
+  /**
+   * set folder authorization information
+   */
+  @PUT
+  @Path("folder/{folderId}/permissions")
+  @ZeppelinApi
+  public Response putFolderPermissions(@PathParam("folderId") String folderId, String req)
+      throws IOException {
+    if (folderId.charAt(0) != '/')
+      folderId = '/' + folderId;
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
+
+    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+    checkIfUserIsOwner(folderId,
+        ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(folderId)));
+
+    Map<String, Set<String>> permMap =
+        gson.fromJson(req, new TypeToken<Map<String, Set<String>>>() {}.getType());
+
+    LOG.info("Set permissions {} {} {} {} {}", folderId, SecurityUtils.getPrincipal(), permMap.get("owners"),
+        permMap.get("readers"), permMap.get("writers"));
+
+    Set<String> readers = permMap.get("readers");
+    Set<String> owners = permMap.get("owners");
+    Set<String> writers = permMap.get("writers");
+
+    notebookAuthorization.setReaders(folderId, readers);
+    notebookAuthorization.setWriters(folderId, writers);
+    notebookAuthorization.setOwners(folderId, owners);
+    LOG.debug("After set permissions {} {} {}", notebookAuthorization.getOwners(folderId),
+        notebookAuthorization.getReaders(folderId), notebookAuthorization.getWriters(folderId));
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    notebookServer.broadcastFolderPermissions(folderId, subject);
     notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.OK).build();
   }
@@ -269,8 +314,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response getNoteList() throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    HashSet<String> userAndRoles = SecurityUtils.getRoles();
-    userAndRoles.add(subject.getUser());
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
     List<Map<String, String>> notesInfo = notebookServer.generateNotesInfo(false, subject,
         userAndRoles);
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
@@ -911,18 +955,12 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notes for: {}", queryTerm);
-    String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getRoles();
-    HashSet<String> userAndRoles = new HashSet<>();
-    userAndRoles.add(principal);
-    userAndRoles.addAll(roles);
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
     List<Map<String, String>> notesFound = noteSearchService.query(queryTerm);
     for (int i = 0; i < notesFound.size(); i++) {
-      String[] Id = notesFound.get(i).get("id").split("/", 2);
-      String noteId = Id[0];
-      if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
-          !notebookAuthorization.isReader(noteId, userAndRoles) &&
-          !notebookAuthorization.isWriter(noteId, userAndRoles)) {
+      String[] id = notesFound.get(i).get("id").split("/", 2);
+      String noteId = id[0];
+      if (!notebookAuthorization.isReader(noteId, userAndRoles)) {
         notesFound.remove(i);
         i--;
       }
@@ -931,6 +969,12 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, notesFound).build();
   }
 
+  private Set<String> getPrincipalUserAndRoles() {
+    Set<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(SecurityUtils.getPrincipal());
+    userAndRoles.addAll(SecurityUtils.getRoles());
+    return userAndRoles;
+  }
 
   private void handleParagraphParams(String message, Note note, Paragraph paragraph)
       throws IOException {

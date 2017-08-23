@@ -14,7 +14,8 @@
 
 angular.module('zeppelinWebApp').service('noteActionService', noteActionService)
 
-function noteActionService(websocketMsgSrv, $location, noteRenameService, noteListFactory) {
+function noteActionService(websocketMsgSrv, $location, noteRenameService, noteListFactory,
+                           $rootScope) {
   'ngInject'
 
   this.moveNoteToTrash = function (noteId, redirectToHome) {
@@ -151,6 +152,10 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
         }
       }
     })
+  }
+
+  this.showFolderPermissions = function(node) {
+    $rootScope.$broadcast('showFolderPermissionsModal', node)
   }
 
   function normalizeFolderId (folderId) {

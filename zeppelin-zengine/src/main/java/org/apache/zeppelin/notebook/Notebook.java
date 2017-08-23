@@ -18,7 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,9 +34,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
+
 import org.apache.zeppelin.interpreter.*;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -83,6 +80,7 @@ public class Notebook implements NoteEventListener {
    */
   private final Map<String, Note> notes = new LinkedHashMap<>();
   private final FolderView folders = new FolderView();
+  private final NotesInfoProvider notesInfoProvider = new NotesInfoProvider(notes, folders);
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
@@ -114,6 +112,8 @@ public class Notebook implements NoteEventListener {
     this.jobListenerFactory = jobListenerFactory;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
+    notebookAuthorization.setNotesInfoProvider(notesInfoProvider);
+
     this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
@@ -334,7 +334,7 @@ public class Notebook implements NoteEventListener {
       logger.error(e.toString(), e);
     }
     noteSearchService.deleteIndexDocs(note);
-    notebookAuthorization.removeNote(id);
+    notebookAuthorization.removeResource(id);
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettingManager.get()) {

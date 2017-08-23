@@ -361,7 +361,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     notebookRepoSync.remove(0, note.getId(), user1);
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(1, notebookRepoSync.list(1, null).size());
-    authInfo.removeNote(note.getId());
+    authInfo.removeResource(note.getId());
     assertEquals(0, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
     assertEquals(0, authInfo.getWriters(note.getId()).size());
