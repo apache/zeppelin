@@ -20,7 +20,7 @@ package org.apache.zeppelin.notebook;
 import java.util.Map;
 
 /**
- * Provide info about notes, folders and its relations
+ * Provide info about notes, folders and its relations.
  */
 public class NotesInfoProvider {
   private final Map<String, Note> notes;

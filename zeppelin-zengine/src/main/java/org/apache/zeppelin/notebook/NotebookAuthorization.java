@@ -208,11 +208,13 @@ public class NotebookAuthorization {
   }
 
   private boolean isPermissionsEmpty(Map<PermissionType, Set<String>> resourceAuthInfo) {
-    if (resourceAuthInfo == null || resourceAuthInfo.isEmpty())
+    if (resourceAuthInfo == null || resourceAuthInfo.isEmpty()) {
       return true;
+    }
     for (Set<String> permissions: resourceAuthInfo.values()) {
-      if (!permissions.isEmpty())
+      if (!permissions.isEmpty()) {
         return false;
+      }
     }
     return true;
   }
@@ -391,7 +393,7 @@ public class NotebookAuthorization {
   }
 
   /**
-   * Permission type
+   * Permission type.
    */
   public enum PermissionType {
     @SerializedName("readers") READER,

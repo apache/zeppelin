@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Only used for saving NotebookAuthorization info
+ * Only used for saving NotebookAuthorization info.
  */
 public class NotebookAuthorizationInfoSaving implements JsonSerializable {
 

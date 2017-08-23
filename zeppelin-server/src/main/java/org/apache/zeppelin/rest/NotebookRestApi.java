@@ -100,14 +100,15 @@ public class NotebookRestApi {
   }
 
   /**
-   * get folder authorization information
+   * Get folder authorization information.
    */
   @GET
   @Path("folder/{folderId}/permissions")
   @ZeppelinApi
   public Response getFolderPermissions(@PathParam("folderId") String folderId) throws IOException {
-    if (folderId.charAt(0) != '/')
+    if (folderId.charAt(0) != '/') {
       folderId = '/' + folderId;
+    }
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserCanRead(folderId,
         "Insufficient privileges you cannot get the list of permissions for this folder");
@@ -240,15 +241,16 @@ public class NotebookRestApi {
   }
 
   /**
-   * set folder authorization information
+   * Set folder authorization information.
    */
   @PUT
   @Path("folder/{folderId}/permissions")
   @ZeppelinApi
   public Response putFolderPermissions(@PathParam("folderId") String folderId, String req)
       throws IOException {
-    if (folderId.charAt(0) != '/')
+    if (folderId.charAt(0) != '/') {
       folderId = '/' + folderId;
+    }
     Set<String> userAndRoles = getPrincipalUserAndRoles();
 
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
@@ -258,8 +260,8 @@ public class NotebookRestApi {
     Map<String, Set<String>> permMap =
         gson.fromJson(req, new TypeToken<Map<String, Set<String>>>() {}.getType());
 
-    LOG.info("Set permissions {} {} {} {} {}", folderId, SecurityUtils.getPrincipal(), permMap.get("owners"),
-        permMap.get("readers"), permMap.get("writers"));
+    LOG.info("Set permissions {} {} {} {} {}", folderId, SecurityUtils.getPrincipal(),
+        permMap.get("owners"), permMap.get("readers"), permMap.get("writers"));
 
     Set<String> readers = permMap.get("readers");
     Set<String> owners = permMap.get("owners");
