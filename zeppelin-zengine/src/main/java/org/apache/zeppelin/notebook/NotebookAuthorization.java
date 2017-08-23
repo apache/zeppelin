@@ -217,7 +217,8 @@ public class NotebookAuthorization {
     return true;
   }
 
-  private void setPermissionsRecursively(String resourceId, Set<String> entities, PermissionType permissionType) {
+  private void setPermissionsRecursively(String resourceId, Set<String> entities,
+      PermissionType permissionType) {
     setPermissions(resourceId, entities, permissionType);
     if (isFolderId(resourceId)) {
       Folder folder = notesInfoProvider.getFolder(resourceId);
@@ -232,7 +233,8 @@ public class NotebookAuthorization {
     }
   }
 
-  private void setPermissions(String resourceId, Set<String> entities, PermissionType permissionType) {
+  private void setPermissions(String resourceId, Set<String> entities,
+      PermissionType permissionType) {
     Map<PermissionType, Set<String>> noteAuthInfo = authInfo.get(resourceId);
     entities = filterEmpty(entities);
     if (noteAuthInfo == null) {
@@ -388,6 +390,9 @@ public class NotebookAuthorization {
     }
   }
 
+  /**
+   * Permission type
+   */
   public enum PermissionType {
     @SerializedName("readers") READER,
     @SerializedName("writers") WRITER,
