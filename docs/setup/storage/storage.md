@@ -33,6 +33,7 @@ There are few notebook storage systems available for a use out of the box:
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
+  * storage using Zepl service - `ZeplRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -246,17 +247,17 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
-## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
+## Notebook Storage in Zepl  <a name="Zepl"></a>
 
-ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
+Zepl storage layer allows out of the box connection of Zeppelin instance with your Zepl account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 
 ```
-<!-- For connecting your Zeppelin with ZeppelinHub -->
+<!-- For connecting your Zeppelin with Zepl service -->
 <!--
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo</value>
-  <description>two notebook persistence layers (local + ZeppelinHub)</description>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zepl.ZeplRepo</value>
+  <description>two notebook persistence layers (git local + Zepl)</description>
 </property>
 -->
 ```
@@ -264,17 +265,17 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 or set the environment variable in the file **zeppelin-env.sh**:
 
 ```
-export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
+export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zepl.ZeplRepo"
 ```
 
 Secondly, you need to set the environment variables in the file **zeppelin-env.sh**:
 
 ```
-export ZEPPELINHUB_API_TOKEN = ZeppelinHub token
-export ZEPPELINHUB_API_ADDRESS = address of ZeppelinHub service (e.g. https://www.zeppelinhub.com)
+export ZEPL_API_TOKEN = Zepl token
+export ZEPL_API_ADDRESS = address of Zepl service (e.g. https://www.zepl.com)
 ```
 
-You can get more information on generating `token` and using authentication on the corresponding [help page](http://help.zeppelinhub.com/zeppelin_integration/#add-a-new-zeppelin-instance-and-generate-a-token).
+You can get more information on generating `token` and using authentication on the corresponding [help page](http://docs.zepl.com/zeppelin_integration/#create-a-new-repository).
 
 
 ## Notebook Storage in MongoDB <a name="MongoDB"></a>
