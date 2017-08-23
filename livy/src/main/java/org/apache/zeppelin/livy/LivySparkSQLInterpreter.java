@@ -19,11 +19,14 @@ package org.apache.zeppelin.livy;
 
 import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
+import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -39,6 +42,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       "zeppelin.livy.spark.sql.maxResult";
 
   private LivySparkInterpreter sparkInterpreter;
+  private String codeType = null;
 
   private boolean isSpark2 = false;
   private int maxResult = 1000;
@@ -64,7 +68,21 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {
-      InterpreterResult result = sparkInterpreter.interpret("spark", null, false, false);
+      InterpreterContext context = new InterpreterContext(
+          "noteId",
+          "paragraphId",
+          "replName",
+          "paragraphTitle",
+          "paragraphText",
+          new AuthenticationInfo(),
+          new HashMap<String, Object>(),
+          new GUI(),
+          new GUI(),
+          null,
+          null,
+          null,
+          new InterpreterOutput(null));
+      InterpreterResult result = sparkInterpreter.interpret("spark", context);
       if (result.code() == InterpreterResult.Code.SUCCESS &&
           result.message().get(0).getData().contains("org.apache.spark.sql.SparkSession")) {
         LOGGER.info("SparkSession is detected so we are using spark 2.x for session {}",
@@ -72,7 +90,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
         isSpark2 = true;
       } else {
         // spark 1.x
-        result = sparkInterpreter.interpret("sqlContext", null, false, false);
+        result = sparkInterpreter.interpret("sqlContext", context);
         if (result.code() == InterpreterResult.Code.SUCCESS) {
           LOGGER.info("sqlContext is detected.");
         } else if (result.code() == InterpreterResult.Code.ERROR) {
@@ -81,7 +99,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
           LOGGER.info("sqlContext is not detected, try to create SQLContext by ourselves");
           result = sparkInterpreter.interpret(
               "val sqlContext = new org.apache.spark.sql.SQLContext(sc)\n"
-                  + "import sqlContext.implicits._", null, false, false);
+                  + "import sqlContext.implicits._", context);
           if (result.code() == InterpreterResult.Code.ERROR) {
             throw new LivyException("Fail to create SQLContext," +
                 result.message().get(0).getData());
@@ -128,9 +146,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
         sqlQuery = "sqlContext.sql(\"\"\"" + line + "\"\"\").show(" + maxResult + ", " +
             truncate + ")";
       }
-      InterpreterResult result = sparkInterpreter.interpret(sqlQuery, context.getParagraphId(),
-          this.displayAppInfo, true);
-
+      InterpreterResult result = sparkInterpreter.interpret(sqlQuery, context);
       if (result.code() == InterpreterResult.Code.SUCCESS) {
         InterpreterResult result2 = new InterpreterResult(InterpreterResult.Code.SUCCESS);
         for (InterpreterResultMessage message : result.message()) {
@@ -248,12 +264,16 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    sparkInterpreter.cancel(context);
+    if (this.sparkInterpreter != null) {
+      sparkInterpreter.cancel(context);
+    }
   }
 
   @Override
   public void close() {
-    this.sparkInterpreter.close();
+    if (this.sparkInterpreter != null) {
+      this.sparkInterpreter.close();
+    }
   }
 
   @Override
