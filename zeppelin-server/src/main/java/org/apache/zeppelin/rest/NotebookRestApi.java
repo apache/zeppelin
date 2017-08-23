@@ -207,8 +207,8 @@ public class NotebookRestApi {
         gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {}.getType());
     Note note = notebook.getNote(noteId);
 
-    LOG.info("Set permissions {} {} {} {} {}", noteId, SecurityUtils.getPrincipal(), permMap.get("owners"),
-        permMap.get("readers"), permMap.get("writers"));
+    LOG.info("Set permissions {} {} {} {} {}", noteId, SecurityUtils.getPrincipal(),
+        permMap.get("owners"), permMap.get("readers"), permMap.get("writers"));
 
     HashSet<String> readers = permMap.get("readers");
     HashSet<String> owners = permMap.get("owners");
