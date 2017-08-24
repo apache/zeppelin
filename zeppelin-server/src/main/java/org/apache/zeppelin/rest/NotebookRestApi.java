@@ -380,7 +380,8 @@ public class NotebookRestApi {
     LOG.info("Create new note by JSON {}", message);
     NewNoteRequest request = NewNoteRequest.fromJson(message);
     AuthenticationInfo subject = new AuthenticationInfo(user);
-    Note note = notebook.createNote(subject);
+    String noteName = request == null ? null : request.getName();
+    Note note = notebook.createNote(subject, noteName);
     if (request != null) {
       List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
       if (initialParagraphs != null) {
@@ -391,12 +392,6 @@ public class NotebookRestApi {
       }
     }
     note.addNewParagraph(subject); // add one paragraph to the last
-    String noteName = request.getName();
-    if (noteName.isEmpty()) {
-      noteName = "Note " + note.getId();
-    }
-
-    note.setName(noteName);
     note.persist(subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());

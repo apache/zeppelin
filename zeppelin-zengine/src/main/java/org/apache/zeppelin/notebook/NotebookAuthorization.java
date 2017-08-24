@@ -202,8 +202,8 @@ public class NotebookAuthorization {
   }
 
   private boolean isResourceUnderFolderWithPermissions(String resourceId) {
-    Folder folder = getParentFolder(resourceId);
-    Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folder.getId());
+    String folderId = getParentFolderId(resourceId);
+    Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
     return !isPermissionsEmpty(resourceAuthInfo);
   }
 
@@ -353,16 +353,16 @@ public class NotebookAuthorization {
           owners.add(subject.getUser());
           setOwners(noteId, owners);
         } else {
-          Folder folder = getParentFolder(noteId);
-          Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folder.getId());
+          String folderId = getParentFolderId(noteId);
+          Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
           for (Map.Entry<PermissionType, Set<String>> e: resourceAuthInfo.entrySet()) {
             setPermissions(noteId, e.getValue(), e.getKey());
           }
         }
       } else {
         if (isResourceUnderFolderWithPermissions(noteId)) {
-          Folder folder = getParentFolder(noteId);
-          Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folder.getId());
+          String folderId = getParentFolderId(noteId);
+          Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
           for (Set<String> entries: resourceAuthInfo.values()) {
             if (!(entries.size() == 1 && entries.iterator().next().equals(subject.getUser()))){
               throw new RuntimeException("Cannot set private note permissions" +
@@ -384,11 +384,11 @@ public class NotebookAuthorization {
     }
   }
 
-  private Folder getParentFolder(String resourceId){
+  private String getParentFolderId(String resourceId){
     if (isFolderId(resourceId)) {
-      return notesInfoProvider.getFolder(resourceId).getParent();
+      return notesInfoProvider.getFolder(resourceId).getParent().getId();
     } else {
-      return notesInfoProvider.getFolderByNoteId(resourceId);
+      return notesInfoProvider.getFolderByNoteId(resourceId).getId();
     }
   }
 

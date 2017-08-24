@@ -1010,6 +1010,8 @@ public class NotebookServer extends WebSocketServlet
     try {
       Note note = null;
 
+
+      String noteName = (String) message.get("name");
       String defaultInterpreterId = (String) message.get("defaultInterpreterId");
       if (!StringUtils.isEmpty(defaultInterpreterId)) {
         List<String> interpreterSettingIds = new LinkedList<>();
@@ -1020,19 +1022,12 @@ public class NotebookServer extends WebSocketServlet
             interpreterSettingIds.add(interpreterSettingId);
           }
         }
-        note = notebook.createNote(interpreterSettingIds, subject);
+        note = notebook.createNote(interpreterSettingIds, subject, noteName);
       } else {
-        note = notebook.createNote(subject);
+        note = notebook.createNote(subject, noteName);
       }
 
       note.addNewParagraph(subject); // it's an empty note. so add one paragraph
-      if (message != null) {
-        String noteName = (String) message.get("name");
-        if (StringUtils.isEmpty(noteName)) {
-          noteName = "Note " + note.getId();
-        }
-        note.setName(noteName);
-      }
 
       note.persist(subject);
       addConnectionToNote(note.getId(), (NotebookSocket) conn);

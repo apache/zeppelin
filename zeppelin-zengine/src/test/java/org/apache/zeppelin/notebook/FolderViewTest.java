@@ -313,18 +313,18 @@ public class FolderViewTest {
   public void onNameChangedTest() {
     Note newNote = createNote();
 
-    assert (!folderView.hasNote(newNote));
+    assert (!folderView.hasNote(newNote.getId()));
 
     newNote.setName("      ");
-    assert (!folderView.hasNote(newNote));
+    assert (!folderView.hasNote(newNote.getId()));
 
     newNote.setName("a/b/newNote");
-    assert (folderView.hasNote(newNote));
-    assertEquals(abFolder, folderView.getFolderOf(newNote));
+    assert (folderView.hasNote(newNote.getId()));
+    assertEquals(abFolder, folderView.getFolderOf(newNote.getId()));
 
     newNote.setName("newNote");
     assert (!abFolder.getNotes().contains(newNote));
-    assertEquals(rootFolder, folderView.getFolderOf(newNote));
+    assertEquals(rootFolder, folderView.getFolderOf(newNote.getId()));
   }
 
   @Test

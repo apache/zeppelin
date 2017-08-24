@@ -136,16 +136,21 @@ public class Notebook implements NoteEventListener {
    *
    * @throws IOException
    */
-  public Note createNote(AuthenticationInfo subject) throws IOException {
+  public Note createNote(AuthenticationInfo subject, String noteName) throws IOException {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(interpreterSettingManager.getDefaultInterpreterSettingList(), subject);
+      note = createNote(interpreterSettingManager.getDefaultInterpreterSettingList(),
+          subject, noteName);
     } else {
-      note = createNote(null, subject);
+      note = createNote(null, subject, noteName);
     }
     noteSearchService.addIndexDoc(note);
     return note;
+  }
+
+  public Note createNote(AuthenticationInfo subject) throws IOException {
+    return createNote(subject, null);
   }
 
   /**
@@ -153,12 +158,17 @@ public class Notebook implements NoteEventListener {
    *
    * @throws IOException
    */
-  public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
+  public Note createNote(List<String> interpreterIds, AuthenticationInfo subject, String noteName)
       throws IOException {
     Note note =
         new Note(notebookRepo, replFactory, interpreterSettingManager, jobListenerFactory,
                 noteSearchService, credentials, this);
     note.setNoteNameListener(folders);
+    if (noteName == null || noteName.isEmpty()) {
+      note.setName("Note " + note.getId());
+    } else {
+      note.setName(noteName);
+    }
 
     synchronized (notes) {
       notes.put(note.getId(), note);
@@ -172,6 +182,11 @@ public class Notebook implements NoteEventListener {
     note.persist(subject);
     fireNoteCreateEvent(note);
     return note;
+  }
+
+  public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
+      throws IOException {
+    return createNote(interpreterIds, subject, null);
   }
 
   /**
@@ -203,11 +218,11 @@ public class Notebook implements NoteEventListener {
     try {
       Note oldNote = Note.fromJson(sourceJson);
       convertFromSingleResultToMultipleResultsFormat(oldNote);
-      newNote = createNote(subject);
-      if (noteName != null)
-        newNote.setName(noteName);
-      else
-        newNote.setName(oldNote.getName());
+      if (noteName == null) {
+        noteName = oldNote.getName();
+      }
+      newNote = createNote(subject, noteName);
+
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
         newNote.addCloneParagraph(p);
@@ -238,12 +253,7 @@ public class Notebook implements NoteEventListener {
     if (sourceNote == null) {
       throw new IllegalArgumentException(sourceNoteId + "not found");
     }
-    Note newNote = createNote(subject);
-    if (newNoteName != null) {
-      newNote.setName(newNoteName);
-    } else {
-      newNote.setName("Note " + newNote.getId());
-    }
+    Note newNote = createNote(subject, newNoteName);
     // Copy the interpreter bindings
     List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
     bindInterpretersToNote(subject.getUser(), newNote.getId(), boundInterpreterSettingsIds);

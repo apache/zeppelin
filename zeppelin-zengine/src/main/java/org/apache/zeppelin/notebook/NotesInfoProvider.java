@@ -32,7 +32,7 @@ public class NotesInfoProvider {
   }
 
   public Folder getFolderByNoteId(String noteId){
-    return folders.getFolderOf(notes.get(noteId));
+    return folders.getFolderOf(noteId);
   }
 
   public Folder getFolder(String folderId){

@@ -84,9 +84,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetNoteInfo() throws IOException {
     LOG.info("testGetNoteInfo");
     // Create note to get info
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "note");
     assertNotNull("can't create new note", note);
-    note.setName("note");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -224,9 +223,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testExportNote() throws IOException {
     LOG.info("testExportNote");
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "source note for export");
     assertNotNull("can't create new note", note);
-    note.setName("source note for export");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -257,9 +255,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteName = "source note for import";
     LOG.info("testImportNote");
     // create test note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, noteName);
     assertNotNull("can't create new note", note);
-    note.setName(noteName);
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -319,9 +316,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testCloneNote() throws IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("testCloneNote");
     // Create note to clone
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "source note for clone");
     assertNotNull("can't create new note", note);
-    note.setName("source note for clone");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = paragraph.getConfig();
     config.put("enabled", true);
@@ -370,9 +366,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testNoteJobs() throws IOException, InterruptedException {
     LOG.info("testNoteJobs");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "note for run test");
     assertNotNull("can't create new note", note);
-    note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     
     Map config = paragraph.getConfig();
@@ -425,9 +420,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetNoteJob() throws IOException, InterruptedException {
     LOG.info("testGetNoteJob");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "note for run test");
     assertNotNull("can't create new note", note);
-    note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Map config = paragraph.getConfig();
@@ -479,9 +473,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testRunParagraphWithParams() throws IOException, InterruptedException {
     LOG.info("testRunParagraphWithParams");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "note for run test");
     assertNotNull("can't create new note", note);
-    note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Map config = paragraph.getConfig();
@@ -523,9 +516,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testJobs() throws InterruptedException, IOException{
     // create a note and a paragraph
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
-
-    note.setName("note for run test");
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%md This is test paragraph.");
     
@@ -572,9 +563,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testRegressionZEPPELIN_527() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
-
-    note.setName("note for run test");
+    Note note = ZeppelinServer.notebook.createNote(anonymous, "note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
 

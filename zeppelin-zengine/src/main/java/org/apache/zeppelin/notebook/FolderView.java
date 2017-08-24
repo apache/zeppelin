@@ -30,8 +30,8 @@ import java.util.Map;
 public class FolderView implements NoteNameListener, FolderListener {
   // key: folderId
   private final Map<String, Folder> folders = new LinkedHashMap<>();
-  // key: a note, value: a folder where the note belongs to
-  private final Map<Note, Folder> index = new LinkedHashMap<>();
+  // key: noteId, value: a folder where the note belongs to
+  private final Map<String, Folder> index = new LinkedHashMap<>();
 
   private static final Logger logger = LoggerFactory.getLogger(FolderView.class);
 
@@ -72,8 +72,8 @@ public class FolderView implements NoteNameListener, FolderListener {
     return oldFolder;
   }
 
-  public Folder getFolderOf(Note note) {
-    return index.get(note);
+  public Folder getFolderOf(String noteId) {
+    return index.get(noteId);
   }
 
   public void putNote(Note note) {
@@ -87,7 +87,7 @@ public class FolderView implements NoteNameListener, FolderListener {
     folder.addNote(note);
 
     synchronized (index) {
-      index.put(note, folder);
+      index.put(note.getId(), folder);
     }
   }
 
@@ -145,17 +145,17 @@ public class FolderView implements NoteNameListener, FolderListener {
   }
 
   public void removeNote(Note note) {
-    if (!index.containsKey(note)) {
+    if (!index.containsKey(note.getId())) {
       return;
     }
 
-    Folder folder = index.get(note);
+    Folder folder = index.get(note.getId());
     folder.removeNote(note);
 
     removeFolderIfEmpty(folder.getId());
 
     synchronized (index) {
-      index.remove(note);
+      index.remove(note.getId());
     }
   }
 
@@ -172,8 +172,8 @@ public class FolderView implements NoteNameListener, FolderListener {
     return getFolder(folderId) != null;
   }
 
-  public boolean hasNote(Note note) {
-    return index.containsKey(note);
+  public boolean hasNote(String noteId) {
+    return index.containsKey(noteId);
   }
 
   public int countFolders() {
@@ -204,13 +204,13 @@ public class FolderView implements NoteNameListener, FolderListener {
     }
     logger.info("Note name changed: {} -> {}", oldName, note.getName());
     // New note
-    if (!index.containsKey(note)) {
+    if (!index.containsKey(note.getId())) {
       putNote(note);
     }
     // Existing note
     else {
       // If the note is in the right place, just return
-      Folder folder = index.get(note);
+      Folder folder = index.get(note.getId());
       if (folder.getId().equals(note.getFolderId())) {
         return;
       }
@@ -233,7 +233,7 @@ public class FolderView implements NoteNameListener, FolderListener {
     newFolder.merge(folder);
 
     for (Note note : folder.getNotes()) {
-      index.put(note, newFolder);
+      index.put(note.getId(), newFolder);
     }
   }
 }
