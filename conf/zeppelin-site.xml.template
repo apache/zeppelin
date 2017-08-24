@@ -173,6 +173,26 @@
 </property>
 -->
 
+<!-- Notebook storage layer using hdfs file system
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
+  <description>hdfs notebook persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.hdfs.keytab</name>
+  <value></value>
+  <description>keytab for accessing kerberized hdfs</description>
+</property>
+
+<property>
+  <name>zeppelin.hdfs.principal</name>
+  <value></value>
+  <description>principal for accessing kerberized hdfs</description>
+</property>
+-->
+
 <!-- For connecting your Zeppelin with ZeppelinHub -->
 <!--
 <property>

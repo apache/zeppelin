@@ -81,6 +81,7 @@ public class NotebookRepoSync implements NotebookRepo {
         Constructor<?> constructor = notebookStorageClass.getConstructor(
             ZeppelinConfiguration.class);
         repos.add((NotebookRepo) constructor.newInstance(conf));
+        LOG.info("Instantiate NotebookRepo: " + storageClassNames[i]);
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
           InvocationTargetException e) {
