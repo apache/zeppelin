@@ -90,22 +90,32 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
 
     // for firefox and safari
     logoutURL = logoutURL.replace('//', '//false:false@')
-    $http.post(logoutURL).error(function () {
-      // force authcBasic (if configured) to logout
-      $http.post(logoutURL).error(function () {
+
+    let config = (process.env.PROD) ? {headers: { 'X-Requested-With': 'XMLHttpRequest' }} : {}
+    $http.post(logoutURL, config).then(
+      function (response) {
+        alert('ok response status ', response.status)
+      },
+      function (errorResponse) {
         $rootScope.userName = ''
         $rootScope.ticket.principal = ''
         $rootScope.ticket.screenUsername = ''
         $rootScope.ticket.ticket = ''
         $rootScope.ticket.roles = ''
+
         BootstrapDialog.show({
           message: 'Logout Success'
         })
         setTimeout(function () {
-          window.location = baseUrlSrv.getBase()
+          let redirect = errorResponse.headers('Location')
+          if (errorResponse.status === 403 && redirect !== undefined) {
+            // Handle page redirect
+            window.location.href = redirect
+          } else {
+            window.location = baseUrlSrv.getBase()
+          }
         }, 1000)
       })
-    })
   }
 
   function search (searchTerm) {
