@@ -233,11 +233,12 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
-    commitParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
-      websocketEvents.sendNewEvent({
+    commitParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId) {
+      return websocketEvents.sendNewEvent({
         op: 'COMMIT_PARAGRAPH',
         data: {
           id: paragraphId,
+          noteId: noteId,
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
