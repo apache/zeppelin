@@ -21,9 +21,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
- * Class defining information about user.
+ * Class for storing and operating with user's recent notes.
  */
-public class UserInfo {
+public class RecentNotes {
   private static final int MAX_RECENT_SIZE = 10;
 
   /**

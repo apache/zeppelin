@@ -31,7 +31,7 @@ conf/notebook-authorization.json
 conf/shiro.ini
 conf/credentials.json
 conf/helium.json
-conf/users.json
+conf/recentNotes.json
 
 # other generated files
 spark/dependency-reduced-pom.xml

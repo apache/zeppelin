@@ -510,8 +510,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
 
-  public String getUsersInfoPath(){
-    return getRelativeDir(String.format("%s/users.json", getConfDir()));
+  public String getRecentNotesFilePath(){
+    return getRelativeDir(String.format("%s/recentNotes.json", getConfDir()));
   }
 
 

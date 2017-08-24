@@ -59,7 +59,6 @@ import org.apache.zeppelin.notebook.NotebookEventListener;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -71,7 +70,7 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.users.UsersRepo;
+import org.apache.zeppelin.users.RecentNotesRepo;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -87,8 +86,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Queues;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -138,8 +135,8 @@ public class NotebookServer extends WebSocketServlet
     return ZeppelinServer.notebook;
   }
 
-  private UsersRepo usersRepo(){
-    return ZeppelinServer.usersRepo;
+  private RecentNotesRepo recentNotesRepo(){
+    return ZeppelinServer.recentNotesRepo;
   }
 
   @Override
@@ -447,7 +444,7 @@ public class NotebookServer extends WebSocketServlet
     synchronized (noteSocketMap) {
       List<NotebookSocket> socketList = noteSocketMap.remove(noteId);
     }
-    usersRepo().removeNoteFromRecent(noteId);
+    recentNotesRepo().removeNoteFromRecent(noteId);
   }
 
   private void removeConnectionFromAllNote(NotebookSocket socket) {
@@ -860,7 +857,7 @@ public class NotebookServer extends WebSocketServlet
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, user, conn);
 
-      usersRepo().putRecentNote(fromMessage.principal, note.getId());
+      recentNotesRepo().putRecentNote(fromMessage.principal, note.getId());
       sendRecentNotes(fromMessage.principal);
     } else {
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
@@ -871,7 +868,7 @@ public class NotebookServer extends WebSocketServlet
     if (principal == null)
       return;
     multicastToUser(principal, new Message(OP.RECENT_NOTES_LIST).put("recentNotes",
-        getNotes(usersRepo().getUserInfo(principal).getRecentNotesIds())));
+        getNotes(recentNotesRepo().getRecentNotesInfo(principal).getRecentNotesIds())));
   }
 
   private void sendHomeNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1135,7 +1132,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void removeFromRecent(Message message) throws IOException {
-    usersRepo().removeNoteFromRecent(message.principal, (String) message.get("noteId"));
+    recentNotesRepo().removeNoteFromRecent(message.principal, (String) message.get("noteId"));
     sendRecentNotes(message.principal);
   }
 
@@ -1381,7 +1378,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void clearRecent(String user) throws IOException {
-    usersRepo().clearRecent(user);
+    recentNotesRepo().clearRecent(user);
     sendRecentNotes(user);
   }
 

@@ -40,56 +40,54 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
- * Class for storing user information (persistence layer).
+ * Class for storing users' recent notes (persistence layer).
  */
-public class UsersRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(UsersRepo.class);
+public class RecentNotesRepo {
+  private static final Logger LOG = LoggerFactory.getLogger(RecentNotesRepo.class);
 
   private Gson gson;
-  private File usersFile;
+  private File recentNotesFile;
 
-  private Map<String, UserInfo> usersInfo = new HashMap<>();
+  private Map<String, RecentNotes> recentNotesInfo = new HashMap<>();
 
   private boolean persistMode;
 
-  public UsersRepo() {
+  public RecentNotesRepo() {
     persistMode = false;
   }
 
-  public UsersRepo(String usersInfoPath) {
+  public RecentNotesRepo(String recentNotesFilePath) {
     persistMode = true;
-    if (usersInfoPath != null) {
-      this.usersFile = new File(usersInfoPath);
+    if (recentNotesFilePath != null) {
+      this.recentNotesFile = new File(recentNotesFilePath);
     }
 
-    GsonBuilder builder = new GsonBuilder();
-    builder.setPrettyPrinting();
-    gson = builder.create();
+    gson = new GsonBuilder().setPrettyPrinting().create();
     loadFromFile();
   }
 
-  public UserInfo getUserInfo(String user) {
-    UserInfo userInfo = usersInfo.get(user);
-    if (userInfo == null) {
-      userInfo = new UserInfo();
+  public RecentNotes getRecentNotesInfo(String user) {
+    RecentNotes recentNotes = recentNotesInfo.get(user);
+    if (recentNotes == null) {
+      recentNotes = new RecentNotes();
     }
-    return userInfo;
+    return recentNotes;
   }
 
   public void putRecentNote(String user, String noteId) throws IOException {
-    synchronized (usersInfo) {
-      if (!usersInfo.containsKey(user)) {
-        usersInfo.put(user, new UserInfo());
+    synchronized (recentNotesInfo) {
+      if (!recentNotesInfo.containsKey(user)) {
+        recentNotesInfo.put(user, new RecentNotes());
       }
-      usersInfo.get(user)
+      recentNotesInfo.get(user)
           .addRecentNote(noteId);
       saveToFileIfPersistMode();
     }
   }
 
   public void removeNoteFromRecent(String user, String noteId) throws IOException {
-    synchronized (usersInfo) {
-      usersInfo.get(user).removeNoteFromRecent(noteId);
+    synchronized (recentNotesInfo) {
+      recentNotesInfo.get(user).removeNoteFromRecent(noteId);
       saveToFileIfPersistMode();
     }
   }
@@ -100,8 +98,8 @@ public class UsersRepo {
    * @throws IOException if problems with save to file
    */
   public void removeNoteFromRecent(String noteId) throws IOException {
-    synchronized (usersInfo) {
-      for (Map.Entry<String, UserInfo> e : usersInfo.entrySet()) {
+    synchronized (recentNotesInfo) {
+      for (Map.Entry<String, RecentNotes> e : recentNotesInfo.entrySet()) {
         e.getValue().removeNoteFromRecent(noteId);
       }
       saveToFileIfPersistMode();
@@ -109,18 +107,18 @@ public class UsersRepo {
   }
 
   public void clearRecent(String user) throws IOException {
-    synchronized (usersInfo) {
-      usersInfo.get(user).clearRecent();
+    synchronized (recentNotesInfo) {
+      recentNotesInfo.get(user).clearRecent();
       saveToFileIfPersistMode();
     }
   }
 
   private void loadFromFile() {
-    LOG.info(usersFile.getAbsolutePath());
-    if (!usersFile.exists()) {
+    LOG.info(recentNotesFile.getAbsolutePath());
+    if (!recentNotesFile.exists()) {
       return;
     }
-    try (FileInputStream fis = new FileInputStream(usersFile);
+    try (FileInputStream fis = new FileInputStream(recentNotesFile);
          InputStreamReader isr = new InputStreamReader(fis)) {
       BufferedReader bufferedReader = new BufferedReader(isr);
       StringBuilder sb = new StringBuilder();
@@ -130,10 +128,10 @@ public class UsersRepo {
       }
 
       String json = sb.toString();
-      UserInfoSaving info = gson.fromJson(json, UserInfoSaving.class);
-      this.usersInfo = info.usersInfo;
+      RecentNotesSaving info = gson.fromJson(json, RecentNotesSaving.class);
+      this.recentNotesInfo = info.recentNotesInfo;
     } catch (IOException e) {
-      LOG.error("Error loading users file", e);
+      LOG.error("Error loading recent notes file", e);
       e.printStackTrace();
     }
   }
@@ -146,25 +144,25 @@ public class UsersRepo {
   private void saveToFile() throws IOException {
     String jsonString;
 
-    synchronized (usersInfo) {
-      UserInfoSaving info = new UserInfoSaving();
-      info.usersInfo = usersInfo;
+    synchronized (recentNotesInfo) {
+      RecentNotesSaving info = new RecentNotesSaving();
+      info.recentNotesInfo = recentNotesInfo;
       jsonString = gson.toJson(info);
     }
 
     try {
-      if (!usersFile.exists()) {
-        usersFile.createNewFile();
+      if (!recentNotesFile.exists()) {
+        recentNotesFile.createNewFile();
 
         Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
-        Files.setPosixFilePermissions(usersFile.toPath(), permissions);
+        Files.setPosixFilePermissions(recentNotesFile.toPath(), permissions);
       }
-      try (FileOutputStream fos = new FileOutputStream(usersFile, false);
+      try (FileOutputStream fos = new FileOutputStream(recentNotesFile, false);
            OutputStreamWriter out = new OutputStreamWriter(fos)) {
         out.append(jsonString);
       }
     } catch (IOException e) {
-      LOG.error("Error while saving users file", e);
+      LOG.error("Error while saving recent notes file", e);
     }
   }
 }
