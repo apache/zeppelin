@@ -254,3 +254,4 @@ anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
 ## Other authentication methods
 
 - [HTTP Basic Authentication using NGINX](./authentication_nginx.html)
+- [Authentication with OIDC](./authentication_oidc.html)
