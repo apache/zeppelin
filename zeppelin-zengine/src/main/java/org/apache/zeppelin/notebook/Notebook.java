@@ -112,7 +112,8 @@ public class Notebook implements NoteEventListener {
     this.jobListenerFactory = jobListenerFactory;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
-    notebookAuthorization.setNotesInfoProvider(notesInfoProvider);
+    if (this.notebookAuthorization != null)
+      this.notebookAuthorization.setNotesInfoProvider(notesInfoProvider);
 
     this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();

@@ -257,9 +257,11 @@ public class NotebookAuthorization {
     if (resourceAuthInfo == null) {
       entities = new HashSet<>();
     } else {
-      entities = resourceAuthInfo.get(permissionType);
-      if (entities == null) {
+      Set<String> tmp = resourceAuthInfo.get(permissionType);
+      if (tmp == null) {
         entities = new HashSet<>();
+      } else {
+        entities = new HashSet<>(tmp);
       }
     }
     return entities;
