@@ -54,7 +54,7 @@ public class NotebookAuthorization {
    */
   private static Map<String, Map<PermissionType, Set<String>>> authInfo = new HashMap<>();
 
-  private NotesInfoProvider notesInfoProvider;
+  private FolderView folderView;
   /*
    * contains roles for each user
    */
@@ -127,8 +127,8 @@ public class NotebookAuthorization {
     return roles;
   }
 
-  public void setNotesInfoProvider(NotesInfoProvider notesInfoProvider) {
-    this.notesInfoProvider = notesInfoProvider;
+  public void setFolderView(FolderView folderView) {
+    this.folderView = folderView;
   }
 
   private void saveToFile() {
@@ -198,7 +198,7 @@ public class NotebookAuthorization {
   }
 
   private boolean isRootFolder(String resourceId) {
-    return isFolderId(resourceId) && notesInfoProvider.getFolder(resourceId).isRoot();
+    return isFolderId(resourceId) && folderView.getFolder(resourceId).isRoot();
   }
 
   private boolean isResourceUnderFolderWithPermissions(String resourceId) {
@@ -223,7 +223,7 @@ public class NotebookAuthorization {
       PermissionType permissionType) {
     setPermissions(resourceId, entities, permissionType);
     if (isFolderId(resourceId)) {
-      Folder folder = notesInfoProvider.getFolder(resourceId);
+      Folder folder = folderView.getFolder(resourceId);
       Set<String> subFolders = folder.getChildren().keySet();
       for (String folderId: subFolders){
         setPermissionsRecursively('/' + folderId, entities, permissionType);
@@ -388,9 +388,9 @@ public class NotebookAuthorization {
 
   private String getParentFolderId(String resourceId){
     if (isFolderId(resourceId)) {
-      return notesInfoProvider.getFolder(resourceId).getParent().getId();
+      return folderView.getFolder(resourceId).getParent().getId();
     } else {
-      return notesInfoProvider.getFolderByNoteId(resourceId).getId();
+      return folderView.getFolderOf(resourceId).getId();
     }
   }
 

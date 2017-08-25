@@ -80,7 +80,6 @@ public class Notebook implements NoteEventListener {
    */
   private final Map<String, Note> notes = new LinkedHashMap<>();
   private final FolderView folders = new FolderView();
-  private final NotesInfoProvider notesInfoProvider = new NotesInfoProvider(notes, folders);
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
@@ -113,7 +112,7 @@ public class Notebook implements NoteEventListener {
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
     if (this.notebookAuthorization != null)
-      this.notebookAuthorization.setNotesInfoProvider(notesInfoProvider);
+      this.notebookAuthorization.setFolderView(folders);
 
     this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
