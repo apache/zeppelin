@@ -384,24 +384,29 @@ public class NotebookAuthorization {
   
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
+      String admin = conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE);
       if (isPublic()) {
         // add current user to owners - can be public
         Set<String> owners = getOwners(noteId);
         owners.add(subject.getUser());
+        owners.add(admin);
         setOwners(noteId, owners);
       } else {
         // add current user to owners, readers, runners, writers - private note
         Set<String> entities = getOwners(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setOwners(noteId, entities);
         entities = getReaders(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setReaders(noteId, entities);
         entities = getRunners(noteId);
         entities.add(subject.getUser());
         setRunners(noteId, entities);
         entities = getWriters(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setWriters(noteId, entities);
       }
     }
