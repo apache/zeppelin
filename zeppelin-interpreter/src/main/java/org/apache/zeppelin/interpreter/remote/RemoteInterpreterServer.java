@@ -513,6 +513,13 @@ public class RemoteInterpreterServer
         List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
         resultMessages.addAll(result.message());
 
+        for (InterpreterResultMessage msg : resultMessages) {
+          if (msg.getType() == InterpreterResult.Type.IMG) {
+            logger.debug("InterpreterResultMessage: IMAGE_DATA");
+          } else {
+            logger.debug("InterpreterResultMessage: " + msg.toString());
+          }
+        }
         // put result into resource pool
         if (resultMessages.size() > 0) {
           int lastMessageIndex = resultMessages.size() - 1;

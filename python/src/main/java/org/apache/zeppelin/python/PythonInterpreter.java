@@ -91,6 +91,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private static final int MAX_TIMEOUT_SEC = 10;
 
   private long pythonPid = 0;
+  private IPythonInterpreter iPythonInterpreter;
 
   Integer statementSetNotifier = new Integer(0);
 
@@ -219,6 +220,37 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   @Override
   public void open() {
+    // try IPythonInterpreter first. If it is not available, we will fallback to the original
+    // python interpreter implementation.
+    iPythonInterpreter = getIPythonInterpreter();
+    if (getProperty().getProperty("zeppelin.python.useIPython", "true").equals("true") &&
+      iPythonInterpreter.checkIPythonPrerequisite()) {
+      try {
+        iPythonInterpreter.open();
+        if (InterpreterContext.get() != null) {
+          InterpreterContext.get().out.write(("IPython is available, " +
+              "use IPython for PythonInterpreter\n")
+              .getBytes());
+        }
+        LOG.info("Use IPythonInterpreter to replace PythonInterpreter");
+        return;
+      } catch (Exception e) {
+        iPythonInterpreter = null;
+      }
+    }
+    // reset iPythonInterpreter to null
+    iPythonInterpreter = null;
+
+    try {
+      if (InterpreterContext.get() != null) {
+        InterpreterContext.get().out.write(("IPython is not available, " +
+            "use the native PythonInterpreter\n")
+            .getBytes());
+      }
+    } catch (IOException e) {
+      LOG.warn("Fail to write InterpreterOutput", e.getMessage());
+    }
+
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
@@ -232,8 +264,27 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
+  private IPythonInterpreter getIPythonInterpreter() {
+    LazyOpenInterpreter lazy = null;
+    IPythonInterpreter ipython = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    ipython = (IPythonInterpreter) p;
+    return ipython;
+  }
+
   @Override
   public void close() {
+    if (iPythonInterpreter != null) {
+      iPythonInterpreter.close();
+      return;
+    }
     pythonscriptRunning = false;
     pythonScriptInitialized = false;
 
@@ -319,6 +370,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+    if (iPythonInterpreter != null) {
+      return iPythonInterpreter.interpret(cmd, contextInterpreter);
+    }
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
@@ -411,6 +465,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (iPythonInterpreter != null) {
+      iPythonInterpreter.cancel(context);
+    }
     try {
       interrupt();
     } catch (IOException e) {
@@ -425,11 +482,17 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (iPythonInterpreter != null) {
+      return iPythonInterpreter.getProgress(context);
+    }
     return 0;
   }
 
   @Override
   public Scheduler getScheduler() {
+    if (iPythonInterpreter != null) {
+      return iPythonInterpreter.getScheduler();
+    }
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
         PythonInterpreter.class.getName() + this.hashCode());
   }
@@ -437,6 +500,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) {
+    if (iPythonInterpreter != null) {
+      return iPythonInterpreter.completion(buf, cursor, interpreterContext);
+    }
     return null;
   }
 

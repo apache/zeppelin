@@ -414,6 +414,12 @@ You can choose one of `shared`, `scoped` and `isolated` options wheh you configu
 Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). 
 It creates separated SparkContext per each notebook in `isolated` mode.
 
+## IPython support
+
+By default, zeppelin would use IPython in `pyspark` when IPython is available, Otherwise it would fall back to the original PySpark implementation.
+If you don't want to use IPython, then you can set `zeppelin.spark.useIPython` as `false` in interpreter setting. For the IPython features, you can refer doc
+[Python Interpreter](python.html)
+
 
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
