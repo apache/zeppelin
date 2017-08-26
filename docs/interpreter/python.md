@@ -234,7 +234,7 @@ Otherwise it can be referred to as `%python.sql`
 
 ## IPython Support
 
-IPython is more powerful than the default python interpreter with extra functionality. You can use IPython2 or IPython3 which depends on which python you set `zeppelin.python`.
+IPython is more powerful than the default python interpreter with extra functionality. You can use IPython with Python2 or Python3 which depends on which python you set `zeppelin.python`.
 
    **Pre-requests**
    
@@ -243,7 +243,7 @@ IPython is more powerful than the default python interpreter with extra function
 
 If you already install anaconda, then you just need to install `grpcio` as Jupyter is already included in anaconda.
 
-Besides the basic function of python interpreter. You can use all the IPython advanced features as you use it in Jupyter Notebook.
+In addition to all basic functions of the python interpreter, you can use all the IPython advanced features as you use it in Jupyter Notebook.
 
 e.g. 
 

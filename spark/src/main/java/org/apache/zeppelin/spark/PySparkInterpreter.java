@@ -119,7 +119,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         iPySparkInterpreter.checkIPythonPrerequisite()) {
       try {
         iPySparkInterpreter.open();
-        if (property.getProperty("zeppelin.spark.useIPython", "true").equals("true")) {
+        if (InterpreterContext.get() != null) {
           // don't print it when it is in testing, just for easy output check in test.
           InterpreterContext.get().out.write(("IPython is available, " +
               "use IPython for PySparkInterpreter\n")
@@ -140,7 +140,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             "use the native PySparkInterpreter\n")
             .getBytes());
       } catch (IOException e) {
-        LOGGER.warn("Fail to write InterpreterOutput", e.getMessage());
+        LOGGER.warn("Fail to write InterpreterOutput", e);
       }
     }
 
