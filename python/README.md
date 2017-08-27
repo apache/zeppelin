@@ -50,3 +50,22 @@ mvn -Dpython.test.exclude='' test -pl python -am
  * Matplotlib figures are displayed inline with the notebook automatically using a built-in backend for zeppelin in conjunction with a post-execute hook.
 
  * `%python.sql` support for Pandas DataFrames is optional and provided using https://github.com/yhat/pandasql if user have one installed
+
+
+# IPython Overview
+IPython interpreter for Apache Zeppelin
+
+# IPython Requirements
+You need to install the following python packages to make the IPython interpreter work.
+ * jupyter 5.x
+ * IPython
+ * ipykernel
+ * grpcio
+ 
+If you have installed anaconda, then you just need to install grpc.
+
+# IPython Architecture
+Current interpreter delegate the whole work to ipython kernel via `jupyter_client`. Zeppelin would launch a python process which host the ipython kernel.
+Zeppelin interpreter process will communicate with the python process via `grpc`. Ideally every feature works in IPython should work in Zeppelin as well.
+
+
