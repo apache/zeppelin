@@ -111,8 +111,9 @@ public class Notebook implements NoteEventListener {
     this.jobListenerFactory = jobListenerFactory;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
-    if (this.notebookAuthorization != null)
+    if (this.notebookAuthorization != null) {
       this.notebookAuthorization.setFolderView(folders);
+    }
 
     this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();

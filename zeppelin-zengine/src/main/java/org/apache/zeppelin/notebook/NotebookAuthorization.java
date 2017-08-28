@@ -188,7 +188,7 @@ public class NotebookAuthorization {
   }
 
   public void setReaders(String resourceId, Set<String> entities) {
-    checkCanSetPermissions(resourceId,entities, PermissionType.READER);
+    checkCanSetPermissions(resourceId, entities, PermissionType.READER);
     setPermissionsRecursively(resourceId, entities, PermissionType.READER);
     saveToFile();
   }
