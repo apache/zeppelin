@@ -21,7 +21,6 @@ package org.apache.zeppelin.notebook;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -40,7 +39,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -48,7 +47,10 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -56,7 +58,6 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.mockito.Mockito;
 
 public class ParagraphTest {
@@ -185,7 +186,7 @@ public class ParagraphTest {
     when(mockInterpreterOption.permissionIsSet()).thenReturn(false);
     when(mockInterpreterSetting.getStatus()).thenReturn(Status.READY);
     when(mockInterpreterSetting.getId()).thenReturn("mock_id_1");
-    when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
+    when(mockInterpreterSetting.getInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
     spyInterpreterSettingList.add(mockInterpreterSetting);
     when(mockNote.getId()).thenReturn("any_id");
     when(mockInterpreterSettingManager.getInterpreterSettings(anyString())).thenReturn(spyInterpreterSettingList);

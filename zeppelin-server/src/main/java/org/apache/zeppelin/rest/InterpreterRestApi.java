@@ -185,7 +185,7 @@ public class InterpreterRestApi {
 
       String noteId = request == null ? null : request.getNoteId();
       if (null == noteId) {
-        interpreterSettingManager.close(settingId);
+        interpreterSettingManager.close(setting);
       } else {
         interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
       }
@@ -208,7 +208,7 @@ public class InterpreterRestApi {
   @GET
   @ZeppelinApi
   public Response listInterpreter(String message) {
-    Map<String, InterpreterSetting> m = interpreterSettingManager.getInterpreterSettingTemplates();
+    Map<String, InterpreterSetting> m = interpreterSettingManager.getAvailableInterpreterSettings();
     return new JsonResponse<>(Status.OK, "", m).build();
   }
 

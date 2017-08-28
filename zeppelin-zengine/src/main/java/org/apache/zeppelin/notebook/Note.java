@@ -41,6 +41,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
@@ -123,6 +124,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   private void generateId() {
     id = IdHashes.generateId();
+  }
+
+  private String getDefaultInterpreterName() {
+    InterpreterSetting setting = interpreterSettingManager.getDefaultInterpreterSetting(getId());
+    return null != setting ? setting.getName() : StringUtils.EMPTY;
   }
 
   public boolean isPersonalizedMode() {
@@ -379,7 +385,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    */
   public Paragraph removeParagraph(String user, String paragraphId) {
     removeAllAngularObjectInParagraph(user, paragraphId);
-    interpreterSettingManager.removeResourcesBelongsToParagraph(getId(), paragraphId);
+    ResourcePoolUtils.removeResourcesBelongsToParagraph(getId(), paragraphId);
     synchronized (paragraphs) {
       Iterator<Paragraph> i = paragraphs.iterator();
       while (i.hasNext()) {
@@ -684,7 +690,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(user, id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
       angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
     }
@@ -699,7 +705,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(user, id);
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
