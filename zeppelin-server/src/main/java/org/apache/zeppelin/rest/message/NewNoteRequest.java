@@ -17,29 +17,31 @@
 
 package org.apache.zeppelin.rest.message;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.interpreter.InterpreterOption;
+
+import java.util.List;
 
 /**
- *  NewNoteRequest rest api request message
- *
+ * NewNoteRequest rest api request message
  */
 public class NewNoteRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 
-  String name;
-  List<NewParagraphRequest> paragraphs;
+  private String name;
+  private String defaultInterpreter;
+  private List<NewParagraphRequest> paragraphs;
 
-  public NewNoteRequest (){
+  public NewNoteRequest() {
 
   }
 
   public String getName() {
     return name;
+  }
+
+  public String getDefaultInterpreter() {
+    return defaultInterpreter;
   }
 
   public List<NewParagraphRequest> getParagraphs() {

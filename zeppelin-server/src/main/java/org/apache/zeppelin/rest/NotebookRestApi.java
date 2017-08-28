@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -141,7 +142,7 @@ public class NotebookRestApi {
       throw new ForbiddenException(errorMsg);
     }
   }
-  
+
   /**
    * Check if the current user is either Owner or Writer for the given note.
    */
@@ -153,7 +154,7 @@ public class NotebookRestApi {
       throw new ForbiddenException(errorMsg);
     }
   }
-  
+
   /**
    * Check if the current user can access (at least he have to be reader) the given note.
    */
@@ -165,19 +166,19 @@ public class NotebookRestApi {
       throw new ForbiddenException(errorMsg);
     }
   }
-  
+
   private void checkIfNoteIsNotNull(Note note) {
     if (note == null) {
       throw new NotFoundException("note not found");
     }
   }
-  
+
   private void checkIfParagraphIsNotNull(Paragraph paragraph) {
     if (paragraph == null) {
       throw new NotFoundException("paragraph not found");
     }
   }
-  
+
   /**
    * set note authorization information
    */
@@ -322,7 +323,7 @@ public class NotebookRestApi {
   /**
    * Create new note REST API
    *
-   * @param message - JSON with new note name
+   * @param message - JSON with new note name, default interpreter and paragraphs
    * @return JSON with new note ID
    * @throws IOException
    */
@@ -334,7 +335,31 @@ public class NotebookRestApi {
     LOG.info("Create new note by JSON {}", message);
     NewNoteRequest request = NewNoteRequest.fromJson(message);
     AuthenticationInfo subject = new AuthenticationInfo(user);
-    Note note = notebook.createNote(subject);
+    Note note;
+
+    //set default interpreter
+    if (request != null && request.getDefaultInterpreter() != null) {
+      String interpreter = request.getDefaultInterpreter();
+      InterpreterSettingManager manager = notebook.getInterpreterSettingManager();
+      List<String> interpreterIDs = manager.getDefaultInterpreterSettingList();
+      String defaultId = null;
+      for (String id : interpreterIDs) {
+        if (manager.get(id).getName().equals(interpreter)) {
+          defaultId = id;
+          break;
+        }
+      }
+      if (defaultId != null) {
+        interpreterIDs.remove(defaultId);
+        interpreterIDs.add(0, defaultId);
+        note = notebook.createNote(interpreterIDs, subject);
+      } else {
+        String errorMsg = String.format("interpreter %s not found", interpreter);
+        return new JsonResponse<>(Status.NOT_FOUND, errorMsg).build();
+      }
+    } else {
+      note = notebook.createNote(subject);
+    }
     if (request != null) {
       List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
       if (initialParagraphs != null) {
@@ -345,9 +370,13 @@ public class NotebookRestApi {
       }
     }
     note.addNewParagraph(subject); // add one paragraph to the last
-    String noteName = request.getName();
-    if (noteName.isEmpty()) {
-      noteName = "Note " + note.getId();
+
+    //deal with possible empty note name
+    String noteName = "Note " + note.getId();
+    if (request != null && request.getName() != null) {
+      if (!request.getName().isEmpty()) {
+        noteName = request.getName();
+      }
     }
 
     note.setName(noteName);

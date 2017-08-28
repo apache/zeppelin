@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -36,6 +38,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -206,5 +209,52 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testCreateNote() throws IOException {
+    // prepare data
+    Map<String, Object> data = Maps.newHashMap();
+    data.put("name", "test");
+    data.put("defaultInterpreter", "python");
+    Map<String, String> paragraph = Maps.newHashMap();
+    paragraph.put("title", "title");
+    paragraph.put("text", "text");
+    data.put("paragraphs", Lists.newArrayList(paragraph));
+
+    // request api
+    PostMethod post = httpPost("/notebook", gson.toJson(data));
+
+    // test create response
+    assertThat(post, isAllowed());
+    LOG.info("Notebook create response {}", post.getResponseBodyAsString());
+    Map<String, String> response = (Map<String, String>) gson.fromJson(post.getResponseBodyAsString(), data.getClass());
+    String noteId = response.get("body");
+    assertNotNull(noteId);
+    post.releaseConnection();
+
+    // test can get the note
+    GetMethod get = httpGet("/notebook/" + noteId);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    // test note name
+    Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
+    assertEquals(resp2Body.get("name"), data.get("name"));
+    get.releaseConnection();
+
+    // test default interpreter
+    String interpreter = ZeppelinServer.notebook.getInterpreterSettingManager().getDefaultInterpreterSetting(noteId).getName();
+    assertEquals(interpreter, data.get("defaultInterpreter"));
+
+    // test paragraphs
+    List<Paragraph> paragraphs = ZeppelinServer.notebook.getNote(noteId).getParagraphs();
+    assertEquals(paragraphs.size(), 2);
+    assertEquals(paragraphs.get(0).getTitle(), paragraph.get("title"));
+    assertEquals(paragraphs.get(0).getText(), paragraph.get("text"));
+
+    // cleanup
+    ZeppelinServer.notebook.removeNote(noteId, anonymous);
   }
 }

@@ -80,6 +80,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <tr>
       <td>Description</td>
       <td>This ```POST``` method creates a new note using the given name or default name if none given.
+      Default interpreter and initial paragraphs can also be set.
           The body field of the returned JSON contains the new note id.
       </td>
     </tr>
@@ -92,18 +93,31 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td>200</td>
     </tr>
     <tr>
+      <td>Not Found code</td>
+      <td>404</td>
+    </tr>
+    <tr>
       <td> Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON input (without paragraphs) </td>
+      <td> sample JSON input (without interpreter and paragraphs) </td>
       <td><pre>{"name": "name of new note"}</pre></td>
     </tr>
     <tr>
-      <td> sample JSON input (with initial paragraphs) </td>
+      <td> sample JSON input (with interpreter) </td>
       <td><pre>
 {
   "name": "name of new note",
+  "defaultInterpreter": "python"
+}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON input (with interpreter, initial paragraphs) </td>
+      <td><pre>
+{
+  "name": "name of new note",
+  "defaultInterpreter": "python",
   "paragraphs": [
     {
       "title": "paragraph title1",
@@ -132,7 +146,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
