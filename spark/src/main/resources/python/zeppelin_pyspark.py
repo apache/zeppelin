@@ -24,20 +24,19 @@ from pyspark.context import SparkContext
 import ast
 import warnings
 
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
-class Logger(object):
-  def __init__(self):
-    pass
-
+class Logger(StringIO):
   def write(self, message):
     intp.appendOutput(message)
-
+    StringIO.write(self, message)
   def reset(self):
-    pass
-
-  def flush(self):
     pass
 
 
