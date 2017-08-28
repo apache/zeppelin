@@ -93,9 +93,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
 
     let config = (process.env.PROD) ? {headers: { 'X-Requested-With': 'XMLHttpRequest' }} : {}
     $http.post(logoutURL, config).then(
-      function (response) {
-        alert('ok response status ', response.status)
-      },
+      function (response) { },
       function (errorResponse) {
         $rootScope.userName = ''
         $rootScope.ticket.principal = ''
