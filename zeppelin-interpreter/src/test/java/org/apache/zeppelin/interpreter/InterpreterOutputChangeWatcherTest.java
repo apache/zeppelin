@@ -21,7 +21,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +29,7 @@ import org.junit.Test;
 public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChangeListener {
   private File tmpDir;
   private File fileChanged;
-  private AtomicInteger numChanged;
+  private int numChanged;
   private InterpreterOutputChangeWatcher watcher;
 
   @Before
@@ -41,7 +40,7 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     fileChanged = null;
-    numChanged = new AtomicInteger(0);
+    numChanged = 0;
   }
 
   @After
@@ -67,7 +66,7 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
   @Test
   public void test() throws IOException, InterruptedException {
     assertNull(fileChanged);
-    assertEquals(0, numChanged.get());
+    assertEquals(0, numChanged);
 
     Thread.sleep(1000);
     // create new file
@@ -93,14 +92,14 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     }
 
     assertNotNull(fileChanged);
-    assertEquals(1, numChanged.get());
+    assertEquals(1, numChanged);
   }
 
 
   @Override
   public void fileChanged(File file) {
     fileChanged = file;
-    numChanged.incrementAndGet();
+    numChanged++;
 
     synchronized(this) {
       notify();

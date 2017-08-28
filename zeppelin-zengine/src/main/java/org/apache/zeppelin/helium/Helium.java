@@ -19,12 +19,11 @@ package org.apache.zeppelin.helium;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.resource.*;
+import org.apache.zeppelin.resource.DistributedResourcePool;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,22 +47,19 @@ public class Helium {
 
   private final HeliumBundleFactory bundleFactory;
   private final HeliumApplicationFactory applicationFactory;
-  private final InterpreterSettingManager interpreterSettingManager;
 
   public Helium(
       String heliumConfPath,
       String registryPaths,
       File registryCacheDir,
       HeliumBundleFactory bundleFactory,
-      HeliumApplicationFactory applicationFactory,
-      InterpreterSettingManager interpreterSettingManager)
+      HeliumApplicationFactory applicationFactory)
       throws IOException {
     this.heliumConfPath = heliumConfPath;
     this.registryPaths = registryPaths;
     this.registryCacheDir = registryCacheDir;
     this.bundleFactory = bundleFactory;
     this.applicationFactory = applicationFactory;
-    this.interpreterSettingManager = interpreterSettingManager;
     heliumConf = loadConf(heliumConfPath);
     allPackages = getAllPackageInfo();
   }
@@ -354,7 +350,7 @@ public class Helium {
         allResources = resourcePool.getAll();
       }
     } else {
-      allResources = interpreterSettingManager.getAllResources();
+      allResources = ResourcePoolUtils.getAllResources();
     }
 
     for (List<HeliumPackageSearchResult> pkgs : allPackages.values()) {
@@ -481,40 +477,5 @@ public class Helium {
     mixed.put("confSpec", spec);
 
     return mixed;
-  }
-
-  public ResourceSet getAllResources() {
-    return getAllResourcesExcept(null);
-  }
-
-  private ResourceSet getAllResourcesExcept(String interpreterGroupExcludsion) {
-    ResourceSet resourceSet = new ResourceSet();
-    for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
-      if (interpreterGroupExcludsion != null &&
-          intpGroup.getId().equals(interpreterGroupExcludsion)) {
-        continue;
-      }
-
-      RemoteInterpreterProcess remoteInterpreterProcess = intpGroup.getRemoteInterpreterProcess();
-      if (remoteInterpreterProcess == null) {
-        ResourcePool localPool = intpGroup.getResourcePool();
-        if (localPool != null) {
-          resourceSet.addAll(localPool.getAll());
-        }
-      } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            }
-        );
-        for (String res : resourceList) {
-          resourceSet.add(Resource.fromJson(res));
-        }
-      }
-    }
-    return resourceSet;
   }
 }

@@ -93,11 +93,13 @@ public class ZeppelinServer extends Application {
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
+  private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
-
+    this.depResolver = new DependencyResolver(
+        conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
@@ -127,26 +129,13 @@ public class ZeppelinServer extends Application {
           new File(conf.getRelativeDir("zeppelin-web/src/app/spell")));
     }
 
-    this.schedulerFactory = SchedulerFactory.singleton();
-    this.interpreterSettingManager = new InterpreterSettingManager(conf, notebookWsServer,
-        notebookWsServer, notebookWsServer);
-    this.replFactory = new InterpreterFactory(interpreterSettingManager);
-    this.notebookRepo = new NotebookRepoSync(conf);
-    this.noteSearchService = new LuceneSearch();
-    this.notebookAuthorization = NotebookAuthorization.init(conf);
-    this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
-    notebook = new Notebook(conf,
-        notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
-            noteSearchService, notebookAuthorization, credentials);
-
     ZeppelinServer.helium = new Helium(
         conf.getHeliumConfPath(),
         conf.getHeliumRegistry(),
         new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO),
             "helium-registry-cache"),
         heliumBundleFactory,
-        heliumApplicationFactory,
-        interpreterSettingManager);
+        heliumApplicationFactory);
 
     // create bundle
     try {
@@ -154,6 +143,20 @@ public class ZeppelinServer extends Application {
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
+
+    this.schedulerFactory = new SchedulerFactory();
+    this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
+        new InterpreterOption(true));
+    this.replFactory = new InterpreterFactory(conf, notebookWsServer,
+        notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
+        interpreterSettingManager);
+    this.notebookRepo = new NotebookRepoSync(conf);
+    this.noteSearchService = new LuceneSearch();
+    this.notebookAuthorization = NotebookAuthorization.init(conf);
+    this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+    notebook = new Notebook(conf,
+        notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
+            noteSearchService, notebookAuthorization, credentials);
 
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
@@ -203,7 +206,7 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterSettingManager().close();
+          notebook.getInterpreterSettingManager().shutdown();
           notebook.close();
           Thread.sleep(3000);
         } catch (Exception e) {

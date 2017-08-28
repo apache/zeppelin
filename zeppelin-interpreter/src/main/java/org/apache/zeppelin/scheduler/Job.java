@@ -41,7 +41,6 @@ public abstract class Job {
   /**
    * Job status.
    *
-   * UNKNOWN - Job is not found in remote
    * READY - Job is not running, ready to run.
    * PENDING - Job is submitted to scheduler. but not running yet
    * RUNNING - Job is running.
@@ -49,8 +48,8 @@ public abstract class Job {
    * ERROR - Job finished run. with error
    * ABORT - Job finished by abort
    */
-  public enum Status {
-    UNKNOWN, READY, PENDING, RUNNING, FINISHED, ERROR, ABORT;
+  public static enum Status {
+    READY, PENDING, RUNNING, FINISHED, ERROR, ABORT;
 
     public boolean isReady() {
       return this == READY;
@@ -71,14 +70,14 @@ public abstract class Job {
   Date dateCreated;
   Date dateStarted;
   Date dateFinished;
-  volatile Status status;
+  Status status;
 
   static Logger LOGGER = LoggerFactory.getLogger(Job.class);
 
   transient boolean aborted = false;
 
-  private volatile String errorMessage;
-  private transient volatile Throwable exception;
+  private String errorMessage;
+  private transient Throwable exception;
   private transient JobListener listener;
   private long progressUpdateIntervalMs;
 
