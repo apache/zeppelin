@@ -29,6 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
 import org.apache.zeppelin.resource.Resource;
@@ -38,6 +39,7 @@ import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -84,7 +86,6 @@ public class RemoteInterpreterEventPoller extends Thread {
 
   @Override
   public void run() {
-    Client client = null;
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     ScheduledFuture<?> appendFuture = appendService.scheduleWithFixedDelay(
         runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
@@ -100,26 +101,14 @@ public class RemoteInterpreterEventPoller extends Thread {
         continue;
       }
 
-      try {
-        client = interpreterProcess.getClient();
-      } catch (Exception e1) {
-        logger.error("Can't get RemoteInterpreterEvent", e1);
-        waitQuietly();
-        continue;
-      }
-
-      RemoteInterpreterEvent event = null;
-      boolean broken = false;
-      try {
-        event = client.getEvent();
-      } catch (TException e) {
-        broken = true;
-        logger.error("Can't get RemoteInterpreterEvent", e);
-        waitQuietly();
-        continue;
-      } finally {
-        interpreterProcess.releaseClient(client, broken);
-      }
+      RemoteInterpreterEvent event = interpreterProcess.callRemoteFunction(
+          new RemoteInterpreterProcess.RemoteFunction<RemoteInterpreterEvent>() {
+            @Override
+            public RemoteInterpreterEvent call(Client client) throws Exception {
+              return client.getEvent();
+            }
+          }
+      );
 
       AngularObjectRegistry angularObjectRegistry = interpreterGroup.getAngularObjectRegistry();
 
@@ -286,10 +275,7 @@ public class RemoteInterpreterEventPoller extends Thread {
     boolean broken = false;
     final Gson gson = new Gson();
     final String eventOwnerKey = reqResourceBody.getOwnerKey();
-    Client interpreterServerMain = null;
     try {
-      interpreterServerMain = interpreterProcess.getClient();
-      final Client eventClient = interpreterServerMain;
       if (resourceType == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
         final List<ZeppelinServerResourceParagraphRunner> remoteRunners = new LinkedList<>();
 
@@ -308,7 +294,6 @@ public class RemoteInterpreterEventPoller extends Thread {
 
               @Override
               public void onFinished(Object resultObject) {
-                boolean clientBroken = false;
                 if (resultObject != null && resultObject instanceof List) {
                   List<InterpreterContextRunner> runnerList =
                       (List<InterpreterContextRunner>) resultObject;
@@ -324,15 +309,15 @@ public class RemoteInterpreterEventPoller extends Thread {
                   resResource.setResourceType(RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS);
                   resResource.setData(remoteRunners);
 
-                  try {
-                    eventClient.onReceivedZeppelinResource(resResource.toJson());
-                  } catch (Exception e) {
-                    clientBroken = true;
-                    logger.error("Can't get RemoteInterpreterEvent", e);
-                    waitQuietly();
-                  } finally {
-                    interpreterProcess.releaseClient(eventClient, clientBroken);
-                  }
+                  interpreterProcess.callRemoteFunction(
+                      new RemoteInterpreterProcess.RemoteFunction<Void>() {
+                        @Override
+                        public Void call(Client client) throws Exception {
+                          client.onReceivedZeppelinResource(resResource.toJson());
+                          return null;
+                        }
+                      }
+                  );
                 }
               }
 
@@ -346,39 +331,32 @@ public class RemoteInterpreterEventPoller extends Thread {
             reqRunnerContext.getNoteId(), reqRunnerContext.getParagraphId(), callBackEvent);
       }
     } catch (Exception e) {
-      broken = true;
       logger.error("Can't get RemoteInterpreterEvent", e);
       waitQuietly();
 
-    } finally {
-      interpreterProcess.releaseClient(interpreterServerMain, broken);
     }
   }
 
-  private void sendResourcePoolResponseGetAll(ResourceSet resourceSet) {
-    Client client = null;
-    boolean broken = false;
-    try {
-      client = interpreterProcess.getClient();
-      List<String> resourceList = new LinkedList<>();
-      Gson gson = new Gson();
-      for (Resource r : resourceSet) {
-        resourceList.add(gson.toJson(r));
-      }
-      client.resourcePoolResponseGetAll(resourceList);
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      broken = true;
-    } finally {
-      if (client != null) {
-        interpreterProcess.releaseClient(client, broken);
-      }
-    }
+  private void sendResourcePoolResponseGetAll(final ResourceSet resourceSet) {
+    interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            List<String> resourceList = new LinkedList<>();
+            for (Resource r : resourceSet) {
+              resourceList.add(r.toJson());
+            }
+            client.resourcePoolResponseGetAll(resourceList);
+            return null;
+          }
+        }
+    );
   }
 
   private ResourceSet getAllResourcePoolExcept() {
     ResourceSet resourceSet = new ResourceSet();
-    for (InterpreterGroup intpGroup : InterpreterGroup.getAll()) {
+    for (InterpreterGroup intpGroup : interpreterGroup.getInterpreterSetting()
+        .getInterpreterSettingManager().getAllInterpreterGroup()) {
       if (intpGroup.getId().equals(interpreterGroup.getId())) {
         continue;
       }
@@ -390,115 +368,94 @@ public class RemoteInterpreterEventPoller extends Thread {
           resourceSet.addAll(localPool.getAll());
         }
       } else if (interpreterProcess.isRunning()) {
-        Client client = null;
-        boolean broken = false;
-        try {
-          client = remoteInterpreterProcess.getClient();
-          List<String> resourceList = client.resourcePoolGetAll();
-          Gson gson = new Gson();
-          for (String res : resourceList) {
-            resourceSet.add(Resource.fromJson(res));
-          }
-        } catch (Exception e) {
-          logger.error(e.getMessage(), e);
-          broken = true;
-        } finally {
-          if (client != null) {
-            intpGroup.getRemoteInterpreterProcess().releaseClient(client, broken);
-          }
+        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
+              @Override
+              public List<String> call(Client client) throws Exception {
+                return client.resourcePoolGetAll();
+              }
+            }
+        );
+        for (String res : resourceList) {
+          resourceSet.add(Resource.fromJson(res));
         }
       }
     }
     return resourceSet;
   }
 
-  private void sendResourceResponseGet(ResourceId resourceId, Object o) {
-    Client client = null;
-    boolean broken = false;
-    try {
-      client = interpreterProcess.getClient();
-      Gson gson = new Gson();
-      String rid = gson.toJson(resourceId);
-      ByteBuffer obj;
-      if (o == null) {
-        obj = ByteBuffer.allocate(0);
-      } else {
-        obj = Resource.serializeObject(o);
-      }
-      client.resourceResponseGet(rid, obj);
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      broken = true;
-    } finally {
-      if (client != null) {
-        interpreterProcess.releaseClient(client, broken);
-      }
-    }
+  private void sendResourceResponseGet(final ResourceId resourceId, final Object o) {
+    interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            String rid = resourceId.toJson();
+            ByteBuffer obj;
+            if (o == null) {
+              obj = ByteBuffer.allocate(0);
+            } else {
+              obj = Resource.serializeObject(o);
+            }
+            client.resourceResponseGet(rid, obj);
+            return null;
+          }
+        }
+    );
   }
 
-  private Object getResource(ResourceId resourceId) {
-    InterpreterGroup intpGroup = InterpreterGroup.getByInterpreterGroupId(
-        resourceId.getResourcePoolId());
+  private Object getResource(final ResourceId resourceId) {
+    InterpreterGroup intpGroup = interpreterGroup.getInterpreterSetting()
+        .getInterpreterSettingManager()
+        .getInterpreterGroupById(resourceId.getResourcePoolId());
     if (intpGroup == null) {
       return null;
     }
     RemoteInterpreterProcess remoteInterpreterProcess = intpGroup.getRemoteInterpreterProcess();
-    if (remoteInterpreterProcess == null) {
-      ResourcePool localPool = intpGroup.getResourcePool();
-      if (localPool != null) {
-        return localPool.get(resourceId.getName());
-      }
-    } else if (interpreterProcess.isRunning()) {
-      Client client = null;
-      boolean broken = false;
-      try {
-        client = remoteInterpreterProcess.getClient();
-        ByteBuffer res = client.resourceGet(
-            resourceId.getNoteId(),
-            resourceId.getParagraphId(),
-            resourceId.getName());
-        Object o = Resource.deserializeObject(res);
-        return o;
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-        broken = true;
-      } finally {
-        if (client != null) {
-          intpGroup.getRemoteInterpreterProcess().releaseClient(client, broken);
+    ByteBuffer buffer = remoteInterpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
+          @Override
+          public ByteBuffer call(Client client) throws Exception {
+            return  client.resourceGet(
+                resourceId.getNoteId(),
+                resourceId.getParagraphId(),
+                resourceId.getName());
+          }
         }
-      }
+    );
+
+    try {
+      Object o = Resource.deserializeObject(buffer);
+      return o;
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
     }
     return null;
   }
 
-  public void sendInvokeMethodResult(InvokeResourceMethodEventMessage message, Object o) {
-    Client client = null;
-    boolean broken = false;
-    try {
-      client = interpreterProcess.getClient();
-      Gson gson = new Gson();
-      String invokeMessage = gson.toJson(message);
-      ByteBuffer obj;
-      if (o == null) {
-        obj = ByteBuffer.allocate(0);
-      } else {
-        obj = Resource.serializeObject(o);
-      }
-      client.resourceResponseInvokeMethod(invokeMessage, obj);
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      broken = true;
-    } finally {
-      if (client != null) {
-        interpreterProcess.releaseClient(client, broken);
-      }
-    }
+  public void sendInvokeMethodResult(final InvokeResourceMethodEventMessage message,
+                                     final Object o) {
+    interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            String invokeMessage = message.toJson();
+            ByteBuffer obj;
+            if (o == null) {
+              obj = ByteBuffer.allocate(0);
+            } else {
+              obj = Resource.serializeObject(o);
+            }
+            client.resourceResponseInvokeMethod(invokeMessage, obj);
+            return null;
+          }
+        }
+    );
   }
 
-  private Object invokeResourceMethod(InvokeResourceMethodEventMessage message) {
-    ResourceId resourceId = message.resourceId;
-    InterpreterGroup intpGroup = InterpreterGroup.getByInterpreterGroupId(
-        resourceId.getResourcePoolId());
+  private Object invokeResourceMethod(final InvokeResourceMethodEventMessage message) {
+    final ResourceId resourceId = message.resourceId;
+    InterpreterGroup intpGroup = interpreterGroup.getInterpreterSetting()
+        .getInterpreterSettingManager().getInterpreterGroupById(resourceId.getResourcePoolId());
     if (intpGroup == null) {
       return null;
     }
@@ -529,25 +486,25 @@ public class RemoteInterpreterEventPoller extends Thread {
         return null;
       }
     } else if (interpreterProcess.isRunning()) {
-      Client client = null;
-      boolean broken = false;
+      ByteBuffer res = interpreterProcess.callRemoteFunction(
+          new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
+            @Override
+            public ByteBuffer call(Client client) throws Exception {
+              return client.resourceInvokeMethod(
+                  resourceId.getNoteId(),
+                  resourceId.getParagraphId(),
+                  resourceId.getName(),
+                  message.toJson());
+            }
+          }
+      );
+
       try {
-        client = remoteInterpreterProcess.getClient();
-        ByteBuffer res = client.resourceInvokeMethod(
-            resourceId.getNoteId(),
-            resourceId.getParagraphId(),
-            resourceId.getName(),
-            gson.toJson(message));
-        Object o = Resource.deserializeObject(res);
-        return o;
+        return Resource.deserializeObject(res);
       } catch (Exception e) {
         logger.error(e.getMessage(), e);
-        broken = true;
-      } finally {
-        if (client != null) {
-          intpGroup.getRemoteInterpreterProcess().releaseClient(client, broken);
-        }
       }
+      return null;
     }
     return null;
   }

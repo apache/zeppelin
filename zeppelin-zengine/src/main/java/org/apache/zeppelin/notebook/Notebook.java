@@ -60,7 +60,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
-import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -140,7 +139,7 @@ public class Notebook implements NoteEventListener {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
     Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(interpreterSettingManager.getDefaultInterpreterSettingList(), subject);
+      note = createNote(interpreterSettingManager.getInterpreterSettingIds(), subject);
     } else {
       note = createNote(null, subject);
     }
@@ -270,8 +269,8 @@ public class Notebook implements NoteEventListener {
         }
       }
 
-      interpreterSettingManager.setInterpreters(user, note.getId(), interpreterSettingIds);
-      // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
+      interpreterSettingManager.setInterpreterBinding(user, note.getId(), interpreterSettingIds);
+      // comment out while note.getNoteReplLoader().setInterpreterBinding(...) do the same
       // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
   }
@@ -279,7 +278,7 @@ public class Notebook implements NoteEventListener {
   List<String> getBindedInterpreterSettingsIds(String id) {
     Note note = getNote(id);
     if (note != null) {
-      return interpreterSettingManager.getInterpreters(note.getId());
+      return interpreterSettingManager.getInterpreterBinding(note.getId());
     } else {
       return new LinkedList<>();
     }
@@ -313,9 +312,10 @@ public class Notebook implements NoteEventListener {
   }
 
   public void moveNoteToTrash(String noteId) {
-    for (InterpreterSetting interpreterSetting : interpreterSettingManager
-        .getInterpreterSettings(noteId)) {
-      interpreterSettingManager.removeInterpretersForNote(interpreterSetting, "", noteId);
+    try {
+      interpreterSettingManager.setInterpreterBinding("", noteId, new ArrayList<String>());
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -339,7 +339,7 @@ public class Notebook implements NoteEventListener {
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettingManager.get()) {
       AngularObjectRegistry registry =
-          settings.getInterpreterGroup(subject.getUser(), id).getAngularObjectRegistry();
+          settings.getOrCreateInterpreterGroup(subject.getUser(), id).getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object
         for (Paragraph p : note.getParagraphs()) {
@@ -374,7 +374,7 @@ public class Notebook implements NoteEventListener {
       }
     }
 
-    ResourcePoolUtils.removeResourcesBelongsToNote(id);
+    interpreterSettingManager.removeResourcesBelongsToNote(id);
 
     fireNoteRemoveEvent(note);
 
@@ -521,7 +521,8 @@ public class Notebook implements NoteEventListener {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = interpreterSettingManager.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup(subject.getUser(), note.getId());
+        InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(subject.getUser(),
+            note.getId());
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();

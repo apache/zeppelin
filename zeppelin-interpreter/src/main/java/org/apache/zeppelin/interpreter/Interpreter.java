@@ -149,7 +149,6 @@ public abstract class Interpreter {
 
   @ZeppelinApi
   public Interpreter(Properties property) {
-    logger.debug("Properties: {}", property);
     this.property = property;
   }
 
