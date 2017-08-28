@@ -55,6 +55,8 @@ public class NotebookAuthorization {
   private static Map<String, Map<PermissionType, Set<String>>> authInfo = new HashMap<>();
 
   private FolderView folderView;
+
+  private static boolean persist = true;
   /*
    * contains roles for each user
    */
@@ -88,6 +90,9 @@ public class NotebookAuthorization {
   }
 
   private static void loadFromFile() throws IOException {
+    if (!persist) {
+      return;
+    }
     File settingFile = new File(filePath);
     LOG.info(settingFile.getAbsolutePath());
     if (!settingFile.exists()) {
@@ -131,7 +136,14 @@ public class NotebookAuthorization {
     this.folderView = folderView;
   }
 
+  public static void setPersist(boolean persist) {
+    NotebookAuthorization.persist = persist;
+  }
+
   private void saveToFile() {
+    if (!persist) {
+      return;
+    }
     String jsonString;
 
     synchronized (authInfo) {
@@ -170,53 +182,43 @@ public class NotebookAuthorization {
   }
 
   public void setOwners(String resourceId, Set<String> entities) {
-    checkCanSetPermissions(resourceId);
+    checkCanSetPermissions(resourceId, entities, PermissionType.OWNER);
     setPermissionsRecursively(resourceId, entities, PermissionType.OWNER);
     saveToFile();
   }
 
   public void setReaders(String resourceId, Set<String> entities) {
-    checkCanSetPermissions(resourceId);
+    checkCanSetPermissions(resourceId,entities, PermissionType.READER);
     setPermissionsRecursively(resourceId, entities, PermissionType.READER);
     saveToFile();
   }
 
   public void setWriters(String resourceId, Set<String> entities) {
-    checkCanSetPermissions(resourceId);
+    checkCanSetPermissions(resourceId, entities, PermissionType.WRITER);
     setPermissionsRecursively(resourceId, entities, PermissionType.WRITER);
     saveToFile();
   }
 
-  private void checkCanSetPermissions(String resourceId) {
+  private void checkCanSetPermissions(String resourceId, Set<String> entities,
+      PermissionType permissionType) {
     if (isRootFolder(resourceId)) {
       throw new RuntimeException("Cannot change permissions of the root folder");
     }
-    if (isResourceUnderFolderWithPermissions(resourceId)) {
+    if (!canSetPermissions(resourceId, entities, permissionType)) {
       throw new RuntimeException("Cannot change permissions for resource " +
           "under folder with permissions. Id = " + resourceId);
     }
   }
 
   private boolean isRootFolder(String resourceId) {
-    return isFolderId(resourceId) && folderView.getFolder(resourceId).isRoot();
+    return resourceId.equals(Folder.ROOT_FOLDER_ID);
   }
 
-  private boolean isResourceUnderFolderWithPermissions(String resourceId) {
+  private boolean canSetPermissions(String resourceId, Set<String> entities,
+      PermissionType permissionType) {
     String folderId = getParentFolderId(resourceId);
     Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
-    return !isPermissionsEmpty(resourceAuthInfo);
-  }
-
-  private boolean isPermissionsEmpty(Map<PermissionType, Set<String>> resourceAuthInfo) {
-    if (resourceAuthInfo == null || resourceAuthInfo.isEmpty()) {
-      return true;
-    }
-    for (Set<String> permissions: resourceAuthInfo.values()) {
-      if (!permissions.isEmpty()) {
-        return false;
-      }
-    }
-    return true;
+    return resourceAuthInfo == null || entities.equals(resourceAuthInfo.get(permissionType));
   }
 
   private void setPermissionsRecursively(String resourceId, Set<String> entities,
@@ -346,6 +348,24 @@ public class NotebookAuthorization {
     }).toList();
   }
 
+  private boolean isResourceUnderFolderWithPermissions(String resourceId) {
+    String folderId = getParentFolderId(resourceId);
+    Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
+    return !isPermissionsEmpty(resourceAuthInfo);
+  }
+
+  private boolean isPermissionsEmpty(Map<PermissionType, Set<String>> resourceAuthInfo) {
+    if (resourceAuthInfo == null || resourceAuthInfo.isEmpty()) {
+      return true;
+    }
+    for (Set<String> permissions: resourceAuthInfo.values()) {
+      if (!permissions.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
       if (isPublic()) {
@@ -362,36 +382,36 @@ public class NotebookAuthorization {
           }
         }
       } else {
-        if (isResourceUnderFolderWithPermissions(noteId)) {
-          String folderId = getParentFolderId(noteId);
-          Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
-          for (Set<String> entries: resourceAuthInfo.values()) {
-            if (!(entries.size() == 1 && entries.iterator().next().equals(subject.getUser()))){
-              throw new RuntimeException("Cannot set private note permissions" +
-                  " because of parent folder permissions");
-            }
-          }
-        }
         // add current user to owners, readers, writers - private note
-        Set<String> entities = getOwners(noteId);
-        entities.add(subject.getUser());
-        setOwners(noteId, entities);
-        entities = getReaders(noteId);
-        entities.add(subject.getUser());
-        setReaders(noteId, entities);
-        entities = getWriters(noteId);
-        entities.add(subject.getUser());
-        setWriters(noteId, entities);
+        Set<String> owners = getOwners(noteId);
+        owners.add(subject.getUser());
+        Set<String> writers = getWriters(noteId);
+        writers.add(subject.getUser());
+        Set<String> readers = getReaders(noteId);
+        readers.add(subject.getUser());
+
+        if (canSetPermissions(noteId, owners, PermissionType.OWNER) &&
+            canSetPermissions(noteId, writers, PermissionType.WRITER) &&
+            canSetPermissions(noteId, readers, PermissionType.READER)) {
+          setOwners(noteId, owners);
+          setReaders(noteId, owners);
+          setWriters(noteId, owners);
+        } else {
+          throw new RuntimeException("Cannot set private note permissions" +
+              " because of parent folder permissions");
+        }
       }
     }
   }
 
   private String getParentFolderId(String resourceId){
+    String ans;
     if (isFolderId(resourceId)) {
-      return folderView.getFolder(resourceId).getParent().getId();
+      ans =  folderView.getFolder(resourceId).getParent().getId();
     } else {
-      return folderView.getFolderOf(resourceId).getId();
+      ans =  folderView.getFolderOf(resourceId).getId();
     }
+    return ans.charAt(0) == '/' ? ans : '/' + ans;
   }
 
   /**
