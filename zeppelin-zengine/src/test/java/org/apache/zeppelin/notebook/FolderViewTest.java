@@ -65,6 +65,9 @@ public class FolderViewTest {
   @Mock
   InterpreterSettingManager interpreterSettingManager;
 
+  @Mock
+  NotebookAuthorization notebookAuthorization;
+
   FolderView folderView;
 
   Note note1;
@@ -97,6 +100,7 @@ public class FolderViewTest {
   @Before
   public void createNotesAndFolderMap() {
     folderView = new FolderView();
+    folderView.setNotebookAuthorization(notebookAuthorization);
 
     for (String noteName : testNoteNames) {
       Note note = createNote();
