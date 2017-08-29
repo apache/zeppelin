@@ -32,13 +32,16 @@ except ImportError:
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, Row
 
-class Logger(StringIO):
+class Logger(StringIO, object):
+  def __init__(self, *args, **kwargs):
+    if sys.version_info < (3, 0):
+      self.encoding = None
+    super(Logger, self).__init__(*args, **kwargs)
   def write(self, message):
     intp.appendOutput(message)
     StringIO.write(self, message)
   def reset(self):
     pass
-
 
 class PyZeppelinContext(dict):
   def __init__(self, zc):
