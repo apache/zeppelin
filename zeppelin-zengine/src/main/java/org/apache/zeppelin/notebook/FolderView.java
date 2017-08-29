@@ -33,7 +33,14 @@ public class FolderView implements NoteNameListener, FolderListener {
   // key: noteId, value: a folder where the note belongs to
   private final Map<String, Folder> index = new LinkedHashMap<>();
 
+  NotebookAuthorization notebookAuthorization;
+
   private static final Logger logger = LoggerFactory.getLogger(FolderView.class);
+
+  public void setNotebookAuthorization(
+      NotebookAuthorization notebookAuthorization) {
+    this.notebookAuthorization = notebookAuthorization;
+  }
 
   public Folder getFolder(String folderId) {
     String normalizedFolderId = Folder.normalizeFolderId(folderId);
@@ -65,6 +72,7 @@ public class FolderView implements NoteNameListener, FolderListener {
     logger.info("Rename {} to {}", normOldFolderId, normNewFolderId);
 
     Folder oldFolder = getFolder(normOldFolderId);
+    notebookAuthorization.mergePermissions(oldFolderId, newFolderId);
     removeFolder(oldFolderId);
 
     oldFolder.rename(normNewFolderId);
@@ -129,7 +137,7 @@ public class FolderView implements NoteNameListener, FolderListener {
       logger.info("Remove folder {}", folderId);
       Folder parent = removedFolder.getParent();
       parent.removeChild(folderId);
-      removeFolderIfEmpty(parent.getId());
+      notebookAuthorization.removeResource(notebookAuthorization.getFolderIdForAuth(folderId));
     }
   }
 

@@ -194,12 +194,16 @@ public class NotebookRestApi {
     Set<String> readers = permMap.get("readers");
     Set<String> owners = permMap.get("owners");
     Set<String> writers = permMap.get("writers");
-    notebookAuthorization.checkCanSetPermissions(resourceId, readers,
-        NotebookAuthorization.PermissionType.READER);
-    notebookAuthorization.checkCanSetPermissions(resourceId, writers,
-        NotebookAuthorization.PermissionType.WRITER);
-    notebookAuthorization.checkCanSetPermissions(resourceId, owners,
-        NotebookAuthorization.PermissionType.OWNER);
+    try {
+      notebookAuthorization.checkCanSetPermissions(resourceId, readers,
+          NotebookAuthorization.PermissionType.READER);
+      notebookAuthorization.checkCanSetPermissions(resourceId, writers,
+          NotebookAuthorization.PermissionType.WRITER);
+      notebookAuthorization.checkCanSetPermissions(resourceId, owners,
+          NotebookAuthorization.PermissionType.OWNER);
+    } catch (RuntimeException e) {
+      throw new ForbiddenException(e.getMessage());
+    }
   }
   
   /**

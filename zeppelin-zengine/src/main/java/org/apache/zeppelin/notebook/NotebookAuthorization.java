@@ -38,6 +38,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.gson.annotations.SerializedName;
@@ -181,19 +182,31 @@ public class NotebookAuthorization {
     }).toSet();
   }
 
+  private Set<String> trimEntities(Set<String> entities) {
+    return FluentIterable.from(entities).transform(new Function<String, String>() {
+      @Override
+      public String apply(String from) {
+        return from.trim();
+      }
+    }).toSet();
+  }
+
   public void setOwners(String resourceId, Set<String> entities) {
+    entities = trimEntities(entities);
     checkCanSetPermissions(resourceId, entities, PermissionType.OWNER);
     setPermissionsRecursively(resourceId, entities, PermissionType.OWNER);
     saveToFile();
   }
 
   public void setReaders(String resourceId, Set<String> entities) {
+    entities = trimEntities(entities);
     checkCanSetPermissions(resourceId,entities, PermissionType.READER);
     setPermissionsRecursively(resourceId, entities, PermissionType.READER);
     saveToFile();
   }
 
   public void setWriters(String resourceId, Set<String> entities) {
+    entities = trimEntities(entities);
     checkCanSetPermissions(resourceId, entities, PermissionType.WRITER);
     setPermissionsRecursively(resourceId, entities, PermissionType.WRITER);
     saveToFile();
@@ -205,8 +218,9 @@ public class NotebookAuthorization {
       throw new RuntimeException("Cannot change permissions of the root folder");
     }
     if (!canSetPermissions(resourceId, entities, permissionType)) {
-      throw new RuntimeException("Cannot change permissions for resource " +
-          "under folder with permissions. Id = " + resourceId);
+      throw new RuntimeException("Cannot change permissions for resource under folder " +
+          "with permissions (" + (isFolderId(resourceId) ? "folder " : "note ") +
+          resourceId + ")");
     }
   }
 
@@ -413,6 +427,38 @@ public class NotebookAuthorization {
       ans =  folderView.getFolderOf(resourceId).getId();
     }
     return ans.charAt(0) == '/' ? ans : '/' + ans;
+  }
+
+  public String getFolderIdForAuth(String folderId) {
+    if (folderId.charAt(0) =='/' || folderId.startsWith(Folder.TRASH_FOLDER_ID)) {
+      return folderId;
+    } else {
+      return '/' + folderId;
+    }
+  }
+
+  public void mergePermissions(String fromFolder, String toFolder) {
+    fromFolder = getFolderIdForAuth(fromFolder);
+    toFolder = getFolderIdForAuth(toFolder);
+    Map<PermissionType, Set<String>> fromAuthInfo = authInfo.remove(fromFolder);
+    if (isPermissionsEmpty(fromAuthInfo)) {
+      return;
+    }
+    Map<PermissionType, Set<String>> toAuthInfo = authInfo.get(toFolder);
+
+    if (toAuthInfo == null) {
+      toAuthInfo = new HashMap<>();
+    }
+    for (Map.Entry<PermissionType, Set<String>> e: fromAuthInfo.entrySet()) {
+      Set<String> from = e.getValue();
+      Set<String> to = toAuthInfo.get(e.getKey());
+      if (to == null) {
+        to = new HashSet<>();
+      }
+      to.addAll(from);
+      toAuthInfo.put(e.getKey(), to);
+    }
+    authInfo.put(toFolder, toAuthInfo);
   }
 
   /**

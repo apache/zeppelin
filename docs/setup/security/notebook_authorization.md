@@ -77,3 +77,11 @@ For example, before executing a **Read** operation, it checks if the user and th
 Zeppelin executes a [REST API call](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/rest/NotebookRestApi.java) for the notebook permission information.
 In the backend side, Zeppelin gets the user information for the connection and allows the operation if the users and groups
 associated with the current user have at least one entity that belongs to owner entities for the notebook.
+
+## Permissions for folders
+Folder with permissions is way to unite notes with the same permissions and change the permissions together.
+
+Folder without permissions (with empty permissions) continues to work like common folder.
+
+Folder with permissions sets permissions to all its content (subfolders, notes). Nobody can change permissions on content of folder with permissions. Permissions are regulated by folder.
+Only owners of the folder can change its permissions. If permissions is empty (folder without permissions), anybody can set permissions. Owners of the folder can remove all permissions, then folder becomes 'folder without permissions'.

@@ -111,6 +111,7 @@ public class Notebook implements NoteEventListener {
     this.jobListenerFactory = jobListenerFactory;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
+    folders.setNotebookAuthorization(notebookAuthorization);
     if (this.notebookAuthorization != null) {
       this.notebookAuthorization.setFolderView(folders);
     }
