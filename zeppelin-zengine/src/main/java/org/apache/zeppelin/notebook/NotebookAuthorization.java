@@ -200,7 +200,7 @@ public class NotebookAuthorization {
 
   public void setReaders(String resourceId, Set<String> entities) {
     entities = trimEntities(entities);
-    checkCanSetPermissions(resourceId,entities, PermissionType.READER);
+    checkCanSetPermissions(resourceId, entities, PermissionType.READER);
     setPermissionsRecursively(resourceId, entities, PermissionType.READER);
     saveToFile();
   }
@@ -430,7 +430,7 @@ public class NotebookAuthorization {
   }
 
   public String getFolderIdForAuth(String folderId) {
-    if (folderId.charAt(0) =='/' || folderId.startsWith(Folder.TRASH_FOLDER_ID)) {
+    if (folderId.charAt(0) == '/' || folderId.startsWith(Folder.TRASH_FOLDER_ID)) {
       return folderId;
     } else {
       return '/' + folderId;
