@@ -188,4 +188,18 @@ public class NotebookAuthorizationTest {
     notebookAuthorization.setReaders(noteId, new HashSet<String>());
   }
 
+  @Test
+  public void testCanSetPermissionsAfterSetAndRemoveParentFolderPermissions() throws Exception {
+    Note note = addNote("/f/a");
+    String folderName = "/f";
+    addNote(folderName + "/a");
+    Set<String> entities = new HashSet<>();
+    entities.add("user1");
+    notebookAuthorization.setOwners(folderName, entities);
+    notebookAuthorization.setOwners(folderName, new HashSet<String>());
+    Set<String> entities2 = new HashSet<>();
+    entities.add("user2");
+    notebookAuthorization.setOwners(note.getId(), entities2);
+  }
+
 }

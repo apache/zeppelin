@@ -188,7 +188,7 @@ public class NotebookAuthorization {
   }
 
   public void setReaders(String resourceId, Set<String> entities) {
-    checkCanSetPermissions(resourceId, entities, PermissionType.READER);
+    checkCanSetPermissions(resourceId,entities, PermissionType.READER);
     setPermissionsRecursively(resourceId, entities, PermissionType.READER);
     saveToFile();
   }
@@ -199,7 +199,7 @@ public class NotebookAuthorization {
     saveToFile();
   }
 
-  private void checkCanSetPermissions(String resourceId, Set<String> entities,
+  public void checkCanSetPermissions(String resourceId, Set<String> entities,
       PermissionType permissionType) {
     if (isRootFolder(resourceId)) {
       throw new RuntimeException("Cannot change permissions of the root folder");
@@ -218,7 +218,8 @@ public class NotebookAuthorization {
       PermissionType permissionType) {
     String folderId = getParentFolderId(resourceId);
     Map<PermissionType, Set<String>> resourceAuthInfo = authInfo.get(folderId);
-    return resourceAuthInfo == null || entities.equals(resourceAuthInfo.get(permissionType));
+    return resourceAuthInfo == null || isPermissionsEmpty(resourceAuthInfo)
+        || entities.equals(resourceAuthInfo.get(permissionType));
   }
 
   private void setPermissionsRecursively(String resourceId, Set<String> entities,

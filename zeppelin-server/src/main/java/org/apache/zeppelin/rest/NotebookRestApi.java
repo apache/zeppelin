@@ -189,6 +189,18 @@ public class NotebookRestApi {
       throw new NotFoundException("paragraph not found");
     }
   }
+
+  private void canSetPermissions(String resourceId, Map<String, Set<String>> permMap) {
+    Set<String> readers = permMap.get("readers");
+    Set<String> owners = permMap.get("owners");
+    Set<String> writers = permMap.get("writers");
+    notebookAuthorization.checkCanSetPermissions(resourceId, readers,
+        NotebookAuthorization.PermissionType.READER);
+    notebookAuthorization.checkCanSetPermissions(resourceId, writers,
+        NotebookAuthorization.PermissionType.WRITER);
+    notebookAuthorization.checkCanSetPermissions(resourceId, owners,
+        NotebookAuthorization.PermissionType.OWNER);
+  }
   
   /**
    * set note authorization information
@@ -203,16 +215,16 @@ public class NotebookRestApi {
     checkIfUserIsOwner(noteId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
 
-    HashMap<String, HashSet<String>> permMap =
-        gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {}.getType());
+    Map<String, Set<String>> permMap =
+        gson.fromJson(req, new TypeToken<Map<String, Set<String>>>() {}.getType());
+    canSetPermissions(noteId, permMap);
     Note note = notebook.getNote(noteId);
 
     LOG.info("Set permissions {} {} {} {} {}", noteId, SecurityUtils.getPrincipal(),
         permMap.get("owners"), permMap.get("readers"), permMap.get("writers"));
-
-    HashSet<String> readers = permMap.get("readers");
-    HashSet<String> owners = permMap.get("owners");
-    HashSet<String> writers = permMap.get("writers");
+    Set<String> readers = permMap.get("readers");
+    Set<String> owners = permMap.get("owners");
+    Set<String> writers = permMap.get("writers");
     // Set readers, if writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (owners.isEmpty()) {
@@ -259,7 +271,7 @@ public class NotebookRestApi {
 
     Map<String, Set<String>> permMap =
         gson.fromJson(req, new TypeToken<Map<String, Set<String>>>() {}.getType());
-
+    canSetPermissions(folderId, permMap);
     LOG.info("Set permissions {} {} {} {} {}", folderId, SecurityUtils.getPrincipal(),
         permMap.get("owners"), permMap.get("readers"), permMap.get("writers"));
 
