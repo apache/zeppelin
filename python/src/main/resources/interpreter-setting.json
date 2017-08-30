@@ -17,6 +17,29 @@
         "defaultValue": "1000",
         "description": "Max number of dataframe rows to display.",
         "type": "number"
+      },
+      "zeppelin.python.useIPython": {
+        "propertyName": "zeppelin.python.useIPython",
+        "defaultValue": true,
+        "description": "whether use IPython when it is available",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  },
+  {
+    "group": "python",
+    "name": "ipython",
+    "className": "org.apache.zeppelin.python.IPythonInterpreter",
+    "properties": {
+      "zeppelin.ipython.launch.timeout": {
+        "propertyName": "zeppelin.ipython.launch.timeout",
+        "defaultValue": "30000",
+        "description": "time out for ipython launch",
+        "type": "number"
       }
     },
     "editor": {

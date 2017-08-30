@@ -51,7 +51,8 @@ public class NotebookAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookAuthorization.class);
   private static NotebookAuthorization instance = null;
   /*
-   * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "writers": ["u1"] },  "note2": ... } }
+   * { "note1": { "owners": ["u1"], "readers": ["u1", "u2"], "runners": ["u2"],
+   * "writers": ["u1"] },  "note2": ... } }
    */
   private static Map<String, Map<PermissionType, Set<String>>> authInfo = new HashMap<>();
 
@@ -212,6 +213,13 @@ public class NotebookAuthorization {
     saveToFile();
   }
 
+  public void setRunners(String resourceId, Set<String> entities) {
+    entities = trimEntities(entities);
+    checkCanSetPermissions(resourceId, entities, PermissionType.RUNNER);
+    setPermissionsRecursively(resourceId, entities, PermissionType.RUNNER);
+    saveToFile();
+  }
+
   public void checkCanSetPermissions(String resourceId, Set<String> entities,
       PermissionType permissionType) {
     if (isRootFolder(resourceId)) {
@@ -300,6 +308,10 @@ public class NotebookAuthorization {
     return getPermissions(resourceId, PermissionType.WRITER);
   }
 
+  public Set<String> getRunners(String resourceId) {
+    return getPermissions(resourceId, PermissionType.RUNNER);
+  }
+
   public boolean isOwner(String resourceId, Set<String> entities) {
     return isMember(entities, getOwners(resourceId));
   }
@@ -310,8 +322,15 @@ public class NotebookAuthorization {
 
   public boolean isReader(String resourceId, Set<String> entities) {
     return isMember(entities, getReaders(resourceId)) ||
-            isMember(entities, getOwners(resourceId)) ||
-            isMember(entities, getWriters(resourceId));
+        isMember(entities, getOwners(resourceId)) ||
+        isMember(entities, getWriters(resourceId)) ||
+        isMember(entities, getRunners(resourceId));
+  }
+
+  public boolean isRunner(String noteId, Set<String> entities) {
+    return isMember(entities, getRunners(noteId)) ||
+        isMember(entities, getWriters(noteId)) ||
+        isMember(entities, getOwners(noteId));
   }
 
   // return true if b is empty or if (a intersection b) is non-empty
@@ -343,6 +362,14 @@ public class NotebookAuthorization {
       return true;
     }
     return userAndRoles != null && isReader(resourceId, userAndRoles);
+  }
+
+  public boolean hasRunAuthorization(Set<String> userAndRoles, String noteId) {
+    if (conf.isAnonymousAllowed()) {
+      LOG.debug("Zeppelin runs in anonymous mode, everybody is runner");
+      return true;
+    }
+    return userAndRoles != null && isRunner(noteId, userAndRoles);
   }
 
   public void removeResource(String resourceId) {
@@ -397,20 +424,24 @@ public class NotebookAuthorization {
           }
         }
       } else {
-        // add current user to owners, readers, writers - private note
+        // add current user to owners, readers, runners, writers - private note
         Set<String> owners = getOwners(noteId);
         owners.add(subject.getUser());
         Set<String> writers = getWriters(noteId);
         writers.add(subject.getUser());
         Set<String> readers = getReaders(noteId);
         readers.add(subject.getUser());
+        Set<String> runners = getRunners(noteId);
+        runners.add(subject.getUser());
 
         if (canSetPermissions(noteId, owners, PermissionType.OWNER) &&
             canSetPermissions(noteId, writers, PermissionType.WRITER) &&
-            canSetPermissions(noteId, readers, PermissionType.READER)) {
+            canSetPermissions(noteId, readers, PermissionType.READER) &&
+            canSetPermissions(noteId, runners, PermissionType.RUNNER)) {
           setOwners(noteId, owners);
           setReaders(noteId, owners);
           setWriters(noteId, owners);
+          setRunners(noteId, owners);
         } else {
           throw new RuntimeException("Cannot set private note permissions" +
               " because of parent folder permissions");
@@ -467,6 +498,7 @@ public class NotebookAuthorization {
   public enum PermissionType {
     @SerializedName("readers") READER,
     @SerializedName("writers") WRITER,
-    @SerializedName("owners") OWNER
+    @SerializedName("owners") OWNER,
+    @SerializedName("runners") RUNNER
   }
 }

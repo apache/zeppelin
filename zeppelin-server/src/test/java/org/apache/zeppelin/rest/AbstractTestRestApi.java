@@ -211,6 +211,7 @@ public abstract class AbstractTestRestApi {
         // set spark home for pyspark
         sparkProperties.put("spark.home",
             new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.TEXTAREA.getValue()));
+        sparkProperties.put("zeppelin.spark.useIPython",  new InterpreterProperty("zeppelin.spark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
 
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
@@ -233,6 +234,8 @@ public abstract class AbstractTestRestApi {
               new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.TEXTAREA.getValue()));
           sparkProperties.put("zeppelin.spark.useHiveContext",
               new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
+          sparkProperties.put("zeppelin.spark.useIPython",  new InterpreterProperty("zeppelin.spark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
+
           pySpark = true;
           sparkR = true;
         }

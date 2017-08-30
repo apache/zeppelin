@@ -106,6 +106,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
 
   public Note() {
+    generateId();
   }
 
   public Note(NotebookRepo repo, InterpreterFactory factory,
