@@ -768,7 +768,7 @@ public class NotebookServer extends WebSocketServlet
    */
   private boolean hasParagraphRunnerPermission(NotebookSocket conn,
                                                Notebook notebook, String noteId,
-                                               HashSet<String> userAndRoles,
+                                               Set<String> userAndRoles,
                                                String principal, String op)
       throws IOException {
 

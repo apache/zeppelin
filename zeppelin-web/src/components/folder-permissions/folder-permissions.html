@@ -34,6 +34,11 @@ limitations under the License.
               <option is-select2="false" ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
             </select>
           </p>
+          <p><span class="runners">Runners </span>
+            <select id="selectRunners" multiple="multiple">
+              <option is-select2="false" ng-repeat="runners in permissions.readers" selected="selected">{{runners}}</option>
+            </select>
+          </p>
           <p><span class="readers">Readers </span>
             <select id="selectReaders" multiple="multiple">
               <option is-select2="false" ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>

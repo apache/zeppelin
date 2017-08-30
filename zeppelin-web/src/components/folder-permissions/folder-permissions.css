@@ -24,7 +24,7 @@
   border: 1px solid #E5E5E5;
 }
 
-.owners, .readers, .writers {
+.owners, .readers, .writers, .runners {
   width:60px;
   display: inline-block;
 }

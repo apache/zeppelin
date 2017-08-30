@@ -99,6 +99,7 @@ function folderPermissionsController($scope, $rootScope, $http, baseUrlSrv) {
         angular.element('#selectOwners').select2(selectJson)
         angular.element('#selectReaders').select2(selectJson)
         angular.element('#selectWriters').select2(selectJson)
+        angular.element('#selectRunners').select2(selectJson)
       })
       .error(function (data, status, headers, config) {
         if (status !== 0) {
@@ -114,7 +115,8 @@ function folderPermissionsController($scope, $rootScope, $http, baseUrlSrv) {
     convertPermissionsToArray()
     if (isPermissionsListEmpty($scope.permissions.owners)) {
       if (isPermissionsListEmpty($scope.permissions.writers) &&
-        isPermissionsListEmpty($scope.permissions.readers)) {
+        isPermissionsListEmpty($scope.permissions.readers) &&
+        isPermissionsListEmpty($scope.permissions.runners)) {
         $scope.setPermissions()
       } else {
         BootstrapDialog.show({
@@ -185,6 +187,7 @@ function folderPermissionsController($scope, $rootScope, $http, baseUrlSrv) {
     $scope.permissions.owners = angular.element('#selectOwners').val()
     $scope.permissions.readers = angular.element('#selectReaders').val()
     $scope.permissions.writers = angular.element('#selectWriters').val()
+    $scope.permissions.runners = angular.element('#selectRunners').val()
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove()
   }
 
@@ -197,7 +200,8 @@ function folderPermissionsController($scope, $rootScope, $http, baseUrlSrv) {
           closable: true,
           title: 'Permissions Saved Successfully',
           message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
-          $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+          $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers +
+          '\n\n' + ' Runners  : ' + $scope.permissions.runners
         })
         angular.element('#folderPermissionsModal').modal('hide')
       })

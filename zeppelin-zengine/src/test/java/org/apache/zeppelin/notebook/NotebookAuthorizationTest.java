@@ -129,6 +129,7 @@ public class NotebookAuthorizationTest {
       notebookAuthorization.setOwners(folderName, entities);
       notebookAuthorization.setWriters(folderName, entities);
       notebookAuthorization.setReaders(folderName, entities);
+      notebookAuthorization.setRunners(folderName, entities);
       Note note = addNote("/f/b");
       notebookAuthorization.setNewNotePermissions(note.getId(), new AuthenticationInfo("user1"));
     } finally {

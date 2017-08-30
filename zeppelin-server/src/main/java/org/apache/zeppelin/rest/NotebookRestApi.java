@@ -117,6 +117,7 @@ public class NotebookRestApi {
     permissionsMap.put("owners", notebookAuthorization.getOwners(folderId));
     permissionsMap.put("readers", notebookAuthorization.getReaders(folderId));
     permissionsMap.put("writers", notebookAuthorization.getWriters(folderId));
+    permissionsMap.put("runners", notebookAuthorization.getRunners(folderId));
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
   }
 
@@ -207,6 +208,7 @@ public class NotebookRestApi {
     Set<String> readers = permMap.get("readers");
     Set<String> owners = permMap.get("owners");
     Set<String> writers = permMap.get("writers");
+    Set<String> runners = permMap.get("runners");
     try {
       notebookAuthorization.checkCanSetPermissions(resourceId, readers,
           NotebookAuthorization.PermissionType.READER);
@@ -214,6 +216,8 @@ public class NotebookRestApi {
           NotebookAuthorization.PermissionType.WRITER);
       notebookAuthorization.checkCanSetPermissions(resourceId, owners,
           NotebookAuthorization.PermissionType.OWNER);
+      notebookAuthorization.checkCanSetPermissions(resourceId, runners,
+          NotebookAuthorization.PermissionType.RUNNER);
     } catch (RuntimeException e) {
       throw new ForbiddenException(e.getMessage());
     }
@@ -237,8 +241,9 @@ public class NotebookRestApi {
     canSetPermissions(noteId, permMap);
     Note note = notebook.getNote(noteId);
 
-    LOG.info("Set permissions {} {} {} {} {} {}", noteId, SecurityUtils.getPrincipal(), permMap.get("owners"),
-        permMap.get("readers"), permMap.get("runners"), permMap.get("writers"));
+    LOG.info("Set permissions {} {} {} {} {} {}", noteId, SecurityUtils.getPrincipal(),
+        permMap.get("owners"), permMap.get("readers"), permMap.get("runners"),
+        permMap.get("writers"));
     Set<String> readers = permMap.get("readers");
     Set<String> runners = permMap.get("runners");
     Set<String> owners = permMap.get("owners");
@@ -311,18 +316,22 @@ public class NotebookRestApi {
     Map<String, Set<String>> permMap =
         gson.fromJson(req, new TypeToken<Map<String, Set<String>>>() {}.getType());
     canSetPermissions(folderId, permMap);
-    LOG.info("Set permissions {} {} {} {} {}", folderId, SecurityUtils.getPrincipal(),
-        permMap.get("owners"), permMap.get("readers"), permMap.get("writers"));
+    LOG.info("Set permissions {} {} {} {} {} {}", folderId, SecurityUtils.getPrincipal(),
+        permMap.get("owners"), permMap.get("readers"), permMap.get("writers"),
+        permMap.get("runners"));
 
     Set<String> readers = permMap.get("readers");
     Set<String> owners = permMap.get("owners");
     Set<String> writers = permMap.get("writers");
+    Set<String> runners = permMap.get("runners");
 
     notebookAuthorization.setReaders(folderId, readers);
     notebookAuthorization.setWriters(folderId, writers);
     notebookAuthorization.setOwners(folderId, owners);
-    LOG.debug("After set permissions {} {} {}", notebookAuthorization.getOwners(folderId),
-        notebookAuthorization.getReaders(folderId), notebookAuthorization.getWriters(folderId));
+    notebookAuthorization.setRunners(folderId, runners);
+    LOG.debug("After set permissions {} {} {} {}", notebookAuthorization.getOwners(folderId),
+        notebookAuthorization.getReaders(folderId), notebookAuthorization.getWriters(folderId),
+        notebookAuthorization.getRunners(folderId));
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     notebookServer.broadcastFolderPermissions(folderId, subject);
     notebookServer.broadcastNoteList(subject, userAndRoles);
