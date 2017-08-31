@@ -38,6 +38,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -64,7 +65,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
   }
 
   @Before
-  public void beforeTest() throws IOException {
+  public void beforeTest() throws IOException, InterpreterException {
     cmdHistory = "";
 
     // python interpreter
@@ -96,20 +97,20 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
   }
 
   @Test
-  public void testInterpret() throws InterruptedException, IOException {
+  public void testInterpret() throws InterruptedException, IOException, InterpreterException {
     InterpreterResult result = pythonInterpreter.interpret("print (\"hi\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   @Test
-  public void testInterpretInvalidSyntax() throws IOException {
+  public void testInterpretInvalidSyntax() throws IOException, InterpreterException {
     InterpreterResult result = pythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\n", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("hi\nhi\nhi"));
  }
 
   @Test
-  public void testRedefinitionZeppelinContext() {
+  public void testRedefinitionZeppelinContext() throws InterpreterException {
     String pyRedefinitionCode = "z = 1\n";
     String pyRestoreCode = "z = __zeppelin__\n";
     String pyValidCode = "z.input(\"test\")\n";

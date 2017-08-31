@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.remote;
+package org.apache.zeppelin.interpreter.launcher;
 
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
- *
+ * Component to Launch interpreter process.
  */
-public class RemoteInterpreterContextRunner extends InterpreterContextRunner {
+public abstract class InterpreterLauncher {
 
-  public RemoteInterpreterContextRunner(String noteId, String paragraphId) {
-    super(noteId, paragraphId);
+  protected ZeppelinConfiguration zConf;
+  protected Properties properties;
+
+  public InterpreterLauncher(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
   }
 
-  @Override
-  public void run() {
-    // this class should be used only for gson deserialize abstract class
-    // code should not reach here
-    throw new RuntimeException("Assert");
-  }
+  public abstract  InterpreterClient launch(InterpreterLaunchContext context) throws IOException;
 }

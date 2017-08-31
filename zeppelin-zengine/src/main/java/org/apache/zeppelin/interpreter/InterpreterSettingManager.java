@@ -737,11 +737,12 @@ public class InterpreterSettingManager {
   }
 
   /**
-   * Change interpreter property and restart
+   * Change interpreter properties and restart
    */
   public void setPropertyAndRestart(String id, InterpreterOption option,
                                     Map<String, InterpreterProperty> properties,
-                                    List<Dependency> dependencies) throws IOException {
+                                    List<Dependency> dependencies)
+      throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpSetting = interpreterSettings.get(id);
       if (intpSetting != null) {
@@ -754,7 +755,7 @@ public class InterpreterSettingManager {
           saveToFile();
         } catch (Exception e) {
           loadFromFile();
-          throw e;
+          throw new IOException(e);
         }
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
@@ -763,7 +764,7 @@ public class InterpreterSettingManager {
   }
 
   // restart in note page
-  public void restart(String settingId, String noteId, String user) {
+  public void restart(String settingId, String noteId, String user) throws InterpreterException {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
     synchronized (interpreterSettings) {
@@ -787,7 +788,7 @@ public class InterpreterSettingManager {
     }
   }
 
-  public void restart(String id) {
+  public void restart(String id) throws InterpreterException {
     restart(id, "", "anonymous");
   }
 

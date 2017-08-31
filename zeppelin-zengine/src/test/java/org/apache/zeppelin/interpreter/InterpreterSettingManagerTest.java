@@ -96,7 +96,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testCreateUpdateRemoveSetting() throws IOException {
+  public void testCreateUpdateRemoveSetting() throws IOException, InterpreterException {
     // create new interpreter setting
     InterpreterOption option = new InterpreterOption();
     option.setPerNote("scoped");

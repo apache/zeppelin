@@ -37,7 +37,7 @@ public class PythonCondaInterpreterTest {
   private PythonInterpreter python;
 
   @Before
-  public void setUp() {
+  public void setUp() throws InterpreterException {
     conda = spy(new PythonCondaInterpreter(new Properties()));
     python = mock(PythonInterpreter.class);
 
@@ -57,7 +57,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testListEnv() throws IOException, InterruptedException {
+  public void testListEnv() throws IOException, InterruptedException, InterpreterException {
     setMockCondaEnvList();
 
     // list available env
@@ -72,7 +72,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testActivateEnv() throws IOException, InterruptedException {
+  public void testActivateEnv() throws IOException, InterruptedException, InterpreterException {
     setMockCondaEnvList();
     String envname = "env1";
     InterpreterContext context = getInterpreterContext();
@@ -84,7 +84,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testDeactivate() {
+  public void testDeactivate() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     conda.interpret("deactivate", context);
     verify(python, times(1)).open();
