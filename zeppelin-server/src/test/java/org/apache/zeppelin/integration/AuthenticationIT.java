@@ -258,6 +258,8 @@ public class AuthenticationIT extends AbstractZeppelinIT {
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath(".//*[@id='selectReaders']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
+      pollingWait(By.xpath(".//*[@id='selectRunners']/following::span//input"),
+              MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
