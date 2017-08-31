@@ -113,6 +113,16 @@ abstract public class AbstractZeppelinIT {
     block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
   }
 
+  protected void createNewNote(String name) {
+    clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+        " note')]"));
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteCreateModal")));
+    driver.findElement(By.id("noteName")).sendKeys(name);
+    clickAndWait(By.id("createNoteButton"));
+    block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
+  }
+
   protected void deleteTestNotebook(final WebDriver driver) {
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
     driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
@@ -125,6 +135,11 @@ abstract public class AbstractZeppelinIT {
 
   protected void clickAndWait(final By locator) {
     pollingWait(locator, MAX_IMPLICIT_WAIT).click();
+    ZeppelinITUtils.sleep(1000, true);
+  }
+
+  protected void clickAndWait(final WebElement element) {
+    element.click();
     ZeppelinITUtils.sleep(1000, true);
   }
 

@@ -16,12 +16,14 @@
  */
 package org.apache.zeppelin.integration;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +41,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -316,6 +319,130 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       handleException("Exception in AuthenticationIT while testGroupPermission ", e);
     }
+  }
+
+  @Test
+  public void testFolderPermissionsPropagation() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    AuthenticationIT authenticationIT = new AuthenticationIT();
+    authenticationIT.authenticationUser("admin", "password1");
+    String folderName = "f";
+    String subfolderName = "sub";
+    createNewNote('/' + folderName + '/' + subfolderName + "/note");
+    String testingNoteUrl = driver.getCurrentUrl();
+    driver.navigate().back();
+
+    //find folder element
+    String noteXPath = "//ul[@id='notebook-names']/div/li/div/div/div//a";
+    List<WebElement> elements = driver.findElements(By.xpath(noteXPath));
+    WebElement needed = null;
+    for (WebElement elem: elements) {
+      if (elem.getText().equals(folderName)) {
+        needed = elem;
+        break;
+      }
+    }
+    assertNotNull("Cannot find folder /" + folderName, needed);
+    //move mouse (for show permissions button will shown)
+    Actions action = new Actions(driver);
+    action.moveToElement(needed);
+    action.perform();
+
+    //add some permissions
+    clickAndWait(By.xpath(noteXPath + "//..//a//i[@uib-tooltip='Show permissions']"));
+    pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys("admin ");
+    pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys("admin ");
+    pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
+        .sendKeys(Keys.ENTER);
+    pollingWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Permissions Saved ')]" +
+            "//div[@class='modal-footer']//button[contains(.,'OK')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+    Thread.sleep(1000);
+    clickAndWait(needed);
+
+    //find subfolder element
+    elements = driver.findElements(By.xpath(noteXPath));
+    needed = null;
+    for (WebElement elem: elements) {
+      String s = elem.getText();
+      if (elem.getText().equals(subfolderName)) {
+        needed = elem;
+        break;
+      }
+    }
+    assertNotNull("Cannot find folder /" + folderName + '/' + subfolderName, needed);
+    //move mouse (for show permissions button will shown)
+    action.moveToElement(needed);
+    action.perform();
+    Thread.sleep(1000);
+    clickAndWait(By.xpath("//ul[@id='notebook-names']/div/li/div/div/div/ul/li/div/div/div/a//i[@uib-tooltip='Show permissions']"));
+
+    //check subfolder has the same permissions as folder
+    List<String> owners = new ArrayList<>();
+    List<WebElement> users = driver.findElements(By.xpath("//select[@id='selectOwners']//option"));
+    for (WebElement e: users) {
+      owners.add(e.getText());
+    }
+    assertTrue("Wrong owners on subfolder", owners.size() == 1 && owners.get(0).equals("admin"));
+    List<String> writers = new ArrayList<>();
+    users = driver.findElements(By.xpath("//select[@id='selectWriters']//option"));
+    for (WebElement e: users) {
+      writers.add(e.getText());
+    }
+    assertTrue("Wrong writers on subfolder", writers.size() == 1 && writers.get(0).equals("admin"));
+
+    //try add perm to sub
+    pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys("user1 ");
+    pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
+        .sendKeys(Keys.ENTER);
+    WebElement buttonCancel = driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Cannot change permissions ')]" +
+            "//div[@class='modal-footer']//button[contains(.,'Cancel')]"));
+    assertTrue(buttonCancel != null);
+    buttonCancel.click();
+    pollingWait(By.xpath("//div[@class='modal-dialog']//button[contains(.,'Cancel')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+    pollingWait(By.xpath("//div[@class='modal-dialog']//div[@class='modal-footer']//button[contains(.,'OK')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+
+    //check note permissions
+    driver.navigate().to(testingNoteUrl);
+    Thread.sleep(1000);
+    pollingWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+    owners = new ArrayList<>();
+    users = driver.findElements(By.xpath("//select[@id='selectOwners']//option"));
+    for (WebElement e: users) {
+      String s = e.getText().trim();
+      if (!s.equals("")) {
+        owners.add(s);
+      }
+    }
+
+    assertTrue("Wrong owners on note", owners.size() == 1 && owners.get(0).equals("admin"));
+    writers = new ArrayList<>();
+    users = driver.findElements(By.xpath("//select[@id='selectWriters']//option"));
+    for (WebElement e: users) {
+      String s = e.getText().trim();
+      if (!s.equals("")) {
+        writers.add(s);
+      }
+    }
+    assertTrue("Wrong writers on note", writers.size() == 1 && writers.get(0).equals("admin"));
+
+    //try add perm to note
+    pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys("user1 ");
+    pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
+        .sendKeys(Keys.ENTER);
+    buttonCancel = driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'Cannot change permissions ')]" +
+        "//div[@class='modal-footer']//button[contains(.,'Cancel')]"));
+    assertTrue(buttonCancel != null);
+    buttonCancel.click();
   }
 
 }
