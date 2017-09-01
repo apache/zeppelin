@@ -307,10 +307,9 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
-          .getDefaultInterpreterSettingList();
-      for (String setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting);
+      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
+      for (InterpreterSetting setting : settingList) {
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);

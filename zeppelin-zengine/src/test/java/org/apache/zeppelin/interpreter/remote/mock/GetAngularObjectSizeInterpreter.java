@@ -14,41 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.interpreter.remote.mock;
 
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-import java.util.List;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+
 import java.util.Properties;
 
+public class GetAngularObjectSizeInterpreter extends Interpreter {
 
-public class MockInterpreterEnv extends Interpreter {
-
-  public MockInterpreterEnv(Properties property) {
+  public GetAngularObjectSizeInterpreter(Properties property) {
     super(property);
   }
 
   @Override
   public void open() {
+
   }
 
   @Override
   public void close() {
+
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    String[] cmd = st.split(" ");
-    if (cmd[0].equals("getEnv")) {
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, System.getenv(cmd[1]));
-    } else if (cmd[0].equals("getProperty")){
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, System.getProperty(cmd[1]));
-    } else {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, cmd[0]);
-    }
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+        "" + context.getAngularObjectRegistry().getRegistry().size());
   }
 
   @Override
@@ -65,16 +60,4 @@ public class MockInterpreterEnv extends Interpreter {
   public int getProgress(InterpreterContext context) {
     return 0;
   }
-
-  @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
-    return null;
-  }
-
-  @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
-  }
 }
-

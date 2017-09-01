@@ -41,5 +41,5 @@ public interface RemoteInterpreterProcessListener {
     public void onError();
   }
   public void onParaInfosReceived(String noteId, String paragraphId,
-      String interpreterSettingId, Map<String, String> metaInfos);
+                                  String interpreterSettingId, Map<String, String> metaInfos);
 }

@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter.mock;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+package org.apache.zeppelin.interpreter.remote.mock;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -28,10 +23,13 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-public class MockInterpreter1 extends Interpreter{
-  Map<String, Object> vars = new HashMap<>();
+import java.util.List;
+import java.util.Properties;
 
-  public MockInterpreter1(Properties property) {
+
+public class GetEnvPropertyInterpreter extends Interpreter {
+
+  public GetEnvPropertyInterpreter(Properties property) {
     super(property);
   }
 
@@ -45,16 +43,24 @@ public class MockInterpreter1 extends Interpreter{
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: "+st);
+    String[] cmd = st.split(" ");
+    if (cmd[0].equals("getEnv")) {
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, System.getenv(cmd[1]) == null ? "null" : System.getenv(cmd[1]));
+    } else if (cmd[0].equals("getProperty")){
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, System.getProperty(cmd[1]) == null ? "null" : System.getProperty(cmd[1]));
+    } else {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, cmd[0]);
+    }
   }
 
   @Override
   public void cancel(InterpreterContext context) {
+
   }
 
   @Override
   public FormType getFormType() {
-    return FormType.SIMPLE;
+    return FormType.NATIVE;
   }
 
   @Override
@@ -63,13 +69,14 @@ public class MockInterpreter1 extends Interpreter{
   }
 
   @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
-  }
-
-  @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) {
     return null;
   }
+
+  @Override
+  public Scheduler getScheduler() {
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
+  }
 }
+
