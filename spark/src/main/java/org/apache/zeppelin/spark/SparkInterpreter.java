@@ -137,10 +137,13 @@ public class SparkInterpreter extends Interpreter {
   private Object classServer;      // classserver for scala 2.11
   private JavaSparkContext jsc;
   private boolean enableSupportedVersionCheck;
+  private ExecutorService singleThreadedExecutorSerivce;
 
   public SparkInterpreter(Properties property) {
     super(property);
     out = new InterpreterOutputStream(logger);
+
+    this.singleThreadedExecutorSerivce = createSingleThreadExecutorService();
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
@@ -149,6 +152,14 @@ public class SparkInterpreter extends Interpreter {
     this.sc = sc;
     env = SparkEnv.get();
     sparkListener = setupListeners(this.sc);
+
+    this.singleThreadedExecutorSerivce = createSingleThreadExecutorService();
+  }
+
+  private ExecutorService createSingleThreadExecutorService() {
+    return new ThreadPoolExecutor(1, 1, 0, TimeUnit.NANOSECONDS,
+            new ArrayBlockingQueue<Runnable>(100),
+            new ThreadPoolExecutor.AbortPolicy());
   }
 
   public SparkContext getSparkContext() {
@@ -1490,7 +1501,8 @@ public class SparkInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-      SparkInterpreter.class.getName() + this.hashCode());
+      SparkInterpreter.class.getName() + this.hashCode(),
+            singleThreadedExecutorSerivce);
   }
 
   public SparkZeppelinContext getZeppelinContext() {

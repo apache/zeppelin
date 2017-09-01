@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.slf4j.Logger;
@@ -63,6 +64,10 @@ public class SchedulerFactory implements SchedulerListener {
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {
+    return createOrGetFIFOScheduler(name, this.executor);
+  }
+
+  public Scheduler createOrGetFIFOScheduler(String name, ExecutorService executor) {
     synchronized (schedulers) {
       if (schedulers.containsKey(name) == false) {
         Scheduler s = new FIFOScheduler(name, executor, this);
