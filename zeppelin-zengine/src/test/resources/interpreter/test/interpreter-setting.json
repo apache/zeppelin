@@ -16,6 +16,10 @@
         "defaultValue": "value_2",
         "description": "desc_2"
       }
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
     }
   },
 
@@ -37,6 +41,13 @@
         "defaultValue": "value_2",
         "description": "desc_2"
       }
+    },
+    "runner": {
+      "linux": "linux_runner"
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
     }
   }
 ]

@@ -66,6 +66,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertNotNull(interpreterSetting.getAppEventListener());
     assertNotNull(interpreterSetting.getDependencyResolver());
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
+    assertEquals("linux_runner", interpreterSetting.getInterpreterRunner().getPath());
 
     List<RemoteRepository> repositories = interpreterSettingManager.getRepositories();
     assertEquals(2, repositories.size());
@@ -85,6 +86,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals("value_3", interpreterSetting.getJavaProperties().getProperty("property_3"));
     assertEquals("shared", interpreterSetting.getOption().perNote);
     assertEquals("shared", interpreterSetting.getOption().perUser);
+    assertEquals("linux_runner", interpreterSetting.getInterpreterRunner().getPath());
     assertEquals(0, interpreterSetting.getDependencies().size());
 
     repositories = interpreterSettingManager2.getRepositories();
@@ -264,6 +266,21 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     // InterpreterGroup will be still alive but session belong to note1 will be closed
     assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+  }
+
+  @Test
+  public void testGetEditor() throws IOException {
+    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
+    Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo");
+    // get editor setting from interpreter-setting.json
+    Map<String, Object> editor = interpreterSettingManager.getEditorSetting(echoInterpreter, "user1", "note1", "test.echo");
+    assertEquals("java", editor.get("language"));
+
+    // when editor setting doesn't exit, return the default editor
+    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("user1", "note1", "mock1");
+    editor = interpreterSettingManager.getEditorSetting(mock1Interpreter,"user1", "note1", "mock1");
+    assertEquals("text", editor.get("language"));
 
   }
 }

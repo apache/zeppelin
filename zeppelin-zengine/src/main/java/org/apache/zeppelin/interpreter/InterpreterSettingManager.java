@@ -198,6 +198,8 @@ public class InterpreterSettingManager {
           // merge InterpreterInfo
           savedInterpreterSetting.setInterpreterInfos(
               interpreterSettingTemplate.getInterpreterInfos());
+          savedInterpreterSetting.setInterpreterRunner(
+              interpreterSettingTemplate.getInterpreterRunner());
         } else {
           LOGGER.warn("No InterpreterSetting Template found for InterpreterSetting: "
               + savedInterpreterSetting.getGroup());

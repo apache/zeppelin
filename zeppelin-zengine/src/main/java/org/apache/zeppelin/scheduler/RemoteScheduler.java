@@ -321,14 +321,14 @@ public class RemoteScheduler implements Scheduler {
       if (job.isAborted()) {
         job.setStatus(Status.ABORT);
       } else if (job.getException() != null) {
-//        logger.info("Job ABORT, " + job.getId());
+        logger.debug("Job ABORT, " + job.getId());
         job.setStatus(Status.ERROR);
       } else if (jobResult != null && jobResult instanceof InterpreterResult
           && ((InterpreterResult) jobResult).code() == Code.ERROR) {
-//        logger.info("Job Error, " + job.getId());
+        logger.debug("Job Error, " + job.getId());
         job.setStatus(Status.ERROR);
       } else {
-//        logger.info("Job Finished, " + job.getId());
+        logger.debug("Job Finished, " + job.getId());
         job.setStatus(Status.FINISHED);
       }
 
@@ -365,7 +365,6 @@ public class RemoteScheduler implements Scheduler {
         } else if (after == Status.RUNNING) {
           jobSubmittedRemotely = true;
           job.setStatus(Status.RUNNING);
-//          logger.info("Job RUNNING, " + job.getId());
         }
       } else {
         jobSubmittedRemotely = true;
@@ -374,7 +373,6 @@ public class RemoteScheduler implements Scheduler {
       // only set status when it is RUNNING
       // We would set other status based on the interpret result
       if (after == Status.RUNNING) {
-//        logger.info("Job RUNNING, " + job.getId());
         job.setStatus(Status.RUNNING);
       }
     }
