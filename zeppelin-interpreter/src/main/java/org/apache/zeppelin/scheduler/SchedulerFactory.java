@@ -67,7 +67,7 @@ public class SchedulerFactory implements SchedulerListener {
       if (schedulers.containsKey(name) == false) {
         Scheduler s = new FIFOScheduler(name, executor, this);
         schedulers.put(name, s);
-        executor.execute(s);
+        startScheduler(s);
       }
       return schedulers.get(name);
     }
@@ -78,7 +78,7 @@ public class SchedulerFactory implements SchedulerListener {
       if (schedulers.containsKey(name) == false) {
         Scheduler s = new ParallelScheduler(name, executor, this, maxConcurrency);
         schedulers.put(name, s);
-        executor.execute(s);
+        startScheduler(s);
       }
       return schedulers.get(name);
     }
@@ -100,10 +100,14 @@ public class SchedulerFactory implements SchedulerListener {
             this,
             maxConcurrency);
         schedulers.put(name, s);
-        executor.execute(s);
+        startScheduler(s);
       }
       return schedulers.get(name);
     }
+  }
+
+  public void startScheduler(Scheduler s) {
+    new Thread(s).start();
   }
 
   public Scheduler removeScheduler(String name) {
