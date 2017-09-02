@@ -17,40 +17,33 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
+import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterEnv;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class RemoteInterpreterTest {
 
@@ -116,7 +109,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testRemoteInterperterCall() throws TTransportException, IOException {
+  public void testRemoteInterpreterCall() throws TTransportException, IOException {
     Properties p = new Properties();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
@@ -139,7 +132,7 @@ public class RemoteInterpreterTest {
     assertEquals(0, process.getNumIdleClient());
     assertEquals(0, process.referenceCount());
 
-    intpA.open(); // initializa all interpreters in the same group
+    intpA.open(); // initialize all interpreters in the same group
     assertTrue(process.isRunning());
     assertEquals(1, process.getNumIdleClient());
     assertEquals(1, process.referenceCount());
@@ -244,7 +237,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
+  public void testRemoteInterpreterErrorStatus() throws TTransportException, IOException {
     Properties p = new Properties();
 
     RemoteInterpreter intpA = createMockInterpreterA(p);
@@ -864,7 +857,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testEnvronmentAndPropertySet() {
+  public void testEnvironmentAndPropertySet() {
     Properties p = new Properties();
     p.setProperty("MY_ENV1", "env value 1");
     p.setProperty("my.property.1", "property value 1");
