@@ -26,11 +26,12 @@ conf/zeppelin-site.xml
 conf/shiro.ini
 conf/keystore
 conf/truststore
-conf/interpreter.json
-conf/notebook-authorization.json
 conf/shiro.ini
 conf/credentials.json
 conf/helium.json
+
+notebook/interpreter.json
+notebook/notebook-authorization.json
 
 # other generated files
 spark/dependency-reduced-pom.xml

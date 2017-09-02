@@ -90,7 +90,7 @@ public class InterpreterFactoryTest {
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
-    new File(tmpDir, "conf").mkdirs();
+    new File(tmpDir, "notebook").mkdirs();
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), new File(tmpDir, "interpreter"));
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
@@ -342,7 +342,7 @@ public class InterpreterFactoryTest {
         (Map<String, DefaultInterpreterProperty>) intpSetting.getProperties();
     assertTrue(intpProperties instanceof Map);
 
-    // check if interpreter instance is saved as Properties in conf/interpreter.json file
+    // check if interpreter instance is saved as Properties in notebook/interpreter.json file
     Map<String, InterpreterProperty> properties = new HashMap<String, InterpreterProperty>();
     properties.put("key1", new InterpreterProperty("key1", "value1", "type1"));
     properties.put("key2", new InterpreterProperty("key2", "value2", "type2"));

@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * Information of interpreters in this interpreter setting.
- * this will be serialized for conf/interpreter.json and REST api response.
+ * this will be serialized for notebook/interpreter.json and REST api response.
  */
 public class InterpreterInfo {
   private String name;
