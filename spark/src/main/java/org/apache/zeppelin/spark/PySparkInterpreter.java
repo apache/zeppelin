@@ -171,8 +171,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private Map setupPySparkEnv() throws IOException{
     Map env = EnvironmentUtils.getProcEnvironment();
 
+    SparkConf conf = getSparkConf();
     if (!env.containsKey("PYTHONPATH")) {
-      SparkConf conf = getSparkConf();
       env.put("PYTHONPATH", conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
               ":../interpreter/lib/python");
     }
@@ -182,13 +182,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     if (SparkInterpreter.useSparkSubmit() &&
         !getSparkInterpreter().isYarnMode()) {
 
-      String sparkSubmitJars = getSparkConf().get("spark.jars").replace(",", ":");
+      String sparkSubmitJars = conf.get("spark.jars").replace(",", ":");
 
       if (!"".equals(sparkSubmitJars)) {
         env.put("PYTHONPATH", env.get("PYTHONPATH") + sparkSubmitJars);
       }
     }
 
+    logger.debug("PYTHONPATH: " + env.get("PYTHONPATH"));
     return env;
   }
 
