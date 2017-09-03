@@ -967,10 +967,11 @@ public class InterpreterSettingManager {
         intpSetting.setInfos(null);
         copyDependenciesFromLocalPath(intpSetting);
 
-        stopJobAllInterpreter(intpSetting);
         if (user.equals("anonymous")) {
+          stopJobAllInterpreter(intpSetting);
           intpSetting.closeAndRemoveAllInterpreterGroups();
         } else {
+          stopJobAllInterpreter(intpSetting, noteId, user);
           intpSetting.closeAndRemoveInterpreterGroup(noteId, user);
         }
 
@@ -987,19 +988,32 @@ public class InterpreterSettingManager {
   private void stopJobAllInterpreter(InterpreterSetting intpSetting) {
     if (intpSetting != null) {
       for (InterpreterGroup intpGroup : intpSetting.getAllInterpreterGroups()) {
-        for (List<Interpreter> interpreters : intpGroup.values()) {
-          for (Interpreter intp : interpreters) {
-            for (Job job : intp.getScheduler().getJobsRunning()) {
-              job.abort();
-              job.setStatus(Status.ABORT);
-              logger.info("Job " + job.getJobName() + " aborted ");
-            }
-            for (Job job : intp.getScheduler().getJobsWaiting()) {
-              job.abort();
-              job.setStatus(Status.ABORT);
-              logger.info("Job " + job.getJobName() + " aborted ");
-            }
-          }
+        stopJobInterpreter(intpGroup);
+      }
+    }
+  }
+
+  private void stopJobAllInterpreter(InterpreterSetting intpSetting, String noteId, String user) {
+    if (intpSetting != null) {
+      InterpreterGroup intpGroup = intpSetting.getInterpreterGroup(user, noteId);
+      if (intpGroup != null) {
+        stopJobInterpreter(intpGroup);
+      }
+    }
+  }
+
+  private void stopJobInterpreter(InterpreterGroup intpGroup) {
+    for (List<Interpreter> interpreters : intpGroup.values()) {
+      for (Interpreter intp : interpreters) {
+        for (Job job : intp.getScheduler().getJobsRunning()) {
+          job.abort();
+          job.setStatus(Status.ABORT);
+          logger.info("Job " + job.getJobName() + " aborted ");
+        }
+        for (Job job : intp.getScheduler().getJobsWaiting()) {
+          job.abort();
+          job.setStatus(Status.ABORT);
+          logger.info("Job " + job.getJobName() + " aborted ");
         }
       }
     }
