@@ -381,9 +381,16 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
-        conf.set(key, val);
+      if (!val.trim().isEmpty()) {
+        if (key.startsWith("spark.")) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+          conf.set(key, val);
+        }
+        if (key.startsWith("zeppelin.spark.")) {
+          String sparkPropertyKey = key.substring("zeppelin.spark.".length());
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", sparkPropertyKey, val));
+          conf.set(sparkPropertyKey, val);
+        }
       }
     }
 
@@ -509,9 +516,17 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
-        conf.set(key, val);
+      if (!val.trim().isEmpty()) {
+        if (key.startsWith("spark.")) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+          conf.set(key, val);
+        }
+
+        if (key.startsWith("zeppelin.spark.")) {
+          String sparkPropertyKey = key.substring("zeppelin.spark.".length());
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", sparkPropertyKey, val));
+          conf.set(sparkPropertyKey, val);
+        }
       }
     }
     setupConfForPySpark(conf);

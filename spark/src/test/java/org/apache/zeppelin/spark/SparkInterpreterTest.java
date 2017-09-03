@@ -78,7 +78,7 @@ public class SparkInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "1000");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
-
+    p.setProperty("zeppelin.spark.property_1", "value_1");
     return p;
   }
 
@@ -149,6 +149,13 @@ public class SparkInterpreterTest {
      * assertNotNull(repl.getValue("ver")); assertEquals("HELLO\n",
      * repl.interpret("println(\"HELLO\")").message());
      */
+  }
+
+  @Test
+  public void testNonStandardSparkProperties() throws IOException {
+    // throw NoSuchElementException if no such property is found
+    InterpreterResult result = repl.interpret("sc.getConf.get(\"property_1\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   @Test
