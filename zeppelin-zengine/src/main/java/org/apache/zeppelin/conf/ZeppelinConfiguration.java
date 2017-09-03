@@ -25,11 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.GitNotebookRepo;
-import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +34,9 @@ import org.slf4j.LoggerFactory;
  * Zeppelin configuration.
  *
  */
-public class ZeppelinConfiguration extends XMLConfiguration {
+public class ZeppelinConfiguration extends HadoopLikeConfiguration {
+
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
-  private static final long serialVersionUID = 4749305895693848035L;
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 
   private static final String HELIUM_PACKAGE_DEFAULT_URL =
@@ -109,87 +106,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       }
     }
 
-    LOG.info("Server Host: " + conf.getServerAddress());
-    if (conf.useSsl() == false) {
-      LOG.info("Server Port: " + conf.getServerPort());
-    } else {
-      LOG.info("Server SSL Port: " + conf.getServerSslPort());
-    }
-    LOG.info("Context Path: " + conf.getServerContextPath());
-    LOG.info("Zeppelin Version: " + Util.getVersion());
-
     return conf;
-  }
-
-
-  private String getStringValue(String name, String d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return (String) p.getChildren("value").get(0).getValue();
-      }
-    }
-    return d;
-  }
-
-  private int getIntValue(String name, int d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Integer.parseInt((String) p.getChildren("value").get(0).getValue());
-      }
-    }
-    return d;
-  }
-
-  private long getLongValue(String name, long d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Long.parseLong((String) p.getChildren("value").get(0).getValue());
-      }
-    }
-    return d;
-  }
-
-  private float getFloatValue(String name, float d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Float.parseFloat((String) p.getChildren("value").get(0).getValue());
-      }
-    }
-    return d;
-  }
-
-  private boolean getBooleanValue(String name, boolean d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Boolean.parseBoolean((String) p.getChildren("value").get(0).getValue());
-      }
-    }
-    return d;
   }
 
   public String getString(ConfVars c) {
@@ -204,7 +121,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return System.getProperty(propertyName);
     }
 
-    return getStringValue(propertyName, defaultValue);
+    return super.getString(propertyName, defaultValue);
   }
 
   public int getInt(ConfVars c) {
@@ -219,7 +136,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (System.getProperty(propertyName) != null) {
       return Integer.parseInt(System.getProperty(propertyName));
     }
-    return getIntValue(propertyName, defaultValue);
+    return super.getInt(propertyName, defaultValue);
   }
 
   public long getLong(ConfVars c) {
@@ -234,7 +151,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (System.getProperty(propertyName) != null) {
       return Long.parseLong(System.getProperty(propertyName));
     }
-    return getLongValue(propertyName, defaultValue);
+    return super.getLong(propertyName, defaultValue);
   }
 
   public float getFloat(ConfVars c) {
@@ -248,7 +165,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (System.getProperty(propertyName) != null) {
       return Float.parseFloat(System.getProperty(propertyName));
     }
-    return getFloatValue(propertyName, defaultValue);
+    return super.getFloat(propertyName, defaultValue);
   }
 
   public boolean getBoolean(ConfVars c) {
@@ -263,7 +180,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (System.getProperty(propertyName) != null) {
       return Boolean.parseBoolean(System.getProperty(propertyName));
     }
-    return getBooleanValue(propertyName, defaultValue);
+    return super.getBoolean(propertyName, defaultValue);
   }
 
   public boolean useSsl() {
@@ -477,7 +394,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
-  public boolean isWindowsPath(String path){
+  public boolean isWindowsPath(String path) {
     return path.matches("^[A-Za-z]:\\\\.*");
   }
 
@@ -493,8 +410,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_CONF_DIR);
   }
 
-  public List<String> getAllowedOrigins()
-  {
+  public List<String> getAllowedOrigins() {
     if (getString(ConfVars.ZEPPELIN_ALLOWED_ORIGINS).isEmpty()) {
       return Arrays.asList(new String[0]);
     }
@@ -786,50 +702,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
 
     enum VarType {
-      STRING {
-        @Override
-        void checkType(String value) throws Exception {}
-      },
-      INT {
-        @Override
-        void checkType(String value) throws Exception {
-          Integer.valueOf(value);
-        }
-      },
-      LONG {
-        @Override
-        void checkType(String value) throws Exception {
-          Long.valueOf(value);
-        }
-      },
-      FLOAT {
-        @Override
-        void checkType(String value) throws Exception {
-          Float.valueOf(value);
-        }
-      },
-      BOOLEAN {
-        @Override
-        void checkType(String value) throws Exception {
-          Boolean.valueOf(value);
-        }
-      };
-
-      boolean isType(String value) {
-        try {
-          checkType(value);
-        } catch (Exception e) {
-          LOG.error("Exception in ZeppelinConfiguration while isType", e);
-          return false;
-        }
-        return true;
-      }
-
-      String typeString() {
-        return name().toUpperCase();
-      }
-
-      abstract void checkType(String value) throws Exception;
+      STRING, INT, LONG, FLOAT, BOOLEAN
     }
   }
 }
