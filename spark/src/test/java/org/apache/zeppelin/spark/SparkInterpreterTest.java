@@ -306,6 +306,20 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testMultilineCompletion() {
+    String buf = "val x = 1\nsc.";
+	List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
+    assertTrue(completions.size() > 0);
+  }
+
+  @Test
+  public void testMultilineCompletionNewVar() {
+    String buf = "val x = sc\nx.";
+	List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
+    assertTrue(completions.size() > 0);
+  }
+
+  @Test
   public void testParagraphUrls() {
     String paraId = "test_para_job_url";
     InterpreterContext intpCtx = new InterpreterContext("note", paraId, null, "title", "text",
