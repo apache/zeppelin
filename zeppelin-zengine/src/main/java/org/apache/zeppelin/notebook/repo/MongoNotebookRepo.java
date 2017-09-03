@@ -258,4 +258,5 @@ public class MongoNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
   }
+
 }

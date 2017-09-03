@@ -24,15 +24,16 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.NameScope;
@@ -46,9 +47,11 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 /**
@@ -122,17 +125,14 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     List<NoteInfo> infos = new LinkedList<>();
     for (FileObject f : children) {
-      String fileName = f.getName().getBaseName();
-      if (f.isHidden()
-          || fileName.startsWith(".")
-          || fileName.startsWith("#")
-          || fileName.startsWith("~")) {
+      
+      if (isHidden(f)) {
         // skip hidden, temporary files
         continue;
       }
 
       if (!isDirectory(f)) {
-        // currently single note is saved like, [NOTE_ID]/note.json.
+        // currently single note is saved like, [NOTE_ID]/note.json or [NOTE_ID]/title.zpln.
         // so it must be a directory
         continue;
       }
@@ -152,24 +152,33 @@ public class VFSNotebookRepo implements NotebookRepo {
     return infos;
   }
 
+  private boolean isHidden(FileObject file) throws FileSystemException {
+    String fileName = file.getName().getBaseName();
+    return file.isHidden()
+        || fileName.startsWith(".")
+        || fileName.startsWith("#")
+        || fileName.startsWith("~");
+  }
+  
+  private List<FileObject> filterHiddenFiles(FileObject[] files) throws FileSystemException {
+    List<FileObject> filteredFiles = Lists.newArrayList();
+    for (FileObject f: files) {
+      if (!isHidden(f)) {
+        filteredFiles.add(f);
+      }
+    }
+    return filteredFiles;
+  }
+  
   private Note getNote(FileObject noteDir) throws IOException {
-    if (!isDirectory(noteDir)) {
-      throw new IOException(noteDir.getName().toString() + " is not a directory");
-    }
+    FileObject noteFile = getNoteFromDir(noteDir);
 
-    FileObject noteJson = noteDir.resolveFile("note.json", NameScope.CHILD);
-    if (!noteJson.exists()) {
-      throw new IOException(noteJson.getName().toString() + " not found");
-    }
-    
-    FileContent content = noteJson.getContent();
+    FileContent content = noteFile.getContent();
     InputStream ins = content.getInputStream();
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
     ins.close();
 
     Note note = Note.fromJson(json);
-//    note.setReplLoader(replLoader);
-//    note.jobListenerFactory = jobListenerFactory;
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
@@ -185,10 +194,55 @@ public class VFSNotebookRepo implements NotebookRepo {
         }
       }
     }
+    
+    setFileInfo(note, noteFile);
 
     return note;
   }
 
+  private void setFileInfo(Note note, FileObject noteFile) throws IOException {
+    String relativePath = getRootDir().getName().getRelativeName(noteFile.getName());
+    note.setFilepath(relativePath);
+  }
+  
+  private FileObject getNoteFromDir(FileObject noteDir) throws IOException {
+    if (!isDirectory(noteDir)) {
+      throw new IOException(noteDir.getName().toString() + " is not a directory");
+    }
+
+    // enforce single file in directory
+    FileObject[] files = noteDir.getChildren();
+    
+    FileObject noteFile;
+    if (files.length != 1) {
+      List<FileObject> filteredFiles = filterHiddenFiles(files);
+      if (filteredFiles.isEmpty()) {
+        throw new IOException(
+            "note folder " + noteDir.getName().toString() + " is empty");
+      }
+      if (filteredFiles.size() > 1)
+        throw new IOException(
+            "note folder " + noteDir.getName().toString() + " contains more than one file");
+      noteFile = filteredFiles.get(0);
+    } else {
+      noteFile = files[0];
+    }
+    
+
+    if (!noteFile.exists()) {
+      throw new IOException(noteFile.getName().toString() + " not found");
+    }
+    
+    // enforce either extended or note.json file
+    if (!FilenameUtils.isExtension(noteFile.getName().getBaseName(),
+        Util.getZeppelinNoteExtension())
+        && !FilenameUtils.equals(noteFile.getName().getBaseName(), "note.json")) {
+      throw new IOException(noteFile.getName().getBaseName() + " file isn't in acceptable format");
+    }
+    
+    return noteFile;
+  }
+  
   private NoteInfo getNoteInfo(FileObject noteDir) throws IOException {
     Note note = getNote(noteDir);
     return new NoteInfo(note);
@@ -220,9 +274,48 @@ public class VFSNotebookRepo implements NotebookRepo {
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
     String json = note.toJson();
 
+    FileObject noteDir = getNoteDir(note.getId());
+    FileObject noteJson = noteDir.resolveFile(".note.zpln", NameScope.CHILD);
+    
+    // false means not appending. creates file if not exists
+    OutputStream out = noteJson.getContent().getOutputStream(false);
+    out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
+    out.close();
+    
+    // save
+    String filename = note.getFilename();
+    if (StringUtils.isBlank(filename)) {
+      // when creating note
+      filename = Util.convertTitleToFilename(note.getName());
+      if (StringUtils.isBlank(note.getDirPath())) {
+        note.setDirPath(note.getId() + File.separator);
+      }
+    }
+    noteJson.moveTo(noteDir.resolveFile(filename, NameScope.CHILD));
+    note.setFilename(filename);
+
+    // rename
+    String targetFilename = Util.convertTitleToFilename(note.getName());
+    if (requiresRename(note)) {
+      rename(note.getFilepath(), note.getDirPath() + targetFilename);
+      note.setFilename(targetFilename);
+    }
+  }
+
+  private boolean requiresRename(Note note) {
+    String currentFilename = note.getFilename();
+    if (StringUtils.equals(note.getId(), currentFilename)) {
+      // when note created, no need to rename
+      return false;
+    }
+    String targetFilename = Util.convertTitleToFilename(note.getName());
+    return !StringUtils.equals(currentFilename, targetFilename);
+  }
+  
+  private FileObject getNoteDir(String dirPath) throws IOException {
     FileObject rootDir = getRootDir();
 
-    FileObject noteDir = rootDir.resolveFile(note.getId(), NameScope.CHILD);
+    FileObject noteDir = rootDir.resolveFile(dirPath, NameScope.CHILD);
 
     if (!noteDir.exists()) {
       noteDir.createFolder();
@@ -230,15 +323,19 @@ public class VFSNotebookRepo implements NotebookRepo {
     if (!isDirectory(noteDir)) {
       throw new IOException(noteDir.getName().toString() + " is not a directory");
     }
-
-    FileObject noteJson = noteDir.resolveFile(".note.json", NameScope.CHILD);
-    // false means not appending. creates file if not exists
-    OutputStream out = noteJson.getContent().getOutputStream(false);
-    out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
-    out.close();
-    noteJson.moveTo(noteDir.resolveFile("note.json", NameScope.CHILD));
+    return noteDir;
   }
-
+  
+  private FileObject getNoteFile(FileObject noteDir, String filename) throws IOException {
+    FileObject noteFile = noteDir.resolveFile(filename, NameScope.CHILD);
+    
+    if (isDirectory(noteFile)) {
+      throw new IOException(noteFile.getName().toString() + " is a directory");
+    }
+    
+    return noteFile;
+  }
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     FileObject rootDir = fsManager.resolveFile(getPath("/"));
@@ -325,6 +422,35 @@ public class VFSNotebookRepo implements NotebookRepo {
       throws IOException {
     // Auto-generated method stub
     return null;
+  }
+
+  public void rename(String oldPath, String newPath)
+      throws IOException {
+    // currently assuming old and new files are in the same folder
+    String oldDirPath = FilenameUtils.getPathNoEndSeparator(oldPath);
+    String newDirPath = FilenameUtils.getPathNoEndSeparator(newPath);
+    // will remove with folder structure
+    Preconditions.checkArgument(StringUtils.equals(oldDirPath, newDirPath));
+    
+    String oldFilename = FilenameUtils.getName(oldPath);
+    String newFilename = FilenameUtils.getName(newPath);
+    
+    FileObject noteDir = getNoteDir(oldDirPath);
+
+    FileObject oldNoteFile = getNoteFile(noteDir, oldFilename);
+    FileObject newNoteFile = getNoteFile(noteDir, newFilename);
+    
+    if (!oldNoteFile.exists()) {
+      throw new IOException(oldNoteFile.getName().toString() + " doesn't exist");
+    }
+    
+    if (!newNoteFile.exists()) {
+      newNoteFile.createFile();
+    }
+    
+    oldNoteFile.moveTo(newNoteFile);
+    
+    LOG.info("Note file {} was renamed into {}", oldFilename, newFilename);
   }
 
 }

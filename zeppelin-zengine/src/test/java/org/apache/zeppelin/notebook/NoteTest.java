@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.apache.zeppelin.display.AngularObject;
@@ -262,5 +264,29 @@ public class NoteTest {
     // test Note Json
     Note note2 = Note.fromJson(note.toJson());
     assertEquals(note2, note);
+  }
+  
+  @Test
+  public void testNoteFileSetting() {
+    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    
+    assertThat(note.getFilepath()).isEmpty();
+    assertThat(note.getFilename()).isEmpty();
+    String path = note.getId() + "/" + "note.json";
+    note.setFilepath(path);
+    assertThat(note.getFilepath()).isEqualTo(path);
+    assertThat(note.getFilename()).isEqualTo("note.json");
+    assertThat(note.getFileBasename()).isEqualTo("note");
+    note.setFilename("title1.zpln");
+    assertThat(note.getFilepath()).isEqualTo(note.getId() + "/" + "title1.zpln");
+    assertThat(note.getFilename()).isEqualTo("title1.zpln");
+    assertThat(note.getFileBasename()).isEqualTo("title1");
+    note.setFilepath("a.zpln");
+    assertThat(note.getFilename()).isEqualTo("a.zpln");
+    assertThat(note.getFileBasename()).isEqualTo("a");
+    note.setDirPath("b/");
+    assertThat(note.getFilepath()).isEqualTo("b/a.zpln");
+    note.setDirPath("b");
+    assertThat(note.getFilepath()).isEqualTo("b/a.zpln");
   }
 }

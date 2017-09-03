@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import static java.lang.String.format;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -30,6 +31,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -47,6 +50,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +95,9 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
+  
+  // relative path to note from notebook dir
+  private transient String filepath = StringUtils.EMPTY;
 
   /*
    * note configurations.
@@ -199,6 +206,37 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return folderId;
   }
 
+  public String getFilepath() {
+    return this.filepath;
+  }
+  
+  public void setFilepath(String filepath) {
+    this.filepath = filepath;
+  }
+  
+  public String getFilename() {
+    return FilenameUtils.getName(filepath);
+  }
+  
+  public void setFilename(String filename) {
+    filepath = FilenameUtils.getPath(filepath) + filename;
+  }
+  
+  public String getFileBasename() {
+    return FilenameUtils.getBaseName(filepath);
+  }
+  
+  public String getDirPath() {
+    return FilenameUtils.getPath(filepath);
+  }
+  
+  public void setDirPath(String dirPath) {
+    if (!StringUtils.isBlank(dirPath) && !dirPath.endsWith(File.separator)) {
+      dirPath += File.separator;
+    }
+    filepath = dirPath + getFilename();
+  }
+  
   public boolean isNameEmpty() {
     return this.name.trim().isEmpty();
   }
@@ -741,7 +779,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     index.updateIndexDoc(this);
     repo.save(this, subject);
   }
-
+  
   /**
    * Persist this note with maximum delay.
    */
@@ -831,7 +869,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public void setInfo(Map<String, Object> info) {
     this.info = info;
   }
-
+  
   @Override
   public void beforeStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {

@@ -61,9 +61,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   private String token;
   private ZeppelinhubRestApiHandler restApiClient;
-  
+
   private final ZeppelinConfiguration conf;
-  
+
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
@@ -71,7 +71,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
     token = conf.getString("ZEPPELINHUB_API_TOKEN", ZEPPELIN_CONF_PROP_NAME_TOKEN, "");
     restApiClient = ZeppelinhubRestApiHandler.newInstance(zeppelinHubUrl);
-    //TODO(khalid): check which realm for authentication, pass to token manager
+    // TODO(khalid): check which realm for authentication, pass to token manager
     tokenManager = UserTokenContainer.init(restApiClient, token);
 
     websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
@@ -134,9 +134,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
     URI apiRoot;
     String zeppelinhubUrl;
     try {
-      String url = conf.getString("ZEPPELINHUB_API_ADDRESS",
-                                  ZEPPELIN_CONF_PROP_NAME_SERVER,
-                                  DEFAULT_SERVER);
+      String url = conf.getString("ZEPPELINHUB_API_ADDRESS", ZEPPELIN_CONF_PROP_NAME_SERVER,
+          DEFAULT_SERVER);
       apiRoot = new URI(url);
     } catch (URISyntaxException e) {
       LOG.error("Invalid zeppelinhub url, using default address {}", DEFAULT_SERVER, e);
@@ -146,7 +145,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String scheme = apiRoot.getScheme();
     if (scheme == null) {
       LOG.info("{} is not a valid zeppelinhub server address. proceed with default address {}",
-               apiRoot, DEFAULT_SERVER);
+          apiRoot, DEFAULT_SERVER);
       zeppelinhubUrl = DEFAULT_SERVER;
     } else {
       zeppelinhubUrl = scheme + "://" + apiRoot.getHost();
@@ -163,7 +162,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     return (subject.isAnonymous() && !conf.isAnonymousAllowed()) ? false : true;
   }
-  
+
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
     if (!isSubjectValid(subject)) {
@@ -171,7 +170,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, StringUtils.EMPTY);
-    List<NoteInfo> notes = GSON.fromJson(response, new TypeToken<List<NoteInfo>>() {}.getType());
+    List<NoteInfo> notes = GSON.fromJson(response, new TypeToken<List<NoteInfo>>() {
+    }.getType());
     if (notes == null) {
       return Collections.emptyList();
     }
@@ -229,7 +229,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String endpoint = Joiner.on("/").join(noteId, "checkpoint");
     String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
-    
+
     String token = getUserToken(subject.getUser());
     String response = restApiClient.putWithResponseBody(token, endpoint, content);
 
@@ -263,13 +263,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
     try {
       String token = getUserToken(subject.getUser());
       String response = restApiClient.get(token, endpoint);
-      history = GSON.fromJson(response, new TypeToken<List<Revision>>(){}.getType());
+      history = GSON.fromJson(response, new TypeToken<List<Revision>>() {
+      }.getType());
     } catch (IOException e) {
       LOG.error("Cannot get note history", e);
     }
     return history;
   }
-  
+
   private String getUserToken(String user) {
     return tokenManager.getUserToken(user);
   }
@@ -293,10 +294,10 @@ public class ZeppelinHubRepo implements NotebookRepo {
       LOG.warn("Couldnt find instances for the session {}, returning empty collection",
           zeppelinHubUserSession);
       // user not logged
-      //TODO(xxx): handle this case.
+      // TODO(xxx): handle this case.
       instances = Collections.emptyList();
     }
-    
+
     NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
     repoSetting.type = NotebookRepoSettingsInfo.Type.DROPDOWN;
     for (Instance instance : instances) {
