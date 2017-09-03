@@ -9,7 +9,7 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,//
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -19,13 +19,16 @@ package org.apache.zeppelin.server;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Inject;
+
+import org.apache.zeppelin.web.WebSecurity;
+import org.apache.zeppelin.inject.ZeppelinModule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.inject.Inject;
 import javax.ws.rs.core.Application;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,8 +38,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.apache.zeppelin.web.WebSecurity;
-import org.apache.zeppelin.inject.ZeppelinModule;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumBundleFactory;
@@ -155,19 +156,6 @@ public class ZeppelinServer extends Application {
       LOG.error(e.getMessage(), e);
     }
 
-    this.schedulerFactory = new SchedulerFactory();
-    this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
-        new InterpreterOption(true));
-    this.replFactory = new InterpreterFactory(conf, notebookWsServer,
-        notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
-        interpreterSettingManager);
-    this.notebookRepo = new NotebookRepoSync(conf);
-    this.notebookAuthorization = NotebookAuthorization.init(conf);
-    this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
-    notebook = new Notebook(conf,
-        notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
-            noteSearchService, notebookAuthorization, credentials);
-
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
     // to update fire websocket event on application event.
@@ -175,6 +163,7 @@ public class ZeppelinServer extends Application {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
+
   }
 
   public static void main(String[] args) throws InterruptedException {
