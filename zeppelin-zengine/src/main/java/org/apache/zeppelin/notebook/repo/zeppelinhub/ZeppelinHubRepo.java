@@ -28,7 +28,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
@@ -36,6 +36,7 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHand
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NotebookRepoSettingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
   
   private final ZeppelinConfiguration conf;
   
+  private boolean saveAndCommit;
+  
   public ZeppelinHubRepo(ZeppelinConfiguration conf) {
     this.conf = conf;
     String zeppelinHubUrl = getZeppelinHubUrl(conf);
@@ -75,7 +78,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     tokenManager = UserTokenContainer.init(restApiClient, token);
 
     websocketClient = Client.initialize(getZeppelinWebsocketUri(conf),
-        getZeppelinhubWebsocketUri(conf), token, conf);
+        getZeppelinhubWebsocketUri(conf), token, conf, this);
     websocketClient.start();
   }
 
@@ -196,6 +199,14 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
+    if (isSaveAndCommitEnabled()) {
+      LOG.debug("Save on commit setting for remote repo is enabled, returning without save");
+      return;
+    }
+    doSave(note, subject);
+  }
+
+  public void doSave(Note note, AuthenticationInfo subject) throws IOException {
     if (note == null || !isSubjectValid(subject)) {
       throw new IOException("Zeppelinhub failed to save note");
     }
@@ -204,7 +215,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
     restApiClient.put(token, jsonNote);
   }
-
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
@@ -222,13 +233,15 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
+    if (StringUtils.isBlank(note.getId()) || !isSubjectValid(subject)) {
       return Revision.EMPTY;
     }
-    String endpoint = Joiner.on("/").join(noteId, "checkpoint");
-    String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg));
+    String endpoint = Joiner.on("/").join(note.getId(), "checkpoint");
+    String jsonNote = GSON.toJson(note);
+    String content = GSON.toJson(ImmutableMap.of("message", checkpointMsg,
+        "notebook", jsonNote));
     
     String token = getUserToken(subject.getUser());
     String response = restApiClient.putWithResponseBody(token, endpoint, content);
@@ -308,7 +321,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
 
     repoSetting.value = values;
     repoSetting.name = "Instance";
+    repoSetting.reload = !values.isEmpty();
     settings.add(repoSetting);
+    
     return settings;
   }
 
@@ -359,11 +374,12 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (settings.containsKey("Instance")) {
       try {
         instanceId = Integer.parseInt(settings.get("Instance"));
+        changeToken(instanceId, subject.getUser());
       } catch (NumberFormatException e) {
         LOG.error("ZeppelinHub Instance Id in not a valid integer", e);
       }
     }
-    changeToken(instanceId, subject.getUser());
+
   }
 
   @Override
@@ -373,4 +389,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     return null;
   }
 
+  public boolean isSaveAndCommitEnabled() {
+    return saveAndCommit;
+  }
 }

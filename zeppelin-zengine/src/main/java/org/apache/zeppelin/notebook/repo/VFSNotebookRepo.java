@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +43,7 @@ import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   private FileSystemManager fsManager;
   private URI filesystemRoot;
   private ZeppelinConfiguration conf;
-
+  
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     setNotebookDirectory(conf.getNotebookDir());
@@ -263,9 +263,11 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // no-op
+    // save and checkpoint
+    save(note, subject);
+    // and checkpoint
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
   }
@@ -293,6 +295,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     repoSetting.selected = getNotebookDirPath();
 
     settings.add(repoSetting);
+
     return settings;
   }
 
@@ -318,6 +321,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     } catch (IOException e) {
       LOG.error("Cannot update notebook directory", e);
     }
+    
   }
 
   @Override

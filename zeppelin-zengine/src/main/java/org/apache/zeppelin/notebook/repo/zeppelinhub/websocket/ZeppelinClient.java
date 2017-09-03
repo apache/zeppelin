@@ -339,6 +339,9 @@ public class ZeppelinClient {
     if (action == null) {
       return false;
     }
+    if (Client.getInstance().isSaveAndCommitEnabled()) {
+      return false;
+    }
     return actionable.contains(action.name());
   }
   

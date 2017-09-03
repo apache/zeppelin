@@ -36,6 +36,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -244,7 +245,7 @@ public class S3NotebookRepo implements NotebookRepo {
       FileUtils.deleteQuietly(file);
     }
   }
-
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     String key = user + "/" + "notebook" + "/" + noteId;
@@ -271,9 +272,11 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // no-op
+    // save
+    save(note, subject);
+    // and checkpoint
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
   }
@@ -307,4 +310,5 @@ public class S3NotebookRepo implements NotebookRepo {
     // Auto-generated method stub
     return null;
   }
+  
 }

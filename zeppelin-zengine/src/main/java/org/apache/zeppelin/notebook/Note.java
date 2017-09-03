@@ -40,6 +40,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
@@ -735,6 +736,16 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   public void persist(AuthenticationInfo subject) throws IOException {
+    if (repo instanceof NotebookRepoSync) {
+      NotebookRepoSync repoManager = (NotebookRepoSync) repo;
+      if (repoManager.isSaveOnRunEnabled()) {
+        return;
+      }
+    }
+    forcePersist(subject);
+  }
+  
+  public void forcePersist(AuthenticationInfo subject) throws IOException {
     Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
     stopDelayedPersistTimer();
     snapshotAngularObjectRegistry(subject.getUser());
@@ -791,7 +802,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
         @Override
         public void run() {
           try {
-            persist(subject);
+            forcePersist(subject);
           } catch (IOException e) {
             logger.error(e.getMessage(), e);
           }

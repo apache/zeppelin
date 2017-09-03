@@ -29,11 +29,12 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
-import org.apache.zeppelin.notebook.repo.NotebookRepoWithSettings;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.rest.message.NotebookRepoSettingsRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NotebookRepoSettingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +88,20 @@ public class NotebookRepoRestApi {
   }
 
   /**
+   * Get global settings
+   */
+  @GET
+  @Path("global-settings")
+  @ZeppelinApi
+  public Response getGlobalSettings() {
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    LOG.info("Getting global settings for user {}", subject.getUser());
+    boolean saveAndCommit = noteRepos.isSaveOnCheckpointEnabled();
+    return new JsonResponse<>(Status.OK, "", 
+        ImmutableMap.of("saveAndCommit", saveAndCommit)).build();
+  }
+  
+  /**
    * Update a specific note repo.
    *
    * @param payload
@@ -116,7 +131,7 @@ public class NotebookRepoRestApi {
     LOG.info("User {} is going to change repo setting", subject.getUser());
     NotebookRepoWithSettings updatedSettings =
         noteRepos.updateNotebookRepo(newSettings.name, newSettings.settings, subject);
-    if (!updatedSettings.isEmpty()) {
+    if (NotebookRepoSettingUtils.requiresReload(updatedSettings)) {
       LOG.info("Broadcasting note list to user {}", subject.getUser());
       notebookWsServer.broadcastReloadedNoteList(subject, null);
     }

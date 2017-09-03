@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
@@ -74,13 +75,13 @@ public interface NotebookRepo {
    */
 
   /**
-   * chekpoint (set revision) for notebook.
-   * @param noteId Id of the Notebook
+   * save and chekpoint (set revision) for notebook.
+   * @param note current note
    * @param checkpointMsg message description of the checkpoint
    * @return Rev
    * @throws IOException
    */
-  @ZeppelinApi public Revision checkpoint(String noteId, String checkpointMsg, 
+  @ZeppelinApi public Revision checkpoint(Note note, String checkpointMsg, 
       AuthenticationInfo subject) throws IOException;
 
   /**

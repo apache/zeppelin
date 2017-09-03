@@ -17,6 +17,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -222,9 +223,11 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
-    // no-op
+    // save
+    save(note, subject);
+    // and checkpoint
     LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
     return Revision.EMPTY;
   }

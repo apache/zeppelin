@@ -2,7 +2,7 @@
 layout: page
 title: "Apache Zeppelin Configuration"
 description: "This page will guide you to configure Apache Zeppelin using either environment variables or Java properties. Also, you can configure SSL for Zeppelin."
-group: setup/operation 
+group: setup/operation
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -232,6 +232,12 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.notebook.one.way.sync</h6></td>
     <td>false</td>
     <td>If there are multiple notebook storage locations, should we treat the first one as the only source of truth?</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_PERSISTENCE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.persistence</h6></td>
+    <td>continuous</td>
+    <td>In order to decrease #persists on every action, persist notes 'continuous', on 'run', or on 'checkpoint'</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_PUBLIC</h6></td>

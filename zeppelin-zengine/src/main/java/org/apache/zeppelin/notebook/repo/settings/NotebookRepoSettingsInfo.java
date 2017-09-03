@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.notebook.repo;
+package org.apache.zeppelin.notebook.repo.settings;
 
 import java.util.List;
 import java.util.Map;
@@ -41,4 +41,16 @@ public class NotebookRepoSettingsInfo {
   public List<Map<String, String>> value;
   public String selected;
   public String name;
+  public transient boolean reload;
+  
+  @Override
+  public String toString() {
+    StringBuilder str = new StringBuilder();
+    str.append("NotebookRepoSettingsInfo [ type: ").append(type)
+       .append(", selected: ").append(selected)
+       .append(", name: ").append(name)
+       .append(", reload: ").append(reload)
+       .append(" ]");
+    return str.toString();
+  }
 }

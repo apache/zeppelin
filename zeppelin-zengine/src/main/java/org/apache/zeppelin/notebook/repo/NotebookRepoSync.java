@@ -34,7 +34,11 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.settings.NotebookRepoWithSettings;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.NotebookRepoSettingUtils;
+import org.eclipse.jgit.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +59,19 @@ public class NotebookRepoSync implements NotebookRepo {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private final boolean oneWaySync;
+  
+  private String notePersistence;
+  private static final String GLOBAL_SETTINGS_NAME = "Global Settings";
 
+  /**
+   * Options for persisting notes on actions.
+   */
+  public enum NotePersist {
+    CONTINUOUS,       // Default value when all edit actions initiate note persist
+    RUN,              // Persist notes on run and checkpoint (commit) actions 
+    CHECKPOINT        // Persist note on checkpoint (commit) actions only
+  }
+  
   /**
    * @param conf
    */
@@ -63,6 +79,7 @@ public class NotebookRepoSync implements NotebookRepo {
   public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
+    notePersistence = conf.getNotePersistence();
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -130,24 +147,44 @@ public class NotebookRepoSync implements NotebookRepo {
                            .build();
       reposSetting.add(repoWithSettings);
     }
-
+    
+    // add global note persistence setting
+    repoWithSettings = NotebookRepoWithSettings
+        .builder(GLOBAL_SETTINGS_NAME)
+        .className(this.getClass().getName())
+        .settings(getSettings(subject))
+        .build();
+    reposSetting.add(repoWithSettings);
+    
     return reposSetting;
   }
 
   public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
                                                      AuthenticationInfo subject) {
     NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
-    for (NotebookRepo repo : repos) {
-      if (repo.getClass().getName().equals(name)) {
-        repo.updateSettings(settings, subject);
-        updatedSettings = NotebookRepoWithSettings
-                            .builder(repo.getClass().getSimpleName())
-                            .className(repo.getClass().getName())
-                            .settings(repo.getSettings(subject))
-                            .build();
-        break;
+    
+    if (this.getClass().getName().equals(name)) {
+      updateSettings(settings, subject);
+      updatedSettings = NotebookRepoWithSettings
+          .builder(GLOBAL_SETTINGS_NAME)
+          .className(this.getClass().getName())
+          .settings(getSettings(subject))
+          .build();
+    } else {
+      for (NotebookRepo repo : repos) {
+        if (repo.getClass().getName().equals(name)) {
+          repo.updateSettings(settings, subject);
+          updatedSettings = NotebookRepoWithSettings.
+              builder(repo.getClass().getSimpleName()).
+              className(repo.getClass().getName()).
+              settings(repo.getSettings(subject)).
+              build();
+          break;
+        }
       }
     }
+
+    
     return updatedSettings;
   }
 
@@ -182,32 +219,24 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    getRepo(0).save(note, subject);
-    if (getRepoCount() > 1) {
-      try {
-        getRepo(1).save(note, subject);
+    if (isSaveOnCheckpointEnabled()) {
+      return;
+    }
+    try {
+      for (NotebookRepo repo : repos) {
+        repo.save(note, subject);
       }
-      catch (IOException e) {
-        LOG.info(e.getMessage() + ": Failed to write to secondary storage");
-      }
+    } catch (IOException e) {
+      LOG.warn(e.getMessage() + ": Failed to write to storage");
     }
   }
-
-  /* save note to specific repo (for tests) */
-  void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
-    getRepo(repoIndex).save(note, subject);
-  }
-
+  
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     for (NotebookRepo repo : repos) {
       repo.remove(noteId, subject);
     }
     /* TODO(khalid): handle case when removing from secondary storage fails */
-  }
-
-  void remove(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
-    getRepo(repoIndex).remove(noteId, subject);
   }
 
   /**
@@ -440,7 +469,7 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(Note note, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
@@ -450,10 +479,10 @@ public class NotebookRepoSync implements NotebookRepo {
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
+        allRepoCheckpoints.add(getRepo(i).checkpoint(note, checkpointMsg, subject));
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
-          getRepo(i).getClass().toString(), i, noteId);
+          getRepo(i).getClass().toString(), i, note.getId());
         errorMessage += "Error on storage class " + getRepo(i).getClass().toString() +
           " with index " + i + " : " + e.getMessage() + "\n";
         errorCount++;
@@ -497,21 +526,21 @@ public class NotebookRepoSync implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    List<NotebookRepoSettingsInfo> repoSettings = Collections.emptyList();
-    try {
-      repoSettings =  getRepo(0).getSettings(subject);
-    } catch (IOException e) {
-      LOG.error("Cannot get notebook repo settings", e);
-    }
-    return repoSettings;
+    // add note persistence settings
+    List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
+    NotebookRepoSettingsInfo persistSetting = NotebookRepoSettingUtils
+        .getNotePersistSettings(notePersistence);
+    settings.add(persistSetting);
+    return settings;
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    try {
-      getRepo(0).updateSettings(settings, subject);
-    } catch (IOException e) {
-      LOG.error("Cannot update notebook repo settings", e);
+    // update persistence setting
+    if (settings.containsKey(NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME)) {
+      notePersistence = settings.get(NotebookRepoSettingUtils.NOTE_PERSISTENCE_NAME);
+      LOG.info("Updating Note persistence settings for {} to {}", this.getClass().getName(),
+          notePersistence);
     }
   }
 
@@ -534,5 +563,25 @@ public class NotebookRepoSync implements NotebookRepo {
       }
     }
     return revisionNote;
+  }
+  
+  public boolean isSaveOnRunEnabled() {
+    return StringUtils.equalsIgnoreCase(notePersistence, NotePersist.RUN.name());
+  }
+  
+  public boolean isSaveOnCheckpointEnabled() {
+    return StringUtils.equalsIgnoreCase(notePersistence, NotePersist.CHECKPOINT.name());
+  }
+  
+  public String getGlobalSettingsName() {
+    return GLOBAL_SETTINGS_NAME;
+  }
+  
+  void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
+    getRepo(repoIndex).save(note, subject);
+  }
+  
+  void remove(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
+    getRepo(repoIndex).remove(noteId, subject);
   }
 }

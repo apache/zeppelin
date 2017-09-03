@@ -248,6 +248,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.persistence</name>
+  <value>continuous</value>
+  <description>In order to decrease persists on every action, persist notes 'continuous', on 'run', or on 'checkpoint'</description>
+</property>
+
+<property>
   <name>zeppelin.interpreter.dir</name>
   <value>interpreter</value>
   <description>Interpreter implementation base directory</description>
