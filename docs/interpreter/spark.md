@@ -184,6 +184,13 @@ Staring from 0.6.1 SparkSession is available as variable `spark` when you are us
 
 <a name="dependencyloading"> </a>
 
+### How to pass property to SparkConf
+
+There're 2 kinds of properties that would be passed to SparkConf
+
+ * Standard spark property (prefix with `spark.`). e.g. `spark.executor.memory` will be passed to `SparkConf`
+ * Non-standard spark property (prefix with `zeppelin.spark.`).  e.g. `zeppelin.spark.property_1`, `property_1` will be passed to `SparkConf`
+
 ## Dependency Management
 There are two ways to load external libraries in Spark interpreter. First is using interpreter setting menu and second is loading Spark properties.
 
