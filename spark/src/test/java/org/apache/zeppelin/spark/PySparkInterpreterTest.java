@@ -59,6 +59,7 @@ public class PySparkInterpreterTest {
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
+    p.setProperty("zeppelin.spark.useIPython", "false");
     return p;
   }
 
@@ -81,6 +82,16 @@ public class PySparkInterpreterTest {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
+    context = new InterpreterContext("note", "id", null, "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(null));
+    InterpreterContext.set(context);
+
     sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
     intpGroup.get("note").add(sparkInterpreter);
     sparkInterpreter.setInterpreterGroup(intpGroup);
@@ -91,14 +102,7 @@ public class PySparkInterpreterTest {
     pySparkInterpreter.setInterpreterGroup(intpGroup);
     pySparkInterpreter.open();
 
-    context = new InterpreterContext("note", "id", null, "title", "text",
-      new AuthenticationInfo(),
-      new HashMap<String, Object>(),
-      new GUI(),
-      new AngularObjectRegistry(intpGroup.getId(), null),
-      new LocalResourcePool("id"),
-      new LinkedList<InterpreterContextRunner>(),
-      new InterpreterOutput(null));
+
   }
 
   @AfterClass
@@ -113,6 +117,22 @@ public class PySparkInterpreterTest {
       assertEquals(InterpreterResult.Code.SUCCESS,
         pySparkInterpreter.interpret("a = 1\n", context).code());
     }
+
+    InterpreterResult result = pySparkInterpreter.interpret(
+        "from pyspark.streaming import StreamingContext\n" +
+            "import time\n" +
+            "ssc = StreamingContext(sc, 1)\n" +
+            "rddQueue = []\n" +
+            "for i in range(5):\n" +
+            "    rddQueue += [ssc.sparkContext.parallelize([j for j in range(1, 1001)], 10)]\n" +
+            "inputStream = ssc.queueStream(rddQueue)\n" +
+            "mappedStream = inputStream.map(lambda x: (x % 10, 1))\n" +
+            "reducedStream = mappedStream.reduceByKey(lambda a, b: a + b)\n" +
+            "reducedStream.pprint()\n" +
+            "ssc.start()\n" +
+            "time.sleep(6)\n" +
+            "ssc.stop(stopSparkContext=False, stopGraceFully=True)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   @Test

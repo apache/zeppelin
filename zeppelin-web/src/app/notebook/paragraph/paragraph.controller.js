@@ -52,6 +52,12 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     paragraphText: '',
   }
 
+  let searchRanges = []
+  const getCurrentRangeDefault = function() {
+    return {id: -1, markerId: -1}
+  }
+  let currentRange = getCurrentRangeDefault()
+
   let editorSetting = {}
   // flag that is used to set editor setting on paste percent sign
   let pastePercentSign = false
@@ -376,14 +382,41 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params)
   }
 
+  $scope.bindBeforeUnload = function () {
+    angular.element(window).off('beforeunload')
+
+    let confirmOnPageExit = function (e) {
+      // If we haven't been passed the event get the window.event
+      e = e || window.event
+      let message = 'Do you want to reload this site?'
+
+      // For IE6-8 and Firefox prior to version 4
+      if (e) {
+        e.returnValue = message
+      }
+      // For Chrome, Safari, IE8+ and Opera 12+
+      return message
+    }
+    angular.element(window).on('beforeunload', confirmOnPageExit)
+  }
+
+  $scope.unBindBeforeUnload = function () {
+    angular.element(window).off('beforeunload')
+  }
+
   $scope.saveParagraph = function (paragraph) {
     const dirtyText = paragraph.text
     if (dirtyText === undefined || dirtyText === $scope.originalText) {
       return
     }
-    commitParagraph(paragraph)
-    $scope.originalText = dirtyText
-    $scope.dirtyText = undefined
+
+    $scope.bindBeforeUnload()
+
+    commitParagraph(paragraph).then(function () {
+      $scope.originalText = dirtyText
+      $scope.dirtyText = undefined
+      $scope.unBindBeforeUnload()
+    })
   }
 
   $scope.toggleEnableDisable = function (paragraph) {
@@ -801,6 +834,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
       // remove binding
       $scope.editor.commands.removeCommand('showSettingsMenu')
+      $scope.editor.commands.removeCommand('find')
+      $scope.editor.commands.removeCommand('replace')
 
       let isOption = $rootScope.isMac ? 'option' : 'alt'
 
@@ -1084,7 +1119,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       settings: {params},
     } = paragraph
 
-    websocketMsgSrv.commitParagraph(id, title, text, config, params)
+    return websocketMsgSrv.commitParagraph(id, title, text, config, params,
+      $route.current.pathParams.noteId)
   }
 
   /** Utility function */
@@ -1444,6 +1480,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         $scope.clearParagraphOutput($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 87) { // Ctrl + Alt + w
         $scope.goToSingleParagraph()
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 70) { // Ctrl + f
+        $scope.$emit('toggleSearchBox')
       } else {
         noShortcutDefined = true
       }
@@ -1543,6 +1581,121 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.editor.setOptions({
         fontSize: fontSize + 'pt'
       })
+    }
+  })
+
+  const clearSearchSelection = function() {
+    for (let i = 0; i < searchRanges.length; ++i) {
+      $scope.editor.session.removeMarker(searchRanges[i].markerId)
+    }
+    searchRanges = []
+    if (currentRange.id !== -1) {
+      $scope.editor.session.removeMarker(currentRange.markerId)
+    }
+    currentRange = getCurrentRangeDefault()
+  }
+
+  $scope.onEditorClick = function() {
+    $scope.$emit('editorClicked')
+  }
+
+  $scope.$on('unmarkAll', function() {
+    clearSearchSelection()
+  })
+
+  const markAllOccurrences = function(text) {
+    clearSearchSelection()
+    if (text === '') {
+      return
+    }
+    if ($scope.editor.findAll(text) === 0) {
+      return
+    }
+    let ranges = $scope.editor.selection.getAllRanges()
+    $scope.editor.selection.toSingleRange()
+    $scope.editor.selection.clearSelection()
+    for (let i = 0; i < ranges.length; ++i) {
+      let id = $scope.editor.session.addMarker(ranges[i], 'ace_selected-word', 'text')
+      searchRanges.push({markerId: id, range: ranges[i]})
+    }
+  }
+
+  $scope.$on('markAllOccurrences', function(event, text) {
+    markAllOccurrences(text)
+    if (searchRanges.length > 0) {
+      $scope.$emit('occurrencesExists', searchRanges.length)
+    }
+  })
+
+  $scope.$on('nextOccurrence', function(event, paragraphId) {
+    if ($scope.paragraph.id !== paragraphId) {
+      return
+    }
+    let highlightedRangeExists = currentRange.id !== -1
+    if (highlightedRangeExists) {
+      $scope.editor.session.removeMarker(currentRange.markerId)
+      currentRange.markerId = -1
+    }
+    ++currentRange.id
+    if (currentRange.id >= searchRanges.length) {
+      currentRange.id = -1
+      $scope.$emit('noNextOccurrence')
+      return
+    }
+    currentRange.markerId = $scope.editor.session.addMarker(
+      searchRanges[currentRange.id].range, 'ace_selection', 'text')
+  })
+
+  $scope.$on('prevOccurrence', function(event, paragraphId) {
+    if ($scope.paragraph.id !== paragraphId) {
+      return
+    }
+    let highlightedRangeExists = currentRange.id !== -1
+    if (highlightedRangeExists) {
+      $scope.editor.session.removeMarker(currentRange.markerId)
+      currentRange.markerId = -1
+    }
+    if (currentRange.id === -1) {
+      currentRange.id = searchRanges.length
+    }
+    --currentRange.id
+    if (currentRange.id === -1) {
+      $scope.$emit('noPrevOccurrence')
+      return
+    }
+    currentRange.markerId = $scope.editor.session.addMarker(
+      searchRanges[currentRange.id].range, 'ace_selection', 'text')
+  })
+
+  $scope.$on('replaceCurrent', function(event, from, to) {
+    if (currentRange.id === -1) {
+      return
+    }
+    let indexFromEnd = searchRanges.length - currentRange.id - 1
+    let prevId = currentRange.id
+    $scope.editor.session.removeMarker(currentRange.markerId)
+    $scope.editor.session.replace(searchRanges[currentRange.id].range, to)
+    markAllOccurrences(from)
+    let currentIndex = searchRanges.length - indexFromEnd
+    $scope.$emit('occurrencesCountChanged', currentIndex - prevId - 1)
+    currentRange.id = currentIndex
+    if (currentRange.id === searchRanges.length) {
+      currentRange.id = -1
+      $scope.$emit('noNextOccurrenceAfterReplace')
+    } else {
+      currentRange.markerId = $scope.editor.session.addMarker(
+        searchRanges[currentRange.id].range, 'ace_selection', 'text')
+    }
+  })
+
+  $scope.$on('replaceAll', function(event, from, to) {
+    clearSearchSelection()
+    $scope.editor.replaceAll(to, {needle: from})
+  })
+
+  $scope.$on('checkOccurrences', function() {
+    if (searchRanges.length > 0) {
+      $scope.$emit('occurrencesExists', searchRanges.length)
     }
   })
 }

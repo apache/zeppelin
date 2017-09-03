@@ -173,6 +173,26 @@
 </property>
 -->
 
+<!-- Notebook storage layer using hdfs file system
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
+  <description>hdfs notebook persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.hdfs.keytab</name>
+  <value></value>
+  <description>keytab for accessing kerberized hdfs</description>
+</property>
+
+<property>
+  <name>zeppelin.hdfs.principal</name>
+  <value></value>
+  <description>principal for accessing kerberized hdfs</description>
+</property>
+-->
+
 <!-- For connecting your Zeppelin with ZeppelinHub -->
 <!--
 <property>
@@ -396,4 +416,18 @@
 </property>
 -->
 
+<!--
+<property>
+  <name>zeppelin.server.strict.transport</name>
+  <value>max-age=631138519</value>
+  <description>The HTTP Strict-Transport-Security response header is a security feature that lets a web site tell browsers that it should only be communicated with using HTTPS, instead of using HTTP. Enable this when Zeppelin is running on HTTPS. Value is in Seconds, the default value is equivalent to 20 years.</description>
+</property>
+-->
+<!--
+<property>
+  <name>zeppelin.server.xxss.protection</name>
+  <value>1</value>
+  <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
+</property>
+-->
 </configuration>

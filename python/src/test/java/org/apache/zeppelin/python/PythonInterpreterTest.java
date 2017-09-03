@@ -59,6 +59,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
     Properties p = new Properties();
     p.setProperty(ZEPPELIN_PYTHON, DEFAULT_ZEPPELIN_PYTHON);
     p.setProperty(MAX_RESULT, "1000");
+    p.setProperty("zeppelin.python.useIPython", "false");
     return p;
   }
 
@@ -85,6 +86,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         out);
+    InterpreterContext.set(context);
     pythonInterpreter.open();
   }
 

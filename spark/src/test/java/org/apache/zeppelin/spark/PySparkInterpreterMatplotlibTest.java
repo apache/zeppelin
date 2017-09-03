@@ -89,6 +89,7 @@ public class PySparkInterpreterMatplotlibTest {
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
+    p.setProperty("zeppelin.spark.useIPython", "false");
     return p;
   }
 
@@ -110,6 +111,15 @@ public class PySparkInterpreterMatplotlibTest {
   public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
+    context = new InterpreterContext("note", "id", null, "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(null));
+    InterpreterContext.set(context);
 
     sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
     intpGroup.get("note").add(sparkInterpreter);
@@ -121,14 +131,6 @@ public class PySparkInterpreterMatplotlibTest {
     pyspark.setInterpreterGroup(intpGroup);
     pyspark.open();
 
-    context = new InterpreterContext("note", "id", null, "title", "text",
-      new AuthenticationInfo(),
-      new HashMap<String, Object>(),
-      new GUI(),
-      new AngularObjectRegistry(intpGroup.getId(), null),
-      new LocalResourcePool("id"),
-      new LinkedList<InterpreterContextRunner>(),
-      new InterpreterOutput(null));
   }
 
   @AfterClass
