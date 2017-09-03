@@ -19,7 +19,11 @@ limitations under the License.
       <input type="text" pu-elastic-input class="form-control2" placeholder="New name" style="min-width: 0px; max-width: 95%;"
            ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
            ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
-      <p class="form-control-static2" ng-click="input.showEditor = !revisionView; input.value = note.name" ng-show="!input.showEditor">{{noteName(note)}}</p>
+      <p class="form-control-static2" 
+         tooltip-placement="bottom" 
+         uib-tooltip={{noteName(note)}}
+         ng-click="input.showEditor = !revisionView; input.value = note.name" 
+         ng-show="!input.showEditor">{{noteName(note)}}</p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -162,6 +166,55 @@ limitations under the License.
           </li>
         </ul>
       </div>
+    </span>
+
+    <span class="labelBtn btn-group" id="searchGroup" style="vertical-align:middle; display:inline-block;">
+      <button type="button" class="btn btn-default btn-xs dropdown-toggle"
+              data-toggle="dropdown" tooltip-placement="bottom" uib-tooltip="Search code"
+      ng-click="searchClicked()">
+        <i class="fa fa-search"></i>
+      </button>
+      <ul class="dropdown-menu search-dropdown" ng-click="$event.stopPropagation()"
+          ng-style="{left : search.left}" style="width: 350px">
+        <li>
+          <div class="input-group input-group-sm search-group">
+            <span class="input-group-addon">Find</span>
+            <input type="text" class="form-control" id="findInput"
+                   ng-class="{'no-match': !hasMatches() && search.searchText !== '',
+                    'has-match': search.searchText !== ''}"
+                   ng-change="markAllOccurrencesAndHighlightFirst()"
+                   ng-click="markAllOccurrencesAndHighlightFirst()" ng-keypress="onPressOnFindInput($event)"
+                   ng-model="search.searchText"  ng-trim="false"/>
+            <span class="input-group-addon after-input" ng-show="search.searchText !== ''"
+                  ng-class="{'no-match': !hasMatches() && search.searchText !== ''}">
+              {{search.currentOccurrence}} of {{search.occurrencesCount}}
+            </span>
+            <div class="input-group-btn">
+              <button class="btn btn-default" ng-click="prevOccurrence()">
+                <i class="fa fa-angle-left" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="input-group-btn">
+              <button class="btn btn-default" ng-click="nextOccurrence()">
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="input-group input-group-sm search-group">
+            <span class="input-group-addon" style="border-top-width: inherit">Replace</span>
+            <input type="text" class="form-control" ng-model="search.replaceText" ng-trim="false"
+                   style="border-top-width: inherit"/>
+            <div class="input-group-btn">
+              <button class="btn btn-default" ng-click="replace()"
+                      style="border-top-width: inherit">Replace</button>
+            </div>
+            <div class="input-group-btn">
+              <button class="btn btn-default" ng-click="replaceAll()"
+                      style="border-top-width: inherit">All</button>
+            </div>
+          </div>
+        </li>
+      </ul>
     </span>
 
 <!-- put the delete action by itself for your protection -->

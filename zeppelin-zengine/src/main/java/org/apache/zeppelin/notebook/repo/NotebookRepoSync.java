@@ -81,6 +81,7 @@ public class NotebookRepoSync implements NotebookRepo {
         Constructor<?> constructor = notebookStorageClass.getConstructor(
             ZeppelinConfiguration.class);
         repos.add((NotebookRepo) constructor.newInstance(conf));
+        LOG.info("Instantiate NotebookRepo: " + storageClassNames[i]);
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
           InvocationTargetException e) {
@@ -284,6 +285,7 @@ public class NotebookRepoSync implements NotebookRepo {
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
     return notebookAuthorization.getOwners(noteId).isEmpty()
         && notebookAuthorization.getReaders(noteId).isEmpty()
+            && notebookAuthorization.getRunners(noteId).isEmpty()
         && notebookAuthorization.getWriters(noteId).isEmpty();
   }
 
@@ -299,6 +301,9 @@ public class NotebookRepoSync implements NotebookRepo {
     users = notebookAuthorization.getReaders(noteId);
     users.add(subject.getUser());
     notebookAuthorization.setReaders(noteId, users);
+    users = notebookAuthorization.getRunners(noteId);
+    users.add(subject.getUser());
+    notebookAuthorization.setRunners(noteId, users);
     users = notebookAuthorization.getWriters(noteId);
     users.add(subject.getUser());
     notebookAuthorization.setWriters(noteId, users);

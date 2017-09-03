@@ -143,7 +143,8 @@ ldapRealm.contextFactory.authenticationMechanism = simple
 
 The other more flexible option is to use the LdapRealm. It allows for mapping of ldapgroups to roles and also allows for
  role/group based authentication into the zeppelin server. Sample configuration for this realm is given below.
- ```
+
+```
 [main]
 ldapRealm=org.apache.zeppelin.realm.LdapRealm
 
@@ -179,7 +180,7 @@ ldapRealm.allowedRolesForAuthentication = admin_role,user_role
 ldapRealm.permissionsByRole= user_role = *:ToDoItemsJdo:*:*, *:ToDoItem:*:*; admin_role = *
 securityManager.sessionManager = $sessionManager
 securityManager.realms = $ldapRealm
- ```
+```
 
 ### PAM
 [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
@@ -209,6 +210,21 @@ securityManager.realms = $zeppelinHubRealm
 
 > Note: ZeppelinHub is not releated to Apache Zeppelin project.
 
+## Secure Cookie for Zeppelin Sessions (optional)
+Zeppelin can be configured to set `HttpOnly` flag in the session cookie. With this configuration, Zeppelin cookies can 
+not be accessed via client side scripts thus preventing majority of Cross-site scripting (XSS) attacks.
+
+To enable secure cookie support via Shiro, add the following lines in `conf/shiro.ini` under `[main]` section, after
+defining a `sessionManager`.
+
+```
+cookie = org.apache.shiro.web.servlet.SimpleCookie
+cookie.name = JSESSIONID
+cookie.secure = true
+cookie.httpOnly = true
+sessionManager.sessionIdCookie = $cookie
+```
+
 ## Secure your Zeppelin information (optional)
 By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin.
 Sometimes you might want to hide these information for your use case.
@@ -225,7 +241,28 @@ Since Shiro provides **url-based security**, you can hide the information by com
 In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information.
 If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
 
+### Apply multiple roles in Shiro configuration
+By default, Shiro will allow access to a URL if only user is part of "**all the roles**" defined like this:
+```
+[urls]
+
+/api/interpreter/** = authc, roles[admin, role1]
+```
+
+If there is a need that user with "**any of the defined roles**" should be allowed, then following Shiro configuration can be used:
+```
+[main]
+anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
+
+[urls]
+
+/api/interpreter/** = authc, anyofroles[admin, role1]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
+```
+
 <br/>
+
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
 
 

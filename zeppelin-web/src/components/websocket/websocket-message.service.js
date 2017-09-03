@@ -233,11 +233,12 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
-    commitParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
-      websocketEvents.sendNewEvent({
+    commitParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId) {
+      return websocketEvents.sendNewEvent({
         op: 'COMMIT_PARAGRAPH',
         data: {
           id: paragraphId,
+          noteId: noteId,
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
@@ -308,18 +309,18 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       return websocketEvents.isConnected()
     },
 
-    getNoteJobsList: function () {
+    getJobs: function () {
       websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'})
+    },
+
+    disconnectJobEvent: function () {
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'})
     },
 
     getUpdateNoteJobsList: function (lastUpdateServerUnixTime) {
       websocketEvents.sendNewEvent(
         {op: 'LIST_UPDATE_NOTE_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
       )
-    },
-
-    unsubscribeJobManager: function () {
-      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'})
     },
 
     getInterpreterBindings: function (noteId) {

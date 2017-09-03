@@ -1215,6 +1215,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       "owners":[  
          "user1"
       ],
+      "runners":[
+         "user2"
+      ],
       "writers":[  
          "user2"
       ]
@@ -1257,6 +1260,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     "user1"
   ],
   "owners": [
+    "user2"
+  ],
+  "runners":[
     "user2"
   ],
   "writers": [

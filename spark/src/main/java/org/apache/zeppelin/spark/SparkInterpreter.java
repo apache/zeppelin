@@ -359,10 +359,10 @@ public class SparkInterpreter extends Interpreter {
    * Create SparkSession
    */
   public Object createSparkSession() {
-    logger.info("------ Create new SparkContext {} -------", getProperty("master"));
+    // use local mode for embedded spark mode when spark.master is not found
+    conf.setIfMissing("spark.master", "local");
+    logger.info("------ Create new SparkSession {} -------", conf.get("spark.master"));
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
-    conf.setAppName(getProperty("spark.app.name"));
-
     if (outputDir != null) {
       conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath());
     }
@@ -370,11 +370,6 @@ public class SparkInterpreter extends Interpreter {
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
     }
-
-    if (System.getenv("SPARK_HOME") != null) {
-      conf.setSparkHome(System.getenv("SPARK_HOME"));
-    }
-
     conf.set("spark.scheduler.mode", "FAIR");
     conf.setMaster(getProperty("master"));
     if (isYarnMode()) {
@@ -383,7 +378,6 @@ public class SparkInterpreter extends Interpreter {
     }
 
     Properties intpProperty = getProperty();
-
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
@@ -436,7 +430,11 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public SparkContext createSparkContext_1() {
-    logger.info("------ Create new SparkContext {} -------", getProperty("master"));
+    // use local mode for embedded spark mode when spark.master is not found
+    if (!conf.contains("spark.master")) {
+      conf.setMaster("local");
+    }
+    logger.info("------ Create new SparkContext {} -------", conf.get("spark.master"));
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = null;
@@ -490,9 +488,6 @@ public class SparkInterpreter extends Interpreter {
       classServerUri = (String) Utils.invokeMethod(classServer, "uri");
     }
 
-    conf.setMaster(getProperty("master"))
-        .setAppName(getProperty("spark.app.name"));
-
     if (classServerUri != null) {
       conf.set("spark.repl.class.uri", classServerUri);
     }
@@ -508,13 +503,9 @@ public class SparkInterpreter extends Interpreter {
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
     }
-    if (System.getenv("SPARK_HOME") != null) {
-      conf.setSparkHome(System.getenv("SPARK_HOME"));
-    }
     conf.set("spark.scheduler.mode", "FAIR");
 
     Properties intpProperty = getProperty();
-
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));

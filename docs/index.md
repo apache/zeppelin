@@ -97,6 +97,7 @@ limitations under the License.
   * [Shiro Authentication](./setup/security/shiro_authentication.html)
   * [Notebook Authorization](./setup/security/notebook_authorization.html)
   * [Data Source Authorization](./setup/security/datasource_authorization.html)
+  * [HTTP Security Headers](./setup/security/http_security_headers.html)
 * Notebook Storage: a guide about saving notebooks to external storage
   * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
@@ -122,11 +123,6 @@ limitations under the License.
   * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)
   * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
   * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
-
-#### External Resources
-  * [Mailing List](https://zeppelin.apache.org/community.html)
-  * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
-  * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
   
 #### Available Interpreters 
   * [Alluxio](./interpreter/alluxio.html)
@@ -155,3 +151,7 @@ limitations under the License.
   * [Shell](./interpreter/Shell.html)
   * [Spark](./interpreter/spark.html)
   
+#### External Resources
+  * [Mailing List](https://zeppelin.apache.org/community.html)
+  * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
+  * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)

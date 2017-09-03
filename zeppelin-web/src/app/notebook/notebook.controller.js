@@ -51,6 +51,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.interpreterBindings = []
   $scope.isNoteDirty = null
   $scope.saveTimer = null
+  $scope.paragraphWarningDialog = {}
 
   let connectedOnce = false
   let isRevisionPath = function (path) {
@@ -61,6 +62,21 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.noteRevisions = []
   $scope.currentRevision = 'Head'
   $scope.revisionView = isRevisionPath($location.path())
+
+  $scope.search = {
+    searchText: '',
+    occurrencesExists: false,
+    needHighlightFirst: false,
+    occurrencesHidden: false,
+    replaceText: '',
+    needToSendNextOccurrenceAfterReplace: false,
+    occurrencesCount: 0,
+    currentOccurrence: 0,
+    searchBoxOpened: false,
+    searchBoxWidth: 350,
+    left: '0px'
+  }
+  let currentSearchParagraph = 0
 
   $scope.$watch('note', function (value) {
     $rootScope.pageTitle = value ? value.name : 'Zeppelin'
@@ -381,11 +397,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }, 10000)
   }
 
-  angular.element(window).on('beforeunload', function (e) {
-    $scope.killSaveTimer()
-    $scope.saveNote()
-  })
-
   $scope.setLookAndFeel = function (looknfeel) {
     $scope.note.config.looknfeel = looknfeel
     if ($scope.revisionView === true) {
@@ -447,7 +458,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.note.paragraphs && $scope.note.paragraphs[0]) {
       $scope.note.paragraphs[0].focus = true
     }
-
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel)
   }
 
@@ -686,6 +696,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       $scope.setIamOwner()
       angular.element('#selectOwners').select2(selectJson)
       angular.element('#selectReaders').select2(selectJson)
+      angular.element('#selectRunners').select2(selectJson)
       angular.element('#selectWriters').select2(selectJson)
       if (callback) {
         callback()
@@ -725,9 +736,204 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   function convertPermissionsToArray () {
     $scope.permissions.owners = angular.element('#selectOwners').val()
     $scope.permissions.readers = angular.element('#selectReaders').val()
+    $scope.permissions.runners = angular.element('#selectRunners').val()
     $scope.permissions.writers = angular.element('#selectWriters').val()
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove()
   }
+
+  $scope.hasMatches = function() {
+    return $scope.search.occurrencesCount > 0
+  }
+
+  const markAllOccurrences = function() {
+    $scope.search.occurrencesCount = 0
+    $scope.search.occurrencesHidden = false
+    currentSearchParagraph = 0
+    $scope.$broadcast('markAllOccurrences', $scope.search.searchText)
+    $scope.search.currentOccurrence = $scope.search.occurrencesCount > 0 ? 1 : 0
+  }
+
+  $scope.markAllOccurrencesAndHighlightFirst = function() {
+    $scope.search.needHighlightFirst = true
+    markAllOccurrences()
+  }
+
+  const increaseCurrentOccurence = function() {
+    ++$scope.search.currentOccurrence
+    if ($scope.search.currentOccurrence > $scope.search.occurrencesCount) {
+      $scope.search.currentOccurrence = 1
+    }
+  }
+
+  const decreaseCurrentOccurence = function() {
+    --$scope.search.currentOccurrence
+    if ($scope.search.currentOccurrence === 0) {
+      $scope.search.currentOccurrence = $scope.search.occurrencesCount
+    }
+  }
+
+  const sendNextOccurrenceMessage = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      markAllOccurrences()
+      if ($scope.search.occurrencesCount === 0) {
+        return
+      }
+    }
+    if ($scope.search.occurrencesHidden) {
+      markAllOccurrences()
+    }
+    $scope.$broadcast('nextOccurrence', $scope.note.paragraphs[currentSearchParagraph].id)
+  }
+
+  const sendPrevOccurrenceMessage = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      markAllOccurrences()
+      if ($scope.search.occurrencesCount === 0) {
+        return
+      }
+    }
+    if ($scope.search.occurrencesHidden) {
+      markAllOccurrences()
+      currentSearchParagraph = $scope.note.paragraphs.length - 1
+    }
+    $scope.$broadcast('prevOccurrence', $scope.note.paragraphs[currentSearchParagraph].id)
+  }
+
+  const increaseCurrentSearchParagraph = function() {
+    ++currentSearchParagraph
+    if (currentSearchParagraph >= $scope.note.paragraphs.length) {
+      currentSearchParagraph = 0
+    }
+  }
+
+  const decreaseCurrentSearchParagraph = function () {
+    --currentSearchParagraph
+    if (currentSearchParagraph === -1) {
+      currentSearchParagraph = $scope.note.paragraphs.length - 1
+    }
+  }
+
+  $scope.$on('occurrencesExists', function(event, count) {
+    $scope.search.occurrencesCount += count
+    if ($scope.search.needHighlightFirst) {
+      sendNextOccurrenceMessage()
+      $scope.search.needHighlightFirst = false
+    }
+  })
+
+  $scope.nextOccurrence = function() {
+    sendNextOccurrenceMessage()
+    increaseCurrentOccurence()
+  }
+
+  $scope.$on('noNextOccurrence', function(event) {
+    increaseCurrentSearchParagraph()
+    sendNextOccurrenceMessage()
+  })
+
+  $scope.prevOccurrence = function() {
+    sendPrevOccurrenceMessage()
+    decreaseCurrentOccurence()
+  }
+
+  $scope.$on('noPrevOccurrence', function(event) {
+    decreaseCurrentSearchParagraph()
+    sendPrevOccurrenceMessage()
+  })
+
+  $scope.$on('editorClicked', function() {
+    $scope.search.occurrencesHidden = true
+    $scope.$broadcast('unmarkAll')
+  })
+
+  $scope.replace = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      $scope.markAllOccurrencesAndHighlightFirst()
+      if ($scope.search.occurrencesCount === 0) {
+        return
+      }
+    }
+    if ($scope.search.occurrencesHidden) {
+      $scope.markAllOccurrencesAndHighlightFirst()
+      return
+    }
+    $scope.$broadcast('replaceCurrent', $scope.search.searchText, $scope.search.replaceText)
+    if ($scope.search.needToSendNextOccurrenceAfterReplace) {
+      sendNextOccurrenceMessage()
+      $scope.search.needToSendNextOccurrenceAfterReplace = false
+    }
+  }
+
+  $scope.$on('occurrencesCountChanged', function(event, cnt) {
+    $scope.search.occurrencesCount += cnt
+    if ($scope.search.occurrencesCount === 0) {
+      $scope.search.currentOccurrence = 0
+    } else {
+      $scope.search.currentOccurrence += cnt + 1
+      if ($scope.search.currentOccurrence > $scope.search.occurrencesCount) {
+        $scope.search.currentOccurrence = 1
+      }
+    }
+  })
+
+  $scope.replaceAll = function() {
+    if ($scope.search.occurrencesCount === 0) {
+      return
+    }
+    if ($scope.search.occurrencesHidden) {
+      $scope.markAllOccurrencesAndHighlightFirst()
+    }
+    $scope.$broadcast('replaceAll', $scope.search.searchText, $scope.search.replaceText)
+    $scope.markAllOccurrencesAndHighlightFirst()
+  }
+
+  $scope.$on('noNextOccurrenceAfterReplace', function() {
+    $scope.search.occurrencesCount = 0
+    $scope.search.needHighlightFirst = false
+    $scope.search.needToSendNextOccurrenceAfterReplace = false
+    $scope.$broadcast('checkOccurrences')
+    increaseCurrentSearchParagraph()
+    if ($scope.search.occurrencesCount > 0) {
+      $scope.search.needToSendNextOccurrenceAfterReplace = true
+    }
+  })
+
+  $scope.onPressOnFindInput = function(event) {
+    if (event.keyCode === 13) {
+      $scope.nextOccurrence()
+    }
+  }
+
+  let makeSearchBoxVisible = function() {
+    if ($scope.search.searchBoxOpened) {
+      $scope.search.searchBoxOpened = false
+      console.log('make 0')
+      $scope.search.left = '0px'
+    } else {
+      $scope.search.searchBoxOpened = true
+      let searchGroupRect = angular.element('#searchGroup')[0].getBoundingClientRect()
+      console.log('make visible')
+      let dropdownRight = searchGroupRect.left + $scope.search.searchBoxWidth
+      console.log(dropdownRight + ' ' + window.innerWidth)
+      if (dropdownRight + 5 > window.innerWidth) {
+        $scope.search.left = window.innerWidth - dropdownRight - 15 + 'px'
+      }
+    }
+  }
+
+  $scope.searchClicked = function() {
+    makeSearchBoxVisible()
+  }
+
+  $scope.$on('toggleSearchBox', function() {
+    let elem = angular.element('#searchGroup')
+    if ($scope.search.searchBoxOpened) {
+      elem.removeClass('open')
+    } else {
+      elem.addClass('open')
+    }
+    $timeout(makeSearchBoxVisible())
+  })
 
   $scope.restartInterpreter = function(interpreter) {
     const thisConfirm = BootstrapDialog.confirm({
@@ -809,7 +1015,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
           closable: true,
           title: 'Permissions Saved Successfully',
           message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
-          $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+           $scope.permissions.readers + '\n\n' + 'Runners : ' + $scope.permissions.runners +
+           '\n\n' + 'Writers  : ' + $scope.permissions.writers
         })
         $scope.showPermissions = false
       })
@@ -854,6 +1061,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         $scope.closePermissions()
         angular.element('#selectOwners').select2({})
         angular.element('#selectReaders').select2({})
+        angular.element('#selectRunners').select2({})
         angular.element('#selectWriters').select2({})
       } else {
         $scope.openPermissions()
@@ -1068,6 +1276,60 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     isPersonalized = isPersonalized === undefined ? 'false' : isPersonalized
     $scope.note.config.personalizedMode = isPersonalized
   })
+
+  $scope.$on('$routeChangeStart', function (event, next, current) {
+    if (!$scope.note || !$scope.note.paragraphs) {
+      return
+    }
+    if ($scope.note && $scope.note.paragraphs) {
+      $scope.note.paragraphs.map(par => {
+        if ($scope.allowLeave === true) {
+          return
+        }
+        let thisScope = angular.element(
+          '#' + par.id + '_paragraphColumn_main').scope()
+
+        if (thisScope.dirtyText === undefined ||
+          thisScope.originalText === undefined ||
+          thisScope.dirtyText === thisScope.originalText) {
+          return true
+        } else {
+          event.preventDefault()
+          $scope.showParagraphWarning(next)
+        }
+      })
+    }
+  })
+
+  $scope.showParagraphWarning = function (next) {
+    if ($scope.paragraphWarningDialog.opened !== true) {
+      $scope.paragraphWarningDialog = BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Do you want to leave this site?',
+        message: 'Changes that you have made will not be saved.',
+        buttons: [{
+          label: 'Stay',
+          action: function (dialog) {
+            dialog.close()
+          }
+        }, {
+          label: 'Leave',
+          action: function (dialog) {
+            dialog.close()
+            let locationToRedirect = next['$$route']['originalPath']
+            Object.keys(next.pathParams).map(key => {
+              locationToRedirect = locationToRedirect.replace(':' + key,
+                next.pathParams[key])
+            })
+            $scope.allowLeave = true
+            $location.path(locationToRedirect)
+          }
+        }]
+      })
+    }
+  }
 
   $scope.$on('$destroy', function () {
     angular.element(window).off('beforeunload')
