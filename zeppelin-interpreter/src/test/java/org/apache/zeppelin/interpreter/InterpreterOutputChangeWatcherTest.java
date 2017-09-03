@@ -22,14 +22,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChangeListener {
   private File tmpDir;
-  private File fileChanged;
-  private int numChanged;
+  private Set<File> fileChanged;
   private InterpreterOutputChangeWatcher watcher;
 
   @Before
@@ -39,8 +40,7 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
 
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
-    fileChanged = null;
-    numChanged = 0;
+    fileChanged = new HashSet<>();
   }
 
   @After
@@ -65,8 +65,7 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
 
   @Test
   public void test() throws IOException, InterruptedException {
-    assertNull(fileChanged);
-    assertEquals(0, numChanged);
+    assertTrue(fileChanged.isEmpty());
 
     Thread.sleep(1000);
     // create new file
@@ -91,15 +90,13 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
       wait(30*1000);
     }
 
-    assertNotNull(fileChanged);
-    assertEquals(1, numChanged);
+    assertTrue(fileChanged.contains(file1));
   }
 
 
   @Override
   public void fileChanged(File file) {
-    fileChanged = file;
-    numChanged++;
+    fileChanged.add(file);
 
     synchronized(this) {
       notify();
