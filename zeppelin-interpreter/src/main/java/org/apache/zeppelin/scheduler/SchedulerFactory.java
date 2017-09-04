@@ -17,24 +17,21 @@
 
 package org.apache.zeppelin.scheduler;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO(moon) : add description.
+ * Factory class for creating schedulers
+ *
  */
 public class SchedulerFactory implements SchedulerListener {
   private static final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
-  ExecutorService executor;
-  Map<String, Scheduler> schedulers = new LinkedHashMap<>();
+  protected ExecutorService executor;
+  protected Map<String, Scheduler> schedulers = new LinkedHashMap<>();
 
   private static SchedulerFactory singleton;
   private static Long singletonLock = new Long(0);
@@ -54,17 +51,17 @@ public class SchedulerFactory implements SchedulerListener {
     return singleton;
   }
 
-  public SchedulerFactory() throws Exception {
-    executor = ExecutorFactory.singleton().createOrGet("schedulerFactory", 100);
+  SchedulerFactory() throws Exception {
+    executor = ExecutorFactory.singleton().createOrGet("SchedulerFactory", 100);
   }
 
   public void destroy() {
-    ExecutorFactory.singleton().shutdown("schedulerFactory");
+    ExecutorFactory.singleton().shutdown("SchedulerFactory");
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {
     synchronized (schedulers) {
-      if (schedulers.containsKey(name) == false) {
+      if (!schedulers.containsKey(name)) {
         Scheduler s = new FIFOScheduler(name, executor, this);
         schedulers.put(name, s);
         executor.execute(s);
@@ -75,7 +72,7 @@ public class SchedulerFactory implements SchedulerListener {
 
   public Scheduler createOrGetParallelScheduler(String name, int maxConcurrency) {
     synchronized (schedulers) {
-      if (schedulers.containsKey(name) == false) {
+      if (!schedulers.containsKey(name)) {
         Scheduler s = new ParallelScheduler(name, executor, this, maxConcurrency);
         schedulers.put(name, s);
         executor.execute(s);
@@ -84,60 +81,38 @@ public class SchedulerFactory implements SchedulerListener {
     }
   }
 
-  public Scheduler createOrGetRemoteScheduler(
-      String name,
-      String noteId,
-      RemoteInterpreterProcess interpreterProcess,
-      int maxConcurrency) {
-
+  public Scheduler createOrGetScheduler(Scheduler scheduler) {
     synchronized (schedulers) {
-      if (schedulers.containsKey(name) == false) {
-        Scheduler s = new RemoteScheduler(
-            name,
-            executor,
-            noteId,
-            interpreterProcess,
-            this,
-            maxConcurrency);
-        schedulers.put(name, s);
-        executor.execute(s);
+      if (!schedulers.containsKey(scheduler.getName())) {
+        schedulers.put(scheduler.getName(), scheduler);
+        executor.execute(scheduler);
       }
-      return schedulers.get(name);
+      return schedulers.get(scheduler.getName());
     }
   }
 
-  public Scheduler removeScheduler(String name) {
+  public void removeScheduler(String name) {
     synchronized (schedulers) {
       Scheduler s = schedulers.remove(name);
       if (s != null) {
         s.stop();
       }
     }
-    return null;
   }
 
-  public Collection<Scheduler> listScheduler(String name) {
-    List<Scheduler> s = new LinkedList<>();
-    synchronized (schedulers) {
-      for (Scheduler ss : schedulers.values()) {
-        s.add(ss);
-      }
-    }
-    return s;
+  public ExecutorService getExecutor() {
+    return executor;
   }
 
   @Override
   public void jobStarted(Scheduler scheduler, Job job) {
-    logger.info("Job " + job.getJobName() + " started by scheduler " + scheduler.getName());
+    logger.info("Job " + job.getId() + " started by scheduler " + scheduler.getName());
 
   }
 
   @Override
   public void jobFinished(Scheduler scheduler, Job job) {
-    logger.info("Job " + job.getJobName() + " finished by scheduler " + scheduler.getName());
+    logger.info("Job " + job.getId() + " finished by scheduler " + scheduler.getName());
 
   }
-
-
-
 }
