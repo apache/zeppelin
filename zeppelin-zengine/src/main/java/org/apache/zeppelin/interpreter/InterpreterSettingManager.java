@@ -142,7 +142,7 @@ public class InterpreterSettingManager {
     this.interpreterDirPath = Paths.get(conf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
     this.interpreterSettingPath = Paths.get(conf.getInterpreterSettingPath());
-    LOGGER.debug("InterpreterBindingPath: {}", interpreterSettingPath);
+    LOGGER.debug("InterpreterSettingPath: {}", interpreterSettingPath);
     this.dependencyResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
     this.interpreterRepositories = dependencyResolver.getRepos();
@@ -283,7 +283,7 @@ public class InterpreterSettingManager {
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
       String interpreterJson) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
-    ClassLoader tempClassLoader = new URLClassLoader(urls, cl);
+    ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
     URL url = tempClassLoader.getResource(interpreterJson);
     if (url == null) {
@@ -390,6 +390,17 @@ public class InterpreterSettingManager {
       }
     }
     return settings;
+  }
+
+  public InterpreterSetting getInterpreterSettingByName(String name) {
+    synchronized (interpreterSettings) {
+      for (InterpreterSetting setting : interpreterSettings.values()) {
+        if (setting.getName().equals(name)) {
+          return setting;
+        }
+      }
+    }
+    throw new RuntimeException("No such interpreter setting: " + name);
   }
 
   public ManagedInterpreterGroup getInterpreterGroupById(String groupId) {

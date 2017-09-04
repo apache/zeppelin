@@ -44,12 +44,15 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void open() {
-    getProperty().setProperty("zeppelin.python", PySparkInterpreter.getPythonExec(property));
+    property.setProperty("zeppelin.python", PySparkInterpreter.getPythonExec(property));
     sparkInterpreter = getSparkInterpreter();
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
-    String additionalPythonPath = conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
-        ":../interpreter/lib/python";
-    setAdditionalPythonPath(additionalPythonPath);
+    // only set PYTHONPATH in local or yarn-client mode.
+    // yarn-cluster will setup PYTHONPATH automatically.
+    if (!conf.get("spark.submit.deployMode").equals("cluster")) {
+      setAdditionalPythonPath(PythonUtils.sparkPythonPath());
+      setAddBulitinPy4j(false);
+    }
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
     super.open();
   }

@@ -59,7 +59,7 @@ public class PySparkInterpreterTest {
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
-    p.setProperty("zeppelin.spark.useIPython", "false");
+    p.setProperty("zeppelin.pyspark.useIPython", "false");
     return p;
   }
 

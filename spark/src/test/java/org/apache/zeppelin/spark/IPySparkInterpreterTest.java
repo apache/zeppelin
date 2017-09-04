@@ -59,6 +59,7 @@ public class IPySparkInterpreterTest {
     Properties p = new Properties();
     p.setProperty("spark.master", "local[4]");
     p.setProperty("master", "local[4]");
+    p.setProperty("spark.submit.deployMode", "client");
     p.setProperty("spark.app.name", "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.maxResult", "1000");
