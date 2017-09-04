@@ -76,6 +76,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private String livyURL;
   private int sessionCreationTimeout;
   private int pullStatusInterval;
+  private final boolean shareExisingSession;
   protected boolean displayAppInfo;
   protected LivyVersion livyVersion;
   private RestTemplate restTemplate;
@@ -94,6 +95,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
+    this.shareExisingSession = Boolean.parseBoolean(
+        property.getProperty("zeppelin.livy.share_existing_session"));
+
     this.restTemplate = createRestTemplate();
   }
 
@@ -102,11 +106,32 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   @Override
   public void open() {
     try {
-      initLivySession();
+      logger.info("zeppelin.livy.share_existing_session: {}", shareExisingSession);
+      if (!shareExisingSession) {
+        sessionInfo = createSession();
+      } else {
+        sessionInfo = fetchExistingSession();
+        if (sessionInfo == null) {
+          sessionInfo = createSession();
+        }
+      }
     } catch (LivyException e) {
       String msg = "Fail to create session, please check livy interpreter log and " +
           "livy server log";
       throw new RuntimeException(msg, e);
+    }
+  }
+
+  private SessionInfo fetchExistingSession() throws LivyException {
+    logger.info("fetchExistingSession");
+    SessionList sessionList = SessionList.fromJson(callRestAPI("/sessions", "GET"));
+    if (sessionList.total == 0) {
+      logger.warn("total == 0");
+      return null;
+    } else {
+      SessionInfo sessionInfo = sessionList.get(0);
+      logger.info("fetchExistingSession: {}", sessionInfo);
+      return sessionInfo;
     }
   }
 
@@ -119,25 +144,25 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
   }
 
-  protected void initLivySession() throws LivyException {
-    this.sessionInfo = createSession(getUserName(), getSessionKind());
+  protected SessionInfo createSession() throws LivyException {
+    SessionInfo si = _createSession(getUserName(), getSessionKind());
     if (displayAppInfo) {
-      if (sessionInfo.appId == null) {
+      if (si.appId == null) {
         // livy 0.2 don't return appId and sparkUiUrl in response so that we need to get it
         // explicitly by ourselves.
-        sessionInfo.appId = extractAppId();
+        si.appId = extractAppId();
       }
 
-      if (sessionInfo.appInfo == null ||
-          StringUtils.isEmpty(sessionInfo.appInfo.get("sparkUiUrl"))) {
-        sessionInfo.webUIAddress = extractWebUIAddress();
+      if (si.appInfo == null ||
+          StringUtils.isEmpty(si.appInfo.get("sparkUiUrl"))) {
+        si.webUIAddress = extractWebUIAddress();
       } else {
-        sessionInfo.webUIAddress = sessionInfo.appInfo.get("sparkUiUrl");
+        si.webUIAddress = si.appInfo.get("sparkUiUrl");
       }
       LOGGER.info("Create livy session successfully with sessionId: {}, appId: {}, webUI: {}",
-          sessionInfo.id, sessionInfo.appId, sessionInfo.webUIAddress);
+          si.id, si.appId, si.webUIAddress);
     } else {
-      LOGGER.info("Create livy session successfully with sessionId: {}", this.sessionInfo.id);
+      LOGGER.info("Create livy session successfully with sessionId: {}", si.id);
     }
     // check livy version
     try {
@@ -147,6 +172,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       this.livyVersion = new LivyVersion("0.2.0");
       LOGGER.info("Use livy 0.2.0");
     }
+    return si;
   }
 
   protected abstract String extractAppId() throws LivyException;
@@ -193,7 +219,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     return 0;
   }
 
-  private SessionInfo createSession(String user, String kind)
+  private SessionInfo _createSession(String user, String kind)
       throws LivyException {
     try {
       Map<String, String> conf = new HashMap<>();
@@ -254,7 +280,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         // to check session status again in this sync block
         synchronized (this) {
           if (isSessionExpired()) {
-            initLivySession();
+            createSession();
           }
         }
         stmtInfo = executeStatement(new ExecuteRequest(code));
@@ -644,6 +670,26 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
     public static SessionInfo fromJson(String json) {
       return gson.fromJson(json, SessionInfo.class);
+    }
+  }
+
+  /**
+   *
+   */
+  public static class SessionList {
+    public int from;
+    public int total;
+    public List<SessionInfo> sessions;
+
+    public SessionInfo get(int idx) {
+      if (sessions == null) {
+        return null;
+      }
+      return sessions.get(idx);
+    }
+
+    public static SessionList fromJson(String json) {
+      return gson.fromJson(json, SessionList.class);
     }
   }
 
