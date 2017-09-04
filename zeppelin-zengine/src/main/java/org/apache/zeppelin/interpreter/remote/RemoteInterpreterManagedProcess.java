@@ -226,6 +226,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   public void stop() {
+    // shutdown EventPoller first.
+    this.remoteInterpreterEventPoller.shutdown();
     if (callbackServer.isServing()) {
       callbackServer.stop();
     }

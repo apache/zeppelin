@@ -78,6 +78,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private long ipythonLaunchTimeout;
   private String additionalPythonPath;
   private String additionalPythonInitFile;
+  private boolean useBuiltinPy4j = true;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
 
@@ -92,6 +93,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
    * @param additionalPythonPath
    */
   public void setAdditionalPythonPath(String additionalPythonPath) {
+    LOGGER.info("setAdditionalPythonPath: " + additionalPythonPath);
     this.additionalPythonPath = additionalPythonPath;
   }
 
@@ -105,6 +107,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     this.additionalPythonInitFile = additionalPythonInitFile;
   }
 
+  public void setAddBulitinPy4j(boolean add) {
+    this.useBuiltinPy4j = add;
+  }
+
   @Override
   public void open() {
     try {
@@ -113,6 +119,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         return;
       }
       pythonExecutable = getProperty().getProperty("zeppelin.python", "python");
+      LOGGER.info("Python Exec: " + pythonExecutable);
       ipythonLaunchTimeout = Long.parseLong(
           getProperty().getProperty("zeppelin.ipython.launch.timeout", "30000"));
       this.zeppelinContext = new PythonZeppelinContext(
@@ -218,29 +225,34 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     executor.setWatchdog(watchDog);
 
-    String py4jLibPath = null;
-    if (System.getenv("ZEPPELIN_HOME") != null) {
-      py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator
-          + PythonInterpreter.ZEPPELIN_PY4JPATH;
-    } else {
-      Path workingPath = Paths.get("..").toAbsolutePath();
-      py4jLibPath = workingPath + File.separator + PythonInterpreter.ZEPPELIN_PY4JPATH;
+    if (useBuiltinPy4j) {
+      String py4jLibPath = null;
+      if (System.getenv("ZEPPELIN_HOME") != null) {
+        py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator
+            + PythonInterpreter.ZEPPELIN_PY4JPATH;
+      } else {
+        Path workingPath = Paths.get("..").toAbsolutePath();
+        py4jLibPath = workingPath + File.separator + PythonInterpreter.ZEPPELIN_PY4JPATH;
+      }
+      if (additionalPythonPath != null) {
+        // put the py4j at the end, because additionalPythonPath may already contain py4j.
+        // e.g. PySparkInterpreter
+        additionalPythonPath = additionalPythonPath + ":" + py4jLibPath;
+      } else {
+        additionalPythonPath = py4jLibPath;
+      }
     }
-    if (additionalPythonPath != null) {
-      // put the py4j at the end, because additionalPythonPath may already contain py4j.
-      // e.g. PySparkInterpreter
-      additionalPythonPath = additionalPythonPath + ":" + py4jLibPath;
-    } else {
-      additionalPythonPath = py4jLibPath;
-    }
+
     Map<String, String> envs = EnvironmentUtils.getProcEnvironment();
     if (envs.containsKey("PYTHONPATH")) {
-      envs.put("PYTHONPATH", additionalPythonPath + ":" + envs.get("PYTHONPATH"));
+      if (additionalPythonPath != null) {
+        envs.put("PYTHONPATH", additionalPythonPath + ":" + envs.get("PYTHONPATH"));
+      }
     } else {
       envs.put("PYTHONPATH", additionalPythonPath);
     }
 
-    LOGGER.debug("PYTHONPATH: " + envs.get("PYTHONPATH"));
+    LOGGER.info("PYTHONPATH: " + envs.get("PYTHONPATH"));
     executor.execute(cmd, envs, this);
 
     // wait until IPython kernel is started or timeout

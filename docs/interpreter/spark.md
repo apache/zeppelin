@@ -424,7 +424,7 @@ It creates separated SparkContext per each notebook in `isolated` mode.
 ## IPython support
 
 By default, zeppelin would use IPython in `pyspark` when IPython is available, Otherwise it would fall back to the original PySpark implementation.
-If you don't want to use IPython, then you can set `zeppelin.spark.useIPython` as `false` in interpreter setting. For the IPython features, you can refer doc
+If you don't want to use IPython, then you can set `zeppelin.pyspark.useIPython` as `false` in interpreter setting. For the IPython features, you can refer doc
 [Python Interpreter](python.html)
 
 
