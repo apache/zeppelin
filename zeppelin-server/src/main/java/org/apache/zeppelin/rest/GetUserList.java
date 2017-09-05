@@ -202,6 +202,7 @@ public class GetUserList {
    */
   public List<String> getUserList(JdbcRealm obj) {
     List<String> userlist = new ArrayList<>();
+    Connection con = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
     DataSource dataSource = null;
@@ -239,7 +240,7 @@ public class GetUserList {
     }
 
     try {
-      Connection con = dataSource.getConnection();
+      con = dataSource.getConnection();
       ps = con.prepareStatement(userquery);
       ps.setString(1, username);
       ps.setString(2, tablename);
@@ -252,6 +253,7 @@ public class GetUserList {
     } finally {
       JdbcUtils.closeResultSet(rs);
       JdbcUtils.closeStatement(ps);
+      JdbcUtils.closeConnection(con);
     }
     return userlist;
   }
