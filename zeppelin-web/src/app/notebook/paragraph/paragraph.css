@@ -189,6 +189,10 @@
   padding: 4px;
 }
 
+.paragraph .control button {
+  border: 0;
+}
+
 .paragraph .control li {
   font-size: 12px;
   margin-bottom: 4px;
