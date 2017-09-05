@@ -185,6 +185,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   }
 
+  const isTabCompletion = function() {
+    const completionKey = $scope.paragraph.config.editorSetting.completionKey
+    return completionKey == 'TAB'
+  }
+
   $scope.$on('updateParagraphOutput', function (event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
       if (!$scope.paragraph.results) {
@@ -843,9 +848,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           let currentLine = $scope.editor.session.getLine(iCursor.row)
           let isAllTabs = currentLine.split('').every(function(char) { return (char === '\t' || char === ' ') })
 
-          // If user has pressed tab on first line char or if editor mode is %md, keep existing behavior
+          // If user has pressed tab on first line char or if isTabCompletion() is false, keep existing behavior
           // If user has pressed tab anywhere in between and editor mode is not %md, show autocomplete
-          if (!isAllTabs && iCursor.column && $scope.paragraph.config.editorMode !== 'ace/mode/markdown') {
+          if (!isAllTabs && iCursor.column && isTabCompletion()) {
             $scope.editor.execCommand('startAutocomplete')
           } else {
             ace.config.loadModule('ace/ext/language_tools', function () {
