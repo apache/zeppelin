@@ -839,11 +839,13 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           sender: 'editor|cli'
         },
         exec: function(env, args, request) {
-          let iColumnPosition = $scope.editor.selection.getCursor().column
+          let iCursor = $scope.editor.getCursorPosition()
+          let currentLine = $scope.editor.session.getLine(iCursor.row)
+          let isAllTabs = currentLine.split('').every(function(char) { return (char === '\t' || char === ' ') })
 
           // If user has pressed tab on first line char or if editor mode is %md, keep existing behavior
           // If user has pressed tab anywhere in between and editor mode is not %md, show autocomplete
-          if (iColumnPosition && $scope.paragraph.config.editorMode !== 'ace/mode/markdown') {
+          if (!isAllTabs && iCursor.column && $scope.paragraph.config.editorMode !== 'ace/mode/markdown') {
             $scope.editor.execCommand('startAutocomplete')
           } else {
             ace.config.loadModule('ace/ext/language_tools', function () {
