@@ -44,6 +44,11 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td>Shell command time out in millisecs</td>
   </tr>
   <tr>
+    <td>shell.working.directory.user.home</td>
+    <td>false</td>
+    <td>If this set to true, the shell's working directory will be set to user home</td>
+  </tr>
+  <tr>
     <td>zeppelin.shell.auth.type</td>
     <td></td>
     <td>Types of authentications' methods supported are SIMPLE, and KERBEROS</td>

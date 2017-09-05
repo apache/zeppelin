@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 public class ShellInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
+  private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   ConcurrentHashMap<String, DefaultExecutor> executors;
@@ -89,7 +90,10 @@ public class ShellInterpreter extends Interpreter {
         contextInterpreter.out, contextInterpreter.out));
       executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
-      executor.setWorkingDirectory(new File(System.getProperty("user.home")));
+      if (Boolean.valueOf(getProperty(DIRECTORY_USER_HOME))) {
+        executor.setWorkingDirectory(new File(System.getProperty("user.home")));
+      }
+
       int exitVal = executor.execute(cmdLine);
       LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 
         + " return with exit value: " + exitVal);
