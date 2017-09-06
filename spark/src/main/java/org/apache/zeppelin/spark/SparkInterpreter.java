@@ -1098,16 +1098,72 @@ public class SparkInterpreter extends Interpreter {
     }
 
     ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
-    Candidates ret = c.complete(buf, cursor);
+    
+    if (Utils.isScala2_10()) {
+      String singleToken = getCompletionTargetString(buf, cursor);
+      Candidates ret = c.complete(singleToken, singleToken.length());
+      
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<>();
+  
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+      }
+  
+      return completions;
+    } else {
+      Candidates ret = c.complete(buf, cursor);
+  
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<>();
+  
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+      }
+  
+      return completions;
+    }
+  }
 
-    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<>();
+  private String getCompletionTargetString(String text, int cursor) {
+    String[] completionSeqCharaters = {" ", "\n", "\t"};
+    int completionEndPosition = cursor;
+    int completionStartPosition = cursor;
+    int indexOfReverseSeqPostion = cursor;
 
-    for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+    String resultCompletionText = "";
+    String completionScriptText = "";
+    try {
+      completionScriptText = text.substring(0, cursor);
+    }
+    catch (Exception e) {
+      logger.error(e.toString());
+      return null;
+    }
+    completionEndPosition = completionScriptText.length();
+
+    String tempReverseCompletionText = new StringBuilder(completionScriptText).reverse().toString();
+
+    for (String seqCharacter : completionSeqCharaters) {
+      indexOfReverseSeqPostion = tempReverseCompletionText.indexOf(seqCharacter);
+
+      if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
+        completionStartPosition = indexOfReverseSeqPostion;
+      }
+
     }
 
-    return completions;
+    if (completionStartPosition == completionEndPosition) {
+      completionStartPosition = 0;
+    }
+    else
+    {
+      completionStartPosition = completionEndPosition - completionStartPosition;
+    }
+    resultCompletionText = completionScriptText.substring(
+            completionStartPosition , completionEndPosition);
+
+    return resultCompletionText;
   }
 
   /*

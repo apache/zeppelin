@@ -314,8 +314,9 @@ public class SparkInterpreterTest {
 
   @Test
   public void testMultilineCompletionNewVar() {
+    Assume.assumeFalse("this feature does not work with scala 2.10", Utils.isScala2_10());
     String buf = "val x = sc\nx.";
-	List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
+	  List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
     assertTrue(completions.size() > 0);
   }
 
