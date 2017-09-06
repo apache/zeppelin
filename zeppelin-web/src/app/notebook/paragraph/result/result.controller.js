@@ -28,6 +28,8 @@ import {
 } from '../../../spell'
 import { ParagraphStatus, } from '../paragraph.status'
 
+const AnsiUp = require('ansi_up')
+const AnsiUpConverter = new AnsiUp.default // eslint-disable-line new-parens,new-cap
 const TableGridFilterTemplate = require('../../../visualization/builtins/visualization-table-grid-filter.html')
 
 angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl)
@@ -470,7 +472,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         removeChildrenDOM(targetElemId)
 
         if (generated) {
-          const divDOM = angular.element('<div></div>').text(generated)
+          const escaped = AnsiUpConverter.ansi_to_html(generated)
+          const divDOM = angular.element('<div></div>').innerHTML = escaped
           elem.append(divDOM)
         }
 
@@ -645,7 +648,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       }, newParagraphConfig.results[resultIndex], paragraph, resultIndex)
       renderResult($scope.type, true)
     } else {
-      websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params)
+      return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params)
     }
   }
 

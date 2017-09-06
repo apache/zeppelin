@@ -17,11 +17,6 @@
 
 package org.apache.zeppelin.interpreter.mock;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -29,8 +24,14 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-public class MockInterpreter1 extends Interpreter{
-Map<String, Object> vars = new HashMap<>();
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+public class MockInterpreter1 extends Interpreter {
+
+	Map<String, Object> vars = new HashMap<>();
 
 	public MockInterpreter1(Properties property) {
 		super(property);

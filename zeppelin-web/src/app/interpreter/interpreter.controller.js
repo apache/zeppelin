@@ -110,11 +110,11 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
   let getInterpreterSettings = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
-      .success(function (data, status, headers, config) {
-        $scope.interpreterSettings = data.body
+      .then(function (res) {
+        $scope.interpreterSettings = res.data.body
         checkDownloadingDependencies()
-      }).error(function (data, status, headers, config) {
-        if (status === 401) {
+      }).catch(function (res) {
+        if (res.status === 401) {
           ngToast.danger({
             content: 'You don\'t have permission on this page',
             verticalPosition: 'bottom',
@@ -124,7 +124,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             window.location = baseUrlSrv.getBase()
           }, 3000)
         }
-        console.log('Error %o %o', status, data.message)
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '')
       })
   }
 
@@ -155,19 +155,19 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   let getAvailableInterpreters = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').success(function (data, status, headers, config) {
-      $scope.availableInterpreters = data.body
-    }).error(function (data, status, headers, config) {
-      console.log('Error %o %o', status, data.message)
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').then(function (res) {
+      $scope.availableInterpreters = res.data.body
+    }).catch(function (res) {
+      console.log('Error %o %o', res.status, res.data ? res.data.message : '')
     })
   }
 
   let getAvailableInterpreterPropertyWidgets = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
-      .success(function (data, status, headers, config) {
-        $scope.interpreterPropertyTypes = data.body
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
+      .then(function (res) {
+        $scope.interpreterPropertyTypes = res.data.body
+      }).catch(function (res) {
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '')
       })
   }
 
@@ -391,15 +391,16 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting')
 
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request)
-            .success(function (data, status, headers, config) {
-              $scope.interpreterSettings[index] = data.body
+            .then(function (res) {
+              $scope.interpreterSettings[index] = res.data.body
               removeTMPSettings(index)
               checkDownloadingDependencies()
               thisConfirm.close()
             })
-            .error(function (data, status, headers, config) {
-              console.log('Error %o %o', status, data.message)
-              ngToast.danger({content: data.message, verticalPosition: 'bottom'})
+            .catch(function (res) {
+              const message = res.data ? res.data.message : 'Could not connect to server.'
+              console.log('Error %o %o', res.status, message)
+              ngToast.danger({content: message, verticalPosition: 'bottom'})
               form.$show()
               thisConfirm.close()
             })
@@ -427,11 +428,11 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       callback: function (result) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId)
-            .success(function (data, status, headers, config) {
+            .then(function (res) {
               let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
               $scope.interpreterSettings.splice(index, 1)
-            }).error(function (data, status, headers, config) {
-              console.log('Error %o %o', status, data.message)
+            }).catch(function (res) {
+              console.log('Error %o %o', res.status, res.data ? res.data.message : '')
             })
         }
       }
@@ -463,13 +464,13 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       callback: function (result) {
         if (result) {
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId)
-            .success(function (data, status, headers, config) {
+            .then(function (res) {
               let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
-              $scope.interpreterSettings[index] = data.body
+              $scope.interpreterSettings[index] = res.data.body
               ngToast.info('Interpreter stopped. Will be lazily started on next run.')
-            }).error(function (data, status, headers, config) {
-              let errorMsg = (data !== null) ? data.message : 'Could not connect to server.'
-              console.log('Error %o %o', status, errorMsg)
+            }).catch(function (res) {
+              let errorMsg = (res.data !== null) ? res.data.message : 'Could not connect to server.'
+              console.log('Error %o %o', res.status, errorMsg)
               ngToast.danger(errorMsg)
             })
         }
@@ -535,14 +536,15 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     request.properties = newProperties
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
-      .success(function (data, status, headers, config) {
+      .then(function (res) {
         $scope.resetNewInterpreterSetting()
         getInterpreterSettings()
         $scope.showAddNewSetting = false
         checkDownloadingDependencies()
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
-        ngToast.danger({content: data.message, verticalPosition: 'bottom'})
+      }).catch(function (res) {
+        const errorMsg = res.data ? res.data.message : 'Could not connect to server.'
+        console.log('Error %o %o', res.status, errorMsg)
+        ngToast.danger({content: errorMsg, verticalPosition: 'bottom'})
       })
   }
 
@@ -699,12 +701,12 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     let request = angular.copy($scope.newRepoSetting)
 
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/repository', request)
-      .success(function (data, status, headers, config) {
+      .then(function (res) {
         getRepositories()
         $scope.resetNewRepositorySetting()
         angular.element('#repoModal').modal('hide')
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', headers, config)
+      }).catch(function (res) {
+        console.log('Error %o %o', res.headers, res.config)
       })
   }
 
@@ -716,11 +718,11 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       callback: function (result) {
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/repository/' + repoId)
-            .success(function (data, status, headers, config) {
+            .then(function (res) {
               let index = _.findIndex($scope.repositories, {'id': repoId})
               $scope.repositories.splice(index, 1)
-            }).error(function (data, status, headers, config) {
-              console.log('Error %o %o', status, data.message)
+            }).catch(function (res) {
+              console.log('Error %o %o', res.status, res.data ? res.data.message : '')
             })
         }
       }
@@ -755,22 +757,22 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
   $scope.showSparkUI = function (settingId) {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
-      .success(function (data, status, headers, config) {
-        if (data.body === undefined) {
+      .then(function (res) {
+        if (res.data.body === undefined) {
           BootstrapDialog.alert({
             message: 'No spark application running'
           })
           return
         }
-        if (data.body.url) {
-          window.open(data.body.url, '_blank')
+        if (res.data.body.url) {
+          window.open(res.data.body.url, '_blank')
         } else {
           BootstrapDialog.alert({
-            message: data.body.message
+            message: res.data.body.message
           })
         }
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
+      }).catch(function (res) {
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '')
       })
   }
 

@@ -12,6 +12,15 @@ public class InterpreterRunner {
   @SerializedName("win")
   private String winPath;
 
+  public InterpreterRunner() {
+
+  }
+
+  public InterpreterRunner(String linuxPath, String winPath) {
+    this.linuxPath = linuxPath;
+    this.winPath = winPath;
+  }
+
   public String getPath() {
     return System.getProperty("os.name").startsWith("Windows") ? winPath : linuxPath;
   }

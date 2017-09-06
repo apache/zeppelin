@@ -219,6 +219,11 @@
     display: inline-block;
 }
 
+.permissions .runners {
+    width:60px;
+    display: inline-block;
+}
+
 .permissions .writers {
     width:60px;
     display: inline-block;

@@ -73,19 +73,19 @@ public class CorsFilter implements Filter {
   }
 
   private void addCorsHeaders(HttpServletResponse response, String origin) {
-    response.addHeader("Access-Control-Allow-Origin", origin);
-    response.addHeader("Access-Control-Allow-Credentials", "true");
-    response.addHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
-    response.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
+    response.setHeader("Access-Control-Allow-Origin", origin);
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    response.setHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
+    response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
     DateFormat fullDateFormatEN =
         DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, new Locale("EN", "en"));
-    response.addHeader("Date", fullDateFormatEN.format(new Date()));
+    response.setHeader("Date", fullDateFormatEN.format(new Date()));
     ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
-    response.addHeader("X-FRAME-OPTIONS", zeppelinConfiguration.getXFrameOptions());
+    response.setHeader("X-FRAME-OPTIONS", zeppelinConfiguration.getXFrameOptions());
     if (zeppelinConfiguration.useSsl()) {
-      response.addHeader("Strict-Transport-Security", zeppelinConfiguration.getStrictTransport());
+      response.setHeader("Strict-Transport-Security", zeppelinConfiguration.getStrictTransport());
     }
-    response.addHeader("X-XSS-Protection", zeppelinConfiguration.getXxssProtection());
+    response.setHeader("X-XSS-Protection", zeppelinConfiguration.getXxssProtection());
   }
 
   @Override

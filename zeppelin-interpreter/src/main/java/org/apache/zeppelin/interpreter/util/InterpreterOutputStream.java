@@ -29,7 +29,7 @@ import java.io.IOException;
  */
 public class InterpreterOutputStream extends LogOutputStream {
   private Logger logger;
-  InterpreterOutput interpreterOutput;
+  volatile InterpreterOutput interpreterOutput;
   boolean ignoreLeadingNewLinesFromScalaReporter = false;
 
   public InterpreterOutputStream(Logger logger) {

@@ -17,22 +17,18 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterOutputStream;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 
 /**
@@ -43,41 +39,32 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
           System.getProperty("os.name").startsWith("Windows") ?
                   "../bin/interpreter.cmd" :
                   "../bin/interpreter.sh";
-  private InterpreterGroup intpGroup;
-  private HashMap<String, String> env;
+
+  private InterpreterSetting interpreterSetting;
 
   @Before
   public void setUp() throws Exception {
-    intpGroup = new InterpreterGroup();
-    intpGroup.put("note", new LinkedList<Interpreter>());
+    InterpreterOption interpreterOption = new InterpreterOption();
 
-    env = new HashMap<>();
-    env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterOutputStream.class.getName(), "mock", true, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    InterpreterRunner runner = new InterpreterRunner(INTERPRETER_SCRIPT, INTERPRETER_SCRIPT);
+    interpreterSetting = new InterpreterSetting.Builder()
+        .setId("test")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .setRunner(runner)
+        .setInterpreterDir("../interpeters/test")
+        .create();
   }
 
   @After
   public void tearDown() throws Exception {
-    intpGroup.close();
-  }
-
-  private RemoteInterpreter createMockInterpreter() {
-    RemoteInterpreter intp = new RemoteInterpreter(
-        new Properties(),
-        "note",
-        MockInterpreterOutputStream.class.getName(),
-        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
-        "fake",
-        "fakeRepo",
-        env,
-        10 * 1000,
-        this,
-        null,
-        "anonymous",
-        false);
-
-    intpGroup.get("note").add(intp);
-    intp.setInterpreterGroup(intpGroup);
-    return intp;
+    interpreterSetting.close();
   }
 
   private InterpreterContext createInterpreterContext() {
@@ -90,14 +77,14 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
+        null,
         null,
         new LinkedList<InterpreterContextRunner>(), null);
   }
 
   @Test
   public void testInterpreterResultOnly() {
-    RemoteInterpreter intp = createMockInterpreter();
+    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterResult ret = intp.interpret("SUCCESS::staticresult", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("staticresult", ret.message().get(0).getData());
@@ -113,7 +100,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   @Test
   public void testInterpreterOutputStreamOnly() {
-    RemoteInterpreter intp = createMockInterpreter();
+    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterResult ret = intp.interpret("SUCCESS:streamresult:", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("streamresult", ret.message().get(0).getData());
@@ -125,7 +112,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   @Test
   public void testInterpreterResultOutputStreamMixed() {
-    RemoteInterpreter intp = createMockInterpreter();
+    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterResult ret = intp.interpret("SUCCESS:stream:static", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("stream", ret.message().get(0).getData());
@@ -134,7 +121,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   @Test
   public void testOutputType() {
-    RemoteInterpreter intp = createMockInterpreter();
+    RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
 
     InterpreterResult ret = intp.interpret("SUCCESS:%html hello:", createInterpreterContext());
     assertEquals(InterpreterResult.Type.HTML, ret.message().get(0).getType());

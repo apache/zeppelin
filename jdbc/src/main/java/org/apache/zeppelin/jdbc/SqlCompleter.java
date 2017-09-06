@@ -179,7 +179,8 @@ public class SqlCompleter {
 
 
   private static void fillTableNames(String schema, DatabaseMetaData meta, Set<String> tables) {
-    try (ResultSet tbls = meta.getTables(schema, schema, "%", null)) {
+    try (ResultSet tbls = meta.getTables(schema, schema, "%",
+        new String[]{"TABLE", "VIEW", "ALIAS", "SYNONYM", "GLOBAL TEMPORARY", "LOCAL TEMPORARY"})) {
       while (tbls.next()) {
         String table = tbls.getString("TABLE_NAME");
         tables.add(table);

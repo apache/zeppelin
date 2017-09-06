@@ -38,7 +38,11 @@ function SaveAsService (browserDetectService) {
       }
       angular.element('body > iframe#SaveAsId').remove()
     } else {
-      content = 'data:image/svg;charset=utf-8,' + BOM + encodeURIComponent(content)
+      let binaryData = []
+      binaryData.push(BOM)
+      binaryData.push(content)
+      content = window.URL.createObjectURL(new Blob(binaryData))
+
       angular.element('body').append('<a id="SaveAsId"></a>')
       let saveAsElement = angular.element('body > a#SaveAsId')
       saveAsElement.attr('href', content)
@@ -46,6 +50,7 @@ function SaveAsService (browserDetectService) {
       saveAsElement.attr('target', '_blank')
       saveAsElement[0].click()
       saveAsElement.remove()
+      window.URL.revokeObjectURL(content)
     }
   }
 }
