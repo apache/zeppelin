@@ -382,14 +382,41 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params)
   }
 
+  $scope.bindBeforeUnload = function () {
+    angular.element(window).off('beforeunload')
+
+    let confirmOnPageExit = function (e) {
+      // If we haven't been passed the event get the window.event
+      e = e || window.event
+      let message = 'Do you want to reload this site?'
+
+      // For IE6-8 and Firefox prior to version 4
+      if (e) {
+        e.returnValue = message
+      }
+      // For Chrome, Safari, IE8+ and Opera 12+
+      return message
+    }
+    angular.element(window).on('beforeunload', confirmOnPageExit)
+  }
+
+  $scope.unBindBeforeUnload = function () {
+    angular.element(window).off('beforeunload')
+  }
+
   $scope.saveParagraph = function (paragraph) {
     const dirtyText = paragraph.text
     if (dirtyText === undefined || dirtyText === $scope.originalText) {
       return
     }
-    commitParagraph(paragraph)
-    $scope.originalText = dirtyText
-    $scope.dirtyText = undefined
+
+    $scope.bindBeforeUnload()
+
+    commitParagraph(paragraph).then(function () {
+      $scope.originalText = dirtyText
+      $scope.dirtyText = undefined
+      $scope.unBindBeforeUnload()
+    })
   }
 
   $scope.toggleEnableDisable = function (paragraph) {
@@ -1092,7 +1119,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       settings: {params},
     } = paragraph
 
-    websocketMsgSrv.commitParagraph(id, title, text, config, params)
+    return websocketMsgSrv.commitParagraph(id, title, text, config, params,
+      $route.current.pathParams.noteId)
   }
 
   /** Utility function */

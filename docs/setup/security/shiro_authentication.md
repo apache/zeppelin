@@ -210,6 +210,21 @@ securityManager.realms = $zeppelinHubRealm
 
 > Note: ZeppelinHub is not releated to Apache Zeppelin project.
 
+## Secure Cookie for Zeppelin Sessions (optional)
+Zeppelin can be configured to set `HttpOnly` flag in the session cookie. With this configuration, Zeppelin cookies can 
+not be accessed via client side scripts thus preventing majority of Cross-site scripting (XSS) attacks.
+
+To enable secure cookie support via Shiro, add the following lines in `conf/shiro.ini` under `[main]` section, after
+defining a `sessionManager`.
+
+```
+cookie = org.apache.shiro.web.servlet.SimpleCookie
+cookie.name = JSESSIONID
+cookie.secure = true
+cookie.httpOnly = true
+sessionManager.sessionIdCookie = $cookie
+```
+
 ## Secure your Zeppelin information (optional)
 By default, anyone who defined in `[users]` can share **Interpreter Setting**, **Credential** and **Configuration** information in Apache Zeppelin.
 Sometimes you might want to hide these information for your use case.

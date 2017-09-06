@@ -17,29 +17,28 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import java.util.List;
-
-import org.apache.thrift.TException;
+import com.google.gson.Gson;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
+import java.util.List;
 
 /**
  * Proxy for AngularObjectRegistry that exists in remote interpreter process
  */
 public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   Logger logger = LoggerFactory.getLogger(RemoteAngularObjectRegistry.class);
-  private InterpreterGroup interpreterGroup;
+  private ManagedInterpreterGroup interpreterGroup;
 
   public RemoteAngularObjectRegistry(String interpreterId,
-      AngularObjectRegistryListener listener,
-      InterpreterGroup interpreterGroup) {
+                                     AngularObjectRegistryListener listener,
+                                     ManagedInterpreterGroup interpreterGroup) {
     super(interpreterId, listener);
     this.interpreterGroup = interpreterGroup;
   }
@@ -56,31 +55,29 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
    * @param noteId
    * @return
    */
-  public AngularObject addAndNotifyRemoteProcess(String name, Object o, String noteId, String
-          paragraphId) {
-    Gson gson = new Gson();
+  public AngularObject addAndNotifyRemoteProcess(final String name,
+                                                 final Object o,
+                                                 final String noteId,
+                                                 final String paragraphId) {
+
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (!remoteInterpreterProcess.isRunning()) {
       return super.add(name, o, noteId, paragraphId, true);
     }
 
-    Client client = null;
-    boolean broken = false;
-    try {
-      client = remoteInterpreterProcess.getClient();
-      client.angularObjectAdd(name, noteId, paragraphId, gson.toJson(o));
-      return super.add(name, o, noteId, paragraphId, true);
-    } catch (TException e) {
-      broken = true;
-      logger.error("Error", e);
-    } catch (Exception e) {
-      logger.error("Error", e);
-    } finally {
-      if (client != null) {
-        remoteInterpreterProcess.releaseClient(client, broken);
-      }
-    }
-    return null;
+    remoteInterpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            Gson gson = new Gson();
+            client.angularObjectAdd(name, noteId, paragraphId, gson.toJson(o));
+            return null;
+          }
+        }
+    );
+
+    return super.add(name, o, noteId, paragraphId, true);
+
   }
 
   /**
@@ -91,30 +88,24 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
    * @param paragraphId
    * @return
    */
-  public AngularObject removeAndNotifyRemoteProcess(String name, String noteId, String
-          paragraphId) {
+  public AngularObject removeAndNotifyRemoteProcess(final String name,
+                                                    final String noteId,
+                                                    final String paragraphId) {
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (remoteInterpreterProcess == null || !remoteInterpreterProcess.isRunning()) {
       return super.remove(name, noteId, paragraphId);
     }
-
-    Client client = null;
-    boolean broken = false;
-    try {
-      client = remoteInterpreterProcess.getClient();
-      client.angularObjectRemove(name, noteId, paragraphId);
-      return super.remove(name, noteId, paragraphId);
-    } catch (TException e) {
-      broken = true;
-      logger.error("Error", e);
-    } catch (Exception e) {
-      logger.error("Error", e);
-    } finally {
-      if (client != null) {
-        remoteInterpreterProcess.releaseClient(client, broken);
+    remoteInterpreterProcess.callRemoteFunction(
+      new RemoteInterpreterProcess.RemoteFunction<Void>() {
+        @Override
+        public Void call(Client client) throws Exception {
+          client.angularObjectRemove(name, noteId, paragraphId);
+          return null;
+        }
       }
-    }
-    return null;
+    );
+
+    return super.remove(name, noteId, paragraphId);
   }
   
   public void removeAllAndNotifyRemoteProcess(String noteId, String paragraphId) {

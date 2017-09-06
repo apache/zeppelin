@@ -185,7 +185,7 @@ function auth () {
       $rootScope.ticket = angular.fromJson(response.data).body
 
       $rootScope.ticket.screenUsername = $rootScope.ticket.principal
-      if ($rootScope.ticket.principal.startsWith('#Pac4j')) {
+      if ($rootScope.ticket.principal.indexOf('#Pac4j') === 0) {
         let re = ', name=(.*?),'
         $rootScope.ticket.screenUsername = $rootScope.ticket.principal.match(re)[1]
       }

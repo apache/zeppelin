@@ -17,160 +17,68 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import java.util.*;
-
-import org.apache.commons.lang3.StringUtils;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.RemoteScheduler;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Proxy for Interpreter instance that runs on separate process
  */
 public class RemoteInterpreter extends Interpreter {
-  private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreter.class);
+  private static final Gson gson = new Gson();
 
-  private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
-  private final ApplicationEventListener applicationEventListener;
-  private Gson gson = new Gson();
-  private String interpreterRunner;
-  private String interpreterPath;
-  private String localRepoPath;
+
   private String className;
-  private String sessionKey;
-  private FormType formType;
-  private boolean initialized;
-  private Map<String, String> env;
-  private int connectTimeout;
-  private int maxPoolSize;
-  private String host;
-  private int port;
+  private String sessionId;
   private String userName;
-  private Boolean isUserImpersonate;
-  private int outputLimit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
-  private String interpreterGroupName;
+  private FormType formType;
+
+  private RemoteInterpreterProcess interpreterProcess;
+  private volatile boolean isOpened = false;
+  private volatile boolean isCreated = false;
 
   /**
    * Remote interpreter and manage interpreter process
    */
-  public RemoteInterpreter(Properties property, String sessionKey, String className,
-      String interpreterRunner, String interpreterPath, String localRepoPath, int connectTimeout,
-      int maxPoolSize, RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
-      int outputLimit, String interpreterGroupName) {
-    super(property);
-    this.sessionKey = sessionKey;
+  public RemoteInterpreter(Properties properties,
+                           String sessionId,
+                           String className,
+                           String userName) {
+    super(properties);
+    this.sessionId = sessionId;
     this.className = className;
-    initialized = false;
-    this.interpreterRunner = interpreterRunner;
-    this.interpreterPath = interpreterPath;
-    this.localRepoPath = localRepoPath;
-    env = getEnvFromInterpreterProperty(property);
-    this.connectTimeout = connectTimeout;
-    this.maxPoolSize = maxPoolSize;
-    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
-    this.applicationEventListener = appListener;
     this.userName = userName;
-    this.isUserImpersonate = isUserImpersonate;
-    this.outputLimit = outputLimit;
-    this.interpreterGroupName = interpreterGroupName;
   }
 
-
-  /**
-   * Connect to existing process
-   */
-  public RemoteInterpreter(Properties property, String sessionKey, String className, String host,
-      int port, String localRepoPath, int connectTimeout, int maxPoolSize,
-      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate,
-      int outputLimit) {
-    super(property);
-    this.sessionKey = sessionKey;
-    this.className = className;
-    initialized = false;
-    this.host = host;
-    this.port = port;
-    this.localRepoPath = localRepoPath;
-    this.connectTimeout = connectTimeout;
-    this.maxPoolSize = maxPoolSize;
-    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
-    this.applicationEventListener = appListener;
-    this.userName = userName;
-    this.isUserImpersonate = isUserImpersonate;
-    this.outputLimit = outputLimit;
-  }
-
-
-  // VisibleForTesting
-  public RemoteInterpreter(Properties property, String sessionKey, String className,
-      String interpreterRunner, String interpreterPath, String localRepoPath,
-      Map<String, String> env, int connectTimeout,
-      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appListener, String userName, Boolean isUserImpersonate) {
-    super(property);
-    this.className = className;
-    this.sessionKey = sessionKey;
-    this.interpreterRunner = interpreterRunner;
-    this.interpreterPath = interpreterPath;
-    this.localRepoPath = localRepoPath;
-    env.putAll(getEnvFromInterpreterProperty(property));
-    this.env = env;
-    this.connectTimeout = connectTimeout;
-    this.maxPoolSize = 10;
-    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
-    this.applicationEventListener = appListener;
-    this.userName = userName;
-    this.isUserImpersonate = isUserImpersonate;
-  }
-
-  private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
-    Map<String, String> env = new HashMap<String, String>();
-    StringBuilder sparkConfBuilder = new StringBuilder();
-    for (String key : property.stringPropertyNames()) {
-      if (RemoteInterpreterUtils.isEnvString(key)) {
-        env.put(key, property.getProperty(key));
-      }
-      if (key.equals("master")) {
-        sparkConfBuilder.append(" --master " + property.getProperty("master"));
-      }
-      if (isSparkConf(key, property.getProperty(key))) {
-        sparkConfBuilder.append(" --conf " + key + "=" +
-            toShellFormat(property.getProperty(key)));
-      }
-    }
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
-    return env;
-  }
-
-  private String toShellFormat(String value) {
-    if (value.contains("\'") && value.contains("\"")) {
-      throw new RuntimeException("Spark property value could not contain both \" and '");
-    } else if (value.contains("\'")) {
-      return "\"" + value + "\"";
-    } else {
-      return "\'" + value + "\'";
-    }
-  }
-
-  static boolean isSparkConf(String key, String value) {
-    return !StringUtils.isEmpty(key) && key.startsWith("spark.") && !StringUtils.isEmpty(value);
+  public boolean isOpened() {
+    return isOpened;
   }
 
   @Override
@@ -178,202 +86,113 @@ public class RemoteInterpreter extends Interpreter {
     return className;
   }
 
-  private boolean connectToExistingProcess() {
-    return host != null && port > 0;
+  public String getSessionId() {
+    return this.sessionId;
   }
 
-  public RemoteInterpreterProcess getInterpreterProcess() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
-    if (intpGroup == null) {
-      return null;
+  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() {
+    if (this.interpreterProcess != null) {
+      return this.interpreterProcess;
     }
-
-    synchronized (intpGroup) {
-      if (intpGroup.getRemoteInterpreterProcess() == null) {
-        RemoteInterpreterProcess remoteProcess;
-        if (connectToExistingProcess()) {
-          remoteProcess = new RemoteInterpreterRunningProcess(
-              connectTimeout,
-              remoteInterpreterProcessListener,
-              applicationEventListener,
-              host,
-              port);
-        } else {
-          // create new remote process
-          remoteProcess = new RemoteInterpreterManagedProcess(
-              interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
-              remoteInterpreterProcessListener, applicationEventListener, interpreterGroupName);
-        }
-
-        intpGroup.setRemoteInterpreterProcess(remoteProcess);
-      }
-
-      return intpGroup.getRemoteInterpreterProcess();
-    }
-  }
-
-  public synchronized void init() {
-    if (initialized == true) {
-      return;
-    }
-
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-
-    final InterpreterGroup interpreterGroup = getInterpreterGroup();
-
-    interpreterProcess.setMaxPoolSize(
-        Math.max(this.maxPoolSize, interpreterProcess.getMaxPoolSize()));
-    String groupId = interpreterGroup.getId();
-
+    ManagedInterpreterGroup intpGroup = getInterpreterGroup();
+    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess();
     synchronized (interpreterProcess) {
-      Client client = null;
-      try {
-        client = interpreterProcess.getClient();
-      } catch (Exception e1) {
-        throw new InterpreterException(e1);
-      }
-
-      boolean broken = false;
-      try {
-        logger.info("Create remote interpreter {}", getClassName());
-        if (localRepoPath != null) {
-          property.put("zeppelin.interpreter.localRepo", localRepoPath);
-        }
-
-        property.put("zeppelin.interpreter.output.limit", Integer.toString(outputLimit));
-        client.createInterpreter(groupId, sessionKey,
-            getClassName(), (Map) property, userName);
-        // Push angular object loaded from JSON file to remote interpreter
-        if (!interpreterGroup.isAngularRegistryPushed()) {
-          pushAngularObjectRegistryToRemote(client);
-          interpreterGroup.setAngularRegistryPushed(true);
-        }
-
-      } catch (TException e) {
-        logger.error("Failed to create interpreter: {}", getClassName());
-        throw new InterpreterException(e);
-      } finally {
-        // TODO(jongyoul): Fixed it when not all of interpreter in same interpreter group are broken
-        interpreterProcess.releaseClient(client, broken);
+      if (!interpreterProcess.isRunning()) {
+        interpreterProcess.start(userName, false);
+        interpreterProcess.getRemoteInterpreterEventPoller()
+            .setInterpreterProcess(interpreterProcess);
+        interpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(intpGroup);
+        interpreterProcess.getRemoteInterpreterEventPoller().start();
       }
     }
-    initialized = true;
+    return interpreterProcess;
   }
 
+  public ManagedInterpreterGroup getInterpreterGroup() {
+    return (ManagedInterpreterGroup) super.getInterpreterGroup();
+  }
 
   @Override
   public void open() {
-    InterpreterGroup interpreterGroup = getInterpreterGroup();
+    synchronized (this) {
+      if (!isOpened) {
+        // create all the interpreters of the same session first, then Open the internal interpreter
+        // of this RemoteInterpreter.
+        // The why we we create all the interpreter of the session is because some interpreter
+        // depends on other interpreter. e.g. PySparkInterpreter depends on SparkInterpreter.
+        // also see method Interpreter.getInterpreterInTheSameSessionByClassName
+        for (Interpreter interpreter : getInterpreterGroup()
+                                        .getOrCreateSession(userName, sessionId)) {
+          ((RemoteInterpreter) interpreter).internal_create();
+        }
 
-    synchronized (interpreterGroup) {
-      // initialize all interpreters in this interpreter group
-      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
-      // TODO(jl): this open method is called by LazyOpenInterpreter.open(). It, however,
-      // initializes all of interpreters with same sessionKey. But LazyOpenInterpreter assumes if it
-      // doesn't call open method, it's not open. It causes problem while running intp.close()
-      // In case of Spark, this method initializes all of interpreters and init() method increases
-      // reference count of RemoteInterpreterProcess. But while closing this interpreter group, all
-      // other interpreters doesn't do anything because those LazyInterpreters aren't open.
-      // But for now, we have to initialise all of interpreters for some reasons.
-      // See Interpreter.getInterpreterInTheSameSessionByClassName(String)
-      RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-      if (!initialized) {
-        // reference per session
-        interpreterProcess.reference(interpreterGroup, userName, isUserImpersonate);
-      }
-      for (Interpreter intp : new ArrayList<>(interpreters)) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
-        }
-        try {
-          ((RemoteInterpreter) p).init();
-        } catch (InterpreterException e) {
-          logger.error("Failed to initialize interpreter: {}. Remove it from interpreterGroup",
-              p.getClassName());
-          interpreters.remove(p);
-        }
+        interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            LOGGER.info("Open RemoteInterpreter {}", getClassName());
+            // open interpreter here instead of in the jobRun method in RemoteInterpreterServer
+            // client.open(sessionId, className);
+            // Push angular object loaded from JSON file to remote interpreter
+            synchronized (getInterpreterGroup()) {
+              if (!getInterpreterGroup().isAngularRegistryPushed()) {
+                pushAngularObjectRegistryToRemote(client);
+                getInterpreterGroup().setAngularRegistryPushed(true);
+              }
+            }
+            return null;
+          }
+        });
+        isOpened = true;
       }
     }
   }
+
+  private void internal_create() {
+    synchronized (this) {
+      if (!isCreated) {
+        RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+        interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            LOGGER.info("Create RemoteInterpreter {}", getClassName());
+            client.createInterpreter(getInterpreterGroup().getId(), sessionId,
+                className, (Map) property, userName);
+            return null;
+          }
+        });
+        isCreated = true;
+      }
+    }
+  }
+
 
   @Override
   public void close() {
-    InterpreterGroup interpreterGroup = getInterpreterGroup();
-    synchronized (interpreterGroup) {
-      // close all interpreters in this session
-      List<Interpreter> interpreters = interpreterGroup.get(sessionKey);
-      // TODO(jl): this open method is called by LazyOpenInterpreter.open(). It, however,
-      // initializes all of interpreters with same sessionKey. But LazyOpenInterpreter assumes if it
-      // doesn't call open method, it's not open. It causes problem while running intp.close()
-      // In case of Spark, this method initializes all of interpreters and init() method increases
-      // reference count of RemoteInterpreterProcess. But while closing this interpreter group, all
-      // other interpreters doesn't do anything because those LazyInterpreters aren't open.
-      // But for now, we have to initialise all of interpreters for some reasons.
-      // See Interpreter.getInterpreterInTheSameSessionByClassName(String)
-      if (initialized) {
-        // dereference per session
-        getInterpreterProcess().dereference();
-      }
-      for (Interpreter intp : new ArrayList<>(interpreters)) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+    if (isOpened) {
+      RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+      interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
+        @Override
+        public Void call(Client client) throws Exception {
+          client.close(sessionId, className);
+          return null;
         }
-        try {
-          ((RemoteInterpreter) p).closeInterpreter();
-        } catch (InterpreterException e) {
-          logger.error("Failed to initialize interpreter: {}. Remove it from interpreterGroup",
-              p.getClassName());
-          interpreters.remove(p);
-        }
-      }
-    }
-  }
-
-  public void closeInterpreter() {
-    if (this.initialized == false) {
-      return;
-    }
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    Client client = null;
-    boolean broken = false;
-    try {
-      client = interpreterProcess.getClient();
-      if (client != null) {
-        client.close(sessionKey, className);
-      }
-    } catch (TException e) {
-      broken = true;
-      throw new InterpreterException(e);
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
-    } finally {
-      if (client != null) {
-        interpreterProcess.releaseClient(client, broken);
-      }
-      this.initialized = false;
+      });
+      isOpened = false;
+    } else {
+      LOGGER.warn("close is called when RemoterInterpreter is not opened for " + className);
     }
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("st:\n{}", st);
+  public InterpreterResult interpret(final String st, final InterpreterContext context) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("st:\n{}", st);
     }
 
-    FormType form = getFormType();
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
-    }
-
+    final FormType form = getFormType();
+    RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
     InterpreterContextRunnerPool interpreterContextRunnerPool = interpreterProcess
         .getInterpreterContextRunnerPool();
-
     List<InterpreterContextRunner> runners = context.getRunners();
     if (runners != null && runners.size() != 0) {
       // assume all runners in this InterpreterContext have the same note id
@@ -382,165 +201,153 @@ public class RemoteInterpreter extends Interpreter {
       interpreterContextRunnerPool.clear(noteId);
       interpreterContextRunnerPool.addAll(noteId, runners);
     }
+    return interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<InterpreterResult>() {
+          @Override
+          public InterpreterResult call(Client client) throws Exception {
 
-    boolean broken = false;
-    try {
+            RemoteInterpreterResult remoteResult = client.interpret(
+                sessionId, className, st, convert(context));
+            Map<String, Object> remoteConfig = (Map<String, Object>) gson.fromJson(
+                remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
+                }.getType());
+            context.getConfig().clear();
+            context.getConfig().putAll(remoteConfig);
+            GUI currentGUI = context.getGui();
+            if (form == FormType.NATIVE) {
+              GUI remoteGui = GUI.fromJson(remoteResult.getGui());
+              currentGUI.clear();
+              currentGUI.setParams(remoteGui.getParams());
+              currentGUI.setForms(remoteGui.getForms());
+            } else if (form == FormType.SIMPLE) {
+              final Map<String, Input> currentForms = currentGUI.getForms();
+              final Map<String, Object> currentParams = currentGUI.getParams();
+              final GUI remoteGUI = GUI.fromJson(remoteResult.getGui());
+              final Map<String, Input> remoteForms = remoteGUI.getForms();
+              final Map<String, Object> remoteParams = remoteGUI.getParams();
+              currentForms.putAll(remoteForms);
+              currentParams.putAll(remoteParams);
+            }
 
-      final GUI currentGUI = context.getGui();
-      RemoteInterpreterResult remoteResult = client.interpret(
-          sessionKey, className, st, convert(context));
+            InterpreterResult result = convert(remoteResult);
+            return result;
+          }
+        }
+    );
 
-      Map<String, Object> remoteConfig = (Map<String, Object>) gson.fromJson(
-          remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
-          }.getType());
-      context.getConfig().clear();
-      context.getConfig().putAll(remoteConfig);
-
-      if (form == FormType.NATIVE) {
-        GUI remoteGui = GUI.fromJson(remoteResult.getGui());
-        currentGUI.clear();
-        currentGUI.setParams(remoteGui.getParams());
-        currentGUI.setForms(remoteGui.getForms());
-      } else if (form == FormType.SIMPLE) {
-        final Map<String, Input> currentForms = currentGUI.getForms();
-        final Map<String, Object> currentParams = currentGUI.getParams();
-        final GUI remoteGUI = GUI.fromJson(remoteResult.getGui());
-        final Map<String, Input> remoteForms = remoteGUI.getForms();
-        final Map<String, Object> remoteParams = remoteGUI.getParams();
-        currentForms.putAll(remoteForms);
-        currentParams.putAll(remoteParams);
-      }
-
-      InterpreterResult result = convert(remoteResult);
-      return result;
-    } catch (TException e) {
-      broken = true;
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client, broken);
-    }
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
+  public void cancel(final InterpreterContext context) {
+    if (!isOpened) {
+      LOGGER.warn("Cancel is called when RemoterInterpreter is not opened for " + className);
+      return;
     }
-
-    boolean broken = false;
-    try {
-      client.cancel(sessionKey, className, convert(context));
-    } catch (TException e) {
-      broken = true;
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client, broken);
-    }
+    RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+    interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
+      @Override
+      public Void call(Client client) throws Exception {
+        client.cancel(sessionId, className, convert(context));
+        return null;
+      }
+    });
   }
 
   @Override
   public FormType getFormType() {
-    open();
-
     if (formType != null) {
       return formType;
     }
 
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
+    // it is possible to call getFormType before it is opened
+    synchronized (this) {
+      if (!isOpened) {
+        open();
+      }
     }
-
-    boolean broken = false;
-    try {
-      formType = FormType.valueOf(client.getFormType(sessionKey, className));
-      return formType;
-    } catch (TException e) {
-      broken = true;
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client, broken);
-    }
+    RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+    FormType type = interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<FormType>() {
+          @Override
+          public FormType call(Client client) throws Exception {
+            formType = FormType.valueOf(client.getFormType(sessionId, className));
+            return formType;
+          }
+        });
+    return type;
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    if (interpreterProcess == null || !interpreterProcess.isRunning()) {
+  public int getProgress(final InterpreterContext context) {
+    if (!isOpened) {
+      LOGGER.warn("getProgress is called when RemoterInterpreter is not opened for " + className);
       return 0;
     }
-
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
-    }
-
-    boolean broken = false;
-    try {
-      return client.getProgress(sessionKey, className, convert(context));
-    } catch (TException e) {
-      broken = true;
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client, broken);
-    }
+    RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+    return interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<Integer>() {
+          @Override
+          public Integer call(Client client) throws Exception {
+            return client.getProgress(sessionId, className, convert(context));
+          }
+        });
   }
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
+  public List<InterpreterCompletion> completion(final String buf, final int cursor,
+                                                final InterpreterContext interpreterContext) {
+    if (!isOpened) {
+      LOGGER.warn("completion is called when RemoterInterpreter is not opened for " + className);
+      return new ArrayList<>();
     }
-
-    boolean broken = false;
-    try {
-      List completion = client.completion(sessionKey, className, buf, cursor,
-          convert(interpreterContext));
-      return completion;
-    } catch (TException e) {
-      broken = true;
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client, broken);
-    }
+    RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+    return interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<List<InterpreterCompletion>>() {
+          @Override
+          public List<InterpreterCompletion> call(Client client) throws Exception {
+            return client.completion(sessionId, className, buf, cursor,
+                convert(interpreterContext));
+          }
+        });
   }
 
+  public String getStatus(final String jobId) {
+    if (!isOpened) {
+      LOGGER.warn("getStatus is called when RemoteInterpreter is not opened for " + className);
+      return Job.Status.UNKNOWN.name();
+    }
+    RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+    return interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<String>() {
+          @Override
+          public String call(Client client) throws Exception {
+            return client.getStatus(sessionId, jobId);
+          }
+        });
+  }
+
+  //TODO(zjffdu) Share the Scheduler in the same session or in the same InterpreterGroup ?
   @Override
   public Scheduler getScheduler() {
-    int maxConcurrency = maxPoolSize;
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    if (interpreterProcess == null) {
-      return null;
-    } else {
-      return SchedulerFactory.singleton().createOrGetRemoteScheduler(
-          RemoteInterpreter.class.getName() + sessionKey + interpreterProcess.hashCode(),
-          sessionKey, interpreterProcess, maxConcurrency);
-    }
-  }
+    int maxConcurrency = Integer.parseInt(
+        property.getProperty("zeppelin.interpreter.max.poolsize",
+            ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE.getIntValue() + ""));
 
-  private String getInterpreterGroupKey(InterpreterGroup interpreterGroup) {
-    return interpreterGroup.getId();
+    Scheduler s = new RemoteScheduler(
+        RemoteInterpreter.class.getName() + "-" + sessionId,
+        SchedulerFactory.singleton().getExecutor(),
+        sessionId,
+        this,
+        SchedulerFactory.singleton(),
+        maxConcurrency);
+    return SchedulerFactory.singleton().createOrGetScheduler(s);
   }
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(ic.getNoteId(), ic.getParagraphId(), ic.getReplName(),
-        ic.getParagraphTitle(), ic.getParagraphText(), ic.getAuthenticationInfo().toJson(),
-        gson.toJson(ic.getConfig()), ic.getGui().toJson(), gson.toJson(ic.getRunners()));
+        ic.getParagraphTitle(), ic.getParagraphText(), gson.toJson(ic.getAuthenticationInfo()),
+        gson.toJson(ic.getConfig()), gson.toJson(ic.getGui()), gson.toJson(ic.getRunners()));
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {
@@ -557,41 +364,25 @@ public class RemoteInterpreter extends Interpreter {
   /**
    * Push local angular object registry to
    * remote interpreter. This method should be
-   * call ONLY inside the init() method
+   * call ONLY once when the first Interpreter is created
    */
-  void pushAngularObjectRegistryToRemote(Client client) throws TException {
+  private void pushAngularObjectRegistryToRemote(Client client) throws TException {
     final AngularObjectRegistry angularObjectRegistry = this.getInterpreterGroup()
         .getAngularObjectRegistry();
-
     if (angularObjectRegistry != null && angularObjectRegistry.getRegistry() != null) {
       final Map<String, Map<String, AngularObject>> registry = angularObjectRegistry
           .getRegistry();
-
-      logger.info("Push local angular object registry from ZeppelinServer to" +
+      LOGGER.info("Push local angular object registry from ZeppelinServer to" +
           " remote interpreter group {}", this.getInterpreterGroup().getId());
-
       final java.lang.reflect.Type registryType = new TypeToken<Map<String,
           Map<String, AngularObject>>>() {
       }.getType();
-
-      Gson gson = new Gson();
       client.angularRegistryPush(gson.toJson(registry, registryType));
     }
   }
 
-  public Map<String, String> getEnv() {
-    return env;
-  }
-
-  public void addEnv(Map<String, String> env) {
-    if (this.env == null) {
-      this.env = new HashMap<>();
-    }
-    this.env.putAll(env);
-  }
-
-  //Only for test
-  public String getInterpreterRunner() {
-    return interpreterRunner;
+  @Override
+  public String toString() {
+    return "RemoteInterpreter_" + className + "_" + sessionId;
   }
 }
