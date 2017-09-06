@@ -15,69 +15,45 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.mock;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package org.apache.zeppelin.interpreter;
+
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-public class MockInterpreter11 extends Interpreter{
-  Map<String, Object> vars = new HashMap<>();
+public class DoubleEchoInterpreter extends Interpreter {
 
-  public MockInterpreter11(Properties property) {
+  public DoubleEchoInterpreter(Properties property) {
     super(property);
   }
-  boolean open;
 
   @Override
   public void open() {
-    open = true;
+
   }
 
   @Override
   public void close() {
-    open = false;
-  }
 
-  public boolean isOpen() {
-    return open;
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl11: "+st);
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, st + "," + st);
   }
 
   @Override
   public void cancel(InterpreterContext context) {
+
   }
 
   @Override
   public FormType getFormType() {
-    return FormType.SIMPLE;
+    return null;
   }
 
   @Override
   public int getProgress(InterpreterContext context) {
     return 0;
-  }
-
-  @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
-  }
-
-  @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
-    return null;
   }
 }
