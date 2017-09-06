@@ -11,6 +11,13 @@
         "description": "Shell command time out in millisecs. Default = 60000",
         "type": "number"
       },
+      "shell.working.directory.user.home": {
+        "envName": "SHELL_WORKING_DIRECTORY_USER_HOME",
+        "propertyName": "shell.working.directory.user.home",
+        "defaultValue": false,
+        "description": "If this set to true, the shell's working directory will be set to user home",
+        "type": "checkbox"
+      },
       "zeppelin.shell.auth.type": {
         "envName": null,
         "propertyName": "zeppelin.shell.auth.type",
