@@ -84,16 +84,16 @@ For developers, to get latest *0.8.0-SNAPSHOT* check [README](https://github.com
     [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-all.tgz.sha512))
 
     * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.7.1/manual/interpreterinstallation.html)):
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.1'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz'">zeppelin-0.7.1-bin-netinst.tgz</a> (273 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.1'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz'">zeppelin-0.7.1-bin-netinst.tgz</a> (273 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1-bin-netinst.tgz.sha512))
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.1'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz'">zeppelin-0.7.1.tgz</a> (1.9 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.1'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz'">zeppelin-0.7.1.tgz</a> (1.9 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.1/zeppelin-0.7.1.tgz.sha512))
   <p />
 
   - 0.7.0 released on Feb 5, 2017 ([release notes](./releases/zeppelin-release-0.7.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.0))
@@ -105,16 +105,16 @@ For developers, to get latest *0.8.0-SNAPSHOT* check [README](https://github.com
     [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-all.tgz.sha512))
 
     * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.7.0/manual/interpreterinstallation.html)):
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz'">zeppelin-0.7.0-bin-netinst.tgz</a> (272 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.0'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz'">zeppelin-0.7.0-bin-netinst.tgz</a> (272 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0-bin-netinst.tgz.sha512))
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz'">zeppelin-0.7.0.tgz</a> (1.9 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.0'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz'">zeppelin-0.7.0.tgz</a> (1.9 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.0/zeppelin-0.7.0.tgz.sha512))
   <p />
 
   - 0.6.2 released on Oct 15, 2016 ([release notes](./releases/zeppelin-release-0.6.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.6.2))
