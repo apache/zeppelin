@@ -705,7 +705,8 @@ public class InterpreterSetting {
       // create new remote process
       remoteInterpreterProcess = new RemoteInterpreterManagedProcess(
           interpreterRunner != null ? interpreterRunner.getPath() :
-              conf.getInterpreterRemoteRunnerPath(), interpreterDir, localRepoPath,
+              conf.getInterpreterRemoteRunnerPath(), conf.getCallbackPortRange(),
+          interpreterDir, localRepoPath,
           getEnvFromInterpreterProperty(getJavaProperties()), connectTimeout,
           remoteInterpreterProcessListener, appEventListener, group);
     }
