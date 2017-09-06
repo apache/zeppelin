@@ -21,6 +21,7 @@ import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +98,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     // start server process
     try {
       port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+      logger.info("Choose port {} for RemoteInterpreterProcess", port);
     } catch (IOException e1) {
       throw new InterpreterException(e1);
     }
@@ -172,6 +174,17 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   public void stop() {
     if (isRunning()) {
       logger.info("kill interpreter process");
+      try {
+        callRemoteFunction(new RemoteFunction<Void>() {
+          @Override
+          public Void call(RemoteInterpreterService.Client client) throws Exception {
+            client.shutdown();
+            return null;
+          }
+        });
+      } catch (Exception e) {
+        logger.warn("ignore the exception when shutting down");
+      }
       watchdog.destroyProcess();
     }
 

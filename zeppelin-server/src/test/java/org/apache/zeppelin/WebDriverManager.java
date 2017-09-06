@@ -141,6 +141,7 @@ public class WebDriverManager {
       fail();
     }
 
+    driver.manage().window().maximize();
     return driver;
   }
 

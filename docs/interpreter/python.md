@@ -232,6 +232,70 @@ SELECT * FROM rates WHERE age < 40
 Otherwise it can be referred to as `%python.sql`
 
 
+## IPython Support
+
+IPython is more powerful than the default python interpreter with extra functionality. You can use IPython with Python2 or Python3 which depends on which python you set `zeppelin.python`.
+
+   **Pre-requests**
+   
+    - Jupyter `pip install jupyter`
+    - grpcio `pip install grpcio`
+
+If you already install anaconda, then you just need to install `grpcio` as Jupyter is already included in anaconda.
+
+In addition to all basic functions of the python interpreter, you can use all the IPython advanced features as you use it in Jupyter Notebook.
+
+e.g. 
+
+Use IPython magic
+
+```
+%python.ipython
+
+#python help
+range?
+
+#timeit
+%timeit range(100)
+```
+
+Use matplotlib 
+
+```
+%python.ipython
+
+
+%matplotlib inline
+import matplotlib.pyplot as plt
+
+print("hello world")
+data=[1,2,3,4]
+plt.figure()
+plt.plot(data)
+```
+
+We also make `ZeppelinContext` available in IPython Interpreter. You can use `ZeppelinContext` to create dynamic forms and display pandas DataFrame.
+
+e.g.
+
+Create dynamic form
+
+```
+z.input(name='my_name', defaultValue='hello')
+```
+
+Show pandas dataframe
+
+```
+import pandas as pd
+df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})
+z.show(df)
+
+```
+
+By default, we would use IPython in `%python.python` if IPython is available. Otherwise it would fall back to the original Python implementation.
+If you don't want to use IPython, then you can set `zeppelin.python.useIPython` as `false` in interpreter setting.
+
 ## Technical description
 
 For in-depth technical details on current implementation please refer to [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).

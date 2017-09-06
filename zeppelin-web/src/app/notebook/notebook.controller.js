@@ -51,6 +51,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.interpreterBindings = []
   $scope.isNoteDirty = null
   $scope.saveTimer = null
+  $scope.paragraphWarningDialog = {}
 
   let connectedOnce = false
   let isRevisionPath = function (path) {
@@ -396,11 +397,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }, 10000)
   }
 
-  angular.element(window).on('beforeunload', function (e) {
-    $scope.killSaveTimer()
-    $scope.saveNote()
-  })
-
   $scope.setLookAndFeel = function (looknfeel) {
     $scope.note.config.looknfeel = looknfeel
     if ($scope.revisionView === true) {
@@ -700,6 +696,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       $scope.setIamOwner()
       angular.element('#selectOwners').select2(selectJson)
       angular.element('#selectReaders').select2(selectJson)
+      angular.element('#selectRunners').select2(selectJson)
       angular.element('#selectWriters').select2(selectJson)
       if (callback) {
         callback()
@@ -739,6 +736,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   function convertPermissionsToArray () {
     $scope.permissions.owners = angular.element('#selectOwners').val()
     $scope.permissions.readers = angular.element('#selectReaders').val()
+    $scope.permissions.runners = angular.element('#selectRunners').val()
     $scope.permissions.writers = angular.element('#selectWriters').val()
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove()
   }
@@ -1017,7 +1015,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
           closable: true,
           title: 'Permissions Saved Successfully',
           message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
-          $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+           $scope.permissions.readers + '\n\n' + 'Runners : ' + $scope.permissions.runners +
+           '\n\n' + 'Writers  : ' + $scope.permissions.writers
         })
         $scope.showPermissions = false
       })
@@ -1062,6 +1061,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         $scope.closePermissions()
         angular.element('#selectOwners').select2({})
         angular.element('#selectReaders').select2({})
+        angular.element('#selectRunners').select2({})
         angular.element('#selectWriters').select2({})
       } else {
         $scope.openPermissions()
@@ -1276,6 +1276,60 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     isPersonalized = isPersonalized === undefined ? 'false' : isPersonalized
     $scope.note.config.personalizedMode = isPersonalized
   })
+
+  $scope.$on('$routeChangeStart', function (event, next, current) {
+    if (!$scope.note || !$scope.note.paragraphs) {
+      return
+    }
+    if ($scope.note && $scope.note.paragraphs) {
+      $scope.note.paragraphs.map(par => {
+        if ($scope.allowLeave === true) {
+          return
+        }
+        let thisScope = angular.element(
+          '#' + par.id + '_paragraphColumn_main').scope()
+
+        if (thisScope.dirtyText === undefined ||
+          thisScope.originalText === undefined ||
+          thisScope.dirtyText === thisScope.originalText) {
+          return true
+        } else {
+          event.preventDefault()
+          $scope.showParagraphWarning(next)
+        }
+      })
+    }
+  })
+
+  $scope.showParagraphWarning = function (next) {
+    if ($scope.paragraphWarningDialog.opened !== true) {
+      $scope.paragraphWarningDialog = BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Do you want to leave this site?',
+        message: 'Changes that you have made will not be saved.',
+        buttons: [{
+          label: 'Stay',
+          action: function (dialog) {
+            dialog.close()
+          }
+        }, {
+          label: 'Leave',
+          action: function (dialog) {
+            dialog.close()
+            let locationToRedirect = next['$$route']['originalPath']
+            Object.keys(next.pathParams).map(key => {
+              locationToRedirect = locationToRedirect.replace(':' + key,
+                next.pathParams[key])
+            })
+            $scope.allowLeave = true
+            $location.path(locationToRedirect)
+          }
+        }]
+      })
+    }
+  }
 
   $scope.$on('$destroy', function () {
     angular.element(window).off('beforeunload')

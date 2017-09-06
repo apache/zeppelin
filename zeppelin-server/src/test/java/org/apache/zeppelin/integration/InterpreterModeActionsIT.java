@@ -72,7 +72,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   static String interpreterOptionPath = "";
   static String originalInterpreterOption = "";
 
-  static String cmdPsPython = "ps aux | grep 'zeppelin_python-' | grep -v 'grep' | wc -l";
+  static String cmdPsPython = "ps aux | grep 'zeppelin_ipython' | grep -v 'grep' | wc -l";
   static String cmdPsInterpreter = "ps aux | grep 'zeppelin/interpreter/python/*' |" +
       " sed -E '/grep|local-repo/d' | wc -l";
 
@@ -145,19 +145,19 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   private void logoutUser(String userName) throws URISyntaxException {
-    pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
-    pollingWait(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='navbar.logout()']"), MAX_BROWSER_TIMEOUT_SEC).click();
-
-    By locator = By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button");
-    WebElement element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-        .until(ExpectedConditions.visibilityOfElementLocated(locator));
-    if (element.isDisplayed()) {
+    ZeppelinITUtils.sleep(500, false);
+    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+        userName + "')]")).click();
+    ZeppelinITUtils.sleep(500, false);
+    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+        userName + "')]//a[@ng-click='navbar.logout()']")).click();
+    ZeppelinITUtils.sleep(2000, false);
+    if (driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"))
+        .isDisplayed()) {
       driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
     }
     driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
-    ZeppelinITUtils.sleep(1000, false);
+    ZeppelinITUtils.sleep(500, false);
   }
 
   private void setPythonParagraph(int num, String text) {
@@ -199,7 +199,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           "//div[@class='modal-dialog']//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
       clickAndWait(By.xpath("//a[@class='navbar-brand navbar-title'][contains(@href, '#/')]"));
       interpreterModeActionsIT.logoutUser("admin");
-
       //step 2: (user1) login, create a new note, run two paragraph with 'python', check result, check process, logout
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'

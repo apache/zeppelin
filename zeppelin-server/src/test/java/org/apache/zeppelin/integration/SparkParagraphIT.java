@@ -138,7 +138,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       WebElement paragraph1Result = driver.findElement(By.xpath(
           getParagraphXPath(1) + "//div[contains(@id,\"_text\")]"));
       collector.checkThat("Paragraph from SparkParagraphIT of testPySpark result: ",
-          paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
+          paragraph1Result.getText().toString(), CoreMatchers.containsString("test loop 0\ntest loop 1\ntest loop 2")
       );
 
       // the last statement's evaluation result is printed

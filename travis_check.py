@@ -57,7 +57,7 @@ def getBuildStatus(author, commit):
     build = None
 
     if len(data) == 0:
-        return build;
+        return build
 
     for b in data:
         if b["commit"][:len(commit)] == commit:
@@ -102,7 +102,7 @@ def printBuildStatus(build):
 
 for sleep in check:
     info("--------------------------------")
-    time.sleep(sleep);
+    time.sleep(sleep)
     info("Get build status ...")
     build = getBuildStatus(author, commit)
     if build == None:
