@@ -217,6 +217,7 @@ The following components are provided under Apache License.
     (Apache 2.0) frontend-maven-plugin 1.3 (com.github.eirslett:frontend-maven-plugin:1.3 - https://github.com/eirslett/frontend-maven-plugin/blob/frontend-plugins-1.3/LICENSE
     (Apache 2.0) frontend-plugin-core 1.3 (com.github.eirslett:frontend-plugin-core) - https://github.com/eirslett/frontend-maven-plugin/blob/frontend-plugins-1.3/LICENSE
     (Apache 2.0) mongo-java-driver 3.4.1 (org.mongodb:mongo-java-driver:3.4.1) - https://github.com/mongodb/mongo-java-driver/blob/master/LICENSE.txt
+    (Apache 2.0) jmxutils 1.9 (org.weakref:jmxutils:1.9) - https://github.com/martint/jmxutils/blob/master/LICENSE
 
 ========================================================================
 MIT licenses
@@ -341,6 +342,8 @@ The following components are provided under the BSD-style License.
     (BSD-3-Clause) Scalamacros Quasiquotes 2.1.0 (org.scalamacros:quasiquotes:2.1.0 - https://mvnrepository.com/artifact/org.scalamacros/quasiquotes_2.10/2.1.0)
     (BSD-2-Clause) JUnit Interface 0.11 (com.novocode:junit-interface:0.11 - https://github.com/sbt/junit-interface)
     (BSD-3-Clause) SBT Test Interface (org.scala-sbt:test-interface:1.0 - https://github.com/sbt/test-interface)
+    (BSD-2-Clause) HDRHistogram 2.1.4 (org.hdrhistogram:HdrHistogram:2.1.4) - https://github.com/HdrHistogram/HdrHistogram/blob/master/LICENSE.txt
+
 
 ========================================================================
 CDDL license

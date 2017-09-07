@@ -29,7 +29,7 @@ Zeppelin
  ├── lib
  ├── licenses
  ├── notebook
- └── zeppelin-web-<verion>.war
+ └── zeppelin-web-<version>.war
  
 ```
 
