@@ -24,18 +24,22 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility and helper functions for the Spark Interpreter
  */
 class Utils {
   public static Logger logger = LoggerFactory.getLogger(Utils.class);
+  private static final String SCALA_COMPILER_VERSION = evaluateScalaCompilerVersion();
 
   static Object invokeMethod(Object o, String name) {
     return invokeMethod(o, name, new Class[]{}, new Object[]{});
   }
 
-  static Object invokeMethod(Object o, String name, Class[] argTypes, Object[] params) {
+  static Object invokeMethod(Object o, String name, Class<?>[] argTypes, Object[] params) {
     try {
       return o.getClass().getMethod(name, argTypes).invoke(o, params);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -44,7 +48,7 @@ class Utils {
     return null;
   }
 
-  static Object invokeStaticMethod(Class c, String name, Class[] argTypes, Object[] params) {
+  static Object invokeStaticMethod(Class<?> c, String name, Class<?>[] argTypes, Object[] params) {
     try {
       return c.getMethod(name, argTypes).invoke(null, params);
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
@@ -53,17 +57,17 @@ class Utils {
     return null;
   }
 
-  static Object invokeStaticMethod(Class c, String name) {
+  static Object invokeStaticMethod(Class<?> c, String name) {
     return invokeStaticMethod(c, name, new Class[]{}, new Object[]{});
   }
 
-  static Class findClass(String name) {
+  static Class<?> findClass(String name) {
     return findClass(name, false);
   }
 
-  static Class findClass(String name, boolean silence) {
+  static Class<?> findClass(String name, boolean silence) {
     try {
-      return Utils.class.forName(name);
+      return Class.forName(name);
     } catch (ClassNotFoundException e) {
       if (!silence) {
         logger.error(e.getMessage(), e);
@@ -72,7 +76,7 @@ class Utils {
     }
   }
 
-  static Object instantiateClass(String name, Class[] argTypes, Object[] params) {
+  static Object instantiateClass(String name, Class<?>[] argTypes, Object[] params) {
     try {
       Constructor<?> constructor = Utils.class.getClassLoader()
               .loadClass(name).getConstructor(argTypes);
@@ -87,7 +91,7 @@ class Utils {
   // function works after intp is initialized
   static boolean isScala2_10() {
     try {
-      Utils.class.forName("org.apache.spark.repl.SparkIMain");
+      Class.forName("org.apache.spark.repl.SparkIMain");
       return true;
     } catch (ClassNotFoundException e) {
       return false;
@@ -99,10 +103,45 @@ class Utils {
   static boolean isScala2_11() {
     return !isScala2_10();
   }
+  
+  static boolean isCompilerAboveScala2_11_7() {
+    if (isScala2_10() || SCALA_COMPILER_VERSION == null) {
+      return false;
+    }
+    Pattern p = Pattern.compile("([0-9]+)[.]([0-9]+)[.]([0-9]+)");
+    Matcher m = p.matcher(SCALA_COMPILER_VERSION);
+    if (m.matches()) {
+      int major = Integer.parseInt(m.group(1));
+      int minor = Integer.parseInt(m.group(2));
+      int bugfix = Integer.parseInt(m.group(3));
+      return (major > 2 || (major == 2 && minor > 11) || (major == 2 && minor == 11 && bugfix > 7));
+    }
+    return false;
+  }
+
+  private static String evaluateScalaCompilerVersion() {
+    String version = null;
+    try {
+      Properties p = new Properties();
+      Class<?> completionClass = findClass("scala.tools.nsc.interpreter.JLineCompletion");
+      if (completionClass != null) {
+        try (java.io.InputStream in = completionClass.getClass()
+          .getResourceAsStream("/compiler.properties")) {
+          p.load(in);
+          version = p.getProperty("version.number");
+        } catch (java.io.IOException e) {
+          logger.error("Failed to evaluate Scala compiler version", e);
+        }
+      }
+    } catch (RuntimeException e) {
+      logger.error("Failed to evaluate Scala compiler version", e);
+    }
+    return version;
+  }
 
   static boolean isSpark2() {
     try {
-      Utils.class.forName("org.apache.spark.sql.SparkSession");
+      Class.forName("org.apache.spark.sql.SparkSession");
       return true;
     } catch (ClassNotFoundException e) {
       return false;
