@@ -1099,7 +1099,7 @@ public class SparkInterpreter extends Interpreter {
 
     ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
     
-    if (Utils.isScala2_10()) {
+    if (Utils.isScala2_10() || !Utils.isCompilerAboveScala2_11_7()) {
       String singleToken = getCompletionTargetString(buf, cursor);
       Candidates ret = c.complete(singleToken, singleToken.length());
       
