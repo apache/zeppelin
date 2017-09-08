@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -88,9 +89,20 @@ public class SecurityUtils {
 
     String principal;
     if (subject.isAuthenticated()) {
-      principal = subject.getPrincipal().toString();
+      principal = extractPrincipal(subject);
     } else {
       principal = ANONYMOUS;
+    }
+    return principal;
+  }
+
+  private static String extractPrincipal(Subject subject) {
+    String principal;
+    Object principalObject = subject.getPrincipal();
+    if (principalObject instanceof Principal) {
+      principal = ((Principal) principalObject).getName();
+    } else {
+      principal = String.valueOf(principalObject);
     }
     return principal;
   }
