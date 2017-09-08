@@ -403,6 +403,7 @@ public class NotebookAuthorization {
         setReaders(noteId, entities);
         entities = getRunners(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setRunners(noteId, entities);
         entities = getWriters(noteId);
         entities.add(subject.getUser());
