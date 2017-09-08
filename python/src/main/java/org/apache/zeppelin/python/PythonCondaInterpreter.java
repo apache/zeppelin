@@ -115,21 +115,28 @@ public class PythonCondaInterpreter extends Interpreter {
   private void changePythonEnvironment(String envName)
       throws IOException, InterruptedException {
     PythonInterpreter python = getPythonInterpreter();
+    String condaLibraryPath = null;
     String binPath = null;
     if (envName == null) {
       binPath = getProperty(ZEPPELIN_PYTHON);
       if (binPath == null) {
         binPath = DEFAULT_ZEPPELIN_PYTHON;
       }
+      condaLibraryPath = null;
     } else {
       Map<String, String> envList = getCondaEnvs();
+      for (String key : envList.keySet()) {
+      }
       for (String name : envList.keySet()) {
         if (envName.equals(name)) {
           binPath = envList.get(name) + CONDA_PYTHON_PATH;
+          condaLibraryPath = String.format("%s/lib", envList.get(name));
           break;
         }
       }
     }
+    python.setCurrentCondaEnvName(envName);
+    python.setPythonCondaLibPath(condaLibraryPath);
     python.setPythonCommand(binPath);
   }
 
@@ -200,22 +207,24 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private InterpreterResult runCondaActivate(String envName)
       throws IOException, InterruptedException {
-
+    PythonInterpreter python = getPythonInterpreter();
     if (null == envName || envName.isEmpty()) {
       return new InterpreterResult(Code.ERROR, "Env name should be specified");
     }
 
     changePythonEnvironment(envName);
     restartPythonProcess();
-
+    python.setCurrentCondaEnvName(envName);
     return new InterpreterResult(Code.SUCCESS, "'" + envName + "' is activated");
   }
 
   private InterpreterResult runCondaDeactivate()
       throws IOException, InterruptedException {
 
+    PythonInterpreter python = getPythonInterpreter();
     changePythonEnvironment(null);
     restartPythonProcess();
+    python.setCurrentCondaEnvName(null);
     return new InterpreterResult(Code.SUCCESS, "Deactivated");
   }
 
@@ -255,20 +264,26 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private String runCondaInstall(List<String> restArgs)
       throws IOException, InterruptedException {
-
+    PythonInterpreter python = getPythonInterpreter();
+    String envName = python.getCurrentCondaEnvName();
     restArgs.add(0, "conda");
     restArgs.add(1, "install");
     restArgs.add(2, "--yes");
+    restArgs.add(3, "-n");
+    restArgs.add(4, envName);
 
     return runCondaCommandForTextOutput("Package Installation", restArgs);
   }
 
   private String runCondaUninstall(List<String> restArgs)
       throws IOException, InterruptedException {
-
+    PythonInterpreter python = getPythonInterpreter();
+    String envName = python.getCurrentCondaEnvName();
     restArgs.add(0, "conda");
     restArgs.add(1, "uninstall");
     restArgs.add(2, "--yes");
+    restArgs.add(3, "-n");
+    restArgs.add(4, envName);
 
     return runCondaCommandForTextOutput("Package Uninstallation", restArgs);
   }
