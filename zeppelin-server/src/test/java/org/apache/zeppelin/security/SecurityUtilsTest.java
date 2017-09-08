@@ -35,7 +35,7 @@ import java.net.UnknownHostException;
 import java.net.InetAddress;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(org.apache.shiro.SecurityUtils.class) // Static.class contains static methods
+@PrepareForTest(org.apache.shiro.SecurityUtils.class)
 public class SecurityUtilsTest {
 
   @Mock
