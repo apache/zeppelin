@@ -747,11 +747,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
     } catch (SQLException e) {
       logger.error("Cannot run " + sql, e);
       String errorMsg = Throwables.getStackTraceAsString(e);
-      try {
-        closeDBPool(user, propertyKey);
-      } catch (SQLException e1) {
-        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
-      }
       interpreterResult.add(errorMsg);
       return new InterpreterResult(Code.ERROR, interpreterResult.message());
     } finally {
