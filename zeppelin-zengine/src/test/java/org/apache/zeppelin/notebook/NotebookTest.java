@@ -259,9 +259,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Note note = notebook.createNote(subject);
 
     assertNotNull(notebook.getNotebookAuthorization().getOwners(note.getId()));
-    assertEquals(1, notebook.getNotebookAuthorization().getOwners(note.getId()).size());
+    assertEquals(2, notebook.getNotebookAuthorization().getOwners(note.getId()).size());
     Set<String> owners = new HashSet<>();
     owners.add("user1");
+    owners.add("admin");
     assertEquals(owners, notebook.getNotebookAuthorization().getOwners(note.getId()));
     notebook.removeNote(note.getId(), anonymous);
   }
@@ -490,9 +491,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note importedNote2 = notebook.importNote(exportedNoteJson, "Title2", subject);
     assertNotNull(notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
-    assertEquals(1, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()).size());
+    assertEquals(2, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()).size());
     Set<String> owners = new HashSet<>();
     owners.add("user1");
+    owners.add("admin");
     assertEquals(owners, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(importedNote.getId(), anonymous);
@@ -524,9 +526,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note cloneNote2 = notebook.cloneNote(note.getId(), "clone note2", subject);
     assertNotNull(notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
-    assertEquals(1, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()).size());
+    assertEquals(2, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()).size());
     Set<String> owners = new HashSet<>();
     owners.add("user1");
+    owners.add("admin");
     assertEquals(owners, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
@@ -1146,8 +1149,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Test
   public void testPublicPrivateNewNote() throws IOException, SchedulerException {
+    String adminName = conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE);
     HashSet<String> user1 = Sets.newHashSet("user1");
     HashSet<String> user2 = Sets.newHashSet("user2");
+    HashSet<String> admin = Sets.newHashSet(adminName);
     
     // case of public note
     assertTrue(conf.isNotebokPublic());
@@ -1155,8 +1160,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     
     List<Note> notes1 = notebook.getAllNotes(user1);
     List<Note> notes2 = notebook.getAllNotes(user2);
+    List<Note> notesAdmin = notebook.getAllNotes(admin);
     assertEquals(notes1.size(), 0);
     assertEquals(notes2.size(), 0);
+    assertEquals(notesAdmin.size(), 0);
     
     // user1 creates note
     Note notePublic = notebook.createNote(new AuthenticationInfo("user1"));
@@ -1164,13 +1171,16 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // both users have note
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
+    notesAdmin = notebook.getAllNotes(admin);
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
+    assertEquals(notesAdmin.size(), 1);
     assertEquals(notes1.get(0).getId(), notePublic.getId());
     assertEquals(notes2.get(0).getId(), notePublic.getId());
+    assertEquals(notesAdmin.get(0).getId(), notePublic.getId());
     
-    // user1 is only owner
-    assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 1);
+    // user1 and admin role are owner
+    assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 2);
     assertEquals(notebookAuthorization.getReaders(notePublic.getId()).size(), 0);
     assertEquals(notebookAuthorization.getRunners(notePublic.getId()).size(), 0);
     assertEquals(notebookAuthorization.getWriters(notePublic.getId()).size(), 0);
@@ -1185,8 +1195,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // check that still 1 note per user
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
+    notesAdmin = notebook.getAllNotes(admin);
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
+    assertEquals(notesAdmin.size(), 1);
     
     // create private note
     Note notePrivate = notebook.createNote(new AuthenticationInfo("user1"));
@@ -1194,15 +1206,17 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // only user1 have notePrivate right after creation
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
+    notesAdmin = notebook.getAllNotes(admin);
     assertEquals(notes1.size(), 2);
     assertEquals(notes2.size(), 1);
+    assertEquals(notesAdmin.size(), 2);
     assertEquals(true, notes1.contains(notePrivate));
     
-    // user1 have all rights
-    assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getRunners(notePrivate.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 1);
+    // user1 have all rights and admin role has owner right.
+    assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 2);
+    assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 2);
+    assertEquals(notebookAuthorization.getRunners(notePrivate.getId()).size(), 2);
+    assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 2);
     
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
