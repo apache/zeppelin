@@ -319,6 +319,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncWithAcl() throws IOException {
     /* scenario 1 - note exists with acl on main storage */
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
+    AuthenticationInfo admin = new AuthenticationInfo(conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE));
     Note note = notebookSync.createNote(user1);
     assertEquals(0, note.getParagraphs().size());
 
@@ -330,8 +331,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
     Set<String> entity = new HashSet<String>();
     entity.add(user1.getUser());
+    entity.add(admin.getUser());
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
-    assertEquals(1, authInfo.getOwners(note.getId()).size());
+    assertEquals(2, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
     assertEquals(0, authInfo.getRunners(note.getId()).size());
     assertEquals(0, authInfo.getWriters(note.getId()).size());
@@ -356,7 +358,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(1, notebookRepoSync.get(0,
         notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
-    assertEquals(1, authInfo.getOwners(note.getId()).size());
+    assertEquals(2, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
     assertEquals(0, authInfo.getRunners(note.getId()).size());
     assertEquals(0, authInfo.getWriters(note.getId()).size());
