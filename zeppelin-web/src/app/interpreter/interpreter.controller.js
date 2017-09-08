@@ -16,9 +16,13 @@ import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl)
 
-function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl($rootScope, $scope, $http,
+                         $timeout, $route,
+                         baseUrlSrv,
+                         ErrorHandlerService) {
   'ngInject'
 
+  let ehs = ErrorHandlerService
   let interpreterSettingsTmp = []
   $scope.interpreterSettings = []
   $scope.availableInterpreters = {}
@@ -27,7 +31,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.searchInterpreter = ''
   $scope._ = _
   $scope.interpreterPropertyTypes = []
-  ngToast.dismiss()
 
   $scope.openPermissions = function () {
     $scope.showInterpreterAuth = true
@@ -113,19 +116,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       .then(function (res) {
         $scope.interpreterSettings = res.data.body
         checkDownloadingDependencies()
-      }).catch(function (res) {
-        if (res.status === 401) {
-          ngToast.danger({
-            content: 'You don\'t have permission on this page',
-            verticalPosition: 'bottom',
-            timeout: '3000'
-          })
-          setTimeout(function () {
-            window.location = baseUrlSrv.getBase()
-          }, 3000)
-        }
-        console.log('Error %o %o', res.status, res.data ? res.data.message : '')
-      })
+      }).catch(ehs.handleHttpError('Failed to get interpreter settings'))
   }
 
   const checkDownloadingDependencies = function () {
@@ -137,11 +128,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       }
 
       if (setting.status === ParagraphStatus.ERROR || setting.errorReason) {
-        ngToast.danger({content: 'Error setting properties for interpreter \'' +
-        setting.group + '.' + setting.name + '\': ' + setting.errorReason,
-          verticalPosition: 'top',
-          dismissOnTimeout: false
-        })
+        const message = 'Error setting properties for interpreter \'' +
+          setting.group + '.' + setting.name + '\': ' + setting.errorReason
+        ehs.showToast(message, 'danger')
       }
     }
 
@@ -157,18 +146,14 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   let getAvailableInterpreters = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').then(function (res) {
       $scope.availableInterpreters = res.data.body
-    }).catch(function (res) {
-      console.log('Error %o %o', res.status, res.data ? res.data.message : '')
-    })
+    }).catch(ehs.handleHttpError('Failed to get available interpreters'))
   }
 
   let getAvailableInterpreterPropertyWidgets = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
       .then(function (res) {
         $scope.interpreterPropertyTypes = res.data.body
-      }).catch(function (res) {
-        console.log('Error %o %o', res.status, res.data ? res.data.message : '')
-      })
+      }).catch(ehs.handleHttpError('Failed to get interpreter property widgets'))
   }
 
   let emptyNewProperty = function(object) {
@@ -397,10 +382,10 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
               checkDownloadingDependencies()
               thisConfirm.close()
             })
-            .catch(function (res) {
-              const message = res.data ? res.data.message : 'Could not connect to server.'
-              console.log('Error %o %o', res.status, message)
-              ngToast.danger({content: message, verticalPosition: 'bottom'})
+            .catch(res => {
+              // display error
+              ehs.handleHttpError('Failed to update interpreter setting')(res)
+              // close forms
               form.$show()
               thisConfirm.close()
             })
@@ -431,9 +416,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             .then(function (res) {
               let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
               $scope.interpreterSettings.splice(index, 1)
-            }).catch(function (res) {
-              console.log('Error %o %o', res.status, res.data ? res.data.message : '')
-            })
+            }).catch(ehs.handleHttpError('Failed to remove interpreter setting'))
         }
       }
     })
@@ -467,12 +450,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             .then(function (res) {
               let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
               $scope.interpreterSettings[index] = res.data.body
-              ngToast.info('Interpreter stopped. Will be lazily started on next run.')
-            }).catch(function (res) {
-              let errorMsg = (res.data !== null) ? res.data.message : 'Could not connect to server.'
-              console.log('Error %o %o', res.status, errorMsg)
-              ngToast.danger(errorMsg)
-            })
+              ehs.showToast('Interpreter stopped. Will be lazily started on next run.', 'info')
+            }).catch(ehs.handleHttpError(`Failed to restart interpreter: ${settingId}`))
         }
       }
     })
@@ -541,11 +520,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         getInterpreterSettings()
         $scope.showAddNewSetting = false
         checkDownloadingDependencies()
-      }).catch(function (res) {
-        const errorMsg = res.data ? res.data.message : 'Could not connect to server.'
-        console.log('Error %o %o', res.status, errorMsg)
-        ngToast.danger({content: errorMsg, verticalPosition: 'bottom'})
-      })
+      }).catch(ehs.handleHttpError('Failed to add new interpreter setting'))
   }
 
   $scope.cancelInterpreterSetting = function () {
@@ -705,9 +680,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         getRepositories()
         $scope.resetNewRepositorySetting()
         angular.element('#repoModal').modal('hide')
-      }).catch(function (res) {
-        console.log('Error %o %o', res.headers, res.config)
-      })
+      }).catch(ehs.handleHttpError('Failed to add new repository'))
   }
 
   $scope.removeRepository = function (repoId) {
@@ -721,9 +694,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             .then(function (res) {
               let index = _.findIndex($scope.repositories, {'id': repoId})
               $scope.repositories.splice(index, 1)
-            }).catch(function (res) {
-              console.log('Error %o %o', res.status, res.data ? res.data.message : '')
-            })
+            }).catch(ehs.handleHttpError('Failed to remove repository'))
         }
       }
     })
@@ -771,9 +742,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             message: res.data.body.message
           })
         }
-      }).catch(function (res) {
-        console.log('Error %o %o', res.status, res.data ? res.data.message : '')
-      })
+      }).catch(ehs.handleHttpError('Failed to display spark UI'))
   }
 
   $scope.getInterpreterBindingModeDocsLink = function() {

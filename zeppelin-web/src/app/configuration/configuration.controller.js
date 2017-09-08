@@ -14,30 +14,18 @@
 
 angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
 
-function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast) {
+function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast, ErrorHandlerService) {
   'ngInject'
 
+  let ehs = ErrorHandlerService
   $scope.configrations = []
-  ngToast.dismiss()
 
   let getConfigurations = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
-    .success(function (data, status, headers, config) {
-      $scope.configurations = data.body
+    .then(res => {
+      $scope.configurations = res.data.body
     })
-    .error(function (data, status, headers, config) {
-      if (status === 401) {
-        ngToast.danger({
-          content: 'You don\'t have permission on this page',
-          verticalPosition: 'bottom',
-          timeout: '3000'
-        })
-        setTimeout(function () {
-          window.location = baseUrlSrv.getBase()
-        }, 3000)
-      }
-      console.log('Error %o %o', status, data.message)
-    })
+    .catch(ehs.handleHttpError('Failed to get configurations'))
   }
 
   let init = function () {

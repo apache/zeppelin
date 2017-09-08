@@ -15,9 +15,10 @@
 import { HeliumType, } from './helium-type'
 
 export default function HeliumCtrl ($scope, $rootScope, $sce,
-                                   baseUrlSrv, ngToast, heliumService) {
+                                   baseUrlSrv, ngToast, ErrorHandlerService, heliumService) {
   'ngInject'
 
+  let ehs = ErrorHandlerService
   $scope.pkgSearchResults = {}
   $scope.defaultPackages = {}
   $scope.showVersions = {}
@@ -55,6 +56,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
       .then(visPackageOrder => {
         setVisPackageOrder(visPackageOrder)
       })
+      .catch(ehs.handleHttpError('Failed to initialize helium controller'))
   }
 
   const setVisPackageOrder = function(visPackageOrder) {
@@ -343,6 +345,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
         $scope.defaultPackageConfigs[pkgName] = confs
         pkgSearchResult.configFetching = false
       })
+      .catch(ehs.handleHttpError('Failed to toggle config button'))
   }
 
   $scope.saveConfig = function (pkgSearchResult) {
