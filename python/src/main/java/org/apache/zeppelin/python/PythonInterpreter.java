@@ -44,6 +44,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -57,7 +58,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import py4j.GatewayServer;
-import py4j.commands.Command;
 
 /**
  * Python interpreter for Zeppelin.
@@ -76,6 +76,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private int maxResult;
   private String py4jLibPath;
   private String pythonLibPath;
+
+  private String currentCondaEnvName = StringUtils.EMPTY;
+  private String currentCondaEnvLibPath = StringUtils.EMPTY;
 
   private String pythonCommand;
 
@@ -153,6 +156,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       Path workingPath = Paths.get("..").toAbsolutePath();
       py4jLibPath = workingPath + File.separator + ZEPPELIN_PY4JPATH;
       pythonLibPath = workingPath + File.separator + ZEPPELIN_PYTHON_LIBS;
+    }
+
+    if (currentCondaEnvLibPath != null && !currentCondaEnvLibPath.isEmpty()) {
+      pythonLibPath = String.format("%s:%s", pythonLibPath, currentCondaEnvLibPath);
     }
 
     port = findRandomOpenPortOnAllLocalInterfaces();
@@ -517,6 +524,28 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     } else {
       return pythonCommand;
     }
+  }
+
+  public void setCurrentCondaEnvName(String envName) {
+    if (envName == null) {
+      envName = StringUtils.EMPTY;
+    }
+    this.currentCondaEnvName = envName;
+  }
+
+  public String getCurrentCondaEnvName() {
+    return currentCondaEnvName;
+  }
+
+  public void setPythonCondaLibPath(String path) {
+    if (path == null) {
+      path = StringUtils.EMPTY;
+    }
+    this.currentCondaEnvLibPath = path;
+  }
+
+  public String getPythonCondaLibPath() {
+    return this.currentCondaEnvLibPath;
   }
 
   public String getPythonBindPath() {
