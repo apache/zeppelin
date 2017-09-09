@@ -381,9 +381,16 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
-        conf.set(key, val);
+      if (!val.trim().isEmpty()) {
+        if (key.startsWith("spark.")) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+          conf.set(key, val);
+        }
+        if (key.startsWith("zeppelin.spark.")) {
+          String sparkPropertyKey = key.substring("zeppelin.spark.".length());
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", sparkPropertyKey, val));
+          conf.set(sparkPropertyKey, val);
+        }
       }
     }
 
@@ -509,9 +516,17 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
-        conf.set(key, val);
+      if (!val.trim().isEmpty()) {
+        if (key.startsWith("spark.")) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+          conf.set(key, val);
+        }
+
+        if (key.startsWith("zeppelin.spark.")) {
+          String sparkPropertyKey = key.substring("zeppelin.spark.".length());
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", sparkPropertyKey, val));
+          conf.set(sparkPropertyKey, val);
+        }
       }
     }
     setupConfForPySpark(conf);
@@ -1096,23 +1111,33 @@ public class SparkInterpreter extends Interpreter {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
-    String completionText = getCompletionTargetString(buf, cursor);
-    if (completionText == null) {
-      completionText = "";
-      cursor = completionText.length();
-    }
 
     ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
-    Candidates ret = c.complete(completionText, cursor);
-
-    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<>();
-
-    for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+    
+    if (Utils.isScala2_10() || !Utils.isCompilerAboveScala2_11_7()) {
+      String singleToken = getCompletionTargetString(buf, cursor);
+      Candidates ret = c.complete(singleToken, singleToken.length());
+      
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<>();
+  
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+      }
+  
+      return completions;
+    } else {
+      Candidates ret = c.complete(buf, cursor);
+  
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<>();
+  
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+      }
+  
+      return completions;
     }
-
-    return completions;
   }
 
   private String getCompletionTargetString(String text, int cursor) {
