@@ -516,18 +516,13 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.removeParagraph = function (paragraph) {
-    let paragraphs = angular.element('div[id$="_paragraphColumn_main"]')
-    if (paragraphs[paragraphs.length - 1].id.indexOf(paragraph.id) === 0) {
+    if ($scope.note.paragraphs.length === 1) {
       BootstrapDialog.alert({
         closable: true,
-        message: 'The last paragraph can\'t be deleted.',
-        callback: function (result) {
-          if (result) {
-            $scope.editor.focus()
-          }
-        }
+        message: 'All the paragraphs can\'t be deleted.'
       })
     } else {
+      let paragraphs = angular.element('div[id$="_paragraphColumn_main"]')
       BootstrapDialog.confirm({
         closable: true,
         title: '',
