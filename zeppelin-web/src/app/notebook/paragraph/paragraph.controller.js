@@ -522,7 +522,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         message: 'All the paragraphs can\'t be deleted.'
       })
     } else {
-      let paragraphs = angular.element('div[id$="_paragraphColumn_main"]')
       BootstrapDialog.confirm({
         closable: true,
         title: '',
