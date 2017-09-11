@@ -74,12 +74,13 @@ public class PythonCondaInterpreterTest {
   @Test
   public void testActivateEnv() throws IOException, InterruptedException {
     setMockCondaEnvList();
-
+    String envname = "env1";
     InterpreterContext context = getInterpreterContext();
-    conda.interpret("activate env1", context);
+    conda.interpret("activate " + envname, context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand("/path1/bin/python");
+    assertTrue(envname.equals(conda.getCurrentCondaEnvName()));
   }
 
   @Test
@@ -89,6 +90,7 @@ public class PythonCondaInterpreterTest {
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand("python");
+    assertTrue(conda.getCurrentCondaEnvName().isEmpty());
   }
 
   @Test
