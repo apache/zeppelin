@@ -573,3 +573,13 @@ table.table-striped {
 .network-labels {
   margin: 0.2em;
 }
+
+.icon-more-dropdown {
+  background-image: url(assets/images/icon-more.svg);
+  background-size: 14px;
+  height: 13px;
+  width: 13px;
+  display: inline-block;
+  position: relative;
+  top: 1px;
+}
