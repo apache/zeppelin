@@ -21,7 +21,7 @@ describe('ErrorHandlerService', function () {
     })
 
     expect(ngToast.danger).toHaveBeenCalledWith({
-      content: 'You don\'t have permission on this page', verticalPosition: 'bottom', timeout: '3000'
+      content: 'auth error', verticalPosition: 'bottom', timeout: '3000'
     })
   })
 
