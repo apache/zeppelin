@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+//TODO(zjffdu) add more test for Interpreter which is a very important class
 public class InterpreterTest {
 
   @Test
@@ -83,6 +84,43 @@ public class InterpreterTest {
             noteId, user),
         actual
     );
+  }
+
+  public static class DummyInterpreter extends Interpreter {
+
+    public DummyInterpreter(Properties property) {
+      super(property);
+    }
+
+    @Override
+    public void open() {
+
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public InterpreterResult interpret(String st, InterpreterContext context) {
+      return null;
+    }
+
+    @Override
+    public void cancel(InterpreterContext context) {
+
+    }
+
+    @Override
+    public FormType getFormType() {
+      return null;
+    }
+
+    @Override
+    public int getProgress(InterpreterContext context) {
+      return 0;
+    }
   }
 
 }

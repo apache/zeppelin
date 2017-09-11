@@ -189,5 +189,16 @@
     "editor": {
       "language": "r"
     }
+  },
+
+  {
+    "group": "spark",
+    "name": "ipyspark",
+    "className": "org.apache.zeppelin.spark.IPySparkInterpreter",
+    "properties": {},
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
   }
 ]

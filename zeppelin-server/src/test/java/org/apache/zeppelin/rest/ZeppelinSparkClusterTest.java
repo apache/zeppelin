@@ -271,7 +271,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(len=u'3')]\n", p.getResult().message().get(0).getData());
+                assertTrue("[Row(len=u'3')]\n".equals(p.getResult().message().get(0).getData()) ||
+                    "[Row(len='3')]\n".equals(p.getResult().message().get(0).getData()));
 
                 // test exception
                 p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -321,7 +322,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 note.run(p.getId());
                 waitForFinish(p);
                 assertEquals(Status.FINISHED, p.getStatus());
-                assertEquals("[Row(len=u'3')]\n", p.getResult().message().get(0).getData());
+                assertTrue("[Row(len=u'3')]\n".equals(p.getResult().message().get(0).getData()) ||
+                    "[Row(len='3')]\n".equals(p.getResult().message().get(0).getData()));
             }
         }
         ZeppelinServer.notebook.removeNote(note.getId(), anonymous);

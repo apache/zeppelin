@@ -696,6 +696,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       $scope.setIamOwner()
       angular.element('#selectOwners').select2(selectJson)
       angular.element('#selectReaders').select2(selectJson)
+      angular.element('#selectRunners').select2(selectJson)
       angular.element('#selectWriters').select2(selectJson)
       if (callback) {
         callback()
@@ -735,6 +736,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   function convertPermissionsToArray () {
     $scope.permissions.owners = angular.element('#selectOwners').val()
     $scope.permissions.readers = angular.element('#selectReaders').val()
+    $scope.permissions.runners = angular.element('#selectRunners').val()
     $scope.permissions.writers = angular.element('#selectWriters').val()
     angular.element('.permissionsForm select').find('option:not([is-select2="false"])').remove()
   }
@@ -1013,7 +1015,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
           closable: true,
           title: 'Permissions Saved Successfully',
           message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
-          $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
+           $scope.permissions.readers + '\n\n' + 'Runners : ' + $scope.permissions.runners +
+           '\n\n' + 'Writers  : ' + $scope.permissions.writers
         })
         $scope.showPermissions = false
       })
@@ -1058,6 +1061,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         $scope.closePermissions()
         angular.element('#selectOwners').select2({})
         angular.element('#selectReaders').select2({})
+        angular.element('#selectRunners').select2({})
         angular.element('#selectWriters').select2({})
       } else {
         $scope.openPermissions()

@@ -1,0 +1,115 @@
+{
+  "interpreterSettings": {
+    "2C3RWCVAG": {
+      "id": "2C3RWCVAG",
+      "name": "test",
+      "group": "test",
+      "properties": {
+        "property_1": "value_1",
+        "property_2": "new_value_2",
+        "property_3": "value_3"
+      },
+      "status": "READY",
+      "interpreterGroup": [
+        {
+          "name": "echo",
+          "class": "org.apache.zeppelin.interpreter.EchoInterpreter",
+          "defaultInterpreter": true,
+          "editor": {
+            "language": "java",
+            "editOnDblClick": false
+          }
+        }
+      ],
+      "dependencies": [],
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2CKWE7B19": {
+      "id": "2CKWE7B19",
+      "name": "test2",
+      "group": "test",
+      "properties": {
+        "property_1": "value_1",
+        "property_2": "new_value_2",
+        "property_3": "value_3"
+      },
+      "status": "READY",
+      "interpreterGroup": [
+        {
+          "name": "echo",
+          "class": "org.apache.zeppelin.interpreter.EchoInterpreter",
+          "defaultInterpreter": true,
+          "editor": {
+            "language": "java",
+            "editOnDblClick": false
+          }
+        }
+      ],
+      "dependencies": [],
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    }
+  },
+  "interpreterBindings": {
+    "2C6793KRV": [
+      "2C48Y7FSJ",
+      "2C63XW4XE",
+      "2C66GE1VB",
+      "2C5VH924X",
+      "2C4BJDRRZ",
+      "2C3SQSB7V",
+      "2C4HKDCQW",
+      "2C3DR183X",
+      "2C66Z9XPQ",
+      "2C3PTPMUH",
+      "2C69WE69N",
+      "2C5SRRXHM",
+      "2C4ZD49PF",
+      "2C6V3D44K",
+      "2C4UB1UZA",
+      "2C5S1R21W",
+      "2C5DCRVGM",
+      "2C686X8ZH",
+      "2C3RWCVAG",
+      "2C3JKFMJU",
+      "2C3VECEG2"
+    ]
+  },
+  "interpreterRepositories": [
+    {
+      "id": "central",
+      "type": "default",
+      "url": "http://repo1.maven.org/maven2/",
+      "releasePolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "snapshotPolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "mirroredRepositories": [],
+      "repositoryManager": false
+    }
+  ]
+}

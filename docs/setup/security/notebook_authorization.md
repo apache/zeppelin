@@ -36,13 +36,17 @@ As you can see, each Zeppelin notebooks has 3 entities :
 * Owners ( users or groups )
 * Readers ( users or groups )
 * Writers ( users or groups )
+* Runners ( users or groups )
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/permission_setting.png"></center>
 
 Fill out the each forms with comma seperated **users** and **groups** configured in `conf/shiro.ini` file.
 If the form is empty (*), it means that any users can perform that operation.
 
-If someone who doesn't have **read** permission is trying to access the notebook or someone who doesn't have **write** permission is trying to edit the notebook, Zeppelin will ask to login or block the user.
+If someone who doesn't have **read** permission is trying to access the notebook or someone who doesn't have **write** permission is trying to edit the notebook,
+or someone who doesn't have **run** permission is trying to run a paragraph Zeppelin will ask to login or block the user.
+
+By default, owners and writers have **write** permission, owners, writers and runners have **run** permission, owners, writers, runners and readers have **read** permission
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/insufficient_privileges.png"></center>
 
@@ -63,13 +67,13 @@ or set `zeppelin.notebook.public` property to `false` in `conf/zeppelin-site.xml
 </property>
 ```
 
-Behind the scenes, when you create a new note only the `owners` field is filled with current user, leaving `readers` and `writers` fields empty. All the notes with at least one empty authorization field are considered to be in `public` workspace. Thus when setting `zeppelin.notebook.public` (or corresponding `ZEPPELIN_NOTEBOOK_PUBLIC`) to false, newly created notes have `readers` and `writers` fields filled with current user, making note appear as in `private` workspace.
+Behind the scenes, when you create a new note only the `owners` field is filled with current user, leaving `readers`, `runners` and `writers` fields empty. All the notes with at least one empty authorization field are considered to be in `public` workspace. Thus when setting `zeppelin.notebook.public` (or corresponding `ZEPPELIN_NOTEBOOK_PUBLIC`) to false, newly created notes have `readers`, `runners`, `writers` fields filled with current user, making note appear as in `private` workspace.
 
 ## How it works
 In this section, we will explain the detail about how the notebook authorization works in backend side.
 
 ### NotebookServer
-The [NotebookServer](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/socket/NotebookServer.java) classifies every notebook operations into three categories: **Read**, **Write**, **Manage**.
+The [NotebookServer](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/socket/NotebookServer.java) classifies every notebook operations into three categories: **Read**, **Run**, **Write**, **Manage**.
 Before executing a notebook operation, it checks if the user and the groups associated with the `NotebookSocket` have permissions.
 For example, before executing a **Read** operation, it checks if the user and the groups have at least one entity that belongs to the **Reader** entities.
 
