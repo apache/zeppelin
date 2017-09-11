@@ -235,8 +235,12 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private String runCondaList() throws IOException, InterruptedException {
     List<String> commands = new ArrayList<String>();
-    commands.add("conda");
-    commands.add("list");
+    commands.add(0, "conda");
+    commands.add(1, "list");
+    if (!getCurrentCondaEnvName().isEmpty()) {
+      commands.add(2, "-n");
+      commands.add(3, getCurrentCondaEnvName());
+    }
 
     return runCondaCommandForTableOutput("Installed Package List", commands);
   }
