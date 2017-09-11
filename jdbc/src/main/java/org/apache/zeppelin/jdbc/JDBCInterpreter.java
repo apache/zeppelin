@@ -744,7 +744,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           }
         }
       }
-    } catch (SQLException e) {
+    } catch (Throwable e) {
       logger.error("Cannot run " + sql, e);
       String errorMsg = Throwables.getStackTraceAsString(e);
       interpreterResult.add(errorMsg);
