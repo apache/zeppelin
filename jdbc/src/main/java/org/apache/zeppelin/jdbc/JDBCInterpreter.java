@@ -668,11 +668,21 @@ public class JDBCInterpreter extends KerberosInterpreter {
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
     try {
       connection = getConnection(propertyKey, interpreterContext);
-      if (connection == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    } catch (Exception e) {
+      String errorMsg = Throwables.getStackTraceAsString(e);
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
       }
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    }
+    if (connection == null) {
+      return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    }
 
-
+    try {
       List<String> sqlArray;
       if (splitQuery) {
         sqlArray = splitSqlQueries(sql);
@@ -702,24 +712,24 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
             // Regards that the command is DDL.
             if (isDDLCommand(statement.getUpdateCount(),
-                resultSet.getMetaData().getColumnCount())) {
+                    resultSet.getMetaData().getColumnCount())) {
               interpreterResult.add(InterpreterResult.Type.TEXT,
-                  "Query executed successfully.");
+                      "Query executed successfully.");
             } else {
               String results = getResults(resultSet,
-                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
+                      !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
               interpreterResult.add(results);
               if (resultSet.next()) {
                 interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
-                    String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
+                        String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
               }
             }
           } else {
             // Response contains either an update count or there are no results.
             int updateCount = statement.getUpdateCount();
             interpreterResult.add(InterpreterResult.Type.TEXT,
-                "Query executed successfully. Affected rows : " +
-                    updateCount);
+                    "Query executed successfully. Affected rows : " +
+                            updateCount);
           }
         } finally {
           if (resultSet != null) {
@@ -734,6 +744,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
           }
         }
       }
+    } catch (Throwable e) {
+      logger.error("Cannot run " + sql, e);
+      String errorMsg = Throwables.getStackTraceAsString(e);
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    } finally {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {
         try {
@@ -744,17 +760,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         } catch (SQLException e) { /*ignored*/ }
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
-    } catch (Throwable e) {
-      logger.error("Cannot run " + sql, e);
-      String errorMsg = Throwables.getStackTraceAsString(e);
-      try {
-        closeDBPool(user, propertyKey);
-      } catch (SQLException e1) {
-        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
-      }
-      interpreterResult.add(errorMsg);
-      return new InterpreterResult(Code.ERROR, interpreterResult.message());
     }
+
     return interpreterResult;
   }
 
