@@ -143,8 +143,12 @@ public class PythonCondaInterpreter extends Interpreter {
         }
       }
     }
-    setCurrentCondaEnvName(envName);
-    python.setPythonCommand(binPath);
+
+    File pythonBin = new File(binPath);
+    if (pythonBin.exists() && pythonBin.isFile() && pythonBin.canExecute()) {
+      setCurrentCondaEnvName(envName);
+      python.setPythonCommand(binPath);
+    }
   }
 
   private void restartPythonProcess() {
