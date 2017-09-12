@@ -357,7 +357,7 @@ public class JDBCInterpreter extends Interpreter {
   public Connection getConnection(String propertyKey, InterpreterContext interpreterContext)
       throws ClassNotFoundException, SQLException, InterpreterException, IOException {
     final String user =  interpreterContext.getAuthenticationInfo().getUser();
-    Connection connection;
+    Connection connection = null;
     if (propertyKey == null || basePropretiesMap.get(propertyKey) == null) {
       return null;
     }
@@ -612,16 +612,6 @@ public class JDBCInterpreter extends Interpreter {
           }
         }
       }
-      //In case user ran an insert/update/upsert statement
-      if (connection != null) {
-        try {
-          if (!connection.getAutoCommit()) {
-            connection.commit();
-          }
-          connection.close();
-        } catch (SQLException e) { /*ignored*/ }
-      }
-      getJDBCConfiguration(user).removeStatement(paragraphId);
     } catch (Throwable e) {
       if (e.getCause() instanceof TTransportException &&
           Throwables.getStackTraceAsString(e).contains("GSS") &&
@@ -638,6 +628,17 @@ public class JDBCInterpreter extends Interpreter {
         interpreterResult.add(errorMsg);
         return new InterpreterResult(Code.ERROR, interpreterResult.message());
       }
+    } finally {
+      //In case user ran an insert/update/upsert statement
+      if (connection != null) {
+        try {
+          if (!connection.getAutoCommit()) {
+            connection.commit();
+          }
+          connection.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
+      getJDBCConfiguration(user).removeStatement(paragraphId);
     }
     return interpreterResult;
   }
