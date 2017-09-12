@@ -553,7 +553,7 @@ public class JDBCInterpreter extends Interpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    Connection connection;
+    Connection connection = null;
     Statement statement;
     ResultSet resultSet = null;
     String paragraphId = interpreterContext.getParagraphId();
