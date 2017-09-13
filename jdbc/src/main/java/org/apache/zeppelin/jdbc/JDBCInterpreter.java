@@ -230,11 +230,17 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private void initConnectionPoolMap() {
-    for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
+    for (String key : jdbcUserConfigurationsMap.keySet()) {
       try {
+        closeDBPool(key, DEFAULT_KEY);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      try {
+        JDBCUserConfigurations configurations = jdbcUserConfigurationsMap.get(key);
         configurations.initConnectionPoolMap();
-      } catch (Exception e) {
-        logger.error("Error while closing initConnectionPoolMap...", e);
+      } catch (SQLException e) {
+        e.printStackTrace();
       }
     }
   }
