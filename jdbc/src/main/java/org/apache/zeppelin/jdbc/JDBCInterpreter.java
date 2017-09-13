@@ -230,11 +230,17 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private void initConnectionPoolMap() {
-    for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
+    for (String key : jdbcUserConfigurationsMap.keySet()) {
       try {
+        closeDBPool(key, DEFAULT_KEY);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      try {
+        JDBCUserConfigurations configurations = jdbcUserConfigurationsMap.get(key);
         configurations.initConnectionPoolMap();
-      } catch (Exception e) {
-        logger.error("Error while closing initConnectionPoolMap...", e);
+      } catch (SQLException e) {
+        e.printStackTrace();
       }
     }
   }
@@ -357,7 +363,7 @@ public class JDBCInterpreter extends Interpreter {
   public Connection getConnection(String propertyKey, InterpreterContext interpreterContext)
       throws ClassNotFoundException, SQLException, InterpreterException, IOException {
     final String user =  interpreterContext.getAuthenticationInfo().getUser();
-    Connection connection;
+    Connection connection = null;
     if (propertyKey == null || basePropretiesMap.get(propertyKey) == null) {
       return null;
     }
@@ -553,20 +559,30 @@ public class JDBCInterpreter extends Interpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    Connection connection;
+    Connection connection = null;
     Statement statement;
     ResultSet resultSet = null;
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
-
     try {
       connection = getConnection(propertyKey, interpreterContext);
-      if (connection == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    } catch (Exception e) {
+      String errorMsg = Throwables.getStackTraceAsString(e);
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
       }
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    }
+    if (connection == null) {
+      return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    }
 
+    try {
       ArrayList<String> multipleSqlArray = splitSqlQueries(sql);
       for (int i = 0; i < multipleSqlArray.size(); i++) {
         String sqlToExecute = multipleSqlArray.get(i);
@@ -612,16 +628,6 @@ public class JDBCInterpreter extends Interpreter {
           }
         }
       }
-      //In case user ran an insert/update/upsert statement
-      if (connection != null) {
-        try {
-          if (!connection.getAutoCommit()) {
-            connection.commit();
-          }
-          connection.close();
-        } catch (SQLException e) { /*ignored*/ }
-      }
-      getJDBCConfiguration(user).removeStatement(paragraphId);
     } catch (Throwable e) {
       if (e.getCause() instanceof TTransportException &&
           Throwables.getStackTraceAsString(e).contains("GSS") &&
@@ -638,6 +644,17 @@ public class JDBCInterpreter extends Interpreter {
         interpreterResult.add(errorMsg);
         return new InterpreterResult(Code.ERROR, interpreterResult.message());
       }
+    } finally {
+      //In case user ran an insert/update/upsert statement
+      if (connection != null) {
+        try {
+          if (!connection.getAutoCommit()) {
+            connection.commit();
+          }
+          connection.close();
+        } catch (SQLException e) { /*ignored*/ }
+      }
+      getJDBCConfiguration(user).removeStatement(paragraphId);
     }
     return interpreterResult;
   }
