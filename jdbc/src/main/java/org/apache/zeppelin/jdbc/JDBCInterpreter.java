@@ -278,11 +278,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void initConnectionPoolMap() {
-    for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
+    for (String key : jdbcUserConfigurationsMap.keySet()) {
       try {
+        closeDBPool(key, DEFAULT_KEY);
+      } catch (SQLException e) {
+        logger.error("Error while closing database pool.", e);
+      }
+      try {
+        JDBCUserConfigurations configurations = jdbcUserConfigurationsMap.get(key);
         configurations.initConnectionPoolMap();
-      } catch (Exception e) {
-        logger.error("Error while closing initConnectionPoolMap...", e);
+      } catch (SQLException e) {
+        logger.error("Error while closing initConnectionPoolMap.", e);
       }
     }
   }
