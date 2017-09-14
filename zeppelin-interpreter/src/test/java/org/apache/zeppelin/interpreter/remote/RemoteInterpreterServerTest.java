@@ -43,7 +43,7 @@ public class RemoteInterpreterServerTest {
   @Test
   public void testStartStop() throws InterruptedException, IOException, TException {
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
-        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces());
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), true);
     assertEquals(false, server.isRunning());
 
     server.start();
