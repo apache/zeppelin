@@ -17,10 +17,14 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
@@ -95,6 +99,9 @@ public class LazyOpenInterpreter
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    Properties properties = intp.getPropertySource();
+    replaceContextParameters(properties, context);
+    intp.setProperty(properties);
     open();
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
@@ -190,5 +197,45 @@ public class LazyOpenInterpreter
   @Override
   public void unregisterHook(String event) {
     intp.unregisterHook(event);
+  }
+
+  /**
+   * Replace markers #{contextFieldName} by values from {@link InterpreterContext} fields
+   * with same name and marker #{user}. If value == null then replace by empty string.
+   */
+  private void replaceContextParameters(Properties properties,
+                                        InterpreterContext interpreterContext) {
+    if (properties != null && interpreterContext != null) {
+      String markerTemplate = "#\\{%s\\}";
+      List<String> skipFields = Arrays.asList("paragraphTitle", "paragraphId", "paragraphText");
+      List typesToProcess = Arrays.asList(String.class, Double.class, Float.class, Short.class,
+              Byte.class, Character.class, Boolean.class, Integer.class, Long.class);
+      for (String key : properties.stringPropertyNames()) {
+        String p = properties.getProperty(key);
+        if (StringUtils.isNotEmpty(p)) {
+          for (Field field : InterpreterContext.class.getDeclaredFields()) {
+            Class clazz = field.getType();
+            if (!skipFields.contains(field.getName()) && (typesToProcess.contains(clazz)
+                    || clazz.isPrimitive())) {
+              Object value = null;
+              try {
+                value = FieldUtils.readField(field, interpreterContext, true);
+              } catch (Exception e) {
+                logger.error("Cannot read value of field {0}", field.getName());
+              }
+              p = p.replaceAll(String.format(markerTemplate, field.getName()),
+                      value != null ? value.toString() : StringUtils.EMPTY);
+            }
+          }
+          if (interpreterContext.getAuthenticationInfo() != null) {
+            p = p.replaceAll(String.format(markerTemplate, "user"),
+                    StringUtils.defaultString(
+                            interpreterContext.getAuthenticationInfo().getUser(),
+                            StringUtils.EMPTY));
+            properties.setProperty(key, p);
+          }
+        }
+      }
+    }
   }
 }

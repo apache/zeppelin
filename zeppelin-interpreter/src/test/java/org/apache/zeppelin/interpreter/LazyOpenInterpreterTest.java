@@ -17,7 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
+
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -40,4 +43,47 @@ public class LazyOpenInterpreterTest {
     lazyOpenInterpreter.interpret("intp 1", interpreterContext);
     assertTrue("Interpeter is open", lazyOpenInterpreter.isOpen());
   }
+
+  @Test
+  public void testPropertyWithReplacedContextFields() {
+    Properties p = new Properties();
+    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
+            " #{authenticationInfo}");
+    String noteId = "testNoteId";
+    String paragraphTitle = "testParagraphTitle";
+    String paragraphText = "testParagraphText";
+    String paragraphId = "testParagraphId";
+    String user = "username";
+
+    Interpreter intp = new InterpreterTest.DummyInterpreter(p);
+    intp.setUserName(user);
+    LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(intp);
+
+
+    InterpreterContext interpreterContext =
+            new InterpreterContext(noteId,
+                    paragraphId,
+                    null,
+                    paragraphTitle,
+                    paragraphText,
+                    new AuthenticationInfo(user, null, "testTicket"),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+    lazyOpenInterpreter.interpret("intp 1", interpreterContext);
+    assertTrue("Interpeter is open", lazyOpenInterpreter.isOpen());
+
+    String actual = intp.getProperty("p1");
+    InterpreterContext.remove();
+
+    assertEquals(
+            String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , %s, %s, #{authenticationInfo}", noteId,
+                    noteId, user),
+            actual
+    );
+  }
+
 }

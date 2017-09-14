@@ -52,40 +52,6 @@ public class InterpreterTest {
     assertEquals("v2", intp.getProperty("p1"));
   }
 
-  @Test
-  public void testPropertyWithReplacedContextFields() {
-    String noteId = "testNoteId";
-    String paragraphTitle = "testParagraphTitle";
-    String paragraphText = "testParagraphText";
-    String paragraphId = "testParagraphId";
-    String user = "username";
-    InterpreterContext.set(new InterpreterContext(noteId,
-        paragraphId,
-        null,
-        paragraphTitle,
-        paragraphText,
-        new AuthenticationInfo("testUser", null, "testTicket"),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null));
-    Properties p = new Properties();
-    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
-        " #{authenticationInfo}");
-    Interpreter intp = new DummyInterpreter(p);
-    intp.setUserName(user);
-    String actual = intp.getProperty("p1");
-    InterpreterContext.remove();
-
-    assertEquals(
-        String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , %s, %s, #{authenticationInfo}", noteId,
-            noteId, user),
-        actual
-    );
-  }
-
   public static class DummyInterpreter extends Interpreter {
 
     public DummyInterpreter(Properties property) {
