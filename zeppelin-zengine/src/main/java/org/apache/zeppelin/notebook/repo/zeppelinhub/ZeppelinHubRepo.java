@@ -186,7 +186,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, noteId);
-    Note note = GSON.fromJson(response, Note.class);
+    Note note = Note.GSON.fromJson(response, Note.class);
     if (note == null) {
       return EMPTY_NOTE;
     }
@@ -245,7 +245,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, endpoint);
 
-    Note note = GSON.fromJson(response, Note.class);
+    Note note = Note.GSON.fromJson(response, Note.class);
     if (note == null) {
       return EMPTY_NOTE;
     }

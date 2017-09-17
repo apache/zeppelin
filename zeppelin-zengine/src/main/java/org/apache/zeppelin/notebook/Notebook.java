@@ -211,7 +211,7 @@ public class Notebook implements NoteEventListener {
     reader.setLenient(true);
     Note newNote;
     try {
-      Note oldNote = gson.fromJson(reader, Note.class);
+      Note oldNote = Note.GSON.fromJson(reader, Note.class);
       convertFromSingleResultToMultipleResultsFormat(oldNote);
       newNote = createNote(subject);
       if (noteName != null)

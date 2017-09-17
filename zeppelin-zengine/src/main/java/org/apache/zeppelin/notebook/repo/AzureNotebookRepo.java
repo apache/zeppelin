@@ -25,7 +25,6 @@ import java.io.Writer;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -135,10 +133,8 @@ public class AzureNotebookRepo implements NotebookRepo {
 
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-        .create();
 
-    Note note = gson.fromJson(json, Note.class);
+    Note note = Note.GSON.fromJson(json, Note.class);
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Job.Status.PENDING || p.getStatus() == Job.Status.RUNNING) {
