@@ -18,22 +18,16 @@
 package org.apache.zeppelin.notebook;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Lists;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -41,7 +35,6 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -52,15 +45,19 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.resource.ResourcePool;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ParagraphTest {
   @Test
@@ -84,7 +81,7 @@ public class ParagraphTest {
     assertEquals("md", Paragraph.getRequiredReplName(text));
     assertEquals("", Paragraph.getScriptBody(text));
   }
-  
+
   @Test
   public void replSingleCharName() {
     String text = "%r a";
@@ -231,5 +228,14 @@ public class ParagraphTest {
 
 
 
+  }
+
+  @Test
+  public void deserializeParagraphFromDifferentDateFormat() throws ParseException {
+    String dateString = "2017-09-01 00:01:02.345";
+    Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateString);
+    Paragraph paragraph = Note.GSON
+        .fromJson("{\"dateUpdated\":\"" + dateString + "\"}", Paragraph.class);
+    assertEquals(date, paragraph.dateUpdated);
   }
 }

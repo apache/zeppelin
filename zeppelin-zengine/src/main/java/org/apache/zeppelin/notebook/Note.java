@@ -17,21 +17,37 @@
 
 package org.apache.zeppelin.notebook;
 
-import static java.lang.String.format;
-
+import com.google.common.base.Preconditions;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -42,11 +58,8 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
+import static java.lang.String.format;
 
 /**
  * Binded interpreters for a note
@@ -58,6 +71,10 @@ public class Note implements Serializable, ParagraphJobListener {
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
       new ScheduledThreadPoolExecutor(0);
+
+  public static final Gson GSON = new GsonBuilder().setPrettyPrinting()
+      .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer()).create();
 
   static {
     delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
@@ -323,9 +340,8 @@ public class Note implements Serializable, ParagraphJobListener {
     newParagraph.setTitle(srcParagraph.getTitle());
 
     try {
-      Gson gson = new Gson();
-      String resultJson = gson.toJson(srcParagraph.getReturn());
-      InterpreterResult result = gson.fromJson(resultJson, InterpreterResult.class);
+      String resultJson = GSON.toJson(srcParagraph.getReturn());
+      InterpreterResult result = GSON.fromJson(resultJson, InterpreterResult.class);
       newParagraph.setReturn(result, null);
     } catch (Exception e) {
       // 'result' part of Note consists of exception, instead of actual interpreter results
@@ -589,7 +605,7 @@ public class Note implements Serializable, ParagraphJobListener {
   public void run(String paragraphId) {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    
+
     if (p.isBlankParagraph()) {
       logger.info("skip to run blank paragraph. {}", p.getId());
       p.setStatus(Job.Status.FINISHED);
