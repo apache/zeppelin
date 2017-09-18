@@ -19,6 +19,9 @@ package org.apache.zeppelin.notebook;
 
 
 import com.google.common.collect.Lists;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -228,9 +231,11 @@ public class ParagraphTest {
   }
 
   @Test
-  public void deserializeParagraphFromDifferentDateFormat() {
+  public void deserializeParagraphFromDifferentDateFormat() throws ParseException {
+    String dateString = "2017-09-01 00:01:02.345";
+    Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateString);
     Paragraph paragraph = Note.GSON
-        .fromJson("{\"dateUpdated\":\"2017-09-01 00:01:02.345\"}", Paragraph.class);
-    System.out.println(paragraph.dateUpdated);
+        .fromJson("{\"dateUpdated\":\"" + dateString + "\"}", Paragraph.class);
+    assertEquals(date, paragraph.dateUpdated);
   }
 }
