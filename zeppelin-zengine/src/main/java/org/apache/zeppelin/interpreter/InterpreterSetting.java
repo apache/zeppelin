@@ -738,7 +738,7 @@ public class InterpreterSetting {
     }
 
     setupPropertiesForPySpark(sparkProperties);
-    setupPropertiesForSparkR(sparkProperties, javaProperties.getProperty("SPARK_HOME"));
+    setupPropertiesForSparkR(sparkProperties, System.getenv("SPARK_HOME"));
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       env.put("SPARK_YARN_CLUSTER", "true");
     }
