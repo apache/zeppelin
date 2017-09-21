@@ -38,8 +38,8 @@ You can visit [issue tracker](https://issues.apache.org/jira/secure/ReleaseNote.
 
 This release would not be possible without the following community members' contributions:
 
-Jeff Zhang, krishna-pandey, lichenyang, Yanbo Liang, Vipin Rathor, Lee moon soo, Prabhjyot Singh, Mina Lee, Viktor Boginskii, jerryshao, Shiem Edelbrock, CloverHearts, Jinkyu Yi, Luis Vicente, Sachin, Alex Lourie, Shim, Shu Jiaming
+Jeff Zhang, krishna-pandey, lichenyang, Yanbo Liang, Vipin Rathor, Lee moon soo, Prabhjyot Singh, Mina Lee, 1ambda, Jongyoul Lee, Viktor Boginskii, jerryshao, Shiem Edelbrock, CloverHearts, Jinkyu Yi, Luis Vicente, Sachin, Alex Lourie, Shim, Shu Jiaming
 
 The following people helped verifying this release:
 
-Prabhjyot Singh, Sanjay Dasgupta, Park Hoon,
+Prabhjyot Singh, Sanjay Dasgupta, Park Hoon, Krishna Pandey, Jeff Zhang, DuyHai Doan, Miquel Angel Andreu Febrer, Krishna Pandey, moon soo Lee, Hyung Sung Shim, Anthony Corbacho, Mina Lee, Ahyoung Ryu

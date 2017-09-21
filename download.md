@@ -23,7 +23,7 @@ limitations under the License.
 
 The latest release of Apache Zeppelin is **0.7.3**.
 
-  - 0.7.3 released on Sep 16, 2017 ([release notes](./releases/zeppelin-release-0.7.3.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.3))
+  - 0.7.3 released on Sep 21, 2017 ([release notes](./releases/zeppelin-release-0.7.3.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.3))
 
     * Binary package with all interpreters ([Install guide](../../docs/0.7.3/install/install.html)):
     <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.7.3'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-all.tgz'">zeppelin-0.7.3-bin-all.tgz</div> (796 MB,
