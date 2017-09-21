@@ -21,42 +21,42 @@ limitations under the License.
 
 # Download Apache Zeppelin
 
-The latest release of Apache Zeppelin is **0.7.2**.
+The latest release of Apache Zeppelin is **0.7.3**.
 
-  - 0.7.2 released on Jun 12, 2017 ([release notes](./releases/zeppelin-release-0.7.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.2))
+  - 0.7.3 released on Sep 21, 2017 ([release notes](./releases/zeppelin-release-0.7.3.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.3))
 
-    * Binary package with all interpreters ([Install guide](../../docs/0.7.2/install/install.html)):
-    <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.7.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz'">zeppelin-0.7.2-bin-all.tgz</div> (715 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.sha512))</p>
+    * Binary package with all interpreters ([Install guide](../../docs/0.7.3/install/install.html)):
+    <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.7.3'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-all.tgz'">zeppelin-0.7.3-bin-all.tgz</div> (796 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-all.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-all.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-all.tgz.sha512))</p>
 
-    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.7.2/manual/interpreterinstallation.html)):
-    <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz'">zeppelin-0.7.2-bin-netinst.tgz</div> (274 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz.sha512))</p>
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.7.3/manual/interpreterinstallation.html)):
+    <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.3'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-netinst.tgz'">zeppelin-0.7.3-bin-netinst.tgz</div> (274 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-netinst.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-netinst.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3-bin-netinst.tgz.sha512))</p>
 
     * Source:
-    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.2'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz'">zeppelin-0.7.2.tgz</a> (1.9 MB,
-    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.asc),
-    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.md5),
-    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.sha512))
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.3'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz'">zeppelin-0.7.3.tgz</a> (1.9 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz.sha512))
 
-# Using the official docker image 
+# Using the official docker image
 
 Make sure that [docker](https://www.docker.com/community-edition) is installed in your local machine.  
 
-Use this command to launch Apache Zeppelin in a container. 
+Use this command to launch Apache Zeppelin in a container.
 
 ```bash
-docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.7.2
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.7.3
 ```
 
 To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
 
 ```bash
-docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.7.2
+docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.7.3
 ```
 
 If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
@@ -74,6 +74,27 @@ For developers, to get latest *0.8.0-SNAPSHOT* check [README](https://github.com
 
 
 ## Old releases
+
+  - 0.7.2 released on Jun 12, 2017 ([release notes](./releases/zeppelin-release-0.7.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.2))
+
+    * Binary package with all interpreters:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.7.2'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz'">zeppelin-0.7.2-bin-all.tgz</a> (715 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-all.tgz.sha512))
+
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.7.2/manual/interpreterinstallation.html)):
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.7.2'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz'">zeppelin-0.7.2-bin-netinst.tgz</a> (274 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2-bin-netinst.tgz.sha512))
+
+    * Source:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.7.2'); window.location.href='http://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz'">zeppelin-0.7.2.tgz</a> (1.9 MB,
+    [pgp](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.asc),
+    [md5](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.md5),
+    [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.7.2/zeppelin-0.7.2.tgz.sha512))
+  <p />
 
   - 0.7.1 released on Mar 31, 2017 ([release notes](./releases/zeppelin-release-0.7.1.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.1))
 
@@ -163,7 +184,7 @@ For developers, to get latest *0.8.0-SNAPSHOT* check [README](https://github.com
      [sha](https://archive.apache.org/dist/zeppelin/zeppelin-0.6.1/zeppelin-0.6.1.tgz.sha512))
 
     <blockquote style="margin-top: 10px;">
-      <p><strong>Note</strong>Zeppelin-0.6.1 is built with Scala 2.11 by default. If you want to build Zeppelin with Scala 2.10 or install interpreter built with Scala 2.10(other than Spark interpreter), please see <a href='../../docs/0.6.1/install/install.html#2-build-source-with-options' target='_blank'>install</a> or <a href='../../docs/0.6.1/manual/interpreterinstallation.html#install-interpreter-built-with-scala-210' target='_blank'>interpreter installation</a>.</p>
+      <p><strong>Note</strong>: Zeppelin-0.6.1 is built with Scala 2.11 by default. If you want to build Zeppelin with Scala 2.10 or install interpreter built with Scala 2.10(other than Spark interpreter), please see <a href='../../docs/0.6.1/install/install.html#2-build-source-with-options' target='_blank'>install</a> or <a href='../../docs/0.6.1/manual/interpreterinstallation.html#install-interpreter-built-with-scala-210' target='_blank'>interpreter installation</a>.</p>
     </blockquote>
 <p />
 
