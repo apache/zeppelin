@@ -21,6 +21,7 @@ limitations under the License.
 
 # Apache Zeppelin Documentation
 
+  * [Zeppelin 0.7.1](docs/0.7.1)
   * [Zeppelin 0.7.0](docs/0.7.0)
   * [Zeppelin 0.6.0](docs/0.6.0)
   * [Zeppelin 0.5.6-incubating](docs/0.5.6-incubating)
