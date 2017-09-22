@@ -54,8 +54,6 @@ public class ShellScriptLauncher extends InterpreterLauncher {
     int connectTimeout =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     if (option.isExistingProcess()) {
-      // TODO(zjffdu) remove the existing process approach seems no one is using this.
-      // use the existing process
       return new RemoteInterpreterRunningProcess(
           connectTimeout,
           option.getHost(),

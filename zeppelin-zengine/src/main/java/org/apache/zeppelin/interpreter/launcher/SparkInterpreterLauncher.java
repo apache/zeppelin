@@ -54,9 +54,9 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     }
 
     setupPropertiesForPySpark(sparkProperties);
-    setupPropertiesForSparkR(sparkProperties, properties.getProperty("SPARK_HOME"));
+    setupPropertiesForSparkR(sparkProperties);
     if (isYarnMode() && getDeployMode().equals("cluster")) {
-      env.put("SPARK_YARN_CLUSTER", "true");
+      env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
     }
 
     StringBuilder sparkConfBuilder = new StringBuilder();
@@ -71,14 +71,37 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
-    // use the HADOOP_CONF_DIR defined in zeppelin-env.sh if it is not
-    // specified in interpreter setting
-    if (!env.containsKey("HADOOP_CONF_DIR") && System.getenv("HADOOP_CONF_DIR") != null) {
-      env.put("HADOOP_CONF_DIR", System.getenv("HADOOP_CONF_DIR"));
+
+    // set these env in the order of
+    // 1. interpreter-setting
+    // 2. zeppelin-env.sh
+    // It is encouraged to set env in interpreter setting, but just for backward compatability,
+    // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
+    for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
+      String envValue = getEnv(envName);
+      if (envValue != null) {
+        env.put(envName, envValue);
+      }
     }
     LOGGER.debug("buildEnvFromProperties: " + env);
     return env;
 
+  }
+
+
+  /**
+   * get environmental variable in the following order
+   *
+   * 1. interpreter setting
+   * 2. zeppelin-env.sh
+   *
+   */
+  private String getEnv(String envName) {
+    String env = properties.getProperty(envName);
+    if (env == null) {
+      env = System.getenv(envName);
+    }
+    return env;
   }
 
   private boolean isSparkConf(String key, String value) {
@@ -101,8 +124,8 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     }
   }
 
-  private void setupPropertiesForSparkR(Properties sparkProperties,
-                                        String sparkHome) {
+  private void setupPropertiesForSparkR(Properties sparkProperties) {
+    String sparkHome = getEnv("SPARK_HOME");
     File sparkRBasePath = null;
     if (sparkHome == null) {
       if (!getSparkMaster(properties).startsWith("local")) {
@@ -129,8 +152,7 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
    * Order to look for spark master
    * 1. master in interpreter setting
    * 2. spark.master interpreter setting
-   * 3. SPARK_HOME in zeppelin-env.sh
-   * 4. use local[*]
+   * 3. use local[*]
    * @param properties
    * @return
    */
@@ -138,9 +160,6 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     String master = properties.getProperty("master");
     if (master == null) {
       master = properties.getProperty("spark.master");
-      if (master == null) {
-        master = System.getenv("SPARK_HOME");
-      }
       if (master == null) {
         master = "local[*]";
       }

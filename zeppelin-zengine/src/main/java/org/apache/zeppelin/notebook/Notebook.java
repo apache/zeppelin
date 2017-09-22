@@ -895,7 +895,7 @@ public class Notebook implements NoteEventListener {
           try {
             notebook.getInterpreterSettingManager().restart(setting.getId());
           } catch (InterpreterException e) {
-            logger.warn("Fail to resetart interpreter: " + setting.getId(), e);
+            logger.error("Fail to restart interpreter: " + setting.getId(), e);
           }
         }
       }
