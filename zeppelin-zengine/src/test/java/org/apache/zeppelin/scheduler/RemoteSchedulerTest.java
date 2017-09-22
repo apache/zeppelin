@@ -63,7 +63,6 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
     schedulerSvc = new SchedulerFactory();
 
     InterpreterOption interpreterOption = new InterpreterOption();
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterA.class.getName(), "mock", true, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);

@@ -46,7 +46,6 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   public void setUp() throws Exception {
     InterpreterOption interpreterOption = new InterpreterOption();
 
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterOutputStream.class.getName(), "mock", true, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
