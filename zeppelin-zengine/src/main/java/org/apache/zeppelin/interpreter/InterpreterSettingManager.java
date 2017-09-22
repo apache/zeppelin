@@ -124,7 +124,7 @@ public class InterpreterSettingManager {
                                        remoteInterpreterProcessListener,
                                    ApplicationEventListener appEventListener)
       throws IOException {
-    this(zeppelinConfiguration, new InterpreterOption(true),
+    this(zeppelinConfiguration, new InterpreterOption(),
         angularObjectRegistryListener,
         remoteInterpreterProcessListener,
         appEventListener);

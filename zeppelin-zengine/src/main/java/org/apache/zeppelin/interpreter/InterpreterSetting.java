@@ -105,7 +105,7 @@ public class InterpreterSetting {
   private List<InterpreterInfo> interpreterInfos;
 
   private List<Dependency> dependencies = new ArrayList<>();
-  private InterpreterOption option = new InterpreterOption(true);
+  private InterpreterOption option = new InterpreterOption();
 
   @SerializedName("runner")
   private InterpreterRunner interpreterRunner;
@@ -132,8 +132,6 @@ public class InterpreterSetting {
 
   private transient ZeppelinConfiguration conf = new ZeppelinConfiguration();
 
-  private transient Map<String, URLClassLoader> cleanCl =
-      Collections.synchronizedMap(new HashMap<String, URLClassLoader>());
   ///////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -616,13 +614,8 @@ public class InterpreterSetting {
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = null;
-      if (option.isRemote()) {
-        interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
-            info.getClassName(), user);
-      } else {
-        interpreter = createLocalInterpreter(info.getClassName());
-      }
-
+      interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
+          info.getClassName(), user);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {
@@ -633,66 +626,7 @@ public class InterpreterSetting {
     }
     return interpreters;
   }
-
-  // Create Interpreter in ZeppelinServer for non-remote mode
-  private Interpreter createLocalInterpreter(String className)
-      throws InterpreterException {
-    LOGGER.info("Create Local Interpreter {} from {}", className, interpreterDir);
-
-    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-    try {
-
-      URLClassLoader ccl = cleanCl.get(interpreterDir);
-      if (ccl == null) {
-        // classloader fallback
-        ccl = URLClassLoader.newInstance(new URL[]{}, oldcl);
-      }
-
-      boolean separateCL = true;
-      try { // check if server's classloader has driver already.
-        Class cls = this.getClass().forName(className);
-        if (cls != null) {
-          separateCL = false;
-        }
-      } catch (Exception e) {
-        LOGGER.error("exception checking server classloader driver", e);
-      }
-
-      URLClassLoader cl;
-
-      if (separateCL == true) {
-        cl = URLClassLoader.newInstance(new URL[]{}, ccl);
-      } else {
-        cl = ccl;
-      }
-      Thread.currentThread().setContextClassLoader(cl);
-
-      Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
-      Constructor<Interpreter> constructor =
-          replClass.getConstructor(new Class[]{Properties.class});
-      Interpreter repl = constructor.newInstance(getJavaProperties());
-      repl.setClassloaderUrls(ccl.getURLs());
-      LazyOpenInterpreter intp = new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl));
-      return intp;
-    } catch (SecurityException e) {
-      throw new InterpreterException(e);
-    } catch (NoSuchMethodException e) {
-      throw new InterpreterException(e);
-    } catch (IllegalArgumentException e) {
-      throw new InterpreterException(e);
-    } catch (InstantiationException e) {
-      throw new InterpreterException(e);
-    } catch (IllegalAccessException e) {
-      throw new InterpreterException(e);
-    } catch (InvocationTargetException e) {
-      throw new InterpreterException(e);
-    } catch (ClassNotFoundException e) {
-      throw new InterpreterException(e);
-    } finally {
-      Thread.currentThread().setContextClassLoader(oldcl);
-    }
-  }
-
+  
   RemoteInterpreterProcess createInterpreterProcess() {
     RemoteInterpreterProcess remoteInterpreterProcess = null;
     int connectTimeout =
@@ -885,14 +819,8 @@ public class InterpreterSetting {
       throws InterpreterException {
     AngularObjectRegistry angularObjectRegistry;
     ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this);
-    if (option.isRemote()) {
-      angularObjectRegistry =
-          new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
-    } else {
-      angularObjectRegistry = new AngularObjectRegistry(id, angularObjectRegistryListener);
-      // TODO(moon) : create distributed resource pool for local interpreters and set
-    }
-
+    angularObjectRegistry =
+        new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
     return interpreterGroup;
   }
