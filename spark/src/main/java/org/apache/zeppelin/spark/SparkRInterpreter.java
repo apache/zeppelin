@@ -54,7 +54,7 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     String rCmdPath = getProperty("zeppelin.R.cmd");
     String sparkRLibPath;
 
@@ -105,7 +105,8 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String lines, InterpreterContext interpreterContext) {
+  public InterpreterResult interpret(String lines, InterpreterContext interpreterContext)
+      throws InterpreterException {
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.populateSparkWebUrl(interpreterContext);
@@ -220,7 +221,7 @@ public class SparkRInterpreter extends Interpreter {
     return new ArrayList<>();
   }
 
-  private SparkInterpreter getSparkInterpreter() {
+  private SparkInterpreter getSparkInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());

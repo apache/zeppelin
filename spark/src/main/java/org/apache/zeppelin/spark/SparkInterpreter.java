@@ -353,7 +353,7 @@ public class SparkInterpreter extends Interpreter {
   public boolean isYarnMode() {
     String master = getProperty("master");
     if (master == null) {
-      master = getProperty().getProperty("spark.master", "local[*]");
+      master = getProperty("spark.master", "local[*]");
     }
     return master.startsWith("yarn");
   }
@@ -376,7 +376,7 @@ public class SparkInterpreter extends Interpreter {
     }
     conf.set("spark.scheduler.mode", "FAIR");
 
-    Properties intpProperty = getProperty();
+    Properties intpProperty = getProperties();
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
@@ -509,7 +509,7 @@ public class SparkInterpreter extends Interpreter {
     }
     conf.set("spark.scheduler.mode", "FAIR");
 
-    Properties intpProperty = getProperty();
+    Properties intpProperty = getProperties();
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
@@ -543,19 +543,19 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
-            property.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+        getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
 
     // set properties and do login before creating any spark stuff for secured cluster
     if (isYarnMode()) {
       System.setProperty("SPARK_YARN_MODE", "true");
     }
-    if (getProperty().containsKey("spark.yarn.keytab") &&
-            getProperty().containsKey("spark.yarn.principal")) {
+    if (getProperties().containsKey("spark.yarn.keytab") &&
+            getProperties().containsKey("spark.yarn.principal")) {
       try {
-        String keytab = getProperty().getProperty("spark.yarn.keytab");
-        String principal = getProperty().getProperty("spark.yarn.principal");
+        String keytab = getProperties().getProperty("spark.yarn.keytab");
+        String principal = getProperties().getProperty("spark.yarn.principal");
         UserGroupInformation.loginUserFromKeytab(principal, keytab);
       } catch (IOException e) {
         throw new RuntimeException("Can not pass kerberos authentication", e);
@@ -963,7 +963,7 @@ public class SparkInterpreter extends Interpreter {
     sparkUrl = getSparkUIUrl();
     Map<String, String> infos = new java.util.HashMap<>();
     infos.put("url", sparkUrl);
-    String uiEnabledProp = property.getProperty("spark.ui.enabled", "true");
+    String uiEnabledProp = getProperty("spark.ui.enabled", "true");
     java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
             uiEnabledProp.trim());
     if (!uiEnabled) {

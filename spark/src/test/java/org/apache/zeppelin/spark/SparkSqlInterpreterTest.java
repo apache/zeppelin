@@ -85,7 +85,7 @@ public class SparkSqlInterpreterTest {
   }
 
   @Test
-  public void test() {
+  public void test() throws InterpreterException {
     repl.interpret("case class Test(name:String, age:Int)", context);
     repl.interpret("val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))", context);
     if (isDataFrameSupported()) {
@@ -107,7 +107,7 @@ public class SparkSqlInterpreterTest {
   }
 
   @Test
-  public void testStruct() {
+  public void testStruct() throws InterpreterException {
     repl.interpret("case class Person(name:String, age:Int)", context);
     repl.interpret("case class People(group:String, person:Person)", context);
     repl.interpret(
@@ -124,7 +124,7 @@ public class SparkSqlInterpreterTest {
   }
 
   @Test
-  public void test_null_value_in_row() {
+  public void test_null_value_in_row() throws InterpreterException {
     repl.interpret("import org.apache.spark.sql._", context);
     if (isDataFrameSupported()) {
       repl.interpret(
@@ -162,7 +162,7 @@ public class SparkSqlInterpreterTest {
   }
 
   @Test
-  public void testMaxResults() {
+  public void testMaxResults() throws InterpreterException {
     repl.interpret("case class P(age:Int)", context);
     repl.interpret(
         "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8),P(9),P(10),P(11)))",
