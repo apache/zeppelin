@@ -206,7 +206,7 @@ public class SparkInterpreter extends Interpreter {
       private String getJobUrl(int jobId) {
         String jobUrl = null;
         if (sparkUrl != null) {
-          jobUrl = sparkUrl + "/jobs/job?id=" + jobId;
+          jobUrl = sparkUrl + "/jobs/job/?id=" + jobId;
         }
         return jobUrl;
       }
@@ -934,6 +934,11 @@ public class SparkInterpreter extends Interpreter {
   public String getSparkUIUrl() {
     if (sparkUrl != null) {
       return sparkUrl;
+    }
+
+    String sparkUrlProp = property.getProperty("zeppelin.spark.uiWebUrl", "");
+    if (!sparkUrlProp.isEmpty()) {
+      return sparkUrlProp;
     }
 
     if (sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0)) {
