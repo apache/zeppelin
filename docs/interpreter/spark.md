@@ -350,6 +350,41 @@ myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
   </div>
 </div>
 
+### Object Interpolation into Command
+In addition to the programmatic access using `z.get()` shown above, 
+some interpreters also support inline interpolation of such objects
+into command lines by using substitution patterns of the form `{object-key}`.
+The following example shows how the value of an object `put` into `ZeppelinContext` 
+by the Scala interpreter is spliced into a command of the SQL interpreter.
+
+__In Scala interpreter:__
+```
+val tableName = ...
+z.put("tableName", tableName)
+```
+__In SQL interpreter:__
+```
+select * from {tableName}
+```
+The escaping pattern `{{anything}}` may be used in situations where `{` and `}` are needed 
+in the command line. The pattern `{{anything}}` is translated into `{anything}` and spliced 
+into the containing command. If the key `anything` is not defined, the entire 
+pattern (from first '{' to last '}') is passed unchanged.
+
+This feature is inspired by a similar facility in Jupyter (when spawning a command using the 
+bang `!` operator). As with Jupyter the interpolation described above is applied only when the command line 
+contains some well-formed patterns consisting of a prefix containing 1 or more '{' characters, 
+some plain text (without { and } characters), and a suffix containing 1 or more '}' characters.
+The number of '{' characters must match the number of '}' characters for the patterns to be 
+considered well-formed. 
+
+Each pair of '{{' ... '}}' is translated in to a '{' ... '}'. If the command contains '{' or '}'
+characters used in any other way, no interpolation is performed on the command line, even if 
+the command contains other well-formed patterns.
+
+The use of the `{object-key}` format for object interpolation is currently only available 
+in the SQL interpreter, but will be provided in other interpreters progressively.
+
 ### Form Creation
 
 `ZeppelinContext` provides functions for creating forms.

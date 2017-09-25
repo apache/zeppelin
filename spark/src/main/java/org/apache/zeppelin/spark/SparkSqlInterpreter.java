@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
@@ -87,6 +89,9 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    SparkZeppelinContext sparkZeppelinContext = getSparkInterpreter().getZeppelinContext();
+
+    String interpolatedCommand = interpolateZeppelinContextObjects(st, sparkZeppelinContext);
     SQLContext sqlc = null;
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
 
@@ -114,7 +119,7 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      rdd = sqlMethod.invoke(sqlc, st);
+      rdd = sqlMethod.invoke(sqlc, interpolatedCommand);
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);

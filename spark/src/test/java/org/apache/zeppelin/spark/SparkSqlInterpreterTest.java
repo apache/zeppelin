@@ -31,6 +31,7 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SparkSqlInterpreterTest {
@@ -159,6 +160,80 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
     assertEquals("name\tage\ngates\tnull\n", ret.message().get(0).getData());
+  }
+
+  private SparkInterpreter getSparkInterpreter() {
+    LazyOpenInterpreter lazy = null;
+    SparkInterpreter spark = null;
+    Interpreter p = sql.getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    spark = (SparkInterpreter) p;
+
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
+  }
+
+  @Test
+  public void testVariableInterpolation() {
+    InterpreterContext newContext = new InterpreterContext("NoteId", "ParaId", null,
+            "testVariableInterpolation", "",
+            null, null, null, null,
+            new LocalResourcePool("testVariableInterpolation"),
+            null, null);
+    SparkZeppelinContext zc = getSparkInterpreter().getZeppelinContext();
+    zc.setInterpreterContext(newContext);
+
+    zc.put("n", "100");
+    zc.put("table", "name");
+
+    // Correct variable substitutions ...
+    String commandWithVariables = "select * from {table} where count = {n}";
+    String  resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from name where count = 100", resultString);
+
+    // Correct escaping of { and } characters (1) ...
+    commandWithVariables = "select * from names where name rlike 'a{{2}}'";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from names where name rlike 'a{2}'", resultString);
+
+    // Correct escaping of { and } characters (2) ...
+    commandWithVariables = "this: {table}, {{{{{{any}}}}}} is not SQL";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("this: name, {{{any}}} is not SQL", resultString);
+
+    // Error due to unknown variable ...
+    commandWithVariables = "select * from names where count = {n2}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from names where count = {n2}", resultString);
+
+    // Incorrect pairing of { and } characters (1) ...
+    commandWithVariables = "these: {{2}}, {{{{{{any}}}}} are not SQL";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("these: {{2}}, {{{{{{any}}}}} are not SQL", resultString);
+
+    // Incorrect pairing of { and } characters (2) ...
+    commandWithVariables = "select * from {table} where count = {n}}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from {table} where count = {n}}", resultString);
+
+    // Incorrect pairing of { and } characters (3) ...
+    commandWithVariables = "select * from {table} where count = {n}}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from {table} where count = {n}}", resultString);
+
+    // Combined substitution and escaping ...
+    commandWithVariables = "select * from {{{table}}} where count = {n}";
+    resultString = sql.interpolateZeppelinContextObjects(commandWithVariables, zc);
+    assertEquals("select * from {name} where count = 100", resultString);
+
   }
 
   @Test
