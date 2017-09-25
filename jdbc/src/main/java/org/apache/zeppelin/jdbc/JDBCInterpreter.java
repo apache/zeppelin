@@ -278,11 +278,17 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void initConnectionPoolMap() {
-    for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
+    for (String key : jdbcUserConfigurationsMap.keySet()) {
       try {
+        closeDBPool(key, DEFAULT_KEY);
+      } catch (SQLException e) {
+        logger.error("Error while closing database pool.", e);
+      }
+      try {
+        JDBCUserConfigurations configurations = jdbcUserConfigurationsMap.get(key);
         configurations.initConnectionPoolMap();
-      } catch (Exception e) {
-        logger.error("Error while closing initConnectionPoolMap...", e);
+      } catch (SQLException e) {
+        logger.error("Error while closing initConnectionPoolMap.", e);
       }
     }
   }
@@ -653,7 +659,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    Connection connection;
+    Connection connection = null;
     Statement statement;
     ResultSet resultSet = null;
     String paragraphId = interpreterContext.getParagraphId();
@@ -668,11 +674,21 @@ public class JDBCInterpreter extends KerberosInterpreter {
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
     try {
       connection = getConnection(propertyKey, interpreterContext);
-      if (connection == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    } catch (Exception e) {
+      String errorMsg = Throwables.getStackTraceAsString(e);
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
       }
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    }
+    if (connection == null) {
+      return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    }
 
-
+    try {
       List<String> sqlArray;
       if (splitQuery) {
         sqlArray = splitSqlQueries(sql);
@@ -734,6 +750,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
           }
         }
       }
+    } catch (Throwable e) {
+      logger.error("Cannot run " + sql, e);
+      String errorMsg = Throwables.getStackTraceAsString(e);
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    } finally {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {
         try {
@@ -744,16 +766,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
         } catch (SQLException e) { /*ignored*/ }
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
-    } catch (Throwable e) {
-      logger.error("Cannot run " + sql, e);
-      String errorMsg = Throwables.getStackTraceAsString(e);
-      try {
-        closeDBPool(user, propertyKey);
-      } catch (SQLException e1) {
-        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
-      }
-      interpreterResult.add(errorMsg);
-      return new InterpreterResult(Code.ERROR, interpreterResult.message());
     }
     return interpreterResult;
   }

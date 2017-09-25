@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +36,7 @@ import org.apache.zeppelin.resource.ResourcePool;
 public class InterpreterContext {
   private static final ThreadLocal<InterpreterContext> threadIC = new ThreadLocal<>();
 
-  public final InterpreterOutput out;
+  public InterpreterOutput out;
 
   public static InterpreterContext get() {
     return threadIC.get();
@@ -48,21 +50,46 @@ public class InterpreterContext {
     threadIC.remove();
   }
 
-  private final String noteId;
-  private final String replName;
-  private final String paragraphTitle;
-  private final String paragraphId;
-  private final String paragraphText;
+  private String noteId;
+  private String replName;
+  private String paragraphTitle;
+  private String paragraphId;
+  private String paragraphText;
   private AuthenticationInfo authenticationInfo;
-  private final Map<String, Object> config;
-  private GUI gui;
+  private Map<String, Object> config = new HashMap<>();
+  private GUI gui = new GUI();
   private AngularObjectRegistry angularObjectRegistry;
   private ResourcePool resourcePool;
-  private List<InterpreterContextRunner> runners;
+  private List<InterpreterContextRunner> runners = new ArrayList<>();
   private String className;
   private RemoteEventClientWrapper client;
   private RemoteWorksController remoteWorksController;
-  private final Map<String, Integer> progressMap;
+  private Map<String, Integer> progressMap;
+
+  /**
+   * Builder class for InterpreterContext
+   */
+  public static class Builder {
+    private InterpreterContext context = new InterpreterContext();
+
+    public Builder setNoteId(String noteId) {
+      context.noteId = noteId;
+      return this;
+    }
+
+    public Builder setParagraphId(String paragraphId) {
+      context.paragraphId = paragraphId;
+      return this;
+    }
+
+    public InterpreterContext getContext() {
+      return context;
+    }
+  }
+
+  private InterpreterContext() {
+
+  }
 
   // visible for testing
   public InterpreterContext(String noteId,

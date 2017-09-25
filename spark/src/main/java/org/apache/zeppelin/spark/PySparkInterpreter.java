@@ -76,6 +76,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private static final int MAX_TIMEOUT_SEC = 10;
   private long pythonPid;
 
+  private IPySparkInterpreter iPySparkInterpreter;
+
   public PySparkInterpreter(Properties property) {
     super(property);
 
@@ -111,6 +113,37 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public void open() {
+    // try IPySparkInterpreter first
+    iPySparkInterpreter = getIPySparkInterpreter();
+    if (property.getProperty("zeppelin.pyspark.useIPython", "true").equals("true") &&
+        iPySparkInterpreter.checkIPythonPrerequisite()) {
+      try {
+        iPySparkInterpreter.open();
+        if (InterpreterContext.get() != null) {
+          // don't print it when it is in testing, just for easy output check in test.
+          InterpreterContext.get().out.write(("IPython is available, " +
+              "use IPython for PySparkInterpreter\n")
+              .getBytes());
+        }
+        LOGGER.info("Use IPySparkInterpreter to replace PySparkInterpreter");
+        return;
+      } catch (Exception e) {
+        LOGGER.warn("Fail to open IPySparkInterpreter", e);
+      }
+    }
+    iPySparkInterpreter = null;
+
+    if (property.getProperty("zeppelin.pyspark.useIPython", "true").equals("true")) {
+      // don't print it when it is in testing, just for easy output check in test.
+      try {
+        InterpreterContext.get().out.write(("IPython is not available, " +
+            "use the native PySparkInterpreter\n")
+            .getBytes());
+      } catch (IOException e) {
+        LOGGER.warn("Fail to write InterpreterOutput", e);
+      }
+    }
+
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
@@ -169,13 +202,18 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  private Map setupPySparkEnv() throws IOException{
+  private Map setupPySparkEnv() throws IOException {
     Map env = EnvironmentUtils.getProcEnvironment();
 
-    if (!env.containsKey("PYTHONPATH")) {
-      SparkConf conf = getSparkConf();
-      env.put("PYTHONPATH", conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
-              ":../interpreter/lib/python");
+    // only set PYTHONPATH in local or yarn-client mode.
+    // yarn-cluster will setup PYTHONPATH automatically.
+    SparkConf conf = getSparkConf();
+    if (!conf.get("spark.submit.deployMode", "client").equals("cluster")) {
+      if (!env.containsKey("PYTHONPATH")) {
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+      } else {
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+      }
     }
 
     // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
@@ -190,7 +228,22 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
+    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
     return env;
+  }
+
+  // Run python shell
+  // Choose python in the order of
+  // PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON > zeppelin.pyspark.python
+  public static String getPythonExec(Properties properties) {
+    String pythonExec = properties.getProperty("zeppelin.pyspark.python", "python");
+    if (System.getenv("PYSPARK_PYTHON") != null) {
+      pythonExec = System.getenv("PYSPARK_PYTHON");
+    }
+    if (System.getenv("PYSPARK_DRIVER_PYTHON") != null) {
+      pythonExec = System.getenv("PYSPARK_DRIVER_PYTHON");
+    }
+    return pythonExec;
   }
 
   private void createGatewayServerAndStartScript() {
@@ -202,16 +255,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     gatewayServer = new GatewayServer(this, port);
     gatewayServer.start();
 
-    // Run python shell
-    // Choose python in the order of
-    // PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON > zeppelin.pyspark.python
-    String pythonExec = getProperty("zeppelin.pyspark.python");
-    if (System.getenv("PYSPARK_PYTHON") != null) {
-      pythonExec = System.getenv("PYSPARK_PYTHON");
-    }
-    if (System.getenv("PYSPARK_DRIVER_PYTHON") != null) {
-      pythonExec = System.getenv("PYSPARK_DRIVER_PYTHON");
-    }
+    String pythonExec = getPythonExec(property);
+    LOGGER.info("pythonExec: " + pythonExec);
     CommandLine cmd = CommandLine.parse(pythonExec);
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
@@ -263,6 +308,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public void close() {
+    if (iPySparkInterpreter != null) {
+      iPySparkInterpreter.close();
+      return;
+    }
     executor.getWatchdog().destroyProcess();
     new File(scriptPath).delete();
     gatewayServer.shutdown();
@@ -351,6 +400,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+    }
+
+    if (iPySparkInterpreter != null) {
+      return iPySparkInterpreter.interpret(st, context);
     }
 
     if (!pythonscriptRunning) {
@@ -448,6 +501,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (iPySparkInterpreter != null) {
+      iPySparkInterpreter.cancel(context);
+      return;
+    }
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.cancel(context);
     try {
@@ -464,6 +521,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (iPySparkInterpreter != null) {
+      return iPySparkInterpreter.getProgress(context);
+    }
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     return sparkInterpreter.getProgress(context);
   }
@@ -472,6 +532,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) {
+    if (iPySparkInterpreter != null) {
+      return iPySparkInterpreter.completion(buf, cursor, interpreterContext);
+    }
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -586,6 +649,21 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       lazy.open();
     }
     return spark;
+  }
+
+  private IPySparkInterpreter getIPySparkInterpreter() {
+    LazyOpenInterpreter lazy = null;
+    IPySparkInterpreter iPySpark = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(IPySparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
+      }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    iPySpark = (IPySparkInterpreter) p;
+    return iPySpark;
   }
 
   public SparkZeppelinContext getZeppelinContext() {

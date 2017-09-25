@@ -50,6 +50,8 @@ public class PythonCondaInterpreter extends Interpreter {
   public static final Pattern PATTERN_COMMAND_HELP = Pattern.compile("help");
   public static final Pattern PATTERN_COMMAND_INFO = Pattern.compile("info");
 
+  private String currentCondaEnvName = StringUtils.EMPTY;
+
   public PythonCondaInterpreter(Properties property) {
     super(property);
   }
@@ -112,6 +114,17 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
+  public String getCurrentCondaEnvName() {
+    return currentCondaEnvName;
+  }
+
+  public void setCurrentCondaEnvName(String currentCondaEnvName) {
+    if (currentCondaEnvName == null) {
+      currentCondaEnvName = StringUtils.EMPTY;
+    }
+    this.currentCondaEnvName = currentCondaEnvName;
+  }
+
   private void changePythonEnvironment(String envName)
       throws IOException, InterruptedException {
     PythonInterpreter python = getPythonInterpreter();
@@ -130,6 +143,7 @@ public class PythonCondaInterpreter extends Interpreter {
         }
       }
     }
+    setCurrentCondaEnvName(envName);
     python.setPythonCommand(binPath);
   }
 
@@ -221,8 +235,12 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private String runCondaList() throws IOException, InterruptedException {
     List<String> commands = new ArrayList<String>();
-    commands.add("conda");
-    commands.add("list");
+    commands.add(0, "conda");
+    commands.add(1, "list");
+    if (!getCurrentCondaEnvName().isEmpty()) {
+      commands.add(2, "-n");
+      commands.add(3, getCurrentCondaEnvName());
+    }
 
     return runCondaCommandForTableOutput("Installed Package List", commands);
   }
@@ -259,6 +277,10 @@ public class PythonCondaInterpreter extends Interpreter {
     restArgs.add(0, "conda");
     restArgs.add(1, "install");
     restArgs.add(2, "--yes");
+    if (!getCurrentCondaEnvName().isEmpty()) {
+      restArgs.add(3, "-n");
+      restArgs.add(4, getCurrentCondaEnvName());
+    }
 
     return runCondaCommandForTextOutput("Package Installation", restArgs);
   }
@@ -269,6 +291,10 @@ public class PythonCondaInterpreter extends Interpreter {
     restArgs.add(0, "conda");
     restArgs.add(1, "uninstall");
     restArgs.add(2, "--yes");
+    if (!getCurrentCondaEnvName().isEmpty()) {
+      restArgs.add(3, "-n");
+      restArgs.add(4, getCurrentCondaEnvName());
+    }
 
     return runCondaCommandForTextOutput("Package Uninstallation", restArgs);
   }

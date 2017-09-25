@@ -73,8 +73,20 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     Properties p = new Properties();
     p.setProperty("zeppelin.python", "python");
     p.setProperty("zeppelin.python.maxResult", "100");
+    p.setProperty("zeppelin.python.useIPython", "false");
 
     intpGroup = new InterpreterGroup();
+
+    out = new InterpreterOutput(this);
+    context = new InterpreterContext("note", "id", null, "title", "text",
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("id"),
+        new LinkedList<InterpreterContextRunner>(),
+        out);
+    InterpreterContext.set(context);
 
     python = new PythonInterpreter(p);
     python.setInterpreterGroup(intpGroup);
@@ -85,16 +97,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
 
     intpGroup.put("note", Arrays.asList(python, sql));
 
-    out = new InterpreterOutput(this);
 
-    context = new InterpreterContext("note", "id", null, "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        out);
 
     // to make sure python is running.
     InterpreterResult ret = python.interpret("\n", context);
@@ -140,10 +143,10 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = sql.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), Type.TABLE, out.getOutputAt(0).getType());
-    assertTrue(new String(out.getOutputAt(0).toByteArray()).indexOf("moon\t33") > 0);
-    assertTrue(new String(out.getOutputAt(0).toByteArray()).indexOf("park\t34") > 0);
+    assertEquals(new String(out.getOutputAt(1).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE, out.getOutputAt(1).getType());
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("moon\t33") > 0);
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("park\t34") > 0);
 
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from df2", context).code());
   }
@@ -156,7 +159,6 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     //then
     assertNotNull("Interpreter returned 'null'", ret);
     assertEquals(ret.toString(), InterpreterResult.Code.ERROR, ret.code());
-    assertTrue(out.toInterpreterResultMessage().size() == 0);
   }
 
   @Test
@@ -176,10 +178,10 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
 
     // then
     assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), Type.TABLE, out.getOutputAt(0).getType());
-    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("index_name"));
-    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("nan"));
-    assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("6.7"));
+    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE, out.getOutputAt(1).getType());
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("index_name"));
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("nan"));
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("6.7"));
   }
 
   @Override

@@ -1,327 +1,411 @@
-package org.apache.zeppelin.interpreter;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+package org.apache.zeppelin.interpreter;
 
 import org.junit.Test;
 
-import org.apache.zeppelin.dep.Dependency;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertNull;
 
 public class InterpreterSettingTest {
 
   @Test
-  public void sharedModeCloseandRemoveInterpreterGroupTest() {
+  public void testCreateInterpreters() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setRemote(false);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
+    // create default interpreter for user1 and note1
+    assertEquals(EchoInterpreter.class.getName(), interpreterSetting.getDefaultInterpreter("user1", "note1").getClassName());
 
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
+    // create interpreter echo for user1 and note1
+    assertEquals(EchoInterpreter.class.getName(), interpreterSetting.getInterpreter("user1", "note1", "echo").getClassName());
+    assertEquals(interpreterSetting.getDefaultInterpreter("user1", "note1"), interpreterSetting.getInterpreter("user1", "note1", "echo"));
 
-    // This won't effect anything
-    Interpreter mockInterpreter2 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList2 = new ArrayList<>();
-    interpreterList2.add(mockInterpreter2);
-    interpreterGroup = interpreterSetting.getInterpreterGroup("user2", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user2", "note1"), interpreterList2);
+    // create interpreter double_echo for user1 and note1
+    assertEquals(DoubleEchoInterpreter.class.getName(), interpreterSetting.getInterpreter("user1", "note1", "double_echo").getClassName());
 
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+    // create non-existed interpreter
+    assertNull(interpreterSetting.getInterpreter("user1", "note1", "invalid_echo"));
+  }
 
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user2");
+  @Test
+  public void testSharedMode() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerUser(InterpreterOption.SHARED);
+    interpreterOption.setRemote(false);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
+
+    // create default interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    // create default interpreter for user2 and note1
+    interpreterSetting.getDefaultInterpreter("user2", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    // create default interpreter user1 and note2
+    interpreterSetting.getDefaultInterpreter("user1", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    // only 1 session is created, this session is shared across users and notes
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    interpreterSetting.closeInterpreters("note1", "user1");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
 
   @Test
-  public void perUserScopedModeCloseAndRemoveInterpreterGroupTest() {
+  public void testPerUserScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
-
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
-    Interpreter mockInterpreter2 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList2 = new ArrayList<>();
-    interpreterList2.add(mockInterpreter2);
-    interpreterGroup = interpreterSetting.getInterpreterGroup("user2", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user2", "note1"), interpreterList2);
-
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note1").size());
-    assertEquals(2, interpreterSetting.getInterpreterGroup("user2", "note1").size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user1");
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user2","note1").size());
+    // create interpreter for user2 and note1
+    interpreterSetting.getDefaultInterpreter("user2", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    // Check if non-existed key works or not
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user1");
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user2","note1").size());
+    interpreterSetting.closeInterpreters("user1", "note1");
+    // InterpreterGroup is still there, but one session is removed
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user2");
+    interpreterSetting.closeInterpreters("user2", "note1");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
 
   @Test
-  public void perUserIsolatedModeCloseAndRemoveInterpreterGroupTest() {
+  public void testPerNoteScopedMode() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerNote(InterpreterOption.SCOPED);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
+
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    // create interpreter for user1 and note2
+    interpreterSetting.getDefaultInterpreter("user1", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    interpreterSetting.closeInterpreters("user1", "note1");
+    // InterpreterGroup is still there, but one session is removed
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    interpreterSetting.closeInterpreters("user1", "note2");
+    assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+  @Test
+  public void testPerUserIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
-    Interpreter mockInterpreter2 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList2 = new ArrayList<>();
-    interpreterList2.add(mockInterpreter2);
-    interpreterGroup = interpreterSetting.getInterpreterGroup("user2", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user2", "note1"), interpreterList2);
-
+    // create interpreter for user2 and note1
+    interpreterSetting.getDefaultInterpreter("user2", "note1");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user2", "note1").size());
 
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user1");
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user2","note1").size());
+    // Each user own one InterpreterGroup and one session per InterpreterGroup
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(1).getSessionNum());
+
+    interpreterSetting.closeInterpreters("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user2");
+    interpreterSetting.closeInterpreters("user2", "note1");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
 
   @Test
-  public void perNoteScopedModeCloseAndRemoveInterpreterGroupTest() {
-    InterpreterOption interpreterOption = new InterpreterOption();
-    interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
-
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
-
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
-    Interpreter mockInterpreter2 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList2 = new ArrayList<>();
-    interpreterList2.add(mockInterpreter2);
-    interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note2");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note2"), interpreterList2);
-
-    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note1").size());
-    assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note2").size());
-
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user1");
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note2").size());
-
-    // Check if non-existed key works or not
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user1");
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note2").size());
-
-    interpreterSetting.closeAndRemoveInterpreterGroup("note2", "user1");
-    assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
-  }
-
-  @Test
-  public void perNoteIsolatedModeCloseAndRemoveInterpreterGroupTest() {
+  public void testPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
-    Interpreter mockInterpreter2 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList2 = new ArrayList<>();
-    interpreterList2.add(mockInterpreter2);
-    interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note2");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note2"), interpreterList2);
-
+    // create interpreter for user2 and note2
+    interpreterSetting.getDefaultInterpreter("user1", "note2");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note2").size());
+    // Each user own one InterpreterGroup and one session per InterpreterGroup
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(1).getSessionNum());
 
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1", "user1");
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note2").size());
+    interpreterSetting.closeInterpreters("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-
-    interpreterSetting.closeAndRemoveInterpreterGroup("note2", "user1");
+    interpreterSetting.closeInterpreters("user1", "note2");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
 
   @Test
-  public void perNoteScopedModeRemoveInterpreterGroupWhenNoteIsRemoved() {
+  public void testPerUserIsolatedPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
-
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    // This method will be called when remove note
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    interpreterSetting.getDefaultInterpreter("user1", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    // create interpreter for user2 and note1
+    interpreterSetting.getDefaultInterpreter("user2", "note1");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+
+    // group1 for user1 has 2 sessions, and group2 for user2 has 1 session
+    assertEquals(interpreterSetting.getInterpreterGroup("user1", "note1"), interpreterSetting.getInterpreterGroup("user1", "note2"));
+    assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note1").getSessionNum());
+    assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note2").getSessionNum());
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user2", "note1").getSessionNum());
+
+    // close one session for user1
+    interpreterSetting.closeInterpreters("user1", "note1");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").getSessionNum());
+
+    // close another session for user1
+    interpreterSetting.closeInterpreters("user1", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    // close session for user2
+    interpreterSetting.closeInterpreters("user2", "note1");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
-    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
-    assertEquals(0, interpreterSetting.getInterpreterGroup("user1","note1").size());
   }
 
   @Test
-  public void perNoteIsolatedModeRemoveInterpreterGroupWhenNoteIsRemoved() {
+  public void testPerUserIsolatedPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
-
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
 
-    // This method will be called when remove note
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    // create interpreter for user1 and note2
+    interpreterSetting.getDefaultInterpreter("user1", "note2");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+
+    // create interpreter for user2 and note1
+    interpreterSetting.getDefaultInterpreter("user2", "note1");
+    assertEquals(3, interpreterSetting.getAllInterpreterGroups().size());
+
+    // create interpreter for user2 and note2
+    interpreterSetting.getDefaultInterpreter("user2", "note2");
+    assertEquals(4, interpreterSetting.getAllInterpreterGroups().size());
+
+    for (InterpreterGroup interpreterGroup : interpreterSetting.getAllInterpreterGroups()) {
+      // each InterpreterGroup has one session
+      assertEquals(1, interpreterGroup.getSessionNum());
+    }
+
+    // close one session for user1 and note1
+    interpreterSetting.closeInterpreters("user1", "note1");
+    assertEquals(3, interpreterSetting.getAllInterpreterGroups().size());
+
+    // close one session for user1 and note2
+    interpreterSetting.closeInterpreters("user1", "note2");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+
+    // close one session for user2 and note1
+    interpreterSetting.closeInterpreters("user2", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    // close one session for user2 and note2
+    interpreterSetting.closeInterpreters("user2", "note2");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
-    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
-    assertEquals(0, interpreterSetting.getInterpreterGroup("user1","note1").size());
   }
 
   @Test
-  public void perUserScopedModeNeverRemoveInterpreterGroupWhenNoteIsRemoved() {
+  public void testPerUserScopedPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
+    interpreterOption.setPerNote(InterpreterOption.SCOPED);
+    interpreterOption.setRemote(true);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
-
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
+    // create interpreter for user1 and note1
+    interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    // This method will be called when remove note
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    // create interpreter for user1 and note2
+    interpreterSetting.getDefaultInterpreter("user1", "note2");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note1").size());
-  }
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-  @Test
-  public void perUserIsolatedModeNeverRemoveInterpreterGroupWhenNoteIsRemoved() {
-    InterpreterOption interpreterOption = new InterpreterOption();
-    interpreterOption.setPerUser(InterpreterOption.ISOLATED);
-    InterpreterSetting interpreterSetting = new InterpreterSetting("", "", "", new ArrayList<InterpreterInfo>(), new Properties(), new ArrayList<Dependency>(), interpreterOption, "", null);
-
-    interpreterSetting.setInterpreterGroupFactory(new InterpreterGroupFactory() {
-      @Override
-      public InterpreterGroup createInterpreterGroup(String interpreterGroupId,
-          InterpreterOption option) {
-        return new InterpreterGroup(interpreterGroupId);
-      }
-    });
-
-    Interpreter mockInterpreter1 = mock(RemoteInterpreter.class);
-    List<Interpreter> interpreterList1 = new ArrayList<>();
-    interpreterList1.add(mockInterpreter1);
-    InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup("user1", "note1");
-    interpreterGroup.put(interpreterSetting.getInterpreterSessionKey("user1", "note1"), interpreterList1);
-
+    // create interpreter for user2 and note1
+    interpreterSetting.getDefaultInterpreter("user2", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1", "note1").size());
+    assertEquals(3, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
-    // This method will be called when remove note
-    interpreterSetting.closeAndRemoveInterpreterGroup("note1","");
+    // create interpreter for user2 and note2
+    interpreterSetting.getDefaultInterpreter("user2", "note2");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
-    // Be careful that getInterpreterGroup makes interpreterGroup if it doesn't exist
-    assertEquals(1, interpreterSetting.getInterpreterGroup("user1","note1").size());
+    assertEquals(4, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    // close one session for user1 and note1
+    interpreterSetting.closeInterpreters("user1", "note1");
+    assertEquals(3, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    // close one session for user1 and note2
+    interpreterSetting.closeInterpreters("user1", "note2");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    // close one session for user2 and note1
+    interpreterSetting.closeInterpreters("user2", "note1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    // close one session for user2 and note2
+    interpreterSetting.closeInterpreters("user2", "note2");
+    assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
   }
 }

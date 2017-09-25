@@ -80,7 +80,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // then
     assertThat(get, isAllowed());
-    assertEquals(ZeppelinServer.notebook.getInterpreterSettingManager().getAvailableInterpreterSettings().size(),
+    assertEquals(ZeppelinServer.notebook.getInterpreterSettingManager().getInterpreterSettingTemplates().size(),
         body.entrySet().size());
     get.releaseConnection();
   }
@@ -110,7 +110,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testSettingsCRUD() throws IOException {
     // when: call create setting API
-    String rawRequest = "{\"name\":\"md2\",\"group\":\"md\"," +
+    String rawRequest = "{\"name\":\"md3\",\"group\":\"md\"," +
         "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
         "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
         "\"dependencies\":[]," +
@@ -367,7 +367,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetMetadataInfo() throws IOException {
-    String jsonRequest = "{\"name\":\"spark\",\"group\":\"spark\"," +
+    String jsonRequest = "{\"name\":\"spark_new\",\"group\":\"spark\"," +
             "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", \"type\": \"textarea\"}}," +
             "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
             "\"dependencies\":[]," +

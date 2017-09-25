@@ -19,7 +19,6 @@ package org.apache.zeppelin.dep;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,25 +32,23 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
-import org.sonatype.aether.util.graph.DefaultDependencyNode;
-
 
 /**
  * Deps resolver.
  * Add new dependencies from mvn repo (at runtime) to Zeppelin.
  */
 public class DependencyResolver extends AbstractDependencyResolver {
-  Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
+  private Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
 
   private final String[] exclusions = new String[] {"org.apache.zeppelin:zeppelin-zengine",
                                                     "org.apache.zeppelin:zeppelin-interpreter",
@@ -177,8 +174,9 @@ public class DependencyResolver extends AbstractDependencyResolver {
             DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
     try {
       return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
-    } catch (NullPointerException ex) {
-      throw new RepositoryException(String.format("Cannot fetch dependencies for %s", dependency));
+    } catch (NullPointerException | DependencyResolutionException ex) {
+      throw new RepositoryException(
+              String.format("Cannot fetch dependencies for %s", dependency), ex);
     }
   }
 }

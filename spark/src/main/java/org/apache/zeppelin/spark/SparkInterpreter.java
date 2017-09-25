@@ -351,7 +351,11 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public boolean isYarnMode() {
-    return getProperty("master").startsWith("yarn");
+    String master = getProperty("master");
+    if (master == null) {
+      master = getProperty().getProperty("spark.master", "local[*]");
+    }
+    return master.startsWith("yarn");
   }
 
   /**
@@ -371,24 +375,24 @@ public class SparkInterpreter extends Interpreter {
       conf.set("spark.executor.uri", execUri);
     }
     conf.set("spark.scheduler.mode", "FAIR");
-    conf.setMaster(getProperty("master"));
-    if (isYarnMode()) {
-      conf.set("master", "yarn");
-      conf.set("spark.submit.deployMode", "client");
-    }
 
     Properties intpProperty = getProperty();
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
-        conf.set(key, val);
+      if (!val.trim().isEmpty()) {
+        if (key.startsWith("spark.")) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+          conf.set(key, val);
+        }
+        if (key.startsWith("zeppelin.spark.")) {
+          String sparkPropertyKey = key.substring("zeppelin.spark.".length());
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", sparkPropertyKey, val));
+          conf.set(sparkPropertyKey, val);
+        }
       }
     }
 
-    setupConfForPySpark(conf);
-    setupConfForSparkR(conf);
     Class SparkSession = Utils.findClass("org.apache.spark.sql.SparkSession");
     Object builder = Utils.invokeStaticMethod(SparkSession, "builder");
     Utils.invokeMethod(builder, "config", new Class[]{ SparkConf.class }, new Object[]{ conf });
@@ -509,99 +513,21 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
-      if (key.startsWith("spark.") && !val.trim().isEmpty()) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
-        conf.set(key, val);
+      if (!val.trim().isEmpty()) {
+        if (key.startsWith("spark.")) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+          conf.set(key, val);
+        }
+
+        if (key.startsWith("zeppelin.spark.")) {
+          String sparkPropertyKey = key.substring("zeppelin.spark.".length());
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", sparkPropertyKey, val));
+          conf.set(sparkPropertyKey, val);
+        }
       }
     }
-    setupConfForPySpark(conf);
-    setupConfForSparkR(conf);
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
-  }
-
-  private void setupConfForPySpark(SparkConf conf) {
-    Object pysparkBaseProperty =
-        new DefaultInterpreterProperty("SPARK_HOME", null, null).getValue();
-    String pysparkBasePath = pysparkBaseProperty != null ? pysparkBaseProperty.toString() : null;
-    File pysparkPath;
-    if (null == pysparkBasePath) {
-      pysparkBasePath =
-          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../")
-              .getValue().toString();
-      pysparkPath = new File(pysparkBasePath,
-          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
-    } else {
-      pysparkPath = new File(pysparkBasePath,
-          "python" + File.separator + "lib");
-    }
-
-    //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
-    //TODO(zjffdu), this is not maintainable when new version is added.
-    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip",
-      "py4j-0.10.1-src.zip", "py4j-0.10.3-src.zip", "py4j-0.10.4-src.zip"};
-    ArrayList<String> pythonLibUris = new ArrayList<>();
-    for (String lib : pythonLibs) {
-      File libFile = new File(pysparkPath, lib);
-      if (libFile.exists()) {
-        pythonLibUris.add(libFile.toURI().toString());
-      }
-    }
-    pythonLibUris.trimToSize();
-
-    // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
-    // when spark version is less than or equal to 1.4.1
-    if (pythonLibUris.size() == 2) {
-      try {
-        String confValue = conf.get("spark.yarn.dist.files");
-        conf.set("spark.yarn.dist.files", confValue + "," + Joiner.on(",").join(pythonLibUris));
-      } catch (NoSuchElementException e) {
-        conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
-      }
-      if (!useSparkSubmit()) {
-        conf.set("spark.files", conf.get("spark.yarn.dist.files"));
-      }
-      conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
-      conf.set("spark.submit.pyFiles", Joiner.on(",").join(pythonLibUris));
-    }
-
-    // Distributes needed libraries to workers
-    // when spark version is greater than or equal to 1.5.0
-    if (isYarnMode()) {
-      conf.set("spark.yarn.isPython", "true");
-    }
-  }
-
-  private void setupConfForSparkR(SparkConf conf) {
-    Object sparkRBaseProperty =
-        new DefaultInterpreterProperty("SPARK_HOME", null, null).getValue();
-    String sparkRBasePath = sparkRBaseProperty != null ? sparkRBaseProperty.toString() : null;
-    File sparkRPath;
-    if (null == sparkRBasePath) {
-      sparkRBasePath =
-          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../")
-              .getValue().toString();
-      sparkRPath = new File(sparkRBasePath,
-              "interpreter" + File.separator + "spark" + File.separator + "R");
-    } else {
-      sparkRPath = new File(sparkRBasePath, "R" + File.separator + "lib");
-    }
-
-    sparkRPath = new File(sparkRPath, "sparkr.zip");
-    if (sparkRPath.exists() && sparkRPath.isFile()) {
-      String archives = null;
-      if (conf.contains("spark.yarn.dist.archives")) {
-        archives = conf.get("spark.yarn.dist.archives");
-      }
-      if (archives != null) {
-        archives = archives + "," + sparkRPath + "#sparkr";
-      } else {
-        archives = sparkRPath + "#sparkr";
-      }
-      conf.set("spark.yarn.dist.archives", archives);
-    } else {
-      logger.warn("sparkr.zip is not found, sparkr may not work.");
-    }
   }
 
   static final String toString(Object o) {
@@ -1096,23 +1022,33 @@ public class SparkInterpreter extends Interpreter {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
-    String completionText = getCompletionTargetString(buf, cursor);
-    if (completionText == null) {
-      completionText = "";
-      cursor = completionText.length();
-    }
 
     ScalaCompleter c = (ScalaCompleter) Utils.invokeMethod(completer, "completer");
-    Candidates ret = c.complete(completionText, cursor);
-
-    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<>();
-
-    for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+    
+    if (Utils.isScala2_10() || !Utils.isCompilerAboveScala2_11_7()) {
+      String singleToken = getCompletionTargetString(buf, cursor);
+      Candidates ret = c.complete(singleToken, singleToken.length());
+      
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<>();
+  
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+      }
+  
+      return completions;
+    } else {
+      Candidates ret = c.complete(buf, cursor);
+  
+      List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+      List<InterpreterCompletion> completions = new LinkedList<>();
+  
+      for (String candidate : candidates) {
+        completions.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
+      }
+  
+      return completions;
     }
-
-    return completions;
   }
 
   private String getCompletionTargetString(String text, int cursor) {

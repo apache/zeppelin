@@ -83,7 +83,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     }
 
     try {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
       File file = new File(shiroPath);
@@ -258,6 +258,8 @@ public class AuthenticationIT extends AbstractZeppelinIT {
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath(".//*[@id='selectReaders']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
+      pollingWait(By.xpath(".//*[@id='selectRunners']/following::span//input"),
+              MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
       pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
