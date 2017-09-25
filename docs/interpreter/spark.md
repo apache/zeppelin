@@ -145,6 +145,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>true</td>
     <td>Do not change - developer only setting, not for production use</td>
   </tr>
+  <tr>
+  <td>zeppelin.spark.uiWebUrl</td>
+    <td></td>
+    <td>Override Spark UI default URL</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.

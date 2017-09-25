@@ -67,6 +67,13 @@
         "defaultValue": true,
         "description": "Do not change - developer only setting, not for production use",
         "type": "checkbox"
+      },
+      "zeppelin.spark.uiWebUrl": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.uiWebUrl",
+        "defaultValue": "",
+        "description": "Override Spark UI default URL",
+        "type": "string"
       }
     },
     "editor": {
