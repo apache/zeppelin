@@ -62,6 +62,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -80,6 +82,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   protected boolean displayAppInfo;
   protected LivyVersion livyVersion;
   private RestTemplate restTemplate;
+  private Map<String, String> customHeaders = new HashMap<>();
 
   Set<Object> paragraphsToCancel = Collections.newSetFromMap(
       new ConcurrentHashMap<Object, Boolean>());
@@ -96,6 +99,33 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
     this.restTemplate = createRestTemplate();
+    if (!StringUtils.isBlank(property.getProperty("zeppelin.livy.http.headers"))) {
+      String[] headers = property.getProperty("zeppelin.livy.http.headers").split(";");
+      for (String header : headers) {
+        String[] splits = header.split(":", -1);
+        if (splits.length != 2) {
+          throw new RuntimeException("Invalid format of http headers: " + header +
+              ", valid http header format is HEADER_NAME:HEADER_VALUE");
+        }
+        customHeaders.put(splits[0].trim(), envSubstitute(splits[1].trim()));
+      }
+    }
+  }
+
+  private String envSubstitute(String value) {
+    String newValue = new String(value);
+    Pattern pattern = Pattern.compile("\\$\\{(.*)\\}");
+    Matcher matcher = pattern.matcher(value);
+    while (matcher.find()) {
+      String env = matcher.group(1);
+      newValue = newValue.replace("${" + env + "}", System.getenv(env));
+    }
+    return newValue;
+  }
+
+  // only for testing
+  Map<String, String> getCustomHeaders() {
+    return customHeaders;
   }
 
   public abstract String getSessionKind();
@@ -523,6 +553,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
     headers.add("X-Requested-By", "zeppelin");
+    for (Map.Entry<String, String> entry : customHeaders.entrySet()) {
+      headers.add(entry.getKey(), entry.getValue());
+    }
     ResponseEntity<String> response = null;
     try {
       if (method.equals("POST")) {
