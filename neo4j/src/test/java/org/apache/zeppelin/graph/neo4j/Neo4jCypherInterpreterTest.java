@@ -233,13 +233,13 @@ public class Neo4jCypherInterpreterTest {
   @Test
   public void testFallingQuery() {
     interpreter.open();
-    final String ERROR_MSG_EMPTY = "%text Cypher query is Empty";
+    final String ERROR_MSG_EMPTY = "";
     InterpreterResult result = interpreter.interpret(StringUtils.EMPTY, context);
-    assertEquals(Code.ERROR, result.code());
+    assertEquals(Code.SUCCESS, result.code());
     assertEquals(ERROR_MSG_EMPTY, result.toString());
 
     result = interpreter.interpret(null, context);
-    assertEquals(Code.ERROR, result.code());
+    assertEquals(Code.SUCCESS, result.code());
     assertEquals(ERROR_MSG_EMPTY, result.toString());
 
     result = interpreter.interpret("MATCH (n:Person{name: }) RETURN n.name AS name, n.age AS age", context);
