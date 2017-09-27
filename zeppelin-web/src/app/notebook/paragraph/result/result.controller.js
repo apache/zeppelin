@@ -769,6 +769,9 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       for (let index in row) {
         let stringValue = (row[index]).toString()
         if (stringValue.indexOf(delimiter) > -1) {
+          if (stringValue.indexOf("\"")) {
+            stringValue = stringValue.replace("\"", "\"\"")
+          }
           dsvRow += '"' + stringValue + '"' + delimiter
         } else {
           dsvRow += row[index] + delimiter
