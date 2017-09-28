@@ -1297,9 +1297,10 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
-    /** We dont want to remove the last paragraph */
     final Note note = notebook.getNote(noteId);
-    if (!note.isLastParagraph(paragraphId)) {
+
+    /** Don't allow removing paragraph when there is only one paragraph in the Notebook */
+    if (note.getParagraphCount() > 1) {
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       Paragraph para = note.removeParagraph(subject.getUser(), paragraphId);
       note.persist(subject);

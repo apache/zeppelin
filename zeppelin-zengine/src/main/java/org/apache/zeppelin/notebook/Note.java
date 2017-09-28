@@ -507,6 +507,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return true;
   }
 
+  public int getParagraphCount() {
+    return paragraphs.size();
+  }
+
   public Paragraph getParagraph(String paragraphId) {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
