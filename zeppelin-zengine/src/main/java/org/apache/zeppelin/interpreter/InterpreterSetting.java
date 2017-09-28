@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.launcher.ShellScriptLauncher;
 import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
+import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
@@ -139,6 +140,7 @@ public class InterpreterSetting {
   private transient InterpreterLauncher launcher;
   ///////////////////////////////////////////////////////////////////////////////////////////
 
+  private transient LifecycleManager lifecycleManager;
 
   /**
    * Builder class for InterpreterSetting
@@ -233,6 +235,11 @@ public class InterpreterSetting {
       return this;
     }
 
+    public Builder setLifecycleManager(LifecycleManager lifecycleManager) {
+      interpreterSetting.lifecycleManager = lifecycleManager;
+      return this;
+    }
+
     public InterpreterSetting create() {
       // post processing
       interpreterSetting.postProcessing();
@@ -249,6 +256,9 @@ public class InterpreterSetting {
 
   void postProcessing() {
     this.status = Status.READY;
+    if (this.lifecycleManager == null) {
+      this.lifecycleManager = new NullLifecycleManager(conf);
+    }
   }
 
   /**
@@ -319,6 +329,14 @@ public class InterpreterSetting {
 
   public void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
     this.interpreterSettingManager = interpreterSettingManager;
+  }
+
+  public void setLifecycleManager(LifecycleManager lifecycleManager) {
+    this.lifecycleManager = lifecycleManager;
+  }
+
+  public LifecycleManager getLifecycleManager() {
+    return lifecycleManager;
   }
 
   public String getId() {
@@ -628,7 +646,7 @@ public class InterpreterSetting {
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = null;
       interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
-          info.getClassName(), user);
+          info.getClassName(), user, lifecycleManager);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {

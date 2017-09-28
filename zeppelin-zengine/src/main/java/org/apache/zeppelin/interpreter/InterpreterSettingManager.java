@@ -51,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -116,7 +117,7 @@ public class InterpreterSettingManager {
   private RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
-
+  private LifecycleManager lifecycleManager;
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
@@ -153,6 +154,14 @@ public class InterpreterSettingManager {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+    try {
+      this.lifecycleManager = (LifecycleManager)
+          Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
+              .newInstance(conf);
+    } catch (Exception e) {
+      throw new IOException("Fail to create LifecyleManager", e);
+    }
+
     init();
   }
 
@@ -177,6 +186,7 @@ public class InterpreterSettingManager {
             remoteInterpreterProcessListener);
         savedInterpreterSetting.setAppEventListener(appEventListener);
         savedInterpreterSetting.setDependencyResolver(dependencyResolver);
+        savedInterpreterSetting.setLifecycleManager(lifecycleManager);
         savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
             savedInterpreterSetting.getProperties()
         ));
@@ -372,6 +382,7 @@ public class InterpreterSettingManager {
     interpreterSetting.setAppEventListener(appEventListener);
     interpreterSetting.setDependencyResolver(dependencyResolver);
     interpreterSetting.setInterpreterSettingManager(this);
+    interpreterSetting.setLifecycleManager(lifecycleManager);
     interpreterSetting.postProcessing();
     interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
   }
@@ -633,6 +644,7 @@ public class InterpreterSettingManager {
     setting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
     setting.setDependencyResolver(dependencyResolver);
     setting.setAngularObjectRegistryListener(angularObjectRegistryListener);
+    setting.setLifecycleManager(lifecycleManager);
     setting.setInterpreterSettingManager(this);
     setting.postProcessing();
     interpreterSettings.put(setting.getId(), setting);
@@ -645,6 +657,7 @@ public class InterpreterSettingManager {
     interpreterSettingTemplates.put(interpreterSetting.getName(), interpreterSetting);
     interpreterSetting.setAppEventListener(appEventListener);
     interpreterSetting.setDependencyResolver(dependencyResolver);
+    interpreterSetting.setLifecycleManager(lifecycleManager);
     interpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
     interpreterSetting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
     interpreterSetting.setInterpreterSettingManager(this);
