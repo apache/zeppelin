@@ -81,6 +81,7 @@ public class WebDriverManager {
         profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
         profile.setPreference("network.proxy.type", 0);
 
+        // Commenting out installing extensions. See ZEPPELIN-2962.
         // profile.addExtension(new File(firebugPath));
         // profile.addExtension(new File(firepathPath));
 
