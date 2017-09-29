@@ -187,7 +187,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
   const isTabCompletion = function() {
     const completionKey = $scope.paragraph.config.editorSetting.completionKey
-    return completionKey == 'TAB'
+    return completionKey === 'TAB'
   }
 
   $scope.$on('updateParagraphOutput', function (event, data) {
