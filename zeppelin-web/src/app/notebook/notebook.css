@@ -398,3 +398,27 @@
 .search-group:nth-child(even) {
   border-top-width: 0;
 }
+
+.new-paragraph:hover .plus-sign {
+    display: block;
+    background: #ECF7FD;
+    height: 30px;
+    text-align: center;
+    position: absolute;
+    width: calc(100% - 4px);
+    line-height: 30px;
+    top: -23px;
+    border: 1px solid #DDDDDD;
+    border-radius: 3px;
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 2px 4px;
+}
+
+.first-paragraph:hover .plus-sign {
+    top: -14px;
+    z-index: 100000;
+}
+
+.last-paragraph:hover .plus-sign {
+    position: relative;
+    top: -16px;
+}
