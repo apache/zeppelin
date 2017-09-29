@@ -340,19 +340,6 @@
   </dependencies>
 
   <build>
-    <!-- sparkr resources -->
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <excludes>
-          <exclude>interpreter-setting.json</exclude>
-        </excludes>
-      </resource>
-      <resource>
-        <directory>src/main/sparkr-resources</directory>
-      </resource>
-    </resources>
-
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -548,6 +535,22 @@
             <exclude>${pyspark.test.exclude}</exclude>
           </excludes>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-interpreter-setting</id>
+            <phase>package</phase>
+            <goals>
+              <goal>resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/../../interpreter/spark</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
