@@ -122,5 +122,4 @@ for sleep in check:
         sys.exit(0)
 
 info("Timeout")
-
 sys.exit(1)
