@@ -45,5 +45,5 @@ if [[ -n "$PYTHON" ]] ; then
   conda info -a
   conda config --add channels conda-forge
   conda install -q matplotlib pandasql ipython jupyter_client ipykernel matplotlib bokeh
-  pip install grpcio ggplot
+  pip install -q grpcio ggplot
 fi
