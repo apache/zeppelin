@@ -493,6 +493,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   @Override
   protected boolean jobAbort() {
+    boolean aborted = true;
     Interpreter repl = getRepl(getRequiredReplName());
     if (repl == null) {
       // when interpreters are already destroyed
@@ -507,10 +508,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     Job job = scheduler.removeFromWaitingQueue(getId());
     if (job != null) {
       job.setStatus(Status.ABORT);
+      aborted = false;
     } else {
       repl.cancel(getInterpreterContextWithoutRunner(null));
     }
-    return true;
+    return aborted;
   }
 
   private InterpreterContext getInterpreterContext() {
