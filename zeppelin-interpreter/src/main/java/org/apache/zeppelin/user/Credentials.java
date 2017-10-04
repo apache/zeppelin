@@ -47,7 +47,21 @@ public class Credentials {
   private Boolean credentialsPersist = true;
   File credentialsFile;
 
-  public Credentials(Boolean credentialsPersist, String credentialsPath) {
+  private Encryptor encryptor;
+
+  /**
+   * Wrapper fro user credentials. It can load credentials from a file if credentialsPath is
+   * supplied, and will encrypt the file if an encryptKey is supplied.
+   *
+   * @param credentialsPersist
+   * @param credentialsPath
+   * @param encryptKey
+   */
+  public Credentials(Boolean credentialsPersist, String credentialsPath, String encryptKey) {
+    if (encryptKey != null) {
+      this.encryptor = new Encryptor(encryptKey);
+    }
+
     this.credentialsPersist = credentialsPersist;
     if (credentialsPath != null) {
       credentialsFile = new File(credentialsPath);
@@ -119,6 +133,11 @@ public class Credentials {
       fis.close();
 
       String json = sb.toString();
+
+      if (encryptor != null) {
+        json = encryptor.decrypt(json);
+      }
+
       CredentialsInfoSaving info = CredentialsInfoSaving.fromJson(json);
       this.credentialsMap = info.credentialsMap;
     } catch (IOException e) {
@@ -146,6 +165,11 @@ public class Credentials {
 
       FileOutputStream fos = new FileOutputStream(credentialsFile, false);
       OutputStreamWriter out = new OutputStreamWriter(fos);
+
+      if (encryptor != null) {
+        jsonString = encryptor.encrypt(jsonString);
+      }
+
       out.append(jsonString);
       out.close();
       fos.close();
