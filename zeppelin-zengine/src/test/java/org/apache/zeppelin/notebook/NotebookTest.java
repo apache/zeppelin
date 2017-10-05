@@ -98,7 +98,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
-    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+    credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
 
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory, interpreterSettingManager, this, search,
         notebookAuthorization, credentials);

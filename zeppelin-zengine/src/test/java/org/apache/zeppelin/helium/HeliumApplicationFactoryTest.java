@@ -77,7 +77,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         this,
         search,
         notebookAuthorization,
-        new Credentials(false, null));
+        new Credentials(false, null, null));
 
     heliumAppFactory.setNotebook(notebook);
 
