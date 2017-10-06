@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -139,8 +139,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_" + new Random(System.currentTimeMillis())
-        .nextInt();
+    return "paragraph_" + System.currentTimeMillis() + "_" + new SecureRandom().nextInt();
   }
 
   public Map<String, Paragraph> getUserParagraphMap() {
