@@ -46,7 +46,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUpWithAuthenticationEnable();
+    AbstractTestRestApi.startUpWithAuthenticationEnable(NotebookSecurityRestApiTest.class.getSimpleName());
   }
 
   @AfterClass

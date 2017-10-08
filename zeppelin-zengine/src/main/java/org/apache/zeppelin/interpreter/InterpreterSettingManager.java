@@ -803,7 +803,7 @@ public class InterpreterSettingManager {
   }
 
   public void restart(String id) throws InterpreterException {
-    restart(id, "", "anonymous");
+    interpreterSettings.get(id).close();
   }
 
   public InterpreterSetting get(String id) {

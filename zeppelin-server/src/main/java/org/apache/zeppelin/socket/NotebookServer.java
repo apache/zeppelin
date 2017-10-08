@@ -1678,7 +1678,10 @@ public class NotebookServer extends WebSocketServlet
       Paragraph p = setParagraphUsingMessage(note, fromMessage,
           paragraphId, text, title, params, config);
 
-      persistAndExecuteSingleParagraph(conn, note, p);
+      if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
+        // stop execution when one paragraph fails.
+        break;
+      }
     }
   }
 
@@ -1770,7 +1773,7 @@ public class NotebookServer extends WebSocketServlet
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
         text, title, params, config);
 
-    persistAndExecuteSingleParagraph(conn, note, p);
+    persistAndExecuteSingleParagraph(conn, note, p, false);
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
@@ -1802,15 +1805,16 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void persistAndExecuteSingleParagraph(NotebookSocket conn,
-                                                Note note, Paragraph p) throws IOException {
+  private boolean persistAndExecuteSingleParagraph(NotebookSocket conn,
+                                                Note note, Paragraph p,
+                                                boolean blocking) throws IOException {
     addNewParagraphIfLastParagraphIsExecuted(note, p);
     if (!persistNoteWithAuthInfo(conn, note, p)) {
-      return;
+      return false;
     }
 
     try {
-      note.run(p.getId());
+      return note.run(p.getId(), blocking);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       if (p != null) {
@@ -1818,6 +1822,7 @@ public class NotebookServer extends WebSocketServlet
         p.setStatus(Status.ERROR);
         broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
       }
+      return false;
     }
   }
 

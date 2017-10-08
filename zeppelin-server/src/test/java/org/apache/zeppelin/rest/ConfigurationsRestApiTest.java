@@ -36,7 +36,7 @@ public class ConfigurationsRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(ConfigurationsRestApi.class.getSimpleName());
   }
 
   @AfterClass

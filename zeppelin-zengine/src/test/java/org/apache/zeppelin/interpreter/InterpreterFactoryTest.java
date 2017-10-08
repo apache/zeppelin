@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.junit.Test;
 
@@ -36,19 +37,19 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "") instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "");
-    // EchoInterpreter is the default interpreter (see zeppelin-interpreter/src/test/resources/conf/interpreter.json)
+    // EchoInterpreter is the default interpreter because mock1 is the default interpreter group
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test") instanceof RemoteInterpreter);
     remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test");
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "echo") instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "echo");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2");
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "double_echo") instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "double_echo");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo");
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
   }
 
