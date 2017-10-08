@@ -39,7 +39,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
 
     @BeforeClass
     public static void init() throws Exception {
-        AbstractTestRestApi.startUp();
+        AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
     }
 
     @AfterClass

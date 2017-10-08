@@ -592,17 +592,24 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
     AuthenticationInfo authenticationInfo = new AuthenticationInfo();
     authenticationInfo.setUser(cronExecutingUser);
-    runAll(authenticationInfo);
+    runAll(authenticationInfo, true);
   }
 
-  public void runAll(AuthenticationInfo authenticationInfo) {
+  public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
     for (Paragraph p : getParagraphs()) {
       if (!p.isEnabled()) {
         continue;
       }
       p.setAuthenticationInfo(authenticationInfo);
-      run(p.getId());
+      if (!run(p.getId(), blocking)) {
+        logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
+        break;
+      }
     }
+  }
+
+  public boolean run(String paragraphId) {
+    return run(paragraphId, false);
   }
 
   /**
@@ -610,14 +617,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    *
    * @param paragraphId ID of paragraph
    */
-  public void run(String paragraphId) {
+  public boolean run(String paragraphId, boolean blocking) {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     
     if (p.isBlankParagraph()) {
       logger.info("skip to run blank paragraph. {}", p.getId());
       p.setStatus(Job.Status.FINISHED);
-      return;
+      return true;
     }
 
     p.clearRuntimeInfo(null);
@@ -637,6 +644,19 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       p.setAuthenticationInfo(p.getAuthenticationInfo());
       intp.getScheduler().submit(p);
+    }
+
+    if (blocking) {
+      while (!p.getStatus().isCompleted()) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return p.getStatus() == Status.FINISHED;
+    } else {
+      return true;
     }
   }
 

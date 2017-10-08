@@ -50,7 +50,7 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(NotebookRepoRestApiTest.class.getSimpleName());
   }
 
   @AfterClass
