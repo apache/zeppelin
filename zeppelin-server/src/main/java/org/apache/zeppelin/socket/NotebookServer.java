@@ -2296,13 +2296,11 @@ public class NotebookServer extends WebSocketServlet
 
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
-      LOG.info("after status change. STatus= {}", after);
       super.afterStatusChange(job, before, after);
-      LOG.info("after super afterStatusChange");
       Note note = super.note;
       Object synchronizer = note.getSequentialNoteRunInfo().getSynchronizer();
       synchronized (synchronizer) {
-        LOG.info("notifying");
+        LOG.debug("Notifying waiting thread");
         synchronizer.notify();
       }
     }
@@ -2333,9 +2331,7 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
     SequentialNoteRunInfo sequentialNoteRunInfo = note.getSequentialNoteRunInfo();
-    LOG.info("is Sequential Run: {}", sequentialNoteRunInfo.isRunningSequentially());
     if (sequentialNoteRunInfo != null && sequentialNoteRunInfo.isRunningSequentially()) {
-      LOG.info("Returning ParagraphListenerForSequentialRun");
       return new ParagraphListenerForSequentialRun(this, note);
     }
     return new ParagraphListenerImpl(this, note);

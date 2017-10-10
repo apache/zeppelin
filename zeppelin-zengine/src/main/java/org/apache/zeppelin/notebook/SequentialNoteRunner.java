@@ -26,18 +26,14 @@ public class SequentialNoteRunner implements Runnable {
       logger.info("Running paragraph {}", paragraphId);
       try {
         note.run(paragraphId);
-        logger.info("after run");
         Object synchronizer = note.getSequentialNoteRunInfo().getSynchronizer();
         synchronized (synchronizer) {
           Status paragraphStatus = paragraph.getStatus();
-          logger.info("status = {}", paragraphStatus);
           while (paragraphStatus == null || paragraphStatus == Status.PENDING
                  || paragraphStatus == Status.RUNNING) {
             try {
-              logger.info("waiting on {}", synchronizer);
               synchronizer.wait();
               paragraphStatus = paragraph.getStatus();
-              logger.info("status: {}", paragraphStatus);
             } catch (InterruptedException e) {
               logger.error("Exception while waiting for status of paragraph {} to change",
                   paragraphId, e);
