@@ -115,7 +115,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   public void open() {
     // try IPySparkInterpreter first
     iPySparkInterpreter = getIPySparkInterpreter();
-    if (property.getProperty("zeppelin.spark.useIPython", "true").equals("true") &&
+    if (property.getProperty("zeppelin.pyspark.useIPython", "true").equals("true") &&
         iPySparkInterpreter.checkIPythonPrerequisite()) {
       try {
         iPySparkInterpreter.open();
@@ -133,7 +133,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
     iPySparkInterpreter = null;
 
-    if (property.getProperty("zeppelin.spark.useIPython", "true").equals("true")) {
+    if (property.getProperty("zeppelin.pyspark.useIPython", "true").equals("true")) {
       // don't print it when it is in testing, just for easy output check in test.
       try {
         InterpreterContext.get().out.write(("IPython is not available, " +
@@ -202,13 +202,18 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  private Map setupPySparkEnv() throws IOException{
+  private Map setupPySparkEnv() throws IOException {
     Map env = EnvironmentUtils.getProcEnvironment();
 
-    if (!env.containsKey("PYTHONPATH")) {
-      SparkConf conf = getSparkConf();
-      env.put("PYTHONPATH", conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
-              ":../interpreter/lib/python");
+    // only set PYTHONPATH in local or yarn-client mode.
+    // yarn-cluster will setup PYTHONPATH automatically.
+    SparkConf conf = getSparkConf();
+    if (!conf.get("spark.submit.deployMode", "client").equals("cluster")) {
+      if (!env.containsKey("PYTHONPATH")) {
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+      } else {
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+      }
     }
 
     // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
@@ -223,7 +228,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
-    LOGGER.debug("PYTHONPATH: " + env.get("PYTHONPATH"));
+    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
     return env;
   }
 
@@ -251,6 +256,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     gatewayServer.start();
 
     String pythonExec = getPythonExec(property);
+    LOGGER.info("pythonExec: " + pythonExec);
     CommandLine cmd = CommandLine.parse(pythonExec);
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);

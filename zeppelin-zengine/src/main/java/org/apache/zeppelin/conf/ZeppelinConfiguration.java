@@ -443,6 +443,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_CREDENTIALS_PERSIST);
   }
 
+  public String getCredentialsEncryptKey() {
+    return getString(ConfVars.ZEPPELIN_CREDENTIALS_ENCRYPT_KEY);
+  }
+
   public String getCredentialsPath() {
     return getRelativeDir(String.format("%s/credentials.json", getConfDir()));
   }
@@ -493,7 +497,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getConfDir() {
-    return getString(ConfVars.ZEPPELIN_CONF_DIR);
+    return getRelativeDir(ConfVars.ZEPPELIN_CONF_DIR);
   }
 
   public List<String> getAllowedOrigins()
@@ -680,6 +684,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
+    ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),

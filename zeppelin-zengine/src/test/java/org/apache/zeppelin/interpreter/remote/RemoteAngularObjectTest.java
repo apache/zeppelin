@@ -60,7 +60,6 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     onRemove = new AtomicInteger(0);
 
     InterpreterOption interpreterOption = new InterpreterOption();
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterAngular.class.getName(), "mock", true, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);

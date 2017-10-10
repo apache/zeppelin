@@ -17,24 +17,25 @@
 
 package org.apache.zeppelin.user;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
 
 import org.junit.Test;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
-public class CredentialsTest {
+public class EncryptorTest {
 
   @Test
-  public void testDefaultProperty() throws IOException {
-    Credentials credentials = new Credentials(false, null, null);
-    UserCredentials userCredentials = new UserCredentials();
-    UsernamePassword up1 = new UsernamePassword("user2", "password");
-    userCredentials.putUsernamePassword("hive(vertica)", up1);
-    credentials.putUserCredentials("user1", userCredentials);
-    UserCredentials uc2 = credentials.getUserCredentials("user1");
-    UsernamePassword up2 = uc2.getUsernamePassword("hive(vertica)");
-    assertEquals(up1.getUsername(), up2.getUsername());
-    assertEquals(up1.getPassword(), up2.getPassword());
+  public void testEncryption() throws IOException {
+    Encryptor encryptor = new Encryptor("foobar1234567890");
+
+    String input = "test";
+
+    String encrypted = encryptor.encrypt(input);
+    assertNotEquals(input, encrypted);
+
+    String decrypted = encryptor.decrypt(encrypted);
+    assertEquals(input, decrypted);
   }
 }

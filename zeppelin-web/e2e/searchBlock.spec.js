@@ -99,7 +99,7 @@ describe('Search block e2e Test', function() {
     waitVisibility(element(by.repeater('currentParagraph in note.paragraphs')))
     browser.switchTo().activeElement().sendKeys(testData.textInFirstP)
     let addBelow = element(
-      by.xpath('//div[@class="new-paragraph" and @ng-click="insertNew(\'below\');"]'))
+      by.xpath('//div[@class="new-paragraph last-paragraph" and @ng-click="insertNew(\'below\');"]'))
     clickAndWait(addBelow)
     browser.switchTo().activeElement().sendKeys(testData.textInSecondP)
   }
@@ -123,7 +123,6 @@ describe('Search block e2e Test', function() {
   }
 
   /*Tests*/
-
   it('shortcut works', function() {
     waitVisibility(element(by.repeater('currentParagraph in note.paragraphs')))
     openSearchBoxByShortcut()
