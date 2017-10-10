@@ -81,6 +81,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+  private SequentialNoteRunInfo sequentialRunInfo = new SequentialNoteRunInfo();
 
   private transient InterpreterFactory factory;
   private transient InterpreterSettingManager interpreterSettingManager;
@@ -91,7 +92,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
-  private SequentialNoteRunInfo sequentialNoteRunInfo = new SequentialNoteRunInfo();
 
   /*
    * note configurations.
@@ -230,7 +230,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   public SequentialNoteRunInfo getSequentialNoteRunInfo() {
-    return sequentialNoteRunInfo;
+    return sequentialRunInfo;
   }
 
   void setInterpreterFactory(InterpreterFactory factory) {
@@ -651,10 +651,12 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   /**
    * Run all paragraphs sequentially.
+   * @param sequentialNoteRunListener
    */
-  public void runAllSequentially() {
+  public void runAllSequentially(SequentialNoteRunListener sequentialNoteRunListener) {
     this.getSequentialNoteRunInfo().setRunningSequentially(true);
-    SequentialNoteRunner sequentialRunner = new SequentialNoteRunner(this);
+    SequentialNoteRunner sequentialRunner =
+        new SequentialNoteRunner(this, sequentialNoteRunListener);
     runAllExecutorService.execute(sequentialRunner);
   }
 

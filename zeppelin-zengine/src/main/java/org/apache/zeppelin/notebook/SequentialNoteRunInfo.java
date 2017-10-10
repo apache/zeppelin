@@ -1,7 +1,7 @@
 package org.apache.zeppelin.notebook;
 
 /**
- * Info about sequential run of all paragraphs
+ * Info about sequential run of note
  */
 public class SequentialNoteRunInfo {
 
