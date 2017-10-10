@@ -52,6 +52,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
+    <module>zeppelin-metrics</module>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>

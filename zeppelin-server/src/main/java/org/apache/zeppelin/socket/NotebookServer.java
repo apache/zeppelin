@@ -46,6 +46,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.JobListenerFactory;
+import org.apache.zeppelin.metrics.MetricType;
+import org.apache.zeppelin.metrics.Metrics;
+import org.apache.zeppelin.metrics.TimedExecution;
 import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -116,6 +119,7 @@ public class NotebookServer extends WebSocketServlet
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
+  private final Metrics metrics = Metrics.getInstance();
 
   /**
    * This is a special endpoint in the notebook websoket, Every connection in this Queue
@@ -815,6 +819,7 @@ public class NotebookServer extends WebSocketServlet
 
     String user = fromMessage.principal;
 
+    TimedExecution run = metrics.startMeasurement(MetricType.NotebookView);
     Note note = notebook.getNote(noteId);
     if (note != null) {
 
@@ -833,6 +838,7 @@ public class NotebookServer extends WebSocketServlet
     } else {
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
+    metrics.save(run);
   }
 
   private void sendHomeNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1006,6 +1012,7 @@ public class NotebookServer extends WebSocketServlet
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
       Message message) throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(message.principal);
+    TimedExecution run = metrics.startMeasurement(MetricType.NotebookCreate);
 
     try {
       Note note = null;
@@ -1039,12 +1046,14 @@ public class NotebookServer extends WebSocketServlet
       conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
     } catch (FileSystemException e) {
       LOG.error("Exception from createNote", e);
+      metrics.saveFailure(e, MetricType.NotebookCreate);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
           "Oops! There is something wrong with the notebook file system. "
               + "Please check the logs for more details.")));
       return;
     }
     broadcastNoteList(subject, userAndRoles);
+    metrics.save(run);
   }
 
   private void removeNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1649,6 +1658,7 @@ public class NotebookServer extends WebSocketServlet
   private void runAllParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
                                 Notebook notebook,
       Message fromMessage) throws IOException {
+    TimedExecution run = metrics.startMeasurement(MetricType.NotebookRun);
     final String noteId = (String) fromMessage.get("noteId");
     if (StringUtils.isBlank(noteId)) {
       return;
@@ -1680,6 +1690,7 @@ public class NotebookServer extends WebSocketServlet
 
       persistAndExecuteSingleParagraph(conn, note, p);
     }
+    metrics.save(run);
   }
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1740,6 +1751,7 @@ public class NotebookServer extends WebSocketServlet
 
   private void runParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
                             Message fromMessage) throws IOException {
+    TimedExecution run = metrics.startMeasurement(MetricType.ParagraphRun);
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
@@ -1771,6 +1783,7 @@ public class NotebookServer extends WebSocketServlet
         text, title, params, config);
 
     persistAndExecuteSingleParagraph(conn, note, p);
+    metrics.save(run);
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
@@ -1813,6 +1826,7 @@ public class NotebookServer extends WebSocketServlet
       note.run(p.getId());
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
+      metrics.saveFailure(ex, MetricType.ParagraphRun);
       if (p != null) {
         p.setReturn(new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage()), ex);
         p.setStatus(Status.ERROR);
