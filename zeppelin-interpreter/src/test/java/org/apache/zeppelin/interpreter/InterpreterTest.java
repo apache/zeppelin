@@ -19,7 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import java.util.Properties;
 
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -403,9 +403,11 @@ public class RemoteInterpreterTest {
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
             "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
             null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
     assertEquals(userName, interpreter.getProperty(propertyName));
+    InterpreterContext.remove();
   }
 
   @Test
@@ -418,9 +420,11 @@ public class RemoteInterpreterTest {
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
             "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
             null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
     assertEquals(userName, interpreter.getProperty(propertyName));
+    InterpreterContext.remove();
   }
 
   @Test
@@ -433,9 +437,11 @@ public class RemoteInterpreterTest {
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
             "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
             null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
-    assertEquals(userName, interpreter.getProperty(propertyName));
+    assertEquals(userName, lazyOpenInterpreter.getProperty(propertyName));
+    InterpreterContext.remove();
   }
 
 }
