@@ -868,7 +868,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         exec: function(env, args, request) {
           let iCursor = $scope.editor.getCursorPosition()
           let currentLine = $scope.editor.session.getLine(iCursor.row)
-          let isAllTabs = currentLine.split('').every(function(char) { return (char === '\t' || char === ' ') })
+          let isAllTabs = currentLine.substring(0, iCursor.column - 1).split('').every(function(char) { return (char === '\t' || char === ' ') })
 
           // If user has pressed tab on first line char or if editor mode is %md, keep existing behavior
           // If user has pressed tab anywhere in between and editor mode is not %md, show autocomplete
