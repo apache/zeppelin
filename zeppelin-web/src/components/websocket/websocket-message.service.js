@@ -210,6 +210,16 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
+    runAllParagraphsSequentially: function (noteId, paragraphs) {
+      websocketEvents.sendNewEvent({
+        op: 'RUN_ALL_SEQUENTIALLY',
+        data: {
+          noteId: noteId,
+          paragraphs: JSON.stringify(paragraphs)
+        }
+      })
+    },
+
     removeParagraph: function (paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}})
     },

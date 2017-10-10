@@ -61,8 +61,10 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
 import org.apache.zeppelin.notebook.SequentialNoteRunInfo;
+import org.apache.zeppelin.notebook.SequentialNoteRunListener;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.NoteRunUpdateMessage;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
@@ -2282,6 +2284,28 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
+  /**
+   * Listener class for sequential note runs
+   */
+  public static class SequentialNoteRunListenerImpl implements SequentialNoteRunListener {
+    private NotebookServer notebookServer;
+
+    public SequentialNoteRunListenerImpl(NotebookServer notebookServer) {
+      this.notebookServer = notebookServer;
+    }
+
+    @Override
+    public void onSequentialRunFinished(Note note) {
+      notebookServer.broadcast(note.getId(),
+          new Message(OP.NOTE_RUN_UPDATE)
+          .put("noteRunUpdate", new NoteRunUpdateMessage(note.getId(), false)));
+    }
+  }
+
+  public SequentialNoteRunListener getSequentialNoteRunListener() {
+    return new SequentialNoteRunListenerImpl(this);
+  }
+
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
     SequentialNoteRunInfo sequentialNoteRunInfo = note.getSequentialNoteRunInfo();
@@ -2545,6 +2569,8 @@ public class NotebookServer extends WebSocketServlet
       }
     }
     // Run all sequentially in a new thread
-    note.runAllSequentially();
+    note.runAllSequentially(getSequentialNoteRunListener());
+    broadcast(note.getId(), new Message(OP.NOTE_RUN_UPDATE)
+        .put("noteRunUpdate", new NoteRunUpdateMessage(noteId, true)));
   }
 }

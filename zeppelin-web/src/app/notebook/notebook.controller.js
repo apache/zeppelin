@@ -51,6 +51,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.interpreterBindings = []
   $scope.isNoteDirty = null
   $scope.saveTimer = null
+  $scope.runningSequentially = false
 
   let connectedOnce = false
   let isRevisionPath = function (path) {
@@ -295,6 +296,28 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
             }
           })
           websocketMsgSrv.runAllParagraphs(noteId, paragraphs)
+        }
+      }
+    })
+  }
+
+  $scope.runAllParagraphsSequentially = function (noteId) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Run all paragraphs?',
+      callback: function (result) {
+        if (result) {
+          const paragraphs = $scope.note.paragraphs.map(p => {
+            return {
+              id: p.id,
+              title: p.title,
+              paragraph: p.text,
+              config: p.config,
+              params: p.settings.params
+            }
+          })
+          websocketMsgSrv.runAllParagraphsSequentially(noteId, paragraphs)
         }
       }
     })
@@ -1067,6 +1090,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     let isPersonalized = $scope.note.config.personalizedMode
     isPersonalized = isPersonalized === undefined ? 'false' : isPersonalized
     $scope.note.config.personalizedMode = isPersonalized
+    $scope.runningSequentially = ($scope.note.sequentialRunInfo != null)
+        ? $scope.note.sequentialRunInfo.runningSequentially : null
   })
 
   $scope.$on('$destroy', function () {
@@ -1086,5 +1111,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   angular.element(window).bind('resize', function () {
     const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight
     angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20)
+  })
+
+  $scope.$on('updateNoteRunStatus', function (event, data) {
+    let noteRunUpdate = data.noteRunUpdate
+    if (noteRunUpdate != null && noteRunUpdate.noteId === $scope.note.id) {
+      $scope.runningSequentially = noteRunUpdate.runningSequentially
+    }
   })
 }

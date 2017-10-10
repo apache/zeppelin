@@ -11,9 +11,11 @@ public class SequentialNoteRunner implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(SequentialNoteRunner.class);
 
   private Note note;
+  private SequentialNoteRunListener listener;
 
-  public SequentialNoteRunner(Note note) {
+  public SequentialNoteRunner(Note note, SequentialNoteRunListener listener) {
     this.note = note;
+    this.listener = listener;
   }
 
   @Override
@@ -22,28 +24,33 @@ public class SequentialNoteRunner implements Runnable {
     for (Paragraph paragraph: note.getParagraphs()) {
       String paragraphId = paragraph.getId();
       logger.info("Running paragraph {}", paragraphId);
-      note.run(paragraphId);
-      logger.info("after run");
-      Object synchronizer = note.getSequentialNoteRunInfo().getSynchronizer();
-      synchronized (synchronizer) {
-        Status paragraphStatus = paragraph.getStatus();
-        logger.info("status = {}", paragraphStatus);
-        while (paragraphStatus == null || (paragraphStatus != Status.FINISHED
-            && paragraphStatus != Status.ERROR)) {
-          try {
-            logger.info("waiting on {}", synchronizer);
-            synchronizer.wait();
-            paragraphStatus = paragraph.getStatus();
-            logger.info("status: {}", paragraphStatus);
-          } catch (InterruptedException e) {
-            logger.error("Exception while waiting for status of paragraph {} to change",
-                paragraphId, e);
+      try {
+        note.run(paragraphId);
+        logger.info("after run");
+        Object synchronizer = note.getSequentialNoteRunInfo().getSynchronizer();
+        synchronized (synchronizer) {
+          Status paragraphStatus = paragraph.getStatus();
+          logger.info("status = {}", paragraphStatus);
+          while (paragraphStatus == null || paragraphStatus == Status.PENDING
+                 || paragraphStatus == Status.RUNNING) {
+            try {
+              logger.info("waiting on {}", synchronizer);
+              synchronizer.wait();
+              paragraphStatus = paragraph.getStatus();
+              logger.info("status: {}", paragraphStatus);
+            } catch (InterruptedException e) {
+              logger.error("Exception while waiting for status of paragraph {} to change",
+                  paragraphId, e);
+            }
           }
+          logger.info("Paragraph {} execution complete", paragraphId);
         }
-        logger.info("Paragraph {} execution complete", paragraphId);
+      } catch (Exception e) {
+        logger.error("Error while running paragraph {}", paragraphId, e);
       }
     }
     note.getSequentialNoteRunInfo().setRunningSequentially(false);
+    listener.onSequentialRunFinished(note);
     logger.info("Sequential run for note {} finished", note.getId());
   }
 
