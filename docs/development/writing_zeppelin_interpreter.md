@@ -74,7 +74,8 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
     },
     "editor": {
       "language": "your-syntax-highlight-language",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {
@@ -128,6 +129,19 @@ If your interpreter uses mark-up language such as markdown or HTML, set `editOnD
   "editOnDblClick": false
 }
 ```
+
+### Completion key (Optional)
+By default, `Ctrl+dot(.)` brings autocompletion list in the editor.
+Through `completionKey`, each interpreter can configure autocompletion key.
+Currently `TAB` is only available option.
+
+```
+"editor": {
+  "completionKey": "TAB"
+}
+```
+
+
 ## Install your interpreter binary
 
 Once you have built your interpreter, you can place it under the interpreter directory with all its dependencies.
