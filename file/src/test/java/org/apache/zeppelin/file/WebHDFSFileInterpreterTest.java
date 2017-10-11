@@ -40,12 +40,12 @@ import java.lang.String;
  * Tests Interpreter by running pre-determined commands against mock file system
  *
  */
-public class HDFSFileInterpreterTest extends TestCase {
+public class WebHDFSFileInterpreterTest extends TestCase {
 
     @Test
     public void testMaxLength() {
 
-      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+      WebHDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
       t.open();
       InterpreterResult result = t.interpret("ls -l /", null);
       String lineSeparator = "\n";
@@ -56,7 +56,7 @@ public class HDFSFileInterpreterTest extends TestCase {
       Properties properties = new Properties();
       final int maxLength = fileStatusLength - 2;
       properties.setProperty("hdfs.maxlength", String.valueOf(maxLength));
-      HDFSFileInterpreter t1 = new MockHDFSFileInterpreter(properties);
+      WebHDFSFileInterpreter t1 = new MockHDFSFileInterpreter(properties);
       t1.open();
       InterpreterResult result1 = t1.interpret("ls -l /", null);
       assertEquals(result1.message().get(0).getData().split(lineSeparator).length, maxLength);
@@ -65,7 +65,7 @@ public class HDFSFileInterpreterTest extends TestCase {
 
     @Test
     public void test() {
-      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+      WebHDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
       t.open();
 
       // We have info for /, /user, /tmp, /mr-history/done
@@ -186,7 +186,7 @@ public class HDFSFileInterpreterTest extends TestCase {
       mfs.put("/mr-history/done?op=GETFILESTATUS",
           "{\"FileStatus\":{\"accessTime\":0,\"blockSize\":0,\"childrenNum\":1,\"fileId\":16393,\"group\":\"hadoop\",\"length\":0,\"modificationTime\":1441253197480,\"owner\":\"mapred\",\"pathSuffix\":\"\",\"permission\":\"777\",\"replication\":0,\"storagePolicy\":0,\"type\":\"DIRECTORY\"}}");
     }
-    public void addMockData(HDFSCommand.Op op) {
+    public void addMockData(WebHDFSCommand.Op op) {
       if (op.op.equals("LISTSTATUS")) {
         addListStatusData();
       } else if (op.op.equals("GETFILESTATUS")) {
@@ -202,7 +202,7 @@ public class HDFSFileInterpreterTest extends TestCase {
   /**
    * Run commands against mock file system that simulates webhdfs responses
    */
-  class MockHDFSCommand extends HDFSCommand {
+  class MockHDFSCommand extends WebHDFSCommand {
     MockFileSystem fs = null;
 
     public MockHDFSCommand(String url, String user, Logger logger, int maxLength) {
@@ -236,7 +236,7 @@ public class HDFSFileInterpreterTest extends TestCase {
   /**
    * Mock Interpreter - uses Mock HDFS command
    */
-  class MockHDFSFileInterpreter extends HDFSFileInterpreter {
+  class MockHDFSFileInterpreter extends WebHDFSFileInterpreter {
 
     @Override
     public void prepare() {

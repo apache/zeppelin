@@ -34,6 +34,7 @@ There are few notebook storage systems available for a use out of the box:
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
+  * storage using Web HDFS - `WebHdfsNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -263,7 +264,51 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
+
+## Notebook Storage in Web Hdfs <a name="HDFS"></a>
+
+To enable your notebooks to be stored on HDFS - uncomment the next property in `zeppelin-site.xml` in order to use WebHdfsNotebookRepo class:
+
+```
+<property>
+<name>zeppelin.notebook.storage</name>
+<value>org.apache.zeppelin.notebook.repo.WebHdfsNotebookRepo</value>
+<description>notebook persistence layer implementation</description>
+</property>
+
+<property>
+<name>hdfs.url</name>
+<value>http://localhost:50070/webhdfs/v1/</value>
+<description>HDFS url</description>
+</property>
+
+<property>
+<name>hdfs.user</name>
+<value>hdfs</value>
+<description>HDFS user</description>
+</property>
+
+<property>
+<name>hdfs.maxlength</name>
+<value>1000</value>
+<description>Maximum number of lines of results fetched</description>
+</property>
+
+```
+
+and replace the notebook directory property below by an absolute HDFS location as follows :
+```
+<property>
+<name>zeppelin.notebook.dir</name>
+<value>/tmp/notebook</value>
+<description>path or URI for notebook persist</description>
+</property>
+```
+
+</br>
+
 ## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
+>>>>>>> 1c23f2138834bba3a08b365c59d861687c289589:docs/setup/storage/storage.md
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 

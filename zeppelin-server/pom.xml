@@ -441,7 +441,7 @@
       </activation>
       <properties>
         <zeppelin.daemon.package.base>
-	        ../bin
+          ../bin
         </zeppelin.daemon.package.base>
       </properties>
     </profile>
@@ -453,7 +453,7 @@
       </activation>
       <properties>
         <zeppelin.daemon.package.base>
-	        ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
+          ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin
         </zeppelin.daemon.package.base>
       </properties>
     </profile>

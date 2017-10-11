@@ -33,7 +33,6 @@
 
   <properties>
     <!--library versions-->
-    <ws.rsapi.version>2.0</ws.rsapi.version>
     <jersey.common.version>2.22.2</jersey.common.version>
 
     <!--plugin versions-->
@@ -49,12 +48,12 @@
     </dependency>
 
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>${ws.rsapi.version}</version>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+      <version>${jersey.common.version}</version>
     </dependency>
 
-    <dependency>
+  <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -62,12 +61,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-common</artifactId>
-      <version>${jersey.common.version}</version>
     </dependency>
 
     <dependency>

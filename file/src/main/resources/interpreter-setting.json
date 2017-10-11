@@ -2,7 +2,7 @@
   {
     "group": "file",
     "name": "hdfs",
-    "className": "org.apache.zeppelin.file.HDFSFileInterpreter",
+    "className": "org.apache.zeppelin.file.WebHDFSFileInterpreter",
     "properties": {
       "hdfs.url": {
         "envName": null,
