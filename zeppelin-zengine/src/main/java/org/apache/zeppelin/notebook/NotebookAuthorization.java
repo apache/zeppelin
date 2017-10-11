@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,6 +34,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -297,7 +297,8 @@ public class NotebookAuthorization {
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    return isMember(entities, getWriters(noteId)) || isMember(entities, getOwners(noteId));
+    return isMember(entities, getWriters(noteId)) ||
+           isMember(entities, getOwners(noteId));
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
@@ -384,24 +385,30 @@ public class NotebookAuthorization {
   
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
+      String admin = conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE);
       if (isPublic()) {
         // add current user to owners - can be public
         Set<String> owners = getOwners(noteId);
         owners.add(subject.getUser());
+        owners.add(admin);
         setOwners(noteId, owners);
       } else {
         // add current user to owners, readers, runners, writers - private note
         Set<String> entities = getOwners(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setOwners(noteId, entities);
         entities = getReaders(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setReaders(noteId, entities);
         entities = getRunners(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setRunners(noteId, entities);
         entities = getWriters(noteId);
         entities.add(subject.getUser());
+        entities.add(admin);
         setWriters(noteId, entities);
       }
     }
