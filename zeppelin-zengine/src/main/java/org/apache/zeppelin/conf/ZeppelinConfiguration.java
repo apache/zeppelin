@@ -692,8 +692,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
     ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
 
-    ZEPPELIN_HDFS_KEYTAB("zeppelin.hdfs.keytab", ""),
-    ZEPPELIN_HDFS_PRINCIPAL("zeppelin.hdfs.principal", ""),
+    ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
+    ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
 
     ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE("zeppelin.interpreter.callback.portRange", ":");
 

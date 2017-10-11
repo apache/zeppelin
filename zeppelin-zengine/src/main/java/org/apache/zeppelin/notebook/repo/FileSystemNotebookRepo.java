@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +49,10 @@ public class FileSystemNotebookRepo implements NotebookRepo {
 
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     if (isSecurityEnabled) {
-      String keytab = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HDFS_KEYTAB);
-      String principal = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HDFS_PRINCIPAL);
+      String keytab = zConf.getString(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
+      String principal = zConf.getString(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
       if (StringUtils.isBlank(keytab) || StringUtils.isBlank(principal)) {
         throw new IOException("keytab and principal can not be empty, keytab: " + keytab
             + ", principal: " + principal);
