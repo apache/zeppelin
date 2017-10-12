@@ -172,7 +172,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   /**
    * starts or continues rendering html/angular and returns MarkupBuilder to build html.
    * <pre> g.html().with{
-   * 	h1("hello")
+   *  h1("hello")
    *  h2("world")
    * }</pre>
    */
