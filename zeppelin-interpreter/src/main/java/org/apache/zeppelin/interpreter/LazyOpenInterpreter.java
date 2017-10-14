@@ -210,7 +210,7 @@ public class LazyOpenInterpreter
    * with same name and marker #{user}. If value == null then replace by empty string.
    */
   public void replaceContextParameters(InterpreterContext interpreterContext) {
-    Properties properties = intp.getPropertySource();
+    Properties properties = intp.getPropertiesSource();
     if (properties != null && interpreterContext != null) {
       String markerTemplate = "#\\{%s\\}";
       List<String> skipFields = Arrays.asList("paragraphTitle", "paragraphId", "paragraphText");
