@@ -123,8 +123,11 @@ limitations under the License.
        <!-- see ZEPPELIN-2806
        viewport-watch>
        -->
-    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43;</h4>
+    <div class="new-paragraph"
+         ng-click="insertNew('above')"
+         ng-hide="viewOnly || asIframe || revisionView"
+         ng-class="{'first-paragraph': $first}">
+      <h4 class="plus-sign">&#43; Add Paragraph</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
@@ -133,8 +136,8 @@ limitations under the License.
          ng-hide="currentParagraph.config.tableHide && viewOnly"
          ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
-    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43;</h4>
+    <div class="new-paragraph last-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
+      <h4 class="plus-sign">&#43; Add Paragraph</h4>
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

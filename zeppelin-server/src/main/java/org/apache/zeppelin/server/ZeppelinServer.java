@@ -134,7 +134,10 @@ public class ZeppelinServer extends Application {
     this.notebookRepo = new NotebookRepoSync(conf);
     this.noteSearchService = new LuceneSearch();
     this.notebookAuthorization = NotebookAuthorization.init(conf);
-    this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
+    this.credentials = new Credentials(
+        conf.credentialsPersist(),
+        conf.getCredentialsPath(),
+        conf.getCredentialsEncryptKey());
     this.recentNotesRepo = new RecentNotesRepo(conf.getRecentNotesFilePath());
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,

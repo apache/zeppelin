@@ -173,21 +173,21 @@
 </property>
 -->
 
-<!-- Notebook storage layer using hdfs file system
+<!-- Notebook storage layer using hadoop compatible file system
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
-  <description>hdfs notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo</value>
+  <description>Hadoop compatible file system notebook persistence layer implementation, such as local file system, hdfs, azure wasb, s3 and etc.</description>
 </property>
 
 <property>
-  <name>zeppelin.hdfs.keytab</name>
+  <name>zeppelin.server.kerberos.keytab</name>
   <value></value>
   <description>keytab for accessing kerberized hdfs</description>
 </property>
 
 <property>
-  <name>zeppelin.hdfs.principal</name>
+  <name>zeppelin.server.kerberos.principal</name>
   <value></value>
   <description>principal for accessing kerberized hdfs</description>
 </property>

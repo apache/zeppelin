@@ -25,6 +25,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return interpreterSetting;
   }
 
-  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() {
+  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() throws IOException {
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterperterProcess for InterpreterGroup: " + getId());
       remoteInterpreterProcess = interpreterSetting.createInterpreterProcess();
@@ -112,7 +113,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
         LOGGER.info("Job " + job.getJobName() + " aborted ");
       }
 
-      interpreter.close();
+      try {
+        interpreter.close();
+      } catch (InterpreterException e) {
+        LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
+      }
       //TODO(zjffdu) move the close of schedule to Interpreter
       if (null != scheduler) {
         SchedulerFactory.singleton().removeScheduler(scheduler.getName());

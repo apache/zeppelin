@@ -82,7 +82,7 @@ public class InterpreterContextRunnerPool {
         }
       }
 
-      throw new InterpreterException("Can not run paragraph " + paragraphId + " on " + noteId);
+      throw new RuntimeException("Can not run paragraph " + paragraphId + " on " + noteId);
     }
   }
 }

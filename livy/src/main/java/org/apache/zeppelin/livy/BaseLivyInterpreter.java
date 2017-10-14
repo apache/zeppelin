@@ -41,6 +41,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -79,6 +82,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   protected boolean displayAppInfo;
   protected LivyVersion livyVersion;
   private RestTemplate restTemplate;
+  private Map<String, String> customHeaders = new HashMap<>();
 
   Set<Object> paragraphsToCancel = Collections.newSetFromMap(
       new ConcurrentHashMap<Object, Boolean>());
@@ -95,12 +99,39 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
     this.restTemplate = createRestTemplate();
+    if (!StringUtils.isBlank(property.getProperty("zeppelin.livy.http.headers"))) {
+      String[] headers = property.getProperty("zeppelin.livy.http.headers").split(";");
+      for (String header : headers) {
+        String[] splits = header.split(":", -1);
+        if (splits.length != 2) {
+          throw new RuntimeException("Invalid format of http headers: " + header +
+              ", valid http header format is HEADER_NAME:HEADER_VALUE");
+        }
+        customHeaders.put(splits[0].trim(), envSubstitute(splits[1].trim()));
+      }
+    }
+  }
+
+  private String envSubstitute(String value) {
+    String newValue = new String(value);
+    Pattern pattern = Pattern.compile("\\$\\{(.*)\\}");
+    Matcher matcher = pattern.matcher(value);
+    while (matcher.find()) {
+      String env = matcher.group(1);
+      newValue = newValue.replace("${" + env + "}", System.getenv(env));
+    }
+    return newValue;
+  }
+
+  // only for testing
+  Map<String, String> getCustomHeaders() {
+    return customHeaders;
   }
 
   public abstract String getSessionKind();
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     try {
       initLivySession();
     } catch (LivyException e) {
@@ -197,7 +228,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       throws LivyException {
     try {
       Map<String, String> conf = new HashMap<>();
-      for (Map.Entry<Object, Object> entry : property.entrySet()) {
+      for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
         if (entry.getKey().toString().startsWith("livy.spark.") &&
             !entry.getValue().toString().isEmpty())
           conf.put(entry.getKey().toString().substring(5), entry.getValue().toString());
@@ -427,15 +458,15 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
 
   private RestTemplate createRestTemplate() {
-    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
-    String principal = property.getProperty("zeppelin.livy.principal");
+    String keytabLocation = getProperty("zeppelin.livy.keytab");
+    String principal = getProperty("zeppelin.livy.principal");
     boolean isSpnegoEnabled = StringUtils.isNotEmpty(keytabLocation) &&
         StringUtils.isNotEmpty(principal);
 
     HttpClient httpClient = null;
     if (livyURL.startsWith("https:")) {
-      String keystoreFile = property.getProperty("zeppelin.livy.ssl.trustStore");
-      String password = property.getProperty("zeppelin.livy.ssl.trustStorePassword");
+      String keystoreFile = getProperty("zeppelin.livy.ssl.trustStore");
+      String password = getProperty("zeppelin.livy.ssl.trustStorePassword");
       if (StringUtils.isBlank(keystoreFile)) {
         throw new RuntimeException("No zeppelin.livy.ssl.trustStore specified for livy ssl");
       }
@@ -520,8 +551,11 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     targetURL = livyURL + targetURL;
     LOGGER.debug("Call rest api in {}, method: {}, jsonData: {}", targetURL, method, jsonData);
     HttpHeaders headers = new HttpHeaders();
-    headers.add("Content-Type", "application/json");
+    headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
     headers.add("X-Requested-By", "zeppelin");
+    for (Map.Entry<String, String> entry : customHeaders.entrySet()) {
+      headers.add(entry.getKey(), entry.getValue());
+    }
     ResponseEntity<String> response = null;
     try {
       if (method.equals("POST")) {

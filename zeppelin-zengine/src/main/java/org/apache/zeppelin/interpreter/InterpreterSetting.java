@@ -26,24 +26,29 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
+import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
+import org.apache.zeppelin.interpreter.launcher.ShellScriptLauncher;
+import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -101,7 +106,7 @@ public class InterpreterSetting {
   private List<InterpreterInfo> interpreterInfos;
 
   private List<Dependency> dependencies = new ArrayList<>();
-  private InterpreterOption option = new InterpreterOption(true);
+  private InterpreterOption option = new InterpreterOption();
 
   @SerializedName("runner")
   private InterpreterRunner interpreterRunner;
@@ -128,8 +133,10 @@ public class InterpreterSetting {
 
   private transient ZeppelinConfiguration conf = new ZeppelinConfiguration();
 
-  private transient Map<String, URLClassLoader> cleanCl =
-      Collections.synchronizedMap(new HashMap<String, URLClassLoader>());
+  // TODO(zjffdu) ShellScriptLauncher is the only launcher implemention for now. It could be other
+  // launcher in future when we have other launcher implementation. e.g. third party launcher
+  // service like livy
+  private transient InterpreterLauncher launcher;
   ///////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -241,6 +248,7 @@ public class InterpreterSetting {
   }
 
   void postProcessing() {
+//    createLauncher();
     this.status = Status.READY;
   }
 
@@ -262,6 +270,14 @@ public class InterpreterSetting {
     this.interpreterDir = o.getInterpreterDir();
     this.interpreterRunner = o.getInterpreterRunner();
     this.conf = o.getConf();
+  }
+
+  private void createLauncher() {
+    if (group.equals("spark")) {
+      this.launcher = new SparkInterpreterLauncher(this.conf);
+    } else {
+      this.launcher = new ShellScriptLauncher(this.conf);
+    }
   }
 
   public AngularObjectRegistryListener getAngularObjectRegistryListener() {
@@ -452,7 +468,9 @@ public class InterpreterSetting {
     Properties jProperties = new Properties();
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
-      jProperties.setProperty(entry.getKey(), entry.getValue().getValue().toString());
+      if (entry.getValue().getValue() != null) {
+        jProperties.setProperty(entry.getKey(), entry.getValue().getValue().toString());
+      }
     }
 
     if (!jProperties.containsKey("zeppelin.interpreter.output.limit")) {
@@ -610,13 +628,8 @@ public class InterpreterSetting {
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = null;
-      if (option.isRemote()) {
-        interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
-            info.getClassName(), user);
-      } else {
-        interpreter = createLocalInterpreter(info.getClassName());
-      }
-
+      interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
+          info.getClassName(), user);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {
@@ -628,99 +641,16 @@ public class InterpreterSetting {
     return interpreters;
   }
 
-  // Create Interpreter in ZeppelinServer for non-remote mode
-  private Interpreter createLocalInterpreter(String className)
-      throws InterpreterException {
-    LOGGER.info("Create Local Interpreter {} from {}", className, interpreterDir);
-
-    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-    try {
-
-      URLClassLoader ccl = cleanCl.get(interpreterDir);
-      if (ccl == null) {
-        // classloader fallback
-        ccl = URLClassLoader.newInstance(new URL[]{}, oldcl);
-      }
-
-      boolean separateCL = true;
-      try { // check if server's classloader has driver already.
-        Class cls = this.getClass().forName(className);
-        if (cls != null) {
-          separateCL = false;
-        }
-      } catch (Exception e) {
-        LOGGER.error("exception checking server classloader driver", e);
-      }
-
-      URLClassLoader cl;
-
-      if (separateCL == true) {
-        cl = URLClassLoader.newInstance(new URL[]{}, ccl);
-      } else {
-        cl = ccl;
-      }
-      Thread.currentThread().setContextClassLoader(cl);
-
-      Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
-      Constructor<Interpreter> constructor =
-          replClass.getConstructor(new Class[]{Properties.class});
-      Interpreter repl = constructor.newInstance(getJavaProperties());
-      repl.setClassloaderUrls(ccl.getURLs());
-      LazyOpenInterpreter intp = new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl));
-      return intp;
-    } catch (SecurityException e) {
-      throw new InterpreterException(e);
-    } catch (NoSuchMethodException e) {
-      throw new InterpreterException(e);
-    } catch (IllegalArgumentException e) {
-      throw new InterpreterException(e);
-    } catch (InstantiationException e) {
-      throw new InterpreterException(e);
-    } catch (IllegalAccessException e) {
-      throw new InterpreterException(e);
-    } catch (InvocationTargetException e) {
-      throw new InterpreterException(e);
-    } catch (ClassNotFoundException e) {
-      throw new InterpreterException(e);
-    } finally {
-      Thread.currentThread().setContextClassLoader(oldcl);
+  synchronized RemoteInterpreterProcess createInterpreterProcess() throws IOException {
+    if (launcher == null) {
+      createLauncher();
     }
-  }
-
-  RemoteInterpreterProcess createInterpreterProcess() {
-    RemoteInterpreterProcess remoteInterpreterProcess = null;
-    int connectTimeout =
-        conf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + id;
-    if (option.isExistingProcess()) {
-      // TODO(zjffdu) remove the existing process approach seems no one is using this.
-      // use the existing process
-      remoteInterpreterProcess = new RemoteInterpreterRunningProcess(
-          connectTimeout,
-          remoteInterpreterProcessListener,
-          appEventListener,
-          option.getHost(),
-          option.getPort());
-    } else {
-      // create new remote process
-      remoteInterpreterProcess = new RemoteInterpreterManagedProcess(
-          interpreterRunner != null ? interpreterRunner.getPath() :
-              conf.getInterpreterRemoteRunnerPath(), conf.getCallbackPortRange(),
-          interpreterDir, localRepoPath,
-          getEnvFromInterpreterProperty(getJavaProperties()), connectTimeout,
-          remoteInterpreterProcessListener, appEventListener, group);
-    }
-    return remoteInterpreterProcess;
-  }
-
-  private Map<String, String> getEnvFromInterpreterProperty(Properties property) {
-    Map<String, String> env = new HashMap<>();
-    for (Object key : property.keySet()) {
-      if (RemoteInterpreterUtils.isEnvString((String) key)) {
-        env.put((String) key, property.getProperty((String) key));
-      }
-    }
-    return env;
+    InterpreterLaunchContext launchContext = new
+        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, name);
+    RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
+    process.setRemoteInterpreterEventPoller(
+        new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
+    return process;
   }
 
   private List<Interpreter> getOrCreateSession(String user, String noteId) {
@@ -764,18 +694,11 @@ public class InterpreterSetting {
     return null;
   }
 
-  private ManagedInterpreterGroup createInterpreterGroup(String groupId)
-      throws InterpreterException {
+  private ManagedInterpreterGroup createInterpreterGroup(String groupId) {
     AngularObjectRegistry angularObjectRegistry;
     ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this);
-    if (option.isRemote()) {
-      angularObjectRegistry =
-          new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
-    } else {
-      angularObjectRegistry = new AngularObjectRegistry(id, angularObjectRegistryListener);
-      // TODO(moon) : create distributed resource pool for local interpreters and set
-    }
-
+    angularObjectRegistry =
+        new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
     return interpreterGroup;
   }
@@ -893,7 +816,8 @@ public class InterpreterSetting {
           );
           newProperties.put(key, property);
         } else {
-          throw new RuntimeException("Can not convert this type of property: " + value.getClass());
+          throw new RuntimeException("Can not convert this type of property: " +
+              value.getClass());
         }
       }
       return newProperties;

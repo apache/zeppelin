@@ -18,9 +18,9 @@
 package org.apache.zeppelin.notebook.utility;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Generate Tiny ID.
@@ -71,6 +71,6 @@ public class IdHashes {
   }
 
   public static String generateId() {
-    return encode(System.currentTimeMillis() + new Random().nextInt());
+    return encode(System.currentTimeMillis() + new SecureRandom().nextInt());
   }
 }
