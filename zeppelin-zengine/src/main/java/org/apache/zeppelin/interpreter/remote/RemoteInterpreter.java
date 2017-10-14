@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -54,7 +55,9 @@ import java.util.Properties;
  */
 public class RemoteInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreter.class);
-  private static final Gson gson = new Gson();
+  private static final Gson gson = new GsonBuilder()
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .create();
 
 
   private String className;
