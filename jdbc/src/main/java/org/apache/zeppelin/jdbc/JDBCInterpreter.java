@@ -175,7 +175,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
             properties.containsKey(String.format("%s.%s", keyValue[0], URL_KEY))) {
           dataSourcePropertyKeys.add(keyValue[0]);
         } else {
-          commonProperties.setProperty(keyValue[1], property.getProperty(propertyKey));
+          commonProperties.setProperty(keyValue[1], getProperty(propertyKey));
         }
       }
     }
