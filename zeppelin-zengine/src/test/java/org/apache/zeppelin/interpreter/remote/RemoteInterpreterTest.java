@@ -414,7 +414,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testReplaceContextParametersInSettingsForSharedInterpreter() throws TTransportException, IOException {
+  public void testReplaceContextParametersInSettingsForSharedInterpreter() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     String propertyName = "variable.with.replace";
     String userName = "username";
@@ -431,7 +431,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testReplaceContextParametersInSettingsForIsolatedInterpreter() throws TTransportException, IOException {
+  public void testReplaceContextParametersInSettingsForIsolatedInterpreter() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerNote(InterpreterOption.ISOLATED);
     String propertyName = "variable.with.replace";
     String userName = "username";
@@ -448,7 +448,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testReplaceContextParametersInSettingsForScopedInterpreter() throws TTransportException, IOException {
+  public void testReplaceContextParametersInSettingsForScopedInterpreter() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerNote(InterpreterOption.SCOPED);
     String propertyName = "variable.with.replace";
     String userName = "username";

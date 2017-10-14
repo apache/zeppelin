@@ -45,7 +45,7 @@ public class LazyOpenInterpreterTest {
   }
 
   @Test
-  public void testPropertyWithReplacedContextFields() {
+  public void testPropertyWithReplacedContextFields() throws InterpreterException {
     Properties p = new Properties();
     p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
             " #{authenticationInfo}");
