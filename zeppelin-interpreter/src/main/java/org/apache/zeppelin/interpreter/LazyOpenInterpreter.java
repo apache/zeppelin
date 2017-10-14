@@ -242,7 +242,7 @@ public class LazyOpenInterpreter
           }
         }
       }
-      intp.setProperty(properties);
+      intp.setProperties(properties);
     }
   }
 }
