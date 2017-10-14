@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.groovy;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.io.File;
@@ -26,10 +24,8 @@ import java.util.*;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -40,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -167,7 +162,7 @@ public class GroovyInterpreter extends Interpreter {
       //put shared bindings evaluated in this interpreter
       bindings.putAll(sharedBindings);
       //put predefined bindings
-      bindings.put("g", new GObject(log, out, this.getProperty(), contextInterpreter, bindings));
+      bindings.put("g", new GObject(log, out, this.getProperties(), contextInterpreter, bindings));
       bindings.put("out", new PrintWriter(out, true));
 
       script.run();
@@ -204,7 +199,7 @@ public class GroovyInterpreter extends Interpreter {
           Thread t = (Thread) object;
           t.dumpStack();
           t.interrupt();
-          //t.stop(); //TODO: need some way to terminate maybe through GObject..
+          //t.stop(); //TODO(dlukyanov): need some way to terminate maybe through GObject..
         } catch (Throwable t) {
           log.error("Failed to cancel script: " + t, t);
         }

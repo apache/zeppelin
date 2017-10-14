@@ -1,7 +1,7 @@
 # Apache Zeppelin
 
-**Documentation:** [User Guide](http://zeppelin.apache.org/docs/latest/index.html)<br/>
-**Mailing Lists:** [User and Dev mailing list](http://zeppelin.apache.org/community.html)<br/>
+**Documentation:** [User Guide](https://zeppelin.apache.org/docs/latest/index.html)<br/>
+**Mailing Lists:** [User and Dev mailing list](https://zeppelin.apache.org/community.html)<br/>
 **Continuous Integration:** [![Build Status](https://travis-ci.org/apache/zeppelin.svg?branch=master)](https://travis-ci.org/apache/zeppelin) <br/>
 **Contributing:** [Contribution Guide](https://zeppelin.apache.org/contribution/contributions.html)<br/>
 **Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
@@ -15,15 +15,15 @@ Core feature:
    * Built-in Apache Spark support
 
 
-To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](http://zeppelin.apache.org)
+To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](https://zeppelin.apache.org)
 
 
 ## Getting Started
 
 ### Install binary package
-Please go to [install](http://zeppelin.apache.org/docs/snapshot/install/install.html) to install Apache Zeppelin from binary package.
+Please go to [install](https://zeppelin.apache.org/docs/latest/install/install.html) to install Apache Zeppelin from binary package.
 
 ### Build from source
-Please check [Build from source](http://zeppelin.apache.org/docs/snapshot/install/build.html) to build Zeppelin from source.
+Please check [Build from source](https://zeppelin.apache.org/docs/latest/install/build.html) to build Zeppelin from source.
 
 

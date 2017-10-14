@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -55,20 +56,21 @@ public abstract class Interpreter {
    * open() is called only once
    */
   @ZeppelinApi
-  public abstract void open();
+  public abstract void open() throws InterpreterException;
 
   /**
    * Closes interpreter. You may want to free your resources up here.
    * close() is called only once
    */
   @ZeppelinApi
-  public abstract void close();
+  public abstract void close() throws InterpreterException;
 
   /**
    * Run precode if exists.
    */
   @ZeppelinApi
-  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext)
+      throws InterpreterException {
     String simpleName = this.getClass().getSimpleName();
     String precode = getProperty(String.format("zeppelin.%s.precode", simpleName));
     if (StringUtils.isNotBlank(precode)) {
@@ -83,13 +85,15 @@ public abstract class Interpreter {
    * @param st statements to run
    */
   @ZeppelinApi
-  public abstract InterpreterResult interpret(String st, InterpreterContext context);
+  public abstract InterpreterResult interpret(String st,
+                                              InterpreterContext context)
+      throws InterpreterException;
 
   /**
    * Optionally implement the canceling routine to abort interpret() method
    */
   @ZeppelinApi
-  public abstract void cancel(InterpreterContext context);
+  public abstract void cancel(InterpreterContext context) throws InterpreterException;
 
   /**
    * Dynamic form handling
@@ -99,7 +103,7 @@ public abstract class Interpreter {
    * FormType.NATIVE handles form in API
    */
   @ZeppelinApi
-  public abstract FormType getFormType();
+  public abstract FormType getFormType() throws InterpreterException;
 
   /**
    * get interpret() method running process in percentage.
@@ -107,7 +111,7 @@ public abstract class Interpreter {
    * @return number between 0-100
    */
   @ZeppelinApi
-  public abstract int getProgress(InterpreterContext context);
+  public abstract int getProgress(InterpreterContext context) throws InterpreterException;
 
   /**
    * Get completion list based on cursor position.
@@ -120,7 +124,7 @@ public abstract class Interpreter {
    */
   @ZeppelinApi
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext)  {
+      InterpreterContext interpreterContext) throws InterpreterException {
     return null;
   }
 
@@ -144,22 +148,22 @@ public abstract class Interpreter {
   public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL[] classloaderUrls;
-  protected Properties property;
-  private String userName;
+  protected Properties properties;
+  protected String userName;
 
   @ZeppelinApi
-  public Interpreter(Properties property) {
-    this.property = property;
+  public Interpreter(Properties properties) {
+    this.properties = properties;
   }
 
-  public void setProperty(Properties property) {
-    this.property = property;
+  public void setProperties(Properties properties) {
+    this.properties = properties;
   }
 
   @ZeppelinApi
-  public Properties getProperty() {
+  public Properties getProperties() {
     Properties p = new Properties();
-    p.putAll(property);
+    p.putAll(properties);
 
     RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
         getClassName());
@@ -183,11 +187,22 @@ public abstract class Interpreter {
 
   @ZeppelinApi
   public String getProperty(String key) {
-    logger.debug("key: {}, value: {}", key, getProperty().getProperty(key));
+    logger.debug("key: {}, value: {}", key, getProperties().getProperty(key));
 
-    return getProperty().getProperty(key);
+    return getProperties().getProperty(key);
   }
 
+  @ZeppelinApi
+  public String getProperty(String key, String defaultValue) {
+    logger.debug("key: {}, value: {}", key, getProperties().getProperty(key, defaultValue));
+
+    return getProperties().getProperty(key, defaultValue);
+  }
+
+  @ZeppelinApi
+  public void setProperty(String key, String value) {
+    properties.setProperty(key, value);
+  }
 
   public String getClassName() {
     return this.getClass().getName();

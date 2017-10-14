@@ -79,7 +79,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRemoteDistributedResourcePool() {
+  public void testRemoteDistributedResourcePool() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
     intp1.interpret("put key1 value1", context);
@@ -162,7 +162,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourcePoolUtils() {
+  public void testResourcePoolUtils() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
 
@@ -201,7 +201,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourceInvokeMethod() {
+  public void testResourceInvokeMethod() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
     intp1.interpret("put key1 hey", context);

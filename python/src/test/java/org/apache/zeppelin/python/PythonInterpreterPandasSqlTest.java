@@ -33,6 +33,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -107,18 +108,18 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   }
 
   @After
-  public void afterTest() throws IOException {
+  public void afterTest() throws IOException, InterpreterException {
     sql.close();
   }
 
   @Test
-  public void dependenciesAreInstalled() {
+  public void dependenciesAreInstalled() throws InterpreterException {
     InterpreterResult ret = python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
   @Test
-  public void errorMessageIfDependenciesNotInstalled() {
+  public void errorMessageIfDependenciesNotInstalled() throws InterpreterException {
     InterpreterResult ret;
     ret = sql.interpret("SELECT * from something", context);
 
@@ -128,7 +129,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   }
 
   @Test
-  public void sqlOverTestDataPrintsTable() throws IOException {
+  public void sqlOverTestDataPrintsTable() throws IOException, InterpreterException {
     InterpreterResult ret;
     // given
     //String expectedTable = "name\tage\n\nmoon\t33\n\npark\t34";
@@ -152,7 +153,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   }
 
   @Test
-  public void badSqlSyntaxFails() throws IOException {
+  public void badSqlSyntaxFails() throws IOException, InterpreterException {
     //when
     InterpreterResult ret = sql.interpret("select wrong syntax", context);
 
@@ -162,7 +163,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   }
 
   @Test
-  public void showDataFrame() throws IOException {
+  public void showDataFrame() throws IOException, InterpreterException {
     InterpreterResult ret;
     ret = python.interpret("import pandas as pd", context);
     ret = python.interpret("import numpy as np", context);
