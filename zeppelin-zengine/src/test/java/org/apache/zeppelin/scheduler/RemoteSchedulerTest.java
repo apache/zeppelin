@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -209,7 +210,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       protected boolean jobAbort() {
         if (isRunning()) {
-          intpA.cancel(context);
+          try {
+            intpA.cancel(context);
+          } catch (InterpreterException e) {
+            e.printStackTrace();
+          }
         }
         return true;
       }
@@ -259,7 +264,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       protected boolean jobAbort() {
         if (isRunning()) {
-          intpA.cancel(context);
+          try {
+            intpA.cancel(context);
+          } catch (InterpreterException e) {
+            e.printStackTrace();
+          }
         }
         return true;
       }

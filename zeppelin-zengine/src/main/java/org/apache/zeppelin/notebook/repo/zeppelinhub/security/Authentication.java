@@ -47,7 +47,6 @@ public class Authentication implements Runnable {
   // Cipher is an AES in CBC mode
   private static final String CIPHER_ALGORITHM = "AES";
   private static final String CIPHER_MODE = "AES/CBC/PKCS5PADDING";
-  private static final String KEY = "AbtEr99DxsWWbJkP";
   private static final int ivSize = 16;
 
   private static final String ZEPPELIN_CONF_ANONYMOUS_ALLOWED = "zeppelin.anonymous.allowed";
@@ -198,7 +197,7 @@ public class Authentication implements Runnable {
   private Key generateKey() {
     try {
       KeyGenerator kgen = KeyGenerator.getInstance(CIPHER_ALGORITHM);
-      kgen.init(128, new SecureRandom(toBytes(KEY)));
+      kgen.init(128, new SecureRandom());
       SecretKey secretKey = kgen.generateKey();
       byte[] enCodeFormat = secretKey.getEncoded();
       return new SecretKeySpec(enCodeFormat, CIPHER_ALGORITHM);

@@ -81,7 +81,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testSharedMode() {
+  public void testSharedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -124,7 +124,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testScopedMode() {
+  public void testScopedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -170,7 +170,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testIsolatedMode() {
+  public void testIsolatedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -217,7 +217,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testExecuteIncorrectPrecode() throws TTransportException, IOException {
+  public void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "fail test");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
@@ -228,7 +228,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testExecuteCorrectPrecode() throws TTransportException, IOException {
+  public void testExecuteCorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "1");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
@@ -239,7 +239,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
+  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.setProperty("zeppelin.interpreter.echo.fail", "true");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
@@ -254,7 +254,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testFIFOScheduler() throws InterruptedException {
+  public void testFIFOScheduler() throws InterruptedException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     // by default SleepInterpreter would use FIFOScheduler
 
@@ -268,13 +268,23 @@ public class RemoteInterpreterTest {
     Thread thread1 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     Thread thread2 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     long start = System.currentTimeMillis();
@@ -287,7 +297,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testParallelScheduler() throws InterruptedException {
+  public void testParallelScheduler() throws InterruptedException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.parallel", "true");
 
@@ -302,13 +312,23 @@ public class RemoteInterpreterTest {
     Thread thread1 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     Thread thread2 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     long start = System.currentTimeMillis();
@@ -376,7 +396,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testEnvironmentAndProperty() {
+  public void testEnvironmentAndProperty() throws InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("ENV_1", "VALUE_1");
     interpreterSetting.setProperty("property_1", "value_1");

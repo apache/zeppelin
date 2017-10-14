@@ -44,7 +44,7 @@ public class SparkInterpreterModeTest {
     }
   }
 
-  private void testInterpreterBasics() throws IOException {
+  private void testInterpreterBasics() throws IOException, InterpreterException {
     // test SparkInterpreter
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark");
@@ -75,7 +75,7 @@ public class SparkInterpreterModeTest {
   }
 
   @Test
-  public void testLocalMode() throws IOException, YarnException {
+  public void testLocalMode() throws IOException, YarnException, InterpreterException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", System.getenv("SPARK_HOME"));
@@ -94,7 +94,7 @@ public class SparkInterpreterModeTest {
   }
 
   @Test
-  public void testYarnClientMode() throws IOException, YarnException, InterruptedException {
+  public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
@@ -116,7 +116,7 @@ public class SparkInterpreterModeTest {
   }
 
   @Test
-  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException {
+  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());

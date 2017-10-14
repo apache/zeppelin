@@ -213,7 +213,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testSparkSql() throws IOException {
+  public void testSparkSql() throws IOException, InterpreterException {
     repl.interpret("case class Person(name:String, age:Int)\n", context);
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
     assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
@@ -243,7 +243,7 @@ public class SparkInterpreterTest {
 
   @Test
   public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
-    Properties intpProperty = repl.getProperty();
+    Properties intpProperty = repl.getProperties();
     SparkConf sparkConf = repl.getSparkContext().getConf();
     for (Object oKey : intpProperty.keySet()) {
       String key = (String) oKey;
@@ -256,7 +256,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void shareSingleSparkContext() throws InterruptedException, IOException {
+  public void shareSingleSparkContext() throws InterruptedException, IOException, InterpreterException {
     // create another SparkInterpreter
     SparkInterpreter repl2 = new SparkInterpreter(getSparkTestProperties(tmpDir));
     repl2.setInterpreterGroup(intpGroup);
@@ -272,7 +272,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testEnableImplicitImport() throws IOException {
+  public void testEnableImplicitImport() throws IOException, InterpreterException {
     if (getSparkVersionNumber(repl) >= 13) {
       // Set option of importing implicits to "true", and initialize new Spark repl
       Properties p = getSparkTestProperties(tmpDir);
@@ -289,7 +289,7 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testDisableImplicitImport() throws IOException {
+  public void testDisableImplicitImport() throws IOException, InterpreterException {
     if (getSparkVersionNumber(repl) >= 13) {
       // Set option of importing implicits to "false", and initialize new Spark repl
       // this test should return error status when creating DataFrame from sequence

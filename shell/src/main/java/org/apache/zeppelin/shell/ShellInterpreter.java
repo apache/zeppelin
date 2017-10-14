@@ -174,8 +174,8 @@ public class ShellInterpreter extends KerberosInterpreter {
     return false;
   }
 
-  public void createSecureConfiguration() {
-    Properties properties = getProperty();
+  public void createSecureConfiguration() throws InterpreterException {
+    Properties properties = getProperties();
     CommandLine cmdLine = CommandLine.parse(shell);
     cmdLine.addArgument("-c", false);
     String kinitCommand = String.format("kinit -k -t %s %s",

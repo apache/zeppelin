@@ -166,13 +166,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
   @Override
   public void open() {
     super.open();
-    for (String propertyKey : property.stringPropertyNames()) {
+    for (String propertyKey : properties.stringPropertyNames()) {
       logger.debug("propertyKey: {}", propertyKey);
       String[] keyValue = propertyKey.split("\\.", 2);
       if (2 == keyValue.length) {
         if (!keyValue[0].equals(COMMON_KEY) &&
-                property.containsKey(String.format("%s.%s", keyValue[0], DRIVER_KEY)) &&
-                property.containsKey(String.format("%s.%s", keyValue[0], URL_KEY))) {
+            properties.containsKey(String.format("%s.%s", keyValue[0], DRIVER_KEY)) &&
+            properties.containsKey(String.format("%s.%s", keyValue[0], URL_KEY))) {
           dataSourcePropertyKeys.add(keyValue[0]);
         } else {
           commonProperties.setProperty(keyValue[1], property.getProperty(propertyKey));
@@ -187,8 +187,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
 
   protected boolean isKerboseEnabled() {
-    if (!isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
+    if (!isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
+      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(properties);
       if (authType.equals(KERBEROS)) {
         return true;
       }
@@ -282,10 +282,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private Properties getPropertiesByKey(String propertyKey) {
     Properties prefixProperties = new Properties();
-    for (String p : property.stringPropertyNames()) {
+    for (String p : properties.stringPropertyNames()) {
       String[] keyValue = p.split("\\.", 2);
       if (2 == keyValue.length && keyValue[0].equals(propertyKey)) {
-        prefixProperties.put(keyValue[1].trim(), property.getProperty(p));
+        prefixProperties.put(keyValue[1].trim(), getProperty(p));
       }
     }
     return prefixProperties;
@@ -343,7 +343,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   private void setUserProperty(String propertyKey, InterpreterContext interpreterContext)
-      throws SQLException, IOException {
+      throws SQLException, IOException, InterpreterException {
 
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
@@ -413,18 +413,19 @@ public class JDBCInterpreter extends KerberosInterpreter {
     final Properties properties = jdbcUserConfigurations.getPropertyMap(propertyKey);
     final String url = properties.getProperty(URL_KEY);
 
-    if (isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+    if (isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
       connection = getConnectionFromPool(url, user, propertyKey, properties);
     } else {
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
+      UserGroupInformation.AuthenticationMethod authType =
+          JDBCSecurityImpl.getAuthtype(getProperties());
 
       final String connectionUrl = appendProxyUserToURL(url, user, propertyKey);
 
-      JDBCSecurityImpl.createSecureConfiguration(property, authType);
+      JDBCSecurityImpl.createSecureConfiguration(getProperties(), authType);
       switch (authType) {
         case KERBEROS:
           if (user == null || "false".equalsIgnoreCase(
-              property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
+              getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
             connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
           } else {
             if (propertiesByKey.containsKey("proxy.user.property")) {
@@ -487,7 +488,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return connectionUrl.toString();
   }
 
-  private String getPassword(Properties properties) throws IOException {
+  private String getPassword(Properties properties) throws IOException, InterpreterException {
     if (isNotEmpty(properties.getProperty(PASSWORD_KEY))) {
       return properties.getProperty(PASSWORD_KEY);
     } else if (isNotEmpty(properties.getProperty(JDBC_JCEKS_FILE))
@@ -842,7 +843,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) throws InterpreterException {
     List<InterpreterCompletion> candidates = new ArrayList<>();
     String propertyKey = getPropertyKey(buf);
     String sqlCompleterKey =

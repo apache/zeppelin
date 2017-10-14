@@ -37,6 +37,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.FIFOScheduler;
@@ -349,7 +350,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testAutoCompletion() throws SQLException, IOException {
+  public void testAutoCompletion() throws SQLException, IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");

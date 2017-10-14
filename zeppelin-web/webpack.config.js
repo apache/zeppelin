@@ -120,6 +120,7 @@ module.exports = function makeWebpackConfig () {
    * Reference: http://webpack.github.io/docs/configuration.html#devtool
    * Type of sourcemap to use per build type
    */
+  config.devtool = 'eval-source-map';
   if (isTest) {
     config.devtool = 'inline-source-map';
   } else if (isProd) {
@@ -127,7 +128,6 @@ module.exports = function makeWebpackConfig () {
   } else {
     config.devtool = 'eval-source-map';
   }
-  config.devtool = 'source-map';
 
   /**
    * Loaders
@@ -196,14 +196,6 @@ module.exports = function makeWebpackConfig () {
         }
       ]})
     }],
-    postLoaders: [
-      {
-        // COVERAGE
-        test: /\.js$/,
-        exclude: /(node_modules|bower_components|\.test\.js)/,
-        loader: 'istanbul-instrumenter'
-      }
-    ]
   };
 
   /**
@@ -249,6 +241,17 @@ module.exports = function makeWebpackConfig () {
         }
       })
     )
+  }
+  
+  if (isTest) {
+    config.module.postLoaders = [
+      {
+        // COVERAGE
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components|\.test\.js)/,
+        loader: 'istanbul-instrumenter'
+      }
+    ]
   }
 
   // Add build specific plugins
