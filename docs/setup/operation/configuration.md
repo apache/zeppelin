@@ -216,6 +216,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Save notebooks to S3 with server-side encryption enabled</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.signerOverride</h6></td>
+    <td></td>
+    <td>Optional override to control which signature algorithm should be used to sign AWS requests</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</h6></td>
     <td><h6 class="properties">zeppelin.notebook.azure.connectionString</h6></td>
     <td></td>
