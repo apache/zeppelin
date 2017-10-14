@@ -82,7 +82,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Test
-  public void testInterpreterResultOnly() {
+  public void testInterpreterResultOnly() throws InterpreterException {
     RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterResult ret = intp.interpret("SUCCESS::staticresult", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
@@ -98,7 +98,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Test
-  public void testInterpreterOutputStreamOnly() {
+  public void testInterpreterOutputStreamOnly() throws InterpreterException {
     RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterResult ret = intp.interpret("SUCCESS:streamresult:", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
@@ -110,7 +110,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Test
-  public void testInterpreterResultOutputStreamMixed() {
+  public void testInterpreterResultOutputStreamMixed() throws InterpreterException {
     RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterResult ret = intp.interpret("SUCCESS:stream:static", createInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
@@ -119,7 +119,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   }
 
   @Test
-  public void testOutputType() {
+  public void testOutputType() throws InterpreterException {
     RemoteInterpreter intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
 
     InterpreterResult ret = intp.interpret("SUCCESS:%html hello:", createInterpreterContext());

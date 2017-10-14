@@ -112,7 +112,7 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testBasicIntp() {
+  public void testBasicIntp() throws InterpreterException {
     if (getSparkVersionNumber() > 11) {
       assertEquals(InterpreterResult.Code.SUCCESS,
         pySparkInterpreter.interpret("a = 1\n", context).code());
@@ -136,7 +136,7 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testCompletion() {
+  public void testCompletion() throws InterpreterException {
     if (getSparkVersionNumber() > 11) {
       List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length(), null);
       assertTrue(completions.size() > 0);
@@ -144,7 +144,7 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testRedefinitionZeppelinContext() {
+  public void testRedefinitionZeppelinContext() throws InterpreterException {
     if (getSparkVersionNumber() > 11) {
       String redefinitionCode = "z = 1\n";
       String restoreCode = "z = __zeppelin__\n";
@@ -162,7 +162,12 @@ public class PySparkInterpreterTest {
     @Override
     public void run() {
       String code = "import time\nwhile True:\n  time.sleep(1)" ;
-      InterpreterResult ret = pySparkInterpreter.interpret(code, context);
+      InterpreterResult ret = null;
+      try {
+        ret = pySparkInterpreter.interpret(code, context);
+      } catch (InterpreterException e) {
+        e.printStackTrace();
+      }
       assertNotNull(ret);
       Pattern expectedMessage = Pattern.compile("KeyboardInterrupt");
       Matcher m = expectedMessage.matcher(ret.message().toString());
@@ -171,7 +176,7 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testCancelIntp() throws InterruptedException {
+  public void testCancelIntp() throws InterruptedException, InterpreterException {
     if (getSparkVersionNumber() > 11) {
       assertEquals(InterpreterResult.Code.SUCCESS,
         pySparkInterpreter.interpret("a = 1\n", context).code());

@@ -131,7 +131,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   public abstract String getSessionKind();
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     try {
       initLivySession();
     } catch (LivyException e) {
@@ -228,7 +228,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       throws LivyException {
     try {
       Map<String, String> conf = new HashMap<>();
-      for (Map.Entry<Object, Object> entry : property.entrySet()) {
+      for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
         if (entry.getKey().toString().startsWith("livy.spark.") &&
             !entry.getValue().toString().isEmpty())
           conf.put(entry.getKey().toString().substring(5), entry.getValue().toString());
@@ -458,15 +458,15 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
 
   private RestTemplate createRestTemplate() {
-    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
-    String principal = property.getProperty("zeppelin.livy.principal");
+    String keytabLocation = getProperty("zeppelin.livy.keytab");
+    String principal = getProperty("zeppelin.livy.principal");
     boolean isSpnegoEnabled = StringUtils.isNotEmpty(keytabLocation) &&
         StringUtils.isNotEmpty(principal);
 
     HttpClient httpClient = null;
     if (livyURL.startsWith("https:")) {
-      String keystoreFile = property.getProperty("zeppelin.livy.ssl.trustStore");
-      String password = property.getProperty("zeppelin.livy.ssl.trustStorePassword");
+      String keystoreFile = getProperty("zeppelin.livy.ssl.trustStore");
+      String password = getProperty("zeppelin.livy.ssl.trustStorePassword");
       if (StringUtils.isBlank(keystoreFile)) {
         throw new RuntimeException("No zeppelin.livy.ssl.trustStore specified for livy ssl");
       }

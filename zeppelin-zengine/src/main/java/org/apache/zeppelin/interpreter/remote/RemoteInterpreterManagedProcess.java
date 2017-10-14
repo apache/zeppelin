@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -73,30 +74,10 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
-      RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener,
       String interpreterGroupName) {
-    super(new RemoteInterpreterEventPoller(listener, appListener),
-        connectTimeout);
+    super(connectTimeout);
     this.interpreterRunner = intpRunner;
     this.portRange = portRange;
-    this.env = env;
-    this.interpreterDir = intpDir;
-    this.localRepoDir = localRepoDir;
-    this.interpreterGroupName = interpreterGroupName;
-  }
-
-  RemoteInterpreterManagedProcess(String intpRunner,
-                                  String intpDir,
-                                  String localRepoDir,
-                                  Map<String, String> env,
-                                  RemoteInterpreterEventPoller remoteInterpreterEventPoller,
-                                  int connectTimeout,
-                                  String interpreterGroupName) {
-    super(remoteInterpreterEventPoller,
-        connectTimeout);
-    this.interpreterRunner = intpRunner;
-    this.portRange = ":";
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
@@ -124,7 +105,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       callbackHost = RemoteInterpreterUtils.findAvailableHostAddress();
       callbackPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     } catch (IOException e1) {
-      throw new InterpreterException(e1);
+      throw new RuntimeException(e1);
     }
 
     logger.info("Thrift server for callback will start. Port: {}", callbackPort);
@@ -206,7 +187,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       executor.execute(cmdLine, procEnv, this);
     } catch (IOException e) {
       running.set(false);
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     try {
@@ -217,7 +198,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       }
       if (!running.get()) {
         callbackServer.stop();
-        throw new InterpreterException("Cannot run interpreter");
+        throw new RuntimeException(new String(cmdOut.toByteArray()));
       }
     } catch (InterruptedException e) {
       logger.error("Remote interpreter is not accessible");
@@ -227,7 +208,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
   public void stop() {
     // shutdown EventPoller first.
-    this.remoteInterpreterEventPoller.shutdown();
+    this.getRemoteInterpreterEventPoller().shutdown();
     if (callbackServer.isServing()) {
       callbackServer.stop();
     }
@@ -264,6 +245,31 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   public void onProcessFailed(ExecuteException e) {
     logger.info("Interpreter process failed {}", e);
     running.set(false);
+  }
+
+  @VisibleForTesting
+  public Map<String, String> getEnv() {
+    return env;
+  }
+
+  @VisibleForTesting
+  public String getLocalRepoDir() {
+    return localRepoDir;
+  }
+
+  @VisibleForTesting
+  public String getInterpreterDir() {
+    return interpreterDir;
+  }
+
+  @VisibleForTesting
+  public String getInterpreterGroupName() {
+    return interpreterGroupName;
+  }
+
+  @VisibleForTesting
+  public String getInterpreterRunner() {
+    return interpreterRunner;
   }
 
   public boolean isRunning() {
