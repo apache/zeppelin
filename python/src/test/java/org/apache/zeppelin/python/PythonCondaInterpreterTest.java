@@ -37,7 +37,7 @@ public class PythonCondaInterpreterTest {
   private PythonInterpreter python;
 
   @Before
-  public void setUp() {
+  public void setUp() throws InterpreterException {
     conda = spy(new PythonCondaInterpreter(new Properties()));
     python = mock(PythonInterpreter.class);
 
@@ -57,7 +57,7 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testListEnv() throws IOException, InterruptedException {
+  public void testListEnv() throws IOException, InterruptedException, InterpreterException {
     setMockCondaEnvList();
 
     // list available env
@@ -72,23 +72,25 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testActivateEnv() throws IOException, InterruptedException {
+  public void testActivateEnv() throws IOException, InterruptedException, InterpreterException {
     setMockCondaEnvList();
-
+    String envname = "env1";
     InterpreterContext context = getInterpreterContext();
-    conda.interpret("activate env1", context);
+    conda.interpret("activate " + envname, context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand("/path1/bin/python");
+    assertTrue(envname.equals(conda.getCurrentCondaEnvName()));
   }
 
   @Test
-  public void testDeactivate() {
+  public void testDeactivate() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     conda.interpret("deactivate", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
     verify(python).setPythonCommand("python");
+    assertTrue(conda.getCurrentCondaEnvName().isEmpty());
   }
 
   @Test

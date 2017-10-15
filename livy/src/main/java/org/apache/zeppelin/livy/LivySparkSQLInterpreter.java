@@ -59,7 +59,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     this.sparkInterpreter = getSparkInterpreter();
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
@@ -93,7 +93,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     }
   }
 
-  private LivySparkInterpreter getSparkInterpreter() {
+  private LivySparkInterpreter getSparkInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     LivySparkInterpreter spark = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());

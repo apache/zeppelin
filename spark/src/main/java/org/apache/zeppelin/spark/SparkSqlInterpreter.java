@@ -59,7 +59,7 @@ public class SparkSqlInterpreter extends Interpreter {
     this.maxResult = Integer.parseInt(getProperty(MAX_RESULTS));
   }
 
-  private SparkInterpreter getSparkInterpreter() {
+  private SparkInterpreter getSparkInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
@@ -86,7 +86,8 @@ public class SparkSqlInterpreter extends Interpreter {
   public void close() {}
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     SQLContext sqlc = null;
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
 
@@ -134,7 +135,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     SQLContext sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
@@ -149,7 +150,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     return sparkInterpreter.getProgress(context);
   }

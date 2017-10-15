@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -171,7 +172,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
 
     @Test
-    public void sparkRTest() throws IOException {
+    public void sparkRTest() throws IOException, InterpreterException {
       // create new note
       Note note = ZeppelinServer.notebook.createNote(anonymous);
       int sparkVersion = getSparkVersionNumber(note);
@@ -426,7 +427,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
 
     @Test
-    public void pySparkDepLoaderTest() throws IOException {
+    public void pySparkDepLoaderTest() throws IOException, InterpreterException {
         // create new note
         Note note = ZeppelinServer.notebook.createNote(anonymous);
         int sparkVersionNumber = getSparkVersionNumber(note);

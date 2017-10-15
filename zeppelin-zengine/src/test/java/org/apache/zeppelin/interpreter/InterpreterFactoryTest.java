@@ -52,10 +52,10 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
   }
 
-  @Test(expected = InterpreterException.class)
+  @Test
   public void testUnknownRepl1() throws IOException {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl");
+    assertNull(interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl"));
   }
 
   @Test

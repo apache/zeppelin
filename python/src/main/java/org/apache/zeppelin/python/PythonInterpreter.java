@@ -57,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import py4j.GatewayServer;
-import py4j.commands.Command;
 
 /**
  * Python interpreter for Zeppelin.
@@ -101,7 +100,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       File scriptFile = File.createTempFile("zeppelin_python-", ".py", new File("/tmp"));
       scriptPath = scriptFile.getAbsolutePath();
     } catch (IOException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -116,7 +115,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return path;
   }
 
-  private void createPythonScript() {
+  private void createPythonScript() throws InterpreterException {
     File out = new File(scriptPath);
 
     if (out.exists() && out.isDirectory()) {
@@ -131,7 +130,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return scriptPath;
   }
 
-  private void copyFile(File out, String sourceFile) {
+  private void copyFile(File out, String sourceFile) throws InterpreterException {
     ClassLoader classLoader = getClass().getClassLoader();
     try {
       FileOutputStream outStream = new FileOutputStream(out);
@@ -144,7 +143,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
-  private void createGatewayServerAndStartScript() throws UnknownHostException {
+  private void createGatewayServerAndStartScript()
+      throws UnknownHostException, InterpreterException {
     createPythonScript();
     if (System.getenv("ZEPPELIN_HOME") != null) {
       py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator + ZEPPELIN_PY4JPATH;
@@ -219,11 +219,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     // try IPythonInterpreter first. If it is not available, we will fallback to the original
     // python interpreter implementation.
     iPythonInterpreter = getIPythonInterpreter();
-    if (getProperty().getProperty("zeppelin.python.useIPython", "true").equals("true") &&
+    if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
       iPythonInterpreter.checkIPythonPrerequisite()) {
       try {
         iPythonInterpreter.open();
@@ -369,7 +369,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter)
+      throws InterpreterException {
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.interpret(cmd, contextInterpreter);
     }
@@ -551,7 +552,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       bootstrapCode += line + "\n";
     }
 
-    interpret(bootstrapCode, context);
+    try {
+      interpret(bootstrapCode, context);
+    } catch (InterpreterException e) {
+      throw new IOException(e);
+    }
   }
 
   public GUI getGui() {

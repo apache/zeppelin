@@ -69,7 +69,7 @@ public class ScaldingInterpreter extends Interpreter {
   @Override
   public void open() {
     numOpenInstances = numOpenInstances + 1;
-    String maxOpenInstancesStr = property.getProperty(MAX_OPEN_INSTANCES,
+    String maxOpenInstancesStr = getProperty(MAX_OPEN_INSTANCES,
             MAX_OPEN_INSTANCES_DEFAULT);
     int maxOpenInstances = 50;
     try {
@@ -83,8 +83,8 @@ public class ScaldingInterpreter extends Interpreter {
       return;
     }
     logger.info("Opening instance {}", numOpenInstances);
-    logger.info("property: {}", property);
-    String argsString = property.getProperty(ARGS_STRING, ARGS_STRING_DEFAULT);
+    logger.info("property: {}", getProperties());
+    String argsString = getProperty(ARGS_STRING, ARGS_STRING_DEFAULT);
     String[] args;
     if (argsString == null) {
       args = new String[0];
@@ -121,7 +121,7 @@ public class ScaldingInterpreter extends Interpreter {
       return new InterpreterResult(Code.SUCCESS);
     }
     InterpreterResult interpreterResult = new InterpreterResult(Code.ERROR);
-    if (property.getProperty(ARGS_STRING).contains("hdfs")) {
+    if (getProperty(ARGS_STRING).contains("hdfs")) {
       UserGroupInformation ugi = null;
       try {
         ugi = UserGroupInformation.createProxyUser(user, UserGroupInformation.getLoginUser());

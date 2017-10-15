@@ -33,6 +33,6 @@ public class RemoteInterpreterContextRunner extends InterpreterContextRunner {
   public void run() {
     // this class should be used only for gson deserialize abstract class
     // code should not reach here
-    throw new InterpreterException("Assert");
+    throw new RuntimeException("Assert");
   }
 }
