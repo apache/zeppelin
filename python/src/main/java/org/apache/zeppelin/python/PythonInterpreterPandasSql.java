@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
@@ -42,7 +43,7 @@ public class PythonInterpreterPandasSql extends Interpreter {
     super(property);
   }
 
-  PythonInterpreter getPythonInterpreter() {
+  PythonInterpreter getPythonInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
@@ -62,7 +63,7 @@ public class PythonInterpreterPandasSql extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     LOG.info("Open Python SQL interpreter instance: {}", this.toString());
 
     try {
@@ -76,14 +77,15 @@ public class PythonInterpreterPandasSql extends Interpreter {
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     LOG.info("Close Python SQL interpreter instance: {}", this.toString());
     Interpreter python = getPythonInterpreter();
     python.close();
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     LOG.info("Running SQL query: '{}' over Pandas DataFrame", st);
     Interpreter python = getPythonInterpreter();
 

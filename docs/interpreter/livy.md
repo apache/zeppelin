@@ -144,7 +144,12 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>zeppelin.livy.ssl.trustStorePassword</td>
     <td></td>
     <td>password for trustStore file. Used when livy ssl is enabled</td>
-  </tr>  
+  </tr>
+  <tr>
+    <td>zeppelin.livy.http.headers</td>
+    <td>key_1: value_1; key_2: value_2</td>
+    <td>custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>
+  </tr>
 </table>
 
 **We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**

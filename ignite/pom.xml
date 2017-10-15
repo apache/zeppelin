@@ -20,10 +20,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>zeppelin</artifactId>
+    <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.8.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../interpreter-parent</relativePath>
   </parent>
 
   <artifactId>zeppelin-ignite_2.10</artifactId>
@@ -32,7 +32,8 @@
   <name>Zeppelin: Apache Ignite interpreter</name>
 
   <properties>
-    <ignite.version>2.1.0</ignite.version>
+    <interpreter.name>ignite</interpreter.name>
+    <ignite.version>2.2.0</ignite.version>
   </properties>
 
   <dependencies>
@@ -106,55 +107,12 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution> 
-            <id>enforce</id> 
-            <phase>none</phase> 
-          </execution>
-        </executions>
       </plugin>
-
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/ignite</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-artifact</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/ignite</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>${project.packaging}</type>
-                </artifactItem>
-              </artifactItems>              
-            </configuration>
-          </execution>
-        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

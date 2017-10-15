@@ -86,11 +86,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       File scriptFile = File.createTempFile("zeppelin_pyspark-", ".py");
       scriptPath = scriptFile.getAbsolutePath();
     } catch (IOException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
   }
 
-  private void createPythonScript() {
+  private void createPythonScript() throws InterpreterException {
     ClassLoader classLoader = getClass().getClassLoader();
     File out = new File(scriptPath);
 
@@ -112,10 +112,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     // try IPySparkInterpreter first
     iPySparkInterpreter = getIPySparkInterpreter();
-    if (property.getProperty("zeppelin.spark.useIPython", "true").equals("true") &&
+    if (getProperty("zeppelin.pyspark.useIPython", "true").equals("true") &&
         iPySparkInterpreter.checkIPythonPrerequisite()) {
       try {
         iPySparkInterpreter.open();
@@ -132,8 +132,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
     iPySparkInterpreter = null;
-
-    if (property.getProperty("zeppelin.spark.useIPython", "true").equals("true")) {
+    if (getProperty("zeppelin.pyspark.useIPython", "true").equals("true")) {
       // don't print it when it is in testing, just for easy output check in test.
       try {
         InterpreterContext.get().out.write(("IPython is not available, " +
@@ -202,13 +201,18 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  private Map setupPySparkEnv() throws IOException{
+  private Map setupPySparkEnv() throws IOException, InterpreterException {
     Map env = EnvironmentUtils.getProcEnvironment();
 
-    if (!env.containsKey("PYTHONPATH")) {
-      SparkConf conf = getSparkConf();
-      env.put("PYTHONPATH", conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
-              ":../interpreter/lib/python");
+    // only set PYTHONPATH in local or yarn-client mode.
+    // yarn-cluster will setup PYTHONPATH automatically.
+    SparkConf conf = getSparkConf();
+    if (!conf.get("spark.submit.deployMode", "client").equals("cluster")) {
+      if (!env.containsKey("PYTHONPATH")) {
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+      } else {
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+      }
     }
 
     // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
@@ -223,7 +227,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
-    LOGGER.debug("PYTHONPATH: " + env.get("PYTHONPATH"));
+    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
+
+    // set PYSPARK_PYTHON
+    if (getSparkConf().contains("spark.pyspark.python")) {
+      env.put("PYSPARK_PYTHON", getSparkConf().get("spark.pyspark.python"));
+    }
     return env;
   }
 
@@ -241,7 +250,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return pythonExec;
   }
 
-  private void createGatewayServerAndStartScript() {
+  private void createGatewayServerAndStartScript() throws InterpreterException {
     // create python script
     createPythonScript();
 
@@ -250,7 +259,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     gatewayServer = new GatewayServer(this, port);
     gatewayServer.start();
 
-    String pythonExec = getPythonExec(property);
+    String pythonExec = getPythonExec(getProperties());
+    LOGGER.info("pythonExec: " + pythonExec);
     CommandLine cmd = CommandLine.parse(pythonExec);
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
@@ -289,7 +299,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  private int findRandomOpenPortOnAllLocalInterfaces() {
+  private int findRandomOpenPortOnAllLocalInterfaces() throws InterpreterException {
     int port;
     try (ServerSocket socket = new ServerSocket(0);) {
       port = socket.getLocalPort();
@@ -388,7 +398,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     sparkInterpreter.populateSparkWebUrl(context);
     if (sparkInterpreter.isUnsupportedSparkVersion()) {
@@ -494,7 +505,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     if (iPySparkInterpreter != null) {
       iPySparkInterpreter.cancel(context);
       return;
@@ -514,7 +525,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     if (iPySparkInterpreter != null) {
       return iPySparkInterpreter.getProgress(context);
     }
@@ -525,7 +536,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) throws InterpreterException {
     if (iPySparkInterpreter != null) {
       return iPySparkInterpreter.completion(buf, cursor, interpreterContext);
     }
@@ -626,7 +637,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
 
-  private SparkInterpreter getSparkInterpreter() {
+  private SparkInterpreter getSparkInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
@@ -660,7 +671,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return iPySpark;
   }
 
-  public SparkZeppelinContext getZeppelinContext() {
+  public SparkZeppelinContext getZeppelinContext() throws InterpreterException {
     SparkInterpreter sparkIntp = getSparkInterpreter();
     if (sparkIntp != null) {
       return getSparkInterpreter().getZeppelinContext();
@@ -669,7 +680,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public JavaSparkContext getJavaSparkContext() {
+  public JavaSparkContext getJavaSparkContext() throws InterpreterException {
     SparkInterpreter intp = getSparkInterpreter();
     if (intp == null) {
       return null;
@@ -678,7 +689,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public Object getSparkSession() {
+  public Object getSparkSession() throws InterpreterException {
     SparkInterpreter intp = getSparkInterpreter();
     if (intp == null) {
       return null;
@@ -687,7 +698,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public SparkConf getSparkConf() {
+  public SparkConf getSparkConf() throws InterpreterException {
     JavaSparkContext sc = getJavaSparkContext();
     if (sc == null) {
       return null;
@@ -696,7 +707,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public SQLContext getSQLContext() {
+  public SQLContext getSQLContext() throws InterpreterException {
     SparkInterpreter intp = getSparkInterpreter();
     if (intp == null) {
       return null;

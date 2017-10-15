@@ -143,7 +143,13 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
     fi
     unset PYSPARKPATH
+    export SPARK_CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
+  fi
 
+  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+    ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+  else
     # autodetect HADOOP_CONF_HOME by heuristic
     if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
       if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
@@ -152,13 +158,8 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
         export HADOOP_CONF_DIR="/etc/hadoop/conf"
       fi
     fi
-
-    if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-      ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
-    fi
-
-    export SPARK_CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
   fi
+
 elif [[ "${INTERPRETER_ID}" == "hbase" ]]; then
   if [[ -n "${HBASE_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HBASE_CONF_DIR}"

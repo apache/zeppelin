@@ -21,23 +21,23 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class HdfsNotebookRepoTest {
+public class FileSystemNotebookRepoTest {
 
   private ZeppelinConfiguration zConf;
   private Configuration hadoopConf;
   private FileSystem fs;
-  private HdfsNotebookRepo hdfsNotebookRepo;
+  private FileSystemNotebookRepo hdfsNotebookRepo;
   private String notebookDir;
   private AuthenticationInfo authInfo = AuthenticationInfo.ANONYMOUS;
 
   @Before
   public void setUp() throws IOException {
-    notebookDir = Files.createTempDirectory("HdfsNotebookRepoTest").toFile().getAbsolutePath();
+    notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
     zConf = new ZeppelinConfiguration();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
     hadoopConf = new Configuration();
     fs = FileSystem.get(hadoopConf);
-    hdfsNotebookRepo = new HdfsNotebookRepo(zConf);
+    hdfsNotebookRepo = new FileSystemNotebookRepo(zConf);
   }
 
   @After

@@ -35,7 +35,7 @@ else:
     import queue as queue
 
 
-TIMEOUT = 30
+TIMEOUT = 60*60*24*365*100  # 100 years
 
 class IPython(ipython_pb2_grpc.IPythonServicer):
 
@@ -50,7 +50,8 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         self._status = ipython_pb2.RUNNING
 
     def execute(self, request, context):
-        print("execute code: " + request.code)
+        print("execute code:\n")
+        print(request.code)
         sys.stdout.flush()
         stdout_queue = queue.Queue(maxsize = 10)
         stderr_queue = queue.Queue(maxsize = 10)

@@ -17,17 +17,29 @@
 package org.apache.zeppelin.security;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import sun.security.acl.PrincipalImpl;
 
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.net.InetAddress;
 
-
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(org.apache.shiro.SecurityUtils.class)
 public class SecurityUtilsTest {
+
+  @Mock
+  org.apache.shiro.subject.Subject subject;
 
   @Test
   public void isInvalid() throws URISyntaxException, UnknownHostException {
@@ -86,5 +98,18 @@ public class SecurityUtilsTest {
   public void notAURIOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertFalse(SecurityUtils.isValidOrigin("test123",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
+  }
+
+
+  @Test
+  public void canGetPrincipalName()  {
+    String expectedName = "java.security.Principal.getName()";
+    SecurityUtils.setIsEnabled(true);
+    PowerMockito.mockStatic(org.apache.shiro.SecurityUtils.class);
+    when(org.apache.shiro.SecurityUtils.getSubject()).thenReturn(subject);
+    when(subject.isAuthenticated()).thenReturn(true);
+    when(subject.getPrincipal()).thenReturn(new PrincipalImpl(expectedName));
+
+    assertEquals(expectedName, SecurityUtils.getPrincipal());
   }
 }
