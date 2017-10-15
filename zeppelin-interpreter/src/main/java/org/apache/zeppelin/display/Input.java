@@ -109,13 +109,13 @@ public class Input<T> implements Serializable {
     }
     if (defaultValue instanceof Object[]) {
       if (defaultValue != null ?
-        !Arrays.equals((Object[])defaultValue, (Object[])input.defaultValue)
-        : input.defaultValue != null) {
+          !Arrays.equals((Object[])defaultValue, (Object[])input.defaultValue)
+          : input.defaultValue != null) {
         return false;
       }
-    } else if (defaultValue != null ? !defaultValue.equals(input.defaultValue)
-        : input.defaultValue != null) {
-          return false;
+    } else if (defaultValue != null ?
+        !defaultValue.equals(input.defaultValue) : input.defaultValue != null) {
+      return false;
     }
     return argument != null ? argument.equals(input.argument) : input.argument == null;
 
