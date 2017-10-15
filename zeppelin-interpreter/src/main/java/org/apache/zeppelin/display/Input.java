@@ -109,7 +109,7 @@ public class Input<T> implements Serializable {
     }
     if (defaultValue instanceof Object[]) {
       if (defaultValue != null ?
-          !Arrays.equals((Object[])defaultValue, (Object[])input.defaultValue)
+          !Arrays.equals((Object[]) defaultValue, (Object[]) input.defaultValue)
           : input.defaultValue != null) {
         return false;
       }
