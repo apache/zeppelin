@@ -123,7 +123,7 @@ public class InterpreterRestApi {
               request.getOption(), request.getProperties());
       logger.info("new setting created with {}", interpreterSetting.getId());
       return new JsonResponse<>(Status.OK, "", interpreterSetting).build();
-    } catch (InterpreterException | IOException e) {
+    } catch (IOException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
           .build();

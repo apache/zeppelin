@@ -529,8 +529,13 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
 
     if (!graphMode) { graphMode = 'table' }
 
-    const builtInViz = builtInVisualizations[graphMode]
-    if (!builtInViz) { return }
+    let builtInViz = builtInVisualizations[graphMode]
+    if (!builtInViz) {
+      /** helium package is not available, fallback to table vis */
+      graphMode = 'table'
+      $scope.graphMode = graphMode /** html depends on this scope value */
+      builtInViz = builtInVisualizations[graphMode]
+    }
 
     // deactive previsouly active visualization
     for (let t in builtInVisualizations) {

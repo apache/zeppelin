@@ -77,7 +77,7 @@ public class InterpreterFactory {
           return interpreter;
         }
       }
-      throw new InterpreterException(replName + " interpreter not found");
+      return null;
 
     } else {
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)

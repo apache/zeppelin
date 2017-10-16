@@ -21,6 +21,7 @@ package org.apache.zeppelin.pig;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
@@ -48,7 +49,7 @@ public class PigQueryInterpreterTest {
   private InterpreterContext context;
 
   @Before
-  public void setUp() {
+  public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     properties.put("zeppelin.pig.execType", "local");
     properties.put("zeppelin.pig.maxResult", "20");

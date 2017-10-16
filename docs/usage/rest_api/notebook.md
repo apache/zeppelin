@@ -753,6 +753,59 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   </table>
 
 <br/>
+
+### Update paragraph
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method update paragraph contents using given id, e.g. <code>{"text": "hello"}</code>
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Bad Request code</td>
+      <td>400</td>
+    </tr>
+    <tr>
+      <td>Forbidden code</td>
+      <td>403</td>
+    </tr>
+    <tr>
+      <td>Not Found code</td>
+      <td>404</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td>500</td>
+    </tr>
+    <tr>
+      <td>sample JSON input</td>
+      <td><pre>
+{
+  "title": "Hello world",
+  "text": "println(\"hello world\")"
+}</pre></td>
+    </tr>
+    <tr>
+      <td>sample JSON response</td>
+      <td><pre>
+{
+  "status": "OK",
+  "message": ""
+  }
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
 ### Update paragraph configuration
   <table class="table-configuration">
     <col width="200">

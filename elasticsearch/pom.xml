@@ -20,10 +20,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>zeppelin</artifactId>
+    <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.8.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../interpreter-parent</relativePath>
   </parent>
 
   <artifactId>zeppelin-elasticsearch</artifactId>
@@ -32,6 +32,7 @@
   <name>Zeppelin: Elasticsearch interpreter</name>
 
   <properties>
+    <interpreter.name>elasticsearch</interpreter.name>
     <elasticsearch.version>2.4.3</elasticsearch.version>
     <httpasyncclient.version>4.0.2</httpasyncclient.version>
     <guava.version>18.0</guava.version>
@@ -93,54 +94,12 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution> 
-            <id>enforce</id> 
-            <phase>none</phase> 
-          </execution>
-        </executions>
       </plugin>
-
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/elasticsearch</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-artifact</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/elasticsearch</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>${project.packaging}</type>
-                </artifactItem>
-              </artifactItems>              
-            </configuration>
-          </execution>
-        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

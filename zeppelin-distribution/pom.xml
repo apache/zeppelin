@@ -75,13 +75,13 @@
 
   <dependencies>
     <dependency>
-      <artifactId>zeppelin-server</artifactId>
       <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-server</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <artifactId>zeppelin-web</artifactId>
       <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-web</artifactId>
       <version>${project.version}</version>
       <type>war</type>
     </dependency>

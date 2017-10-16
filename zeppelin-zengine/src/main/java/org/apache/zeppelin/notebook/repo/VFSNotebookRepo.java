@@ -218,6 +218,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
+    LOG.info("Saving note:" + note.getId());
     String json = note.toJson();
 
     FileObject rootDir = getRootDir();
