@@ -286,6 +286,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     } else {
       envs.put("PYTHONPATH", additionalPythonPath);
     }
+    LOGGER.info("PYTHONPATH:" + envs.get("PYTHONPATH"));
     return envs;
   }
 
