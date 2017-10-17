@@ -123,6 +123,10 @@ public abstract class BaseZeppelinContext {
     this.gui = o;
   }
 
+  public GUI getGui() {
+    return gui;
+  }
+
   private void restartInterpreter() {
   }
 
@@ -164,7 +168,7 @@ public abstract class BaseZeppelinContext {
         interpreterContext.out.write(o.toString());
       }
     } catch (IOException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -225,14 +229,14 @@ public abstract class BaseZeppelinContext {
   public void run(String noteId, String paragraphId, InterpreterContext context,
                   boolean checkCurrentParagraph) {
     if (paragraphId.equals(context.getParagraphId()) && checkCurrentParagraph) {
-      throw new InterpreterException("Can not run current Paragraph");
+      throw new RuntimeException("Can not run current Paragraph");
     }
 
     List<InterpreterContextRunner> runners =
         getInterpreterContextRunner(noteId, paragraphId, context);
 
     if (runners.size() <= 0) {
-      throw new InterpreterException("Paragraph " + paragraphId + " not found " + runners.size());
+      throw new RuntimeException("Paragraph " + paragraphId + " not found " + runners.size());
     }
 
     for (InterpreterContextRunner r : runners) {
@@ -251,7 +255,7 @@ public abstract class BaseZeppelinContext {
     List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
 
     if (runners.size() <= 0) {
-      throw new InterpreterException("Note " + noteId + " not found " + runners.size());
+      throw new RuntimeException("Note " + noteId + " not found " + runners.size());
     }
 
     for (InterpreterContextRunner r : runners) {
@@ -342,12 +346,12 @@ public abstract class BaseZeppelinContext {
                   boolean checkCurrentParagraph) {
     List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
     if (idx >= runners.size()) {
-      throw new InterpreterException("Index out of bound");
+      throw new RuntimeException("Index out of bound");
     }
 
     InterpreterContextRunner runner = runners.get(idx);
     if (runner.getParagraphId().equals(context.getParagraphId()) && checkCurrentParagraph) {
-      throw new InterpreterException("Can not run current Paragraph: " + runner.getParagraphId());
+      throw new RuntimeException("Can not run current Paragraph: " + runner.getParagraphId());
     }
 
     runner.run();
@@ -373,7 +377,7 @@ public abstract class BaseZeppelinContext {
         Integer idx = (Integer) idOrIdx;
         run(noteId, idx, context);
       } else {
-        throw new InterpreterException("Paragraph " + idOrIdx + " not found");
+        throw new RuntimeException("Paragraph " + idOrIdx + " not found");
       }
     }
   }

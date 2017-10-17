@@ -17,35 +17,56 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.collect.Maps;
-import com.google.common.base.Strings;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.security.SecureRandom;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.helium.HeliumPackage;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.*;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 
 /**
  * Paragraph is a representation of an execution unit.
@@ -70,10 +91,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
   // see ZEPPELIN-212
-  Object results;
+  volatile Object results;
 
   // For backward compatibility of note.json format after ZEPPELIN-212
-  Object result;
+  volatile Object result;
   private Map<String, ParagraphRuntimeInfo> runtimeInfos;
 
   /**
@@ -118,8 +139,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_" + new Random(System.currentTimeMillis())
-        .nextInt();
+    return "paragraph_" + System.currentTimeMillis() + "_" + new SecureRandom().nextInt();
   }
 
   public Map<String, Paragraph> getUserParagraphMap() {
@@ -134,7 +154,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   @Override
-  public void setResult(Object results) {
+  public synchronized void setResult(Object results) {
     this.results = results;
   }
 
@@ -204,7 +224,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(text);
+    return getRequiredReplName(text != null ? text.trim() : text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -212,15 +232,14 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       return null;
     }
 
-    String trimmed = text.trim();
-    if (!trimmed.startsWith("%")) {
+    if (!text.startsWith("%")) {
       return null;
     }
 
     // get script head
     int scriptHeadIndex = 0;
-    for (int i = 0; i < trimmed.length(); i++) {
-      char ch = trimmed.charAt(i);
+    for (int i = 0; i < text.length(); i++) {
+      char ch = text.charAt(i);
       if (Character.isWhitespace(ch) || ch == '(' || ch == '\n') {
         break;
       }
@@ -247,11 +266,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       return text;
     }
 
-    String trimmed = text.trim();
-    if (magic.length() + 1 >= trimmed.length()) {
+    if (magic.length() + 1 >= text.length()) {
       return "";
     }
-    return trimmed.substring(magic.length() + 1).trim();
+    return text.substring(magic.length() + 1).trim();
   }
 
   public Interpreter getRepl(String name) {
@@ -288,22 +306,35 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return getInterpreterCompletion();
       }
     }
+    String trimmedBuffer = buffer != null ? buffer.trim() : null;
+    cursor = calculateCursorPosition(buffer, trimmedBuffer, cursor);
 
-    String replName = getRequiredReplName(buffer);
-    if (replName != null && cursor > replName.length()) {
-      cursor -= replName.length() + 1;
-    }
+    String replName = getRequiredReplName(trimmedBuffer);
 
-    String body = getScriptBody(buffer);
-    Interpreter repl = getRepl(replName);
-    if (repl == null) {
-      return null;
-    }
-
+    String body = getScriptBody(trimmedBuffer);
     InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
 
-    List completion = repl.completion(body, cursor, interpreterContext);
-    return completion;
+    try {
+      Interpreter repl = getRepl(replName);
+      return repl.completion(body, cursor, interpreterContext);
+    } catch (InterpreterException e) {
+      throw new RuntimeException("Fail to get completion", e);
+    }
+  }
+
+  public int calculateCursorPosition(String buffer, String trimmedBuffer, int cursor) {
+    int countWhitespacesAtStart = buffer.indexOf(trimmedBuffer);
+    if (countWhitespacesAtStart > 0) {
+      cursor -= countWhitespacesAtStart;
+    }
+
+    String replName = getRequiredReplName(trimmedBuffer);
+    if (replName != null && cursor > replName.length()) {
+      String body = trimmedBuffer.substring(replName.length() + 1);
+      cursor -= replName.length() + 1 + body.indexOf(body.trim());
+    }
+
+    return cursor;
   }
 
   public void setInterpreterFactory(InterpreterFactory factory) {
@@ -319,7 +350,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   @Override
-  public Object getReturn() {
+  public synchronized Object getReturn() {
     return results;
   }
 
@@ -330,11 +361,15 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   @Override
   public int progress() {
     String replName = getRequiredReplName();
-    Interpreter repl = getRepl(replName);
-    if (repl != null) {
+
+    try {
+      Interpreter repl = getRepl(replName);
+      if (repl == null) {
+        return 0;
+      }
       return repl.getProgress(getInterpreterContext(null));
-    } else {
-      return 0;
+    } catch (InterpreterException e) {
+      throw new RuntimeException("Fail to get progress", e);
     }
   }
 
@@ -366,6 +401,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       logger.error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
     }
+    //TODO(zjffdu) check interpreter setting status in interpreter setting itself
     InterpreterSetting intp = getInterpreterSettingById(repl.getInterpreterGroup().getId());
     while (intp.getStatus().equals(
         org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
@@ -461,10 +497,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
     if (repl == null) {
-      // when interpreters are already destroyed
       return true;
     }
-
     Scheduler scheduler = repl.getScheduler();
     if (scheduler == null) {
       return true;
@@ -474,7 +508,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      repl.cancel(getInterpreterContextWithoutRunner(null));
+      try {
+        repl.cancel(getInterpreterContextWithoutRunner(null));
+      } catch (InterpreterException e) {
+        throw new RuntimeException(e);
+      }
     }
     return true;
   }
@@ -525,8 +563,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (!interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup =
           interpreterSettingManager.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
+      registry = intpGroup.getOrCreateInterpreterGroup(getUser(), note.getId())
+          .getAngularObjectRegistry();
+      resourcePool = intpGroup.getOrCreateInterpreterGroup(getUser(), note.getId())
+          .getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<>();
@@ -556,8 +596,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (!interpreterSettingManager.getInterpreterSettings(note.getId()).isEmpty()) {
       InterpreterSetting intpGroup =
           interpreterSettingManager.getInterpreterSettings(note.getId()).get(0);
-      registry = intpGroup.getInterpreterGroup(getUser(), note.getId()).getAngularObjectRegistry();
-      resourcePool = intpGroup.getInterpreterGroup(getUser(), note.getId()).getResourcePool();
+      registry = intpGroup.getOrCreateInterpreterGroup(getUser(), note.getId())
+          .getAngularObjectRegistry();
+      resourcePool = intpGroup.getOrCreateInterpreterGroup(getUser(), note.getId())
+          .getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<>();
@@ -701,12 +743,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   private boolean isValidInterpreter(String replName) {
-    try {
-      return factory.getInterpreter(user, note.getId(), replName) != null;
-    } catch (InterpreterException e) {
-      // ignore this exception, it would be recaught when running paragraph.
-      return false;
-    }
+    return factory.getInterpreter(user, note.getId(), replName) != null;
   }
 
   public void updateRuntimeInfos(String label, String tooltip, Map<String, String> infos,

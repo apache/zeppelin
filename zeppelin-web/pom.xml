@@ -42,6 +42,11 @@
     <web.e2e.enabled>false</web.e2e.enabled>
     <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!--plugin versions-->
+    <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
+    <plugin.frontend.npmDownloadRoot>http://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
+    <plugin.frontend.yarnDownloadRoot>https://github.com/yarnpkg/yarn/releases/download/</plugin.frontend.yarnDownloadRoot>
   </properties>
 
   <build>
@@ -58,7 +63,13 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>${plugin.frontned.version}</version>
+        <version>${plugin.frontend.version}</version>
+        <configuration>
+          <nodeDownloadRoot>${plugin.frontend.nodeDownloadRoot}</nodeDownloadRoot>
+          <npmDownloadRoot>${plugin.frontend.npmDownloadRoot}</npmDownloadRoot>
+          <yarnDownloadRoot>${plugin.frontend.yarnDownloadRoot}</yarnDownloadRoot>
+        </configuration>
+
         <executions>
 
           <execution>

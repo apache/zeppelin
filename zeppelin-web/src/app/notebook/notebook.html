@@ -89,13 +89,19 @@ limitations under the License.
           <select id="selectOwners" multiple="multiple">
             <option is-select2="false" ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
           </select>
-          Owners can change permissions,read and write the note.
+          Owners can change permissions,read, run and write the note.
         </p>
         <p><span class="writers">Writers </span>
           <select id="selectWriters" multiple="multiple">
             <option is-select2="false" ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
           </select>
-            Writers can read and write the note.
+            Writers can read, run and write the note.
+        </p>
+        <p><span class="runners">Runners </span>
+          <select id="selectRunners" multiple="multiple">
+            <option is-select2="false" ng-repeat="runners in permissions.runners" selected="selected">{{runners}}</option>
+          </select>
+            Runners can read and run the note.
         </p>
         <p><span class="readers">Readers </span>
           <select id="selectReaders" multiple="multiple">
@@ -125,8 +131,11 @@ limitations under the License.
        <!-- see ZEPPELIN-2806
        viewport-watch>
        -->
-    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43;</h4>
+    <div class="new-paragraph"
+         ng-click="insertNew('above')"
+         ng-hide="viewOnly || asIframe || revisionView"
+         ng-class="{'first-paragraph': $first}">
+      <h4 class="plus-sign">&#43; Add Paragraph</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
@@ -135,8 +144,8 @@ limitations under the License.
          ng-hide="currentParagraph.config.tableHide && viewOnly"
          ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
-    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43;</h4>
+    <div class="new-paragraph last-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
+      <h4 class="plus-sign">&#43; Add Paragraph</h4>
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

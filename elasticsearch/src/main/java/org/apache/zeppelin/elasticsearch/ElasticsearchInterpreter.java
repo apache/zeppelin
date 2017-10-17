@@ -112,7 +112,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    logger.info("Properties: {}", getProperty());
+    logger.info("Properties: {}", getProperties());
 
     String clientType = getProperty(ELASTICSEARCH_CLIENT_TYPE);
     clientType = clientType == null ? null : clientType.toLowerCase();
@@ -123,15 +123,15 @@ public class ElasticsearchInterpreter extends Interpreter {
     catch (final NumberFormatException e) {
       this.resultSize = 10;
       logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
-          property.get(ELASTICSEARCH_RESULT_SIZE), e);
+          getProperty(ELASTICSEARCH_RESULT_SIZE), e);
     }
 
     try {
       if (StringUtils.isEmpty(clientType) || "transport".equals(clientType)) {
-        elsClient = new TransportBasedClient(getProperty());
+        elsClient = new TransportBasedClient(getProperties());
       }
       else if ("http".equals(clientType)) {
-        elsClient = new HttpBasedClient(getProperty());
+        elsClient = new HttpBasedClient(getProperties());
       }
       else {
         logger.error("Unknown type of Elasticsearch client: " + clientType);

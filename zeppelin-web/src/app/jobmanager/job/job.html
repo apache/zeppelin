@@ -27,7 +27,8 @@ limitations under the License.
         class="job-control-btn" tooltip-placement="left"
         uib-tooltip-html="!$ctrl.isRunning() ? 'Start All Paragraphs' : 'Stop All Paragraphs'"
         ng-click="!$ctrl.isRunning() ? $ctrl.runJob() : $ctrl.stopJob()"
-        ng-class="!$ctrl.isRunning() ? 'icon-control-play' : 'icon-control-pause'">
+        ng-class="!$ctrl.isRunning() ? 'icon-control-play' : 'icon-control-pause'"
+        ng-style="{'color': $ctrl.isRunning() ? '#CD5C5C' : '#3071A9'}">
       </span>
     </div>
     <!-- job control: end -->

@@ -24,6 +24,7 @@ import java.util.List;
  */
 public class Result {
   public static final String SUCCESS = "SUCCESS";
+  public static final String ERROR = "ERROR";
 
   @SerializedName("code")
   private String code;

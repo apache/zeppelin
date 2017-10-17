@@ -123,7 +123,7 @@ public class InterpreterRestApi {
               request.getOption(), request.getProperties());
       logger.info("new setting created with {}", interpreterSetting.getId());
       return new JsonResponse<>(Status.OK, "", interpreterSetting).build();
-    } catch (InterpreterException | IOException e) {
+    } catch (IOException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse<>(Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e))
           .build();
@@ -185,7 +185,7 @@ public class InterpreterRestApi {
 
       String noteId = request == null ? null : request.getNoteId();
       if (null == noteId) {
-        interpreterSettingManager.close(setting);
+        interpreterSettingManager.close(settingId);
       } else {
         interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
       }
@@ -208,7 +208,7 @@ public class InterpreterRestApi {
   @GET
   @ZeppelinApi
   public Response listInterpreter(String message) {
-    Map<String, InterpreterSetting> m = interpreterSettingManager.getAvailableInterpreterSettings();
+    Map<String, InterpreterSetting> m = interpreterSettingManager.getInterpreterSettingTemplates();
     return new JsonResponse<>(Status.OK, "", m).build();
   }
 

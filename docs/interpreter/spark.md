@@ -181,12 +181,18 @@ For example,
  * **local[*]** in local mode
  * **spark://master:7077** in standalone cluster
  * **yarn-client** in Yarn client mode
+ * **yarn-cluster** in Yarn cluster mode
  * **mesos://host:5050** in Mesos cluster
 
 That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. 
 For the further information about Spark & Zeppelin version compatibility, please refer to "Available Interpreters" section in [Zeppelin download page](https://zeppelin.apache.org/download.html).
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
+
+### 3. Yarn mode
+Zeppelin support both yarn client and yarn cluster mode (yarn cluster mode is supported from 0.8.0). For yarn mode, you must specify `SPARK_HOME` & `HADOOP_CONF_DIR`.
+You can either specify them in `zeppelin-env.sh`, or in interpreter setting page. Specifying them in `zeppelin-env.sh` means you can use only one version of `spark` & `hadoop`. Specifying them
+in interpreter setting page means you can use multiple versions of `spark` & `hadoop` in one zeppelin instance.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
@@ -195,6 +201,13 @@ Staring from 0.6.1 SparkSession is available as variable `spark` when you are us
 > Note that Scala/Python/R environment shares the same SparkContext, SQLContext and ZeppelinContext instance.
 
 <a name="dependencyloading"> </a>
+
+### How to pass property to SparkConf
+
+There're 2 kinds of properties that would be passed to SparkConf
+
+ * Standard spark property (prefix with `spark.`). e.g. `spark.executor.memory` will be passed to `SparkConf`
+ * Non-standard spark property (prefix with `zeppelin.spark.`).  e.g. `zeppelin.spark.property_1`, `property_1` will be passed to `SparkConf`
 
 ## Dependency Management
 There are two ways to load external libraries in Spark interpreter. First is using interpreter setting menu and second is loading Spark properties.
@@ -413,6 +426,12 @@ utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/a
 You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. 
 Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). 
 It creates separated SparkContext per each notebook in `isolated` mode.
+
+## IPython support
+
+By default, zeppelin would use IPython in `pyspark` when IPython is available, Otherwise it would fall back to the original PySpark implementation.
+If you don't want to use IPython, then you can set `zeppelin.pyspark.useIPython` as `false` in interpreter setting. For the IPython features, you can refer doc
+[Python Interpreter](python.html)
 
 
 ## Setting up Zeppelin with Kerberos

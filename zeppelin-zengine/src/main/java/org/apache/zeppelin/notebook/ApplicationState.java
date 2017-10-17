@@ -17,7 +17,6 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.helium.HeliumPackage;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 
 /**
  * Current state of application

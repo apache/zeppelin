@@ -22,9 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -33,33 +31,31 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+
+import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.resource.ResourcePool;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 public class ParagraphTest {
@@ -175,7 +171,7 @@ public class ParagraphTest {
     Interpreter mockInterpreter = mock(Interpreter.class);
     doReturn(mockInterpreter).when(spyParagraph).getRepl(anyString());
 
-    InterpreterGroup mockInterpreterGroup = mock(InterpreterGroup.class);
+    ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
     when(mockInterpreterGroup.getId()).thenReturn("mock_id_1");
     when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
@@ -188,7 +184,7 @@ public class ParagraphTest {
     when(mockInterpreterOption.permissionIsSet()).thenReturn(false);
     when(mockInterpreterSetting.getStatus()).thenReturn(Status.READY);
     when(mockInterpreterSetting.getId()).thenReturn("mock_id_1");
-    when(mockInterpreterSetting.getInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
+    when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
     spyInterpreterSettingList.add(mockInterpreterSetting);
     when(mockNote.getId()).thenReturn("any_id");
     when(mockInterpreterSettingManager.getInterpreterSettings(anyString())).thenReturn(spyInterpreterSettingList);
@@ -228,8 +224,37 @@ public class ParagraphTest {
     assertNotEquals(p1.getReturn().toString(), p2.getReturn().toString());
 
     assertEquals(p1, spyParagraph.getUserParagraph(user1.getUser()));
-
-
-
   }
+
+  @Test
+  public void testCursorPosition() {
+    Paragraph paragraph = spy(new Paragraph());
+    doReturn(null).when(paragraph).getRepl(anyString());
+    // left = buffer, middle = cursor position into source code, right = cursor position after parse
+    List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
+        Triple.of("%jdbc schema.", 13, 7),
+        Triple.of("   %jdbc schema.", 16, 7),
+        Triple.of(" \n%jdbc schema.", 15, 7),
+        Triple.of("%jdbc schema.table.  ", 19, 13),
+        Triple.of("%jdbc schema.\n\n", 13, 7),
+        Triple.of("  %jdbc schema.tab\n\n", 18, 10),
+        Triple.of("  \n%jdbc schema.\n \n", 16, 7),
+        Triple.of("  \n%jdbc schema.\n \n", 16, 7),
+        Triple.of("  \n%jdbc\n\n schema\n \n", 17, 6),
+        Triple.of("%another\n\n schema.", 18, 7),
+        Triple.of("\n\n schema.", 10, 7),
+        Triple.of("schema.", 7, 7),
+        Triple.of("schema. \n", 7, 7),
+        Triple.of("  \n   %jdbc", 11, 0),
+        Triple.of("\n   %jdbc", 9, 0),
+        Triple.of("%jdbc  \n  schema", 16, 6),
+        Triple.of("%jdbc  \n  \n   schema", 20, 6)
+    );
+
+    for (Triple<String, Integer, Integer> data : dataSet) {
+      Integer actual = paragraph.calculateCursorPosition(data.getLeft(), data.getLeft().trim(), data.getMiddle());
+      assertEquals(data.getRight(), actual);
+    }
+  }
+
 }

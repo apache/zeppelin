@@ -126,8 +126,8 @@ public abstract class AbstractTestRestApi {
 
   private static void start(boolean withAuth) throws Exception {
     if (!wasRunning) {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), new File("../zeppelin-web/dist").getAbsolutePath());
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -211,6 +211,7 @@ public abstract class AbstractTestRestApi {
         // set spark home for pyspark
         sparkProperties.put("spark.home",
             new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.TEXTAREA.getValue()));
+        sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
 
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
@@ -233,6 +234,8 @@ public abstract class AbstractTestRestApi {
               new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.TEXTAREA.getValue()));
           sparkProperties.put("zeppelin.spark.useHiveContext",
               new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
+          sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
+
           pySpark = true;
           sparkR = true;
         }
@@ -304,10 +307,9 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
-          .getDefaultInterpreterSettingList();
-      for (String setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting);
+      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
+      for (InterpreterSetting setting : settingList) {
+        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);

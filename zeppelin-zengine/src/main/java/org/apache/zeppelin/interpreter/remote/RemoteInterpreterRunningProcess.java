@@ -30,12 +30,10 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
 
   public RemoteInterpreterRunningProcess(
       int connectTimeout,
-      RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener,
       String host,
       int port
   ) {
-    super(connectTimeout, listener, appListener);
+    super(connectTimeout);
     this.host = host;
     this.port = port;
   }
