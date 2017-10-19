@@ -148,7 +148,7 @@ You can also set other Spark properties which are not listed in the table. For a
   <tr>
   <td>zeppelin.spark.uiWebUrl</td>
     <td></td>
-    <td>Overrides Spark UI default URL (ex: http://{hostName}/{uniquePath)</td>
+    <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
   </tr>
 </table>
 

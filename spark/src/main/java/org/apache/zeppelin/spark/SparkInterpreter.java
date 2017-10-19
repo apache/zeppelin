@@ -26,11 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +49,6 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -72,7 +69,6 @@ import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
 import scala.Console;
 import scala.Enumeration.Value;
 import scala.None;
@@ -937,7 +933,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     String sparkUrlProp = property.getProperty("zeppelin.spark.uiWebUrl", "");
-    if (!sparkUrlProp.isEmpty()) {
+    if (!StringUtils.isBlank(sparkUrlProp)) {
       return sparkUrlProp;
     }
 
