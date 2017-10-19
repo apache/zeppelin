@@ -145,6 +145,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>true</td>
     <td>Do not change - developer only setting, not for production use</td>
   </tr>
+  <tr>
+  <td>zeppelin.spark.uiWebUrl</td>
+    <td></td>
+    <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
@@ -184,7 +189,7 @@ For example,
  * **yarn-cluster** in Yarn cluster mode
  * **mesos://host:5050** in Mesos cluster
 
-That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. 
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way.
 For the further information about Spark & Zeppelin version compatibility, please refer to "Available Interpreters" section in [Zeppelin download page](https://zeppelin.apache.org/download.html).
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
@@ -216,7 +221,7 @@ There are two ways to load external libraries in Spark interpreter. First is usi
 Please see [Dependency Management](../usage/interpreter/dependency_management.html) for the details.
 
 ### 2. Loading Spark Properties
-Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. 
+Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations.
 The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in `conf/zeppelin-env.sh`. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properties that user can set to distribute libraries are:
 
 <table class="table-configuration">
@@ -249,7 +254,7 @@ Here are few examples:
   ```bash
     export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
   ```
-    
+
 * `SPARK_HOME/conf/spark-defaults.conf`
 
   ```
@@ -414,17 +419,17 @@ To learn more about dynamic form, checkout [Dynamic Form](../usage/dynamic_form/
 
 
 ## Matplotlib Integration (pyspark)
-Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, 
-a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), 
-since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through 
+Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`,
+a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html),
+since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through
 utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/angular_backend.html), as shown below:
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 
-You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. 
-Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). 
+You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter.
+Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental).
 It creates separated SparkContext per each notebook in `isolated` mode.
 
 ## IPython support
