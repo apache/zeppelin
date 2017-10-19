@@ -191,6 +191,7 @@
 
 .paragraph .control button {
   border: 0;
+  padding: 1px 3px;
 }
 
 .paragraph .control li {
