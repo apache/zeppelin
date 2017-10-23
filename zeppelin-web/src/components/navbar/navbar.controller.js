@@ -86,12 +86,19 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
     websocketMsgSrv.getHomeNote()
   }
 
-  function logout () {
+  function logout() {
     let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout'
 
     // for firefox and safari
     logoutURL = logoutURL.replace('//', '//false:false@')
-    $http.post(logoutURL).error(function () {
+
+    $http.post(logoutURL).then(function () {}, function (response) {
+      if (response.data) {
+        let res = angular.fromJson(response.data).body
+        if (res['redirectURL']) {
+          window.location.href = res['redirectURL'] + window.location.href
+        }
+      }
       // force authcBasic (if configured) to logout
       $http.post(logoutURL).error(function () {
         $rootScope.userName = ''
