@@ -49,7 +49,7 @@ public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
 
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
-  private Long DEFAULT_TIMEOUT_PROPERTY = 60000l;
+  private String DEFAULT_TIMEOUT_PROPERTY = "60000";
 
   private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
@@ -102,14 +102,8 @@ public class ShellInterpreter extends KerberosInterpreter {
       executor.setStreamHandler(new PumpStreamHandler(
         contextInterpreter.out, contextInterpreter.out));
 
-      Long timeOutProperty;
-      try {
-        timeOutProperty = Long.valueOf(getProperty(TIMEOUT_PROPERTY));
-      } catch (Exception e) {
-        timeOutProperty = DEFAULT_TIMEOUT_PROPERTY;
-        LOGGER.error("Cannot convert TIMEOUT_PROPERTY to Long value, switching to default value", e);
-      }
-      executor.setWatchdog(new ExecuteWatchdog(timeOutProperty));
+      executor.setWatchdog(new ExecuteWatchdog(
+          Long.valueOf(getProperty(TIMEOUT_PROPERTY, DEFAULT_TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
       if (Boolean.valueOf(getProperty(DIRECTORY_USER_HOME))) {
         executor.setWorkingDirectory(new File(System.getProperty("user.home")));
