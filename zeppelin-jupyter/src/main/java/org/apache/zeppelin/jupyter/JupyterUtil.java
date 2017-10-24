@@ -16,11 +16,7 @@
  */
 package org.apache.zeppelin.jupyter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -165,6 +161,11 @@ public class JupyterUtil {
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();
+  }
+
+  public String getJson(String input) {
+    Note note = getNote(new StringReader(input), "%python", "%md");
+    return new Gson().toJson(note);
   }
 
   public static void main(String[] args) throws ParseException, IOException {

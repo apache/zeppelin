@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.jupyter.JupyterUtil;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
@@ -1268,8 +1269,13 @@ public class NotebookServer extends WebSocketServlet
       Message fromMessage) throws IOException {
     Note note = null;
     if (fromMessage != null) {
+      String noteJson;
       String noteName = (String) ((Map) fromMessage.get("note")).get("name");
-      String noteJson = gson.toJson(fromMessage.get("note"));
+      if (((Map) fromMessage.get("note")).get("cells") == null) {
+        noteJson = gson.toJson(fromMessage.get("note"));
+      } else {
+        noteJson = new JupyterUtil().getJson(gson.toJson(fromMessage.get("note")));
+      }
       AuthenticationInfo subject = null;
       if (fromMessage.principal != null) {
         subject = new AuthenticationInfo(fromMessage.principal);
