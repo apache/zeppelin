@@ -495,6 +495,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   @Override
   protected boolean jobAbort() {
+    boolean aborted = true;
     Interpreter repl = getRepl(getRequiredReplName());
     if (repl == null) {
       return true;
@@ -507,6 +508,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     Job job = scheduler.removeFromWaitingQueue(getId());
     if (job != null) {
       job.setStatus(Status.ABORT);
+      aborted = false;
     } else {
       try {
         repl.cancel(getInterpreterContextWithoutRunner(null));
@@ -514,7 +516,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         throw new RuntimeException(e);
       }
     }
-    return true;
+    return aborted;
   }
 
   private InterpreterContext getInterpreterContext() {
