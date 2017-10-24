@@ -22,10 +22,11 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
   $scope.firstNoteRevisionForCompare = null
   $scope.secondNoteRevisionForCompare = null
   $scope.mergeNoteRevisionsForCompare = null
+  $scope.currentParagraphDiffDisplay = null
   $scope.currentFirstRevisionForCompare = 'Choose...'
   $scope.currentSecondRevisionForCompare = 'Choose...'
 
-  $scope.getNoteRevisionForReview = function(revision, position) {
+  $scope.getNoteRevisionForReview = function (revision, position) {
     if (position) {
       if (position === 'first') {
         $scope.currentFirstRevisionForCompare = revision.message
@@ -37,7 +38,7 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
   }
 
   // compare revisions
-  $scope.compareRevisions = function() {
+  $scope.compareRevisions = function () {
     if ($scope.firstNoteRevisionForCompare && $scope.secondNoteRevisionForCompare) {
       let paragraphs1 = $scope.firstNoteRevisionForCompare.note.paragraphs
       let paragraphs2 = $scope.secondNoteRevisionForCompare.note.paragraphs
@@ -67,13 +68,20 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
           let identicalClass = 'color-black'
 
           diff.forEach(function (part) {
-            colorClass = part.added ? 'color-green' : part.removed ? 'color-red' : identicalClass
+            colorClass = part.added ? 'color-green-row' : part.removed ? 'color-red-row' : identicalClass
             span = document.createElement('span')
             span.className = colorClass
             if (identical && colorClass !== identicalClass) {
               identical = false
             }
-            span.appendChild(document.createTextNode(part.value))
+
+            let str = part.value
+
+            if (str[str.length - 1] !== '\n') {
+              str = str + '\n'
+            }
+
+            span.appendChild(document.createTextNode(str))
             diffHtml.appendChild(span)
           })
 
@@ -104,7 +112,7 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
         }
       }
 
-      merge.sort(function(a, b) {
+      merge.sort(function (a, b) {
         if (a.type === added) {
           return -1
         }
@@ -121,6 +129,10 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
       })
 
       $scope.mergeNoteRevisionsForCompare = merge
+
+      if ($scope.currentParagraphDiffDisplay !== null) {
+        $scope.changeCurrentParagraphDiffDisplay($scope.currentParagraphDiffDisplay.paragraph.id)
+      }
     }
   }
 
@@ -140,8 +152,18 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
     }
   })
 
-  $scope.formatRevisionDate = function(date) {
-    return moment.unix(date).format('MMMM Do YYYY, h:mm a')
+  $scope.formatRevisionDate = function (date) {
+    return moment.unix(date).format('MMMM Do YYYY, h:mm:ss a')
+  }
+
+  $scope.changeCurrentParagraphDiffDisplay = function (paragraphId) {
+    for (let p of $scope.mergeNoteRevisionsForCompare) {
+      if (p.paragraph.id === paragraphId) {
+        $scope.currentParagraphDiffDisplay = p
+        return
+      }
+    }
+    $scope.currentParagraphDiffDisplay = null
   }
 }
 

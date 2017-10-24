@@ -22,17 +22,157 @@
   border-bottom: 1px solid #E5E5E5;
 }
 
+.revisions-comparator-panel {
+  transition-property: border, left, background-color;
+  transition-duration: 250ms, 500ms, 200ms;
+  transition-timing-function: ease-out;
+  position: relative;
+  left: 0;
+  width: 95%;
+  background-color: rgba(255, 255, 0, 0.10);
+  border: 1px solid rgba(120, 129, 82, 0.08);
+  margin-right: 15px;
+  min-width: 270px;
+}
+
+.revisions-comparator-panel:first-child {
+  margin-top: 5px;
+}
+
+.revisions-comparator-panel:last-child {
+  margin-bottom: 5px;
+}
+
+.revisions-comparator-panel:hover {
+  left: 6px;
+  border: 1px solid rgba(55, 54, 35, 0.35);
+  background-color: rgba(255, 204, 0, 0.25);
+}
+
+.revisions-comparator-panel-selected {
+  left: 18px !important;
+  background-color: rgba(252, 255, 0, 0.53) !important;
+  border: 1px solid rgba(55, 54, 35, 0.49)
+}
+
 .revisions-comparator-panel-heading {
-  padding: 10px 0px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.revisions-comparator-panel.ng-enter,
+.revisions-comparator-panel.ng-enter.ng-enter-active ,
+.revisions-comparator-panel.ng-leave,
+.revisions-comparator-panel.ng-leave-active {
+  transition-duration: 0s !important;
+}
+
+.cursor-hand {
+  cursor: pointer;
+}
+
+.paragraphs-div {
+  overflow: auto;
+  height: 35vh;
+}
+
+.paragraphs-div-border {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.commit-tree {
+  width: 100%;
+  margin-right: 0;
+  margin-bottom: 10px;
+  border: 2px solid grey;
+  border-radius: 5px !important;
+}
+
+.commit-rows {
+  height: 30vh;
+  overflow: auto;
+  display: block;
+  width: 100%;
+}
+
+.commit-rows tr:nth-child(even) {
+  background-color: rgba(128, 128, 128, 0.06);
+}
+
+.commit-tree tr:hover {
+  background-color: rgba(0, 146, 164, 0.21);
+}
+
+.selected-revision {
+  background-color: rgba(0, 161, 255, 0.43) !important;
+}
+
+.commit-tree table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  padding: 2px;
+  margin-bottom: 0px;
+}
+
+.commit-tree tr {
+  width: 100%;
+}
+
+.commit-tree td:nth-child(1),
+.commit-tree th:nth-child(1) {
+  width: 10%;
+}
+
+.commit-tree td:nth-child(2),
+.commit-tree th:nth-child(2) {
+  width: 20%;
+}
+
+.commit-tree th{
+  background-color: rgba(32, 141, 172, 0.68);
+  color: rgb(255, 255, 255);
+  text-align: center;
+}
+
+.commit-tree thead tr {
+  display: block;
+  position: relative;
+}
+
+.empty-code-panel {
+  text-align: center;
+  padding-top: 25%;
+  font-size: 30px;
+  color: grey;
+}
+
+.empty-paragraph-message {
+  font-size: 2em;
+  color: grey;
+  margin: 0 auto;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.revisions-comparator-bar {
+  margin-left: 25px;
+
+}
+
+.revisions-comparator-bar .btn-group {
+  margin: 0 20px;
 }
 
 .revisions-comparator-code-panel {
-  display: inline-block;
-  width: 50%;
+  display: block;
+  clear: both;
+  width: 95%;
   float: left;
-  height: 300px;
+  height: 70vh;
   overflow-y: auto;
-  max-height: 300px
 }
 
 .revisions-comparator-code-panel-title {
@@ -40,7 +180,6 @@
   float: left;
   font-size: 14px;
   padding: 5px;
-  background-color: #f5f5f5;
 }
 
 .revisions-comparator-bar {
@@ -55,6 +194,9 @@
 
 #diffPanel {
   height: 100%;
+  padding-left: 10px;
+  border: 2px solid grey;
+  border-radius: 5px !important;
 }
 
 #diffPanel .panel-group {
@@ -84,7 +226,10 @@
 
 .revisions-comparator-first-string {
   display: block;
+  height: 2em;
   overflow: hidden;
+  padding-top: 6px;
+  padding-left: 5px;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: 12px;
@@ -95,6 +240,18 @@
   padding: 5px;
   font-size: 12px;
   border-radius: 3px;
+}
+
+.color-green-row {
+  background-color: rgba(0, 226, 0, 0.22);
+  display: block;
+  color: green;
+}
+
+.color-red-row {
+  background-color: rgba(226, 0, 0, 0.22);
+  display: block;
+  color: red;
 }
 
 .color-green {
