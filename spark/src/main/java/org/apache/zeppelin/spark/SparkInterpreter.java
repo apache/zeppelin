@@ -932,7 +932,7 @@ public class SparkInterpreter extends Interpreter {
       return sparkUrl;
     }
 
-    String sparkUrlProp = property.getProperty("zeppelin.spark.uiWebUrl", "");
+    String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
     if (!StringUtils.isBlank(sparkUrlProp)) {
       return sparkUrlProp;
     }
