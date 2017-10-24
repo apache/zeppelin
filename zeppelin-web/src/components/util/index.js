@@ -12,25 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
+import { ErrorHandlerService } from './error-handler.service'
 
-function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast, ErrorHandlerService) {
-  'ngInject'
-
-  let ehs = ErrorHandlerService
-  $scope.configrations = []
-
-  let getConfigurations = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
-    .then(res => {
-      $scope.configurations = res.data.body
-    })
-    .catch(ehs.handleHttpError('Failed to get configurations'))
-  }
-
-  let init = function () {
-    getConfigurations()
-  }
-
-  init()
-}
+angular.module('zeppelinWebApp')
+  .service('ErrorHandlerService', ErrorHandlerService)
