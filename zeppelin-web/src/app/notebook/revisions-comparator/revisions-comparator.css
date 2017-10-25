@@ -102,11 +102,11 @@
 }
 
 .commit-tree tr:hover {
-  background-color: rgba(0, 146, 164, 0.21);
+  background-color: rgba(48, 113, 169, 0.21);
 }
 
 .selected-revision {
-  background-color: rgba(0, 161, 255, 0.43) !important;
+  background-color: rgba(48, 113, 169, 0.47) !important;
 }
 
 .commit-tree table {
@@ -131,9 +131,15 @@
 }
 
 .commit-tree th{
-  background-color: rgba(32, 141, 172, 0.68);
+  font-weight: normal;
+  font-size: 1.2em;
+  background-color: #317bb4;
   color: rgb(255, 255, 255);
   text-align: center;
+}
+
+.commit-tree .commit-rows td{
+  padding-left: 15px;
 }
 
 .commit-tree thead tr {
