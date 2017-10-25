@@ -645,7 +645,7 @@ public class InterpreterSetting {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, name);
+        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, group);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
         new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
