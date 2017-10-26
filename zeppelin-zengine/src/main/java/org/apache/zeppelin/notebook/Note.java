@@ -685,9 +685,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(user, id);
-      AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
-      angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
+      if (intpGroup != null) {
+        AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+        angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
+      }
     }
   }
 
@@ -700,7 +702,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(user, id);
+      if (setting.getInterpreterGroup(user, id) == null) {
+        continue;
+      }
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
