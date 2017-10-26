@@ -45,10 +45,28 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       "https://s3.amazonaws.com/helium-package/helium.json";
   private static ZeppelinConfiguration conf;
 
+  private Map<String, String> properties = new HashMap<>();
+
   public ZeppelinConfiguration(URL url) throws ConfigurationException {
     setDelimiterParsingDisabled(true);
     load(url);
+    initProperties();
   }
+
+  private void initProperties() {
+    List<ConfigurationNode> nodes = getRootNode().getChildren();
+    if (nodes == null || nodes.isEmpty()) {
+      return;
+    }
+    for (ConfigurationNode p : nodes) {
+      String name = (String) p.getChildren("name").get(0).getValue();
+      String value = (String) p.getChildren("value").get(0).getValue();
+      if (!StringUtils.isEmpty(name)) {
+        properties.put(name, value);
+      }
+    }
+  }
+
 
   public ZeppelinConfiguration() {
     ConfVars[] vars = ConfVars.values();
@@ -122,71 +140,41 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
 
   private String getStringValue(String name, String d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return (String) p.getChildren("value").get(0).getValue();
-      }
+    String value = this.properties.get(name);
+    if (value != null) {
+      return value;
     }
     return d;
   }
 
   private int getIntValue(String name, int d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Integer.parseInt((String) p.getChildren("value").get(0).getValue());
-      }
+    String value = this.properties.get(name);
+    if (value != null) {
+      return Integer.parseInt(value);
     }
     return d;
   }
 
   private long getLongValue(String name, long d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Long.parseLong((String) p.getChildren("value").get(0).getValue());
-      }
+    String value = this.properties.get(name);
+    if (value != null) {
+      return Long.parseLong(value);
     }
     return d;
   }
 
   private float getFloatValue(String name, float d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Float.parseFloat((String) p.getChildren("value").get(0).getValue());
-      }
+    String value = this.properties.get(name);
+    if (value != null) {
+      return Float.parseFloat(value);
     }
     return d;
   }
 
   private boolean getBooleanValue(String name, boolean d) {
-    List<ConfigurationNode> properties = getRootNode().getChildren();
-    if (properties == null || properties.isEmpty()) {
-      return d;
-    }
-    for (ConfigurationNode p : properties) {
-      if (p.getChildren("name") != null && !p.getChildren("name").isEmpty()
-          && name.equals(p.getChildren("name").get(0).getValue())) {
-        return Boolean.parseBoolean((String) p.getChildren("value").get(0).getValue());
-      }
+    String value = this.properties.get(name);
+    if (value != null) {
+      return Boolean.parseBoolean(value);
     }
     return d;
   }
