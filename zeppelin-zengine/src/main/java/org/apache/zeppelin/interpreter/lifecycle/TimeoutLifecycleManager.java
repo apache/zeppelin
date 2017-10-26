@@ -24,7 +24,7 @@ public class TimeoutLifecycleManager implements LifecycleManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutLifecycleManager.class);
 
-  // ManagerInterpreter -> LastTimeUsing timestamp
+  // ManagerInterpreterGroup -> LastTimeUsing timestamp
   private Map<ManagedInterpreterGroup, Long> interpreterGroups = new ConcurrentHashMap<>();
 
   private long checkInterval;
@@ -33,10 +33,10 @@ public class TimeoutLifecycleManager implements LifecycleManager {
   private Timer checkTimer;
 
   public TimeoutLifecycleManager(ZeppelinConfiguration zConf) {
-    this.checkInterval = zConf.getLong("zeppelin.interpreter.lifecyclemanager." +
-        "timeout.checkinterval", 60000);
-    this.timeoutThreshold = zConf.getLong("zeppelin.interpreter.lifecyclemanager.timeout.threshold",
-        1000 * 60 * 60);
+    this.checkInterval = zConf.getLong(ZeppelinConfiguration.ConfVars
+            .ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
+    this.timeoutThreshold = zConf.getLong(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
     this.checkTimer = new Timer(true);
     this.checkTimer.scheduleAtFixedRate(new TimerTask() {
       @Override
@@ -46,13 +46,15 @@ public class TimeoutLifecycleManager implements LifecycleManager {
           ManagedInterpreterGroup interpreterGroup = entry.getKey();
           Long lastTimeUsing = entry.getValue();
           if ((now - lastTimeUsing) > timeoutThreshold )  {
-            LOGGER.info("Interpreter {} is timeout.", interpreterGroup.getId());
+            LOGGER.info("InterpreterGroup {} is timeout.", interpreterGroup.getId());
             interpreterGroup.close();
             interpreterGroups.remove(entry.getKey());
           }
         }
       }
     }, checkInterval, checkInterval);
+    LOGGER.info("TimeoutLifecycleManager is started with checkinterval: " + checkInterval
+        + ", timeoutThreshold: " + timeoutThreshold);
   }
 
   @Override
@@ -70,6 +72,4 @@ public class TimeoutLifecycleManager implements LifecycleManager {
   public void onInterpreterUse(ManagedInterpreterGroup interpreterGroup, String sessionId) {
     interpreterGroups.put(interpreterGroup, System.currentTimeMillis());
   }
-
-
 }

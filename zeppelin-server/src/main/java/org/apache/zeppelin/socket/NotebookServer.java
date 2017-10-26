@@ -1376,13 +1376,13 @@ public class NotebookServer extends WebSocketServlet
       List<InterpreterSetting> settings =
           notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
       for (InterpreterSetting setting : settings) {
-        if (setting.getOrCreateInterpreterGroup(user, note.getId()) == null) {
+        if (setting.getInterpreterGroup(user, note.getId()) == null) {
           continue;
         }
-        if (interpreterGroupId.equals(setting.getOrCreateInterpreterGroup(user, note.getId())
+        if (interpreterGroupId.equals(setting.getInterpreterGroup(user, note.getId())
             .getId())) {
           AngularObjectRegistry angularObjectRegistry =
-              setting.getOrCreateInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
+              setting.getInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
 
           // first trying to get local registry
           ao = angularObjectRegistry.get(varName, noteId, paragraphId);
@@ -1419,13 +1419,13 @@ public class NotebookServer extends WebSocketServlet
         List<InterpreterSetting> settings =
             notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
-          if (setting.getOrCreateInterpreterGroup(user, n.getId()) == null) {
+          if (setting.getInterpreterGroup(user, n.getId()) == null) {
             continue;
           }
-          if (interpreterGroupId.equals(setting.getOrCreateInterpreterGroup(user, n.getId())
+          if (interpreterGroupId.equals(setting.getInterpreterGroup(user, n.getId())
               .getId())) {
             AngularObjectRegistry angularObjectRegistry =
-                setting.getOrCreateInterpreterGroup(user, n.getId()).getAngularObjectRegistry();
+                setting.getInterpreterGroup(user, n.getId()).getAngularObjectRegistry();
             this.broadcastExcept(n.getId(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
                     .put("interpreterGroupId", interpreterGroupId).put("noteId", n.getId())
@@ -2297,14 +2297,17 @@ public class NotebookServer extends WebSocketServlet
     }
 
     for (InterpreterSetting intpSetting : settings) {
+      if (intpSetting.getInterpreterGroup(user, note.getId()) == null) {
+        continue;
+      }
       AngularObjectRegistry registry =
-          intpSetting.getOrCreateInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
+          intpSetting.getInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
       List<AngularObject> objects = registry.getAllWithGlobal(note.getId());
       for (AngularObject object : objects) {
         conn.send(serializeMessage(
             new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", object)
                 .put("interpreterGroupId",
-                    intpSetting.getOrCreateInterpreterGroup(user, note.getId()).getId())
+                    intpSetting.getInterpreterGroup(user, note.getId()).getId())
                 .put("noteId", note.getId()).put("paragraphId", object.getParagraphId())));
       }
     }

@@ -707,7 +707,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE("zeppelin.interpreter.callback.portRange", ":"),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
-        "org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager");
+        "org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager"),
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
+        "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
+        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 360000L);
 
     private String varName;
     @SuppressWarnings("rawtypes")

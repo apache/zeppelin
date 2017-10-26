@@ -402,7 +402,7 @@ public class InterpreterSetting {
     this.interpreterGroups.remove(groupId);
   }
 
-  ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
+  public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
     String groupId = getInterpreterGroupId(user, noteId);
     try {
       interpreterGroupReadLock.lock();

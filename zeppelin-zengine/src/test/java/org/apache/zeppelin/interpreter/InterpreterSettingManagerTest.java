@@ -52,7 +52,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals("test", interpreterSetting.getGroup());
     assertEquals(3, interpreterSetting.getInterpreterInfos().size());
     // 3 other builtin properties:
-    //   * zeppelin.interpeter.output.limit
+    //   * zeppelin.interpreter.output.limit
     //   * zeppelin.interpreter.localRepo
     //   * zeppelin.interpreter.max.poolsize
     assertEquals(6, interpreterSetting.getJavaProperties().size());

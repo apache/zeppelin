@@ -159,7 +159,7 @@ public class InterpreterSettingManager {
           Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
               .newInstance(conf);
     } catch (Exception e) {
-      throw new IOException("Fail to create LifecyleManager", e);
+      throw new IOException("Fail to create LifecycleManager", e);
     }
 
     init();
