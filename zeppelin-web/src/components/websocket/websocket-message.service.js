@@ -340,5 +340,14 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'})
     },
 
+    saveNoteForms: function (note) {
+      websocketEvents.sendNewEvent({op: 'NOTE_FORMS',
+        data: {
+          noteId: note.id,
+          noteParams: note.noteParams
+        }
+      })
+    }
+
   }
 }

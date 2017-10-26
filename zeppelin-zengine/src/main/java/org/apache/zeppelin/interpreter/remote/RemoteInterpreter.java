@@ -231,11 +231,15 @@ public class RemoteInterpreter extends Interpreter {
             context.getConfig().clear();
             context.getConfig().putAll(remoteConfig);
             GUI currentGUI = context.getGui();
+            GUI currentNoteGUI = context.getNoteGui();
             if (form == FormType.NATIVE) {
               GUI remoteGui = GUI.fromJson(remoteResult.getGui());
+              GUI remoteNoteGui = GUI.fromJson(remoteResult.getNoteGui());
               currentGUI.clear();
               currentGUI.setParams(remoteGui.getParams());
               currentGUI.setForms(remoteGui.getForms());
+              currentNoteGUI.setParams(remoteNoteGui.getParams());
+              currentNoteGUI.setForms(remoteNoteGui.getForms());
             } else if (form == FormType.SIMPLE) {
               final Map<String, Input> currentForms = currentGUI.getForms();
               final Map<String, Object> currentParams = currentGUI.getParams();
@@ -391,7 +395,8 @@ public class RemoteInterpreter extends Interpreter {
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(ic.getNoteId(), ic.getParagraphId(), ic.getReplName(),
         ic.getParagraphTitle(), ic.getParagraphText(), gson.toJson(ic.getAuthenticationInfo()),
-        gson.toJson(ic.getConfig()), gson.toJson(ic.getGui()), gson.toJson(ic.getRunners()));
+        gson.toJson(ic.getConfig()), gson.toJson(ic.getGui()), gson.toJson(ic.getNoteGui()),
+        gson.toJson(ic.getRunners()));
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {

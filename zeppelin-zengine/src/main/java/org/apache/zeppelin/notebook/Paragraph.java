@@ -427,21 +427,38 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
       // inputs will be built from script body
-      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(scriptBody);
-
+      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(scriptBody, false);
+      LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(scriptBody, true);
       final AngularObjectRegistry angularRegistry =
           repl.getInterpreterGroup().getAngularObjectRegistry();
 
       scriptBody = extractVariablesFromAngularRegistry(scriptBody, inputs, angularRegistry);
-
       settings.setForms(inputs);
-      script = Input.getSimpleQuery(settings.getParams(), scriptBody);
+      if (!noteInputs.isEmpty()) {
+        if (!note.getNoteForms().isEmpty()) {
+          Map<String, Input> currentNoteForms =  note.getNoteForms();
+          for (String s : noteInputs.keySet()) {
+            if (!currentNoteForms.containsKey(s)) {
+              currentNoteForms.put(s, noteInputs.get(s));
+            }
+          }
+        } else {
+          note.setNoteForms(noteInputs);
+        }
+      }
+      script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
+      script = Input.getSimpleQuery(settings.getParams(), script, false);
     }
     logger.debug("RUN : " + script);
     try {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
       InterpreterResult ret = repl.interpret(script, context);
+
+      if (repl.getFormType() == FormType.NATIVE) {
+        note.setNoteParams(context.getNoteGui().getParams());
+        note.setNoteForms(context.getNoteGui().getForms());
+      }
 
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
@@ -584,8 +601,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     InterpreterContext interpreterContext =
         new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
-            resourcePool, runners, output);
+            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
+            getNoteGui(), registry, resourcePool, runners, output);
     return interpreterContext;
   }
 
@@ -618,13 +635,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     InterpreterContext interpreterContext =
         new InterpreterContext(note.getId(), getId(), getRequiredReplName(), this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
-            resourcePool, runners, output);
+            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
+            getNoteGui(), registry, resourcePool, runners, output);
     return interpreterContext;
   }
 
   public InterpreterContextRunner getInterpreterContextRunner() {
-
     return new ParagraphRunner(note, note.getId(), getId());
   }
 
@@ -798,6 +814,13 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public Map<String, ParagraphRuntimeInfo> getRuntimeInfos() {
     return runtimeInfos;
+  }
+
+  private GUI getNoteGui() {
+    GUI gui = new GUI();
+    gui.setParams(this.note.getNoteParams());
+    gui.setForms(this.note.getNoteForms());
+    return gui;
   }
 
   @Override

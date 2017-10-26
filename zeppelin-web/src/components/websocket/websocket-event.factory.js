@@ -140,6 +140,8 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('noteRevision', data)
     } else if (op === 'INTERPRETER_BINDINGS') {
       $rootScope.$broadcast('interpreterBindings', data)
+    } else if (op === 'NOTE_FORMS') {
+      $rootScope.$broadcast('noteForms', data)
     } else if (op === 'ERROR_INFO') {
       BootstrapDialog.show({
         closable: false,

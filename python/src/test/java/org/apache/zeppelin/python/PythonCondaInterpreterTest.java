@@ -131,6 +131,7 @@ public class PythonCondaInterpreterTest {
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
+        new GUI(),
         null,
         null,
         null,

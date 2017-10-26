@@ -35,10 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.*;
@@ -353,6 +350,9 @@ public class NotebookServer extends WebSocketServlet
         case WATCHER:
           switchConnectionToWatcher(conn, messagereceived);
           break;
+        case NOTE_FORMS:
+          saveNoteForms(conn, userAndRoles, notebook, messagereceived);
+          break;
         default:
           break;
       }
@@ -646,6 +646,8 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void broadcastParagraph(Note note, Paragraph p) {
+    broadcastNoteForms(note);
+
     if (note.isPersonalizedMode()) {
       broadcastParagraphs(p.getUserParagraphMap(), p);
     } else {
@@ -1223,7 +1225,6 @@ public class NotebookServer extends WebSocketServlet
       p.setTitle((String) fromMessage.get("title"));
       p.setText((String) fromMessage.get("paragraph"));
     }
-
 
     note.persist(subject);
 
@@ -2499,5 +2500,33 @@ public class NotebookServer extends WebSocketServlet
       }
     }
     setting.clearNoteIdAndParaMap();
+  }
+
+  public void broadcastNoteForms(Note note) {
+    GUI formsSettings = new GUI();
+    formsSettings.setForms(note.getNoteForms());
+    formsSettings.setParams(note.getNoteParams());
+
+    broadcast(note.getId(), new Message(OP.NOTE_FORMS).put("formsData", formsSettings));
+  }
+
+  private void saveNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+                             Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    Map<String, Object> noteParams = (Map<String, Object>) fromMessage.get("noteParams");
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "update")) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.setNoteParams(noteParams);
+
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note.persist(subject);
+      broadcastNoteForms(note);
+    }
   }
 }
