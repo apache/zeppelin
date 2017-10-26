@@ -148,6 +148,51 @@
 </property>
 -->
 
+<!-- Minio storage settings -->
+<!-- 
+<property>
+  <name>zeppelin.notebook.minio.accesskey</name>
+  <value>access_key</value>
+  <description>access key for minio login</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.minio.secretkey</name>
+  <value>secret_key</value>
+  <description>secret key for minio login</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.minio.endpoint</name>
+  <value>http://localhost:9000</value>
+  <description>endpoint for minio storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.minio.https</name>
+  <value>false</value>
+  <description>Use encrypted connection to Minio server</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.minio.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.minio.user</name>
+  <value>user</value>
+  <description>user name for minio folder structure</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.MinioNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
+
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>

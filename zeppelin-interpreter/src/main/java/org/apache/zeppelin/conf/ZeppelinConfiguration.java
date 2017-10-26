@@ -387,6 +387,30 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE);
   }
 
+  public String getMinioAccessKey() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MINIO_ACCESSKEY);
+  }
+
+  public String getMinioSecretKey() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MINIO_SECRETKEY);
+  }
+
+  public String getMinioBucketName() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MINIO_BUCKET);
+  }
+
+  public String getMinioUser() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MINIO_USER);
+  }
+
+  public String getMinioEndpoint() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_MINIO_ENDPOINT);
+  }
+
+  public boolean useHTTPSForMinio() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MINIO_HTTPS);
+  }
+
   public String getMongoUri() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI);
   }
@@ -659,6 +683,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION("zeppelin.notebook.s3.kmsKeyRegion", null),
     ZEPPELIN_NOTEBOOK_S3_SSE("zeppelin.notebook.s3.sse", false),
     ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE("zeppelin.notebook.s3.signerOverride", null),
+    ZEPPELIN_NOTEBOOK_MINIO_BUCKET("zeppelin.notebook.minio.bucket", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_MINIO_USER("zeppelin.notebook.minio.user", "user"),
+    ZEPPELIN_NOTEBOOK_MINIO_ENDPOINT("zeppelin.notebook.minio.endpoint", "localhost"),
+    ZEPPELIN_NOTEBOOK_MINIO_ACCESSKEY("zeppelin.notebook.minio.accesskey", "accesskey"),
+    ZEPPELIN_NOTEBOOK_MINIO_SECRETKEY("zeppelin.notebook.minio.secretkey", "secretkey"),
+    ZEPPELIN_NOTEBOOK_MINIO_HTTPS("zeppelin.notebook.minio.https", true),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
