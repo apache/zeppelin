@@ -18,6 +18,7 @@
 package org.apache.zeppelin.kylin;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -29,10 +30,10 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -168,26 +169,31 @@ public class KylinInterpreter extends Interpreter {
   private InterpreterResult executeQuery(String sql) throws IOException {
 
     HttpResponse response = prepareRequest(sql);
-
-    if (response.getStatusLine().getStatusCode() != 200) {
-      logger.error("failed to execute query: " + response.getEntity().getContent().toString());
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Failed : HTTP error code " + response.getStatusLine().getStatusCode());
+    String result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+    int code = response.getStatusLine().getStatusCode();
+    if (code != 200) {
+      StringBuilder errorMessage = new StringBuilder("Failed : HTTP error code " + code);
+      logger.error("failed to execute query: " + result);
+      try {
+        JSONObject content = new JSONObject(result);
+        if (content.has("exception")) {
+          errorMessage.append(". Error message: " + content.getString("exception"));
+        }
+      } catch (JSONException e) {
+        logger.error("Cannot parse json string ", e);
+        // when code is 401, the response is html, not json
+        if (code == 401) {
+          errorMessage.append(". Error message: Unauthorized. This request requires "
+              + "HTTP authentication. Please make sure your have set your credentials correctly.");
+        } else {
+          errorMessage.append(". Error message: " + result);
+        }
+      }
+      return new InterpreterResult(InterpreterResult.Code.ERROR, errorMessage.toString());
     }
 
-    BufferedReader br = new BufferedReader(
-        new InputStreamReader((response.getEntity().getContent())));
-    StringBuilder sb = new StringBuilder();
-
-    String output;
-    logger.info("Output from Server .... \n");
-    while ((output = br.readLine()) != null) {
-      logger.info(output);
-      sb.append(output).append('\n');
-    }
-    InterpreterResult rett = new InterpreterResult(InterpreterResult.Code.SUCCESS, 
-        formatResult(sb.toString()));
-    return rett;
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+        formatResult(result));
   }
 
   String formatResult(String msg) {
