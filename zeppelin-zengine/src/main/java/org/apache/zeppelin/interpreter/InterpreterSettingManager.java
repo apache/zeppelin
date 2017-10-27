@@ -192,8 +192,15 @@ public class InterpreterSettingManager {
           Map<String, InterpreterProperty> mergedProperties =
               new HashMap<>(InterpreterSetting.convertInterpreterProperties(
                   interpreterSettingTemplate.getProperties()));
-          mergedProperties.putAll(InterpreterSetting.convertInterpreterProperties(
-              savedInterpreterSetting.getProperties()));
+          Map<String, InterpreterProperty> savedProperties = InterpreterSetting
+              .convertInterpreterProperties(savedInterpreterSetting.getProperties());
+          for (Map.Entry<String, InterpreterProperty> entry : savedProperties.entrySet()) {
+            // only merge properties whose value is not empty
+            if (entry.getValue().getValue() != null && !
+                StringUtils.isBlank(entry.getValue().toString())) {
+              mergedProperties.put(entry.getKey(), entry.getValue());
+            }
+          }
           savedInterpreterSetting.setProperties(mergedProperties);
           // merge InterpreterInfo
           savedInterpreterSetting.setInterpreterInfos(
@@ -737,11 +744,12 @@ public class InterpreterSettingManager {
   }
 
   /**
-   * Change interpreter property and restart
+   * Change interpreter properties and restart
    */
   public void setPropertyAndRestart(String id, InterpreterOption option,
                                     Map<String, InterpreterProperty> properties,
-                                    List<Dependency> dependencies) throws IOException {
+                                    List<Dependency> dependencies)
+      throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpSetting = interpreterSettings.get(id);
       if (intpSetting != null) {
@@ -754,7 +762,7 @@ public class InterpreterSettingManager {
           saveToFile();
         } catch (Exception e) {
           loadFromFile();
-          throw e;
+          throw new IOException(e);
         }
       } else {
         throw new InterpreterException("Interpreter setting id " + id + " not found");
@@ -763,7 +771,7 @@ public class InterpreterSettingManager {
   }
 
   // restart in note page
-  public void restart(String settingId, String noteId, String user) {
+  public void restart(String settingId, String noteId, String user) throws InterpreterException {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
     synchronized (interpreterSettings) {
@@ -774,20 +782,14 @@ public class InterpreterSettingManager {
         //clean up metaInfos
         intpSetting.setInfos(null);
         copyDependenciesFromLocalPath(intpSetting);
-
-        if (user.equals("anonymous")) {
-          intpSetting.close();
-        } else {
-          intpSetting.closeInterpreters(user, noteId);
-        }
-
+        intpSetting.closeInterpreters(user, noteId);
       } else {
         throw new InterpreterException("Interpreter setting id " + settingId + " not found");
       }
     }
   }
 
-  public void restart(String id) {
+  public void restart(String id) throws InterpreterException {
     restart(id, "", "anonymous");
   }
 

@@ -44,13 +44,13 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public void setProperty(Properties property) {
-    intp.setProperty(property);
+  public void setProperties(Properties properties) {
+    intp.setProperties(properties);
   }
 
   @Override
-  public Properties getProperty() {
-    return intp.getProperty();
+  public Properties getProperties() {
+    return intp.getProperties();
   }
 
   @Override
@@ -59,7 +59,7 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public synchronized void open() {
+  public synchronized void open() throws InterpreterException {
     if (opened == true) {
       return;
     }
@@ -73,12 +73,13 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
+  public InterpreterResult executePrecode(InterpreterContext interpreterContext)
+      throws InterpreterException {
     return intp.executePrecode(interpreterContext);
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     synchronized (intp) {
       if (opened == true) {
         intp.close();
@@ -94,7 +95,8 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     open();
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
@@ -105,18 +107,18 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     open();
     intp.cancel(context);
   }
 
   @Override
-  public FormType getFormType() {
+  public FormType getFormType() throws InterpreterException {
     return intp.getFormType();
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     if (opened) {
       return intp.getProgress(context);
     } else {
@@ -131,7 +133,7 @@ public class LazyOpenInterpreter
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) throws InterpreterException {
     open();
     List completion = intp.completion(buf, cursor, interpreterContext);
     return completion;

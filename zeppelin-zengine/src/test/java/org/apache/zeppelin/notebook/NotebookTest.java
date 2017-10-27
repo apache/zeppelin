@@ -23,8 +23,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
-import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -32,9 +30,6 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
-import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
@@ -667,7 +662,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Test
   public void testAngularObjectRemovalOnInterpreterRestart() throws InterruptedException,
-      IOException {
+      IOException, InterpreterException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
@@ -795,7 +790,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   
   @Test
   public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
-      IOException {
+      IOException, InterpreterException {
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
@@ -829,7 +824,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
-  public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException {
+  public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException, InterpreterException {
     // create a notes
     Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -861,7 +856,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
-  public void testPerSessionInterpreter() throws IOException {
+  public void testPerSessionInterpreter() throws IOException, InterpreterException {
     // create two notes
     Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -905,7 +900,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
 
   @Test
-  public void testPerNoteSessionInterpreter() throws IOException {
+  public void testPerNoteSessionInterpreter() throws IOException, InterpreterException {
     // create two notes
     Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -964,7 +959,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
-  public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException {
+  public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException, InterpreterException {
     // create a notes
     Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);

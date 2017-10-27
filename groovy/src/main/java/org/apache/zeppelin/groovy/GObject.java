@@ -172,7 +172,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   /**
    * starts or continues rendering html/angular and returns MarkupBuilder to build html.
    * <pre> g.html().with{
-   * 	h1("hello")
+   *  h1("hello")
    *  h2("world")
    * }</pre>
    */
@@ -316,12 +316,12 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   @ZeppelinApi
   public void run(String noteId, String paragraphId, InterpreterContext context) {
     if (paragraphId.equals(context.getParagraphId())) {
-      throw new InterpreterException("Can not run current Paragraph");
+      throw new RuntimeException("Can not run current Paragraph");
     }
     List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, paragraphId,
         context);
     if (runners.size() <= 0) {
-      throw new InterpreterException("Paragraph " + paragraphId + " not found " + runners.size());
+      throw new RuntimeException("Paragraph " + paragraphId + " not found " + runners.size());
     }
     for (InterpreterContextRunner r : runners) {
       r.run();
@@ -338,7 +338,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
     List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
 
     if (runners.size() <= 0) {
-      throw new InterpreterException("Note " + noteId + " not found " + runners.size());
+      throw new RuntimeException("Note " + noteId + " not found " + runners.size());
     }
 
     for (InterpreterContextRunner r : runners) {

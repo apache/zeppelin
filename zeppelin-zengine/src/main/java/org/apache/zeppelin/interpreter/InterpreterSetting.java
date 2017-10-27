@@ -18,7 +18,6 @@
 package org.apache.zeppelin.interpreter;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -34,19 +33,22 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
+import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
+import org.apache.zeppelin.interpreter.launcher.ShellScriptLauncher;
+import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -58,7 +60,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,6 +133,10 @@ public class InterpreterSetting {
 
   private transient ZeppelinConfiguration conf = new ZeppelinConfiguration();
 
+  // TODO(zjffdu) ShellScriptLauncher is the only launcher implemention for now. It could be other
+  // launcher in future when we have other launcher implementation. e.g. third party launcher
+  // service like livy
+  private transient InterpreterLauncher launcher;
   ///////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -200,10 +205,10 @@ public class InterpreterSetting {
       return this;
     }
 
-//    public Builder setInterpreterRunner(InterpreterRunner runner) {
-//      interpreterSetting.interpreterRunner = runner;
-//      return this;
-//    }
+    public Builder setInterpreterRunner(InterpreterRunner runner) {
+      interpreterSetting.interpreterRunner = runner;
+      return this;
+    }
 
     public Builder setIntepreterSettingManager(
         InterpreterSettingManager interpreterSettingManager) {
@@ -264,6 +269,14 @@ public class InterpreterSetting {
     this.interpreterDir = o.getInterpreterDir();
     this.interpreterRunner = o.getInterpreterRunner();
     this.conf = o.getConf();
+  }
+
+  private void createLauncher() {
+    if (group.equals("spark")) {
+      this.launcher = new SparkInterpreterLauncher(this.conf);
+    } else {
+      this.launcher = new ShellScriptLauncher(this.conf);
+    }
   }
 
   public AngularObjectRegistryListener getAngularObjectRegistryListener() {
@@ -356,7 +369,7 @@ public class InterpreterSetting {
     try {
       interpreterGroupWriteLock.lock();
       if (!interpreterGroups.containsKey(groupId)) {
-        LOGGER.info("Create InterpreterGroup with groupId {} for user {} and note {}",
+        LOGGER.info("Create InterpreterGroup with groupId: {} for user: {} and note: {}",
             groupId, user, noteId);
         ManagedInterpreterGroup intpGroup = createInterpreterGroup(groupId);
         interpreterGroups.put(groupId, intpGroup);
@@ -626,155 +639,20 @@ public class InterpreterSetting {
     }
     return interpreters;
   }
-  
-  RemoteInterpreterProcess createInterpreterProcess() {
-    RemoteInterpreterProcess remoteInterpreterProcess = null;
-    int connectTimeout =
-        conf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + id;
-    if (option.isExistingProcess()) {
-      // TODO(zjffdu) remove the existing process approach seems no one is using this.
-      // use the existing process
-      remoteInterpreterProcess = new RemoteInterpreterRunningProcess(
-          connectTimeout,
-          remoteInterpreterProcessListener,
-          appEventListener,
-          option.getHost(),
-          option.getPort());
-    } else {
-      // create new remote process
-      remoteInterpreterProcess = new RemoteInterpreterManagedProcess(
-          interpreterRunner != null ? interpreterRunner.getPath() :
-              conf.getInterpreterRemoteRunnerPath(), conf.getCallbackPortRange(),
-          interpreterDir, localRepoPath,
-          getEnvFromInterpreterProperty(), connectTimeout,
-          remoteInterpreterProcessListener, appEventListener, group);
+
+  synchronized RemoteInterpreterProcess createInterpreterProcess() throws IOException {
+    if (launcher == null) {
+      createLauncher();
     }
-    return remoteInterpreterProcess;
+    InterpreterLaunchContext launchContext = new
+        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, group);
+    RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
+    process.setRemoteInterpreterEventPoller(
+        new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
+    return process;
   }
 
-  private boolean isSparkConf(String key, String value) {
-    return !StringUtils.isEmpty(key) && key.startsWith("spark.") && !StringUtils.isEmpty(value);
-  }
-
-  private Map<String, String> getEnvFromInterpreterProperty() {
-    Map<String, String> env = new HashMap<String, String>();
-    Properties javaProperties = getJavaProperties();
-    Properties sparkProperties = new Properties();
-    String sparkMaster = getSparkMaster();
-    for (String key : javaProperties.stringPropertyNames()) {
-      if (RemoteInterpreterUtils.isEnvString(key)) {
-        env.put(key, javaProperties.getProperty(key));
-      }
-      if (isSparkConf(key, javaProperties.getProperty(key))) {
-        sparkProperties.setProperty(key, toShellFormat(javaProperties.getProperty(key)));
-      }
-    }
-
-    setupPropertiesForPySpark(sparkProperties);
-    setupPropertiesForSparkR(sparkProperties, System.getenv("SPARK_HOME"));
-    if (isYarnMode() && getDeployMode().equals("cluster")) {
-      env.put("SPARK_YARN_CLUSTER", "true");
-    }
-
-    StringBuilder sparkConfBuilder = new StringBuilder();
-    if (sparkMaster != null) {
-      sparkConfBuilder.append(" --master " + sparkMaster);
-    }
-    if (isYarnMode() && getDeployMode().equals("cluster")) {
-      sparkConfBuilder.append(" --files " + conf.getConfDir() + "/log4j_yarn_cluster.properties");
-    }
-    for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
-    }
-
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
-    LOGGER.debug("getEnvFromInterpreterProperty: " + env);
-    return env;
-  }
-
-  private void setupPropertiesForPySpark(Properties sparkProperties) {
-    if (isYarnMode()) {
-      sparkProperties.setProperty("spark.yarn.isPython", "true");
-    }
-  }
-
-  private void mergeSparkProperty(Properties sparkProperties, String propertyName,
-                                  String propertyValue) {
-    if (sparkProperties.containsKey(propertyName)) {
-      String oldPropertyValue = sparkProperties.getProperty(propertyName);
-      sparkProperties.setProperty(propertyName, oldPropertyValue + "," + propertyValue);
-    } else {
-      sparkProperties.setProperty(propertyName, propertyValue);
-    }
-  }
-
-  private void setupPropertiesForSparkR(Properties sparkProperties,
-                                        String sparkHome) {
-    File sparkRBasePath = null;
-    if (sparkHome == null) {
-      if (!getSparkMaster().startsWith("local")) {
-        throw new RuntimeException("SPARK_HOME is not specified for non-local mode");
-      }
-      String zeppelinHome = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME);
-      sparkRBasePath = new File(zeppelinHome,
-          "interpreter" + File.separator + "spark" + File.separator + "R");
-    } else {
-      sparkRBasePath = new File(sparkHome, "R" + File.separator + "lib");
-    }
-
-    File sparkRPath = new File(sparkRBasePath, "sparkr.zip");
-    if (sparkRPath.exists() && sparkRPath.isFile()) {
-      mergeSparkProperty(sparkProperties, "spark.yarn.dist.archives", sparkRPath.getAbsolutePath());
-    } else {
-      LOGGER.warn("sparkr.zip is not found, SparkR may not work.");
-    }
-  }
-
-  private String getSparkMaster() {
-    String master = getJavaProperties().getProperty("master");
-    if (master == null) {
-      master = getJavaProperties().getProperty("spark.master", "local[*]");
-    }
-    return master;
-  }
-
-  private String getDeployMode() {
-    String master = getSparkMaster();
-    if (master.equals("yarn-client")) {
-      return "client";
-    } else if (master.equals("yarn-cluster")) {
-      return "cluster";
-    } else if (master.startsWith("local")) {
-      return "client";
-    } else {
-      String deployMode = getJavaProperties().getProperty("spark.submit.deployMode");
-      if (deployMode == null) {
-        throw new RuntimeException("master is set as yarn, but spark.submit.deployMode " +
-            "is not specified");
-      }
-      if (!deployMode.equals("client") && !deployMode.equals("cluster")) {
-        throw new RuntimeException("Invalid value for spark.submit.deployMode: " + deployMode);
-      }
-      return deployMode;
-    }
-  }
-
-  private boolean isYarnMode() {
-    return getSparkMaster().startsWith("yarn");
-  }
-
-  private String toShellFormat(String value) {
-    if (value.contains("\'") && value.contains("\"")) {
-      throw new RuntimeException("Spark property value could not contain both \" and '");
-    } else if (value.contains("\'")) {
-      return "\"" + value + "\"";
-    } else {
-      return "\'" + value + "\'";
-    }
-  }
-
-  private List<Interpreter> getOrCreateSession(String user, String noteId) {
+  List<Interpreter> getOrCreateSession(String user, String noteId) {
     ManagedInterpreterGroup interpreterGroup = getOrCreateInterpreterGroup(user, noteId);
     Preconditions.checkNotNull(interpreterGroup, "No InterpreterGroup existed for user {}, " +
         "noteId {}", user, noteId);
@@ -815,8 +693,7 @@ public class InterpreterSetting {
     return null;
   }
 
-  private ManagedInterpreterGroup createInterpreterGroup(String groupId)
-      throws InterpreterException {
+  private ManagedInterpreterGroup createInterpreterGroup(String groupId) {
     AngularObjectRegistry angularObjectRegistry;
     ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup(groupId, this);
     angularObjectRegistry =
@@ -938,7 +815,8 @@ public class InterpreterSetting {
           );
           newProperties.put(key, property);
         } else {
-          throw new RuntimeException("Can not convert this type of property: " + value.getClass());
+          throw new RuntimeException("Can not convert this type of property: " +
+              value.getClass());
         }
       }
       return newProperties;

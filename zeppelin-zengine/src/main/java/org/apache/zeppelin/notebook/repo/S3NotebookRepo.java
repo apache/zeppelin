@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.ClientConfigurationFactory;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
@@ -94,33 +96,30 @@ public class S3NotebookRepo implements NotebookRepo {
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
-    CryptoConfiguration cryptoConf = null;
+    CryptoConfiguration cryptoConf = new CryptoConfiguration();
     String keyRegion = conf.getS3KMSKeyRegion();
 
     if (StringUtils.isNotBlank(keyRegion)) {
-      cryptoConf = new CryptoConfiguration();
       cryptoConf.setAwsKmsRegion(Region.getRegion(Regions.fromName(keyRegion)));
     }
+
+    ClientConfiguration cliConf = createClientConfiguration();
     
     // see if we should be encrypting data in S3
     String kmsKeyID = conf.getS3KMSKeyID();
     if (kmsKeyID != null) {
       // use the AWS KMS to encrypt data
       KMSEncryptionMaterialsProvider emp = new KMSEncryptionMaterialsProvider(kmsKeyID);
-      if (cryptoConf != null) {
-        this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cryptoConf);
-      } else {
-        this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
-      }
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cliConf, cryptoConf);
     }
     else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
       // use a custom encryption materials provider class
       EncryptionMaterialsProvider emp = createCustomProvider(conf);
-      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp);
+      this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cliConf, cryptoConf);
     }
     else {
       // regular S3
-      this.s3client = new AmazonS3Client(credentialsProvider);
+      this.s3client = new AmazonS3Client(credentialsProvider, cliConf);
     }
 
     // set S3 endpoint to use
@@ -152,6 +151,22 @@ public class S3NotebookRepo implements NotebookRepo {
     }
 
     return emp;
+  }
+
+  /**
+   * Create AWS client configuration and return it.
+   * @return AWS client configuration
+   */
+  private ClientConfiguration createClientConfiguration() {
+    ClientConfigurationFactory configFactory = new ClientConfigurationFactory();
+    ClientConfiguration config = configFactory.getConfig();
+
+    String s3SignerOverride = conf.getS3SignerOverride();
+    if (StringUtils.isNotBlank(s3SignerOverride)) {
+      config.setSignerOverride(s3SignerOverride);
+    }
+
+    return config;
   }
 
   @Override

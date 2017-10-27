@@ -68,7 +68,7 @@ public class HbaseInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     this.scriptingContainer  = new ScriptingContainer(LocalContextScope.SINGLETON);
     this.writer = new StringWriter();
     scriptingContainer.setOutput(this.writer);
@@ -88,7 +88,7 @@ public class HbaseInterpreter extends Interpreter {
       }
 
       logger.info("Absolute Ruby Source:" + abs_ruby_src.toString());
-      // hirb.rb:41 requires the following system property to be set.
+      // hirb.rb:41 requires the following system properties to be set.
       Properties sysProps = System.getProperties();
       sysProps.setProperty(HBASE_RUBY_SRC, abs_ruby_src.toString());
 
