@@ -5,6 +5,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.notebook.Note;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -68,5 +69,9 @@ public abstract class AbstractInterpreterTest {
     FileUtils.deleteDirectory(interpreterDir);
     FileUtils.deleteDirectory(confDir);
     FileUtils.deleteDirectory(notebookDir);
+  }
+
+  protected Note createNote() {
+    return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
   }
 }

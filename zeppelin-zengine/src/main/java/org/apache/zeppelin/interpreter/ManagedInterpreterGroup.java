@@ -56,7 +56,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() throws IOException {
     if (remoteInterpreterProcess == null) {
-      LOGGER.info("Create InterperterProcess for InterpreterGroup: " + getId());
+      LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
       remoteInterpreterProcess = interpreterSetting.createInterpreterProcess();
     }
     return remoteInterpreterProcess;

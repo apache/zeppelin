@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook.repo;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -141,6 +143,7 @@ public class GitNotebookRepoTest {
 
     //modify, save and checkpoint first note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
@@ -156,6 +159,7 @@ public class GitNotebookRepoTest {
 
     //modify, save and checkpoint second note
     note = notebookRepo.get(TEST_NOTE_ID2, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     config = p.getConfig();
     config.put("enabled", false);
@@ -182,6 +186,7 @@ public class GitNotebookRepoTest {
     
     // add changes to note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
@@ -221,6 +226,7 @@ public class GitNotebookRepoTest {
 
     // add paragraph and save
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
@@ -240,6 +246,7 @@ public class GitNotebookRepoTest {
 
     // get current note
     note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
 
     // add one more paragraph and save
@@ -249,6 +256,7 @@ public class GitNotebookRepoTest {
     p2.setText("get revision when modified note test text");
     notebookRepo.save(note, null);
     note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     int paragraphCount_3 = note.getParagraphs().size();
     assertThat(paragraphCount_3).isEqualTo(paragraphCount_2 + 1);
 
@@ -276,6 +284,7 @@ public class GitNotebookRepoTest {
 
     // get current note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_1);
 
     // add one more paragraph and save
@@ -293,6 +302,7 @@ public class GitNotebookRepoTest {
 
     // get current note
     note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     assertThat(note.getParagraphs().size()).isEqualTo(paragraphCount_2);
 
     // test for absent revision
@@ -311,6 +321,7 @@ public class GitNotebookRepoTest {
     
     // get current note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     int paragraphCount_1 = note.getParagraphs().size();
     LOG.info("initial paragraph count: {}", paragraphCount_1);
     

@@ -341,7 +341,7 @@ public class Helium {
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
     HeliumPackageSuggestion suggestion = new HeliumPackageSuggestion();
 
-    Interpreter intp = paragraph.getCurrentRepl();
+    Interpreter intp = paragraph.getInterpreter();
     if (intp == null) {
       return suggestion;
     }
