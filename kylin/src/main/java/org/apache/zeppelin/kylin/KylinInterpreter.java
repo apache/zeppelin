@@ -211,17 +211,20 @@ public class KylinInterpreter extends Interpreter {
       table = mr.group(1);
     }
 
-    String[] row = table.split("],\\[");
-    for (int i = 0; i < row.length; i++) {
-      String[] col = row[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-      for (int j = 0; j < col.length; j++) {
-        if (col[j] != null) {
-          col[j] = col[j].replaceAll("^\"|\"$", "");
+    if (table != null && !table.isEmpty()) {
+      String[] row = table.split("],\\[");
+      for (int i = 0; i < row.length; i++) {
+        String[] col = row[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+        for (int j = 0; j < col.length; j++) {
+          if (col[j] != null) {
+            col[j] = col[j].replaceAll("^\"|\"$", "");
+          }
+          res.append(col[j] + " \t");
         }
-        res.append(col[j] + " \t");
+        res.append(" \n");
       }
-      res.append(" \n");
     }
+
     return res.toString();
   }
 
