@@ -26,6 +26,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class InterpreterFactoryTest extends AbstractInterpreterTest {
 
@@ -56,12 +57,22 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
   @Test
   public void testUnknownRepl1() throws IOException {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertNull(interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl"));
+    try {
+      interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl");
+      fail("should fail due to no such interpreter");
+    } catch (RuntimeException e) {
+      assertEquals("No such interpreter: test.unknown_repl", e.getMessage());
+    }
   }
 
   @Test
   public void testUnknownRepl2() throws IOException {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertNull(interpreterFactory.getInterpreter("user1", "note1", "unknown_repl"));
+    try {
+      interpreterFactory.getInterpreter("user1", "note1", "unknown_repl");
+      fail("should fail due to no such interpreter");
+    } catch (RuntimeException e) {
+      assertEquals("Either no interpreter named unknown_repl or it is not binded to this note", e.getMessage());
+    }
   }
 }
