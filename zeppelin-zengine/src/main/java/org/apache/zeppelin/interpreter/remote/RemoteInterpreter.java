@@ -162,7 +162,7 @@ public class RemoteInterpreter extends Interpreter {
   private void internal_create() throws IOException {
     synchronized (this) {
       if (!isCreated) {
-        RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+        this.interpreterProcess = getOrCreateInterpreterProcess();
         interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
           @Override
           public Void call(Client client) throws Exception {
