@@ -64,11 +64,11 @@ public class ParagraphTest extends AbstractInterpreterTest {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
     paragraph.setText("%test(1234567");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("(1234567", paragraph.getScriptText());
 
     paragraph.setText("%test 1234567");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("1234567", paragraph.getScriptText());
   }
 
@@ -77,7 +77,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
     paragraph.setText("1234567");
-    assertEquals("", paragraph.getReplText());
+    assertEquals("", paragraph.getIntpText());
     assertEquals("1234567", paragraph.getScriptText());
   }
 
@@ -86,7 +86,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
     paragraph.setText("%test");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("", paragraph.getScriptText());
   }
 
@@ -95,8 +95,25 @@ public class ParagraphTest extends AbstractInterpreterTest {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
     paragraph.setText("%r a");
-    assertEquals("r", paragraph.getReplText());
+    assertEquals("r", paragraph.getIntpText());
     assertEquals("a", paragraph.getScriptText());
+  }
+
+  @Test
+  public void replInvalid() {
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("foo %r");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("foo %r", paragraph.getScriptText());
+
+    paragraph.setText("foo%r");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("foo%r", paragraph.getScriptText());
+
+    paragraph.setText("% foo");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("% foo", paragraph.getScriptText());
   }
 
   @Test
@@ -104,28 +121,40 @@ public class ParagraphTest extends AbstractInterpreterTest {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
     paragraph.setText("%test\r\n###Hello");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\t###Hello");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\u000b###Hello");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\f###Hello");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test\n###Hello");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("###Hello", paragraph.getScriptText());
 
     paragraph.setText("%test ###Hello");
-    assertEquals("test", paragraph.getReplText());
+    assertEquals("test", paragraph.getIntpText());
     assertEquals("###Hello", paragraph.getScriptText());
+
+    paragraph.setText(" %test ###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
+
+    paragraph.setText("\n\r%test ###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
+
+    paragraph.setText("%\r\n###Hello");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("%\r\n###Hello", paragraph.getScriptText());
   }
 
   @Test
@@ -185,7 +214,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
 
     Interpreter mockInterpreter = mock(Interpreter.class);
     spyParagraph.setInterpreter(mockInterpreter);
-    doReturn(mockInterpreter).when(spyParagraph).getInterpreter();
+    doReturn(mockInterpreter).when(spyParagraph).getBindedInterpreter();
 
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
@@ -242,7 +271,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   @Test
   public void testCursorPosition() {
     Paragraph paragraph = spy(new Paragraph());
-    doReturn(null).when(paragraph).getReplText();
+    doReturn(null).when(paragraph).getIntpText();
     // left = buffer, middle = cursor position into source code, right = cursor position after parse
     List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
         Triple.of("%jdbc schema.", 13, 7),

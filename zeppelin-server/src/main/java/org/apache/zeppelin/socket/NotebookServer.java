@@ -1515,7 +1515,7 @@ public class NotebookServer extends WebSocketServlet
     if (paragraph == null) {
       throw new IllegalArgumentException("Unknown paragraph with id : " + paragraphId);
     }
-    return paragraph.getInterpreter().getInterpreterGroup();
+    return paragraph.getBindedInterpreter().getInterpreterGroup();
   }
 
   private void pushAngularObjectToRemoteRegistry(String noteId, String paragraphId, String varName,

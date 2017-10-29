@@ -567,9 +567,9 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     if (paragraphs.size() > 0) {
       String replName;
       if (index == 0) {
-        replName = paragraphs.get(0).getReplText();
+        replName = paragraphs.get(0).getIntpText();
       } else {
-        replName = paragraphs.get(index - 1).getReplText();
+        replName = paragraphs.get(index - 1).getIntpText();
       }
       if (p.isValidInterpreter(replName) && StringUtils.isNotEmpty(replName)) {
         p.setText("%" + replName + "\n");

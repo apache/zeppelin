@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -72,10 +73,8 @@ import com.google.common.collect.Maps;
  */
 public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
-  private static final long serialVersionUID = -6328572073497992016L;
-
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN = Pattern.compile("%([\\w\\.]+).*", Pattern.DOTALL);
+  private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
 
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -84,8 +83,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap(); // personalized
 
   private String title;
-  private String text;  // text is composed of replText and scriptText.
-  private transient String replText;
+  private String text;  // text is composed of intpText and scriptText.
+  private transient String intpText;
   private transient String scriptText;
   private String user;
   private Date dateUpdated;
@@ -180,17 +179,19 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public void setText(String newText) {
+    // strip white space from the beginning
     this.text = newText;
     this.dateUpdated = new Date();
     // parse text to get interpreter component
     if (this.text != null) {
       Matcher matcher = REPL_PATTERN.matcher(this.text);
       if (matcher.matches()) {
-        this.replText = matcher.group(1);
-        this.interpreter = interpreterFactory.getInterpreter(user, note.getId(), replText);
-        this.scriptText = this.text.substring(replText.length() + 1).trim();
+        String headingSpace = matcher.group(1);
+        this.intpText = matcher.group(2);
+        this.interpreter = interpreterFactory.getInterpreter(user, note.getId(), intpText);
+        this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
       } else {
-        this.replText = "";
+        this.intpText = "";
         this.interpreter = interpreterFactory.getInterpreter(user, note.getId(), "");
         this.scriptText = this.text;
       }
@@ -214,8 +215,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     this.title = title;
   }
 
-  public String getReplText() {
-    return replText;
+  public String getIntpText() {
+    return intpText;
   }
 
   public String getScriptText() {
@@ -235,8 +236,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return enabled == null || enabled.booleanValue();
   }
 
-  public Interpreter getInterpreter() {
-    return this.interpreter;
+  public Interpreter getBindedInterpreter() {
+    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -278,7 +279,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (trimmedBuffer != null) {
       Matcher matcher = REPL_PATTERN.matcher(trimmedBuffer);
       if (matcher.matches()) {
-        repl = matcher.group(1);
+        repl = matcher.group(2);
       }
     }
 
@@ -346,11 +347,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     clearRuntimeInfo(null);
-    this.interpreter = interpreterFactory.getInterpreter(user, note.getId(), replText);
+    this.interpreter = getBindedInterpreter();
 
     if (interpreter == null) {
       String intpExceptionMsg =
-          getJobName() + "'s Interpreter " + getReplText() + " not found";
+          getJobName() + "'s Interpreter " + getIntpText() + " not found";
       RuntimeException intpException = new RuntimeException(intpExceptionMsg);
       InterpreterResult intpResult =
           new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
@@ -379,10 +380,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   @Override
   protected Object jobRun() throws Throwable {
-    logger.info("run paragraph {} using {} ", getId(), replText);
+    logger.info("Run paragraph {} using {} ", getId(), intpText);
+    this.interpreter = getBindedInterpreter();
     if (this.interpreter == null) {
-      logger.error("Can not find interpreter name " + replText);
-      throw new RuntimeException("Can not find interpreter for " + replText);
+      logger.error("Can not find interpreter name " + intpText);
+      throw new RuntimeException("Can not find interpreter for " + intpText);
     }
     InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
         interpreter.getInterpreterGroup()).getInterpreterSetting();
@@ -392,9 +394,9 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (this.hasUser() && this.note.hasInterpreterBinded()) {
       if (interpreterSetting != null && interpreterHasUser(interpreterSetting)
           && isUserAuthorizedToAccessInterpreter(interpreterSetting.getOption()) == false) {
-        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), replText);
+        logger.error("{} has no permission for {} ", authenticationInfo.getUser(), intpText);
         return new InterpreterResult(Code.ERROR,
-            authenticationInfo.getUser() + " has no permission for " + replText);
+            authenticationInfo.getUser() + " has no permission for " + intpText);
       }
     }
 
@@ -409,13 +411,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     } else if (interpreter.getFormType() == FormType.SIMPLE) {
       // inputs will be built from script scriptText
       LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(this.scriptText);
-
       final AngularObjectRegistry angularRegistry =
           interpreter.getInterpreterGroup().getAngularObjectRegistry();
-
       String scriptBody = extractVariablesFromAngularRegistry(this.scriptText, inputs,
           angularRegistry);
-
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
@@ -546,7 +545,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     InterpreterContext interpreterContext =
-        new InterpreterContext(note.getId(), getId(), replText, this.getTitle(),
+        new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
             this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
             resourcePool, runners, output);
     return interpreterContext;
@@ -576,7 +575,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     InterpreterContext interpreterContext =
-        new InterpreterContext(note.getId(), getId(), replText, this.getTitle(),
+        new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
             this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
             resourcePool, runners, output);
     return interpreterContext;

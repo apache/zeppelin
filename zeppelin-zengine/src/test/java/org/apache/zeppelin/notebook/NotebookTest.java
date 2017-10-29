@@ -144,7 +144,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // then interpreter factory should be injected into all the paragraphs
     Note note = notebook.getAllNotes().get(0);
-    assertNull(note.getParagraphs().get(0).getInterpreter());
+    assertNull(note.getParagraphs().get(0).getBindedInterpreter());
   }
 
   @Test
