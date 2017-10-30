@@ -17,11 +17,12 @@
 
 package org.apache.zeppelin.interpreter;
 
+
 /**
  * Runtime Exception for interpreters.
  *
  */
-public class InterpreterException extends RuntimeException {
+public class InterpreterException extends Exception {
 
   public InterpreterException(Throwable e) {
     super(e);

@@ -18,7 +18,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.PrivilegedAction;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +34,8 @@ import java.util.Map;
  *              - noteId/note.json
  *              - noteId/note.json
  */
-public class HdfsNotebookRepo implements NotebookRepo {
-  private static final Logger LOGGER = LoggerFactory.getLogger(HdfsNotebookRepo.class);
-
+public class FileSystemNotebookRepo implements NotebookRepo {
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemNotebookRepo.class);
 
   private Configuration hadoopConf;
   private ZeppelinConfiguration zConf;
@@ -43,15 +43,16 @@ public class HdfsNotebookRepo implements NotebookRepo {
   private FileSystem fs;
   private Path notebookDir;
 
-  public HdfsNotebookRepo(ZeppelinConfiguration zConf) throws IOException {
+  public FileSystemNotebookRepo(ZeppelinConfiguration zConf) throws IOException {
     this.zConf = zConf;
     this.hadoopConf = new Configuration();
-    this.notebookDir = new Path(zConf.getNotebookDir());
-    LOGGER.info("Use hdfs directory {} to store notebook", notebookDir);
+
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     if (isSecurityEnabled) {
-      String keytab = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HDFS_KEYTAB);
-      String principal = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HDFS_PRINCIPAL);
+      String keytab = zConf.getString(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
+      String principal = zConf.getString(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
       if (StringUtils.isBlank(keytab) || StringUtils.isBlank(principal)) {
         throw new IOException("keytab and principal can not be empty, keytab: " + keytab
             + ", principal: " + principal);
@@ -59,7 +60,14 @@ public class HdfsNotebookRepo implements NotebookRepo {
       UserGroupInformation.loginUserFromKeytab(principal, keytab);
     }
 
-    this.fs = FileSystem.get(new Configuration());
+    try {
+      this.fs = FileSystem.get(new URI(zConf.getNotebookDir()), new Configuration());
+      LOGGER.info("Creating FileSystem: " + this.fs.getClass().getCanonicalName());
+      this.notebookDir = fs.makeQualified(new Path(zConf.getNotebookDir()));
+      LOGGER.info("Using folder {} to store notebook", notebookDir);
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
     if (!fs.exists(notebookDir)) {
       fs.mkdirs(notebookDir);
       LOGGER.info("Create notebook dir {} in hdfs", notebookDir.toString());
@@ -68,7 +76,6 @@ public class HdfsNotebookRepo implements NotebookRepo {
       throw new IOException("notebookDir {} is file instead of directory, please remove it or " +
           "specify another directory");
     }
-
   }
 
   @Override
@@ -180,7 +187,7 @@ public class HdfsNotebookRepo implements NotebookRepo {
     T call() throws IOException;
   }
 
-  public <T> T callHdfsOperation(final HdfsOperation<T> func) throws IOException {
+  public synchronized <T> T callHdfsOperation(final HdfsOperation<T> func) throws IOException {
     if (isSecurityEnabled) {
       UserGroupInformation.getLoginUser().reloginFromKeytab();
       try {

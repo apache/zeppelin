@@ -28,7 +28,8 @@ public class InterpreterOption {
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
 
-  boolean remote;
+  // always set it as true, keep this field just for backward compatibility
+  boolean remote = true;
   String host = null;
   int port = -1;
 
@@ -77,14 +78,9 @@ public class InterpreterOption {
   }
 
   public InterpreterOption() {
-    this(false);
   }
 
-  public InterpreterOption(boolean remote) {
-    this(remote, SHARED, SHARED);
-  }
-
-  public InterpreterOption(boolean remote, String perUser, String perNote) {
+  public InterpreterOption(String perUser, String perNote) {
     if (perUser == null) {
       throw new NullPointerException("perUser can not be null.");
     }
@@ -92,7 +88,6 @@ public class InterpreterOption {
       throw new NullPointerException("perNote can not be null.");
     }
 
-    this.remote = remote;
     this.perUser = perUser;
     this.perNote = perNote;
   }
@@ -110,14 +105,6 @@ public class InterpreterOption {
         new ArrayList<String>() : new ArrayList<>(other.owners);
 
     return option;
-  }
-
-  public boolean isRemote() {
-    return remote;
-  }
-
-  public void setRemote(boolean remote) {
-    this.remote = remote;
   }
 
   public String getHost() {

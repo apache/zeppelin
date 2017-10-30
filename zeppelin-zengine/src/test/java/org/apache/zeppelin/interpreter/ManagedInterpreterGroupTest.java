@@ -41,7 +41,6 @@ public class ManagedInterpreterGroupTest {
   public void setUp() throws IOException, RepositoryException {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    interpreterOption.setRemote(false);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();

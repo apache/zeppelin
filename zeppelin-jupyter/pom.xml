@@ -63,7 +63,7 @@
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-markdown</artifactId>
-      <version>${zeppelin.version}</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Test -->

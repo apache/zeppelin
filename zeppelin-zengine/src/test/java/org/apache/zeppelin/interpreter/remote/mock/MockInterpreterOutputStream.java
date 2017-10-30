@@ -52,7 +52,8 @@ public class MockInterpreterOutputStream extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     String[] ret = st.split(":");
     try {
       if (ret[1] != null) {

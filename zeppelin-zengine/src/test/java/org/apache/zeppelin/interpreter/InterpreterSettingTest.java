@@ -32,7 +32,6 @@ public class InterpreterSettingTest {
   public void testCreateInterpreters() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
-    interpreterOption.setRemote(false);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -64,7 +63,6 @@ public class InterpreterSettingTest {
   public void testSharedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
-    interpreterOption.setRemote(false);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -101,7 +99,6 @@ public class InterpreterSettingTest {
   public void testPerUserScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -138,7 +135,6 @@ public class InterpreterSettingTest {
   public void testPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -175,7 +171,6 @@ public class InterpreterSettingTest {
   public void testPerUserIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -212,7 +207,6 @@ public class InterpreterSettingTest {
   public void testPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -249,7 +243,6 @@ public class InterpreterSettingTest {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -301,7 +294,6 @@ public class InterpreterSettingTest {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -358,7 +350,6 @@ public class InterpreterSettingTest {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();

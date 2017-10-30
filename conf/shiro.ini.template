@@ -62,6 +62,14 @@ sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 #cacheManager = org.apache.shiro.cache.MemoryConstrainedCacheManager
 #securityManager.cacheManager = $cacheManager
 
+### Enables 'HttpOnly' flag in Zeppelin cookies
+cookie = org.apache.shiro.web.servlet.SimpleCookie
+cookie.name = JSESSIONID
+cookie.httpOnly = true
+### Uncomment the below line only when Zeppelin is running over HTTPS
+#cookie.secure = true
+sessionManager.sessionIdCookie = $cookie
+
 securityManager.sessionManager = $sessionManager
 # 86,400,000 milliseconds = 24 hour
 securityManager.sessionManager.globalSessionTimeout = 86400000

@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -139,8 +139,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_" + new Random(System.currentTimeMillis())
-        .nextInt();
+    return "paragraph_" + System.currentTimeMillis() + "_" + new SecureRandom().nextInt();
   }
 
   public Map<String, Paragraph> getUserParagraphMap() {
@@ -313,15 +312,14 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     String replName = getRequiredReplName(trimmedBuffer);
 
     String body = getScriptBody(trimmedBuffer);
-    Interpreter repl = getRepl(replName);
-    if (repl == null) {
-      return null;
-    }
-
     InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
 
-    List completion = repl.completion(body, cursor, interpreterContext);
-    return completion;
+    try {
+      Interpreter repl = getRepl(replName);
+      return repl.completion(body, cursor, interpreterContext);
+    } catch (InterpreterException e) {
+      throw new RuntimeException("Fail to get completion", e);
+    }
   }
 
   public int calculateCursorPosition(String buffer, String trimmedBuffer, int cursor) {
@@ -363,11 +361,15 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   @Override
   public int progress() {
     String replName = getRequiredReplName();
-    Interpreter repl = getRepl(replName);
-    if (repl != null) {
+
+    try {
+      Interpreter repl = getRepl(replName);
+      if (repl == null) {
+        return 0;
+      }
       return repl.getProgress(getInterpreterContext(null));
-    } else {
-      return 0;
+    } catch (InterpreterException e) {
+      throw new RuntimeException("Fail to get progress", e);
     }
   }
 
@@ -495,10 +497,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
     if (repl == null) {
-      // when interpreters are already destroyed
       return true;
     }
-
     Scheduler scheduler = repl.getScheduler();
     if (scheduler == null) {
       return true;
@@ -508,7 +508,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      repl.cancel(getInterpreterContextWithoutRunner(null));
+      try {
+        repl.cancel(getInterpreterContextWithoutRunner(null));
+      } catch (InterpreterException e) {
+        throw new RuntimeException(e);
+      }
     }
     return true;
   }
@@ -642,7 +646,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     @Override
     public void run() {
-      note.run(getParagraphId());
+      note.run(getParagraphId(), false);
     }
   }
 
@@ -739,12 +743,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   private boolean isValidInterpreter(String replName) {
-    try {
-      return factory.getInterpreter(user, note.getId(), replName) != null;
-    } catch (InterpreterException e) {
-      // ignore this exception, it would be recaught when running paragraph.
-      return false;
-    }
+    return factory.getInterpreter(user, note.getId(), replName) != null;
   }
 
   public void updateRuntimeInfos(String label, String tooltip, Map<String, String> infos,

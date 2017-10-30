@@ -30,7 +30,7 @@ There are few notebook storage systems available for a use out of the box:
 
   * (default) use local file system and version it using local Git repository - `GitNotebookRepo`
   * all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
-  * all notes are saved in the notebook folder in hdfs - `HdfsNotebookRepo`
+  * all notes are saved in the notebook folder in hadoop compatible file system - `FileSystemNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
@@ -54,16 +54,16 @@ To enable versioning for all your local notebooks though a standard Git reposito
 
 </br>
 
-## Notebook Storage in Hdfs repository <a name="Hdfs"></a>
+## Notebook Storage in hadoop compatible file system repository <a name="Hdfs"></a>
 
-Notes may be stored in hdfs, so that multiple Zeppelin instances can share the same notes. It supports all the versions of hadoop 2.x. If you use `HdfsNotebookRepo`, then `zeppelin.notebook.dir` is the path on hdfs. And you need to specify `HADOOP_CONF_DIR` in `zeppelin-env.sh` so that zeppelin can find the right hadoop configuration files.
-If your hadoop cluster is kerberized, then you need to specify `zeppelin.hdfs.keytab` and `zeppelin.hdfs.principal`
+Notes may be stored in hadoop compatible file system such as hdfs, so that multiple Zeppelin instances can share the same notes. It supports all the versions of hadoop 2.x. If you use `FileSystemNotebookRepo`, then `zeppelin.notebook.dir` is the path on the hadoop compatible file system. And you need to specify `HADOOP_CONF_DIR` in `zeppelin-env.sh` so that zeppelin can find the right hadoop configuration files.
+If your hadoop cluster is kerberized, then you need to specify `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal`
 
 ```
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
-  <description>hdfs notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo</value>
+  <description>hadoop compatible file system notebook persistence layer implementation</description>
 </property>
 ```
 

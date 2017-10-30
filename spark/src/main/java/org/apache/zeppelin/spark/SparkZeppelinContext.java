@@ -79,7 +79,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
     }
 
     if (supportedClasses.isEmpty()) {
-      throw new InterpreterException("Can not load Dataset/DataFrame/SchemaRDD class");
+      throw new RuntimeException("Can not load Dataset/DataFrame/SchemaRDD class");
     }
   }
 
@@ -112,7 +112,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
       sc.clearJobGroup();
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     List<Attribute> columns = null;
@@ -129,7 +129,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
           .asJava();
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     StringBuilder msg = new StringBuilder();
@@ -165,7 +165,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     if (rows.length > maxResult) {

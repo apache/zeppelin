@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +55,7 @@ public class IPythonClient {
   private final IPythonGrpc.IPythonBlockingStub blockingStub;
   private final IPythonGrpc.IPythonStub asyncStub;
 
-  private Random random = new Random();
+  private SecureRandom random = new SecureRandom();
 
   /**
    * Construct client for accessing RouteGuide server at {@code host:port}.
@@ -96,7 +96,7 @@ public class IPythonClient {
             LOGGER.debug("Interpreter Streaming Output: " + executeResponse.getOutput());
             if (isPreviousOutputImage) {
               // add '\n' when switch from image to text
-              interpreterOutput.write("\n".getBytes());
+              interpreterOutput.write("\n%text ".getBytes());
             }
             isPreviousOutputImage = false;
             interpreterOutput.write(executeResponse.getOutput().getBytes());
