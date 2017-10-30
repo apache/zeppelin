@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('websocketEvents', WebsocketEventFactory)
 
-function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
+function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv, saveAsService) {
   'ngInject'
 
   let websocketCalls = {}
@@ -173,6 +173,10 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('setNoteRevisionResult', data)
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data)
+    } else if (op === 'CONVERT_NOTE') {
+      content = data.nbformat
+      name = data.name
+      saveAsService.saveAs(jsonContent, $scope.note.name, 'ipynb')
     } else {
       console.error(`unknown websocket op: ${op}`)
     }

@@ -256,6 +256,16 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
+    convertNote: function (note, name) {
+      websocketEvents.sendNewEvent({
+        op: 'CONVERT_NOTE',
+        data: {
+          note: note,
+          name: name
+        }
+      })
+    },
+
     checkpointNote: function (noteId, commitMessage) {
       websocketEvents.sendNewEvent({
         op: 'CHECKPOINT_NOTE',

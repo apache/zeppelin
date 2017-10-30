@@ -203,6 +203,11 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     saveAsService.saveAs(jsonContent, $scope.note.name, 'json')
   }
 
+  // Export nbformat
+  $scope.exportNbformat = function () {
+    websocketMsgSrv.convertNote($scope.note, $scope.note.name)
+  }
+
   // Clone note
   $scope.cloneNote = function (noteId) {
     BootstrapDialog.confirm({

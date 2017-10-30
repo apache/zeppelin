@@ -46,6 +46,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jupyter.JupyterUtil;
+import org.apache.zeppelin.jupyter.nbformat.Nbformat;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
@@ -259,6 +260,8 @@ public class NotebookServer extends WebSocketServlet
         case IMPORT_NOTE:
           importNote(conn, userAndRoles, notebook, messagereceived);
           break;
+        case CONVERT_NOTE:
+          convertNote(conn, messagereceived);
         case COMMIT_PARAGRAPH:
           updateParagraph(conn, userAndRoles, notebook, messagereceived);
           break;
@@ -1288,6 +1291,16 @@ public class NotebookServer extends WebSocketServlet
       broadcastNoteList(subject, userAndRoles);
     }
     return note;
+  }
+
+  protected void convertNote(NotebookSocket conn, Message fromMessage) throws IOException {
+    String note = (String) fromMessage.get("note");
+
+    Message resp = new Message(OP.CONVERT_NOTE)
+            .put("note", new JupyterUtil().getNbformat(note))
+            .put("name", fromMessage.get("name"));
+
+    conn.send(serializeMessage(resp));
   }
 
   private void removeParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
