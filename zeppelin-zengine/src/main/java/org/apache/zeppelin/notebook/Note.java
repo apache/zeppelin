@@ -21,6 +21,8 @@ import static java.lang.String.format;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +66,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
       new ScheduledThreadPoolExecutor(0);
+  // Executor service for sequential paragraph run
+  private static final ExecutorService runAllExecutorService = Executors.newCachedThreadPool();
 
   static {
     delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
@@ -77,6 +81,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
+  private SequentialNoteRunInfo sequentialRunInfo = new SequentialNoteRunInfo();
 
   private transient InterpreterFactory factory;
   private transient InterpreterSettingManager interpreterSettingManager;
@@ -222,6 +227,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   public void setNoteNameListener(NoteNameListener listener) {
     this.noteNameListener = listener;
+  }
+
+  public SequentialNoteRunInfo getSequentialNoteRunInfo() {
+    return sequentialRunInfo;
   }
 
   void setInterpreterFactory(InterpreterFactory factory) {
@@ -658,6 +667,17 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     } else {
       return true;
     }
+  }
+
+  /**
+   * Run all paragraphs sequentially.
+   * @param sequentialNoteRunListener
+   */
+  public void runAllSequentially(SequentialNoteRunListener sequentialNoteRunListener) {
+    this.getSequentialNoteRunInfo().setRunningSequentially(true);
+    SequentialNoteRunner sequentialRunner =
+        new SequentialNoteRunner(this, sequentialNoteRunListener);
+    runAllExecutorService.execute(sequentialRunner);
   }
 
   /**

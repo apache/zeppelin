@@ -54,8 +54,12 @@ import org.apache.zeppelin.notebook.NotebookEventListener;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.notebook.ParagraphRuntimeInfo;
+import org.apache.zeppelin.notebook.SequentialNoteRunInfo;
+import org.apache.zeppelin.notebook.SequentialNoteRunListener;
 import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.NoteRunUpdateMessage;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
@@ -269,6 +273,9 @@ public class NotebookServer extends WebSocketServlet
           break;
         case RUN_ALL_PARAGRAPHS:
           runAllParagraphs(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case RUN_ALL_SEQUENTIALLY:
+          runAllParagraphsSequentially(conn, userAndRoles, notebook, messagereceived);
           break;
         case CANCEL_PARAGRAPH:
           cancelParagraph(conn, userAndRoles, notebook, messagereceived);
@@ -2284,8 +2291,54 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
+  /**
+   * Listener class for sequential paragraph runs
+   */
+  public static class ParagraphListenerForSequentialRun extends ParagraphListenerImpl {
+    public ParagraphListenerForSequentialRun(NotebookServer notebookServer, Note note) {
+      super(notebookServer, note);
+    }
+
+    @Override
+    public void afterStatusChange(Job job, Status before, Status after) {
+      super.afterStatusChange(job, before, after);
+      Note note = super.note;
+      Object synchronizer = note.getSequentialNoteRunInfo().getSynchronizer();
+      synchronized (synchronizer) {
+        LOG.debug("Notifying waiting thread");
+        synchronizer.notify();
+      }
+    }
+  }
+
+  /**
+   * Listener class for sequential note runs
+   */
+  public static class SequentialNoteRunListenerImpl implements SequentialNoteRunListener {
+    private NotebookServer notebookServer;
+
+    public SequentialNoteRunListenerImpl(NotebookServer notebookServer) {
+      this.notebookServer = notebookServer;
+    }
+
+    @Override
+    public void onSequentialRunFinished(Note note) {
+      notebookServer.broadcast(note.getId(),
+          new Message(OP.NOTE_RUN_UPDATE)
+          .put("noteRunUpdate", new NoteRunUpdateMessage(note.getId(), false)));
+    }
+  }
+
+  public SequentialNoteRunListener getSequentialNoteRunListener() {
+    return new SequentialNoteRunListenerImpl(this);
+  }
+
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
+    SequentialNoteRunInfo sequentialNoteRunInfo = note.getSequentialNoteRunInfo();
+    if (sequentialNoteRunInfo != null && sequentialNoteRunInfo.isRunningSequentially()) {
+      return new ParagraphListenerForSequentialRun(this, note);
+    }
     return new ParagraphListenerImpl(this, note);
   }
 
@@ -2507,5 +2560,45 @@ public class NotebookServer extends WebSocketServlet
       }
     }
     setting.clearNoteIdAndParaMap();
+  }
+
+  private void runAllParagraphsSequentially(NotebookSocket conn, HashSet<String> userAndRoles,
+      Notebook notebook, Message fromMessage) throws IOException {
+    final String noteId = (String) fromMessage.get("noteId");
+    if (StringUtils.isBlank(noteId)) {
+      return;
+    }
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "run all paragraphs")) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    List<Map<String, Object>> paragraphs =
+        gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
+            new TypeToken<List<Map<String, Object>>>() {}.getType());
+    for (Map<String, Object> paragraph : paragraphs) {
+      String paragraphId = (String) paragraph.get("id");
+      if (paragraphId == null) {
+        continue;
+      }
+
+      String text = (String) paragraph.get("paragraph");
+      String title = (String) paragraph.get("title");
+      Map<String, Object> params = (Map<String, Object>) paragraph.get("params");
+      Map<String, Object> config = (Map<String, Object>) paragraph.get("config");
+      Paragraph p = setParagraphUsingMessage(note, fromMessage,
+          paragraphId, text, title, params, config);
+
+      addNewParagraphIfLastParagraphIsExecuted(note, p);
+      if (!persistNoteWithAuthInfo(conn, note, p)) {
+        return;
+      }
+    }
+    // Run all sequentially in a new thread
+    note.runAllSequentially(getSequentialNoteRunListener());
+    broadcast(note.getId(), new Message(OP.NOTE_RUN_UPDATE)
+        .put("noteRunUpdate", new NoteRunUpdateMessage(noteId, true)));
   }
 }

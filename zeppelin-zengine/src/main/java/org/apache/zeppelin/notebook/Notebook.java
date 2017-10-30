@@ -466,6 +466,7 @@ public class Notebook implements NoteEventListener {
       return null;
     }
 
+    clearSequentialRunState(note);
     convertFromSingleResultToMultipleResultsFormat(note);
 
     //Manually inject ALL dependencies, as DI constructor was NOT used
@@ -535,6 +536,12 @@ public class Notebook implements NoteEventListener {
     }
 
     return note;
+  }
+
+  private void clearSequentialRunState(Note note) {
+    if (note.getSequentialNoteRunInfo() != null) {
+      note.getSequentialNoteRunInfo().setRunningSequentially(false);
+    }
   }
 
   void loadAllNotes(AuthenticationInfo subject) throws IOException {

@@ -438,6 +438,23 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return
     }
+
+    if ($scope.$parent.runningSequentially) {
+      BootstrapDialog.show({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: 'Not allowed',
+        message: 'Cannot Run paragraph as Run All is in progress for this note.',
+        buttons: [{
+          label: 'Close',
+          action: function(dialog) {
+            dialog.close()
+          }
+        }]
+      })
+      return
+    }
     const magic = SpellResult.extractMagic(paragraphText)
 
     if (heliumService.getSpellByMagic(magic)) {
