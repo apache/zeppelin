@@ -42,8 +42,19 @@
         "description": "desc_2"
       }
     },
-    "runner": {
-      "linux": "linux_runner"
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "sleep",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.SleepInterpreter",
+    "properties": {
+
     },
     "editor": {
       "language": "java",

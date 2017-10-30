@@ -107,7 +107,13 @@ public class Input<T> implements Serializable {
     if (displayName != null ? !displayName.equals(input.displayName) : input.displayName != null) {
       return false;
     }
-    if (defaultValue != null ?
+    if (defaultValue instanceof Object[]) {
+      if (defaultValue != null ?
+          !Arrays.equals((Object[]) defaultValue, (Object[]) input.defaultValue)
+          : input.defaultValue != null) {
+        return false;
+      }
+    } else if (defaultValue != null ?
         !defaultValue.equals(input.defaultValue) : input.defaultValue != null) {
       return false;
     }

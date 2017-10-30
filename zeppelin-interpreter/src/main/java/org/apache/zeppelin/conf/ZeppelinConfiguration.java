@@ -383,6 +383,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_SSE);
   }
 
+  public String getS3SignerOverride() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE);
+  }
+
   public String getMongoUri() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI);
   }
@@ -530,6 +534,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_STRICT_TRANSPORT);
   }
 
+  public String getLifecycleManagerClass() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
+  }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
@@ -654,6 +661,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID("zeppelin.notebook.s3.kmsKeyID", null),
     ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION("zeppelin.notebook.s3.kmsKeyRegion", null),
     ZEPPELIN_NOTEBOOK_S3_SSE("zeppelin.notebook.s3.sse", false),
+    ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE("zeppelin.notebook.s3.signerOverride", null),
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
@@ -696,7 +704,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
     ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
 
-    ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE("zeppelin.interpreter.callback.portRange", ":");
+    ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE("zeppelin.interpreter.callback.portRange", ":"),
+
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
+        "org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager"),
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
+        "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
+        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L);
 
     private String varName;
     @SuppressWarnings("rawtypes")

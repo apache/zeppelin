@@ -650,7 +650,7 @@ public class NotebookRestApi {
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
     try {
-      note.runAll(subject);
+      note.runAll(subject, true);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       return new JsonResponse<>(Status.PRECONDITION_FAILED,

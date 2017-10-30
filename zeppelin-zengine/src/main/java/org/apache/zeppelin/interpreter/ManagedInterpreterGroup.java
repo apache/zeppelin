@@ -47,6 +47,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   ManagedInterpreterGroup(String id, InterpreterSetting interpreterSetting) {
     super(id);
     this.interpreterSetting = interpreterSetting;
+    interpreterSetting.getLifecycleManager().onInterpreterGroupCreated(this);
   }
 
   public InterpreterSetting getInterpreterSetting() {
@@ -81,14 +82,15 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
    * @param sessionId
    */
   public synchronized void close(String sessionId) {
-    LOGGER.info("Close Session: " + sessionId);
+    LOGGER.info("Close Session: " + sessionId + " for interpreter setting: " +
+        interpreterSetting.getName());
     close(sessions.remove(sessionId));
     //TODO(zjffdu) whether close InterpreterGroup if there's no session left in Zeppelin Server
     if (sessions.isEmpty() && interpreterSetting != null) {
-      LOGGER.info("Remove this InterpreterGroup {} as all the sessions are closed", id);
+      LOGGER.info("Remove this InterpreterGroup: {} as all the sessions are closed", id);
       interpreterSetting.removeInterpreterGroup(id);
       if (remoteInterpreterProcess != null) {
-        LOGGER.info("Kill RemoteIntetrpreterProcess");
+        LOGGER.info("Kill RemoteInterpreterProcess");
         remoteInterpreterProcess.stop();
         remoteInterpreterProcess = null;
       }
@@ -133,9 +135,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       for (Interpreter interpreter : interpreters) {
         interpreter.setInterpreterGroup(this);
       }
-      LOGGER.info("Create Session {} in InterpreterGroup {} for user {}", sessionId, id, user);
+      LOGGER.info("Create Session: {} in InterpreterGroup: {} for user: {}", sessionId, id, user);
+      interpreterSetting.getLifecycleManager().onInterpreterSessionCreated(this, sessionId);
       sessions.put(sessionId, interpreters);
       return interpreters;
     }
   }
+
 }

@@ -20,6 +20,8 @@ package org.apache.zeppelin.interpreter.remote;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.mock.GetAngularObjectSizeInterpreter;
@@ -32,11 +34,11 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 
 public class RemoteInterpreterTest {
 
@@ -414,6 +416,29 @@ public class RemoteInterpreterTest {
   }
 
   @Test
+  public void testConvertDynamicForms() throws InterpreterException {
+    GUI gui = new GUI();
+    OptionInput.ParamOption[] paramOptions = {
+        new OptionInput.ParamOption("value1", "param1"),
+        new OptionInput.ParamOption("value2", "param2")
+    };
+    List<Object> defaultValues = new ArrayList();
+    defaultValues.add("default1");
+    defaultValues.add("default2");
+    gui.checkbox("checkbox_id", defaultValues, paramOptions);
+    gui.select("select_id", "default", paramOptions);
+    gui.textbox("textbox_id");
+    Map<String, Input> expected = new LinkedHashMap<>(gui.getForms());
+    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl", null,
+        null, AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), gui,
+        null, null, new ArrayList<InterpreterContextRunner>(), null);
+
+    interpreter.interpret("text", context);
+    assertArrayEquals(expected.values().toArray(), gui.getForms().values().toArray());
+  }
+
+  @Test
   public void testReplaceContextParametersInSettingsForSharedInterpreter() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     String propertyName = "variable.with.replace";
@@ -421,8 +446,8 @@ public class RemoteInterpreterTest {
     interpreterSetting.setProperty(propertyName, "#{user}");
     Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
-            "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
-            null, null, new ArrayList<InterpreterContextRunner>(), null);
+        "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
+        null, null, new ArrayList<InterpreterContextRunner>(), null);
     InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
@@ -438,8 +463,8 @@ public class RemoteInterpreterTest {
     interpreterSetting.setProperty(propertyName, "#{user}");
     Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
-            "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
-            null, null, new ArrayList<InterpreterContextRunner>(), null);
+        "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
+        null, null, new ArrayList<InterpreterContextRunner>(), null);
     InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
@@ -455,8 +480,8 @@ public class RemoteInterpreterTest {
     interpreterSetting.setProperty(propertyName, "#{user}");
     Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
-            "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
-            null, null, new ArrayList<InterpreterContextRunner>(), null);
+        "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
+        null, null, new ArrayList<InterpreterContextRunner>(), null);
     InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());

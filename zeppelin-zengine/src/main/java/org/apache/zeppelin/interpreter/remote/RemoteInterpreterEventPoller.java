@@ -246,7 +246,6 @@ public class RemoteInterpreterEventPoller extends Thread {
             listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
           }
         }
-        logger.debug("Event from remote process {}", event.getType());
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }

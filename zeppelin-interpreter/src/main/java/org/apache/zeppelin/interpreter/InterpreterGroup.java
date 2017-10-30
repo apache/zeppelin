@@ -142,4 +142,23 @@ public class InterpreterGroup {
   public boolean isEmpty() {
     return sessions.isEmpty();
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof InterpreterGroup)) {
+      return false;
+    }
+
+    InterpreterGroup that = (InterpreterGroup) o;
+
+    return id != null ? id.equals(that.id) : that.id == null;
+  }
+
+  @Override
+  public int hashCode() {
+    return id != null ? id.hashCode() : 0;
+  }
 }
