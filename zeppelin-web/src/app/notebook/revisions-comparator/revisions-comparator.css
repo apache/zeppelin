@@ -44,13 +44,11 @@
 }
 
 .revisions-comparator-panel:hover {
-  left: 6px;
   border: 1px solid rgba(55, 54, 35, 0.35);
-  background-color: rgba(255, 204, 0, 0.25);
+  background-color: rgba(255, 204, 0, 0.15);
 }
 
 .revisions-comparator-panel-selected {
-  left: 18px !important;
   background-color: rgba(252, 255, 0, 0.53) !important;
   border: 1px solid rgba(55, 54, 35, 0.49)
 }

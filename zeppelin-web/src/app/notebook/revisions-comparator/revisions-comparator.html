@@ -81,7 +81,7 @@ limitations under the License.
   <div id="diffPanel">
     <div class="panel-group" style="margin-bottom: 0px">
       <div class="paragraphs-div">
-        <div class="panel revisions-comparator-panel" data-ng-repeat="p in mergeNoteRevisionsForCompare"
+        <div class="panel revisions-comparator-panel" data-ng-repeat="p in mergeNoteRevisionsForCompare | orderBy:'time':true"
              ng-class="{'revisions-comparator-panel-selected' : currentParagraphDiffDisplay.paragraph.id === p.paragraph.id}">
           <div class="revisions-comparator-panel-heading"
                ng-click="changeCurrentParagraphDiffDisplay(p.paragraph.id)">
