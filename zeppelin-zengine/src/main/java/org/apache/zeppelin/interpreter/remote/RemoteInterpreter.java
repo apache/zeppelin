@@ -167,7 +167,7 @@ public class RemoteInterpreter extends Interpreter {
           public Void call(Client client) throws Exception {
             LOGGER.info("Create RemoteInterpreter {}", getClassName());
             client.createInterpreter(getInterpreterGroup().getId(), sessionId,
-                className, (Map) getProperties(), getUserName());
+                className, (Map) getProperties(), RemoteInterpreter.super.getUserName());
             return null;
           }
         });
