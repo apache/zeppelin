@@ -20,10 +20,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>zeppelin</artifactId>
+    <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.8.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../interpreter-parent</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
@@ -34,6 +34,7 @@
   <description>Zeppelin Scio support</description>
 
   <properties>
+    <interpreter.name>scio</interpreter.name>
     <!--library versions-->
     <scio.version>0.2.4</scio.version>
     <guava.version>14.0.1</guava.version> <!-- update needed -->
@@ -106,12 +107,12 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
       </plugin>
 
       <plugin>
@@ -152,34 +153,6 @@
             <goals>
               <goal>shade</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/scio</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>${project.packaging}</type>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
           </execution>
         </executions>
       </plugin>

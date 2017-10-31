@@ -15,6 +15,7 @@
 package org.apache.zeppelin.hbase;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class HbaseInterpreterTest {
   private static HbaseInterpreter hbaseInterpreter;
 
   @BeforeClass
-  public static void setUp() throws NullPointerException {
+  public static void setUp() throws NullPointerException, InterpreterException {
     BasicConfigurator.configure();
     Properties properties = new Properties();
     properties.put("hbase.home", "");

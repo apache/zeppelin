@@ -21,6 +21,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,32 +29,26 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract class for interpreter process
  */
-public abstract class RemoteInterpreterProcess {
+public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
 
   private GenericObjectPool<Client> clientPool;
-  protected final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
+  private RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
 
   public RemoteInterpreterProcess(
-      int connectTimeout,
-      RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener) {
-    this(new RemoteInterpreterEventPoller(listener, appListener),
-        connectTimeout);
-    this.remoteInterpreterEventPoller.setInterpreterProcess(this);
-  }
-
-  RemoteInterpreterProcess(RemoteInterpreterEventPoller remoteInterpreterEventPoller,
-                           int connectTimeout) {
+      int connectTimeout) {
     this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
-    this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
     this.connectTimeout = connectTimeout;
   }
 
   public RemoteInterpreterEventPoller getRemoteInterpreterEventPoller() {
     return remoteInterpreterEventPoller;
+  }
+
+  public void setRemoteInterpreterEventPoller(RemoteInterpreterEventPoller eventPoller) {
+    this.remoteInterpreterEventPoller = eventPoller;
   }
 
   public abstract String getHost();
@@ -147,9 +142,9 @@ public abstract class RemoteInterpreterProcess {
       }
     } catch (TException e) {
       broken = true;
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     } catch (Exception e1) {
-      throw new InterpreterException(e1);
+      throw new RuntimeException(e1);
     } finally {
       if (client != null) {
         releaseClient(client, broken);

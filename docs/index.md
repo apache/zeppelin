@@ -142,6 +142,7 @@ limitations under the License.
   * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
   * [markdown](./interpreter/markdown.html)
+  * [Neo4j](./interpreter/neo4j.html)
   * [Pig](./interpreter/pig.html)
   * [Postgresql, HAWQ](./interpreter/postgresql.html)
   * [Python](./interpreter/python.html)

@@ -24,6 +24,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -55,7 +56,7 @@ public class IPySparkInterpreterTest {
   private InterpreterGroup intpGroup;
 
   @Before
-  public void setup() {
+  public void setup() throws InterpreterException {
     Properties p = new Properties();
     p.setProperty("spark.master", "local[4]");
     p.setProperty("master", "local[4]");
@@ -90,7 +91,7 @@ public class IPySparkInterpreterTest {
   }
 
   @Test
-  public void testBasics() throws InterruptedException, IOException {
+  public void testBasics() throws InterruptedException, IOException, InterpreterException {
     // all the ipython test should pass too.
     IPythonInterpreterTest.testInterpreter(iPySparkInterpreter);
 
@@ -145,7 +146,7 @@ public class IPySparkInterpreterTest {
         List<InterpreterResultMessage> interpreterResultMessages = null;
         try {
           interpreterResultMessages = context2.out.getInterpreterResultMessages();
-          assertTrue(interpreterResultMessages.get(0).getData().contains("cancelled"));
+          assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -179,7 +180,7 @@ public class IPySparkInterpreterTest {
         "ssc.start()\n" +
         "time.sleep(6)\n" +
         "ssc.stop(stopSparkContext=False, stopGraceFully=True)", context);
-    Thread.sleep(100);
+    Thread.sleep(1000);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.getInterpreterResultMessages();
     assertEquals(1, interpreterResultMessages.size());

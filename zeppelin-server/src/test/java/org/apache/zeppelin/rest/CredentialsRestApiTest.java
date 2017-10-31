@@ -43,7 +43,7 @@ public class CredentialsRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(CredentialsRestApiTest.class.getSimpleName());
   }
 
   @AfterClass

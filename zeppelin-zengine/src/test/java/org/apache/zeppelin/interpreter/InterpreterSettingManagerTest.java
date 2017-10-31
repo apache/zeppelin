@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -49,9 +50,9 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertEquals(2, interpreterSetting.getInterpreterInfos().size());
+    assertEquals(3, interpreterSetting.getInterpreterInfos().size());
     // 3 other builtin properties:
-    //   * zeppelin.interpeter.output.limit
+    //   * zeppelin.interpreter.output.limit
     //   * zeppelin.interpreter.localRepo
     //   * zeppelin.interpreter.max.poolsize
     assertEquals(6, interpreterSetting.getJavaProperties().size());
@@ -66,7 +67,6 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertNotNull(interpreterSetting.getAppEventListener());
     assertNotNull(interpreterSetting.getDependencyResolver());
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
-    assertEquals("linux_runner", interpreterSetting.getInterpreterRunner().getPath());
 
     List<RemoteRepository> repositories = interpreterSettingManager.getRepositories();
     assertEquals(2, repositories.size());
@@ -79,14 +79,13 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertEquals(2, interpreterSetting.getInterpreterInfos().size());
+    assertEquals(3, interpreterSetting.getInterpreterInfos().size());
     assertEquals(6, interpreterSetting.getJavaProperties().size());
     assertEquals("value_1", interpreterSetting.getJavaProperties().getProperty("property_1"));
     assertEquals("new_value_2", interpreterSetting.getJavaProperties().getProperty("property_2"));
     assertEquals("value_3", interpreterSetting.getJavaProperties().getProperty("property_3"));
     assertEquals("shared", interpreterSetting.getOption().perNote);
     assertEquals("shared", interpreterSetting.getOption().perUser);
-    assertEquals("linux_runner", interpreterSetting.getInterpreterRunner().getPath());
     assertEquals(0, interpreterSetting.getDependencies().size());
 
     repositories = interpreterSettingManager2.getRepositories();
@@ -96,7 +95,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testCreateUpdateRemoveSetting() throws IOException {
+  public void testCreateUpdateRemoveSetting() throws IOException, InterpreterException {
     // create new interpreter setting
     InterpreterOption option = new InterpreterOption();
     option.setPerNote("scoped");
@@ -181,9 +180,6 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     // only close user1's session
     interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
     assertEquals(2, interpreterGroup.getSessionNum());
-    // close all the sessions
-    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "anonymous");
-    assertEquals(0, interpreterGroup.getSessionNum());
 
     // remove interpreter setting
     interpreterSettingManager.remove(interpreterSetting.getId());
@@ -281,6 +277,79 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     Interpreter mock1Interpreter = interpreterFactory.getInterpreter("user1", "note1", "mock1");
     editor = interpreterSettingManager.getEditorSetting(mock1Interpreter,"user1", "note1", "mock1");
     assertEquals("text", editor.get("language"));
+  }
 
+  @Test
+  public void testRestartShared() throws InterpreterException {
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
+    interpreterSetting.getOption().setPerUser("shared");
+    interpreterSetting.getOption().setPerNote("shared");
+
+    interpreterSetting.getOrCreateSession("user1", "note1");
+    interpreterSetting.getOrCreateInterpreterGroup("user2", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    interpreterSettingManager.restart(interpreterSetting.getId(), "user1", "note1");
+    assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+  @Test
+  public void testRestartPerUserIsolated() throws InterpreterException {
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
+    interpreterSetting.getOption().setPerUser("isolated");
+    interpreterSetting.getOption().setPerNote("shared");
+
+    interpreterSetting.getOrCreateSession("user1", "note1");
+    interpreterSetting.getOrCreateSession("user2", "note2");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+
+    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+  @Test
+  public void testRestartPerNoteIsolated() throws InterpreterException {
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
+    interpreterSetting.getOption().setPerUser("shared");
+    interpreterSetting.getOption().setPerNote("isolated");
+
+    interpreterSetting.getOrCreateSession("user1", "note1");
+    interpreterSetting.getOrCreateSession("user2", "note2");
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+
+    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+  @Test
+  public void testRestartPerUserScoped() throws InterpreterException {
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
+    interpreterSetting.getOption().setPerUser("scoped");
+    interpreterSetting.getOption().setPerNote("shared");
+
+    interpreterSetting.getOrCreateSession("user1", "note1");
+    interpreterSetting.getOrCreateSession("user2", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+  }
+
+  @Test
+  public void testRestartPerNoteScoped() throws InterpreterException {
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
+    interpreterSetting.getOption().setPerUser("shared");
+    interpreterSetting.getOption().setPerNote("scoped");
+
+    interpreterSetting.getOrCreateSession("user1", "note1");
+    interpreterSetting.getOrCreateSession("user2", "note2");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+
+    interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
   }
 }

@@ -26,11 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +49,6 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -72,7 +69,6 @@ import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
 import scala.Console;
 import scala.Enumeration.Value;
 import scala.None;
@@ -206,7 +202,7 @@ public class SparkInterpreter extends Interpreter {
       private String getJobUrl(int jobId) {
         String jobUrl = null;
         if (sparkUrl != null) {
-          jobUrl = sparkUrl + "/jobs/job?id=" + jobId;
+          jobUrl = sparkUrl + "/jobs/job/?id=" + jobId;
         }
         return jobUrl;
       }
@@ -353,7 +349,7 @@ public class SparkInterpreter extends Interpreter {
   public boolean isYarnMode() {
     String master = getProperty("master");
     if (master == null) {
-      master = getProperty().getProperty("spark.master", "local[*]");
+      master = getProperty("spark.master", "local[*]");
     }
     return master.startsWith("yarn");
   }
@@ -376,7 +372,7 @@ public class SparkInterpreter extends Interpreter {
     }
     conf.set("spark.scheduler.mode", "FAIR");
 
-    Properties intpProperty = getProperty();
+    Properties intpProperty = getProperties();
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
@@ -509,7 +505,7 @@ public class SparkInterpreter extends Interpreter {
     }
     conf.set("spark.scheduler.mode", "FAIR");
 
-    Properties intpProperty = getProperty();
+    Properties intpProperty = getProperties();
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
@@ -543,19 +539,19 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
-            property.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+        getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
 
     // set properties and do login before creating any spark stuff for secured cluster
     if (isYarnMode()) {
       System.setProperty("SPARK_YARN_MODE", "true");
     }
-    if (getProperty().containsKey("spark.yarn.keytab") &&
-            getProperty().containsKey("spark.yarn.principal")) {
+    if (getProperties().containsKey("spark.yarn.keytab") &&
+            getProperties().containsKey("spark.yarn.principal")) {
       try {
-        String keytab = getProperty().getProperty("spark.yarn.keytab");
-        String principal = getProperty().getProperty("spark.yarn.principal");
+        String keytab = getProperties().getProperty("spark.yarn.keytab");
+        String principal = getProperties().getProperty("spark.yarn.principal");
         UserGroupInformation.loginUserFromKeytab(principal, keytab);
       } catch (IOException e) {
         throw new RuntimeException("Can not pass kerberos authentication", e);
@@ -936,6 +932,11 @@ public class SparkInterpreter extends Interpreter {
       return sparkUrl;
     }
 
+    String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
+    if (!StringUtils.isBlank(sparkUrlProp)) {
+      return sparkUrlProp;
+    }
+
     if (sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0)) {
       Option<String> uiWebUrlOption = (Option<String>) Utils.invokeMethod(sc, "uiWebUrl");
       if (uiWebUrlOption.isDefined()) {
@@ -963,7 +964,7 @@ public class SparkInterpreter extends Interpreter {
     sparkUrl = getSparkUIUrl();
     Map<String, String> infos = new java.util.HashMap<>();
     infos.put("url", sparkUrl);
-    String uiEnabledProp = property.getProperty("spark.ui.enabled", "true");
+    String uiEnabledProp = getProperty("spark.ui.enabled", "true");
     java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
             uiEnabledProp.trim());
     if (!uiEnabled) {

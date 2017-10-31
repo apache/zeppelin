@@ -75,8 +75,9 @@ public class LivyInterpreterIT {
     return true;
   }
 
+
 //  @Test
-  public void testSparkInterpreterRDD() {
+  public void testSparkInterpreterRDD() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -195,8 +196,9 @@ public class LivyInterpreterIT {
     }
   }
 
+
 //  @Test
-  public void testSparkInterpreterDataFrame() {
+  public void testSparkInterpreterDataFrame() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -284,7 +286,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testSparkSQLInterpreter() {
+  public void testSparkSQLInterpreter() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -319,7 +321,7 @@ public class LivyInterpreterIT {
 
 
 //  @Test
-  public void testSparkSQLCancellation() {
+  public void testSparkSQLCancellation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -400,7 +402,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testStringWithTruncation() {
+  public void testStringWithTruncation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -459,8 +461,9 @@ public class LivyInterpreterIT {
     }
   }
 
+
 //  @Test
-  public void testStringWithoutTruncation() {
+  public void testStringWithoutTruncation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -525,7 +528,7 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  public void testPySparkInterpreter() throws LivyException {
+  public void testPySparkInterpreter() throws LivyException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -645,7 +648,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testSparkInterpreterWithDisplayAppInfo() {
+  public void testSparkInterpreterWithDisplayAppInfo() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -684,7 +687,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testSparkRInterpreter() throws LivyException {
+  public void testSparkRInterpreter() throws LivyException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -756,7 +759,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testLivyTutorialNote() throws IOException {
+  public void testLivyTutorialNote() throws IOException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
