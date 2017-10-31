@@ -41,7 +41,7 @@ public class PythonDockerInterpreterTest {
   private PythonInterpreter python;
 
   @Before
-  public void setUp() {
+  public void setUp() throws InterpreterException {
     docker = spy(new PythonDockerInterpreter(new Properties()));
     python = mock(PythonInterpreter.class);
 
@@ -58,7 +58,7 @@ public class PythonDockerInterpreterTest {
   }
 
   @Test
-  public void testActivateEnv() {
+  public void testActivateEnv() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     docker.interpret("activate env", context);
     verify(python, times(1)).open();
@@ -68,7 +68,7 @@ public class PythonDockerInterpreterTest {
   }
 
   @Test
-  public void testDeactivate() {
+  public void testDeactivate() throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     docker.interpret("deactivate", context);
     verify(python, times(1)).open();

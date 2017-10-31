@@ -40,7 +40,49 @@ In 'Separate Interpreter(scoped / isolated) for each note' mode which you can se
 ## Make your own Interpreter
 
 Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
-You can include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` artifact in your build system. And you should put your jars under your interpreter directory with a specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
+For your interpreter project, you need to make `interpreter-parent` as your parent project and use plugin `maven-enforcer-plugin`, `maven-dependency-plugin` and `maven-resources-plugin`. Here's one sample pom.xml 
+
+```
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>interpreter-parent</artifactId>
+        <groupId>org.apache.zeppelin</groupId>
+        <version>0.8.0-SNAPSHOT</version>
+        <relativePath>../interpreter-parent</relativePath>
+    </parent>
+    
+    ...
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.zeppelin</groupId>
+            <artifactId>zeppelin-interpreter</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+          
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>
+```
+
+You should include `org.apache.zeppelin:zeppelin-interpreter:[VERSION]` as your interpreter's dependency in `pom.xml`. Bes
+And you should put your jars under your interpreter directory with a specific directory name. Zeppelin server reads interpreter directories recursively and initializes interpreters including your own interpreter.
 
 There are three locations where you can store your interpreter group, name and other information. Zeppelin server tries to find the location below. Next, Zeppelin tries to find `interpreter-setting.json` in your interpreter jar.
 
@@ -74,7 +116,8 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
     },
     "editor": {
       "language": "your-syntax-highlight-language",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {
@@ -128,6 +171,19 @@ If your interpreter uses mark-up language such as markdown or HTML, set `editOnD
   "editOnDblClick": false
 }
 ```
+
+### Completion key (Optional)
+By default, `Ctrl+dot(.)` brings autocompletion list in the editor.
+Through `completionKey`, each interpreter can configure autocompletion key.
+Currently `TAB` is only available option.
+
+```
+"editor": {
+  "completionKey": "TAB"
+}
+```
+
+
 ## Install your interpreter binary
 
 Once you have built your interpreter, you can place it under the interpreter directory with all its dependencies.

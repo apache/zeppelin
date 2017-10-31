@@ -117,7 +117,7 @@ public class ZeppelinR implements ExecuteResultHandler {
       File scriptFile = File.createTempFile("zeppelin_sparkr-", ".R");
       scriptPath = scriptFile.getAbsolutePath();
     } catch (IOException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -125,7 +125,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * Start R repl
    * @throws IOException
    */
-  public void open() throws IOException {
+  public void open() throws IOException, InterpreterException {
     createRScript();
 
     zeppelinR.put(hashCode(), this);
@@ -170,7 +170,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param expr
    * @return
    */
-  public Object eval(String expr) {
+  public Object eval(String expr) throws InterpreterException {
     synchronized (this) {
       rRequestObject = new Request("eval", expr, null);
       return request();
@@ -182,7 +182,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param key
    * @param value
    */
-  public void set(String key, Object value) {
+  public void set(String key, Object value) throws InterpreterException {
     synchronized (this) {
       rRequestObject = new Request("set", key, value);
       request();
@@ -194,7 +194,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param key
    * @return
    */
-  public Object get(String key) {
+  public Object get(String key) throws InterpreterException {
     synchronized (this) {
       rRequestObject = new Request("get", key, null);
       return request();
@@ -206,7 +206,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param key
    * @return
    */
-  public String getS0(String key) {
+  public String getS0(String key) throws InterpreterException {
     synchronized (this) {
       rRequestObject = new Request("getS", key, null);
       return (String) request();
@@ -217,7 +217,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * Send request to r repl and return response
    * @return responseValue
    */
-  private Object request() throws RuntimeException {
+  private Object request() throws RuntimeException, InterpreterException {
     if (!rScriptRunning) {
       throw new RuntimeException("r repl is not running");
     }
@@ -332,7 +332,7 @@ public class ZeppelinR implements ExecuteResultHandler {
   /**
    * Create R script in tmp dir
    */
-  private void createRScript() {
+  private void createRScript() throws InterpreterException {
     ClassLoader classLoader = getClass().getClassLoader();
     File out = new File(scriptPath);
 

@@ -28,7 +28,7 @@ public class LazyOpenInterpreterTest {
   Interpreter interpreter = mock(Interpreter.class);
 
   @Test
-  public void isOpenTest() {
+  public void isOpenTest() throws InterpreterException {
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
     when(interpreter.interpret(any(String.class), any(InterpreterContext.class))).thenReturn(interpreterResult);
 

@@ -207,7 +207,11 @@ public class RemoteInterpreterServer
     if (interpreterGroup != null) {
       for (List<Interpreter> session : interpreterGroup.values()) {
         for (Interpreter interpreter : session) {
-          interpreter.close();
+          try {
+            interpreter.close();
+          } catch (InterpreterException e) {
+            logger.warn("Fail to close interpreter", e);
+          }
         }
       }
     }
@@ -356,7 +360,11 @@ public class RemoteInterpreterServer
   public void open(String sessionId, String className) throws TException {
     logger.info(String.format("Open Interpreter %s for session %s ", className, sessionId));
     Interpreter intp = getInterpreter(sessionId, className);
-    intp.open();
+    try {
+      intp.open();
+    } catch (InterpreterException e) {
+      throw new TException("Fail to open interpreter", e);
+    }
   }
 
   @Override
@@ -388,7 +396,11 @@ public class RemoteInterpreterServer
       while (it.hasNext()) {
         Interpreter inp = it.next();
         if (inp.getClassName().equals(className)) {
-          inp.close();
+          try {
+            inp.close();
+          } catch (InterpreterException e) {
+            logger.warn("Fail to close interpreter", e);
+          }
           it.remove();
           break;
         }
@@ -655,7 +667,11 @@ public class RemoteInterpreterServer
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      intp.cancel(convert(interpreterContext, null));
+      try {
+        intp.cancel(convert(interpreterContext, null));
+      } catch (InterpreterException e) {
+        throw new TException("Fail to cancel", e);
+      }
     }
   }
 
@@ -672,7 +688,11 @@ public class RemoteInterpreterServer
         throw new TException("No interpreter {} existed for session {}".format(
             className, sessionId));
       }
-      return intp.getProgress(convert(interpreterContext, null));
+      try {
+        return intp.getProgress(convert(interpreterContext, null));
+      } catch (InterpreterException e) {
+        throw new TException("Fail to getProgress", e);
+      }
     }
   }
 
@@ -680,7 +700,11 @@ public class RemoteInterpreterServer
   @Override
   public String getFormType(String sessionId, String className) throws TException {
     Interpreter intp = getInterpreter(sessionId, className);
-    return intp.getFormType().toString();
+    try {
+      return intp.getFormType().toString();
+    } catch (InterpreterException e) {
+      throw new TException(e);
+    }
   }
 
   @Override
@@ -688,8 +712,11 @@ public class RemoteInterpreterServer
       String className, String buf, int cursor, RemoteInterpreterContext remoteInterpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(sessionId, className);
-    List completion = intp.completion(buf, cursor, convert(remoteInterpreterContext, null));
-    return completion;
+    try {
+      return intp.completion(buf, cursor, convert(remoteInterpreterContext, null));
+    } catch (InterpreterException e) {
+      throw new TException("Fail to get completion", e);
+    }
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {

@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -112,19 +113,20 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     try {
       if (ipythonClient != null) {
         // IPythonInterpreter might already been opened by PythonInterpreter
         return;
       }
-      pythonExecutable = getProperty().getProperty("zeppelin.python", "python");
+      pythonExecutable = getProperty("zeppelin.python", "python");
       LOGGER.info("Python Exec: " + pythonExecutable);
+
       ipythonLaunchTimeout = Long.parseLong(
-          getProperty().getProperty("zeppelin.ipython.launch.timeout", "30000"));
+          getProperty("zeppelin.ipython.launch.timeout", "30000"));
       this.zeppelinContext = new PythonZeppelinContext(
           getInterpreterGroup().getInterpreterHookRegistry(),
-          Integer.parseInt(getProperty().getProperty("zeppelin.python.maxResult", "1000")));
+          Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
       int ipythonPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       int jvmGatewayPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       LOGGER.info("Launching IPython Kernel at port: " + ipythonPort);
@@ -243,16 +245,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
-    Map<String, String> envs = EnvironmentUtils.getProcEnvironment();
-    if (envs.containsKey("PYTHONPATH")) {
-      if (additionalPythonPath != null) {
-        envs.put("PYTHONPATH", additionalPythonPath + ":" + envs.get("PYTHONPATH"));
-      }
-    } else {
-      envs.put("PYTHONPATH", additionalPythonPath);
-    }
-
-    LOGGER.info("PYTHONPATH: " + envs.get("PYTHONPATH"));
+    Map<String, String> envs = setupIPythonEnv();
     executor.execute(cmd, envs, this);
 
     // wait until IPython kernel is started or timeout
@@ -282,6 +275,19 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
             + " seconds");
       }
     }
+  }
+
+  protected Map<String, String> setupIPythonEnv() throws IOException {
+    Map<String, String> envs = EnvironmentUtils.getProcEnvironment();
+    if (envs.containsKey("PYTHONPATH")) {
+      if (additionalPythonPath != null) {
+        envs.put("PYTHONPATH", additionalPythonPath + ":" + envs.get("PYTHONPATH"));
+      }
+    } else {
+      envs.put("PYTHONPATH", additionalPythonPath);
+    }
+    LOGGER.info("PYTHONPATH:" + envs.get("PYTHONPATH"));
+    return envs;
   }
 
   @Override

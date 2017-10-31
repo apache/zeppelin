@@ -627,7 +627,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     if (intp == null) {
       String intpExceptionMsg =
           p.getJobName() + "'s Interpreter " + requiredReplName + " not found";
-      InterpreterException intpException = new InterpreterException(intpExceptionMsg);
+      RuntimeException intpException = new RuntimeException(intpExceptionMsg);
       InterpreterResult intpResult =
           new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
       p.setReturn(intpResult, intpException);

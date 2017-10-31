@@ -20,6 +20,7 @@ package org.apache.zeppelin.file;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
@@ -86,7 +87,7 @@ public abstract class FileInterpreter extends Interpreter {
 
   // Functions that each file system implementation must override
 
-  public abstract String listAll(String path);
+  public abstract String listAll(String path) throws InterpreterException;
 
   public abstract boolean isDirectory(String path);
 

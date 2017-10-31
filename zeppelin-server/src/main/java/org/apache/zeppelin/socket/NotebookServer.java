@@ -357,7 +357,7 @@ public class NotebookServer extends WebSocketServlet
           break;
       }
     } catch (Exception e) {
-      LOG.error("Can't handle message", e);
+      LOG.error("Can't handle message: " + msg, e);
     }
   }
 
