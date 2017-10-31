@@ -22,14 +22,14 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
@@ -113,7 +113,7 @@ public class NotebookServer extends WebSocketServlet
       .setPrettyPrinting()
       .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
-  final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
+  final Map<String, List<NotebookSocket>> noteSocketMap = new ConcurrentHashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
@@ -124,6 +124,13 @@ public class NotebookServer extends WebSocketServlet
    * is going on.
    */
   final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
+
+  private static final int THREAD_POOL_SIZE = 100;
+  private final ExecutorService cancellableExecutor = new CancellableExecutor(THREAD_POOL_SIZE,
+          THREAD_POOL_SIZE,
+          0L,
+          TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<Runnable>());
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
@@ -153,7 +160,9 @@ public class NotebookServer extends WebSocketServlet
   public void onOpen(NotebookSocket conn) {
     LOG.info("New connection from {} : {}", conn.getRequest().getRemoteAddr(),
         conn.getRequest().getRemotePort());
+    LOG.info("we have {} connections before open", connectedSockets.size());
     connectedSockets.add(conn);
+    LOG.info("we have {} connections after open", connectedSockets.size());
   }
 
   @Override
@@ -365,9 +374,11 @@ public class NotebookServer extends WebSocketServlet
   public void onClose(NotebookSocket conn, int code, String reason) {
     LOG.info("Closed connection to {} : {}. ({}) {}", conn.getRequest().getRemoteAddr(),
         conn.getRequest().getRemotePort(), code, reason);
+    LOG.info("we have {} connections before close", connectedSockets.size());
     removeConnectionFromAllNote(conn);
     connectedSockets.remove(conn);
     removeUserConnection(conn.getUser(), conn);
+    LOG.info("we have {} connections after close", connectedSockets.size());
   }
 
   private void removeUserConnection(String user, NotebookSocket conn) {
@@ -398,14 +409,21 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void addConnectionToNote(String noteId, NotebookSocket socket) {
+    // make sure a socket relates only a single note.
+    removeConnectionFromAllNote(socket);
+
+    // TODO(sadhen): should use computeIfAbsent when switching to Java 8
+    // and remove the synchronized keyword on noteSocketMap
+    List<NotebookSocket> socketList = null;
     synchronized (noteSocketMap) {
-      removeConnectionFromAllNote(socket); // make sure a socket relates only a
-      // single note.
-      List<NotebookSocket> socketList = noteSocketMap.get(noteId);
+      socketList = noteSocketMap.get(noteId);
       if (socketList == null) {
         socketList = new LinkedList<>();
         noteSocketMap.put(noteId, socketList);
       }
+    }
+
+    synchronized (socketList) {
       if (!socketList.contains(socket)) {
         socketList.add(socket);
       }
@@ -413,9 +431,9 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void removeConnectionFromNote(String noteId, NotebookSocket socket) {
-    synchronized (noteSocketMap) {
-      List<NotebookSocket> socketList = noteSocketMap.get(noteId);
-      if (socketList != null) {
+    List<NotebookSocket> socketList = noteSocketMap.get(noteId);
+    if (socketList != null) {
+      synchronized (socketList) {
         socketList.remove(socket);
       }
     }
@@ -423,31 +441,25 @@ public class NotebookServer extends WebSocketServlet
 
   private void removeNote(String noteId) {
     synchronized (noteSocketMap) {
-      List<NotebookSocket> socketList = noteSocketMap.remove(noteId);
+      noteSocketMap.remove(noteId);
     }
   }
 
   private void removeConnectionFromAllNote(NotebookSocket socket) {
-    synchronized (noteSocketMap) {
-      Set<String> keys = noteSocketMap.keySet();
-      for (String noteId : keys) {
-        removeConnectionFromNote(noteId, socket);
-      }
+    for (String noteId : noteSocketMap.keySet()) {
+      removeConnectionFromNote(noteId, socket);
     }
   }
 
   private String getOpenNoteId(NotebookSocket socket) {
     String id = null;
-    synchronized (noteSocketMap) {
-      Set<String> keys = noteSocketMap.keySet();
-      for (String noteId : keys) {
-        List<NotebookSocket> sockets = noteSocketMap.get(noteId);
-        if (sockets.contains(socket)) {
-          id = noteId;
-        }
+    for (Map.Entry<String, List<NotebookSocket>> entry: noteSocketMap.entrySet()) {
+      String noteId = entry.getKey();
+      List<NotebookSocket> socketList = entry.getValue();
+      if (socketList != null && socketList.contains(socket)) {
+        id = noteId;
       }
     }
-
     return id;
   }
 
@@ -465,48 +477,89 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void broadcast(String noteId, Message m) {
-    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
-    synchronized (noteSocketMap) {
-      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
-      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0) {
-        return;
-      }
-      socketsToBroadcast = new ArrayList<>(socketLists);
+  private void sendMessageForSocketsExcept(final String noteId,
+                                           final Message m,
+                                           final NotebookSocket exclude) {
+    final List<NotebookSocket> socketList = noteSocketMap.get(noteId);
+    if (socketList == null || socketList.size() == 0) {
+      return;
     }
+
     LOG.debug("SEND >> " + m);
-    for (NotebookSocket conn : socketsToBroadcast) {
+    LOG.debug("SEND >> " + m.op);
+
+    long startTime = System.currentTimeMillis();
+    final String serializedMessage = serializeMessage(m);
+
+    synchronized (socketList) {
+      List<NotebookSocket> socketListToSend = Lists.newArrayList();
+      for (NotebookSocket conn : socketList)
+        if (!conn.equals(exclude)) {
+          socketListToSend.add(conn);
+        }
+      int size = socketListToSend.size();
+
+      final CountDownLatch end = new CountDownLatch(size);
+
+      List<Future<Integer>> socketListSended = Lists.newArrayList();
+      for (final NotebookSocket conn : socketListToSend) {
+        NotebookSocketTask<Integer> task = new NotebookSocketTask<Integer>() {
+          @Override
+          public Integer call() throws Exception {
+            try {
+              long innerStartTime = System.currentTimeMillis();
+              conn.send(serializedMessage);
+              LOG.info("{} sends op {} to connection used {}",
+                      noteId,
+                      m.op,
+                      System.currentTimeMillis() - innerStartTime);
+              return 0;
+            } catch (IOException e) {
+              LOG.error("socket error", e);
+              return 1;
+            } catch (Exception e) {
+              LOG.warn("broadcast error", e);
+              return 1;
+            } finally {
+              end.countDown();
+            }
+          }
+        };
+        task.setSocket(conn);
+        socketListSended.add(cancellableExecutor.submit(task));
+      }
+
       try {
-        conn.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("socket error", e);
+        if (!end.await(3, TimeUnit.SECONDS)) {
+          long canceledCount = 0;
+          for (Future<Integer> future : socketListSended)
+            if (!future.isDone()) {
+              future.cancel(true);
+              canceledCount += 1;
+            }
+          LOG.info("There are timeout send tasks and {}" +
+                  "of connections have been successfully canceled",
+                  canceledCount);
+        }
+      } catch (InterruptedException e) {
+        LOG.error("Unexpected interruption", e);
       }
     }
+    LOG.info("broadcast {} op {} to {} connections used {}",
+            noteId,
+            m.op,
+            socketList.size(),
+            System.currentTimeMillis() - startTime);
+  }
+
+  private void broadcast(String noteId, Message m) {
+    broadcastToWatchers(noteId, StringUtils.EMPTY, m);
+    sendMessageForSocketsExcept(noteId, m, null);
   }
 
   private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
-    List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
-    synchronized (noteSocketMap) {
-      broadcastToWatchers(noteId, StringUtils.EMPTY, m);
-      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0) {
-        return;
-      }
-      socketsToBroadcast = new ArrayList<>(socketLists);
-    }
-
-    LOG.debug("SEND >> " + m);
-    for (NotebookSocket conn : socketsToBroadcast) {
-      if (exclude.equals(conn)) {
-        continue;
-      }
-      try {
-        conn.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("socket error", e);
-      }
-    }
+    broadcastToWatchers(noteId, StringUtils.EMPTY, m);
+    sendMessageForSocketsExcept(noteId, m, exclude);
   }
 
   private void multicastToUser(String user, Message m) {
