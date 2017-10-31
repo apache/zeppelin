@@ -180,7 +180,8 @@ public class Message implements JsonSerializable {
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
-    NOTE_FORMS                    // set note forms
+    SAVE_NOTE_FORMS,              // save note forms
+    REMOVE_NOTE_FORMS             // remove note forms
   }
 
   private static final Gson gson = new Gson();

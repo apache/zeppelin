@@ -18,6 +18,12 @@ limitations under the License.
        ng-repeat="formulaire in forms | toArray"
        ng-init="loadForm(formulaire, params)">
     <label class="control-label input-sm" ng-class="{'disable': disable}">{{formulaire.name}}</label>
+    <a ng-if="removeaction">
+      <i class="fa fa-times"
+         ng-click="removeaction(formulaire.name)"
+         tooltip-placement="bottom" uib-tooltip="Remove">
+      </i>
+    </a>
     <div>
       <input class="form-control input-sm"
              ng-if="forms[formulaire.name].type == 'TextBox'"
@@ -26,7 +32,7 @@ limitations under the License.
              ng-class="{'disable': disable}"
              name="{{formulaire.name}}" />
     </div>
-    <div ng-if="actiononchange == true">
+    <div ng-if="actiononchange === true">
       <select class="form-control input-sm"
               ng-if="forms[formulaire.name].type == 'Select'"
               ng-change="action()"
@@ -36,7 +42,7 @@ limitations under the License.
               ng-options="option.value as (option.displayName||option.value) for option in forms[formulaire.name].options">
       </select>
     </div>
-    <div ng-if="actiononchange == false">
+    <div ng-if="actiononchange === false">
       <select class="form-control input-sm"
               ng-if="forms[formulaire.name].type == 'Select'"
               ng-enter="action()"
@@ -46,7 +52,7 @@ limitations under the License.
               ng-options="option.value as (option.displayName||option.value) for option in forms[formulaire.name].options">
       </select>
     </div>
-    <div ng-if="actiononchange == true &&
+    <div ng-if="actiononchange === true &&
                   forms[formulaire.name].type == 'CheckBox'">
       <label ng-repeat="option in forms[formulaire.name].options"
              class="checkbox-item input-sm">
@@ -56,7 +62,7 @@ limitations under the License.
                ng-click="toggleCheckbox(formulaire, option, params); action()"/> {{option.displayName||option.value}}
       </label>
     </div>
-    <div ng-if="actiononchange == false &&
+    <div ng-if="actiononchange === false &&
                   forms[formulaire.name].type == 'CheckBox'">
       <label ng-repeat="option in forms[formulaire.name].options"
              class="checkbox-item input-sm">

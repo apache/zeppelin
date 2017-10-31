@@ -1334,7 +1334,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
-  $scope.$on('noteForms', function (event, data) {
+  $scope.$on('saveNoteForms', function (event, data) {
     $scope.note.noteForms = data.formsData.forms
     $scope.note.noteParams = data.formsData.params
   })
@@ -1348,6 +1348,10 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.saveNoteForms = function () {
     websocketMsgSrv.saveNoteForms($scope.note)
+  }
+
+  $scope.removeNoteForms = function (formName) {
+    websocketMsgSrv.removeNoteForms($scope.note, formName)
   }
 
   $scope.$on('$destroy', function () {

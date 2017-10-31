@@ -350,8 +350,11 @@ public class NotebookServer extends WebSocketServlet
         case WATCHER:
           switchConnectionToWatcher(conn, messagereceived);
           break;
-        case NOTE_FORMS:
+        case SAVE_NOTE_FORMS:
           saveNoteForms(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case REMOVE_NOTE_FORMS:
+          removeNoteForms(conn, userAndRoles, notebook, messagereceived);
           break;
         default:
           break;
@@ -2507,7 +2510,7 @@ public class NotebookServer extends WebSocketServlet
     formsSettings.setForms(note.getNoteForms());
     formsSettings.setParams(note.getNoteParams());
 
-    broadcast(note.getId(), new Message(OP.NOTE_FORMS).put("formsData", formsSettings));
+    broadcast(note.getId(), new Message(OP.SAVE_NOTE_FORMS).put("formsData", formsSettings));
   }
 
   private void saveNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -2523,6 +2526,27 @@ public class NotebookServer extends WebSocketServlet
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setNoteParams(noteParams);
+
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note.persist(subject);
+      broadcastNoteForms(note);
+    }
+  }
+
+  private void removeNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+                             Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String formName = (String) fromMessage.get("formName");
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "update")) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.getNoteForms().remove(formName);
+      note.getNoteParams().remove(formName);
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);

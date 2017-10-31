@@ -341,10 +341,19 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
     },
 
     saveNoteForms: function (note) {
-      websocketEvents.sendNewEvent({op: 'NOTE_FORMS',
+      websocketEvents.sendNewEvent({op: 'SAVE_NOTE_FORMS',
         data: {
           noteId: note.id,
           noteParams: note.noteParams
+        }
+      })
+    },
+
+    removeNoteForms: function (note, formName) {
+      websocketEvents.sendNewEvent({op: 'REMOVE_NOTE_FORMS',
+        data: {
+          noteId: note.id,
+          formName: formName
         }
       })
     }

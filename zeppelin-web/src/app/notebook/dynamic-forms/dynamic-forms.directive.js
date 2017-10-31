@@ -26,7 +26,8 @@ function DynamicFormDirective($templateRequest, $compile) {
       actiononchange: '=actiononchange',
       forms: '=forms',
       params: '=params',
-      action: '=action'
+      action: '=action',
+      removeaction: '=removeaction'
     },
 
     link: function (scope, element, attrs, controller) {
