@@ -219,11 +219,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       InterpreterContext interpreterContext) {
     List<InterpreterCompletion> candidates = Collections.emptyList();
     try {
-      try {
-        candidates = callCompletion(new CompletionRequest(buf, getSessionKind(), cursor));
-      } catch (SessionNotFoundException e) {
-        LOGGER.warn("Livy session {} is expired. Will return empty list of candidates.", sessionInfo.id);
-      }
+      candidates = callCompletion(new CompletionRequest(buf, getSessionKind(), cursor));
+    } catch (SessionNotFoundException e) {
+      LOGGER.warn("Livy session {} is expired. Will return empty list of candidates.", sessionInfo.id);
     } catch (LivyException le) {
       logger.error("Failed to call code completions. Will return empty list of candidates", le);
     }
