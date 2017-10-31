@@ -122,6 +122,7 @@
     "editor": {
       "language": "scala",
       "editOnDblClick": false
+      "completionKey": "TAB"
     }
   },
   {
@@ -161,6 +162,7 @@
     "editor": {
       "language": "sql",
       "editOnDblClick": false
+      "completionKey": "TAB"
     }
   },
   {
@@ -181,6 +183,7 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false
+      "completionKey": "TAB"
     }
   },
   {
@@ -201,6 +204,7 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false
+      "completionKey": "TAB"
     }
   },
   {
@@ -221,6 +225,7 @@
     "editor": {
       "language": "r",
       "editOnDblClick": false
+      "completionKey": "TAB"
     }
   }
 ]
