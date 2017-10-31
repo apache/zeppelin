@@ -782,13 +782,7 @@ public class InterpreterSettingManager {
         //clean up metaInfos
         intpSetting.setInfos(null);
         copyDependenciesFromLocalPath(intpSetting);
-
-        if (user.equals("anonymous")) {
-          intpSetting.close();
-        } else {
-          intpSetting.closeInterpreters(user, noteId);
-        }
-
+        intpSetting.closeInterpreters(user, noteId);
       } else {
         throw new InterpreterException("Interpreter setting id " + settingId + " not found");
       }

@@ -205,10 +205,10 @@ public class InterpreterSetting {
       return this;
     }
 
-//    public Builder setInterpreterRunner(InterpreterRunner runner) {
-//      interpreterSetting.interpreterRunner = runner;
-//      return this;
-//    }
+    public Builder setInterpreterRunner(InterpreterRunner runner) {
+      interpreterSetting.interpreterRunner = runner;
+      return this;
+    }
 
     public Builder setIntepreterSettingManager(
         InterpreterSettingManager interpreterSettingManager) {
@@ -248,7 +248,6 @@ public class InterpreterSetting {
   }
 
   void postProcessing() {
-//    createLauncher();
     this.status = Status.READY;
   }
 
@@ -370,7 +369,7 @@ public class InterpreterSetting {
     try {
       interpreterGroupWriteLock.lock();
       if (!interpreterGroups.containsKey(groupId)) {
-        LOGGER.info("Create InterpreterGroup with groupId {} for user {} and note {}",
+        LOGGER.info("Create InterpreterGroup with groupId: {} for user: {} and note: {}",
             groupId, user, noteId);
         ManagedInterpreterGroup intpGroup = createInterpreterGroup(groupId);
         interpreterGroups.put(groupId, intpGroup);
@@ -653,7 +652,7 @@ public class InterpreterSetting {
     return process;
   }
 
-  private List<Interpreter> getOrCreateSession(String user, String noteId) {
+  List<Interpreter> getOrCreateSession(String user, String noteId) {
     ManagedInterpreterGroup interpreterGroup = getOrCreateInterpreterGroup(user, noteId);
     Preconditions.checkNotNull(interpreterGroup, "No InterpreterGroup existed for user {}, " +
         "noteId {}", user, noteId);
