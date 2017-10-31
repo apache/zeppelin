@@ -210,14 +210,14 @@ public class JupyterUtil {
         metadataJson.addProperty("autoscroll", "auto");
         codeJson.add("metadata", metadataJson);
         codeJson.add("outputs", new JsonArray());
-        codeJson.addProperty("source", "code");
+        codeJson.addProperty("source", code);
       } else if (UNKNOWN_MAGIC.matches(code)) {
         // use raw cells for unknown magic
         codeJson.addProperty("cell_type", "raw");
         JsonObject metadataJson = new JsonObject();
         metadataJson.addProperty("format", "text/plain");
         codeJson.add("metadata", metadataJson);
-        codeJson.addProperty("source", "code");
+        codeJson.addProperty("source", code);
       } else {
         codeJson.addProperty("cell_type", "code");
         codeJson.addProperty("execution_count", index);
@@ -225,7 +225,7 @@ public class JupyterUtil {
         metadataJson.addProperty("autoscroll", "auto");
         codeJson.add("metadata", metadataJson);
         codeJson.add("outputs", new JsonArray());
-        codeJson.addProperty("source", "code");
+        codeJson.addProperty("source", code);
       }
 
       cells.add(codeJson);
