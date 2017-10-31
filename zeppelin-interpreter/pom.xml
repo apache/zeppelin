@@ -262,7 +262,7 @@
                 <goal>copy-dependencies</goal>
               </goals>
               <configuration>
-                <outputDirectory>${basedir}/interpreter/${project.name}</outputDirectory>
+                <outputDirectory>${basedir}/interpreter/${project.artifactId}</outputDirectory>
                 <overWriteReleases>false</overWriteReleases>
                 <overWriteSnapshots>false</overWriteSnapshots>
                 <overWriteIfNewer>true</overWriteIfNewer>
@@ -276,7 +276,7 @@
                 <goal>copy</goal>
               </goals>
               <configuration>
-                <outputDirectory>${basedir}/interpreter/${project.name}</outputDirectory>
+                <outputDirectory>${basedir}/interpreter/${project.artifactId}</outputDirectory>
                 <overWriteReleases>false</overWriteReleases>
                 <overWriteSnapshots>false</overWriteSnapshots>
                 <overWriteIfNewer>true</overWriteIfNewer>
@@ -303,7 +303,7 @@
                 <goal>resources</goal>
               </goals>
               <configuration>
-                <outputDirectory>${basedir}/interpreter/{project.name}</outputDirectory>
+                <outputDirectory>${basedir}/interpreter/{project.artifactId}</outputDirectory>
               </configuration>
             </execution>
           </executions>
