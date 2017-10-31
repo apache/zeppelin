@@ -63,7 +63,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     gson = new Gson();
     notebook = ZeppelinServer.notebook;
     notebookServer = ZeppelinServer.notebookWsServer;

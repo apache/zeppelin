@@ -646,7 +646,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     @Override
     public void run() {
-      note.run(getParagraphId());
+      note.run(getParagraphId(), false);
     }
   }
 
