@@ -222,18 +222,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       try {
         candidates = callCompletion(new CompletionRequest(buf, getSessionKind(), cursor));
       } catch (SessionNotFoundException e) {
-        LOGGER.warn("Livy session {} is expired, new session will be created.", sessionInfo.id);
-        // we don't want to create multiple sessions because it is possible to have
-        // multiple thread
-        // to call this method, like LivySparkSQLInterpreter which use
-        // ParallelScheduler. So we need
-        // to check session status again in this sync block
-        synchronized (this) {
-          if (isSessionExpired()) {
-            initLivySession();
-          }
-        }
-        candidates = callCompletion(new CompletionRequest(buf, getSessionKind(), cursor));
+        LOGGER.warn("Livy session {} is expired. Will return empty list of candidates.", sessionInfo.id);
       }
     } catch (LivyException le) {
       logger.error("Failed to call code completions. Will return empty list of candidates", le);
