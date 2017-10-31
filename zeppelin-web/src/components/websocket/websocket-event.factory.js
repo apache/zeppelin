@@ -174,9 +174,7 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv, s
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data)
     } else if (op === 'CONVERT_NOTE') {
-      content = data.nbformat
-      name = data.name
-      saveAsService.saveAs(jsonContent, $scope.note.name, 'ipynb')
+      saveAsService.saveAs(data.nbformat, data.name, 'ipynb')
     } else {
       console.error(`unknown websocket op: ${op}`)
     }

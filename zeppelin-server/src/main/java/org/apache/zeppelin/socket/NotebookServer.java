@@ -262,6 +262,7 @@ public class NotebookServer extends WebSocketServlet
           break;
         case CONVERT_NOTE:
           convertNote(conn, messagereceived);
+          break;
         case COMMIT_PARAGRAPH:
           updateParagraph(conn, userAndRoles, notebook, messagereceived);
           break;
@@ -1297,7 +1298,7 @@ public class NotebookServer extends WebSocketServlet
     String note = (String) fromMessage.get("note");
 
     Message resp = new Message(OP.CONVERT_NOTE)
-            .put("note", new JupyterUtil().getNbformat(note))
+            .put("nbformat", new JupyterUtil().getNbformat(note))
             .put("name", fromMessage.get("name"));
 
     conn.send(serializeMessage(resp));
