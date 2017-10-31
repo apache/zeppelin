@@ -23,19 +23,23 @@ limitations under the License.
 
 <div id="toc"></div>
 
-Apache Zeppelin allows you to compare revisions of notebook. 
-To see which paragraphs have been changed, removed or added. 
+Apache Zeppelin allows you to compare revisions of notebook.
+To see which paragraphs have been changed, removed or added.
 This action becomes available if your notebook has more than one revision.
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/revisions-comparator-button.png" height="90%" width="90%"></center>
 
 ## How to compare two revisions
 
-For compare two revisions need open dialog of comparator (by click button) and choose two revisions into comboboxes.
+For compare two revisions need open dialog of comparator (by click button) and click on any revision in the table.
 
-<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/revisions-comparator-empty.png" height="90%" width="90%"></center>
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/revisions-comparator-table.png" height="90%" width="90%"></center>
 
-After selecting the second revision will see the result of the comparison.
+Or choose two revisions into comboboxes.
+
+<center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/revisions-comparator-comboboxes.png" height="90%" width="90%"></center>
+
+After click on any revision in the table or selecting the second revision will see the result of the comparison.
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/revisions-comparator-diff.png" height="90%" width="90%"></center>
 
