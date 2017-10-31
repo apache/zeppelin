@@ -321,14 +321,14 @@ public class RemoteScheduler implements Scheduler {
       if (job.isAborted()) {
         job.setStatus(Status.ABORT);
       } else if (job.getException() != null) {
-        logger.debug("Job ABORT, " + job.getId());
+        logger.debug("Job ABORT, " + job.getId() + ", " + job.getErrorMessage());
         job.setStatus(Status.ERROR);
       } else if (jobResult != null && jobResult instanceof InterpreterResult
           && ((InterpreterResult) jobResult).code() == Code.ERROR) {
-        logger.debug("Job Error, " + job.getId());
+        logger.debug("Job Error, " + job.getId() + ", " + job.getErrorMessage());
         job.setStatus(Status.ERROR);
       } else {
-        logger.debug("Job Finished, " + job.getId());
+        logger.debug("Job Finished, " + job.getId() + ", Result: " + job.getReturn());
         job.setStatus(Status.FINISHED);
       }
 
