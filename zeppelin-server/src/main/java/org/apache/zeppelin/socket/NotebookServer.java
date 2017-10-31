@@ -1295,7 +1295,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   protected void convertNote(NotebookSocket conn, Message fromMessage) throws IOException {
-    String note = (String) fromMessage.get("note");
+    String note = gson.toJson(fromMessage.get("note"));
 
     Message resp = new Message(OP.CONVERT_NOTE)
             .put("nbformat", new JupyterUtil().getNbformat(note))
