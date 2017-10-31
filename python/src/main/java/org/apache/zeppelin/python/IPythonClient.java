@@ -96,7 +96,7 @@ public class IPythonClient {
             LOGGER.debug("Interpreter Streaming Output: " + executeResponse.getOutput());
             if (isPreviousOutputImage) {
               // add '\n' when switch from image to text
-              interpreterOutput.write("\n".getBytes());
+              interpreterOutput.write("\n%text ".getBytes());
             }
             isPreviousOutputImage = false;
             interpreterOutput.write(executeResponse.getOutput().getBytes());

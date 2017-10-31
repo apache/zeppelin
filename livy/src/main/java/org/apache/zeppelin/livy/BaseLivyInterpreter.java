@@ -48,6 +48,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.SSLContext;
@@ -290,6 +291,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         }
         stmtInfo = executeStatement(new ExecuteRequest(code));
       }
+
       // pull the statement status
       while (!stmtInfo.isAvailable()) {
         if (paragraphId != null && paragraphsToCancel.contains(paragraphId)) {
@@ -358,7 +360,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       InterpreterResult result2 = new InterpreterResult(result.code());
       result2.add(InterpreterResult.Type.HTML,
           "<font color=\"red\">Previous livy session is expired, new livy session is created. " +
-              "Paragraphs that depend on this paragraph need to be re-executed!" + "</font>");
+              "Paragraphs that depend on this paragraph need to be re-executed!</font>");
       for (InterpreterResultMessage message : result.message()) {
         result2.add(message.getType(), message.getData());
       }
@@ -581,6 +583,15 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         }
         throw new LivyException(cause.getResponseBodyAsString() + "\n"
             + ExceptionUtils.getFullStackTrace(ExceptionUtils.getRootCause(e)));
+      }
+      if (e instanceof HttpServerErrorException) {
+        HttpServerErrorException errorException = (HttpServerErrorException) e;
+        String errorResponse = errorException.getResponseBodyAsString();
+        if (errorResponse.contains("Session is in state dead")) {
+          throw new LivyException("%html <font color=\"red\">Livy session is dead somehow, " +
+              "please check log to see why it is dead, and then restart livy interpreter</font>");
+        }
+        throw new LivyException(errorResponse, e);
       }
       throw new LivyException(e);
     }

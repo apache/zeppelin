@@ -24,6 +24,11 @@
         "defaultValue": "60",
         "type": "number"
       }
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {

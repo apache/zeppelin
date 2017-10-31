@@ -146,7 +146,7 @@ public class IPySparkInterpreterTest {
         List<InterpreterResultMessage> interpreterResultMessages = null;
         try {
           interpreterResultMessages = context2.out.getInterpreterResultMessages();
-          assertTrue(interpreterResultMessages.get(0).getData().contains("cancelled"));
+          assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -180,7 +180,7 @@ public class IPySparkInterpreterTest {
         "ssc.start()\n" +
         "time.sleep(6)\n" +
         "ssc.stop(stopSparkContext=False, stopGraceFully=True)", context);
-    Thread.sleep(100);
+    Thread.sleep(1000);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.getInterpreterResultMessages();
     assertEquals(1, interpreterResultMessages.size());

@@ -284,12 +284,24 @@ public class IPythonInterpreterTest {
     // the order of IMAGE and TEXT is not determined
     // check there must be one IMAGE output
     boolean hasImageOutput = false;
+    boolean hasLineText = false;
+    boolean hasFigureText = false;
     for (InterpreterResultMessage msg : interpreterResultMessages) {
       if (msg.getType() == InterpreterResult.Type.IMG) {
         hasImageOutput = true;
       }
+      if (msg.getType() == InterpreterResult.Type.TEXT
+          && msg.getData().contains("matplotlib.lines.Line2D")) {
+        hasLineText = true;
+      }
+      if (msg.getType() == InterpreterResult.Type.TEXT
+          && msg.getData().contains("matplotlib.figure.Figure")) {
+        hasFigureText = true;
+      }
     }
     assertTrue("No Image Output", hasImageOutput);
+    assertTrue("No Line Text", hasLineText);
+    assertTrue("No Figure Text", hasFigureText);
 
     // bokeh
     // bokeh initialization
