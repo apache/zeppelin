@@ -30,8 +30,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -169,27 +167,37 @@ public class KylinInterpreter extends Interpreter {
   private InterpreterResult executeQuery(String sql) throws IOException {
 
     HttpResponse response = prepareRequest(sql);
-    String result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-    int code = response.getStatusLine().getStatusCode();
-    if (code != 200) {
-      StringBuilder errorMessage = new StringBuilder("Failed : HTTP error code " + code);
-      logger.error("failed to execute query: " + result);
-      try {
-        JSONObject content = new JSONObject(result);
-        if (content.has("exception")) {
-          errorMessage.append(". Error message: " + content.getString("exception"));
-        }
-      } catch (JSONException e) {
-        logger.error("Cannot parse json string ", e);
-        // when code is 401, the response is html, not json
-        if (code == 401) {
-          errorMessage.append(". Error message: Unauthorized. This request requires "
-              + "HTTP authentication. Please make sure your have set your credentials correctly.");
+    String result;
+
+    try {
+      int code = response.getStatusLine().getStatusCode();
+      result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+      if (code != 200) {
+        StringBuilder errorMessage = new StringBuilder("Failed : HTTP error code " + code);
+        logger.error("Failed to execute query: " + result);
+
+        KylinErrorResponse kylinErrorResponse = KylinErrorResponse.fromJson(result);
+        if (kylinErrorResponse == null) {
+          logger.error("Cannot get json from string: " + result);
+          // when code is 401, the response is html, not json
+          if (code == 401) {
+            errorMessage.append(". Error message: Unauthorized. This request requires "
+                + "HTTP authentication. Please make sure your have set your credentials"
+                + " correctly.");
+          } else {
+            errorMessage.append(". Error message: " + result);
+          }
         } else {
-          errorMessage.append(". Error message: " + result);
+          String exception = kylinErrorResponse.getException();
+          logger.error("The exception is " + exception);
+          errorMessage.append(". Error message: " + exception);
         }
+
+        return new InterpreterResult(InterpreterResult.Code.ERROR, errorMessage.toString());
       }
-      return new InterpreterResult(InterpreterResult.Code.ERROR, errorMessage.toString());
+    } catch (NullPointerException | IOException e) {
+      throw new IOException(e);
     }
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS,
