@@ -250,7 +250,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         candidates.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
       }
     } catch (APINotFoundException e) {
-      logger.debug("completion api seems not to be availabele. (available from livy 0.5)", e);
+      logger.debug("completion api seems not to be available. (available from livy 0.5)", e);
     }
     return candidates;
   }
