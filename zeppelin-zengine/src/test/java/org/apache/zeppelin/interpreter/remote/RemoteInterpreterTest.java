@@ -431,7 +431,7 @@ public class RemoteInterpreterTest {
     Map<String, Input> expected = new LinkedHashMap<>(gui.getForms());
     Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl", null,
-        null, AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), gui,
+        null, AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), gui, new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
 
     interpreter.interpret("text", context);
