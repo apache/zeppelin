@@ -49,7 +49,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     @BeforeClass
     public static void init() throws Exception {
-        AbstractTestRestApi.startUp();
+        AbstractTestRestApi.startUp(ZeppelinSparkClusterTest.class.getSimpleName());
     }
 
     @AfterClass

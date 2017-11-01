@@ -85,7 +85,7 @@ class RInterpreterTest extends FlatSpec {
   it should "have persistent properties" in {
     val props = new Properties()
     props.setProperty("hello", "world")
-    rint.setProperty(props)
+    rint.setProperties(props)
     assertResult("world") {
       rint.getProperty("hello")
     }

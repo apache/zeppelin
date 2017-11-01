@@ -76,10 +76,10 @@ public class InterpreterFactory {
         if (null != interpreter) {
           return interpreter;
         }
+        throw new RuntimeException("No such interpreter: " + replName);
       }
-      return null;
-
-    } else {
+      throw new RuntimeException("Interpreter " + group + " is not binded to this note");
+    } else if (replNameSplit.length == 1){
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
       // TODO(jl): Handle with noteId to support defaultInterpreter per note.
@@ -90,19 +90,15 @@ public class InterpreterFactory {
         return interpreter;
       }
 
-      // next, assume replName is 'group' of interpreter ('name' is ommitted)
+      // next, assume replName is 'group' of interpreter ('name' is omitted)
       // search interpreter group and return first interpreter.
       setting = getInterpreterSettingByGroup(settings, replName);
 
       if (null != setting) {
         return setting.getDefaultInterpreter(user, noteId);
-      }
-
-      // Support the legacy way to use it
-      for (InterpreterSetting s : settings) {
-        if (s.getGroup().equals(replName)) {
-          return setting.getDefaultInterpreter(user, noteId);
-        }
+      } else {
+        throw new RuntimeException("Either no interpreter named " + replName + " or it is not " +
+            "binded to this note");
       }
     }
     //TODO(zjffdu) throw InterpreterException instead of return null
