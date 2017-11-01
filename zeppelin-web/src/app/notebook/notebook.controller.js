@@ -173,15 +173,23 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick)
 
-  $scope.keyboardShortcut = function (keyEvent) {
+  let keyboardShortcut = function (keyEvent) {
     // handle keyevent
     if (!$scope.viewOnly && !$scope.revisionView) {
       $scope.$broadcast('keyEvent', keyEvent)
     }
   }
 
+  $scope.keydownEvent = function (keyEvent) {
+    if ((keyEvent.ctrlKey || keyEvent.metaKey) && String.fromCharCode(keyEvent.which).toLowerCase() === 's') {
+      keyEvent.preventDefault()
+    }
+
+    keyboardShortcut(keyEvent)
+  }
+
   // register mouseevent handler for focus paragraph
-  document.addEventListener('keydown', $scope.keyboardShortcut)
+  document.addEventListener('keydown', $scope.keydownEvent)
 
   $scope.paragraphOnDoubleClick = function (paragraphId) {
     $scope.$broadcast('doubleClickParagraph', paragraphId)
