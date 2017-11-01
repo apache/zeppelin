@@ -208,7 +208,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
@@ -256,7 +256,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
@@ -302,7 +302,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
@@ -347,7 +347,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 

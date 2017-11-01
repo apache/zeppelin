@@ -43,7 +43,6 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -58,55 +57,104 @@ import java.util.HashMap;
 import java.util.Map;
 import org.mockito.Mockito;
 
-public class ParagraphTest {
+public class ParagraphTest extends AbstractInterpreterTest {
+
   @Test
   public void scriptBodyWithReplName() {
-    String text = "%spark(1234567";
-    assertEquals("(1234567", Paragraph.getScriptBody(text));
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("%test(1234567");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("(1234567", paragraph.getScriptText());
 
-    text = "%table 1234567";
-    assertEquals("1234567", Paragraph.getScriptBody(text));
+    paragraph.setText("%test 1234567");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("1234567", paragraph.getScriptText());
   }
 
   @Test
   public void scriptBodyWithoutReplName() {
-    String text = "12345678";
-    assertEquals(text, Paragraph.getScriptBody(text));
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("1234567");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("1234567", paragraph.getScriptText());
   }
 
   @Test
   public void replNameAndNoBody() {
-    String text = "%md";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
-    assertEquals("", Paragraph.getScriptBody(text));
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("%test");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("", paragraph.getScriptText());
   }
-  
+
   @Test
   public void replSingleCharName() {
-    String text = "%r a";
-    assertEquals("r", Paragraph.getRequiredReplName(text));
-    assertEquals("a", Paragraph.getScriptBody(text));
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("%r a");
+    assertEquals("r", paragraph.getIntpText());
+    assertEquals("a", paragraph.getScriptText());
+  }
+
+  @Test
+  public void replInvalid() {
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("foo %r");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("foo %r", paragraph.getScriptText());
+
+    paragraph.setText("foo%r");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("foo%r", paragraph.getScriptText());
+
+    paragraph.setText("% foo");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("% foo", paragraph.getScriptText());
   }
 
   @Test
   public void replNameEndsWithWhitespace() {
-    String text = "%md\r\n###Hello";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("%test\r\n###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
 
-    text = "%md\t###Hello";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
+    paragraph.setText("%test\t###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
 
-    text = "%md\u000b###Hello";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
+    paragraph.setText("%test\u000b###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
 
-    text = "%md\f###Hello";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
+    paragraph.setText("%test\f###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
 
-    text = "%md\n###Hello";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
+    paragraph.setText("%test\n###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
 
-    text = "%md ###Hello";
-    assertEquals("md", Paragraph.getRequiredReplName(text));
+    paragraph.setText("%test ###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
+
+    paragraph.setText(" %test ###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
+
+    paragraph.setText("\n\r%test ###Hello");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("###Hello", paragraph.getScriptText());
+
+    paragraph.setText("%\r\n###Hello");
+    assertEquals("", paragraph.getIntpText());
+    assertEquals("%\r\n###Hello", paragraph.getScriptText());
   }
 
   @Test
@@ -124,7 +172,7 @@ public class ParagraphTest {
     final String scriptBody = "My name is ${name} and I am ${age=20} years old. " +
             "My occupation is ${ job = engineer | developer | artists}";
 
-    final Paragraph paragraph = new Paragraph(note, null, null, null);
+    final Paragraph paragraph = new Paragraph(note, null, null);
     final String paragraphId = paragraph.getId();
 
     final AngularObject nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
@@ -150,7 +198,7 @@ public class ParagraphTest {
 
   @Test
   public void returnDefaultParagraphWithNewUser() {
-    Paragraph p = new Paragraph("para_1", null, null, null, null);
+    Paragraph p = new Paragraph("para_1", null, null, null);
     Object defaultValue = "Default Value";
     p.setResult(defaultValue);
     Paragraph newUserParagraph = p.getUserParagraph("new_user");
@@ -160,16 +208,13 @@ public class ParagraphTest {
 
   @Test
   public void returnUnchangedResultsWithDifferentUser() throws Throwable {
-    InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
-    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote,  null, null, mockInterpreterSettingManager));
-
-    doReturn("spy").when(spyParagraph).getRequiredReplName();
-
+    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote,  null, null));
 
     Interpreter mockInterpreter = mock(Interpreter.class);
-    doReturn(mockInterpreter).when(spyParagraph).getRepl(anyString());
+    spyParagraph.setInterpreter(mockInterpreter);
+    doReturn(mockInterpreter).when(spyParagraph).getBindedInterpreter();
 
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
@@ -187,9 +232,6 @@ public class ParagraphTest {
     when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
     spyInterpreterSettingList.add(mockInterpreterSetting);
     when(mockNote.getId()).thenReturn("any_id");
-    when(mockInterpreterSettingManager.getInterpreterSettings(anyString())).thenReturn(spyInterpreterSettingList);
-
-    doReturn("spy script body").when(spyParagraph).getScriptBody();
 
     when(mockInterpreter.getFormType()).thenReturn(FormType.NONE);
 
@@ -229,7 +271,7 @@ public class ParagraphTest {
   @Test
   public void testCursorPosition() {
     Paragraph paragraph = spy(new Paragraph());
-    doReturn(null).when(paragraph).getRepl(anyString());
+    doReturn(null).when(paragraph).getIntpText();
     // left = buffer, middle = cursor position into source code, right = cursor position after parse
     List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
         Triple.of("%jdbc schema.", 13, 7),
