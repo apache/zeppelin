@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
@@ -66,17 +67,21 @@ public class RemoteInterpreter extends Interpreter {
   private volatile boolean isOpened = false;
   private volatile boolean isCreated = false;
 
+  private LifecycleManager lifecycleManager;
+
   /**
    * Remote interpreter and manage interpreter process
    */
   public RemoteInterpreter(Properties properties,
                            String sessionId,
                            String className,
-                           String userName) {
+                           String userName,
+                           LifecycleManager lifecycleManager) {
     super(properties);
     this.sessionId = sessionId;
     this.className = className;
     this.userName = userName;
+    this.lifecycleManager = lifecycleManager;
   }
 
   public boolean isOpened() {
@@ -149,6 +154,7 @@ public class RemoteInterpreter extends Interpreter {
           }
         });
         isOpened = true;
+        this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
       }
     }
   }
@@ -189,6 +195,7 @@ public class RemoteInterpreter extends Interpreter {
         }
       });
       isOpened = false;
+      this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     } else {
       LOGGER.warn("close is called when RemoterInterpreter is not opened for " + className);
     }
@@ -218,6 +225,7 @@ public class RemoteInterpreter extends Interpreter {
       interpreterContextRunnerPool.clear(noteId);
       interpreterContextRunnerPool.addAll(noteId, runners);
     }
+    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(
         new RemoteInterpreterProcess.RemoteFunction<InterpreterResult>() {
           @Override
@@ -270,6 +278,7 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
+    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
       @Override
       public Void call(Client client) throws Exception {
@@ -297,6 +306,7 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
+    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     FormType type = interpreterProcess.callRemoteFunction(
         new RemoteInterpreterProcess.RemoteFunction<FormType>() {
           @Override
@@ -321,6 +331,7 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
+    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(
         new RemoteInterpreterProcess.RemoteFunction<Integer>() {
           @Override
@@ -345,6 +356,7 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
+    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(
         new RemoteInterpreterProcess.RemoteFunction<List<InterpreterCompletion>>() {
           @Override
@@ -366,6 +378,7 @@ public class RemoteInterpreter extends Interpreter {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     return interpreterProcess.callRemoteFunction(
         new RemoteInterpreterProcess.RemoteFunction<String>() {
           @Override
@@ -395,7 +408,7 @@ public class RemoteInterpreter extends Interpreter {
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(ic.getNoteId(), ic.getParagraphId(), ic.getReplName(),
         ic.getParagraphTitle(), ic.getParagraphText(), gson.toJson(ic.getAuthenticationInfo()),
-        gson.toJson(ic.getConfig()), gson.toJson(ic.getGui()), gson.toJson(ic.getNoteGui()),
+        gson.toJson(ic.getConfig()), ic.getGui().toJson(), gson.toJson(ic.getNoteGui()),
         gson.toJson(ic.getRunners()));
   }
 

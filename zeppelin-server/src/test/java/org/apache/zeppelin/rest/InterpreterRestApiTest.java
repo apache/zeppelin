@@ -59,7 +59,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(InterpreterRestApiTest.class.getSimpleName());
   }
 
   @AfterClass

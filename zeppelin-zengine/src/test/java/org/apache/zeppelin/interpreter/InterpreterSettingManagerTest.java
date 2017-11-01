@@ -50,9 +50,9 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertEquals(2, interpreterSetting.getInterpreterInfos().size());
+    assertEquals(3, interpreterSetting.getInterpreterInfos().size());
     // 3 other builtin properties:
-    //   * zeppelin.interpeter.output.limit
+    //   * zeppelin.interpreter.output.limit
     //   * zeppelin.interpreter.localRepo
     //   * zeppelin.interpreter.max.poolsize
     assertEquals(6, interpreterSetting.getJavaProperties().size());
@@ -67,7 +67,6 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertNotNull(interpreterSetting.getAppEventListener());
     assertNotNull(interpreterSetting.getDependencyResolver());
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
-    assertEquals("linux_runner", interpreterSetting.getInterpreterRunner().getPath());
 
     List<RemoteRepository> repositories = interpreterSettingManager.getRepositories();
     assertEquals(2, repositories.size());
@@ -80,14 +79,13 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertEquals(2, interpreterSetting.getInterpreterInfos().size());
+    assertEquals(3, interpreterSetting.getInterpreterInfos().size());
     assertEquals(6, interpreterSetting.getJavaProperties().size());
     assertEquals("value_1", interpreterSetting.getJavaProperties().getProperty("property_1"));
     assertEquals("new_value_2", interpreterSetting.getJavaProperties().getProperty("property_2"));
     assertEquals("value_3", interpreterSetting.getJavaProperties().getProperty("property_3"));
     assertEquals("shared", interpreterSetting.getOption().perNote);
     assertEquals("shared", interpreterSetting.getOption().perUser);
-    assertEquals("linux_runner", interpreterSetting.getInterpreterRunner().getPath());
     assertEquals(0, interpreterSetting.getDependencies().size());
 
     repositories = interpreterSettingManager2.getRepositories();
