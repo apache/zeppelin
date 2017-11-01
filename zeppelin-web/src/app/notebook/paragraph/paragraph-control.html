@@ -101,7 +101,7 @@ limitations under the License.
     <button
         class="btn btn-default btn-xs"
         ng-click="removeParagraph(paragraph)"
-        ng-hide="$last"
+        ng-if="note.paragraphs.length > 1"
         tooltip-placement="top"
         uib-tooltip="Remove Paragraph (Ctrl+{{ isMac ? 'Option' : 'Alt'}}+D)">
       <i class="zi-remove"></i>
