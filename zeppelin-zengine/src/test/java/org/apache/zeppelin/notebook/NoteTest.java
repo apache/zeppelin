@@ -247,7 +247,6 @@ public class NoteTest {
     note.getInfo().put("info_1", "value_1");
     String pText = "%spark sc.version";
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p.dateUpdated = new Date();
     p.setText(pText);
     p.setResult("1.6.2");
     p.settings.getForms().put("textbox_1", new TextBox("name", "default_name"));

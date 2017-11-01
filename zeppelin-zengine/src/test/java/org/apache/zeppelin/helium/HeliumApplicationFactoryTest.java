@@ -229,7 +229,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
-    Interpreter intp = p1.getCurrentRepl();
+    Interpreter intp = p1.getBindedInterpreter();
     assertEquals(intp, null);
 
     // Unbind all interpreter from note

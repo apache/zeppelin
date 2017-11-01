@@ -1515,7 +1515,7 @@ public class NotebookServer extends WebSocketServlet
     if (paragraph == null) {
       throw new IllegalArgumentException("Unknown paragraph with id : " + paragraphId);
     }
-    return paragraph.getCurrentRepl().getInterpreterGroup();
+    return paragraph.getBindedInterpreter().getInterpreterGroup();
   }
 
   private void pushAngularObjectToRemoteRegistry(String noteId, String paragraphId, String varName,
@@ -1780,7 +1780,7 @@ public class NotebookServer extends WebSocketServlet
     // if it's the last paragraph and not empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
     if (!(Strings.isNullOrEmpty(p.getText()) ||
-        p.getText().trim().equals(p.getMagic())) &&
+        Strings.isNullOrEmpty(p.getScriptText())) &&
         isTheLastParagraph) {
       Paragraph newPara = note.addNewParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);
