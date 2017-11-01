@@ -1,0 +1,123 @@
+@font-face {
+  font-family: 'zeppelin';
+  src:  url('../fonts/zeppelin.eot?e112kb');
+  src:  url('../fonts/zeppelin.eot?e112kb#iefix') format('embedded-opentype'),
+    url('../fonts/zeppelin.ttf?e112kb') format('truetype'),
+    url('../fonts/zeppelin.woff?e112kb') format('woff'),
+    url('../fonts/zeppelin.svg?e112kb#zeppelin') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="zi-"], [class*=" zi-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'zeppelin' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.zi-pause:before {
+  content: "\e910";
+}
+.zi-run:before {
+  content: "\e911";
+}
+.zi-remove:before {
+  content: "\e900";
+}
+.zi-angle-down:before {
+  content: "\e902";
+}
+.zi-angle-left:before {
+  content: "\e903";
+}
+.zi-angle-right:before {
+  content: "\e90c";
+}
+.zi-angle-up:before {
+  content: "\e90d";
+}
+.zi-circle-ellipsis:before {
+  content: "\e901";
+  font-weight: bold;
+}
+.zi-gear:before {
+  content: "\e915";
+}
+.zi-star:before {
+  content: "\e916";
+}
+.zi-trash:before {
+  content: "\e917";
+}
+.zi-information:before {
+  content: "\e904";
+}
+.zi-clipboard:before {
+  content: "\e918";
+}
+.zi-notebook:before {
+  content: "\e905";
+}
+.zi-document:before {
+  content: "\e906";
+}
+.zi-document-text:before {
+  content: "\e919";
+}
+.zi-document-download:before {
+  content: "\e91a";
+}
+.zi-document-upload:before {
+  content: "\e91b";
+}
+.zi-documents:before {
+  content: "\e91c";
+}
+.zi-copy:before {
+  content: "\e907";
+}
+.zi-inbox-download:before {
+  content: "\e91d";
+}
+.zi-inbox-upload:before {
+  content: "\e91e";
+}
+.zi-folder-empty:before {
+  content: "\e908";
+}
+.zi-folder:before {
+  content: "\e91f";
+}
+.zi-search:before {
+  content: "\e909";
+}
+.zi-search-plus:before {
+  content: "\e90a";
+}
+.zi-search-minus:before {
+  content: "\e90b";
+}
+.zi-lock:before {
+  content: "\e920";
+}
+.zi-lock-open:before {
+  content: "\e921";
+}
+.zi-printer-text:before {
+  content: "\e90e";
+}
+.zi-pen-angled:before {
+  content: "\e90f";
+}
+.zi-tag:before {
+  content: "\e922";
+}
