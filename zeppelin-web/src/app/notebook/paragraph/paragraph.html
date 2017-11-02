@@ -55,8 +55,9 @@ limitations under the License.
     <div class="tableDisplay"
          ng-show="!paragraph.config.tableHide"
          ng-controller="ResultCtrl"
-         ng-repeat="result in paragraph.results.msg track by $index"
-         ng-init="init(result, paragraph.config.results[$index], paragraph, $index)"
+         ng-repeat="resultConfig in paragraph.config.results track by $index"
+         ng-if="paragraph.results.msg.length > 0"
+         ng-init="init(paragraph.results.msg[$index % (paragraph.results.msg.length)], resultConfig, paragraph, $index,$index % (paragraph.results.msg.length))"
          ng-include src="'app/notebook/paragraph/result/result.html'">
     </div>
     <div id="{{paragraph.id}}_error" class="error text"

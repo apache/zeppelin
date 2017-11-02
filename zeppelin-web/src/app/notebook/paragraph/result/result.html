@@ -17,7 +17,7 @@ limitations under the License.
   <div
     ng-mouseout="onMouseOut()"
     ng-mouseover="onMouseOver()"
-    id="p{{id}}_resize"
+    id="p{{resultId}}_resize"
     ng-if="!config.helium.activeApp"
     style="padding-bottom: 5px;"
     resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
@@ -29,14 +29,14 @@ limitations under the License.
       <div class="option lightBold" style="overflow: visible;"
            ng-show="config.graph.optionOpen && !asIframe && !viewOnly">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-             id="trsetting{{id}}_{{viz.id}}"
+             id="trsetting{{resultId}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-             id="vizsetting{{id}}_{{viz.id}}"
+             id="vizsetting{{resultId}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>
       </div>
 
-      <div id="p{{id}}_network_header"
+      <div id="p{{resultId}}_network_header"
            ng-if="type == 'NETWORK' && graphMode == 'network' && networkNodes != null">
          <ul class="list-inline">
            <li>Nodes <span class="badge">{{networkNodes.count}}</span>:</li>
@@ -57,22 +57,22 @@ limitations under the License.
       </div>
 
       <!-- graph -->
-      <div id="p{{id}}_graph"
+      <div id="p{{resultId}}_graph"
            class="graphContainer"
            ng-class="{'noOverflow': graphMode=='table'}">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
-             id="p{{id}}_{{viz.id}}"
+             id="p{{resultId}}_{{viz.id}}"
              ng-show="graphMode == viz.id">
         </div>
       </div>
 
-      <div id="p{{id}}_network_footer"
+      <div id="p{{resultId}}_network_footer"
            ng-if="type == 'NETWORK' && graphMode == 'network'">
         <ul class="list-inline">
         </ul>
       </div>
 
-      <div id="{{id}}_comment"
+      <div id="{{resultId}}_comment"
            class="text"
            ng-if="tableDataComment"
            ng-bind-html="tableDataComment">
@@ -86,7 +86,7 @@ limitations under the License.
            ng-show="showScrollDownIcon()"
            ng-click="scrollParagraphDown()"
            uib-tooltip="Follow Output"></div>
-      <div id="p{{id}}_text"
+      <div id="p{{resultId}}_text"
            style="max-height: {{config.graph.height}}px; overflow: auto"
            class="text plainTextContent"></div>
       <div class="fa fa-chevron-up scroll-paragraph-up"
@@ -95,31 +95,31 @@ limitations under the License.
            uib-tooltip="Scroll Top"></div>
     </div>
 
-    <div id="p{{id}}_custom"
+    <div id="p{{resultId}}_custom"
          class="resultContained"
          ng-if="!isDefaultDisplay()"
          ng-style="getPointerEvent()">
     </div>
 
-    <div id="p{{id}}_elem"
+    <div id="p{{resultId}}_elem"
          class="resultContained"
          ng-if="type == 'ELEMENT'"
          ng-style="getPointerEvent()">
     </div>
 
-    <div id="p{{id}}_html"
+    <div id="p{{resultId}}_html"
          class="resultContained"
          ng-if="type == 'HTML'"
          ng-style="getPointerEvent()">
     </div>
 
-    <div id="p{{id}}_angular"
+    <div id="p{{resultId}}_angular"
          class="resultContained"
          ng-if="type == 'ANGULAR'"
          ng-style="getPointerEvent()">
     </div>
 
-    <img id="{{id}}_img"
+    <img id="{{resultId}}_img"
          ng-if="type == 'IMG'"
          ng-src="{{getBase64ImageSrc(result.data)}}"
          ng-style="getPointerEvent()" />

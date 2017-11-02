@@ -113,6 +113,17 @@ limitations under the License.
           </a>
         </li>
         <li>
+          <a ng-click="$event.stopPropagation()" class="dropdown"><span
+            class="fa fa-copy shortcut-icon"></span>Num results
+            <form style="display:inline; margin-left:5px; float:right">
+              <select ng-model="paragraph.config.numResults"
+                      class="selectpicker"
+                      ng-change="changeNumResults(paragraph, paragraph.config.numResults)"
+                      ng-options="num for num in numResultsOptions"></select>
+            </form>
+          </a>
+        </li>
+        <li>
           <a ng-click="$event.stopPropagation()" class="dropdown">
             <span class="fa fa-text-height shortcut-icon"></span>
             <select style="margin-left:5px;float: right" ng-model="paragraph.config.fontSize"
