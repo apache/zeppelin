@@ -232,6 +232,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public boolean isEnabled() {
+    //avoid NullPointException when method isTerminated
+    //invoked in ParagraphListenerImpl.afterStatusChange
+    if (config == null) {
+      return true;
+    }
     Boolean enabled = (Boolean) config.get("enabled");
     return enabled == null || enabled.booleanValue();
   }
@@ -306,6 +311,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public Object getPreviousResultFormat() {
     return result;
+  }
+
+  @Override
+  public boolean isTerminated() {
+    return !this.isEnabled() || super.isTerminated();
   }
 
   @Override
