@@ -203,7 +203,7 @@
     },
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
       "completionKey": "TAB"
     }
   },
