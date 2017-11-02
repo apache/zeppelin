@@ -57,8 +57,10 @@ public class AuthenticationInfo implements JsonSerializable {
     this.user = user;
     this.ticket = ticket;
     if (StringUtils.isNotBlank(roles) && roles.length() > 2) {
-      String[] r = roles.substring(1, roles.length() - 1).split(",");
-      this.roles = Arrays.asList(r);
+        this.roles = new ArrayList<>();
+        for (final String role : roles.substring(1, roles.length() - 1).split(",")) {
+            this.roles.add(role.trim());
+        }
     }
   }
 
