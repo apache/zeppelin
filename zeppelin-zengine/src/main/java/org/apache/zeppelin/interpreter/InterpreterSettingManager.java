@@ -172,6 +172,19 @@ public class InterpreterSettingManager {
     if (!Files.exists(interpreterSettingPath)) {
       // nothing to read
       LOGGER.warn("Interpreter Setting file {} doesn't exist", interpreterSettingPath);
+      for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
+        InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
+        interpreterSetting.setConf(conf);
+        interpreterSetting.setInterpreterSettingManager(this);
+        interpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
+        interpreterSetting.setRemoteInterpreterProcessListener(
+            remoteInterpreterProcessListener);
+        interpreterSetting.setAppEventListener(appEventListener);
+        interpreterSetting.setDependencyResolver(dependencyResolver);
+        interpreterSetting.setLifecycleManager(lifecycleManager);
+        interpreterSetting.postProcessing();
+        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+      }
       return;
     }
 
@@ -384,7 +397,6 @@ public class InterpreterSettingManager {
     interpreterSetting.setInterpreterSettingManager(this);
     interpreterSetting.setLifecycleManager(lifecycleManager);
     interpreterSetting.postProcessing();
-    interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
   }
 
   @VisibleForTesting
