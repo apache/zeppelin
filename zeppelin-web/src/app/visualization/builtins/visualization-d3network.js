@@ -56,15 +56,15 @@ export default class NetworkVisualization extends Visualization {
       return
     }
     if (!networkData.isRendered) {
-      networkData.isRendered = true;
+      networkData.isRendered = true
     } else {
-      return;
+      return
     }
-    console.log('Rendering the graph');
+    console.log('Rendering the graph')
 
     if (networkData.graph.edges.length &&
-        !networkData.isTransformed) {
-      networkData.isTransformed = true
+        !networkData.isDefaultSet) {
+      networkData.isDefaultSet = true
       this._setEdgesDefaults(networkData.graph)
     }
 
