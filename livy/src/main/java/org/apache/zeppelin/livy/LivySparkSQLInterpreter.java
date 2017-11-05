@@ -159,6 +159,11 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     }
   }
 
+  @Override
+  public FormType getFormType() {
+    return FormType.SIMPLE;
+  }
+
   protected List<String> parseSQLOutput(String output) {
     List<String> rows = new ArrayList<>();
     String[] lines = output.split("\n");
