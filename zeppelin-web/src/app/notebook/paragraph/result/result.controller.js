@@ -140,7 +140,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
 
   $scope.graphID = null
 
-  $scope.resultIndex = null
+  $scope.resultCopiesIndex = null
 
   // index of the msg
   let msgIndex
@@ -149,7 +149,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   let paragraph
 
   // index of the result
-  let resultIndex
+  let resultCopyIndex
 
   // TableData instance
   let tableData
@@ -223,7 +223,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   }
 
   $scope.$on('updateResult', function(event, result, newConfig, paragraphRef, mIndex, configIndex) {
-    if (paragraph.id !== paragraphRef.id || configIndex !== resultIndex || mIndex !== msgIndex) {
+    if (paragraph.id !== paragraphRef.id || configIndex !== resultCopyIndex || mIndex !== msgIndex) {
       return
     }
     console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, configIndex)
@@ -232,7 +232,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       !angular.equals(result.type, $scope.type) ||
       !angular.equals(result.data, data)
 
-    updateData(result, newConfig, paragraph, resultIndex, mIndex)
+    updateData(result, newConfig, paragraph, resultCopyIndex, mIndex)
     renderResult($scope.type, refresh)
   })
 
@@ -246,7 +246,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
      * initial output line/s will be missing.
      */
     if (paragraph.id === data.paragraphId &&
-      resultIndex === data.index &&
+      resultCopyIndex === data.index &&
       (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
       if (DefaultDisplayType.TEXT !== $scope.type) {
         $scope.type = DefaultDisplayType.TEXT
@@ -258,12 +258,12 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   const updateData = function (result, config, paragraphRef, index, mIndex) {
     data = result.data
     paragraph = paragraphRef
-    resultIndex = parseInt(index)
+    resultCopyIndex = parseInt(index)
     msgIndex = parseInt(mIndex)
 
     $scope.id = paragraph.id + '_' + mIndex
     $scope.resultId = paragraph.id + '_' + mIndex + '_' + index
-    $scope.resultIndex = parseInt(index)
+    $scope.resultCopiesIndex = parseInt(index)
     $scope.type = result.type
     config = config ? config : {}
 
@@ -661,7 +661,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       updateData({
         type: $scope.type,
         data: data
-      }, newParagraphConfig.results[index], paragraph, resultIndex, index, msgIndex)
+      }, newParagraphConfig.results[index], paragraph, resultCopyIndex, index, msgIndex)
       return renderResult($scope.type, true)
     } else {
       return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params)
@@ -677,7 +677,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     }
 
     let newParams = angular.copy(paragraph.settings.params)
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultIndex)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultCopyIndex)
   }
 
   const getVizConfig = function (vizId) {
@@ -736,7 +736,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     }
     console.debug('committVizConfig', newConfig)
     let newParams = angular.copy(paragraph.settings.params)
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultIndex)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultCopyIndex)
   }
 
   $scope.$on('paragraphResized', function (event, paragraphId) {
@@ -762,7 +762,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     newConfig.graph.height = height
     paragraph.config.colWidth = width
 
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultIndex)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultCopyIndex)
   }
 
   $scope.exportToDSV = function (delimiter) {

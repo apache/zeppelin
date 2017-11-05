@@ -136,7 +136,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.baseMapOption = ['Streets', 'Satellite', 'Hybrid', 'Topo', 'Gray', 'Oceans', 'Terrain']
     $scope.colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     $scope.fontSizeOption = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-    $scope.numResultsOptions = [1, 2, 3, 4, 5, 6, 7]
+    $scope.numResultCopiesOptions = [1, 2, 3, 4, 5, 6, 7]
     $scope.paragraphFocused = false
     if (newParagraph.focus) {
       $scope.paragraphFocused = true
@@ -161,8 +161,8 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       config.fontSize = 9
     }
 
-    if (!config.numResults) {
-      config.numResults = 1
+    if (!config.numResultCopies) {
+      config.numResultCopies = 1
     }
 
     if (config.enabled === undefined) {
@@ -189,7 +189,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       editorSetting.isOutputHidden = config.editorSetting.editOnDblClick
     }
 
-    for (let i = 0; i < config.numResults; i++) {
+    for (let i = 0; i < config.numResultCopies; i++) {
       if (!config.results[i]) {
         config.results[i] = {}
         config.results[i].graph = {}
@@ -222,7 +222,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       }
 
       if (update) {
-        for (let i = 0; i < $scope.paragraph.config.numResults; i++) {
+        for (let i = 0; i < $scope.paragraph.config.numResultCopies; i++) {
           $rootScope.$broadcast(
             'updateResult',
             $scope.paragraph.results.msg[data.index],
@@ -675,25 +675,25 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     commitParagraph(paragraph)
   }
 
-  $scope.changeNumResults = function(paragraph, numResults) {
+  $scope.changeNumResultsCopies = function(paragraph, numResultCopies) {
     angular.element('.navbar-right.open').removeClass('open')
     const configResults = paragraph.config.results
     const configLength = paragraph.config.results.length
     const resultMsgSize = paragraph.results.msg.length
 
-    if (configLength !== numResults * resultMsgSize) {
+    if (configLength !== numResultCopies * resultMsgSize) {
       paragraph.config.results = getConfigResource(configResults,
-        resultMsgSize, numResults)
+        resultMsgSize, numResultCopies)
     }
 
-    paragraph.config.numResults = numResults
+    paragraph.config.numResultCopies = numResultCopies
     commitParagraph(paragraph)
   }
 
-  const getConfigResource = function(configResults, resultMsgSize, numResults) {
+  const getConfigResource = function(configResults, resultMsgSize, numResultCopies) {
     let newConfigResults = {}
 
-    for (let i = 0; i < numResults * resultMsgSize; i++) {
+    for (let i = 0; i < numResultCopies * resultMsgSize; i++) {
       newConfigResults[i] = configResults[i % resultMsgSize]
     }
 
@@ -1475,9 +1475,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           const oldResult = (oldPara.results && oldPara.results.msg)
             ? oldPara.results.msg[i] : {}
 
-          const numResults = parseInt(data.paragraph.config.numResults)
-          for (let ci = 0; ci < numResults; ci++) {
-            let configIndex = ci + (parseInt(i) * numResults) + parseInt(i)
+          const numResultCopies = parseInt(data.paragraph.config.numResultCopies)
+          for (let ci = 0; ci < numResultCopies; ci++) {
+            let configIndex = ci + (parseInt(i) * numResultCopies) + parseInt(i)
             const newConfig = newPara.config.results ? newPara.config.results[configIndex] : {}
             const oldConfig = oldPara.config.results ? oldPara.config.results[configIndex] : {}
             if (!angular.equals(newResult, oldResult) ||

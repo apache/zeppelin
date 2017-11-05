@@ -70,7 +70,7 @@ limitations under the License.
   * [Execution Hooks](./usage/interpreter/execution_hooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
 * Other Features:
   * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
-  * [Multiple Results ](./usage/other_features/multiple_result_output.html) for each interpreter output.  
+  * [Multiple Result Copies ](./usage/other_features/multiple_result_copies.html) for each interpreter output.  
   * [Personalized Mode](./usage/other_features/personalized_mode.html) 
   * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
 * REST API: available REST API list in Apache Zeppelin

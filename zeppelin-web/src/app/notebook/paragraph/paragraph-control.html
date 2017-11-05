@@ -114,12 +114,12 @@ limitations under the License.
         </li>
         <li>
           <a ng-click="$event.stopPropagation()" class="dropdown"><span
-            class="fa fa-copy shortcut-icon"></span>Num results
+            class="fa fa-copy shortcut-icon"></span>Result Copies
             <form style="display:inline; margin-left:5px; float:right">
-              <select ng-model="paragraph.config.numResults"
+              <select ng-model="paragraph.config.numResultCopies"
                       class="selectpicker"
-                      ng-change="changeNumResults(paragraph, paragraph.config.numResults)"
-                      ng-options="num for num in numResultsOptions"></select>
+                      ng-change="changeNumResultsCopies(paragraph, paragraph.config.numResultCopies)"
+                      ng-options="num for num in numResultCopiesOptions"></select>
             </form>
           </a>
         </li>
