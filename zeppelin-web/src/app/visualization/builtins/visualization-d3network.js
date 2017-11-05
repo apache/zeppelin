@@ -55,6 +55,12 @@ export default class NetworkVisualization extends Visualization {
       console.log('graph not found')
       return
     }
+    if (!networkData.isRendered) {
+      networkData.isRendered = true;
+    } else {
+      return;
+    }
+    console.log('Rendering the graph');
 
     if (networkData.graph.edges.length &&
         !networkData.isTransformed) {

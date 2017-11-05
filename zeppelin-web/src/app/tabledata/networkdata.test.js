@@ -35,7 +35,7 @@ describe('NetworkData build', function() {
       msg: JSON.stringify(jsonExpected)
     })
 
-    expect(nd.columns.length).toBe(2)
+    expect(nd.columns.length).toBe(1)
     expect(nd.rows.length).toBe(3)
     expect(nd.graph.nodes[0].id).toBe(jsonExpected.nodes[0].id)
     expect(nd.graph.nodes[1].id).toBe(jsonExpected.nodes[1].id)
@@ -46,13 +46,13 @@ describe('NetworkData build', function() {
 
   it('should able to show data fields source and target', function() {
     let jsonExpected = {nodes: [{id: 1, data: {source: 'Source'}}, {id: 2, data: {target: 'Target'}}],
-      edges: [{source: 2, target: 1, id: 1}]}
+      edges: [{source: 2, target: 1, id: 1, data: {source: 'Source Edge Data', target: 'Target Edge Data'}}]}
     nd.loadParagraphResult({
       type: DatasetType.NETWORK,
       msg: JSON.stringify(jsonExpected)
     })
 
-    expect(nd.columns.length).toBe(4)
+    expect(nd.columns.length).toBe(3)
     expect(nd.rows.length).toBe(3)
     expect(nd.graph.nodes[0].id).toBe(jsonExpected.nodes[0].id)
     expect(nd.graph.nodes[1].id).toBe(jsonExpected.nodes[1].id)
@@ -61,5 +61,7 @@ describe('NetworkData build', function() {
     expect(nd.graph.edges[0].target).toBe(jsonExpected.edges[0].target)
     expect(nd.graph.nodes[0].data.source).toBe(jsonExpected.nodes[0].data.source)
     expect(nd.graph.nodes[1].data.target).toBe(jsonExpected.nodes[1].data.target)
+    expect(nd.graph.edges[0].data.source).toBe(jsonExpected.edges[0].data.source)
+    expect(nd.graph.edges[0].data.target).toBe(jsonExpected.edges[0].data.target)
   })
 })
