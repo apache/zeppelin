@@ -193,4 +193,14 @@ public class LazyOpenInterpreter
   public void unregisterHook(String event) {
     intp.unregisterHook(event);
   }
+
+  @Override
+  public void setUserName(String userName) {
+    this.intp.setUserName(userName);
+  }
+
+  @Override
+  public String getUserName() {
+    return this.intp.getUserName();
+  }
 }
