@@ -205,6 +205,16 @@ public class LazyOpenInterpreter
     intp.unregisterHook(event);
   }
 
+  @Override
+  public void setUserName(String userName) {
+    this.intp.setUserName(userName);
+  }
+
+  @Override
+  public String getUserName() {
+    return this.intp.getUserName();
+  }
+
   /**
    * Replace markers #{contextFieldName} by values from {@link InterpreterContext} fields
    * with same name and marker #{user}. If value == null then replace by empty string.
