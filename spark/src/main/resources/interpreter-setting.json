@@ -67,11 +67,19 @@
         "defaultValue": true,
         "description": "Do not change - developer only setting, not for production use",
         "type": "checkbox"
+      },
+      "zeppelin.spark.uiWebUrl": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.uiWebUrl",
+        "defaultValue": "",
+        "description": "Override Spark UI default URL",
+        "type": "string"
       }
     },
     "editor": {
       "language": "scala",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {
@@ -110,7 +118,8 @@
     },
     "editor": {
       "language": "sql",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {
@@ -135,7 +144,8 @@
     },
     "editor": {
       "language": "scala",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {
@@ -150,9 +160,9 @@
         "description": "Python command to run pyspark with",
         "type": "string"
       },
-      "zeppelin.spark.useIPython": {
+      "zeppelin.pyspark.useIPython": {
         "envName": null,
-        "propertyName": "zeppelin.spark.useIPython",
+        "propertyName": "zeppelin.pyspark.useIPython",
         "defaultValue": true,
         "description": "whether use IPython when it is available",
         "type": "checkbox"
@@ -160,7 +170,8 @@
     },
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB"
     }
   },
   {

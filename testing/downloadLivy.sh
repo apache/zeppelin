@@ -49,7 +49,7 @@ download_with_retry() {
 }
 
 LIVY_CACHE=".livy-dist"
-LIVY_ARCHIVE="livy-assembly-${LIVY_VERSION}"
+LIVY_ARCHIVE="livy-${LIVY_VERSION}-bin"
 export LIVY_HOME="${ZEPPELIN_HOME}/livy-server-$LIVY_VERSION"
 echo "LIVY_HOME is ${LIVY_HOME}"
 
@@ -64,7 +64,7 @@ if [[ ! -d "${LIVY_HOME}" ]]; then
         # download livy from archive if not cached
         echo "${LIVY_VERSION} being downloaded from archives"
         STARTTIME=`date +%s`
-        download_with_retry "https://oss.sonatype.org/content/repositories/releases/com/cloudera/livy/livy-assembly/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip"
+        download_with_retry "https://dist.apache.org/repos/dist/release/incubator/livy/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip"
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi

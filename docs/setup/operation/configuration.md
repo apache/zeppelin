@@ -77,7 +77,19 @@ If both are defined, then the **environment variables** will take priority.
     <td>*</td>
     <td>Enables a way to specify a ',' separated list of allowed origins for REST and websockets. <br /> e.g. http://localhost:8080</td>
   </tr>
-    <tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_CREDENTIALS_PERSIST</h6></td>
+    <td><h6 class="properties">zeppelin.credentials.persist</h6></td>
+    <td>true</td>
+    <td>Persist credentials on a JSON file (credentials.json)</td>
+  </tr>  
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_CREDENTIALS_ENCRYPT_KEY</h6></td>
+    <td><h6 class="properties">zeppelin.credentials.encryptKey</h6></td>
+    <td></td>
+    <td>If provided, encrypt passwords on the credentials.json file (passwords will be stored as plain-text otherwise</td>
+  </tr>  
+  <tr>
     <td>N/A</td>
     <td><h6 class="properties">zeppelin.anonymous.allowed</h6></td>
     <td>true</td>
@@ -202,6 +214,12 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.notebook.s3.sse</h6></td>
     <td>false</td>
     <td>Save notebooks to S3 with server-side encryption enabled</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_SIGNEROVERRIDE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.s3.signerOverride</h6></td>
+    <td></td>
+    <td>Optional override to control which signature algorithm should be used to sign AWS requests</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</h6></td>
@@ -410,6 +428,20 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
   <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
 </property>
 ```
+
+### Storing user credentials
+
+In order to avoid having to re-enter credentials every time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
+
+Please notice that passwords will be stored in *plain text* by default. To encrypt the passwords, use the ZEPPELIN_CREDENTIALS_ENCRYPT_KEY config variable. This will encrypt passwords using the AES-128 algorithm.
+
+You can generate an appropriate encryption key any way you'd like - for instance, by using the openssl tool:
+
+```
+openssl enc -aes-128-cbc -k secret -P -md sha1
+```
+
+*Important*: storing your encryption key in a configuration file is _not advised_. Depending on your environment security needs, you may want to consider utilizing a credentials server, storing the ZEPPELIN_CREDENTIALS_ENCRYPT_KEY as an OS env variable, or any other approach that would not colocate the encryption key and the encrypted content (the credentials.json file).
 
 
 ### Obfuscating Passwords using the Jetty Password Tool

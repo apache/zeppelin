@@ -40,7 +40,7 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUpWithAuthenticationEnable();
+    AbstractTestRestApi.startUpWithAuthenticationEnable(SecurityRestApiTest.class.getSimpleName());
   }
 
   @AfterClass

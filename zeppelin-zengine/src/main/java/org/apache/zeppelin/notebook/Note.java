@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -224,7 +225,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.noteNameListener = listener;
   }
 
-  void setInterpreterFactory(InterpreterFactory factory) {
+  public void setInterpreterFactory(InterpreterFactory factory) {
     this.factory = factory;
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
@@ -235,11 +236,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
     this.interpreterSettingManager = interpreterSettingManager;
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        p.setInterpreterSettingManager(interpreterSettingManager);
-      }
-    }
   }
 
   public void initializeJobListenerForParagraph(Paragraph paragraph) {
@@ -305,8 +301,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   void addCloneParagraph(Paragraph srcParagraph) {
 
     // Keep paragraph original ID
-    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory,
-        interpreterSettingManager);
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = srcParagraph.settings.getParams();
@@ -349,7 +344,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
-    Paragraph p = new Paragraph(this, this, factory, interpreterSettingManager);
+    Paragraph p = new Paragraph(this, this, factory);
     p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, index);
     return p;
@@ -507,6 +502,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return true;
   }
 
+  public int getParagraphCount() {
+    return paragraphs.size();
+  }
+
   public Paragraph getParagraph(String paragraphId) {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
@@ -566,14 +565,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   private void setParagraphMagic(Paragraph p, int index) {
     if (paragraphs.size() > 0) {
-      String magic;
+      String replName;
       if (index == 0) {
-        magic = paragraphs.get(0).getMagic();
+        replName = paragraphs.get(0).getIntpText();
       } else {
-        magic = paragraphs.get(index - 1).getMagic();
+        replName = paragraphs.get(index - 1).getIntpText();
       }
-      if (StringUtils.isNotEmpty(magic)) {
-        p.setText(magic + "\n");
+      if (p.isValidInterpreter(replName) && StringUtils.isNotEmpty(replName)) {
+        p.setText("%" + replName + "\n");
       }
     }
   }
@@ -588,17 +587,24 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
     AuthenticationInfo authenticationInfo = new AuthenticationInfo();
     authenticationInfo.setUser(cronExecutingUser);
-    runAll(authenticationInfo);
+    runAll(authenticationInfo, true);
   }
 
-  public void runAll(AuthenticationInfo authenticationInfo) {
+  public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
     for (Paragraph p : getParagraphs()) {
       if (!p.isEnabled()) {
         continue;
       }
       p.setAuthenticationInfo(authenticationInfo);
-      run(p.getId());
+      if (!run(p.getId(), blocking)) {
+        logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
+        break;
+      }
     }
+  }
+
+  public boolean run(String paragraphId) {
+    return run(paragraphId, false);
   }
 
   /**
@@ -606,34 +612,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    *
    * @param paragraphId ID of paragraph
    */
-  public void run(String paragraphId) {
+  public boolean run(String paragraphId, boolean blocking) {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    
-    if (p.isBlankParagraph()) {
-      logger.info("skip to run blank paragraph. {}", p.getId());
-      p.setStatus(Job.Status.FINISHED);
-      return;
-    }
-
-    p.clearRuntimeInfo(null);
-    String requiredReplName = p.getRequiredReplName();
-    Interpreter intp = factory.getInterpreter(p.getUser(), getId(), requiredReplName);
-
-    if (intp == null) {
-      String intpExceptionMsg =
-          p.getJobName() + "'s Interpreter " + requiredReplName + " not found";
-      InterpreterException intpException = new InterpreterException(intpExceptionMsg);
-      InterpreterResult intpResult =
-          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
-      p.setReturn(intpResult, intpException);
-      p.setStatus(Job.Status.ERROR);
-      throw intpException;
-    }
-    if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
-      p.setAuthenticationInfo(p.getAuthenticationInfo());
-      intp.getScheduler().submit(p);
-    }
+    return p.execute(blocking);
   }
 
   /**
@@ -666,6 +648,23 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return p.completion(buffer, cursor);
   }
 
+  public List<InterpreterCompletion> getInterpreterCompletion() {
+    List<InterpreterCompletion> completion = new LinkedList();
+    for (InterpreterSetting intp : interpreterSettingManager.getInterpreterSettings(getId())) {
+      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
+      if (intInfo.size() > 1) {
+        for (InterpreterInfo info : intInfo) {
+          String name = intp.getName() + "." + info.getName();
+          completion.add(new InterpreterCompletion(name, name, CompletionType.setting.name()));
+        }
+      } else {
+        completion.add(new InterpreterCompletion(intp.getName(), intp.getName(),
+            CompletionType.setting.name()));
+      }
+    }
+    return completion;
+  }
+
   public List<Paragraph> getParagraphs() {
     synchronized (paragraphs) {
       return new LinkedList<>(paragraphs);
@@ -681,9 +680,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(user, id);
-      AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
-      angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
+      if (intpGroup != null) {
+        AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+        angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
+      }
     }
   }
 
@@ -696,7 +697,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
 
     for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(user, id);
+      if (setting.getInterpreterGroup(user, id) == null) {
+        continue;
+      }
+      InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
 
       if (registry instanceof RemoteAngularObjectRegistry) {
@@ -889,6 +893,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   void setNoteEventListener(NoteEventListener noteEventListener) {
     this.noteEventListener = noteEventListener;
+  }
+
+  boolean hasInterpreterBinded() {
+    return !interpreterSettingManager.getInterpreterSettings(getId()).isEmpty();
   }
 
   public String toJson() {

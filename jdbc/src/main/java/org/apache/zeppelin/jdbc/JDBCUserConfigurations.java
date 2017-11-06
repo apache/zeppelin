@@ -48,12 +48,6 @@ public class JDBCUserConfigurations {
   }
 
   public void initConnectionPoolMap() throws SQLException {
-    Iterator<String> it = poolingDriverMap.keySet().iterator();
-    while (it.hasNext()) {
-      String driverName = it.next();
-      poolingDriverMap.get(driverName).closePool(driverName);
-      it.remove();
-    }
     poolingDriverMap.clear();
     isSuccessful.clear();
   }

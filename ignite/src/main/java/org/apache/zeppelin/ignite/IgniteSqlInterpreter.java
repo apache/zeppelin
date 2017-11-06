@@ -93,7 +93,7 @@ public class IgniteSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     try {
       if (conn != null) {
         conn.close();

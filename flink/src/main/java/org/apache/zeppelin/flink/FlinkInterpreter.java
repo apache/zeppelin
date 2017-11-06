@@ -17,7 +17,6 @@
  */
 package org.apache.zeppelin.flink;
 
-import java.lang.reflect.InvocationTargetException;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,10 +33,8 @@ import org.apache.flink.runtime.akka.AkkaUtils;
 import org.apache.flink.runtime.instance.ActorGateway;
 import org.apache.flink.runtime.messages.JobManagerMessages;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
-import org.apache.flink.runtime.util.EnvironmentInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
@@ -46,11 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import scala.Console;
-import scala.None;
-import scala.Option;
 import scala.Some;
 import scala.collection.JavaConversions;
-import scala.collection.immutable.Nil;
 import scala.concurrent.duration.FiniteDuration;
 import scala.runtime.AbstractFunction0;
 import scala.tools.nsc.Settings;
@@ -80,7 +74,7 @@ public class FlinkInterpreter extends Interpreter {
   public void open() {
     out = new ByteArrayOutputStream();
     flinkConf = new org.apache.flink.configuration.Configuration();
-    Properties intpProperty = getProperty();
+    Properties intpProperty = getProperties();
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));

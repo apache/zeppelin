@@ -67,6 +67,11 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
       <version>${commons.exec.version}</version>
@@ -130,6 +135,12 @@
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-impl</artifactId>
       <version>${aether.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+      <version>1.52</version>
     </dependency>
 
     <dependency>
@@ -226,4 +237,21 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce</id>
+              <phase>none</phase>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
 </project>

@@ -66,7 +66,8 @@ matrix:
     # Several tests were excluded from this configuration due to the following issues:
     # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470
     # After issues are fixed these tests need to be included back by removing them from the "-Dtests.to.exclude" property
-    - jdk: "oraclejdk8"
+    - sudo: required
+      jdk: "oraclejdk8"
       dist: precise
       env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.2.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.2 -Pweb-ci -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/ZeppelinSparkClusterTest.java,**/org.apache.zeppelin.spark.*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
@@ -109,13 +110,13 @@ matrix:
     - sudo: required
       dist: precise
       jdk: "oraclejdk7"
-      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.6" LIVY_VER="0.2.0" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Plivy-0.2 -Pscala-2.10" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.6" LIVY_VER="0.4.0-incubating" PROFILE="-Pspark-1.6 -Phadoop-2.6 -Pscala-2.10" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
     # Test python/pyspark with python 3, livy 0.3
     - sudo: required
       dist: precise
       jdk: "oraclejdk7"
-      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" LIVY_VER="0.3.0" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Pscala-2.11 -Plivy-0.3" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" LIVY_VER="0.4.0-incubating" PROFILE="-Pspark-2.0 -Phadoop-2.6 -Pscala-2.11" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark-dependencies,spark,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
 before_install:
   # check files included in commit range, clear bower_components if a bower.json file has changed.
@@ -141,8 +142,9 @@ install:
 before_script:
   - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
   - if [[ -n $LIVY_VER ]]; then ./testing/downloadLivy.sh $LIVY_VER; fi
-  - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-server-$LIVY_VER; fi
+  - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-$LIVY_VER-bin; fi
   - if [[ -n $LIVY_VER ]]; then export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER; fi
+  - export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER
   - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
   - echo "export ZEPPELIN_HELIUM_REGISTRY=helium" >> conf/zeppelin-env.sh
   - tail conf/zeppelin-env.sh
@@ -168,10 +170,7 @@ after_failure:
   - cat zeppelin-web/npm-debug.log
   - cat spark-*/logs/*
   - cat livy/target/tmp/*/output.log
-  - ls -R livy/target/tmp/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*
-  - cat livy/target/tmp/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stdout
-  - cat livy/target/tmp/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stderr
   - cat livy/target/tmp/livy-int-test/*/output.log
-  - ls -R livy/target/tmp/livy-int-test/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*
-  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stdout
-  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/com.cloudera.livy.test.framework.MiniYarnMain/*/*/*/stderr
+  - ls -R livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*
+  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*/*/*/stdout
+  - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*/*/*/stderr

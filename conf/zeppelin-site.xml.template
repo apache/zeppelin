@@ -138,6 +138,16 @@
 </property>
 -->
 
+<!-- Optional override to control which signature algorithm should be used to sign AWS requests -->
+<!-- Set this property to "S3SignerType" if your AWS S3 compatible APIs support only AWS Signature Version 2 such as Ceph. -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.signerOverride</name>
+  <value>S3SignerType</value>
+  <description>optional override to control which signature algorithm should be used to sign AWS requests</description>
+</property>
+-->
+
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>
@@ -173,21 +183,21 @@
 </property>
 -->
 
-<!-- Notebook storage layer using hdfs file system
+<!-- Notebook storage layer using hadoop compatible file system
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.HdfsNotebookRepo</value>
-  <description>hdfs notebook persistence layer implementation</description>
+  <value>org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo</value>
+  <description>Hadoop compatible file system notebook persistence layer implementation, such as local file system, hdfs, azure wasb, s3 and etc.</description>
 </property>
 
 <property>
-  <name>zeppelin.hdfs.keytab</name>
+  <name>zeppelin.server.kerberos.keytab</name>
   <value></value>
   <description>keytab for accessing kerberized hdfs</description>
 </property>
 
 <property>
-  <name>zeppelin.hdfs.principal</name>
+  <name>zeppelin.server.kerberos.principal</name>
   <value></value>
   <description>principal for accessing kerberized hdfs</description>
 </property>
@@ -401,6 +411,25 @@
   <description>Enable directory listings on server.</description>
 </property>
 
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.class</name>
+  <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
+  <description>LifecycleManager class for managing the lifecycle of interpreters, by default interpreter will
+  be closed after timeout</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
+  <value>60000</value>
+  <description>milliseconds of the interval to checking whether interpreter is time out</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
+  <value>3600000</value>
+  <description>milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
+</property>
+
 <!--
 <property>
     <name>zeppelin.server.jetty.name</name>
@@ -428,6 +457,12 @@
   <name>zeppelin.server.xxss.protection</name>
   <value>1</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
+</property>
+-->
+<!--
+<property>
+  <name>zeppelin.interpreter.callback.portRange</name>
+  <value>10000:10010</value>
 </property>
 -->
 </configuration>

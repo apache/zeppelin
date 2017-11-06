@@ -90,6 +90,9 @@ public abstract class AbstractTestRestApi {
       "/api/version = anon\n" +
       "/** = authc";
 
+  protected static File zeppelinHome;
+  protected static File confDir;
+
   private String getUrl(String path) {
     String url;
     if (System.getProperty("url") != null) {
@@ -124,10 +127,17 @@ public abstract class AbstractTestRestApi {
     }
   };
 
-  private static void start(boolean withAuth) throws Exception {
+  private static void start(boolean withAuth, String testClassName) throws Exception {
     if (!wasRunning) {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), "../");
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), "../zeppelin-web/dist");
+      // copy the resources files to a temp folder
+      zeppelinHome = new File("..");
+      LOG.info("ZEPPELIN_HOME: " + zeppelinHome.getAbsolutePath());
+      confDir = new File(zeppelinHome, "conf_" + testClassName);
+      confDir.mkdirs();
+
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), new File("../zeppelin-web/dist").getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -142,7 +152,7 @@ public abstract class AbstractTestRestApi {
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
         
         // Create a shiro env test.
-        shiroIni = new File("../conf/shiro.ini");
+        shiroIni = new File(confDir, "shiro.ini");
         if (!shiroIni.exists()) {
           shiroIni.createNewFile();
         }
@@ -211,7 +221,7 @@ public abstract class AbstractTestRestApi {
         // set spark home for pyspark
         sparkProperties.put("spark.home",
             new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("zeppelin.spark.useIPython",  new InterpreterProperty("zeppelin.spark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
+        sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
 
         sparkIntpSetting.setProperties(sparkProperties);
         pySpark = true;
@@ -234,7 +244,7 @@ public abstract class AbstractTestRestApi {
               new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.TEXTAREA.getValue()));
           sparkProperties.put("zeppelin.spark.useHiveContext",
               new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
-          sparkProperties.put("zeppelin.spark.useIPython",  new InterpreterProperty("zeppelin.spark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
+          sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
 
           pySpark = true;
           sparkR = true;
@@ -245,12 +255,12 @@ public abstract class AbstractTestRestApi {
     }
   }
   
-  protected static void startUpWithAuthenticationEnable() throws Exception {
-    start(true);
+  protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
+    start(true, testClassName);
   }
   
-  protected static void startUp() throws Exception {
-    start(false);
+  protected static void startUp(String testClassName) throws Exception {
+    start(false, testClassName);
   }
 
   private static String getHostname() {
@@ -339,6 +349,8 @@ public abstract class AbstractTestRestApi {
         System
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
+
+      FileUtils.deleteDirectory(confDir);
     }
   }
 

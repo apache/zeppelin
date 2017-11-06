@@ -17,10 +17,24 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.commons.exec.*;
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteResultHandler;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.LogOutputStream;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.thrift.TException;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class manages start / stop of remote interpreter process
@@ -37,11 +52,14 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     implements ExecuteResultHandler {
   private static final Logger logger = LoggerFactory.getLogger(
       RemoteInterpreterManagedProcess.class);
-  private final String interpreterRunner;
 
+  private final String interpreterRunner;
+  private final String portRange;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
-  boolean running = false;
+  private AtomicBoolean running = new AtomicBoolean(false);
+  TServer callbackServer;
+  private String host = null;
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
@@ -51,32 +69,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
+      String portRange,
       String intpDir,
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
-      RemoteInterpreterProcessListener listener,
-      ApplicationEventListener appListener,
       String interpreterGroupName) {
-    super(new RemoteInterpreterEventPoller(listener, appListener),
-        connectTimeout);
+    super(connectTimeout);
     this.interpreterRunner = intpRunner;
-    this.env = env;
-    this.interpreterDir = intpDir;
-    this.localRepoDir = localRepoDir;
-    this.interpreterGroupName = interpreterGroupName;
-  }
-
-  RemoteInterpreterManagedProcess(String intpRunner,
-                                  String intpDir,
-                                  String localRepoDir,
-                                  Map<String, String> env,
-                                  RemoteInterpreterEventPoller remoteInterpreterEventPoller,
-                                  int connectTimeout,
-                                  String interpreterGroupName) {
-    super(remoteInterpreterEventPoller,
-        connectTimeout);
-    this.interpreterRunner = intpRunner;
+    this.portRange = portRange;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
@@ -96,18 +97,69 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   @Override
   public void start(String userName, Boolean isUserImpersonate) {
     // start server process
+    final String callbackHost;
+    final int callbackPort;
     try {
-      port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+      port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(portRange);
       logger.info("Choose port {} for RemoteInterpreterProcess", port);
+      callbackHost = RemoteInterpreterUtils.findAvailableHostAddress();
+      callbackPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     } catch (IOException e1) {
-      throw new InterpreterException(e1);
+      throw new RuntimeException(e1);
+    }
+
+    logger.info("Thrift server for callback will start. Port: {}", callbackPort);
+    try {
+      callbackServer = new TThreadPoolServer(
+        new TThreadPoolServer.Args(new TServerSocket(callbackPort)).processor(
+          new RemoteInterpreterCallbackService.Processor<>(
+            new RemoteInterpreterCallbackService.Iface() {
+              @Override
+              public void callback(CallbackInfo callbackInfo) throws TException {
+                logger.info("Registered: {}", callbackInfo);
+                host = callbackInfo.getHost();
+                port = callbackInfo.getPort();
+                running.set(true);
+                synchronized (running) {
+                  running.notify();
+                }
+              }
+            })));
+      // Start thrift server to receive callbackInfo from RemoteInterpreterServer;
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          callbackServer.serve();
+        }
+      }).start();
+
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        @Override
+        public void run() {
+          if (callbackServer.isServing()) {
+            callbackServer.stop();
+          }
+        }
+      }));
+
+      while (!callbackServer.isServing()) {
+        logger.debug("callbackServer is not serving");
+        Thread.sleep(500);
+      }
+      logger.debug("callbackServer is serving now");
+    } catch (TTransportException e) {
+      logger.error("callback server error.", e);
+    } catch (InterruptedException e) {
+      logger.warn("", e);
     }
 
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
+    cmdLine.addArgument("-c", false);
+    cmdLine.addArgument(callbackHost, false);
     cmdLine.addArgument("-p", false);
-    cmdLine.addArgument(Integer.toString(port), false);
+    cmdLine.addArgument(Integer.toString(callbackPort), false);
     if (isUserImpersonate && !userName.equals("anonymous")) {
       cmdLine.addArgument("-u", false);
       cmdLine.addArgument(userName, false);
@@ -133,45 +185,33 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
       logger.info("Run interpreter process {}", cmdLine);
       executor.execute(cmdLine, procEnv, this);
-      running = true;
     } catch (IOException e) {
-      running = false;
-      throw new InterpreterException(e);
+      running.set(false);
+      throw new RuntimeException(e);
     }
 
-
-    long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (!running) {
-        try {
-          cmdOut.flush();
-        } catch (IOException e) {
-          // nothing to do
-        }
-        throw new InterpreterException(new String(cmdOut.toByteArray()));
-      }
-
-      try {
-        if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-          break;
-        } else {
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-                    "Thread.sleep", e);
-          }
-        }
-      } catch (Exception e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Remote interpreter not yet accessible at localhost:" + port);
+    try {
+      synchronized (running) {
+        if (!running.get()) {
+          running.wait(getConnectTimeout() * 2);
         }
       }
+      if (!running.get()) {
+        callbackServer.stop();
+        throw new RuntimeException(new String(cmdOut.toByteArray()));
+      }
+    } catch (InterruptedException e) {
+      logger.error("Remote interpreter is not accessible");
     }
     processOutput.setOutputStream(null);
   }
 
   public void stop() {
+    // shutdown EventPoller first.
+    this.getRemoteInterpreterEventPoller().shutdown();
+    if (callbackServer.isServing()) {
+      callbackServer.stop();
+    }
     if (isRunning()) {
       logger.info("kill interpreter process");
       try {
@@ -190,25 +230,50 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
     executor = null;
     watchdog = null;
-    running = false;
+    running.set(false);
     logger.info("Remote process terminated");
   }
 
   @Override
   public void onProcessComplete(int exitValue) {
     logger.info("Interpreter process exited {}", exitValue);
-    running = false;
+    running.set(false);
 
   }
 
   @Override
   public void onProcessFailed(ExecuteException e) {
     logger.info("Interpreter process failed {}", e);
-    running = false;
+    running.set(false);
+  }
+
+  @VisibleForTesting
+  public Map<String, String> getEnv() {
+    return env;
+  }
+
+  @VisibleForTesting
+  public String getLocalRepoDir() {
+    return localRepoDir;
+  }
+
+  @VisibleForTesting
+  public String getInterpreterDir() {
+    return interpreterDir;
+  }
+
+  @VisibleForTesting
+  public String getInterpreterGroupName() {
+    return interpreterGroupName;
+  }
+
+  @VisibleForTesting
+  public String getInterpreterRunner() {
+    return interpreterRunner;
   }
 
   public boolean isRunning() {
-    return running;
+    return running.get();
   }
 
   private static class ProcessLogOutputStream extends LogOutputStream {

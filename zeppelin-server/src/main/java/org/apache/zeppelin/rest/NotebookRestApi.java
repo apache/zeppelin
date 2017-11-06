@@ -41,10 +41,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.NotFoundException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
-import org.apache.zeppelin.rest.message.CronRequest;
-import org.apache.zeppelin.rest.message.NewNoteRequest;
-import org.apache.zeppelin.rest.message.NewParagraphRequest;
-import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
+import org.apache.zeppelin.rest.message.*;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -496,6 +493,37 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, "", p).build();
   }
 
+  /**
+   * Update paragraph
+   *
+   * @param message json containing the "text" and optionally the "title" of the paragraph, e.g.
+   *                {"text" : "updated text", "title" : "Updated title" }
+   *
+   */
+  @PUT
+  @Path("{noteId}/paragraph/{paragraphId}")
+  @ZeppelinApi
+  public Response updateParagraph(@PathParam("noteId") String noteId,
+                                  @PathParam("paragraphId") String paragraphId,
+                                  String message) throws IOException {
+    String user = SecurityUtils.getPrincipal();
+    LOG.info("{} will update paragraph {} {}", user, noteId, paragraphId);
+
+    Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot update this paragraph");
+    Paragraph p = note.getParagraph(paragraphId);
+    checkIfParagraphIsNotNull(p);
+
+    UpdateParagraphRequest updatedParagraph = gson.fromJson(message, UpdateParagraphRequest.class);
+    p.setText(updatedParagraph.getText());
+    if (updatedParagraph.getTitle() != null) { p.setTitle(updatedParagraph.getTitle()); }
+    AuthenticationInfo subject = new AuthenticationInfo(user);
+    note.persist(subject);
+    notebookServer.broadcastParagraph(note, p);
+    return new JsonResponse<>(Status.OK, "").build();
+  }
+
   @PUT
   @Path("{noteId}/paragraph/{paragraphId}/config")
   @ZeppelinApi
@@ -514,7 +542,6 @@ public class NotebookRestApi {
     configureParagraph(p, newConfig, user);
     AuthenticationInfo subject = new AuthenticationInfo(user);
     note.persist(subject);
-
     return new JsonResponse<>(Status.OK, "", p).build();
   }
 
@@ -623,7 +650,7 @@ public class NotebookRestApi {
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
     try {
-      note.runAll(subject);
+      note.runAll(subject, true);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       return new JsonResponse<>(Status.PRECONDITION_FAILED,
