@@ -271,10 +271,12 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static void configureRequestHeaderSize(ZeppelinConfiguration conf, ServerConnector connector) {
-    HttpConnectionFactory connectionFactory = (HttpConnectionFactory) connector.getConnectionFactory(HttpVersion.HTTP_1_1.toString());
+  private static void configureRequestHeaderSize(ZeppelinConfiguration conf,
+                                                 ServerConnector connector) {
+    HttpConnectionFactory cf = (HttpConnectionFactory)
+            connector.getConnectionFactory(HttpVersion.HTTP_1_1.toString());
     int requestHeaderSize = conf.getJettyRequestHeaderSize();
-    connectionFactory.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
+    cf.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
   }
 
   private static void setupNotebookServer(WebAppContext webapp,
