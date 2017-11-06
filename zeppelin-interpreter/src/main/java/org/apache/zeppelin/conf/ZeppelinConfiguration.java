@@ -713,7 +713,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
         "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
 
-    ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", "admin");
+    ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", "");
 
 
     private String varName;
