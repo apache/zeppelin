@@ -38,6 +38,7 @@ import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -59,8 +60,6 @@ import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Throwables;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -679,7 +678,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     try {
       connection = getConnection(propertyKey, interpreterContext);
     } catch (Exception e) {
-      String errorMsg = Throwables.getStackTraceAsString(e);
+      String errorMsg = ExceptionUtils.getStackTrace(e);
       try {
         closeDBPool(user, propertyKey);
       } catch (SQLException e1) {
@@ -757,7 +756,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       }
     } catch (Throwable e) {
       logger.error("Cannot run " + sql, e);
-      String errorMsg = Throwables.getStackTraceAsString(e);
+      String errorMsg = ExceptionUtils.getStackTrace(e);
       interpreterResult.add(errorMsg);
       return new InterpreterResult(Code.ERROR, interpreterResult.message());
     } finally {

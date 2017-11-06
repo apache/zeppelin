@@ -841,4 +841,11 @@ public class InterpreterSetting {
     }
     throw new RuntimeException("Can not convert this type: " + properties.getClass());
   }
+
+  public void waitForReady() throws InterruptedException {
+    while (getStatus().equals(
+        org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
+      Thread.sleep(200);
+    }
+  }
 }

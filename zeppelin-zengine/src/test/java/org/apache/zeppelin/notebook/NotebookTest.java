@@ -144,7 +144,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // then interpreter factory should be injected into all the paragraphs
     Note note = notebook.getAllNotes().get(0);
-    assertNull(note.getParagraphs().get(0).getRepl(null));
+    assertNull(note.getParagraphs().get(0).getBindedInterpreter());
   }
 
   @Test
@@ -184,8 +184,8 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
         copiedNote.getParagraphs().get(0).getText());
     assertEquals(notes.get(1).getParagraphs().get(0).settings,
         copiedNote.getParagraphs().get(0).settings);
-    assertEquals(notes.get(1).getParagraphs().get(0).title,
-        copiedNote.getParagraphs().get(0).title);
+    assertEquals(notes.get(1).getParagraphs().get(0).getTitle(),
+        copiedNote.getParagraphs().get(0).getTitle());
 
     // delete the notebook
     for (String note : noteNames) {
@@ -470,7 +470,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // Test
     assertEquals(p.getId(), p2.getId());
-    assertEquals(p.text, p2.text);
+    assertEquals(p.getText(), p2.getText());
     assertEquals(p.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
     // Verify import note with subject
@@ -503,7 +503,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
-    assertEquals(cp.text, p.text);
+    assertEquals(cp.getText(), p.getText());
     assertEquals(cp.getResult().message().get(0).getData(), p.getResult().message().get(0).getData());
 
     // Verify clone note with subject
@@ -549,7 +549,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
-    assertEquals(cp.text, p.text);
+    assertEquals(cp.getText(), p.getText());
     assertNull(cp.getResult());
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
