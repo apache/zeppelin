@@ -260,7 +260,7 @@ public class NotebookServer extends WebSocketServlet
         case IMPORT_NOTE:
           importNote(conn, userAndRoles, notebook, messagereceived);
           break;
-        case CONVERT_NOTE:
+        case CONVERT_NOTE_NBFORMAT:
           convertNote(conn, messagereceived);
           break;
         case COMMIT_PARAGRAPH:
@@ -1297,7 +1297,7 @@ public class NotebookServer extends WebSocketServlet
   protected void convertNote(NotebookSocket conn, Message fromMessage) throws IOException {
     String note = gson.toJson(fromMessage.get("note"));
 
-    Message resp = new Message(OP.CONVERT_NOTE)
+    Message resp = new Message(OP.CONVERT_NOTE_NBFORMAT)
             .put("nbformat", new JupyterUtil().getNbformat(note))
             .put("name", fromMessage.get("name"));
 

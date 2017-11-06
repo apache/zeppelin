@@ -258,7 +258,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
 
     convertNote: function (note, name) {
       websocketEvents.sendNewEvent({
-        op: 'CONVERT_NOTE',
+        op: 'CONVERT_NOTE_NBFORMAT',
         data: {
           note: note,
           name: name

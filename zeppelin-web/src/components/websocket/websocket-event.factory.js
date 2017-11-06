@@ -173,7 +173,7 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv, s
       $rootScope.$broadcast('setNoteRevisionResult', data)
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data)
-    } else if (op === 'CONVERT_NOTE') {
+    } else if (op === 'CONVERT_NOTE_NBFORMAT') {
       saveAsService.saveAs(data.nbformat, data.name, 'zepp.ipynb')
     } else {
       console.error(`unknown websocket op: ${op}`)
