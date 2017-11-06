@@ -47,7 +47,11 @@ import org.slf4j.LoggerFactory;
  */
 public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
+
   private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
+  private String DEFAULT_TIMEOUT_PROPERTY = "60000";
+
+  private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
   private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
   private final String shell = isWindows ? "cmd /c" : "bash -c";
   ConcurrentHashMap<String, DefaultExecutor> executors;
@@ -97,9 +101,14 @@ public class ShellInterpreter extends KerberosInterpreter {
       DefaultExecutor executor = new DefaultExecutor();
       executor.setStreamHandler(new PumpStreamHandler(
         contextInterpreter.out, contextInterpreter.out));
-      executor.setWatchdog(new ExecuteWatchdog(Long.valueOf(getProperty(TIMEOUT_PROPERTY))));
+
+      executor.setWatchdog(new ExecuteWatchdog(
+          Long.valueOf(getProperty(TIMEOUT_PROPERTY, DEFAULT_TIMEOUT_PROPERTY))));
       executors.put(contextInterpreter.getParagraphId(), executor);
-      executor.setWorkingDirectory(new File(System.getProperty("user.home")));
+      if (Boolean.valueOf(getProperty(DIRECTORY_USER_HOME))) {
+        executor.setWorkingDirectory(new File(System.getProperty("user.home")));
+      }
+
       int exitVal = executor.execute(cmdLine);
       LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 
         + " return with exit value: " + exitVal);
@@ -170,8 +179,8 @@ public class ShellInterpreter extends KerberosInterpreter {
     return false;
   }
 
-  public void createSecureConfiguration() {
-    Properties properties = getProperty();
+  public void createSecureConfiguration() throws InterpreterException {
+    Properties properties = getProperties();
     CommandLine cmdLine = CommandLine.parse(shell);
     cmdLine.addArgument("-c", false);
     String kinitCommand = String.format("kinit -k -t %s %s",

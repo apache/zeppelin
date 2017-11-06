@@ -23,6 +23,7 @@ import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -56,7 +57,7 @@ public class IPythonInterpreterTest {
   private IPythonInterpreter interpreter;
 
   @Before
-  public void setUp() {
+  public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     interpreter = new IPythonInterpreter(properties);
     InterpreterGroup mockInterpreterGroup = mock(InterpreterGroup.class);
@@ -71,11 +72,11 @@ public class IPythonInterpreterTest {
 
 
   @Test
-  public void testIPython() throws IOException, InterruptedException {
+  public void testIPython() throws IOException, InterruptedException, InterpreterException {
     testInterpreter(interpreter);
   }
 
-  public static void testInterpreter(final Interpreter interpreter) throws IOException, InterruptedException {
+  public static void testInterpreter(final Interpreter interpreter) throws IOException, InterruptedException, InterpreterException {
     // to make this test can run under both python2 and python3
     InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -261,7 +262,11 @@ public class IPythonInterpreterTest {
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
-        interpreter.cancel(context2);
+        try {
+          interpreter.cancel(context2);
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+        }
       }
     }.start();
     result = interpreter.interpret("import time\ntime.sleep(10)", context2);
@@ -279,12 +284,24 @@ public class IPythonInterpreterTest {
     // the order of IMAGE and TEXT is not determined
     // check there must be one IMAGE output
     boolean hasImageOutput = false;
+    boolean hasLineText = false;
+    boolean hasFigureText = false;
     for (InterpreterResultMessage msg : interpreterResultMessages) {
       if (msg.getType() == InterpreterResult.Type.IMG) {
         hasImageOutput = true;
       }
+      if (msg.getType() == InterpreterResult.Type.TEXT
+          && msg.getData().contains("matplotlib.lines.Line2D")) {
+        hasLineText = true;
+      }
+      if (msg.getType() == InterpreterResult.Type.TEXT
+          && msg.getData().contains("matplotlib.figure.Figure")) {
+        hasFigureText = true;
+      }
     }
     assertTrue("No Image Output", hasImageOutput);
+    assertTrue("No Line Text", hasLineText);
+    assertTrue("No Figure Text", hasFigureText);
 
     // bokeh
     // bokeh initialization

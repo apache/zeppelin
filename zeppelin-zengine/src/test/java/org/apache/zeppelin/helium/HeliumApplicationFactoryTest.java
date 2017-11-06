@@ -19,6 +19,7 @@ package org.apache.zeppelin.helium;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
@@ -77,7 +78,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         this,
         search,
         notebookAuthorization,
-        new Credentials(false, null));
+        new Credentials(false, null, null));
 
     heliumAppFactory.setNotebook(notebook);
 
@@ -228,7 +229,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
-    Interpreter intp = p1.getCurrentRepl();
+    Interpreter intp = p1.getBindedInterpreter();
     assertEquals(intp, null);
 
     // Unbind all interpreter from note
@@ -241,7 +242,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
 
 
   @Test
-  public void testUnloadOnInterpreterRestart() throws IOException {
+  public void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
     // given
     HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
         "name1",

@@ -357,7 +357,7 @@ public class NotebookServer extends WebSocketServlet
           break;
       }
     } catch (Exception e) {
-      LOG.error("Can't handle message", e);
+      LOG.error("Can't handle message: " + msg, e);
     }
   }
 
@@ -1297,9 +1297,10 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
-    /** We dont want to remove the last paragraph */
     final Note note = notebook.getNote(noteId);
-    if (!note.isLastParagraph(paragraphId)) {
+
+    /** Don't allow removing paragraph when there is only one paragraph in the Notebook */
+    if (note.getParagraphCount() > 1) {
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       Paragraph para = note.removeParagraph(subject.getUser(), paragraphId);
       note.persist(subject);
@@ -1375,13 +1376,13 @@ public class NotebookServer extends WebSocketServlet
       List<InterpreterSetting> settings =
           notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
       for (InterpreterSetting setting : settings) {
-        if (setting.getOrCreateInterpreterGroup(user, note.getId()) == null) {
+        if (setting.getInterpreterGroup(user, note.getId()) == null) {
           continue;
         }
-        if (interpreterGroupId.equals(setting.getOrCreateInterpreterGroup(user, note.getId())
+        if (interpreterGroupId.equals(setting.getInterpreterGroup(user, note.getId())
             .getId())) {
           AngularObjectRegistry angularObjectRegistry =
-              setting.getOrCreateInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
+              setting.getInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
 
           // first trying to get local registry
           ao = angularObjectRegistry.get(varName, noteId, paragraphId);
@@ -1418,13 +1419,13 @@ public class NotebookServer extends WebSocketServlet
         List<InterpreterSetting> settings =
             notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
         for (InterpreterSetting setting : settings) {
-          if (setting.getOrCreateInterpreterGroup(user, n.getId()) == null) {
+          if (setting.getInterpreterGroup(user, n.getId()) == null) {
             continue;
           }
-          if (interpreterGroupId.equals(setting.getOrCreateInterpreterGroup(user, n.getId())
+          if (interpreterGroupId.equals(setting.getInterpreterGroup(user, n.getId())
               .getId())) {
             AngularObjectRegistry angularObjectRegistry =
-                setting.getOrCreateInterpreterGroup(user, n.getId()).getAngularObjectRegistry();
+                setting.getInterpreterGroup(user, n.getId()).getAngularObjectRegistry();
             this.broadcastExcept(n.getId(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
                     .put("interpreterGroupId", interpreterGroupId).put("noteId", n.getId())
@@ -1514,7 +1515,7 @@ public class NotebookServer extends WebSocketServlet
     if (paragraph == null) {
       throw new IllegalArgumentException("Unknown paragraph with id : " + paragraphId);
     }
-    return paragraph.getCurrentRepl().getInterpreterGroup();
+    return paragraph.getBindedInterpreter().getInterpreterGroup();
   }
 
   private void pushAngularObjectToRemoteRegistry(String noteId, String paragraphId, String varName,
@@ -1677,7 +1678,10 @@ public class NotebookServer extends WebSocketServlet
       Paragraph p = setParagraphUsingMessage(note, fromMessage,
           paragraphId, text, title, params, config);
 
-      persistAndExecuteSingleParagraph(conn, note, p);
+      if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
+        // stop execution when one paragraph fails.
+        break;
+      }
     }
   }
 
@@ -1769,14 +1773,14 @@ public class NotebookServer extends WebSocketServlet
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
         text, title, params, config);
 
-    persistAndExecuteSingleParagraph(conn, note, p);
+    persistAndExecuteSingleParagraph(conn, note, p, false);
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
     // if it's the last paragraph and not empty, let's add a new one
     boolean isTheLastParagraph = note.isLastParagraph(p.getId());
     if (!(Strings.isNullOrEmpty(p.getText()) ||
-        p.getText().trim().equals(p.getMagic())) &&
+        Strings.isNullOrEmpty(p.getScriptText())) &&
         isTheLastParagraph) {
       Paragraph newPara = note.addNewParagraph(p.getAuthenticationInfo());
       broadcastNewParagraph(note, newPara);
@@ -1801,15 +1805,16 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void persistAndExecuteSingleParagraph(NotebookSocket conn,
-                                                Note note, Paragraph p) throws IOException {
+  private boolean persistAndExecuteSingleParagraph(NotebookSocket conn,
+                                                Note note, Paragraph p,
+                                                boolean blocking) throws IOException {
     addNewParagraphIfLastParagraphIsExecuted(note, p);
     if (!persistNoteWithAuthInfo(conn, note, p)) {
-      return;
+      return false;
     }
 
     try {
-      note.run(p.getId());
+      return note.run(p.getId(), blocking);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       if (p != null) {
@@ -1817,6 +1822,7 @@ public class NotebookServer extends WebSocketServlet
         p.setStatus(Status.ERROR);
         broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
       }
+      return false;
     }
   }
 
@@ -2296,14 +2302,17 @@ public class NotebookServer extends WebSocketServlet
     }
 
     for (InterpreterSetting intpSetting : settings) {
+      if (intpSetting.getInterpreterGroup(user, note.getId()) == null) {
+        continue;
+      }
       AngularObjectRegistry registry =
-          intpSetting.getOrCreateInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
+          intpSetting.getInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
       List<AngularObject> objects = registry.getAllWithGlobal(note.getId());
       for (AngularObject object : objects) {
         conn.send(serializeMessage(
             new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", object)
                 .put("interpreterGroupId",
-                    intpSetting.getOrCreateInterpreterGroup(user, note.getId()).getId())
+                    intpSetting.getInterpreterGroup(user, note.getId()).getId())
                 .put("noteId", note.getId()).put("paragraphId", object.getParagraphId())));
       }
     }

@@ -21,12 +21,15 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -43,18 +46,33 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   }
 
   @Override
-  public void open() {
-    getProperty().setProperty("zeppelin.python", PySparkInterpreter.getPythonExec(property));
+  public void open() throws InterpreterException {
+    setProperty("zeppelin.python",
+        PySparkInterpreter.getPythonExec(getProperties()));
     sparkInterpreter = getSparkInterpreter();
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
-    String additionalPythonPath = conf.get("spark.submit.pyFiles").replaceAll(",", ":") +
-        ":../interpreter/lib/python";
-    setAdditionalPythonPath(additionalPythonPath);
+    // only set PYTHONPATH in local or yarn-client mode.
+    // yarn-cluster will setup PYTHONPATH automatically.
+    if (!conf.get("spark.submit.deployMode").equals("cluster")) {
+      setAdditionalPythonPath(PythonUtils.sparkPythonPath());
+      setAddBulitinPy4j(false);
+    }
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
     super.open();
   }
 
-  private SparkInterpreter getSparkInterpreter() {
+  @Override
+  protected Map<String, String> setupIPythonEnv() throws IOException {
+    Map<String, String> env = super.setupIPythonEnv();
+    // set PYSPARK_PYTHON
+    SparkConf conf = sparkInterpreter.getSparkContext().getConf();
+    if (conf.contains("spark.pyspark.python")) {
+      env.put("PYSPARK_PYTHON", conf.get("spark.pyspark.python"));
+    }
+    return env;
+  }
+
+  private SparkInterpreter getSparkInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());

@@ -246,7 +246,6 @@ public class RemoteInterpreterEventPoller extends Thread {
             listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
           }
         }
-        logger.debug("Event from remote process {}", event.getType());
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }
@@ -254,7 +253,11 @@ public class RemoteInterpreterEventPoller extends Thread {
     try {
       clearUnreadEvents(interpreterProcess.getClient());
     } catch (Exception e1) {
-      logger.error("Can't get RemoteInterpreterEvent", e1);
+      if (shutdown) {
+        logger.error("Can not get RemoteInterpreterEvent because it is shutdown.");
+      } else {
+        logger.error("Can't get RemoteInterpreterEvent", e1);
+      }
     }
     if (appendFuture != null) {
       appendFuture.cancel(true);

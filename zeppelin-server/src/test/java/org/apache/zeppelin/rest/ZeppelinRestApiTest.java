@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -55,7 +56,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(ZeppelinRestApiTest.class.getSimpleName());
   }
 
   @AfterClass
@@ -440,12 +441,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteId = note.getId();
 
     note.runAll();
-
-    // wait until paragraph gets started
-    while (!paragraph.getStatus().isRunning()) {
-      Thread.sleep(100);
-    }
-
     // assume that status of the paragraph is running
     GetMethod get = httpGet("/notebook/job/" + noteId);
     assertThat("test get note job: ", get, isAllowed());
@@ -493,15 +488,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteId = note.getId();
 
     note.runAll();
-    // wait until job is finished or timeout.
-    int timeout = 1;
-    while (!paragraph.isTerminated()) {
-      Thread.sleep(1000);
-      if (timeout++ > 120) {
-        LOG.info("testRunParagraphWithParams timeout job.");
-        break;
-      }
-    }
 
     // Call Run paragraph REST API
     PostMethod postParagraph = httpPost("/notebook/job/" + noteId + "/" + paragraph.getId(),
@@ -533,17 +519,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
 
-    note.runAll();
-    // wait until job is finished or timeout.
-    int timeout = 1;
-    while (!paragraph.isTerminated()) {
-      Thread.sleep(1000);
-      if (timeout++ > 10) {
-        LOG.info("testNoteJobs timeout job.");
-        break;
-      }
-    }
-    
+    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+
     String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
     // right cron expression but not exist note.
     PostMethod postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
@@ -647,6 +624,43 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals(9.0, p.getConfig().get("colWidth"));
     assertTrue(((boolean) p.getConfig().get("title")));
 
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
+  public void testUpdateParagraph() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+
+    String jsonRequest = "{\"title\": \"title1\", \"text\": \"text1\"}";
+    PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
+    post.releaseConnection();
+
+    String newParagraphId = (String) resp.get("body");
+    Paragraph newParagraph = ZeppelinServer.notebook.getNote(note.getId()).getParagraph(newParagraphId);
+
+    assertEquals("title1", newParagraph.getTitle());
+    assertEquals("text1", newParagraph.getText());
+
+    String updateRequest = "{\"text\": \"updated text\"}";
+    PutMethod put = httpPut("/notebook/" + note.getId() + "/paragraph/" + newParagraphId, updateRequest);
+    assertThat("Test update method:", put, isAllowed());
+    put.releaseConnection();
+
+    Paragraph updatedParagraph = ZeppelinServer.notebook.getNote(note.getId()).getParagraph(newParagraphId);
+
+    assertEquals("title1", updatedParagraph.getTitle());
+    assertEquals("updated text", updatedParagraph.getText());
+
+    String updateBothRequest = "{\"title\": \"updated title\", \"text\" : \"updated text 2\" }";
+    PutMethod updatePut = httpPut("/notebook/" + note.getId() + "/paragraph/" + newParagraphId, updateBothRequest);
+    updatePut.releaseConnection();
+
+    Paragraph updatedBothParagraph = ZeppelinServer.notebook.getNote(note.getId()).getParagraph(newParagraphId);
+
+    assertEquals("updated title", updatedBothParagraph.getTitle());
+    assertEquals("updated text 2", updatedBothParagraph.getText());
 
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }

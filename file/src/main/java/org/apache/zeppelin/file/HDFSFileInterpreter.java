@@ -202,7 +202,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
     return "No such File or directory";
   }
 
-  public String listAll(String path) {
+  public String listAll(String path) throws InterpreterException {
     String all = "";
     if (exceptionOnConnect != null)
       return "Error connecting to provided endpoint.";

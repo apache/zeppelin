@@ -191,7 +191,7 @@ limitations under the License.
         </li>
         <li>
           <!-- remove paragraph -->
-          <a ng-click="removeParagraph(paragraph)" ng-hide="$last"><span class="fa fa-times shortcut-icon"></span>
+          <a ng-click="removeParagraph(paragraph)" ng-if="note.paragraphs.length > 1"><span class="fa fa-times shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+D</span>
             Remove
           </a>

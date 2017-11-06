@@ -55,7 +55,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    startUp(NotebookRestApiTest.class.getSimpleName());
   }
 
   @AfterClass
@@ -118,6 +118,68 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
+  }
+
+  @Test
+  public void testRunAllParagraph_AllSuccess() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous);
+    // 2 paragraphs
+    // P1:
+    //    %python
+    //    import time
+    //    time.sleep(1)
+    //    user='abc'
+    // P2:
+    //    %python
+    //    from __future__ import print_function
+    //    print(user)
+    //
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p1.setText("%python import time\ntime.sleep(1)\nuser='abc'");
+    p2.setText("%python from __future__ import print_function\nprint(user)");
+
+    PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+    assertThat(post, isAllowed());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    assertEquals(resp.get("status"), "OK");
+    post.releaseConnection();
+
+    assertEquals(Job.Status.FINISHED, p1.getStatus());
+    assertEquals(Job.Status.FINISHED, p2.getStatus());
+    assertEquals("abc\n", p2.getResult().message().get(0).getData());
+  }
+
+  @Test
+  public void testRunAllParagraph_FirstFailed() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous);
+    // 2 paragraphs
+    // P1:
+    //    %python
+    //    import time
+    //    time.sleep(1)
+    //    from __future__ import print_function
+    //    print(user)
+    // P2:
+    //    %python
+    //    user='abc'
+    //
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p1.setText("%python import time\ntime.sleep(1)\nfrom __future__ import print_function\nprint(user2)");
+    p2.setText("%python user2='abc'\nprint(user2)");
+
+    PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+    assertThat(post, isAllowed());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    assertEquals(resp.get("status"), "OK");
+    post.releaseConnection();
+
+    assertEquals(Job.Status.ERROR, p1.getStatus());
+    // p2 will be skipped because p1 is failed.
+    assertEquals(Job.Status.READY, p2.getStatus());
   }
 
   @Test

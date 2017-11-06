@@ -1,0 +1,42 @@
+[
+  {
+    "group": "neo4j",
+    "name": "neo4j",
+    "className": "org.apache.zeppelin.graph.neo4j.Neo4jCypherInterpreter",
+    "properties": {
+      "neo4j.url": {
+        "envName": null,
+        "propertyName": "neo4j.url",
+        "defaultValue": "bolt://localhost:7687",
+        "description": "The Neo4j's BOLT url."
+      },
+      "neo4j.auth.type": {
+        "envName": null,
+        "propertyName": "neo4j.auth.type",
+        "defaultValue": "BASIC",
+        "description": "The Neo4j's authentication type (NONE, BASIC)."
+      },
+      "neo4j.auth.user": {
+        "envName": null,
+        "propertyName": "neo4j.auth.user",
+        "defaultValue": "",
+        "description": "The Neo4j user name."
+      },
+      "neo4j.auth.password": {
+        "envName": null,
+        "propertyName": "neo4j.auth.password",
+        "defaultValue": "",
+        "description": "The Neo4j user password."
+      },
+      "neo4j.max.concurrency": {
+        "envName": null,
+        "propertyName": "neo4j.max.concurrency",
+        "defaultValue": "50",
+        "description": "Max concurrency call from Zeppelin to Neo4j server."
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]

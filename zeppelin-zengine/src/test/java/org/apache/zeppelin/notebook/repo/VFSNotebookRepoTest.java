@@ -73,9 +73,7 @@ public class VFSNotebookRepoTest extends AbstractInterpreterTest implements JobL
 
   @After
   public void tearDown() throws Exception {
-    if (!FileUtils.deleteQuietly(testRootDir)) {
-      LOG.error("Failed to delete {} ", testRootDir.getName());
-    }
+    super.tearDown();
   }
 
   @Test

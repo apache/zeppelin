@@ -168,8 +168,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     ins.close();
 
     Note note = Note.fromJson(json);
-//    note.setReplLoader(replLoader);
-//    note.jobListenerFactory = jobListenerFactory;
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
@@ -218,6 +216,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
+    LOG.info("Saving note:" + note.getId());
     String json = note.toJson();
 
     FileObject rootDir = getRootDir();
