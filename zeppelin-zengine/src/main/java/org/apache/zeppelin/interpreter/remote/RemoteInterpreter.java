@@ -60,7 +60,6 @@ public class RemoteInterpreter extends Interpreter {
 
   private String className;
   private String sessionId;
-  private String userName;
   private FormType formType;
 
   private RemoteInterpreterProcess interpreterProcess;
@@ -80,7 +79,7 @@ public class RemoteInterpreter extends Interpreter {
     super(properties);
     this.sessionId = sessionId;
     this.className = className;
-    this.userName = userName;
+    this.setUserName(userName);
     this.lifecycleManager = lifecycleManager;
   }
 
@@ -105,7 +104,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess();
     synchronized (interpreterProcess) {
       if (!interpreterProcess.isRunning()) {
-        interpreterProcess.start(userName, false);
+        interpreterProcess.start(this.getUserName(), false);
         interpreterProcess.getRemoteInterpreterEventPoller()
             .setInterpreterProcess(interpreterProcess);
         interpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(intpGroup);
@@ -129,7 +128,7 @@ public class RemoteInterpreter extends Interpreter {
         // depends on other interpreter. e.g. PySparkInterpreter depends on SparkInterpreter.
         // also see method Interpreter.getInterpreterInTheSameSessionByClassName
         for (Interpreter interpreter : getInterpreterGroup()
-                                        .getOrCreateSession(userName, sessionId)) {
+                                        .getOrCreateSession(this.getUserName(), sessionId)) {
           try {
             ((RemoteInterpreter) interpreter).internal_create();
           } catch (IOException e) {
@@ -162,13 +161,13 @@ public class RemoteInterpreter extends Interpreter {
   private void internal_create() throws IOException {
     synchronized (this) {
       if (!isCreated) {
-        RemoteInterpreterProcess interpreterProcess = getOrCreateInterpreterProcess();
+        this.interpreterProcess = getOrCreateInterpreterProcess();
         interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
           @Override
           public Void call(Client client) throws Exception {
             LOGGER.info("Create RemoteInterpreter {}", getClassName());
             client.createInterpreter(getInterpreterGroup().getId(), sessionId,
-                className, (Map) getProperties(), userName);
+                className, (Map) getProperties(), getUserName());
             return null;
           }
         });
