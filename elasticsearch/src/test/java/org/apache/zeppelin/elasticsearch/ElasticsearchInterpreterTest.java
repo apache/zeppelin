@@ -164,8 +164,8 @@ public class ElasticsearchInterpreterTest {
 
   private InterpreterContext buildContext(String noteAndParagraphId) {
     final AngularObjectRegistry angularObjReg = new AngularObjectRegistry("elasticsearch", null);
-    return new InterpreterContext(noteAndParagraphId, noteAndParagraphId, null, null, null, null, null,
-        null, angularObjReg , null, null, null);
+    return new InterpreterContext(noteAndParagraphId, noteAndParagraphId, null, null, null, null,
+        null, null, null, angularObjReg , null, null, null);
   }
 
   @Theory

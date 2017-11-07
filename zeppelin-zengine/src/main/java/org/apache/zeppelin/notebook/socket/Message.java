@@ -182,8 +182,10 @@ public class Message implements JsonSerializable {
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
-    RUN_PARAGRAPH_USING_SPELL,     // [s-c] run paragraph using spell
-    PARAS_INFO                    // [s-c] paragraph runtime infos
+    RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
+    PARAS_INFO,                   // [s-c] paragraph runtime infos
+    SAVE_NOTE_FORMS,              // save note forms
+    REMOVE_NOTE_FORMS             // remove note forms
   }
 
   private static final Gson gson = new Gson();
