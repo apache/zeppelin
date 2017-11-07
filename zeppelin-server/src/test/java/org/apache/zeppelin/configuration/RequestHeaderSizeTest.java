@@ -6,7 +6,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.security.DirAccessTest;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,35 +16,41 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RequestHeaderSizeTest extends AbstractTestRestApi {
-    protected static final Logger LOG = LoggerFactory.getLogger(RequestHeaderSizeTest.class);
-        @Test
-        public void testHeaderTooLarge_cause_413() throws Exception {
-            LOG.info("starting test 'testHeaderTooLarge_cause_413'");
-        synchronized (this) {
-            AbstractTestRestApi.startUp(RequestHeaderSizeTest.class.getSimpleName());
-            HttpClient httpClient = new HttpClient();
-            GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
-            String headerValue = RandomStringUtils.randomAlphanumeric(15000);
-            getMethod.setRequestHeader("too_large_header",headerValue);
-            httpClient.executeMethod(getMethod);
-            AbstractTestRestApi.shutDown();
-            assertThat(getMethod.getStatusCode(), is(HttpStatus.SC_REQUEST_TOO_LONG));
-        }
+    private static final Logger LOG = LoggerFactory.getLogger(RequestHeaderSizeTest.class);
+    private static final int REQUEST_HEADER_MAX_SIZE = 20000;
+
+    @Before
+    public void startZeppelin() throws Exception {
+        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
+        startUp(RequestHeaderSizeTest.class.getSimpleName());
     }
 
-    @Test
-    public void testRequestHeaderSizeLimit() throws Exception {
-        LOG.info("starting test 'testRequestHeaderSizeLimit'");
-        synchronized (this) {
-            System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "20000");
-            AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
-            HttpClient httpClient = new HttpClient();
-            GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
-            String headerValue = RandomStringUtils.randomAlphanumeric(15000);
-            getMethod.setRequestHeader("too_large_header",headerValue);
-            httpClient.executeMethod(getMethod);
-            AbstractTestRestApi.shutDown();
-            assertThat(getMethod.getStatusCode(), is(HttpStatus.SC_OK));
-        }
+    @After
+    public void stopZeppelin() throws Exception {
+        shutDown();
     }
+
+
+    @Test
+    public void increased_request_header_size_do_not_cause_413_when_request_size_is_over_8K() throws Exception {
+        LOG.info("starting test 'increased_request_header_size_do_not_cause_413_when_request_size_is_over_8K'");
+        HttpClient httpClient = new HttpClient();
+
+        GetMethod getMethod = new GetMethod(getUrlToTest() + "/version");
+        String headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE - 2000);
+        getMethod.setRequestHeader("too_large_header", headerValue);
+        LOG.info("length is:" + getMethod.toString().length());
+        int httpCode = httpClient.executeMethod(getMethod);
+        assertThat(httpCode, is(HttpStatus.SC_OK));
+
+
+        getMethod = new GetMethod(getUrlToTest() + "/version");
+        headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE);
+        getMethod.setRequestHeader("too_large_header", headerValue);
+        LOG.info("length is:" + getMethod.toString().length());
+        httpCode = httpClient.executeMethod(getMethod);
+        assertThat(httpCode, is(HttpStatus.SC_REQUEST_TOO_LONG));
+    }
+
+
 }
