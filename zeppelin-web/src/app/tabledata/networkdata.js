@@ -67,7 +67,6 @@ export default class NetworkData extends TableData {
     for (let i = 0; i < entities.length; i++) {
       const entity = entities[i]
       const col = []
-      // const col2 = []
       entity.data = entity.data || {}
       for (let j = 0; j < columnNames.length; j++) {
         const name = columnNames[j].name
@@ -75,7 +74,6 @@ export default class NetworkData extends TableData {
             ? entity[name] : entity.data[name]
         const parsedValue = value === null || value === undefined ? '' : value
         col.push(parsedValue)
-        // col2.push({key: name, value: parsedValue})
       }
       rows.push(col)
     }
