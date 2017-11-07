@@ -24,7 +24,16 @@ limitations under the License.
          tooltip-placement="bottom" uib-tooltip="Remove">
       </i>
     </a>
-    <div>
+    <div ng-if="actiononchange === true">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'TextBox'"
+             ng-change="action()"
+             ng-model-options='{ debounce: 1000 }'
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="!actiononchange">
       <input class="form-control input-sm"
              ng-if="forms[formulaire.name].type == 'TextBox'"
              ng-enter="action()"
@@ -42,7 +51,7 @@ limitations under the License.
               ng-options="option.value as (option.displayName||option.value) for option in forms[formulaire.name].options">
       </select>
     </div>
-    <div ng-if="actiononchange === false">
+    <div ng-if="!actiononchange">
       <select class="form-control input-sm"
               ng-if="forms[formulaire.name].type == 'Select'"
               ng-enter="action()"
@@ -62,7 +71,7 @@ limitations under the License.
                ng-click="toggleCheckbox(formulaire, option, params); action()"/> {{option.displayName||option.value}}
       </label>
     </div>
-    <div ng-if="actiononchange === false &&
+    <div ng-if="!actiononchange &&
                   forms[formulaire.name].type == 'CheckBox'">
       <label ng-repeat="option in forms[formulaire.name].options"
              class="checkbox-item input-sm">
