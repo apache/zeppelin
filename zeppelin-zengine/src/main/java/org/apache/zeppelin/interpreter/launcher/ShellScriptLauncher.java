@@ -64,7 +64,7 @@ public class ShellScriptLauncher extends InterpreterLauncher {
           + context.getInterpreterGroupId();
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          zConf.getCallbackPortRange(),
+          zConf.getCallbackPortRange(),  zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
           buildEnvFromProperties(), connectTimeout, groupName);
     }
