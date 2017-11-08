@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -50,7 +52,7 @@ public class RequestHeaderSizeTest extends AbstractTestRestApi {
         LOG.info("header value is:" + headerValue);
 
         getMethod.setRequestHeader("too_large_header", headerValue);
-        LOG.info("headers are:" + Arrays.toString(getMethod.getRequestHeaders().length()));
+        LOG.info("headers are:" + Arrays.toString(getMethod.getRequestHeaders()));
 
         httpCode = httpClient.executeMethod(getMethod);
         assertThat(httpCode, is(HttpStatus.SC_REQUEST_TOO_LONG));
