@@ -21,7 +21,7 @@ public class RequestHeaderSizeTest extends AbstractTestRestApi {
 
     @Before
     public void startZeppelin() throws Exception {
-        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
+        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE.getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
         startUp(RequestHeaderSizeTest.class.getSimpleName());
     }
 
@@ -45,9 +45,13 @@ public class RequestHeaderSizeTest extends AbstractTestRestApi {
 
 
         getMethod = new GetMethod(getUrlToTest() + "/version");
-        headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE);
+        headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE+2000);
+        LOG.info("length of header value is:" + headerValue.length());
+        LOG.info("header value is:" + headerValue);
+
         getMethod.setRequestHeader("too_large_header", headerValue);
-        LOG.info("length is:" + getMethod.toString().length());
+        LOG.info("headers are:" + Arrays.toString(getMethod.getRequestHeaders().length()));
+
         httpCode = httpClient.executeMethod(getMethod);
         assertThat(httpCode, is(HttpStatus.SC_REQUEST_TOO_LONG));
     }
