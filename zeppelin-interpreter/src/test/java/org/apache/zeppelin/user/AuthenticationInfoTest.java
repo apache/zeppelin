@@ -33,8 +33,9 @@ public class AuthenticationInfoTest {
     final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo",
         roles, "bar");
 
-    assertEquals(authenticationInfo.getRoles(),
-        new ArrayList<>(Arrays.asList("role1", "role2", "role with space")));
+    assertEquals(
+        new ArrayList<>(Arrays.asList("role1", "role2", "role with space")),
+        authenticationInfo.getRoles());
 
   }
 
