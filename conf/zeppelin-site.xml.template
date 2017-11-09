@@ -396,7 +396,7 @@
 <property>
   <name>zeppelin.notebook.default.owner.username</name>
   <value></value>
-  <description>Set owner role by default in private mode</description>
+  <description>Set owner role by default</description>
 </property>
 
 <property>
