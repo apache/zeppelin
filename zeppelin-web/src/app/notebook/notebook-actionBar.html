@@ -19,10 +19,10 @@ limitations under the License.
       <input type="text" pu-elastic-input class="form-control2" placeholder="New name" style="min-width: 0px; max-width: 95%;"
            ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
            ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
-      <p class="form-control-static2" 
-         tooltip-placement="bottom" 
+      <p class="form-control-static2"
+         tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
-         ng-click="input.showEditor = !revisionView; input.value = note.name" 
+         ng-click="input.showEditor = !revisionView; input.value = note.name"
          ng-show="!input.showEditor">{{noteName(note)}}</p>
     </div>
     <div style="float: left; padding-bottom: 10px">
@@ -300,7 +300,7 @@ limitations under the License.
               type="button"
               data-toggle="modal"
               data-target="#shortcutModal"
-              tooltip-placement="bottom" uib-tooltip="List of shortcut">
+              tooltip-placement="bottom" uib-tooltip="List of shortcuts">
           <i class="fa fa-keyboard-o"></i>
         </span>
         <span class="setting-btn"

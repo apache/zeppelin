@@ -114,7 +114,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Map config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
-    p1.setText("hello world");
+    p1.setText("%mock1 hello world");
     p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
@@ -144,7 +144,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // then interpreter factory should be injected into all the paragraphs
     Note note = notebook.getAllNotes().get(0);
-    assertNull(note.getParagraphs().get(0).getRepl(null));
+    assertNull(note.getParagraphs().get(0).getBindedInterpreter());
   }
 
   @Test
@@ -184,8 +184,8 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
         copiedNote.getParagraphs().get(0).getText());
     assertEquals(notes.get(1).getParagraphs().get(0).settings,
         copiedNote.getParagraphs().get(0).settings);
-    assertEquals(notes.get(1).getParagraphs().get(0).title,
-        copiedNote.getParagraphs().get(0).title);
+    assertEquals(notes.get(1).getParagraphs().get(0).getTitle(),
+        copiedNote.getParagraphs().get(0).getTitle());
 
     // delete the notebook
     for (String note : noteNames) {
@@ -268,7 +268,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Map config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
-    p1.setText("hello world");
+    p1.setText("%mock1 hello world");
     p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
 
@@ -305,26 +305,21 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Map config1 = p1.getConfig();
     config1.put("enabled", true);
     p1.setConfig(config1);
-    p1.setText("p1");
+    p1.setText("%mock1 p1");
 
     // p2
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config2 = p2.getConfig();
     config2.put("enabled", false);
     p2.setConfig(config2);
-    p2.setText("p2");
+    p2.setText("%mock1 p2");
 
     // p3
     Paragraph p3 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p3.setText("p3");
+    p3.setText("%mock1 p3");
 
     // when
     note.runAll();
-
-    // wait for finish
-    while(p3.isTerminated() == false || p3.getResult() == null) {
-      Thread.yield();
-    }
 
     assertEquals("repl1: p1", p1.getResult().message().get(0).getData());
     assertNull(p2.getResult());
@@ -415,7 +410,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = new HashMap<>();
     p.setConfig(config);
-    p.setText("sleep 1000");
+    p.setText("%mock1 sleep 1000");
 
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setConfig(config);
@@ -466,9 +461,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     p.setText(simpleText);
 
     note.runAll();
-    while (p.isTerminated() == false || p.getResult() == null) {
-      Thread.yield();
-    }
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
@@ -478,7 +470,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // Test
     assertEquals(p.getId(), p2.getId());
-    assertEquals(p.text, p2.text);
+    assertEquals(p.getText(), p2.getText());
     assertEquals(p.getResult().message().get(0).getData(), p2.getResult().message().get(0).getData());
 
     // Verify import note with subject
@@ -503,7 +495,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
     note.runAll();
-    while(p.isTerminated()==false || p.getResult()==null) Thread.yield();
 
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
@@ -512,7 +503,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
-    assertEquals(cp.text, p.text);
+    assertEquals(cp.getText(), p.getText());
     assertEquals(cp.getResult().message().get(0).getData(), p.getResult().message().get(0).getData());
 
     // Verify clone note with subject
@@ -549,9 +540,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
     note.runAll();
-    while (p.isTerminated() == false || p.getResult() == null) {
-      Thread.yield();
-    }
+
     // Force paragraph to have String type object
     p.setResult("Exception");
 
@@ -560,7 +549,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // Keep same ParagraphId
     assertEquals(cp.getId(), p.getId());
-    assertEquals(cp.text, p.text);
+    assertEquals(cp.getText(), p.getText());
     assertNull(cp.getResult());
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
@@ -572,15 +561,13 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p1.setText("hello");
+    p1.setText("%mock1 hello");
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p2.setText("%mock2 world");
     for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
     note.runAll();
-    while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
-    while (p2.isTerminated() == false || p2.getResult() == null) Thread.yield();
 
     assertEquals(2, interpreterSettingManager.getAllResources().size());
 
@@ -796,14 +783,14 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // create three paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);
-    p1.setText("sleep 1000");
+    p1.setText("%mock1 sleep 1000");
     Paragraph p2 = note.addNewParagraph(anonymous);
-    p2.setText("sleep 1000");
+    p2.setText("%mock1 sleep 1000");
     Paragraph p3 = note.addNewParagraph(anonymous);
-    p3.setText("sleep 1000");
+    p3.setText("%mock1 sleep 1000");
 
 
-    note.runAll();
+    note.runAll(AuthenticationInfo.ANONYMOUS, false);
 
     // wait until first paragraph finishes and second paragraph starts
     while (p1.getStatus() != Status.FINISHED || p2.getStatus() != Status.RUNNING) Thread.yield();
@@ -813,9 +800,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     assertEquals(Status.PENDING, p3.getStatus());
 
     // restart interpreter
-    interpreterSettingManager.restart(interpreterSettingManager.getInterpreterSettings(note.getId()).get(0).getId());
+    interpreterSettingManager.restart(interpreterSettingManager.getInterpreterSettingByName("mock1").getId());
 
-    // make sure three differnt status aborted well.
+    // make sure three different status aborted well.
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals(Status.ABORT, p2.getStatus());
     assertEquals(Status.ABORT, p3.getStatus());
@@ -828,7 +815,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // create a notes
     Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p1.setText("getId");
+    p1.setText("%mock1 getId");
     p1.setAuthenticationInfo(anonymous);
 
     // restart interpreter with per user session enabled
@@ -845,7 +832,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notebook.removeNote(note1.getId(), anonymous);
     note1 = notebook.createNote(anonymous);
     p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p1.setText("getId");
+    p1.setText("%mock1 getId");
     p1.setAuthenticationInfo(anonymous);
 
     note1.run(p1.getId());
@@ -864,9 +851,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Note note2  = notebook.createNote(anonymous);
     Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-    p1.setText("getId");
+    p1.setText("%mock1 getId");
     p1.setAuthenticationInfo(anonymous);
-    p2.setText("getId");
+    p2.setText("%mock1 getId");
     p2.setAuthenticationInfo(anonymous);
 
     // run per note session disabled
@@ -908,9 +895,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Note note2  = notebook.createNote(anonymous);
     Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-    p1.setText("getId");
+    p1.setText("%mock1 getId");
     p1.setAuthenticationInfo(anonymous);
-    p2.setText("getId");
+    p2.setText("%mock1 getId");
     p2.setAuthenticationInfo(anonymous);
 
     // shared mode.
@@ -925,8 +912,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // restart interpreter with scoped mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNote(InterpreterOption.SCOPED);
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note1.getId(), anonymous.getUser());
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note2.getId(), anonymous.getUser());
+      notebook.getInterpreterSettingManager().restart(setting.getId());
     }
 
     // run per note session enabled
@@ -941,8 +927,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // restart interpreter with isolated mode enabled
     for (InterpreterSetting setting : notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId())) {
       setting.getOption().setPerNote(InterpreterOption.ISOLATED);
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note1.getId(), anonymous.getUser());
-      notebook.getInterpreterSettingManager().restart(setting.getId(), note2.getId(), anonymous.getUser());
+      setting.getInterpreterSettingManager().restart(setting.getId());
     }
 
     // run per note process enabled
@@ -964,7 +949,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Note note1  = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setAuthenticationInfo(anonymous);
-    p1.setText("getId");
+    p1.setText("%mock1 getId");
 
     // restart interpreter with per note session enabled
     for (InterpreterSetting setting : interpreterSettingManager.getInterpreterSettings(note1.getId())) {
