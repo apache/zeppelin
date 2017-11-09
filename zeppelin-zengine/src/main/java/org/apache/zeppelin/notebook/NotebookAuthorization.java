@@ -319,7 +319,7 @@ public class NotebookAuthorization {
 
   private boolean isAdmin(Set<String> entities) {
     String adminRole = conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE);
-    if (adminRole.isEmpty()) {
+    if (StringUtils.isBlank(adminRole)) {
       return false;
     }
     return entities.contains(adminRole);
