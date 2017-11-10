@@ -19,7 +19,6 @@
 package org.apache.zeppelin.pig;
 
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
@@ -78,7 +77,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
       queries.add(lines[i]);
     }
 
-    StringBuilder resultBuilder = new StringBuilder("%table ");
+    StringBuilder resultBuilder = new StringBuilder(TABLE_MAGIC_TAG);
     try {
       pigServer.setJobName(createJobName(st, context));
       File tmpScriptFile = PigUtils.createTempPigScript(queries);
@@ -116,7 +115,14 @@ public class PigQueryInterpreter extends BasePigInterpreter {
           resultBuilder.append("\n");
           firstRow = false;
         }
-        resultBuilder.append(StringUtils.join(tuple.iterator(), "\t"));
+        Iterator<Object> fieldsIter = tuple.iterator();
+        while (fieldsIter.hasNext()) {
+          Object field = fieldsIter.next();
+          resultBuilder.append(replaceReservedChars(field.toString()));
+          if (fieldsIter.hasNext()) {
+            resultBuilder.append("\t");
+          }
+        }
         resultBuilder.append("\n");
       }
       if (index >= maxResult && iter.hasNext()) {

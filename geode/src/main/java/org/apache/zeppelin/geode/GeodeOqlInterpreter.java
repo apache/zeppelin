@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -85,12 +84,6 @@ import org.apache.geode.pdx.PdxInstance;
 public class GeodeOqlInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
-
-  private static final char NEWLINE = '\n';
-  private static final char TAB = '\t';
-  private static final char WHITESPACE = ' ';
-
-  private static final String TABLE_MAGIC_TAG = "%table ";
 
   private ClientCache clientCache = null;
   private QueryService queryService = null;
@@ -195,20 +188,6 @@ public class GeodeOqlInterpreter extends Interpreter {
       logger.error("Cannot run " + oql, ex);
       return new InterpreterResult(Code.ERROR, ex.getMessage());
     }
-  }
-
-  /**
-   * Zeppelin's %TABLE convention uses tab (\t) to delimit fields and new-line (\n) to delimit rows
-   * To complain with this convention we need to replace any occurrences of tab and/or newline
-   * characters in the content.
-   */
-  private String replaceReservedChars(String str) {
-
-    if (StringUtils.isBlank(str)) {
-      return str;
-    }
-
-    return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 
   private void handleStructEntry(boolean isHeaderSet, Object entry, StringBuilder msg) {

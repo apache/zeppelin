@@ -156,4 +156,27 @@ public class PigQueryInterpreterTest {
     assertTrue(result.message().get(0).getData().contains("id\n0\n1\n2"));
     assertTrue(result.message().get(1).getData().contains("alert-warning"));
   }
+
+  @Test
+  public void testReservedCharacters() throws IOException {
+    File tmpFile = File.createTempFile("zeppelin", "test");
+    FileWriter writer = new FileWriter(tmpFile);
+    IOUtils.write("fake\tline\n", writer);
+    writer.close();
+
+    // run script in PigInterpreter
+    String pigscript = "a = load '" + tmpFile.getAbsolutePath() +
+            "' using PigStorage(',') as (line);";
+    InterpreterResult result = pigInterpreter.interpret(pigscript, context);
+    assertEquals(0, result.message().size());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // run single line query in PigQueryInterpreter
+    String query = "foreach a generate line;";
+    result = pigQueryInterpreter.interpret(query, context);
+    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(result.message().get(0).getData()
+            .contains("line\nfake line\n"));
+  }
 }

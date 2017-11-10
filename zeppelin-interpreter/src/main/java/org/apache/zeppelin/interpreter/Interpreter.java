@@ -51,6 +51,12 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class Interpreter {
 
+  protected static final char NEWLINE = '\n';
+  protected static final char TAB = '\t';
+  protected static final char WHITESPACE = ' ';
+
+  protected static final String TABLE_MAGIC_TAG = "%table ";
+
   /**
    * Opens interpreter. You may want to place your initialize routine here.
    * open() is called only once
@@ -500,5 +506,19 @@ public abstract class Interpreter {
       }
     }
     return null;
+  }
+
+  /**
+   * Zeppelin's %TABLE convention uses tab (\t) to delimit fields and new-line (\n) to delimit rows
+   * To complain with this convention we need to replace any occurrences of tab and/or newline
+   * characters in the content.
+   */
+  protected String replaceReservedChars(String str) {
+
+    if (str == null || str.equals("")) {
+      return "";
+    }
+
+    return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 }
