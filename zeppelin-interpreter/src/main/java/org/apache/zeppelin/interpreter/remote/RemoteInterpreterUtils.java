@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,47 @@ public class RemoteInterpreterUtils {
       socket.close();
     }
     return port;
+  }
+
+  /**
+   * start:end
+   *
+   * @param portRange
+   * @return
+   * @throws IOException
+   */
+  public static int findRandomAvailablePortOnAllLocalInterfaces(String portRange)
+      throws IOException {
+
+    // ':' is the default value which means no constraints on the portRange
+    if (StringUtils.isBlank(portRange) || portRange.equals(":")) {
+      int port;
+      try (ServerSocket socket = new ServerSocket(0);) {
+        port = socket.getLocalPort();
+        socket.close();
+      }
+      return port;
+    }
+    // valid user registered port https://en.wikipedia.org/wiki/Registered_port
+    int start = 1024;
+    int end = 65535;
+    String[] ports = portRange.split(":", -1);
+    if (!ports[0].isEmpty()) {
+      start = Integer.parseInt(ports[0]);
+    }
+    if (!ports[1].isEmpty()) {
+      end = Integer.parseInt(ports[1]);
+    }
+    for (int i = start; i <= end; ++i) {
+      try {
+        ServerSocket socket = new ServerSocket(i);
+        socket.close();
+        return socket.getLocalPort();
+      } catch (Exception e) {
+        // ignore this
+      }
+    }
+    throw new IOException("No available port in the portRange: " + portRange);
   }
 
   public static boolean checkIfRemoteEndpointAccessible(String host, int port) {
