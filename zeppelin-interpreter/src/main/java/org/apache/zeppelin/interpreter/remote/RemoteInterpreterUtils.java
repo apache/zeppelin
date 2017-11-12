@@ -29,6 +29,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -70,7 +72,7 @@ public class RemoteInterpreterUtils {
 
     TServerSocket tSocket = null;
     // ':' is the default value which means no constraints on the portRange
-    if (portRange == null || portRange.equals(":")) {
+    if (StringUtils.isBlank(portRange) || portRange.equals(":")) {
       try {
         tSocket = new TServerSocket(0);
         return tSocket;
