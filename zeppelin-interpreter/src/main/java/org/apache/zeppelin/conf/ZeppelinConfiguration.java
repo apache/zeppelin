@@ -488,6 +488,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE);
   }
 
+  public String getInterpreterPortRange() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_PORTRANGE);
+  }
+
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
   }
@@ -705,6 +709,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
 
     ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE("zeppelin.interpreter.callback.portRange", ":"),
+    ZEPPELIN_INTERPRETER_PORTRANGE("zeppelin.interpreter.portRange", ":"),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
         "org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager"),

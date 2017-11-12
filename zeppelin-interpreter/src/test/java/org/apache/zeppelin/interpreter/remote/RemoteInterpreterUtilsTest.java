@@ -26,17 +26,17 @@ import static org.junit.Assert.assertTrue;
 public class RemoteInterpreterUtilsTest {
 
   @Test
-  public void testFindRandomAvailablePortOnAllLocalInterfaces() throws IOException {
-    assertTrue(RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces() > 0);
+  public void testCreateTServerSocket() throws IOException {
+    assertTrue(RemoteInterpreterUtils.createTServerSocket(":").getServerSocket().getLocalPort() > 0);
 
     String portRange = ":30000";
-    assertTrue(RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(portRange) <= 30000);
+    assertTrue(RemoteInterpreterUtils.createTServerSocket(portRange).getServerSocket().getLocalPort() <= 30000);
 
     portRange = "30000:";
-    assertTrue(RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(portRange) >= 30000);
+    assertTrue(RemoteInterpreterUtils.createTServerSocket(portRange).getServerSocket().getLocalPort()  >= 30000);
 
     portRange = "30000:40000";
-    int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(portRange);
+    int port = RemoteInterpreterUtils.createTServerSocket(portRange).getServerSocket().getLocalPort();
     assertTrue(port >= 30000 && port <= 40000);
   }
 
