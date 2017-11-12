@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.ConfInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
@@ -101,7 +102,7 @@ public class RemoteInterpreter extends Interpreter {
       return this.interpreterProcess;
     }
     ManagedInterpreterGroup intpGroup = getInterpreterGroup();
-    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess();
+    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess(properties);
     synchronized (interpreterProcess) {
       if (!interpreterProcess.isRunning()) {
         interpreterProcess.start(this.getUserName(), false);
@@ -130,7 +131,9 @@ public class RemoteInterpreter extends Interpreter {
         for (Interpreter interpreter : getInterpreterGroup()
                                         .getOrCreateSession(this.getUserName(), sessionId)) {
           try {
-            ((RemoteInterpreter) interpreter).internal_create();
+            if (!(interpreter instanceof ConfInterpreter)) {
+              ((RemoteInterpreter) interpreter).internal_create();
+            }
           } catch (IOException e) {
             throw new InterpreterException(e);
           }

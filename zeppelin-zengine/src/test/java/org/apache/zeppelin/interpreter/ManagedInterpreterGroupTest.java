@@ -62,7 +62,7 @@ public class ManagedInterpreterGroupTest {
 
     // create session_1
     List<Interpreter> interpreters = interpreterGroup.getOrCreateSession("user1", "session_1");
-    assertEquals(2, interpreters.size());
+    assertEquals(3, interpreters.size());
     assertEquals(EchoInterpreter.class.getName(), interpreters.get(0).getClassName());
     assertEquals(DoubleEchoInterpreter.class.getName(), interpreters.get(1).getClassName());
     assertEquals(1, interpreterGroup.getSessionNum());
@@ -73,7 +73,7 @@ public class ManagedInterpreterGroupTest {
 
     // create session_2
     List<Interpreter> interpreters2 = interpreterGroup.getOrCreateSession("user1", "session_2");
-    assertEquals(2, interpreters2.size());
+    assertEquals(3, interpreters2.size());
     assertEquals(EchoInterpreter.class.getName(), interpreters2.get(0).getClassName());
     assertEquals(DoubleEchoInterpreter.class.getName(), interpreters2.get(1).getClassName());
     assertEquals(2, interpreterGroup.getSessionNum());
