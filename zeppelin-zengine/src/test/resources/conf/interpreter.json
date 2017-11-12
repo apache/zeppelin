@@ -66,6 +66,60 @@
         "users": [],
         "isUserImpersonate": false
       }
+    },
+
+    "2C4BJDRRZ" : {
+      "group": "mock1",
+      "name": "mock1",
+      "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
+      "properties": {
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2C3PTPMUH" : {
+      "group": "mock2",
+      "name": "mock2",
+      "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter2",
+      "properties": {
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "isolated",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2C5DCRVGM" : {
+      "group": "mock_resource_pool",
+      "name": "mock_resource_pool",
+      "className": "org.apache.zeppelin.interpreter.remote.mock.MockInterpreterResourcePool",
+      "properties": {
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
     }
   },
   "interpreterBindings": {

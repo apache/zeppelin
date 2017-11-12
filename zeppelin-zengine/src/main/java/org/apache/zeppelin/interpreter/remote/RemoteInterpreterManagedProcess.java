@@ -31,8 +31,6 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -63,7 +61,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
-  private final String interpreterGroupName;
+  private final String interpreterSettingName;
 
   private Map<String, String> env;
 
@@ -74,14 +72,14 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
-      String interpreterGroupName) {
+      String interpreterSettingName) {
     super(connectTimeout);
     this.interpreterRunner = intpRunner;
     this.portRange = portRange;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-    this.interpreterGroupName = interpreterGroupName;
+    this.interpreterSettingName = interpreterSettingName;
   }
 
   @Override
@@ -167,7 +165,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
     cmdLine.addArgument("-g", false);
-    cmdLine.addArgument(interpreterGroupName, false);
+    cmdLine.addArgument(interpreterSettingName, false);
 
     executor = new DefaultExecutor();
 
@@ -263,8 +261,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @VisibleForTesting
-  public String getInterpreterGroupName() {
-    return interpreterGroupName;
+  public String getInterpreterSettingName() {
+    return interpreterSettingName;
   }
 
   @VisibleForTesting
