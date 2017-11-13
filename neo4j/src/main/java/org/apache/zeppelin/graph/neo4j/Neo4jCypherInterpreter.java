@@ -52,7 +52,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Neo4j interpreter for Zeppelin.
  */
 public class Neo4jCypherInterpreter extends Interpreter {
-
   private static final String MAP_KEY_TEMPLATE = "%s.%s";
 
   private Map<String, String> labels;
