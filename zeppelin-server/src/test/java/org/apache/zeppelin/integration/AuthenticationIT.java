@@ -330,28 +330,16 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     authenticationIT.authenticationUser("admin", "password1");
     String folderName = "f";
     String subfolderName = "sub";
-    createNewNote('/' + folderName + '/' + subfolderName + "/note");
+    createNewNote("/" + folderName + "/" + subfolderName + "/note");
     String testingNoteUrl = driver.getCurrentUrl();
     driver.navigate().back();
 
-    //find folder element
-    String noteXPath = "//ul[@id='notebook-names']/div/li/div/div/div//a";
-    List<WebElement> elements = driver.findElements(By.xpath(noteXPath));
-    WebElement needed = null;
-    for (WebElement elem: elements) {
-      if (elem.getText().equals(folderName)) {
-        needed = elem;
-        break;
-      }
-    }
-    assertNotNull("Cannot find folder /" + folderName, needed);
-    //move mouse (for show permissions button will shown)
-    Actions action = new Actions(driver);
-    action.moveToElement(needed);
-    action.perform();
+    WebElement rootFolder = moveCursorToFolderInTree(folderName);
+
+    assertNotNull("Cannot find folder /" + folderName, rootFolder);
 
     //add some permissions
-    clickAndWait(By.xpath(noteXPath + "//..//a//i[@uib-tooltip='Show permissions']"));
+    clickAndWait(rootFolder.findElement(By.xpath(".//..//a//i[@uib-tooltip='Show permissions']")));
     pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
         MAX_BROWSER_TIMEOUT_SEC).sendKeys("admin ");
     pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
@@ -362,24 +350,14 @@ public class AuthenticationIT extends AbstractZeppelinIT {
             "//div[@class='modal-footer']//button[contains(.,'OK')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
     Thread.sleep(1000);
-    clickAndWait(needed);
+    clickAndWait(rootFolder);
 
-    //find subfolder element
-    elements = driver.findElements(By.xpath(noteXPath));
-    needed = null;
-    for (WebElement elem: elements) {
-      String s = elem.getText();
-      if (elem.getText().equals(subfolderName)) {
-        needed = elem;
-        break;
-      }
-    }
-    assertNotNull("Cannot find folder /" + folderName + '/' + subfolderName, needed);
-    //move mouse (for show permissions button will shown)
-    action.moveToElement(needed);
-    action.perform();
+    WebElement subFolder = moveCursorToFolderInTree(subfolderName);
+
+    assertNotNull("Cannot find folder /" + folderName + '/' + subfolderName, subFolder);
+
     Thread.sleep(1000);
-    clickAndWait(By.xpath("//ul[@id='notebook-names']/div/li/div/div/div/ul/li/div/div/div/a//i[@uib-tooltip='Show permissions']"));
+    clickAndWait(subFolder.findElement(By.xpath(".//..//a//i[@uib-tooltip='Show permissions']")));
 
     //check subfolder has the same permissions as folder
     List<String> owners = new ArrayList<>();
@@ -443,6 +421,53 @@ public class AuthenticationIT extends AbstractZeppelinIT {
         "//div[@class='modal-footer']//button[contains(.,'Cancel')]"));
     assertTrue(buttonCancel != null);
     buttonCancel.click();
+
+    goToHome();
+
+    rootFolder = moveCursorToFolderInTree(folderName);
+
+    assertNotNull("Cannot find folder /" + folderName, rootFolder);
+
+    deleteTestFolder(driver, rootFolder);
+
+    authenticationIT.logoutUser("admin");
+  }
+
+  @Test
+  public void testSetOwnerToFolderWhichContainsNotesWithAnotherOwner() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    AuthenticationIT authenticationIT = new AuthenticationIT();
+    authenticationIT.authenticationUser("admin", "password1");
+    String folderName = "f";
+    createNewNote("/" + folderName + "/note");
+    authenticationIT.logoutUser("admin");
+    authenticationIT.authenticationUser("finance1", "finance1");
+    WebElement rootFolder = moveCursorToFolderInTree(folderName);
+    assertNotNull("Cannot find folder /" + folderName, rootFolder);
+
+    WebElement showPermissions = rootFolder.findElement(By.xpath(".//..//a//i[@uib-tooltip='Show permissions']"));
+    clickAndWait(showPermissions);
+    pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+        MAX_BROWSER_TIMEOUT_SEC).sendKeys("admin ");
+
+    pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
+        .sendKeys(Keys.ENTER);
+    pollingWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Cannot change permissions because some children notes has another owner')]" +
+        "//div[@class='modal-footer']//button[contains(.,'Cancel')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+    pollingWait(By.xpath("//div[@class='modal-dialog']//button[contains(.,'Cancel')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+    pollingWait(By.xpath("//div[@class='modal-dialog']//div[@class='modal-footer']//button[contains(.,'OK')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
+
+    authenticationIT.logoutUser("finance1");
+    authenticationIT.authenticationUser("admin", "password1");
+    rootFolder = moveCursorToFolderInTree(folderName);
+    assertNotNull("Cannot find folder /" + folderName, rootFolder);
+    deleteTestFolder(driver, rootFolder);
+    authenticationIT.logoutUser("admin");
   }
 
 }

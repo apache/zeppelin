@@ -349,6 +349,29 @@ public class NotebookAuthorization {
     return userAndRoles != null && isOwner(resourceId, userAndRoles);
   }
 
+  public boolean isOwnerOfChildren(Set<String> userAndRoles, String resourceId) {
+    if (userAndRoles == null) {
+      return false;
+    }
+
+    Folder folder = folderView.getFolder(resourceId);
+    Set<String> subFolders = folder.getChildren().keySet();
+    for (String folderId: subFolders){
+      if (!isOwnerOfChildren(userAndRoles, '/' + folderId)) {
+        return false;
+      }
+    }
+
+    List<Note> notes = folder.getNotes();
+    for (Note note: notes) {
+      if (!isOwner(note.getId(), userAndRoles)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   public boolean hasWriteAuthorization(Set<String> userAndRoles, String resourceId) {
     if (conf.isAnonymousAllowed()) {
       LOG.debug("Zeppelin runs in anonymous mode, everybody is writer");

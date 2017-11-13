@@ -130,6 +130,10 @@ public class NotebookRestApi {
     return  "Only authenticated user can set the permission.";
   }
 
+  private String getCantChangePermissionsByChildrenBlockErrorMsg() throws IOException {
+    return  "Cannot change permissions because some children notes has another owner";
+  }
+
   /**
    * Set of utils method to check if current user can perform action to the note.
    * Since we only have security on notebook level, from now we keep this logic in this class.
@@ -153,6 +157,16 @@ public class NotebookRestApi {
   private void checkIfUserIsOwner(String resourseId, String errorMsg) {
     Set<String> userAndRoles = getPrincipalUserAndRoles();
     if (!notebookAuthorization.isOwner(userAndRoles, resourseId)) {
+      throw new ForbiddenException(errorMsg);
+    }
+  }
+
+  /**
+   * Check if the children of resourceId hasn't another owners
+   */
+  private void checkIfChildrenHasAnotherOwners(String resourseId, String errorMsg) {
+    Set<String> userAndRoles = getPrincipalUserAndRoles();
+    if (!notebookAuthorization.isOwnerOfChildren(userAndRoles, resourseId)) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -309,6 +323,7 @@ public class NotebookRestApi {
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserIsOwner(folderId,
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(folderId)));
+    checkIfChildrenHasAnotherOwners(folderId, getCantChangePermissionsByChildrenBlockErrorMsg());
 
     Map<String, Set<String>> permMap =
         gson.fromJson(req, new TypeToken<Map<String, Set<String>>>() {}.getType());
