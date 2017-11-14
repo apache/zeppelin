@@ -378,7 +378,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   @Override
   protected Object jobRun() throws Throwable {
-    logger.info("Run paragraph {} using {} ", getId(), intpText);
+    logger.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+            getId(), intpText, note.getId(), authenticationInfo.getUser());
     this.interpreter = getBindedInterpreter();
     if (this.interpreter == null) {
       logger.error("Can not find interpreter name " + intpText);
