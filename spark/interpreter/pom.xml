@@ -53,15 +53,7 @@
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
 
-
-    <spark.archive>spark-${spark.version}</spark.archive>
-    <spark.src.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
-    </spark.src.download.url>
-    <spark.bin.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
-    </spark.bin.download.url>
-
+    
   </properties>
 
   <dependencies>
