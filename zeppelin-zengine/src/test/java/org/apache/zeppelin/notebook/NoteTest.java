@@ -87,7 +87,7 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString(), eq("spark"));
+    verify(interpreterFactory, times(1)).getInterpreter(anyString(), anyString(), eq("spark"));
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }
@@ -247,7 +247,6 @@ public class NoteTest {
     note.getInfo().put("info_1", "value_1");
     String pText = "%spark sc.version";
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p.dateUpdated = new Date();
     p.setText(pText);
     p.setResult("1.6.2");
     p.settings.getForms().put("textbox_1", new TextBox("name", "default_name"));

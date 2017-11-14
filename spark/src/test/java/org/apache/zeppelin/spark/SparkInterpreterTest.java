@@ -347,7 +347,7 @@ public class SparkInterpreterTest {
     }
     String sparkUIUrl = repl.getSparkUIUrl();
     assertNotNull(jobUrl);
-    assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job?id="));
+    assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job/?id="));
 
   }
 }

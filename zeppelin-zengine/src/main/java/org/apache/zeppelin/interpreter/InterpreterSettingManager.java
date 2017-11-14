@@ -51,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -116,7 +117,7 @@ public class InterpreterSettingManager {
   private RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
-
+  private LifecycleManager lifecycleManager;
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
@@ -153,7 +154,27 @@ public class InterpreterSettingManager {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+    try {
+      this.lifecycleManager = (LifecycleManager)
+          Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
+              .newInstance(conf);
+    } catch (Exception e) {
+      throw new IOException("Fail to create LifecycleManager", e);
+    }
+
     init();
+  }
+
+
+  private void initInterpreterSetting(InterpreterSetting interpreterSetting) {
+    interpreterSetting.setConf(conf)
+        .setInterpreterSettingManager(this)
+        .setAngularObjectRegistryListener(angularObjectRegistryListener)
+        .setRemoteInterpreterProcessListener(remoteInterpreterProcessListener)
+        .setAppEventListener(appEventListener)
+        .setDependencyResolver(dependencyResolver)
+        .setLifecycleManager(lifecycleManager)
+        .postProcessing();
   }
 
   /**
@@ -163,6 +184,11 @@ public class InterpreterSettingManager {
     if (!Files.exists(interpreterSettingPath)) {
       // nothing to read
       LOGGER.warn("Interpreter Setting file {} doesn't exist", interpreterSettingPath);
+      for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
+        InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
+        initInterpreterSetting(interpreterSetting);
+        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+      }
       return;
     }
 
@@ -170,16 +196,10 @@ public class InterpreterSettingManager {
       InterpreterInfoSaving infoSaving = InterpreterInfoSaving.loadFromFile(interpreterSettingPath);
       //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
       for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
-        savedInterpreterSetting.setConf(conf);
-        savedInterpreterSetting.setInterpreterSettingManager(this);
-        savedInterpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-        savedInterpreterSetting.setRemoteInterpreterProcessListener(
-            remoteInterpreterProcessListener);
-        savedInterpreterSetting.setAppEventListener(appEventListener);
-        savedInterpreterSetting.setDependencyResolver(dependencyResolver);
         savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
             savedInterpreterSetting.getProperties()
         ));
+        initInterpreterSetting(savedInterpreterSetting);
 
         InterpreterSetting interpreterSettingTemplate =
             interpreterSettingTemplates.get(savedInterpreterSetting.getGroup());
@@ -367,13 +387,7 @@ public class InterpreterSettingManager {
         interpreterSettingTemplate);
 
     InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
-    interpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-    interpreterSetting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
-    interpreterSetting.setAppEventListener(appEventListener);
-    interpreterSetting.setDependencyResolver(dependencyResolver);
-    interpreterSetting.setInterpreterSettingManager(this);
-    interpreterSetting.postProcessing();
-    interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+    initInterpreterSetting(interpreterSetting);
   }
 
   @VisibleForTesting
@@ -629,12 +643,7 @@ public class InterpreterSettingManager {
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
     setting.setProperties(p);
-    setting.setAppEventListener(appEventListener);
-    setting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
-    setting.setDependencyResolver(dependencyResolver);
-    setting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-    setting.setInterpreterSettingManager(this);
-    setting.postProcessing();
+    initInterpreterSetting(setting);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
     return setting;
@@ -643,11 +652,7 @@ public class InterpreterSettingManager {
   @VisibleForTesting
   public void addInterpreterSetting(InterpreterSetting interpreterSetting) {
     interpreterSettingTemplates.put(interpreterSetting.getName(), interpreterSetting);
-    interpreterSetting.setAppEventListener(appEventListener);
-    interpreterSetting.setDependencyResolver(dependencyResolver);
-    interpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-    interpreterSetting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
-    interpreterSetting.setInterpreterSettingManager(this);
+    initInterpreterSetting(interpreterSetting);
     interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
   }
 
@@ -790,7 +795,7 @@ public class InterpreterSettingManager {
   }
 
   public void restart(String id) throws InterpreterException {
-    restart(id, "", "anonymous");
+    interpreterSettings.get(id).close();
   }
 
   public InterpreterSetting get(String id) {

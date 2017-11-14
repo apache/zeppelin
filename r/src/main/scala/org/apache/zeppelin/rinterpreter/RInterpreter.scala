@@ -41,7 +41,7 @@ abstract class RInterpreter(properties : Properties, startSpark : Boolean = true
 
   def getrContext: RContext = rContext
 
-  protected lazy val rContext : RContext = synchronized{ RContext(property, this.getInterpreterGroup().getId()) }
+  protected lazy val rContext : RContext = synchronized{ RContext(properties, this.getInterpreterGroup().getId()) }
 
   def open: Unit = rContext.synchronized {
     logger.trace("RInterpreter opening")

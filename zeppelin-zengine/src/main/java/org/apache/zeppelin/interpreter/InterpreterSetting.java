@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.launcher.ShellScriptLauncher;
 import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
+import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
@@ -139,6 +140,7 @@ public class InterpreterSetting {
   private transient InterpreterLauncher launcher;
   ///////////////////////////////////////////////////////////////////////////////////////////
 
+  private transient LifecycleManager lifecycleManager;
 
   /**
    * Builder class for InterpreterSetting
@@ -233,6 +235,11 @@ public class InterpreterSetting {
       return this;
     }
 
+    public Builder setLifecycleManager(LifecycleManager lifecycleManager) {
+      interpreterSetting.lifecycleManager = lifecycleManager;
+      return this;
+    }
+
     public InterpreterSetting create() {
       // post processing
       interpreterSetting.postProcessing();
@@ -249,6 +256,9 @@ public class InterpreterSetting {
 
   void postProcessing() {
     this.status = Status.READY;
+    if (this.lifecycleManager == null) {
+      this.lifecycleManager = new NullLifecycleManager(conf);
+    }
   }
 
   /**
@@ -299,26 +309,41 @@ public class InterpreterSetting {
     return interpreterSettingManager;
   }
 
-  public void setAngularObjectRegistryListener(AngularObjectRegistryListener
+  public InterpreterSetting setAngularObjectRegistryListener(AngularObjectRegistryListener
                                                    angularObjectRegistryListener) {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
+    return this;
   }
 
-  public void setAppEventListener(ApplicationEventListener appEventListener) {
+  public InterpreterSetting setAppEventListener(ApplicationEventListener appEventListener) {
     this.appEventListener = appEventListener;
+    return this;
   }
 
-  public void setRemoteInterpreterProcessListener(RemoteInterpreterProcessListener
+  public InterpreterSetting setRemoteInterpreterProcessListener(RemoteInterpreterProcessListener
                                                       remoteInterpreterProcessListener) {
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    return this;
   }
 
-  public void setDependencyResolver(DependencyResolver dependencyResolver) {
+  public InterpreterSetting setDependencyResolver(DependencyResolver dependencyResolver) {
     this.dependencyResolver = dependencyResolver;
+    return this;
   }
 
-  public void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
+  public InterpreterSetting setInterpreterSettingManager(
+      InterpreterSettingManager interpreterSettingManager) {
     this.interpreterSettingManager = interpreterSettingManager;
+    return this;
+  }
+
+  public InterpreterSetting setLifecycleManager(LifecycleManager lifecycleManager) {
+    this.lifecycleManager = lifecycleManager;
+    return this;
+  }
+
+  public LifecycleManager getLifecycleManager() {
+    return lifecycleManager;
   }
 
   public String getId() {
@@ -384,7 +409,7 @@ public class InterpreterSetting {
     this.interpreterGroups.remove(groupId);
   }
 
-  ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
+  public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
     String groupId = getInterpreterGroupId(user, noteId);
     try {
       interpreterGroupReadLock.lock();
@@ -493,8 +518,9 @@ public class InterpreterSetting {
     return conf;
   }
 
-  public void setConf(ZeppelinConfiguration conf) {
+  public InterpreterSetting setConf(ZeppelinConfiguration conf) {
     this.conf = conf;
+    return this;
   }
 
   public List<Dependency> getDependencies() {
@@ -628,7 +654,7 @@ public class InterpreterSetting {
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = null;
       interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
-          info.getClassName(), user);
+          info.getClassName(), user, lifecycleManager);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {
@@ -645,7 +671,7 @@ public class InterpreterSetting {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, name);
+        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, group, name);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
         new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
@@ -822,5 +848,12 @@ public class InterpreterSetting {
       return newProperties;
     }
     throw new RuntimeException("Can not convert this type: " + properties.getClass());
+  }
+
+  public void waitForReady() throws InterruptedException {
+    while (getStatus().equals(
+        org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
+      Thread.sleep(200);
+    }
   }
 }
