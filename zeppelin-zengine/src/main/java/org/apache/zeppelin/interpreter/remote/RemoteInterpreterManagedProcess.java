@@ -263,7 +263,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     return interpreterDir;
   }
 
-  @VisibleForTesting
   public String getInterpreterSettingName() {
     return interpreterSettingName;
   }

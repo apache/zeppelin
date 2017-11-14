@@ -34,6 +34,9 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -118,6 +121,7 @@ public class InterpreterSettingManager {
   private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
   private LifecycleManager lifecycleManager;
+  private RecoveryStorage recoveryStorage;
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
@@ -154,6 +158,11 @@ public class InterpreterSettingManager {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
+    if (conf.isRecoveryEnabled()) {
+      this.recoveryStorage = new FileSystemRecoveryStorage(conf, this);
+    } else {
+      this.recoveryStorage = new NullRecoveryStorage();
+    }
     try {
       this.lifecycleManager = (LifecycleManager)
           Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
@@ -174,6 +183,7 @@ public class InterpreterSettingManager {
         .setAppEventListener(appEventListener)
         .setDependencyResolver(dependencyResolver)
         .setLifecycleManager(lifecycleManager)
+        .setRecoveryStorage(recoveryStorage)
         .postProcessing();
   }
 
@@ -505,6 +515,10 @@ public class InterpreterSettingManager {
       }
     }
     return resourceSet;
+  }
+
+  public RecoveryStorage getRecoveryStorage() {
+    return recoveryStorage;
   }
 
   public void removeResourcesBelongsToParagraph(String noteId, String paragraphId) {

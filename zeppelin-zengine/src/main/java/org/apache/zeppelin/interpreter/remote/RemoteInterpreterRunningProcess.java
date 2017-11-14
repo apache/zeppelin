@@ -27,13 +27,16 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterRunningProcess.class);
   private final String host;
   private final int port;
+  private final String interpreterSettingName;
 
   public RemoteInterpreterRunningProcess(
+      String interpreterSettingName,
       int connectTimeout,
       String host,
       int port
   ) {
     super(connectTimeout);
+    this.interpreterSettingName = interpreterSettingName;
     this.host = host;
     this.port = port;
   }
@@ -46,6 +49,11 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   @Override
   public int getPort() {
     return port;
+  }
+
+  @Override
+  public String getInterpreterSettingName() {
+    return interpreterSettingName;
   }
 
   @Override
