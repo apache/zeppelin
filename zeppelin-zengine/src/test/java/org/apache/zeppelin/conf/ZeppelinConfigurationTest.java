@@ -24,6 +24,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
@@ -96,5 +97,11 @@ public class ZeppelinConfigurationTest {
       ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
       boolean isIt = conf.isNotebookPublic();
       assertTrue(isIt);
+    }
+
+    @Test
+    public void isRequestHeaderSizeDefaultValueCorrect() throws ConfigurationException {
+        ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+        assertEquals((Integer)8192, conf.getJettyRequestHeaderSize());
     }
 }

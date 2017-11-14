@@ -443,6 +443,15 @@
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
 </property>
 -->
+
+<!--
+<property>
+    <name>zeppelin.server.jetty.request.header.size</name>
+    <value>8192</value>
+    <description>Http Request Header Size Limit (to prevent HTTP 413)</description>
+</property>
+-->
+
 <!--
 <property>
   <name>zeppelin.server.xframe.options</name>
