@@ -221,7 +221,7 @@ public class JupyterUtil {
     JsonObject metadataJson = new JsonObject();
 
     JsonObject kernelspecJson = new JsonObject();
-    kernelspecJson.addProperty("display_name", "Spark 2.0.0 - Scala 2.11");
+    //kernelspecJson.addProperty("display_name", "Spark 2.0.0 - Scala 2.11");
     kernelspecJson.addProperty("language", "scala");
     kernelspecJson.addProperty("name", "spark2-scala");
 
@@ -231,7 +231,7 @@ public class JupyterUtil {
     languageInfoJson.addProperty("mimetype", "text/x-scala");
     languageInfoJson.addProperty("name", "scala");
     languageInfoJson.addProperty("pygments_lexer", "scala");
-    languageInfoJson.addProperty("version", "2.11.8");
+    //languageInfoJson.addProperty("version", "2.11.8");
 
     metadataJson.add("kernelspec", kernelspecJson);
     metadataJson.add("language_info", languageInfoJson);
