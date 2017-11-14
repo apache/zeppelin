@@ -233,6 +233,7 @@ public class JupyterUtil {
     languageInfoJson.addProperty("pygments_lexer", "scala");
     //languageInfoJson.addProperty("version", "2.11.8");
 
+    metadataJson.addProperty("name", noteFormat.getName());
     metadataJson.add("kernelspec", kernelspecJson);
     metadataJson.add("language_info", languageInfoJson);
 
