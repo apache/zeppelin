@@ -16,42 +16,29 @@
  */
 package org.apache.zeppelin.jupyter;
 
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.google.common.base.Joiner;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
+import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.jupyter.nbformat.Cell;
-import org.apache.zeppelin.jupyter.nbformat.CodeCell;
-import org.apache.zeppelin.jupyter.nbformat.DisplayData;
+import org.apache.zeppelin.jupyter.nbformat.*;
 import org.apache.zeppelin.jupyter.nbformat.Error;
-import org.apache.zeppelin.jupyter.nbformat.ExecuteResult;
-import org.apache.zeppelin.jupyter.nbformat.HeadingCell;
-import org.apache.zeppelin.jupyter.nbformat.MarkdownCell;
-import org.apache.zeppelin.jupyter.nbformat.Nbformat;
-import org.apache.zeppelin.jupyter.nbformat.Output;
-import org.apache.zeppelin.jupyter.nbformat.RawCell;
-import org.apache.zeppelin.jupyter.nbformat.Stream;
 import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 import org.apache.zeppelin.markdown.MarkdownParser;
 import org.apache.zeppelin.markdown.PegdownParser;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -188,8 +175,6 @@ public class JupyterUtil {
 
       if (code == null || code.trim().isEmpty())
         continue;
-
-      System.out.println(code);
 
       if (MD.matches(code)) {
         codeJson.addProperty("cell_type", "markdown");
