@@ -24,7 +24,7 @@ limitations under the License.
 From Zeppelin-0.7, you can load/unload a pluggable Apache Zeppelin package on runtime through [Helium framework](https://issues.apache.org/jira/browse/ZEPPELIN-533) in Zeppelin.
 Here are the lists of Helium packages registered in the [NPM Registry](https://docs.npmjs.com/misc/registry) and [Maven Central Repository](http://central.sonatype.org/).
 If you need more information about how you can use the below packages in Zeppelin, see [What is Apache Zeppelin Visualization](https://zeppelin.apache.org/docs/latest/development/writingzeppelinvisualization.html)
-and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/0.8.0-SNAPSHOT/development/helium/writing_spell.html).
+and [What is Apache Zeppelin Spell](https://zeppelin.apache.org/docs/snapshot/development/helium/writing_spell.html).
 <br />
 <div ng-app="app">
   <div ng-controller="HeliumPkgCtrl">
