@@ -394,6 +394,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.default.owner.username</name>
+  <value></value>
+  <description>Set owner role by default</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.public</name>
   <value>true</value>
   <description>Make notebook public by default when created, private otherwise</description>
