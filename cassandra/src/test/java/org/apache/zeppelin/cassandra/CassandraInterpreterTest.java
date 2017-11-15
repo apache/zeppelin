@@ -320,6 +320,22 @@ public class CassandraInterpreterTest {
     }
 
     @Test
+    public void should_escape_tabs_and_newlines() throws Exception {
+        //Given
+        String queries = "INSERT INTO zeppelin.prepared(key,val)" +
+                " VALUES('withTabAndNewLines','my\t\nValue');\n" +
+                "SELECT * FROM zeppelin.prepared WHERE key='withTabAndNewLines';\n";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(queries, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+        assertThat(actual.message().get(0).getData()).isEqualTo("key\tval\n" +
+                "withTabAndNewLines\tmy  Value\n");
+    }
+
+    @Test
     public void should_execute_bound_statement() throws Exception {
         //Given
         String queries = "@prepare[users_insert]=INSERT INTO zeppelin.users" +

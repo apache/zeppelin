@@ -53,7 +53,7 @@ public class KylinInterpreter extends Interpreter {
   static final String KYLIN_QUERY_ACCEPT_PARTIAL = "kylin.query.ispartial";
   static final Pattern KYLIN_TABLE_FORMAT_REGEX_LABEL = Pattern.compile("\"label\":\"(.*?)\"");
   static final Pattern KYLIN_TABLE_FORMAT_REGEX_RESULTS =
-          Pattern.compile("\"results\":\\[\\[(.*?)]]");
+          Pattern.compile("\"results\":\\[\\[(.*?)]]", Pattern.DOTALL);
 
   public KylinInterpreter(Properties property) {
     super(property);
@@ -191,13 +191,13 @@ public class KylinInterpreter extends Interpreter {
   }
 
   String formatResult(String msg) {
-    StringBuilder res = new StringBuilder("%table ");
+    StringBuilder res = new StringBuilder(TABLE_MAGIC_TAG);
     
     Matcher ml = KYLIN_TABLE_FORMAT_REGEX_LABEL.matcher(msg);
     while (!ml.hitEnd() && ml.find()) {
-      res.append(ml.group(1) + " \t");
+      res.append(ml.group(1) + TAB);
     } 
-    res.append(" \n");
+    res.append(NEWLINE);
     
     Matcher mr = KYLIN_TABLE_FORMAT_REGEX_RESULTS.matcher(msg);
     String table = null;
@@ -212,9 +212,9 @@ public class KylinInterpreter extends Interpreter {
         if (col[j] != null) {
           col[j] = col[j].replaceAll("^\"|\"$", "");
         }
-        res.append(col[j] + " \t");
+        res.append(replaceReservedChars(col[j]) + TAB);
       }
-      res.append(" \n");
+      res.append(NEWLINE);
     }
     return res.toString();
   }

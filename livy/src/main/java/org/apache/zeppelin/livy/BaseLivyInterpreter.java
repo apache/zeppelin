@@ -23,6 +23,7 @@ import java.security.KeyStore;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -441,16 +442,23 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
         for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
           if (notFirstColumn) {
-            outputBuilder.append("\t");
+            outputBuilder.append(TAB);
           }
           outputBuilder.append(header.get("name"));
           notFirstColumn = true;
         }
 
-        outputBuilder.append("\n");
+        outputBuilder.append(NEWLINE);
         for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
-          outputBuilder.append(StringUtils.join(row, "\t"));
-          outputBuilder.append("\n");
+          Iterator<Object> fieldsIter = row.iterator();
+          while (fieldsIter.hasNext()) {
+            Object field = fieldsIter.next();
+            outputBuilder.append(replaceReservedChars(field.toString()));
+            if (fieldsIter.hasNext()) {
+              outputBuilder.append(TAB);
+            }
+          }
+          outputBuilder.append(NEWLINE);
         }
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
             InterpreterResult.Type.TABLE, outputBuilder.toString());

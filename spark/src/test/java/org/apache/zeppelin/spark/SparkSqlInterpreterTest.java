@@ -177,4 +177,22 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertTrue(ret.message().get(1).getData().contains("alert-warning"));
   }
+
+  @Test
+  public void testReservedCharacters() throws InterpreterException {
+    repl.interpret("case class P(a:String, b:String)", context);
+    repl.interpret(
+            "val gr = sc.parallelize(Seq(P(\"a\ttab\", \"\"\"a\nCR\"\"\")))",
+            context);
+    if (isDataFrameSupported()) {
+      repl.interpret("gr.toDF.registerTempTable(\"aa\")", context);
+    } else {
+      repl.interpret("gr.registerTempTable(\"aa\")", context);
+    }
+
+    InterpreterResult ret = sql.interpret("select * from aa", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(Type.TABLE, ret.message().get(0).getType());
+    assertEquals("a\tb\na tab\ta CR\n", ret.message().get(0).getData());
+  }
 }

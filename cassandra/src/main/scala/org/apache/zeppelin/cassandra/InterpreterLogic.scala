@@ -207,6 +207,10 @@ class InterpreterLogic(val session: Session)  {
         .append("%table ")
         .append(columnsDefinitions.map { case (columnName, _) => columnName }.mkString("\t")).append("\n")
 
+      val escape: AnyRef => String = {
+        case null => null
+        case x => x.toString.replaceAllLiterally("\t", " ").replaceAllLiterally("\n", " ")
+      }
       // Deserialize Data
       rows.foreach {
         row => {
@@ -215,7 +219,7 @@ class InterpreterLogic(val session: Session)  {
               if (row.isNull(name)) null else row.getObject(name)
             }
           }
-          output.append(data.mkString("\t")).append("\n")
+          output.append(data.map(escape).mkString("\t")).append("\n")
         }
       }
     } else {

@@ -233,6 +233,28 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testQueryWithReservedCharacters() throws SQLException, IOException {
+    String sqlQuery = "select '\n', '\t', 'a';";
+
+    Properties properties = new Properties();
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("STRINGDECODE('\\n')\tSTRINGDECODE('\\t')\t'a'\n \t \ta\n",
+            interpreterResult.message().get(0).getData());
+
+  }
+
+  @Test
   public void testSelectMultipleQueries() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");

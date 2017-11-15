@@ -52,10 +52,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Neo4j interpreter for Zeppelin.
  */
 public class Neo4jCypherInterpreter extends Interpreter {
-  private static final String TABLE = "%table";
-  public static final String NEW_LINE = "\n";
-  public static final String TAB = "\t";
-
   private static final String MAP_KEY_TEMPLATE = "%s.%s";
 
   private Map<String, String> labels;
@@ -217,18 +213,19 @@ public class Neo4jCypherInterpreter extends Interpreter {
     if (cols.isEmpty()) {
       msg = new StringBuilder();
     } else {
-      msg = new StringBuilder(TABLE);
-      msg.append(NEW_LINE);
+      msg = new StringBuilder(TABLE_MAGIC_TAG);
       msg.append(StringUtils.join(cols, TAB));
-      msg.append(NEW_LINE);
+      msg.append(NEWLINE);
       for (List<String> line : lines) {
-        if (line.size() < cols.size()) {
-          for (int i = line.size(); i < cols.size(); i++) {
-            line.add(null);
+        for (int i = 0; i < cols.size(); i++) {
+          if (i < line.size()) {
+            msg.append(replaceReservedChars(line.get(i)));
+          }
+          if (i < cols.size() - 1) {
+            msg.append(TAB);
           }
         }
-        msg.append(StringUtils.join(line, TAB));
-        msg.append(NEW_LINE);
+        msg.append(NEWLINE);
       }
     }
     return new InterpreterResult(Code.SUCCESS, msg.toString());

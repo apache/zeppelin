@@ -112,10 +112,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
   static final String DOT = ".";
 
-  private static final char WHITESPACE = ' ';
-  private static final char NEWLINE = '\n';
-  private static final char TAB = '\t';
-  private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
@@ -125,8 +121,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
   static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
-
-  static final String EMPTY_COLUMN_VALUE = "";
 
   private final String CONCURRENT_EXECUTION_KEY = "zeppelin.jdbc.concurrent.use";
   private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
@@ -772,16 +766,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
       getJDBCConfiguration(user).removeStatement(paragraphId);
     }
     return interpreterResult;
-  }
-
-  /**
-   * For %table response replace Tab and Newline characters from the content.
-   */
-  private String replaceReservedChars(String str) {
-    if (str == null) {
-      return EMPTY_COLUMN_VALUE;
-    }
-    return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 
   @Override

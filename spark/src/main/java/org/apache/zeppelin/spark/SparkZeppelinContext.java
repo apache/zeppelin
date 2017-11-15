@@ -18,6 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
@@ -153,7 +154,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
 
         for (int i = 0; i < columns.size(); i++) {
           if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg.append(apply.invoke(row, i).toString());
+            msg.append(replaceReservedChars(apply.invoke(row, i).toString()));
           } else {
             msg.append("null");
           }
@@ -276,5 +277,19 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
       }
     };
     angularWatch(name, noteId, w);
+  }
+
+  /**
+   * Zeppelin's %TABLE convention uses tab (\t) to delimit fields and new-line (\n) to delimit rows
+   * To complain with this convention we need to replace any occurrences of tab and/or newline
+   * characters in the content.
+   */
+  private String replaceReservedChars(String str) {
+
+    if (StringUtils.isBlank(str)) {
+      return str;
+    }
+
+    return str.replace("\t", " ").replace("\n", " ");
   }
 }

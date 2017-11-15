@@ -98,11 +98,33 @@ public class KylinInterpreterTest {
             + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,\"isException\":false,\"exceptionMessage\":null,"
             + "\"duration\":134,\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
             + "\"partial\":false}";
-    String expected="%table COUNTRY \tCURRENCY \tCOUNT__ \t \n" +
-            "AMERICA \tUSD \tnull \t \n" +
-            "null \tRMB \t0 \t \n" +
-            "KOR \tnull \t100 \t \n" +
-            "\\\"abc\\\" \ta,b,c \t-1 \t \n";
+    String expected="%table COUNTRY\tCURRENCY\tCOUNT__\t\n" +
+            "AMERICA\tUSD\tnull\t\n" +
+            "null\tRMB\t0\t\n" +
+            "KOR\tnull\t100\t\n" +
+            "\\\"abc\\\"\ta,b,c\t-1\t\n";
+    KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
+    String actual = t.formatResult(msg);
+    Assert.assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testParseResultWithReservedCharacters() {
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"TEXT\",\"name\":\"COUNTRY\","
+            + "\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"TEST_TABLE\",\"precision\":256,"
+            + "\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
+            + "\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,\"searchable\":false,"
+            + "\"currency\":false,\"signed\":true},{\"isNullable\":0,\"displaySize\":19,"
+            + "\"label\":\"COUNT__\",\"name\":\"COUNT__\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
+            + "\"tableName\":\"TEST_TABLE\",\"precision\":19,\"scale\":0,\"columnType\":-5,\"columnTypeName\":"
+            + "\"BIGINT\",\"writable\":false,\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
+            + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],\"results\":"
+            + "[[\"a\ttab\",null],[\"a\nCR\",0]],\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,"
+            + "\"isException\":false,\"exceptionMessage\":null,\"duration\":134,\"totalScanCount\":1,"
+            + "\"hitExceptionCache\":false,\"storageCacheUsed\":false,\"partial\":false}";
+    String expected="%table TEXT\tCOUNT__\t\n" +
+            "a tab\tnull\t\n" +
+            "a CR\t0\t\n";
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
     String actual = t.formatResult(msg);
     Assert.assertEquals(expected, actual);
