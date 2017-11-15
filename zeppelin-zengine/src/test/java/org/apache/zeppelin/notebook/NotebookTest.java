@@ -1130,7 +1130,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     HashSet<String> user2 = Sets.newHashSet("user2");
     
     // case of public note
-    assertTrue(conf.isNotebokPublic());
+    assertTrue(conf.isNotebookPublic());
     assertTrue(notebookAuthorization.isPublic());
     
     List<Note> notes1 = notebook.getAllNotes(user1);
@@ -1158,7 +1158,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // case of private note
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
     ZeppelinConfiguration conf2 = ZeppelinConfiguration.create();
-    assertFalse(conf2.isNotebokPublic());
+    assertFalse(conf2.isNotebookPublic());
     // notebook authorization reads from conf, so no need to re-initilize
     assertFalse(notebookAuthorization.isPublic());
     

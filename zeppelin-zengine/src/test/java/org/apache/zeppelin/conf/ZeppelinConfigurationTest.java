@@ -94,7 +94,7 @@ public class ZeppelinConfigurationTest {
     public void isNotebookPublicTest() throws ConfigurationException {
       
       ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
-      boolean isIt = conf.isNotebokPublic();
+      boolean isIt = conf.isNotebookPublic();
       assertTrue(isIt);
     }
 }
