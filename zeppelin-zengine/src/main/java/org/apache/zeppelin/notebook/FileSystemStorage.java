@@ -81,8 +81,8 @@ public class FileSystemStorage {
           LOGGER.info("Create dir {} in hdfs", dir.toString());
         }
         if (fs.isFile(dir)) {
-          throw new IOException("{} is file instead of directory, please remove it or " +
-              "specify another directory");
+          throw new IOException(dir.toString() + " is file instead of directory, please remove " +
+              "it or specify another directory");
         }
         fs.mkdirs(dir);
         return null;

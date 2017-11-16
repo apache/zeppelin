@@ -59,14 +59,13 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemRecoveryStorage.class);
 
   private InterpreterSettingManager interpreterSettingManager;
-  private ZeppelinConfiguration zConf;
   private FileSystemStorage fs;
   private Path recoveryDir;
 
   public FileSystemRecoveryStorage(ZeppelinConfiguration zConf,
                                    InterpreterSettingManager interpreterSettingManager)
       throws IOException {
-
+    super(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
     this.zConf = zConf;
     this.fs = FileSystemStorage.get(zConf);
@@ -97,9 +96,9 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
       }
     }
     LOGGER.debug("Updating recovery data for interpreterSetting: " + interpreterSettingName);
-    LOGGER.debug("Recovery Data: " + StringUtils.join(recoveryContent, "\n"));
+    LOGGER.debug("Recovery Data: " + StringUtils.join(recoveryContent, System.lineSeparator()));
     Path recoveryFile = new Path(recoveryDir, interpreterSettingName + ".recovery");
-    fs.writeFile(StringUtils.join(recoveryContent, "\n"), recoveryFile, true);
+    fs.writeFile(StringUtils.join(recoveryContent, System.lineSeparator()), recoveryFile, true);
   }
 
   @Override
@@ -113,7 +112,7 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
           fileName.length() - ".recovery".length());
       String recoveryContent = fs.readFile(path);
       if (!StringUtils.isBlank(recoveryContent)) {
-        for (String line : recoveryContent.split("\n")) {
+        for (String line : recoveryContent.split(System.lineSeparator())) {
           String[] tokens = line.split("\t");
           String groupId = tokens[0];
           String[] hostPort = tokens[1].split(":");

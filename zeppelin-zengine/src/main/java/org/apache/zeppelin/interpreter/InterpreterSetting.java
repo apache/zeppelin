@@ -272,7 +272,11 @@ public class InterpreterSetting {
       this.lifecycleManager = new NullLifecycleManager(conf);
     }
     if (this.recoveryStorage == null) {
-      this.recoveryStorage = new NullRecoveryStorage();
+      try {
+        this.recoveryStorage = new NullRecoveryStorage(conf);
+      } catch (IOException e) {
+        // ignore this exception as NullRecoveryStorage will do nothing.
+      }
     }
   }
 

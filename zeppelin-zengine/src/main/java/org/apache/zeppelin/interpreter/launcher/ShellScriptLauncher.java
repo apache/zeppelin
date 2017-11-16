@@ -63,15 +63,16 @@ public class ShellScriptLauncher extends InterpreterLauncher {
     } else {
       // try to recover it first
       if (zConf.isRecoveryEnabled()) {
-        Map<String, InterpreterClient> clients = recoveryStorage.restore();
-        if (clients.containsKey(context.getInterpreterGroupId())) {
-          InterpreterClient client = clients.get(context.getInterpreterGroupId());
-          if (client.isRunning()) {
-            LOGGER.info("Recover InterpreterProcess: " + client.getHost() + ":" + client.getPort());
-            return (RemoteInterpreterRunningProcess) client;
+        InterpreterClient recoveredClient =
+            recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
+        if (recoveredClient != null) {
+          if (recoveredClient.isRunning()) {
+            LOGGER.info("Recover InterpreterProcess: " + recoveredClient.getHost() + ":" +
+                recoveredClient.getPort());
+            return recoveredClient;
           } else {
-            LOGGER.warn("Can not recovery interpreter process: " + client.getHost() + ":"
-                + client.getPort() + ", as it is already terminated.");
+            LOGGER.warn("Cannot recovery interpreter process: " + recoveredClient.getHost() + ":"
+                + recoveredClient.getPort() + ", as it is already terminated.");
           }
         }
       }

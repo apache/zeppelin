@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.recovery;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
 import java.io.IOException;
@@ -28,6 +29,13 @@ import java.util.Map;
  *
  */
 public abstract class RecoveryStorage {
+
+  protected ZeppelinConfiguration zConf;
+  protected Map<String, InterpreterClient> restoredClients;
+
+  public RecoveryStorage(ZeppelinConfiguration zConf) throws IOException {
+    this.zConf = zConf;
+  }
 
   /**
    * Update RecoveryStorage when new InterpreterClient is started
@@ -44,9 +52,29 @@ public abstract class RecoveryStorage {
   public abstract void onInterpreterClientStop(InterpreterClient client) throws IOException;
 
   /**
-   * Restore InterpreterClient when Zeppelin Server is restarted
+   *
+   * It is only called one time when Zeppelin Server is started.
+   *
    * @return
    * @throws IOException
    */
   public abstract Map<String, InterpreterClient> restore() throws IOException;
+
+
+  /**
+   * It is called after constructor
+   *
+   * @throws IOException
+   */
+  public void init() throws IOException {
+    this.restoredClients = restore();
+  }
+
+  public InterpreterClient getInterpreterClient(String interpreterGroupId) {
+    if (restoredClients.containsKey(interpreterGroupId)) {
+      return restoredClients.get(interpreterGroupId);
+    } else {
+      return null;
+    }
+  }
 }

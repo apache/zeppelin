@@ -161,8 +161,10 @@ public class InterpreterSettingManager {
     if (conf.isRecoveryEnabled()) {
       this.recoveryStorage = new FileSystemRecoveryStorage(conf, this);
     } else {
-      this.recoveryStorage = new NullRecoveryStorage();
+      this.recoveryStorage = new NullRecoveryStorage(conf);
     }
+    this.recoveryStorage.init();
+
     try {
       this.lifecycleManager = (LifecycleManager)
           Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
