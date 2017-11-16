@@ -504,6 +504,20 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
 
+  public boolean isNotebookCronRestrictEdit() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_RESTRICT_EDIT);
+  }
+
+  public boolean isNotebookCronEditableInterpreter(String interpreter) {
+    String editableInterpreters = getString(ConfVars.ZEPPELIN_NOTEBOOK_CRON_EDITABLE_INTERPRETERS);
+    for (String editableInterpreter : editableInterpreters.split(",")) {
+      if (editableInterpreter.equals(interpreter)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public String getConfDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_CONF_DIR);
   }
@@ -678,6 +692,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
     // whether by default note is public or private
     ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
+    ZEPPELIN_NOTEBOOK_CRON_RESTRICT_EDIT("zeppelin.notebook.cron.restrictEdit", false),
+    ZEPPELIN_NOTEBOOK_CRON_EDITABLE_INTERPRETERS("zeppelin.notebook.cron.editableInterpreters", ""),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
         System.getProperty("os.name")
                 .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),

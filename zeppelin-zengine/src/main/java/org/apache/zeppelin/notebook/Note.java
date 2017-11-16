@@ -581,12 +581,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    * Run all paragraphs sequentially.
    */
   public synchronized void runAll() {
-    String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
-    if (null == cronExecutingUser) {
-      cronExecutingUser = "anonymous";
-    }
     AuthenticationInfo authenticationInfo = new AuthenticationInfo();
-    authenticationInfo.setUser(cronExecutingUser);
+    authenticationInfo.setUser(getCronExecutingUser());
     runAll(authenticationInfo, true);
   }
 
@@ -966,5 +962,17 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   @VisibleForTesting
   public static Gson getGson() {
     return gson;
+  }
+
+  public boolean isCronSet() {
+    return StringUtils.isNotEmpty((String) getConfig().get("cron"));
+  }
+
+  public String getCronExecutingUser() {
+    String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
+    if (cronExecutingUser == null) {
+      cronExecutingUser = "anonymous";
+    }
+    return cronExecutingUser;
   }
 }
