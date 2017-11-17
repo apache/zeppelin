@@ -29,8 +29,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -45,8 +43,8 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
+import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -77,7 +75,9 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -331,6 +331,9 @@ public class NotebookServer extends WebSocketServlet
           break;
         case NOTE_REVISION:
           getNoteByRevision(conn, notebook, messagereceived);
+          break;
+        case NOTE_REVISION_FOR_COMPARE:
+          getNoteByRevisionForCompare(conn, notebook, messagereceived);
           break;
         case LIST_NOTE_JOBS:
           unicastNoteJobInfo(conn, messagereceived);
@@ -1941,6 +1944,25 @@ public class NotebookServer extends WebSocketServlet
     conn.send(serializeMessage(
         new Message(OP.NOTE_REVISION).put("noteId", noteId).put("revisionId", revisionId)
             .put("note", revisionNote)));
+  }
+
+  private void getNoteByRevisionForCompare(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String revisionId = (String) fromMessage.get("revisionId");
+
+    String position = (String) fromMessage.get("position");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    Note revisionNote;
+    if (revisionId.equals("Head")) {
+      revisionNote = notebook.getNote(noteId);
+    } else {
+      revisionNote = notebook.getNoteByRevision(noteId, revisionId, subject);
+    }
+
+    conn.send(serializeMessage(
+        new Message(OP.NOTE_REVISION_FOR_COMPARE).put("noteId", noteId)
+            .put("revisionId", revisionId).put("position", position).put("note", revisionNote)));
   }
 
   /**
