@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +173,7 @@ public class NotebookAuthorization {
   }
 
   public boolean isPublic() {
-    return conf.isNotebokPublic();
+    return conf.isNotebookPublic();
   }
 
   private Set<String> filterEmpty(Set<String> elements) {
@@ -331,7 +332,16 @@ public class NotebookAuthorization {
   public boolean isRunner(String noteId, Set<String> entities) {
     return isMember(entities, getRunners(noteId)) ||
         isMember(entities, getWriters(noteId)) ||
-        isMember(entities, getOwners(noteId));
+        isMember(entities, getOwners(noteId)) ||
+        isAdmin(entities);
+  }
+
+  private boolean isAdmin(Set<String> entities) {
+    String adminRole = conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE);
+    if (StringUtils.isBlank(adminRole)) {
+      return false;
+    }
+    return entities.contains(adminRole);
   }
 
   // return true if b is empty or if (a intersection b) is non-empty
