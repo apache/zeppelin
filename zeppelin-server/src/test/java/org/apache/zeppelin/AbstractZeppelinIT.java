@@ -63,6 +63,10 @@ abstract public class AbstractZeppelinIT {
     return "(//div[@ng-controller=\"ParagraphCtrl\"])[" + paragraphNo + "]";
   }
 
+  protected String getNoteFormsXPath() {
+    return "(//div[@id='noteForms'])";
+  }
+
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
         + "//div[contains(@class, 'control')]//span[2][contains(.,'" + state + "')]");

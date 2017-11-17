@@ -34,26 +34,39 @@ class PyZeppelinContext(object):
     self.max_result = z.getMaxResult()
 
   def input(self, name, defaultValue=""):
-    return self.z.getGui().input(name, defaultValue)
+    return self.z.input(name, defaultValue)
+
+  def textbox(self, name, defaultValue=""):
+    return self.z.textbox(name, defaultValue)
+
+  def noteTextbox(self, name, defaultValue=""):
+    return self.z.noteTextbox(name, defaultValue)
 
   def select(self, name, options, defaultValue=""):
-    javaOptions = gateway.new_array(self.paramOption, len(options))
-    i = 0
-    for tuple in options:
-      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
-      i += 1
-    return self.z.getGui().select(name, defaultValue, javaOptions)
+    return self.z.select(name, defaultValue, self.getParamOptions(options))
+
+  def noteSelect(self, name, options, defaultValue=""):
+    return self.z.noteSelect(name, defaultValue, self.getParamOptions(options))
 
   def checkbox(self, name, options, defaultChecked=[]):
+    return self.z.checkbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+
+  def noteCheckbox(self, name, options, defaultChecked=[]):
+    return self.z.noteCheckbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+
+  def getParamOptions(self, options):
     javaOptions = gateway.new_array(self.paramOption, len(options))
     i = 0
     for tuple in options:
       javaOptions[i] = self.paramOption(tuple[0], tuple[1])
       i += 1
-    javaDefaultCheck = self.javaList()
+    return javaOptions
+
+  def getDefaultChecked(self, defaultChecked):
+    javaDefaultChecked = self.javaList()
     for check in defaultChecked:
-      javaDefaultCheck.append(check)
-    return self.z.getGui().checkbox(name, javaDefaultCheck, javaOptions)
+      javaDefaultChecked.append(check)
+    return javaDefaultChecked
 
   def show(self, p, **kwargs):
     if type(p).__name__ == "DataFrame": # does not play well with sub-classes

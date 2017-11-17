@@ -61,6 +61,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
+        new GUI(),
         null,
         null,
         new LinkedList<InterpreterContextRunner>(),

@@ -1144,6 +1144,7 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
+      z.setNoteGui(context.getNoteGui());
       String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
       sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
       InterpreterResult r = interpretInput(lines, context);
