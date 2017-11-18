@@ -19,6 +19,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
 
   $scope.SigningIn = false;
   $scope.loginParams = {};
+  $scope.loginFormActionCounter = 0;
   $scope.login = function() {
     $scope.SigningIn = true;
     $http({
@@ -46,6 +47,13 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
           $location.path(redirectLocation);
         }, 100);
       }
+      $timeout(function() {
+        // make chrome trigger "save password" logic
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=357696#c41
+        // https://stackoverflow.com/a/33113374/3832536
+        $scope.loginFormActionCounter++;
+        $scope.loginFormAction = '#loginForm' + $scope.loginFormActionCounter;
+      }, 1000);
     }, function errorCallback(errorResponse) {
       $scope.loginParams.errorText = 'The username and password that you entered don\'t match.';
       $scope.SigningIn = false;
