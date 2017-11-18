@@ -184,6 +184,8 @@ public class Message implements JsonSerializable {
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
+    SAVE_NOTE_FORMS,              // save note forms
+    REMOVE_NOTE_FORMS,            // remove note forms
     FOLDER_PERMISSIONS            // [s-c] id of folder which permissions was changed
   }
 

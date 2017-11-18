@@ -69,6 +69,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
   public static final String MAX_RESULT = "zeppelin.python.maxResult";
 
+  private PythonZeppelinContext zeppelinContext;
   private InterpreterContext context;
   private Pattern errorInLastLine = Pattern.compile(".*(Error|Exception): .*$");
   private String pythonPath;
@@ -223,6 +224,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     // try IPythonInterpreter first. If it is not available, we will fallback to the original
     // python interpreter implementation.
     iPythonInterpreter = getIPythonInterpreter();
+    this.zeppelinContext = new PythonZeppelinContext(
+        getInterpreterGroup().getInterpreterHookRegistry(),
+        Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
     if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
       iPythonInterpreter.checkIPythonPrerequisite()) {
       try {
@@ -374,11 +378,15 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.interpret(cmd, contextInterpreter);
     }
+
     if (cmd == null || cmd.isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
 
     this.context = contextInterpreter;
+
+    zeppelinContext.setGui(context.getGui());
+    zeppelinContext.setNoteGui(context.getNoteGui());
 
     if (!pythonscriptRunning) {
       return new InterpreterResult(Code.ERROR, "python process not running"
@@ -559,8 +567,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
-  public GUI getGui() {
-    return context.getGui();
+  public PythonZeppelinContext getZeppelinContext() {
+    return zeppelinContext;
   }
 
   String getLocalIp() {

@@ -70,6 +70,7 @@ public class InterpreterTest {
         null,
         null,
         null,
+        null,
         null));
     Properties p = new Properties();
     p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +

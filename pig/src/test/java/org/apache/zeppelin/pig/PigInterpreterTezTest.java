@@ -48,8 +48,8 @@ public class PigInterpreterTezTest {
     properties.put("tez.queue.name", "test");
     pigInterpreter = new PigInterpreter(properties);
     pigInterpreter.open();
-    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null, null,
-        null, null);
+    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null,
+        null, null, null, null);
 
   }
   @After

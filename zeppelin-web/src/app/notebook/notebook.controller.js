@@ -27,6 +27,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   ngToast.dismiss()
 
   $scope.note = null
+  $scope.actionOnFormSelectionChange = true
+  $scope.hideForms = false
+  $scope.disableForms = false
   $scope.editorToggled = false
   $scope.tableToggled = false
   $scope.viewOnly = false
@@ -1365,6 +1368,26 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         }]
       })
     }
+  }
+
+  $scope.$on('saveNoteForms', function (event, data) {
+    $scope.note.noteForms = data.formsData.forms
+    $scope.note.noteParams = data.formsData.params
+  })
+
+  $scope.isShowNoteForms = function() {
+    if ($scope.note && !angular.equals({}, $scope.note.noteForms)) {
+      return true
+    }
+    return false
+  }
+
+  $scope.saveNoteForms = function () {
+    websocketMsgSrv.saveNoteForms($scope.note)
+  }
+
+  $scope.removeNoteForms = function (formName) {
+    websocketMsgSrv.removeNoteForms($scope.note, formName)
   }
 
   $scope.$on('$destroy', function () {

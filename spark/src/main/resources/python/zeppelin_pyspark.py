@@ -81,23 +81,45 @@ class PyZeppelinContext(dict):
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
+  def textbox(self, name, defaultValue=""):
+    return self.z.textbox(name, defaultValue)
+
+  def noteTextbox(self, name, defaultValue=""):
+    return self.z.noteTextbox(name, defaultValue)
+
   def select(self, name, options, defaultValue=""):
     # auto_convert to ArrayList doesn't match the method signature on JVM side
-    tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
-    iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
-    return self.z.select(name, defaultValue, iterables)
+    return self.z.select(name, defaultValue, self.getParamOptions(options))
+
+  def noteSelect(self, name, options, defaultValue=""):
+    return self.z.noteSelect(name, defaultValue, self.getParamOptions(options))
 
   def checkbox(self, name, options, defaultChecked=None):
-    if defaultChecked is None:
-      defaultChecked = []
-    optionTuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
-    optionIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(optionTuples)
-    defaultCheckedIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
-    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.checkbox(name, defaultCheckedIterables, optionIterables))
+    optionsIterable = self.getParamOptions(options)
+    defaultCheckedIterables = self.getDefaultChecked(defaultChecked)
+    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.checkbox(name, defaultCheckedIterables, optionsIterable))
     result = []
     for checkedItem in checkedItems:
       result.append(checkedItem)
     return result;
+
+  def noteCheckbox(self, name, options, defaultChecked=None):
+    optionsIterable = self.getParamOptions(options)
+    defaultCheckedIterables = self.getDefaultChecked(defaultChecked)
+    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.noteCheckbox(name, defaultCheckedIterables, optionsIterable))
+    result = []
+    for checkedItem in checkedItems:
+      result.append(checkedItem)
+    return result;
+
+  def getParamOptions(self, options):
+    tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
+    return gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
+
+  def getDefaultChecked(self, defaultChecked):
+    if defaultChecked is None:
+      defaultChecked = []
+    return gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
 
   def registerHook(self, event, cmd, replName=None):
     if replName is None:
