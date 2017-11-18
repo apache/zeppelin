@@ -34,7 +34,7 @@ describe('Controller: ParagraphCtrl', function () {
   let functions = ['isRunning', 'getIframeDimensions', 'cancelParagraph', 'runParagraph', 'saveParagraph',
     'moveUp', 'moveDown', 'insertNew', 'removeParagraph', 'toggleEditor', 'closeEditor', 'openEditor',
     'closeTable', 'openTable', 'showTitle', 'hideTitle', 'setTitle', 'showLineNumbers', 'hideLineNumbers',
-    'changeColWidth', 'columnWidthClass', 'toggleOutput', 'loadForm',
+    'changeColWidth', 'columnWidthClass', 'toggleOutput',
     'aceChanged', 'aceLoaded', 'getEditorValue', 'getProgress', 'getExecutionTime', 'isResultOutdated']
 
   functions.forEach(function (fn) {

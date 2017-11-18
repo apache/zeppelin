@@ -68,7 +68,7 @@ public class SparkSqlInterpreterTest {
     sql.open();
 
     context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
-        new HashMap<String, Object>(), new GUI(),
+        new HashMap<String, Object>(), new GUI(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));

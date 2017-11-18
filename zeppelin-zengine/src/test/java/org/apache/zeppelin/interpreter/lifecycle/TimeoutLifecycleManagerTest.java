@@ -56,7 +56,7 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.echo");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
         "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+        new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
     remoteInterpreter.interpret("hello world", context);
     assertTrue(remoteInterpreter.isOpened());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
@@ -95,7 +95,7 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
       protected Object jobRun() throws Throwable {
         InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
             "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
-            null, null, new ArrayList<InterpreterContextRunner>(), null);
+            new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
         return remoteInterpreter.interpret("100000", context);
       }
 

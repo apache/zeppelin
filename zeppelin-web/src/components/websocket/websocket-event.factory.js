@@ -138,8 +138,12 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('listRevisionHistory', data)
     } else if (op === 'NOTE_REVISION') {
       $rootScope.$broadcast('noteRevision', data)
+    } else if (op === 'NOTE_REVISION_FOR_COMPARE') {
+      $rootScope.$broadcast('noteRevisionForCompare', data)
     } else if (op === 'INTERPRETER_BINDINGS') {
       $rootScope.$broadcast('interpreterBindings', data)
+    } else if (op === 'SAVE_NOTE_FORMS') {
+      $rootScope.$broadcast('saveNoteForms', data)
     } else if (op === 'ERROR_INFO') {
       BootstrapDialog.show({
         closable: false,

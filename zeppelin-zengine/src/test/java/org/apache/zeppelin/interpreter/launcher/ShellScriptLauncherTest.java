@@ -18,10 +18,8 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -39,11 +37,11 @@ public class ShellScriptLauncherTest {
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "groupName");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "groupName", "name");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
-    assertEquals("groupName", interpreterProcess.getInterpreterGroupName());
+    assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());

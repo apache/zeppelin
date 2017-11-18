@@ -152,6 +152,10 @@ public class Message implements JsonSerializable {
     SET_NOTE_REVISION,            // [c-s] set current notebook head to this revision
                                   // @param noteId
                                   // @param revisionId
+    NOTE_REVISION_FOR_COMPARE,    // [c-s] get certain revision of note for compare
+                                  // @param noteId
+                                  // @param revisionId
+                                  // @param position
     APP_APPEND_OUTPUT,            // [s-c] append output
     APP_UPDATE_OUTPUT,            // [s-c] update (replace) output
     APP_LOAD,                     // [s-c] on app load
@@ -180,6 +184,8 @@ public class Message implements JsonSerializable {
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
+    SAVE_NOTE_FORMS,              // save note forms
+    REMOVE_NOTE_FORMS,            // remove note forms
     RECENT_NOTES_LIST,            // [s-c] list of recent notes
                                   // @param List<Notes>
     GET_RECENT_NOTES,             // [c-s] ask list of recent notes

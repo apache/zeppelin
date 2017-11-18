@@ -121,6 +121,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
             new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
+            new GUI(),
             null,
             new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
@@ -182,6 +183,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new AuthenticationInfo(),
           new HashMap<String, Object>(),
           new GUI(),
+          new GUI(),
           null,
           new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
@@ -235,6 +237,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           "text",
           new AuthenticationInfo(),
           new HashMap<String, Object>(),
+          new GUI(),
           new GUI(),
           null,
           new LocalResourcePool("pool1"),
