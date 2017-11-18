@@ -138,11 +138,18 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   // resultId = paragraph.id + index
   $scope.id = null
 
+  $scope.graphID = null
+
+  $scope.resultCopiesIndex = null
+
+  // index of the msg
+  let msgIndex
+
   // referece to paragraph
   let paragraph
 
   // index of the result
-  let resultIndex
+  let resultCopyIndex
 
   // TableData instance
   let tableData
@@ -171,7 +178,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       : {'pointer-events': 'none' }
   }
 
-  $scope.init = function (result, config, paragraph, index) {
+  $scope.init = function(result, config, paragraph, index, mIndex) {
     // register helium plugin vis packages
     let visPackages = heliumService.getVisualizationCachedPackages()
     const visPackageOrder = heliumService.getVisualizationCachedPackageOrder()
@@ -192,7 +199,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       })
     })
 
-    updateData(result, config, paragraph, index)
+    updateData(result, config, paragraph, index, mIndex)
     renderResult($scope.type)
   }
 
@@ -215,16 +222,17 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     $timeout(retry)
   }
 
-  $scope.$on('updateResult', function (event, result, newConfig, paragraphRef, index) {
-    if (paragraph.id !== paragraphRef.id || index !== resultIndex) {
+  $scope.$on('updateResult', function(event, result, newConfig, paragraphRef, mIndex, configIndex) {
+    if (paragraph.id !== paragraphRef.id || configIndex !== resultCopyIndex || mIndex !== msgIndex) {
       return
     }
+    console.log('updateResult %o %o %o %o', result, newConfig, paragraphRef, configIndex)
 
     let refresh = !angular.equals(newConfig, $scope.config) ||
       !angular.equals(result.type, $scope.type) ||
       !angular.equals(result.data, data)
 
-    updateData(result, newConfig, paragraph, resultIndex)
+    updateData(result, newConfig, paragraph, resultCopyIndex, mIndex)
     renderResult($scope.type, refresh)
   })
 
@@ -238,7 +246,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
      * initial output line/s will be missing.
      */
     if (paragraph.id === data.paragraphId &&
-      resultIndex === data.index &&
+      resultCopyIndex === data.index &&
       (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
       if (DefaultDisplayType.TEXT !== $scope.type) {
         $scope.type = DefaultDisplayType.TEXT
@@ -247,12 +255,15 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     }
   })
 
-  const updateData = function (result, config, paragraphRef, index) {
+  const updateData = function (result, config, paragraphRef, index, mIndex) {
     data = result.data
     paragraph = paragraphRef
-    resultIndex = parseInt(index)
+    resultCopyIndex = parseInt(index)
+    msgIndex = parseInt(mIndex)
 
-    $scope.id = paragraph.id + '_' + index
+    $scope.id = paragraph.id + '_' + mIndex
+    $scope.resultId = paragraph.id + '_' + mIndex + '_' + index
+    $scope.resultCopiesIndex = parseInt(index)
     $scope.type = result.type
     config = config ? config : {}
 
@@ -349,7 +360,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       if (!DefaultDisplayType[type]) {
         $scope.renderCustomDisplay(type, data)
       } else {
-        const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type)
+        const targetElemId = $scope.createDisplayDOMId(`p${$scope.resultId}`, type)
         $scope.renderDefaultDisplay(targetElemId, type, data, refresh)
       }
     }
@@ -372,7 +383,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     // custom display result can include multiple subset results
     heliumService.executeSpellAsDisplaySystem(type, data)
       .then(dataWithTypes => {
-        const containerDOMId = `p${$scope.id}_custom`
+        const containerDOMId = `p${$scope.resultId}_custom`
         const afterLoaded = () => {
           const containerDOM = angular.element(`#${containerDOMId}`)
           // Spell.interpret() can create multiple outputs
@@ -382,7 +393,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
             const type = dt.type
 
             // prepare each DOM to be filled
-            const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom_${i}`, type)
+            const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.resultId}_custom_${i}`, type)
             const subResultDOM = document.createElement('div')
             containerDOM.append(subResultDOM)
             subResultDOM.setAttribute('id', subResultDOMId)
@@ -491,7 +502,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   }
 
   function appendTextOutput (data) {
-    const elemId = getTextResultElemId($scope.id)
+    const elemId = getTextResultElemId($scope.resultId)
     textResultQueueForAppend.push(data)
 
     // if DOM is not loaded, just push data and return
@@ -553,8 +564,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       // render when targetEl is available
       afterLoaded = function (loadedElem) {
         try {
-          const transformationSettingTargetEl = getTrSettingElem($scope.id, graphMode)
-          const visualizationSettingTargetEl = getVizSettingElem($scope.id, graphMode)
+          const transformationSettingTargetEl = getTrSettingElem($scope.resultId, graphMode)
+          const visualizationSettingTargetEl = getVizSettingElem($scope.resultId, graphMode)
           // set height
           loadedElem.height(height)
 
@@ -601,8 +612,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       console.log('Refresh data %o', tableData)
 
       afterLoaded = function (loadedElem) {
-        const transformationSettingTargetEl = getTrSettingElem($scope.id, graphMode)
-        const visualizationSettingTargetEl = getVizSettingElem($scope.id, graphMode)
+        const transformationSettingTargetEl = getTrSettingElem($scope.resultId, graphMode)
+        const visualizationSettingTargetEl = getVizSettingElem($scope.resultId, graphMode)
         const config = getVizConfig(graphMode)
         loadedElem.height(height)
         const transformation = builtInViz.instance.getTransformation()
@@ -620,11 +631,11 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       }
     }
 
-    const tableElemId = `p${$scope.id}_${graphMode}`
+    const tableElemId = `p${$scope.resultId}_${graphMode}`
     retryUntilElemIsLoaded(tableElemId, afterLoaded)
   }
 
-  $scope.switchViz = function (newMode) {
+  $scope.switchViz = function (newMode, index) {
     let newConfig = angular.copy($scope.config)
     let newParams = angular.copy(paragraph.settings.params)
 
@@ -634,24 +645,24 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     // see switchApp()
     _.set(newConfig, 'helium.activeApp', undefined)
 
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, index)
   }
 
   const createNewScope = function () {
     return $rootScope.$new(true)
   }
 
-  const commitParagraphResult = function (title, text, config, params) {
+  const commitParagraphResult = function (title, text, config, params, index) {
     let newParagraphConfig = angular.copy(paragraph.config)
     newParagraphConfig.results = newParagraphConfig.results || []
-    newParagraphConfig.results[resultIndex] = config
+    newParagraphConfig.results[index] = config
     if ($scope.revisionView === true) {
       // local update without commit
       updateData({
         type: $scope.type,
         data: data
-      }, newParagraphConfig.results[resultIndex], paragraph, resultIndex)
-      renderResult($scope.type, true)
+      }, newParagraphConfig.results[index], paragraph, resultCopyIndex, index, msgIndex)
+      return renderResult($scope.type, true)
     } else {
       return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params)
     }
@@ -666,7 +677,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     }
 
     let newParams = angular.copy(paragraph.settings.params)
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultCopyIndex)
   }
 
   const getVizConfig = function (vizId) {
@@ -725,7 +736,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     }
     console.debug('committVizConfig', newConfig)
     let newParams = angular.copy(paragraph.settings.params)
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultCopyIndex)
   }
 
   $scope.$on('paragraphResized', function (event, paragraphId) {
@@ -751,7 +762,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     newConfig.graph.height = height
     paragraph.config.colWidth = width
 
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams)
+    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams, resultCopyIndex)
   }
 
   $scope.exportToDSV = function (delimiter) {

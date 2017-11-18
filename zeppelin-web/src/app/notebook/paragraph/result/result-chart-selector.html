@@ -21,7 +21,7 @@ limitations under the License.
             ng-repeat="viz in builtInTableDataVisualizationList track by $index"
             ng-if="viz.supports.indexOf(type) > -1"
             ng-class="{'active' : viz.id == graphMode && !config.helium.activeApp}"
-            ng-click="switchViz(viz.id)"
+            ng-click="switchViz(viz.id,resultCopiesIndex)"
             tooltip-placement="bottom" uib-tooltip="{{viz.name ? viz.name : ''}}"
             ng-bind-html="viz.icon">
     </button>
