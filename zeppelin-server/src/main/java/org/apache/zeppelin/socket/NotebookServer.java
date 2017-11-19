@@ -2553,7 +2553,7 @@ public class NotebookServer extends WebSocketServlet
     broadcast(note.getId(), new Message(OP.SAVE_NOTE_FORMS).put("formsData", formsSettings));
   }
 
-  private void saveNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void saveNoteForms(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
                              Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     Map<String, Object> noteParams = (Map<String, Object>) fromMessage.get("noteParams");
@@ -2573,7 +2573,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void removeNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void removeNoteForms(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
                              Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     String formName = (String) fromMessage.get("formName");
