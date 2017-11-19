@@ -726,8 +726,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void cronExecutingUserUpdatePermissionError(NotebookSocket conn, String op, String user,
-                                                      String cronExecutingUser)
-      throws IOException {
+                                                      String cronExecutingUser) throws IOException {
     LOG.info("Cannot {} due to the cron executing user update permission error. user: {}, " +
                     "submitted cron executing user: {}", op, user, cronExecutingUser);
 
@@ -1059,8 +1058,8 @@ public class NotebookServer extends WebSocketServlet
                                            Map<String, Object> configA,
                                            Map<String, Object> configB) {
     boolean updated = false;
-    if (configA.get(key) != null && configB.get(key) != null && configA.get(key)
-        .equals(configB.get(key))) {
+    if (configA.get(key) != null && configB.get(key) != null &&
+            configA.get(key).equals(configB.get(key))) {
       updated = false;
     } else if (configA.get(key) == null && configB.get(key) == null) {
       updated = false;
