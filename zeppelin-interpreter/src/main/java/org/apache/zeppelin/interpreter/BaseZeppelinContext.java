@@ -45,6 +45,7 @@ public abstract class BaseZeppelinContext {
   protected int maxResult;
   protected InterpreterHookRegistry hooks;
   protected GUI gui;
+  protected GUI noteGui;
 
   private static RemoteEventClientWrapper eventClient;
 
@@ -86,37 +87,99 @@ public abstract class BaseZeppelinContext {
   @Deprecated
   @ZeppelinApi
   public Object input(String name, Object defaultValue) {
-    return textbox(name, defaultValue.toString());
+    return textbox(name, defaultValue.toString(), false);
   }
 
   @ZeppelinApi
   public Object textbox(String name) {
-    return textbox(name, "");
+    return textbox(name, "", false);
   }
 
   @ZeppelinApi
   public Object textbox(String name, String defaultValue) {
-    return gui.textbox(name, defaultValue);
-  }
-
-  public Object select(String name, Object defaultValue, ParamOption[] paramOptions) {
-    return gui.select(name, defaultValue, paramOptions);
+    return textbox(name, defaultValue, false);
   }
 
   @ZeppelinApi
   public Collection<Object> checkbox(String name, ParamOption[] options) {
+    return checkbox(name, options, false);
+  }
+
+  @ZeppelinApi
+  public Collection<Object> checkbox(String name, List<Object> defaultChecked,
+                                     ParamOption[] options) {
+    return checkbox(name, defaultChecked, options, false);
+  }
+
+  @ZeppelinApi
+  public Object select(String name, Object defaultValue, ParamOption[] paramOptions) {
+    return select(name, defaultValue, paramOptions, false);
+  }
+
+  @ZeppelinApi
+  public Object noteTextbox(String name) {
+    return textbox(name, "");
+  }
+
+  @ZeppelinApi
+  public Object noteTextbox(String name, String defaultValue) {
+    return textbox(name, defaultValue, true);
+  }
+
+  @ZeppelinApi
+  public Collection<Object> noteCheckbox(String name, ParamOption[] options) {
+    return checkbox(name, options, true);
+  }
+
+  @ZeppelinApi
+  public Collection<Object> noteCheckbox(String name, List<Object> defaultChecked,
+                                         ParamOption[] options) {
+    return checkbox(name, defaultChecked, options, true);
+  }
+
+  @ZeppelinApi
+  public Object noteSelect(String name, Object defaultValue, ParamOption[] paramOptions) {
+    return select(name, defaultValue, paramOptions, true);
+  }
+
+
+  private Object select(String name, Object defaultValue, ParamOption[] paramOptions,
+                       boolean noteForm) {
+    if (noteForm) {
+      return noteGui.select(name, defaultValue, paramOptions);
+    } else {
+      return gui.select(name, defaultValue, paramOptions);
+    }
+  }
+
+  private Object textbox(String name, String defaultValue, boolean noteForm) {
+    if (noteForm) {
+      return noteGui.textbox(name, defaultValue);
+    } else {
+      return gui.textbox(name, defaultValue);
+    }
+  }
+
+  private Collection<Object> checkbox(String name, ParamOption[] options,
+                                     boolean noteForm) {
     List<Object> defaultValues = new LinkedList<>();
     for (ParamOption option : options) {
       defaultValues.add(option.getValue());
     }
-    return checkbox(name, defaultValues, options);
+    if (noteForm) {
+      return noteGui.checkbox(name, defaultValues, options);
+    } else {
+      return gui.checkbox(name, defaultValues, options);
+    }
   }
 
-  @ZeppelinApi
-  public Collection<Object> checkbox(String name,
-                                     List<Object> defaultValues,
-                                     ParamOption[] options) {
-    return gui.checkbox(name, defaultValues, options);
+  private Collection<Object> checkbox(String name, List<Object> defaultChecked,
+                                      ParamOption[] options, boolean noteForm) {
+    if (noteForm) {
+      return noteGui.checkbox(name, defaultChecked, options);
+    } else {
+      return gui.checkbox(name, defaultChecked, options);
+    }
   }
 
   public void setGui(GUI o) {
@@ -125,6 +188,15 @@ public abstract class BaseZeppelinContext {
 
   public GUI getGui() {
     return gui;
+  }
+
+
+  public GUI getNoteGui() {
+    return noteGui;
+  }
+
+  public void setNoteGui(GUI noteGui) {
+    this.noteGui = noteGui;
   }
 
   private void restartInterpreter() {
