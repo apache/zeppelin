@@ -574,6 +574,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return configurations;
   }
 
+  public String getHomescreenHeader() {
+    return getString(ConfVars.ZEPPELIN_HOMESCREEN_HEADER);
+  }
+
   /**
    * Predication whether key/value pair should be included or not
    */
@@ -658,6 +662,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
     // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
+    ZEPPELIN_HOMESCREEN_HEADER("zeppelin.homescreen.header", "app/home/header.html"),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),

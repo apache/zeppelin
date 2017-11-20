@@ -15,7 +15,7 @@
 angular.module('zeppelinWebApp').controller('HomeCtrl', HomeCtrl)
 
 function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv,
-                  ngToast, noteActionService, TRASH_FOLDER_ID) {
+                  ngToast, noteActionService, TRASH_FOLDER_ID, $http, baseUrlSrv) {
   'ngInject'
 
   ngToast.dismiss()
@@ -40,6 +40,20 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
   $scope.initHome = function () {
     websocketMsgSrv.getHomeNote()
     vm.noteCustomHome = false
+    $scope.setHeader()
+  }
+
+  $scope.setHeader = function() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/key/zeppelin.homescreen.header').success(
+      function (data, status, headers, config) {
+        $scope.header = data.body['zeppelin.homescreen.header']
+      }
+    ).error(
+      function (data, status, headers, config) {
+        $scope.header = 'app/home/header.html'
+        console.log('Error %o %o', status, data.message)
+      }
+    )
   }
 
   $scope.reloadNoteList = function () {
