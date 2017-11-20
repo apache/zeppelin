@@ -882,10 +882,14 @@ public class Notebook implements NoteEventListener {
       }
 
       boolean releaseResource = false;
+      String cronExecutingUser = null;
       try {
         Map<String, Object> config = note.getConfig();
-        if (config != null && config.containsKey("releaseresource")) {
-          releaseResource = (boolean) note.getConfig().get("releaseresource");
+        if (config != null) {
+          if (config.containsKey("releaseresource")) {
+            releaseResource = (boolean) config.get("releaseresource");
+          }
+          cronExecutingUser = (String) config.get("cronExecutingUser");
         }
       } catch (ClassCastException e) {
         logger.error(e.getMessage(), e);
@@ -894,7 +898,8 @@ public class Notebook implements NoteEventListener {
         for (InterpreterSetting setting : notebook.getInterpreterSettingManager()
             .getInterpreterSettings(note.getId())) {
           try {
-            notebook.getInterpreterSettingManager().restart(setting.getId());
+            notebook.getInterpreterSettingManager().restart(setting.getId(), noteId,
+                    cronExecutingUser != null ? cronExecutingUser : "anonymous");
           } catch (InterpreterException e) {
             logger.error("Fail to restart interpreter: " + setting.getId(), e);
           }
