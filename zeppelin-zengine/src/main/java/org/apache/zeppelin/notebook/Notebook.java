@@ -447,6 +447,25 @@ public class Notebook implements NoteEventListener {
             }
             config.put("results", results);
           }
+        } else if (ret == null && p.getConfig() != null) {
+          //ZEPPELIN-3063 Notebook loses formatting when importing from 0.6.x
+          if (p.getConfig().get("graph") != null && p.getConfig().get("graph") instanceof Map
+            && !((Map) p.getConfig().get("graph")).get("mode").equals("table")) {
+            Map<String, Object> config = p.getConfig();
+            Object graph = config.remove("graph");
+            Object apps = config.remove("apps");
+            Object helium = config.remove("helium");
+
+            List<Object> results = new LinkedList<>();
+
+            HashMap<Object, Object> res = new HashMap<>();
+            res.put("graph", graph);
+            res.put("apps", apps);
+            res.put("helium", helium);
+            results.add(res);
+
+            config.put("results", results);
+          }
         }
       } catch (Exception e) {
         logger.error("Conversion failure", e);
