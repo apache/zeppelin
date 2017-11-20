@@ -95,6 +95,7 @@ admin = *
 # To allow anonymous access to all but the stated urls,
 # uncomment the line second last line (/** = anon) and comment the last line (/** = authc)
 #
+/api/configurations/key/zeppelin.homescreen.header = anon
 /api/version = anon
 /api/interpreter/** = authc, roles[admin]
 /api/configurations/** = authc, roles[admin]
