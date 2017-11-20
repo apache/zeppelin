@@ -417,27 +417,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testHasCronExecutingUserUpdatePermission()
-          throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    Method method = NotebookServer.class.getDeclaredMethod("hasCronExecutingUserUpdatePermission",
-            String.class, String.class);
-    method.setAccessible(true);
-
-    final NotebookServer server = new NotebookServer();
-
-    assertTrue((boolean) method.invoke(server, null, null));
-    assertFalse((boolean) method.invoke(server, null, ""));
-    assertFalse((boolean) method.invoke(server, null, "user1"));
-    assertTrue((boolean) method.invoke(server, "", null));
-    assertTrue((boolean) method.invoke(server, "", ""));
-    assertFalse((boolean) method.invoke(server, "", "user1"));
-    assertTrue((boolean) method.invoke(server, "user1", null));
-    assertFalse((boolean) method.invoke(server, "user1", ""));
-    assertTrue((boolean) method.invoke(server, "user1", "user1"));
-    assertFalse((boolean) method.invoke(server, "user1", "user2"));
-  }
-
-  @Test
   public void testIsCronExecutingUserUpdatePermissionCheckNeeded()
           throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
      Method method = NotebookServer.class.getDeclaredMethod(
