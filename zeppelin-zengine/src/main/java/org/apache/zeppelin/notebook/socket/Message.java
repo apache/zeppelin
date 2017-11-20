@@ -185,7 +185,13 @@ public class Message implements JsonSerializable {
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
-    REMOVE_NOTE_FORMS             // remove note forms
+    REMOVE_NOTE_FORMS,             // remove note forms
+    REMOVE_SELECTED_PARAGRAPHS,   // [c-s] remove selected paragraphs
+    SELECTED_PARAGRAPHS_REMOVED,  // [s-c] selected paragraphs removed
+    CLEAR_SELECTED_PARAGRAPHS_OUTPUT,   // [c-s] clear output selected paragraphs
+    SELECTED_PARAGRAPHS,                // [s-c] selected paragraph info
+    MOVE_SEVERAL_PARAGRAPHS,            // [c-s] move paragraphs on new index
+    SEVERAL_PARAGRAPHS_MOVED            // [s-c] several paragraph moved
   }
 
   private static final Gson gson = new Gson();

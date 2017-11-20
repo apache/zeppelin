@@ -29,10 +29,13 @@ function modalvisible () {
       element.on('show.bs.modal', function (e) {
         let relatedTarget = angular.element(e.relatedTarget)
         let clone = relatedTarget.data('clone')
+        let useSelectedParagraph = relatedTarget.data('use-selec-parag')
+        let selectedParagraphs = relatedTarget.data('selected-paragraphs')
         let sourceNoteName = relatedTarget.data('source-note-name')
         let path = relatedTarget.data('path')
         let cloneNote = clone ? true : false
-        previsibleMethod()(cloneNote, sourceNoteName, path)
+        useSelectedParagraph = useSelectedParagraph ? true : false
+        previsibleMethod()(cloneNote, useSelectedParagraph, selectedParagraphs, sourceNoteName, path)
       })
       element.on('shown.bs.modal', function (e) {
         if (scope.targetinput) {

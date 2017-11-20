@@ -32,10 +32,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.disableForms = false
   $scope.editorToggled = false
   $scope.tableToggled = false
+  $scope.anableRunParag = true
   $scope.viewOnly = false
   $scope.showSetting = false
   $scope.showRevisionsComparator = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
+  $scope.selectedParagraphsId = new Set()
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -533,6 +535,15 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     removePara(paragraphId)
   })
 
+  $scope.$on('selected_paragraphs_removed', function (event, paragraphsId) {
+    if ($scope.paragraphUrl || $scope.revisionView === true) {
+      return
+    }
+    paragraphsId.forEach(function(paragraphId) {
+      removePara(paragraphId)
+    })
+  })
+
   $scope.$on('moveParagraph', function (event, paragraphId, newIdx) {
     if ($scope.revisionView === true) {
       return
@@ -540,6 +551,18 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     let removedPara = removePara(paragraphId)
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx)
+    }
+  })
+
+  $scope.$on('moveSeveralParagraph', function (event, paragraphsId, newIdx) {
+    if ($scope.revisionView === true) {
+      return
+    }
+    for (let i = 0; i < paragraphsId.length; i++) {
+      let removedPara = removePara(paragraphsId[i])
+      if (removedPara && removedPara.length === 1) {
+        addPara(removedPara[0], newIdx[i])
+      }
     }
   })
 
@@ -1174,6 +1197,213 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     } else {
       return true
     }
+  }
+
+  $scope.switchSelection = function (paragraph) {
+    let paragraphs = $scope.selectedParagraphsId
+    if (paragraphs.has(paragraph.id)) {
+      paragraphs.delete(paragraph.id)
+    } else {
+      paragraphs.add(paragraph.id)
+    }
+  }
+
+  $scope.clearParagraphsSelection = function () {
+    if ($scope.selectedParagraphsId !== null) {
+      $scope.selectedParagraphsId.clear()
+    }
+  }
+
+  $scope.isSelectionMode = function () {
+    if ($scope.selectedParagraphsId === null || $scope.selectedParagraphsId.size === 0) {
+      return false
+    }
+    return true
+  }
+
+  $scope.getSelectedParagraphs = function () {
+    if ($scope.note === null) {
+      return
+    }
+    let allParagraphs = $scope.note.paragraphs
+    let selectedParagraphsId = $scope.selectedParagraphsId
+    let paragraphs = []
+    for (let i = 0; i < allParagraphs.length; i++) {
+      if (selectedParagraphsId.has(allParagraphs[i].id)) {
+        paragraphs.push(allParagraphs[i])
+      }
+    }
+    return paragraphs
+  }
+
+  $scope.moveToTop = function () {
+    let selectParagraphId = $scope.selectedParagraphsId
+    let allParagraphs = $scope.note.paragraphs
+    let id = []
+    let newIndex = []
+    let counter = 0
+    if (allParagraphs.length < 2 || selectParagraphId === null) {
+      return
+    }
+    if (allParagraphs.length <= selectParagraphId.size) {
+      return
+    }
+
+    for (let i = 0; i < allParagraphs.length; i++) {
+      if (selectParagraphId.has(allParagraphs[i].id)) {
+        id.push(allParagraphs[i].id)
+        newIndex.push(counter++)
+      }
+    }
+
+    let selectedParagraphs = $scope.getSelectedParagraphs()
+    for (let i = 0; i < selectedParagraphs.length; i++) {
+      angular
+        .element('#' + selectedParagraphs[i].id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(selectedParagraphs[i])
+    }
+    websocketMsgSrv.moveSeveralParagraphs(id, newIndex)
+  }
+
+  $scope.moveToBottom = function () {
+    let selectParagraphId = $scope.selectedParagraphsId
+    let allParagraphs = $scope.note.paragraphs
+    let id = []
+    let newIndex = []
+    let counter = allParagraphs.length - 1
+    if (allParagraphs.length < 2 || selectParagraphId === null) {
+      return
+    }
+    if (allParagraphs.length <= selectParagraphId.size) {
+      return
+    }
+
+    for (let i = allParagraphs.length - 1; i >= 0; i--) {
+      if (selectParagraphId.has(allParagraphs[i].id)) {
+        id.push(allParagraphs[i].id)
+        newIndex.push(counter--)
+      }
+    }
+    let selectedParagraphs = $scope.getSelectedParagraphs()
+    for (let i = 0; i < selectedParagraphs.length; i++) {
+      angular
+        .element('#' + selectedParagraphs[i].id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(selectedParagraphs[i])
+    }
+    websocketMsgSrv.moveSeveralParagraphs(id, newIndex)
+  }
+
+  $scope.toggleToRunParagraphs = function () {
+    let paragraphsId = $scope.selectedParagraphsId
+    let broadcastMessage
+    if ($scope.anableRunParag) {
+      broadcastMessage = 'disableForRunById'
+    } else {
+      broadcastMessage = 'enableForRunById'
+    }
+    paragraphsId.forEach((id) => {
+      $rootScope.$broadcast(broadcastMessage, id)
+    })
+
+    $scope.anableRunParag = !$scope.anableRunParag
+  }
+
+  $scope.toggleParagraphsTable = function () {
+    if (!$scope.isSelectionMode()) {
+      $scope.toggleAllTable()
+    } else {
+      let paragraphsId = $scope.selectedParagraphsId
+      let broadcastMessage
+      if ($scope.tableToggled) {
+        broadcastMessage = 'openTableById'
+      } else {
+        broadcastMessage = 'closeTableById'
+      }
+      paragraphsId.forEach((id) => {
+        $rootScope.$broadcast(broadcastMessage, id)
+      })
+
+      $scope.tableToggled = !$scope.tableToggled
+    }
+  }
+
+  $scope.toggleParagraphsEditor = function () {
+    if (!$scope.isSelectionMode()) {
+      $scope.toggleAllEditor()
+    } else {
+      let paragraphsId = $scope.selectedParagraphsId
+      let broadcastMessage
+      if ($scope.editorToggled) {
+        broadcastMessage = 'openEditorById'
+      } else {
+        broadcastMessage = 'closeEditorById'
+      }
+      paragraphsId.forEach((id) => {
+        $rootScope.$broadcast(broadcastMessage, id)
+      })
+      $scope.editorToggled = !$scope.editorToggled
+    }
+  }
+
+  $scope.runParagraphs = function (noteId) {
+    if (!$scope.isSelectionMode()) {
+      $scope.runAllParagraphs(noteId)
+    } else {
+      let message = 'Run ' + $scope.selectedParagraphsId.size + ' selected paragraph(s)?'
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.runAllParagraphs, false)
+    }
+  }
+
+  $scope.removeSelectedParagraphs = function (noteId) {
+    if ($scope.selectedParagraphsId.size < $scope.note.paragraphs.length) {
+      let message = 'Delete ' + $scope.selectedParagraphsId.size + ' selected paragraph(s)?'
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.removeSelectedParagraphs, true)
+    } else {
+      BootstrapDialog.alert({
+        closable: true,
+        message: 'All the paragraphs can\'t be deleted.'
+      })
+    }
+  }
+
+  $scope.clearParagraphsOutput = function (noteId) {
+    if (!$scope.isSelectionMode()) {
+      $scope.clearAllParagraphOutput(noteId)
+    } else {
+      let message = 'Clear output ' + $scope.selectedParagraphsId.size + ' selected paragraph(s)?'
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.clearSelectedParagraphsOutput, false)
+    }
+  }
+
+  $scope.showConfirmDialog = function (noteId, dialogMessage, action, isCleanAfter) {
+    if ($scope.selectedParagraphsId.length === 0) {
+      return false
+    }
+
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: dialogMessage,
+      callback: function (result) {
+        if (result) {
+          const paragraphs = $scope.getSelectedParagraphs().map(p => {
+            return {
+              id: p.id,
+              title: p.title,
+              paragraph: p.text,
+              config: p.config,
+              params: p.settings.params
+            }
+          })
+          action(noteId, paragraphs)
+          if (isCleanAfter) {
+            $scope.clearParagraphsSelection()
+          }
+        }
+      }
+    })
   }
 
   /*

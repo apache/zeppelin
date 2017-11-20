@@ -270,6 +270,11 @@ table.table-shortcut {
   font-size: 10px !important;
 }
 
+.checked-paragraph-check-button {
+  background-color: #00ff70;
+  border-radius: 100%;
+}
+
 /*
   Paragraph Title
 */

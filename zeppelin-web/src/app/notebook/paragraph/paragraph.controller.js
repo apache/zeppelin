@@ -1563,12 +1563,50 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.closeEditor($scope.paragraph)
   })
 
+  $scope.$on('openEditorById', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.openEditor($scope.paragraph)
+    }
+  })
+
+  $scope.$on('closeEditorById', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.closeEditor($scope.paragraph)
+    }
+  })
+
   $scope.$on('openTable', function (event) {
     $scope.openTable($scope.paragraph)
   })
 
   $scope.$on('closeTable', function (event) {
     $scope.closeTable($scope.paragraph)
+  })
+
+  $scope.$on('openTableById', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.openTable($scope.paragraph)
+    }
+  })
+
+  $scope.$on('closeTableById', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.closeTable($scope.paragraph)
+    }
+  })
+
+  $scope.$on('enableForRunById', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.enabled === false) {
+      $scope.paragraph.config.enabled = true
+      commitParagraph($scope.paragraph)
+    }
+  })
+
+  $scope.$on('disableForRunById', function (event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.enabled === true) {
+      $scope.paragraph.config.enabled = false
+      commitParagraph($scope.paragraph)
+    }
   })
 
   $scope.$on('resultRendered', function (event, paragraphId) {
