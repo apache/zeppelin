@@ -1645,7 +1645,7 @@ public class NotebookServer extends WebSocketServlet
 
   private void moveSeveralParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws IOException {
-    final ArrayList<String> idList = (ArrayList<String>) fromMessage.get("id");
+    final ArrayList<String> idList = (ArrayList<String>) fromMessage.get("ids");
     final ArrayList<Double> indexList = (ArrayList<Double>) fromMessage.get("index");
 
     if (idList.size() == 0 || indexList.size() == 0) {
