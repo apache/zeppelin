@@ -169,7 +169,7 @@ public class NotebookServer extends WebSocketServlet
       }
 
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
-      if (ticket != null &&
+      if (!messagereceived.op.isAnonymousAllowed() && ticket != null &&
           (messagereceived.ticket == null || !ticket.equals(messagereceived.ticket))) {
         /* not to pollute logs, log instead of exception */
         if (StringUtils.isEmpty(messagereceived.ticket)) {
@@ -187,7 +187,8 @@ public class NotebookServer extends WebSocketServlet
 
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       boolean allowAnonymous = conf.isAnonymousAllowed();
-      if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
+      if (!messagereceived.op.isAnonymousAllowed() && !allowAnonymous &&
+              messagereceived.principal.equals("anonymous")) {
         throw new Exception("Anonymous access not allowed ");
       }
 
@@ -358,6 +359,9 @@ public class NotebookServer extends WebSocketServlet
           break;
         case REMOVE_NOTE_FORMS:
           removeNoteForms(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case GET_HOMESCREEN_HEADER:
+          sendHomeScreenHeader(conn, conf);
           break;
         default:
           break;
@@ -866,6 +870,12 @@ public class NotebookServer extends WebSocketServlet
       removeConnectionFromAllNote(conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
+  }
+
+  private void sendHomeScreenHeader(NotebookSocket conn, ZeppelinConfiguration conf)
+      throws IOException {
+    conn.send(serializeMessage(new Message(OP.HOMESCREEN_HEADER).put("homescreen_header",
+            conf.getHomescreenHeader())));
   }
 
   private void updateNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,

@@ -168,6 +168,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../usage/other_features/customizing_homepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_HOMESCREEN_HEADER</h6></td>
+    <td><h6 class="properties">zeppelin.homescreen.header</h6></td>
+    <td>app/home/header.html</td>
+    <td>Path of the header HTML file which is shown on the top of the default homescreen</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_WAR_TEMPDIR</h6></td>
     <td><h6 class="properties">zeppelin.war.tempdir</h6></td>
     <td>webapps</td>
