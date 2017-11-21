@@ -56,7 +56,7 @@ class PyZeppelinContext(object):
     self.z = z
     self.paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
     self.javaList = gateway.jvm.java.util.ArrayList
-    self.max_result = 1000
+    self.max_result = z.getMaxResult() 
     self._displayhook = lambda *args: None
     self._setup_matplotlib()
 

@@ -64,10 +64,14 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
 
   @Before
   public void beforeTest() throws IOException {
+    beforeTest(getPythonTestProperties());
+  }
+
+  protected void beforeTest(Properties properties) throws IOException {
     cmdHistory = "";
 
     // python interpreter
-    pythonInterpreter = new PythonInterpreter(getPythonTestProperties());
+    pythonInterpreter = new PythonInterpreter(properties);
 
     // create interpreter group
     InterpreterGroup group = new InterpreterGroup();
@@ -100,11 +104,29 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
   }
 
   @Test
+  public void testInterpretPropertyMaxResultsLarger() throws InterruptedException, IOException {
+    // close existing pythonInterpreter and setup a new one with overwritten property
+    pythonInterpreter.close();
+    int maxResult = 5;
+    Properties p = getPythonTestProperties();
+    p.setProperty(MAX_RESULT, Integer.toString(maxResult));
+    beforeTest(p);
+
+    String codeParagraph = "import numpy as np\n" +
+                           "number_rows = 40\n" +
+                           "df = pd.DataFrame(np.random.randn(number_rows, 4), columns=list('ABCD'))\n" +
+                           "z.show(df)";
+    InterpreterResult result = pythonInterpreter.interpret(codeParagraph, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(new String(out.getOutputAt(0).toByteArray()).split("<tr>").length == maxResult + 1);
+  }
+
+  @Test
   public void testInterpretInvalidSyntax() throws IOException {
     InterpreterResult result = pythonInterpreter.interpret("for x in range(0,3):  print (\"hi\")\n", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(new String(out.getOutputAt(0).toByteArray()).contains("hi\nhi\nhi"));
- }
+  }
 
   @Test
   public void testRedefinitionZeppelinContext() {
