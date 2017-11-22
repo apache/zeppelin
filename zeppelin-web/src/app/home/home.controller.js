@@ -24,6 +24,7 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
   vm.websocketMsgSrv = websocketMsgSrv
   vm.arrayOrderingSrv = arrayOrderingSrv
   vm.noteActionService = noteActionService
+  vm.numberOfNotesDisplayed = window.innerHeight / 20
 
   vm.notebookHome = false
   vm.noteCustomHome = true
@@ -84,6 +85,10 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
       vm.notebookHome = false
     }
   })
+
+  $scope.loadMoreNotes = function () {
+    vm.numberOfNotesDisplayed += 10
+  }
 
   $scope.renameNote = function (nodeId, nodePath) {
     vm.noteActionService.renameNote(nodeId, nodePath)

@@ -30,6 +30,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   vm.showLoginWindow = showLoginWindow
   vm.TRASH_FOLDER_ID = TRASH_FOLDER_ID
   vm.isFilterNote = isFilterNote
+  vm.numberOfNotesDisplayed = 10
 
   $scope.query = {q: ''}
 
@@ -151,6 +152,10 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
         $scope.isDrawNavbarNoteList = false
       })
     })
+  }
+
+  $scope.loadMoreNotes = function () {
+    vm.numberOfNotesDisplayed += 10
   }
 
   $scope.calculateTooltipPlacement = function (note) {
