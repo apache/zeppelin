@@ -47,7 +47,7 @@ limitations under the License.
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
               <div ng-if="!query.q || query.q === ''" infinite-scroll="loadMoreNotes()">
-              <li ng-repeat="node in navbar.notes.root.children | limitTo:navbar.numberOfNotesDisplayed | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by node.id"
+              <li ng-repeat="node in navbar.notes.root.children | limitTo:navbar.numberOfNotesDisplayed track by node.id"
                   ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
