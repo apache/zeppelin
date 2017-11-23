@@ -44,6 +44,7 @@ const requiredModules = [
   'ngResource',
   'ngclipboard',
   'angularViewportWatch',
+  'infinite-scroll',
   'ui.grid',
   'ui.grid.exporter',
   'ui.grid.edit', 'ui.grid.rowEdit',
