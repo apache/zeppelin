@@ -39,6 +39,7 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
 
   $scope.initHome = function () {
     websocketMsgSrv.getHomeNote()
+    websocketMsgSrv.getHomescreenHeader()
     vm.noteCustomHome = false
   }
 
@@ -83,6 +84,10 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
       vm.staticHome = true
       vm.notebookHome = false
     }
+  })
+
+  $scope.$on('setHomescreenHeader', function (event, header) {
+    $scope.header = header
   })
 
   $scope.renameNote = function (nodeId, nodePath) {

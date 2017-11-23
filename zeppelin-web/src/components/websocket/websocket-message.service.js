@@ -23,6 +23,10 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'})
     },
 
+    getHomescreenHeader: function () {
+      websocketEvents.sendNewEvent({op: 'GET_HOMESCREEN_HEADER'})
+    },
+
     createNotebook: function (noteName, defaultInterpreterId) {
       websocketEvents.sendNewEvent({
         op: 'NEW_NOTE',

@@ -185,7 +185,13 @@ public class Message implements JsonSerializable {
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
-    REMOVE_NOTE_FORMS             // remove note forms
+    REMOVE_NOTE_FORMS,            // remove note forms
+    GET_HOMESCREEN_HEADER,        // [c-s] get homescreen header
+    HOMESCREEN_HEADER;            // [s-c] homescreen header
+
+    public boolean isAnonymousAllowed() {
+      return this == GET_HOMESCREEN_HEADER;
+    }
   }
 
   private static final Gson gson = new Gson();
