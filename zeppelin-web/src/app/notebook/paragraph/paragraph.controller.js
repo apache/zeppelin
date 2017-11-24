@@ -185,6 +185,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   }
 
+  const isTabCompletion = function() {
+    const completionKey = $scope.paragraph.config.editorSetting.completionKey
+    return completionKey === 'TAB'
+  }
+
   $scope.$on('updateParagraphOutput', function (event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
       if (!$scope.paragraph.results) {
@@ -461,9 +466,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.runParagraph(paragraphText, true, false)
   }
 
-  $scope.runParagraphFromButton = function (paragraphText) {
+  $scope.runParagraphFromButton = function () {
     // we come here from the view, so we don't need to call `$digest()`
-    $scope.runParagraph(paragraphText, false, false)
+    $scope.runParagraph($scope.getEditorValue(), false, false)
   }
 
   $scope.turnOnAutoRun = function (paragraph) {
@@ -652,24 +657,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     commitParagraph(paragraph)
   }
 
-  $scope.loadForm = function (formulaire, params) {
-    let value = formulaire.defaultValue
-    if (params[formulaire.name]) {
-      value = params[formulaire.name]
-    }
-
-    $scope.paragraph.settings.params[formulaire.name] = value
-  }
-
-  $scope.toggleCheckbox = function (formulaire, option) {
-    let idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value)
-    if (idx > -1) {
-      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1)
-    } else {
-      $scope.paragraph.settings.params[formulaire.name].push(option.value)
-    }
-  }
-
   $scope.aceChanged = function (_, editor) {
     let session = editor.getSession()
     let dirtyText = session.getValue()
@@ -850,6 +837,33 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete')
+
+      // Show autocomplete on tab
+      $scope.editor.commands.addCommand({
+        name: 'tabAutocomplete',
+        bindKey: {
+          win: 'tab',
+          mac: 'tab',
+          sender: 'editor|cli'
+        },
+        exec: function(env, args, request) {
+          let iCursor = $scope.editor.getCursorPosition()
+          let currentLine = $scope.editor.session.getLine(iCursor.row)
+          let isAllTabs = currentLine.substring(0, iCursor.column - 1).split('').every(function(char) {
+            return (char === '\t' || char === ' ')
+          })
+
+          // If user has pressed tab on first line char or if isTabCompletion() is false, keep existing behavior
+          // If user has pressed tab anywhere in between and editor mode is not %md, show autocomplete
+          if (!isAllTabs && iCursor.column && isTabCompletion()) {
+            $scope.editor.execCommand('startAutocomplete')
+          } else {
+            ace.config.loadModule('ace/ext/language_tools', function () {
+              $scope.editor.insertSnippet('\t')
+            })
+          }
+        }
+      })
 
       let keyBindingEditorFocusAction = function (scrollValue) {
         let numRows = $scope.editor.getSession().getLength()

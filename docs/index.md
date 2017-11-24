@@ -72,6 +72,7 @@ limitations under the License.
   * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
   * [Personalized Mode](./usage/other_features/personalized_mode.html) 
   * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
+  * [Notebook actions](./usage/other_features/notebook_actions.html)
 * REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./usage/rest_api/interpreter.html)
   * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
@@ -142,6 +143,7 @@ limitations under the License.
   * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
   * [markdown](./interpreter/markdown.html)
+  * [Neo4j](./interpreter/neo4j.html)
   * [Pig](./interpreter/pig.html)
   * [Postgresql, HAWQ](./interpreter/postgresql.html)
   * [Python](./interpreter/python.html)

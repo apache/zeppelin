@@ -295,6 +295,17 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
+    getNoteByRevisionForCompare: function (noteId, revisionId, position) {
+      websocketEvents.sendNewEvent({
+        op: 'NOTE_REVISION_FOR_COMPARE',
+        data: {
+          noteId: noteId,
+          revisionId: revisionId,
+          position: position
+        }
+      })
+    },
+
     getEditorSetting: function (paragraphId, replName) {
       websocketEvents.sendNewEvent({
         op: 'EDITOR_SETTING',
@@ -339,6 +350,24 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
     getInterpreterSettings: function () {
       websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'})
     },
+
+    saveNoteForms: function (note) {
+      websocketEvents.sendNewEvent({op: 'SAVE_NOTE_FORMS',
+        data: {
+          noteId: note.id,
+          noteParams: note.noteParams
+        }
+      })
+    },
+
+    removeNoteForms: function (note, formName) {
+      websocketEvents.sendNewEvent({op: 'REMOVE_NOTE_FORMS',
+        data: {
+          noteId: note.id,
+          formName: formName
+        }
+      })
+    }
 
   }
 }

@@ -1,0 +1,86 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<form id="{{id}}_form" role="form"
+      ng-show="!hide"
+      class="dynamicForm form-horizontal row">
+  <div class="form-group col-sm-6 col-md-6 col-lg-4"
+       ng-repeat="formulaire in forms | toArray"
+       ng-init="loadForm(formulaire, params)">
+    <label class="control-label input-sm" ng-class="{'disable': disable}">{{formulaire.name}}</label>
+    <a ng-if="removeaction">
+      <i class="fa fa-times"
+         ng-click="removeaction(formulaire.name)"
+         tooltip-placement="bottom" uib-tooltip="Remove">
+      </i>
+    </a>
+    <div ng-if="actiononchange === true">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'TextBox'"
+             ng-change="action()"
+             ng-model-options='{ debounce: 1000 }'
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="!actiononchange">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'TextBox'"
+             ng-enter="action()"
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="actiononchange === true">
+      <select class="form-control input-sm"
+              ng-if="forms[formulaire.name].type == 'Select'"
+              ng-change="action()"
+              ng-model="params[formulaire.name]"
+              ng-class="{'disable': disable}"
+              name="{{formulaire.name}}"
+              ng-options="option.value as (option.displayName||option.value) for option in forms[formulaire.name].options">
+      </select>
+    </div>
+    <div ng-if="!actiononchange">
+      <select class="form-control input-sm"
+              ng-if="forms[formulaire.name].type == 'Select'"
+              ng-enter="action()"
+              ng-model="params[formulaire.name]"
+              ng-class="{'disable': disable}"
+              name="{{formulaire.name}}"
+              ng-options="option.value as (option.displayName||option.value) for option in forms[formulaire.name].options">
+      </select>
+    </div>
+    <div ng-if="actiononchange === true &&
+                  forms[formulaire.name].type == 'CheckBox'">
+      <label ng-repeat="option in forms[formulaire.name].options"
+             class="checkbox-item input-sm">
+        <input type="checkbox"
+               ng-checked="params[formulaire.name].indexOf(option.value) > -1"
+               ng-class="{'disable': disable}"
+               ng-click="toggleCheckbox(formulaire, option, params); action()"/> {{option.displayName||option.value}}
+      </label>
+    </div>
+    <div ng-if="!actiononchange &&
+                  forms[formulaire.name].type == 'CheckBox'">
+      <label ng-repeat="option in forms[formulaire.name].options"
+             class="checkbox-item input-sm">
+        <input type="checkbox"
+               ng-checked="params[formulaire.name].indexOf(option.value) > -1"
+               ng-class="{'disable': disable}"
+               ng-enter="action()"
+               ng-click="toggleCheckbox(formulaire, option, params)"/> {{option.displayName||option.value}}
+      </label>
+    </div>
+  </div>
+</form>

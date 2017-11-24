@@ -132,19 +132,19 @@ public class RemoteInterpreterServer
 
   private boolean isTest;
 
-  public RemoteInterpreterServer(String callbackHost, int port) throws IOException,
-      TTransportException {
-    this(callbackHost, port, false);
+  public RemoteInterpreterServer(String callbackHost, int callbackPort, String portRange)
+      throws IOException, TTransportException {
+    this(callbackHost, callbackPort, portRange, false);
   }
 
-  public RemoteInterpreterServer(String callbackHost, int port, boolean isTest)
-      throws TTransportException, IOException {
+  public RemoteInterpreterServer(String callbackHost, int callbackPort, String portRange,
+                                 boolean isTest) throws TTransportException, IOException {
     if (null != callbackHost) {
       this.callbackHost = callbackHost;
-      this.callbackPort = port;
+      this.callbackPort = callbackPort;
     } else {
       // DevInterpreter
-      this.port = port;
+      this.port = callbackPort;
     }
     this.isTest = isTest;
 
@@ -152,14 +152,16 @@ public class RemoteInterpreterServer
     TServerSocket serverTransport;
     if (null == callbackHost) {
       // Dev Interpreter
-      serverTransport = new TServerSocket(port);
+      serverTransport = new TServerSocket(callbackPort);
     } else {
-      this.port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+      serverTransport = RemoteInterpreterUtils.createTServerSocket(portRange);
+      this.port = serverTransport.getServerSocket().getLocalPort();
       this.host = RemoteInterpreterUtils.findAvailableHostAddress();
-      serverTransport = new TServerSocket(this.port);
+      logger.info("Launching ThriftServer at " + this.host + ":" + this.port);
     }
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
+    logger.info("Starting remote interpreter server on port {}", port);
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
     remoteWorksController = new ZeppelinRemoteWorksController(this, remoteWorksResponsePool);
   }
@@ -207,7 +209,11 @@ public class RemoteInterpreterServer
     if (interpreterGroup != null) {
       for (List<Interpreter> session : interpreterGroup.values()) {
         for (Interpreter interpreter : session) {
-          interpreter.close();
+          try {
+            interpreter.close();
+          } catch (InterpreterException e) {
+            logger.warn("Fail to close interpreter", e);
+          }
         }
       }
     }
@@ -250,12 +256,16 @@ public class RemoteInterpreterServer
       throws TTransportException, InterruptedException, IOException {
     String callbackHost = null;
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
+    String portRange = ":";
     if (args.length > 0) {
       callbackHost = args[0];
       port = Integer.parseInt(args[1]);
+      if (args.length > 2) {
+        portRange = args[2];
+      }
     }
     RemoteInterpreterServer remoteInterpreterServer =
-        new RemoteInterpreterServer(callbackHost, port);
+        new RemoteInterpreterServer(callbackHost, port, portRange);
     remoteInterpreterServer.start();
     remoteInterpreterServer.join();
     System.exit(0);
@@ -356,7 +366,11 @@ public class RemoteInterpreterServer
   public void open(String sessionId, String className) throws TException {
     logger.info(String.format("Open Interpreter %s for session %s ", className, sessionId));
     Interpreter intp = getInterpreter(sessionId, className);
-    intp.open();
+    try {
+      intp.open();
+    } catch (InterpreterException e) {
+      throw new TException("Fail to open interpreter", e);
+    }
   }
 
   @Override
@@ -388,7 +402,11 @@ public class RemoteInterpreterServer
       while (it.hasNext()) {
         Interpreter inp = it.next();
         if (inp.getClassName().equals(className)) {
-          inp.close();
+          try {
+            inp.close();
+          } catch (InterpreterException e) {
+            logger.warn("Fail to close interpreter", e);
+          }
           it.remove();
           break;
         }
@@ -444,7 +462,8 @@ public class RemoteInterpreterServer
     }
     return convert(result,
         context.getConfig(),
-        context.getGui());
+        context.getGui(),
+        context.getNoteGui());
   }
 
   @Override
@@ -655,7 +674,11 @@ public class RemoteInterpreterServer
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
-      intp.cancel(convert(interpreterContext, null));
+      try {
+        intp.cancel(convert(interpreterContext, null));
+      } catch (InterpreterException e) {
+        throw new TException("Fail to cancel", e);
+      }
     }
   }
 
@@ -672,7 +695,11 @@ public class RemoteInterpreterServer
         throw new TException("No interpreter {} existed for session {}".format(
             className, sessionId));
       }
-      return intp.getProgress(convert(interpreterContext, null));
+      try {
+        return intp.getProgress(convert(interpreterContext, null));
+      } catch (InterpreterException e) {
+        throw new TException("Fail to getProgress", e);
+      }
     }
   }
 
@@ -680,7 +707,11 @@ public class RemoteInterpreterServer
   @Override
   public String getFormType(String sessionId, String className) throws TException {
     Interpreter intp = getInterpreter(sessionId, className);
-    return intp.getFormType().toString();
+    try {
+      return intp.getFormType().toString();
+    } catch (InterpreterException e) {
+      throw new TException(e);
+    }
   }
 
   @Override
@@ -688,8 +719,11 @@ public class RemoteInterpreterServer
       String className, String buf, int cursor, RemoteInterpreterContext remoteInterpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(sessionId, className);
-    List completion = intp.completion(buf, cursor, convert(remoteInterpreterContext, null));
-    return completion;
+    try {
+      return intp.completion(buf, cursor, convert(remoteInterpreterContext, null));
+    } catch (InterpreterException e) {
+      throw new TException("Fail to get completion", e);
+    }
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
@@ -716,6 +750,7 @@ public class RemoteInterpreterServer
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
         GUI.fromJson(ric.getGui()),
+        GUI.fromJson(ric.getNoteGui()),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
         contextRunners, output, remoteWorksController, eventClient, progressMap);
@@ -847,7 +882,7 @@ public class RemoteInterpreterServer
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,
-      Map<String, Object> config, GUI gui) {
+      Map<String, Object> config, GUI gui, GUI noteGui) {
 
     List<RemoteInterpreterResultMessage> msg = new LinkedList<>();
     for (InterpreterResultMessage m : result.message()) {
@@ -860,7 +895,8 @@ public class RemoteInterpreterServer
         result.code().name(),
         msg,
         gson.toJson(config),
-        gui.toJson());
+        gui.toJson(),
+        noteGui.toJson());
   }
 
   @Override

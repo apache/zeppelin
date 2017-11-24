@@ -107,7 +107,13 @@ public class Input<T> implements Serializable {
     if (displayName != null ? !displayName.equals(input.displayName) : input.displayName != null) {
       return false;
     }
-    if (defaultValue != null ?
+    if (defaultValue instanceof Object[]) {
+      if (defaultValue != null ?
+          !Arrays.equals((Object[]) defaultValue, (Object[]) input.defaultValue)
+          : input.defaultValue != null) {
+        return false;
+      }
+    } else if (defaultValue != null ?
         !defaultValue.equals(input.defaultValue) : input.defaultValue != null) {
       return false;
     }
@@ -149,6 +155,8 @@ public class Input<T> implements Serializable {
   //                                                checkbox form with " or " as delimiter: will be
   //                                                expanded to "US or JP"
   private static final Pattern VAR_PTN = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
+  private static final Pattern VAR_NOTE_PTN =
+      Pattern.compile("([_])?[$]{2}[{]([^=}]*([=][^}]*)?)[}]");
 
   private static String[] getNameAndDisplayName(String str) {
     Pattern p = Pattern.compile("([^(]*)\\s*[(]([^)]*)[)]");
@@ -275,15 +283,21 @@ public class Input<T> implements Serializable {
     return input;
   }
 
-  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script) {
+  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script,
+                                                                    boolean noteForm) {
     LinkedHashMap<String, Input> forms = new LinkedHashMap<>();
     if (script == null) {
       return forms;
     }
     String replaced = script;
 
-    Matcher match = VAR_PTN.matcher(replaced);
+    Pattern pattern = noteForm ? VAR_NOTE_PTN : VAR_PTN;
+    Matcher match = pattern.matcher(replaced);
     while (match.find()) {
+      int first = match.start();
+      if (!noteForm && first > 0 && replaced.charAt(first - 1) == '$') {
+        continue;
+      }
       Input form = getInputForm(match);
       forms.put(form.name, form);
     }
@@ -294,11 +308,18 @@ public class Input<T> implements Serializable {
 
   private static final String DEFAULT_DELIMITER = ",";
 
-  public static String getSimpleQuery(Map<String, Object> params, String script) {
+  public static String getSimpleQuery(Map<String, Object> params, String script, boolean noteForm) {
     String replaced = script;
 
-    Matcher match = VAR_PTN.matcher(replaced);
+    Pattern pattern = noteForm ? VAR_NOTE_PTN : VAR_PTN;
+
+    Matcher match = pattern.matcher(replaced);
     while (match.find()) {
+      int first = match.start();
+
+      if (!noteForm && first > 0 && replaced.charAt(first - 1) == '$') {
+        continue;
+      }
       Input input = getInputForm(match);
       Object value;
       if (params.containsKey(input.name)) {
@@ -331,7 +352,7 @@ public class Input<T> implements Serializable {
         expanded = value.toString();
       }
       replaced = match.replaceFirst(expanded);
-      match = VAR_PTN.matcher(replaced);
+      match = pattern.matcher(replaced);
     }
 
     return replaced;

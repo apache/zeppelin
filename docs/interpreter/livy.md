@@ -144,7 +144,12 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>zeppelin.livy.ssl.trustStorePassword</td>
     <td></td>
     <td>password for trustStore file. Used when livy ssl is enabled</td>
-  </tr>  
+  </tr>
+  <tr>
+    <td>zeppelin.livy.http.headers</td>
+    <td>key_1: value_1; key_2: value_2</td>
+    <td>custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>
+  </tr>
 </table>
 
 **We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
@@ -203,12 +208,13 @@ i.e. sends extra parameter for creating and running a session ("proxyUser": "${l
 This is particularly useful when multi users are sharing a Notebook server.
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). Form templates is only avalible for livy sql interpreter.
+```
+%livy.sql
+select * from products where ${product_id=1}
+```
 
-```
-%livy.pyspark
-print "${group_by=product_id,product_id|product_name|customer_id|store_id}"
-```
+And creating dynamic formst programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
 
 ## FAQ
 

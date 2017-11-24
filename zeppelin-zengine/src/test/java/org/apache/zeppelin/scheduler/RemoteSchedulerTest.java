@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -63,7 +64,6 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
     schedulerSvc = new SchedulerFactory();
 
     InterpreterOption interpreterOption = new InterpreterOption();
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterA.class.getName(), "mock", true, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
@@ -120,6 +120,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
             "text",
             new AuthenticationInfo(),
             new HashMap<String, Object>(),
+            new GUI(),
             new GUI(),
             null,
             new LocalResourcePool("pool1"),
@@ -182,55 +183,6 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           new AuthenticationInfo(),
           new HashMap<String, Object>(),
           new GUI(),
-          null,
-          new LocalResourcePool("pool1"),
-          new LinkedList<InterpreterContextRunner>(), null);
-
-      @Override
-      public Object getReturn() {
-        return results;
-      }
-
-      @Override
-      public int progress() {
-        return 0;
-      }
-
-      @Override
-      public Map<String, Object> info() {
-        return null;
-      }
-
-      @Override
-      protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", context);
-        return "1000";
-      }
-
-      @Override
-      protected boolean jobAbort() {
-        if (isRunning()) {
-          intpA.cancel(context);
-        }
-        return true;
-      }
-
-      @Override
-      public void setResult(Object results) {
-        this.results = results;
-      }
-    };
-
-    Job job2 = new Job("jobId2", "jobName2", null, 200) {
-      public Object results;
-      InterpreterContext context = new InterpreterContext(
-          "note",
-          "jobId2",
-          null,
-          "title",
-          "text",
-          new AuthenticationInfo(),
-          new HashMap<String, Object>(),
           new GUI(),
           null,
           new LocalResourcePool("pool1"),
@@ -260,7 +212,66 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
       @Override
       protected boolean jobAbort() {
         if (isRunning()) {
-          intpA.cancel(context);
+          try {
+            intpA.cancel(context);
+          } catch (InterpreterException e) {
+            e.printStackTrace();
+          }
+        }
+        return true;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
+      }
+    };
+
+    Job job2 = new Job("jobId2", "jobName2", null, 200) {
+      public Object results;
+      InterpreterContext context = new InterpreterContext(
+          "note",
+          "jobId2",
+          null,
+          "title",
+          "text",
+          new AuthenticationInfo(),
+          new HashMap<String, Object>(),
+          new GUI(),
+          new GUI(),
+          null,
+          new LocalResourcePool("pool1"),
+          new LinkedList<InterpreterContextRunner>(), null);
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        intpA.interpret("1000", context);
+        return "1000";
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        if (isRunning()) {
+          try {
+            intpA.cancel(context);
+          } catch (InterpreterException e) {
+            e.printStackTrace();
+          }
         }
         return true;
       }

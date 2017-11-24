@@ -64,7 +64,7 @@ public class PySparkInterpreterMatplotlibTest {
      * normally handles this in real use cases.
      */    
     @Override
-    public InterpreterResult interpret(String st, InterpreterContext context) {
+    public InterpreterResult interpret(String st, InterpreterContext context) throws InterpreterException {
       context.out.clear();
       InterpreterResult result = super.interpret(st, context);
       List<InterpreterResultMessage> resultMessages = null;
@@ -115,6 +115,7 @@ public class PySparkInterpreterMatplotlibTest {
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
+        new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
@@ -140,7 +141,7 @@ public class PySparkInterpreterMatplotlibTest {
   }
 
   @Test
-  public void dependenciesAreInstalled() {
+  public void dependenciesAreInstalled() throws InterpreterException {
     // matplotlib
     InterpreterResult ret = pyspark.interpret("import matplotlib", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
@@ -151,7 +152,7 @@ public class PySparkInterpreterMatplotlibTest {
   }
 
   @Test
-  public void showPlot() {
+  public void showPlot() throws InterpreterException {
     // Simple plot test
     InterpreterResult ret;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
@@ -168,7 +169,7 @@ public class PySparkInterpreterMatplotlibTest {
 
   @Test
   // Test for when configuration is set to auto-close figures after show().
-  public void testClose() {
+  public void testClose() throws InterpreterException {
     InterpreterResult ret;
     InterpreterResult ret1;
     InterpreterResult ret2;
@@ -195,7 +196,7 @@ public class PySparkInterpreterMatplotlibTest {
   
   @Test
   // Test for when configuration is set to not auto-close figures after show().
-  public void testNoClose() {
+  public void testNoClose() throws InterpreterException {
     InterpreterResult ret;
     InterpreterResult ret1;
     InterpreterResult ret2;
@@ -222,7 +223,7 @@ public class PySparkInterpreterMatplotlibTest {
   
   @Test
   // Test angular mode
-  public void testAngular() {
+  public void testAngular() throws InterpreterException {
     InterpreterResult ret;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
     ret = pyspark.interpret("plt.close()", context);

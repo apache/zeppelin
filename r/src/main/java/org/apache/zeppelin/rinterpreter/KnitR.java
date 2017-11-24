@@ -34,12 +34,12 @@ import java.util.Properties;
 public class KnitR extends Interpreter implements WrappedInterpreter {
   KnitRInterpreter intp;
 
-  public KnitR(Properties property, Boolean startSpark) {
-    super(property);
-    intp = new KnitRInterpreter(property, startSpark);
+  public KnitR(Properties properties, Boolean startSpark) {
+    super(properties);
+    intp = new KnitRInterpreter(properties, startSpark);
   }
-  public KnitR(Properties property) {
-    this(property, true);
+  public KnitR(Properties properties) {
+    this(properties, true);
   }
 
   public KnitR() {
@@ -47,38 +47,39 @@ public class KnitR extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     intp.open();
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     intp.close();
   }
 
   @Override
-  public InterpreterResult interpret(String s, InterpreterContext interpreterContext) {
+  public InterpreterResult interpret(String s, InterpreterContext interpreterContext)
+      throws InterpreterException {
     return intp.interpret(s, interpreterContext);
   }
 
   @Override
-  public void cancel(InterpreterContext interpreterContext) {
+  public void cancel(InterpreterContext interpreterContext) throws InterpreterException {
     intp.cancel(interpreterContext);
   }
 
   @Override
-  public FormType getFormType() {
+  public FormType getFormType() throws InterpreterException {
     return intp.getFormType();
   }
 
   @Override
-  public int getProgress(InterpreterContext interpreterContext) {
+  public int getProgress(InterpreterContext interpreterContext) throws InterpreterException {
     return intp.getProgress(interpreterContext);
   }
 
   @Override
   public List<InterpreterCompletion> completion(String s, int i,
-      InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) throws InterpreterException {
     List completion = intp.completion(s, i, interpreterContext);
     return completion;
   }
@@ -94,14 +95,14 @@ public class KnitR extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public void setProperty(Properties property) {
-    super.setProperty(property);
-    intp.setProperty(property);
+  public void setProperties(Properties properties) {
+    super.setProperties(properties);
+    intp.setProperties(properties);
   }
 
   @Override
-  public Properties getProperty() {
-    return intp.getProperty();
+  public Properties getProperties() {
+    return intp.getProperties();
   }
 
   @Override

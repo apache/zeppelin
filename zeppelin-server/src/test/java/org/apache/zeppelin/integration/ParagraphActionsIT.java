@@ -725,4 +725,164 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       handleException("Exception in ParagraphActionsIT while testMultipleDynamicFormsSameType  ", e);
     }
   }
+
+  @Test
+  public void testNoteDynamicFormTextInput() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      setTextOfParagraph(1, "%spark println(\"Hello \"+z.noteTextbox(\"name\", \"world\")) ");
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("Output text is equal to value specified initially", driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(), CoreMatchers.equalTo("Hello world"));
+      driver.findElement(By.xpath(getNoteFormsXPath() + "//input")).clear();
+      driver.findElement(By.xpath(getNoteFormsXPath() + "//input")).sendKeys("Zeppelin");
+      driver.findElement(By.xpath(getNoteFormsXPath() + "//input")).sendKeys(Keys.RETURN);
+
+      collector.checkThat("After new data in text input form, output should not be changed",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("Hello world"));
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("Only after running the paragraph, we can see the newly updated output",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("Hello Zeppelin"));
+
+      setTextOfParagraph(2, "%spark println(\"Hello \"+z.noteTextbox(\"name\", \"world\")) ");
+      runParagraph(2);
+      waitForParagraph(2, "FINISHED");
+      collector.checkThat("Running the another paragraph with same form, we can see value from note form",
+      driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+      CoreMatchers.equalTo("Hello Zeppelin"));
+
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testNoteDynamicFormTextInput  ", e);
+    }
+  }
+
+  @Test
+  public void testNoteDynamicFormSelect() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      setTextOfParagraph(1, "%spark println(\"Howdy \"+z.noteSelect(\"names\", Seq((\"1\",\"Alice\"), " +
+          "(\"2\",\"Bob\"),(\"3\",\"stranger\"))))");
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("Output text should not display any of the options in select form",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("Howdy "));
+
+      Select dropDownMenu = new Select(driver.findElement(By.xpath("(" + (getNoteFormsXPath() + "//select)[1]"))));
+
+      dropDownMenu.selectByVisibleText("Bob");
+      collector.checkThat("After selection in drop down menu, output should not be changed",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("Howdy "));
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+
+      collector.checkThat("After run paragraph again, we can see the newly updated output",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("Howdy 2"));
+
+      setTextOfParagraph(2, "%spark println(\"Howdy \"+z.noteSelect(\"names\", Seq((\"1\",\"Alice\"), " +
+          "(\"2\",\"Bob\"),(\"3\",\"stranger\"))))");
+
+      runParagraph(2);
+      waitForParagraph(2, "FINISHED");
+
+      collector.checkThat("Running the another paragraph with same form, we can see value from note form",
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("Howdy 2"));
+
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testNoteDynamicFormSelect  ", e);
+    }
+  }
+
+  @Test
+  public void testDynamicNoteFormCheckbox() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      setTextOfParagraph(1, "%spark val options = Seq((\"han\",\"Han\"), (\"leia\",\"Leia\"), " +
+          "(\"luke\",\"Luke\")); println(\"Greetings \"+z.noteCheckbox(\"skywalkers\",options).mkString(\" and \"))");
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("Output text should display all of the options included in check boxes",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.containsString("Greetings han and leia and luke"));
+
+      WebElement firstCheckbox = driver.findElement(By.xpath("(" + getNoteFormsXPath() + "//input[@type='checkbox'])[1]"));
+      firstCheckbox.click();
+      collector.checkThat("After unchecking one of the boxes, output should not be changed",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.containsString("Greetings han and leia and luke"));
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+
+      collector.checkThat("After run paragraph again, we can see the newly updated output",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.containsString("Greetings leia and luke"));
+
+      setTextOfParagraph(2, "%spark val options = Seq((\"han\",\"Han\"), (\"leia\",\"Leia\"), " +
+          "(\"luke\",\"Luke\")); println(\"Greetings \"+z.noteCheckbox(\"skywalkers\",options).mkString(\" and \"))");
+
+      runParagraph(2);
+      waitForParagraph(2, "FINISHED");
+
+      collector.checkThat("Running the another paragraph with same form, we can see value from note form",
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.containsString("Greetings leia and luke"));
+
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testDynamicNoteFormCheckbox  ", e);
+    }
+  }
+
+  @Test
+  public void testWithNoteAndParagraphDynamicFormTextInput() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      setTextOfParagraph(1, "%spark println(z.noteTextbox(\"name\", \"note\") + \" \" + z.textbox(\"name\", \"paragraph\")) ");
+
+      runParagraph(1);
+      waitForParagraph(1, "FINISHED");
+
+      collector.checkThat("After run paragraph, we can see computed output from two forms",
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
+          CoreMatchers.equalTo("note paragraph"));
+
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testWithNoteAndParagraphDynamicFormTextInput  ", e);
+    }
+  }
 }

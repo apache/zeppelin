@@ -334,39 +334,41 @@ public class Notebook implements NoteEventListener {
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : interpreterSettingManager.get()) {
-      AngularObjectRegistry registry =
-          settings.getOrCreateInterpreterGroup(subject.getUser(), id).getAngularObjectRegistry();
-      if (registry instanceof RemoteAngularObjectRegistry) {
-        // remove paragraph scope object
-        for (Paragraph p : note.getParagraphs()) {
-          ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, p.getId());
+      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(subject.getUser(), id);
+      if (interpreterGroup != null) {
+        AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+        if (registry instanceof RemoteAngularObjectRegistry) {
+          // remove paragraph scope object
+          for (Paragraph p : note.getParagraphs()) {
+            ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, p.getId());
 
-          // remove app scope object
-          List<ApplicationState> appStates = p.getAllApplicationStates();
-          if (appStates != null) {
-            for (ApplicationState app : appStates) {
-              ((RemoteAngularObjectRegistry) registry)
-                  .removeAllAndNotifyRemoteProcess(id, app.getId());
+            // remove app scope object
+            List<ApplicationState> appStates = p.getAllApplicationStates();
+            if (appStates != null) {
+              for (ApplicationState app : appStates) {
+                ((RemoteAngularObjectRegistry) registry)
+                    .removeAllAndNotifyRemoteProcess(id, app.getId());
+              }
             }
           }
-        }
-        // remove note scope object
-        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
-      } else {
-        // remove paragraph scope object
-        for (Paragraph p : note.getParagraphs()) {
-          registry.removeAll(id, p.getId());
+          // remove note scope object
+          ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
+        } else {
+          // remove paragraph scope object
+          for (Paragraph p : note.getParagraphs()) {
+            registry.removeAll(id, p.getId());
 
-          // remove app scope object
-          List<ApplicationState> appStates = p.getAllApplicationStates();
-          if (appStates != null) {
-            for (ApplicationState app : appStates) {
-              registry.removeAll(id, app.getId());
+            // remove app scope object
+            List<ApplicationState> appStates = p.getAllApplicationStates();
+            if (appStates != null) {
+              for (ApplicationState app : appStates) {
+                registry.removeAll(id, app.getId());
+              }
             }
           }
+          // remove note scope object
+          registry.removeAll(id, null);
         }
-        // remove note scope object
-        registry.removeAll(id, null);
       }
     }
 
@@ -445,6 +447,25 @@ public class Notebook implements NoteEventListener {
             }
             config.put("results", results);
           }
+        } else if (ret == null && p.getConfig() != null) {
+          //ZEPPELIN-3063 Notebook loses formatting when importing from 0.6.x
+          if (p.getConfig().get("graph") != null && p.getConfig().get("graph") instanceof Map
+            && !((Map) p.getConfig().get("graph")).get("mode").equals("table")) {
+            Map<String, Object> config = p.getConfig();
+            Object graph = config.remove("graph");
+            Object apps = config.remove("apps");
+            Object helium = config.remove("helium");
+
+            List<Object> results = new LinkedList<>();
+
+            HashMap<Object, Object> res = new HashMap<>();
+            res.put("graph", graph);
+            res.put("apps", apps);
+            res.put("helium", helium);
+            results.add(res);
+
+            config.put("results", results);
+          }
         }
       } catch (Exception e) {
         logger.error("Conversion failure", e);
@@ -517,9 +538,8 @@ public class Notebook implements NoteEventListener {
       SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
       List<InterpreterSetting> settings = interpreterSettingManager.get();
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getOrCreateInterpreterGroup(subject.getUser(),
-            note.getId());
-        if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
+        InterpreterGroup intpGroup = setting.getInterpreterGroup(subject.getUser(), note.getId());
+        if (intpGroup != null && intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();
           String paragraphId = snapshot.getAngularObject().getParagraphId();
@@ -881,10 +901,14 @@ public class Notebook implements NoteEventListener {
       }
 
       boolean releaseResource = false;
+      String cronExecutingUser = null;
       try {
         Map<String, Object> config = note.getConfig();
-        if (config != null && config.containsKey("releaseresource")) {
-          releaseResource = (boolean) note.getConfig().get("releaseresource");
+        if (config != null) {
+          if (config.containsKey("releaseresource")) {
+            releaseResource = (boolean) config.get("releaseresource");
+          }
+          cronExecutingUser = (String) config.get("cronExecutingUser");
         }
       } catch (ClassCastException e) {
         logger.error(e.getMessage(), e);
@@ -892,7 +916,12 @@ public class Notebook implements NoteEventListener {
       if (releaseResource) {
         for (InterpreterSetting setting : notebook.getInterpreterSettingManager()
             .getInterpreterSettings(note.getId())) {
-          notebook.getInterpreterSettingManager().restart(setting.getId());
+          try {
+            notebook.getInterpreterSettingManager().restart(setting.getId(), noteId,
+                    cronExecutingUser != null ? cronExecutingUser : "anonymous");
+          } catch (InterpreterException e) {
+            logger.error("Fail to restart interpreter: " + setting.getId(), e);
+          }
         }
       }
     }

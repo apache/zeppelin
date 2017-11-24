@@ -27,7 +27,8 @@ struct RemoteInterpreterContext {
   6: string authenticationInfo,
   7: string config,   // json serialized config
   8: string gui,      // json serialized gui
-  9: string runners   // json serialized runner
+  9: string noteGui,      // json serialized note gui
+  10: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResultMessage {
@@ -39,6 +40,7 @@ struct RemoteInterpreterResult {
   2: list<RemoteInterpreterResultMessage> msg,
   3: string config,   // json serialized config
   4: string gui       // json serialized gui
+  5: string noteGui       // json serialized note gui
 }
 
 enum RemoteInterpreterEventType {

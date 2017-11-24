@@ -39,7 +39,15 @@ public class LivySQLInterpreterTest {
     properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
     properties.setProperty("zeppelin.livy.spark.sql.maxResult", "3");
+    properties.setProperty("zeppelin.livy.http.headers", "HEADER_1: VALUE_1_${HOME}");
     sqlInterpreter = new LivySparkSQLInterpreter(properties);
+  }
+
+  @Test
+  public void testHttpHeaders() {
+    assertEquals(1, sqlInterpreter.getCustomHeaders().size());
+    assertTrue(sqlInterpreter.getCustomHeaders().get("HEADER_1").startsWith("VALUE_1_"));
+    assertNotEquals("VALUE_1_${HOME}", sqlInterpreter.getCustomHeaders().get("HEADER_1"));
   }
 
   @Test

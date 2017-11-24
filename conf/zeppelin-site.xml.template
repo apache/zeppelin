@@ -138,6 +138,16 @@
 </property>
 -->
 
+<!-- Optional override to control which signature algorithm should be used to sign AWS requests -->
+<!-- Set this property to "S3SignerType" if your AWS S3 compatible APIs support only AWS Signature Version 2 such as Ceph. -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.signerOverride</name>
+  <value>S3SignerType</value>
+  <description>optional override to control which signature algorithm should be used to sign AWS requests</description>
+</property>
+-->
+
 <!-- If using Azure for storage use the following settings -->
 <!--
 <property>
@@ -181,13 +191,13 @@
 </property>
 
 <property>
-  <name>zeppelin.hdfs.keytab</name>
+  <name>zeppelin.server.kerberos.keytab</name>
   <value></value>
   <description>keytab for accessing kerberized hdfs</description>
 </property>
 
 <property>
-  <name>zeppelin.hdfs.principal</name>
+  <name>zeppelin.server.kerberos.principal</name>
   <value></value>
   <description>principal for accessing kerberized hdfs</description>
 </property>
@@ -384,6 +394,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.default.owner.username</name>
+  <value></value>
+  <description>Set owner role by default</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.public</name>
   <value>true</value>
   <description>Make notebook public by default when created, private otherwise</description>
@@ -399,6 +415,25 @@
   <name>zeppelin.server.default.dir.allowed</name>
   <value>false</value>
   <description>Enable directory listings on server.</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.class</name>
+  <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
+  <description>LifecycleManager class for managing the lifecycle of interpreters, by default interpreter will
+  be closed after timeout</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
+  <value>60000</value>
+  <description>milliseconds of the interval to checking whether interpreter is time out</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
+  <value>3600000</value>
+  <description>milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
 </property>
 
 <!--

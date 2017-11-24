@@ -57,7 +57,7 @@ To enable versioning for all your local notebooks though a standard Git reposito
 ## Notebook Storage in hadoop compatible file system repository <a name="Hdfs"></a>
 
 Notes may be stored in hadoop compatible file system such as hdfs, so that multiple Zeppelin instances can share the same notes. It supports all the versions of hadoop 2.x. If you use `FileSystemNotebookRepo`, then `zeppelin.notebook.dir` is the path on the hadoop compatible file system. And you need to specify `HADOOP_CONF_DIR` in `zeppelin-env.sh` so that zeppelin can find the right hadoop configuration files.
-If your hadoop cluster is kerberized, then you need to specify `zeppelin.hdfs.keytab` and `zeppelin.hdfs.principal`
+If your hadoop cluster is kerberized, then you need to specify `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal`
 
 ```
 <property>

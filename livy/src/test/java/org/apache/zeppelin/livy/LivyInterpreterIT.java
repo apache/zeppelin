@@ -75,8 +75,9 @@ public class LivyInterpreterIT {
     return true;
   }
 
+
 //  @Test
-  public void testSparkInterpreterRDD() {
+  public void testSparkInterpreterRDD() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -89,7 +90,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkInterpreter.open();
 
     try {
@@ -195,8 +196,9 @@ public class LivyInterpreterIT {
     }
   }
 
+
 //  @Test
-  public void testSparkInterpreterDataFrame() {
+  public void testSparkInterpreterDataFrame() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -209,7 +211,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkInterpreter.open();
 
     LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
@@ -284,7 +286,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testSparkSQLInterpreter() {
+  public void testSparkSQLInterpreter() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -305,7 +307,7 @@ public class LivyInterpreterIT {
       MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
       InterpreterOutput output = new InterpreterOutput(outputListener);
       InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
-          "title", "text", authInfo, null, null, null, null, null, output);
+          "title", "text", authInfo, null, null, null, null, null, null, output);
       InterpreterResult result = sqlInterpreter.interpret("show tables", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
@@ -319,7 +321,7 @@ public class LivyInterpreterIT {
 
 
 //  @Test
-  public void testSparkSQLCancellation() {
+  public void testSparkSQLCancellation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -332,7 +334,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkInterpreter.open();
 
     final LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
@@ -400,7 +402,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testStringWithTruncation() {
+  public void testStringWithTruncation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -413,7 +415,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkInterpreter.open();
 
     LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
@@ -459,8 +461,9 @@ public class LivyInterpreterIT {
     }
   }
 
+
 //  @Test
-  public void testStringWithoutTruncation() {
+  public void testStringWithoutTruncation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -478,7 +481,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkInterpreter.open();
 
     LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(newProps);
@@ -525,7 +528,7 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  public void testPySparkInterpreter() throws LivyException {
+  public void testPySparkInterpreter() throws LivyException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -535,7 +538,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     pysparkInterpreter.open();
 
     // test traceback msg
@@ -645,7 +648,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testSparkInterpreterWithDisplayAppInfo() {
+  public void testSparkInterpreterWithDisplayAppInfo() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -662,7 +665,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkInterpreter.open();
 
     try {
@@ -684,7 +687,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testSparkRInterpreter() throws LivyException {
+  public void testSparkRInterpreter() throws LivyException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -700,7 +703,7 @@ public class LivyInterpreterIT {
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sparkr",
-        "title", "text", authInfo, null, null, null, null, null, output);
+        "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkRInterpreter.open();
 
     try {
@@ -756,7 +759,7 @@ public class LivyInterpreterIT {
   }
 
 //  @Test
-  public void testLivyTutorialNote() throws IOException {
+  public void testLivyTutorialNote() throws IOException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -777,7 +780,7 @@ public class LivyInterpreterIT {
       MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
       InterpreterOutput output = new InterpreterOutput(outputListener);
       InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
-          "title", "text", authInfo, null, null, null, null, null, output);
+          "title", "text", authInfo, null, null, null, null, null, null, output);
 
       String p1 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_1.scala"));
       InterpreterResult result = sparkInterpreter.interpret(p1, context);

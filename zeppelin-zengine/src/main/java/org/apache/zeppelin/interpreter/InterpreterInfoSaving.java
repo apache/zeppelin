@@ -63,11 +63,6 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
         for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
-          // Always use separate interpreter process
-          // While we decided to turn this feature on always (without providing
-          // enable/disable option on GUI).
-          // previously created setting should turn this feature on here.
-          interpreterSetting.getOption().setRemote(true);
           interpreterSetting.convertPermissionsFromUsersToOwners(
               jsonObject.getAsJsonObject("interpreterSettings")
                   .getAsJsonObject(interpreterSetting.getId()));

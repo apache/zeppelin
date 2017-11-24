@@ -44,6 +44,7 @@ public class MiniHadoopCluster {
 
     // start MiniYarnCluster
     YarnConfiguration baseConfig = new YarnConfiguration(hadoopConf);
+    baseConfig.set("yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage", "95");
     this.yarnCluster = new MiniYARNCluster(getClass().getName(), 2,
         1, 1);
     yarnCluster.init(baseConfig);

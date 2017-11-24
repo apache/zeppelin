@@ -60,7 +60,6 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     onRemove = new AtomicInteger(0);
 
     InterpreterOption interpreterOption = new InterpreterOption();
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterAngular.class.getName(), "mock", true, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
@@ -87,6 +86,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
+        new GUI(),
         new AngularObjectRegistry(intp.getInterpreterGroup().getId(), null),
         new LocalResourcePool("pool1"),
         new LinkedList<InterpreterContextRunner>(), null);
@@ -101,7 +101,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   }
 
   @Test
-  public void testAngularObjectInterpreterSideCRUD() throws InterruptedException {
+  public void testAngularObjectInterpreterSideCRUD() throws InterruptedException, InterpreterException {
     InterpreterResult ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
     String[] result = ret.message().get(0).getData().split(" ");
@@ -134,7 +134,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   }
 
   @Test
-  public void testAngularObjectRemovalOnZeppelinServerSide() throws InterruptedException {
+  public void testAngularObjectRemovalOnZeppelinServerSide() throws InterruptedException, InterpreterException {
     // test if angularobject removal from server side propagate to interpreter process's registry.
     // will happen when notebook is removed.
 
@@ -159,7 +159,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   }
 
   @Test
-  public void testAngularObjectAddOnZeppelinServerSide() throws InterruptedException {
+  public void testAngularObjectAddOnZeppelinServerSide() throws InterruptedException, InterpreterException {
     // test if angularobject add from server side propagate to interpreter process's registry.
     // will happen when zeppelin server loads notebook and restore the object into registry
 

@@ -46,7 +46,7 @@ public class SleepInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    if (Boolean.parseBoolean(property.getProperty("zeppelin.SleepInterpreter.parallel", "false"))) {
+    if (Boolean.parseBoolean(getProperty("zeppelin.SleepInterpreter.parallel", "false"))) {
       return SchedulerFactory.singleton().createOrGetParallelScheduler(
           "Parallel-" + SleepInterpreter.class.getName(), 10);
     }

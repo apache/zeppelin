@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,6 +34,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +158,7 @@ public class NotebookAuthorization {
   }
   
   public boolean isPublic() {
-    return conf.isNotebokPublic();
+    return conf.isNotebookPublic();
   }
 
   private Set<String> validateUser(Set<String> users) {
@@ -293,24 +293,36 @@ public class NotebookAuthorization {
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {
-    return isMember(entities, getOwners(noteId));
+    return isMember(entities, getOwners(noteId)) || isAdmin(entities);
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    return isMember(entities, getWriters(noteId)) || isMember(entities, getOwners(noteId));
+    return isMember(entities, getWriters(noteId)) ||
+           isMember(entities, getOwners(noteId)) ||
+           isAdmin(entities);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
     return isMember(entities, getReaders(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getRunners(noteId));
+           isMember(entities, getOwners(noteId)) ||
+           isMember(entities, getWriters(noteId)) ||
+           isMember(entities, getRunners(noteId)) ||
+           isAdmin(entities);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
     return isMember(entities, getRunners(noteId)) ||
-            isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getOwners(noteId));
+           isMember(entities, getWriters(noteId)) ||
+           isMember(entities, getOwners(noteId)) ||
+           isAdmin(entities);
+  }
+
+  private boolean isAdmin(Set<String> entities) {
+    String adminRole = conf.getString(ConfVars.ZEPPELIN_OWNER_ROLE);
+    if (StringUtils.isBlank(adminRole)) {
+      return false;
+    }
+    return entities.contains(adminRole);
   }
 
   // return true if b is empty or if (a intersection b) is non-empty

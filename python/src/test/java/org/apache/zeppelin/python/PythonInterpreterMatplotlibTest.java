@@ -22,6 +22,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -70,6 +71,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
+        new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
@@ -83,7 +85,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
   }
 
   @Test
-  public void dependenciesAreInstalled() {
+  public void dependenciesAreInstalled() throws InterpreterException {
     // matplotlib
     InterpreterResult ret = python.interpret("import matplotlib", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
@@ -94,7 +96,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
   }
 
   @Test
-  public void showPlot() throws IOException {
+  public void showPlot() throws IOException, InterpreterException {
     // Simple plot test
     InterpreterResult ret;
     ret = python.interpret("import matplotlib.pyplot as plt", context);
@@ -111,7 +113,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
 
   @Test
   // Test for when configuration is set to auto-close figures after show().
-  public void testClose() throws IOException {
+  public void testClose() throws IOException, InterpreterException {
     InterpreterResult ret;
     InterpreterResult ret1;
     InterpreterResult ret2;
@@ -145,7 +147,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
 
   @Test
   // Test for when configuration is set to not auto-close figures after show().
-  public void testNoClose() throws IOException {
+  public void testNoClose() throws IOException, InterpreterException {
     InterpreterResult ret;
     InterpreterResult ret1;
     InterpreterResult ret2;

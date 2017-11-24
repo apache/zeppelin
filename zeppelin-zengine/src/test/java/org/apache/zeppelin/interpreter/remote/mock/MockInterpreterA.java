@@ -51,8 +51,9 @@ public class MockInterpreterA extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
-    if (property.containsKey("progress")) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
+    if (getProperties().containsKey("progress")) {
       context.setProgress(Integer.parseInt(getProperty("progress")));
     }
     try {

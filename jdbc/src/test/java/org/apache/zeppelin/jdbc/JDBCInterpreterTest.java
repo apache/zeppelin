@@ -37,6 +37,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.FIFOScheduler;
@@ -90,8 +91,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     PreparedStatement insertStatement = connection.prepareStatement("insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
     insertStatement.setString(1, null);
     insertStatement.execute();
-    interpreterContext = new InterpreterContext("", "1", null, "", "", new AuthenticationInfo("testUser"), null, null, null, null,
-        null, null);
+    interpreterContext = new InterpreterContext("", "1", null, "", "",
+        new AuthenticationInfo("testUser"), null, null, null,null, null, null, null);
   }
 
 
@@ -349,7 +350,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testAutoCompletion() throws SQLException, IOException {
+  public void testAutoCompletion() throws SQLException, IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -417,7 +418,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // user1 runs jdbc1
     jdbc1.open();
     InterpreterContext ctx1 = new InterpreterContext("", "1", "jdbc1", "", "", user1Credential,
-      null, null, null, null, null, null);
+      null, null, null, null, null, null, null);
     jdbc1.interpret("", ctx1);
 
     JDBCUserConfigurations user1JDBC1Conf = jdbc1.getJDBCConfiguration("user1");
@@ -428,7 +429,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // user1 runs jdbc2
     jdbc2.open();
     InterpreterContext ctx2 = new InterpreterContext("", "1", "jdbc2", "", "", user1Credential,
-      null, null, null, null, null, null);
+      null, null, null, null, null, null, null);
     jdbc2.interpret("", ctx2);
 
     JDBCUserConfigurations user1JDBC2Conf = jdbc2.getJDBCConfiguration("user1");
@@ -439,7 +440,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // user2 runs jdbc1
     jdbc1.open();
     InterpreterContext ctx3 = new InterpreterContext("", "1", "jdbc1", "", "", user2Credential,
-      null, null, null, null, null, null);
+      null, null, null, null, null, null, null);
     jdbc1.interpret("", ctx3);
 
     JDBCUserConfigurations user2JDBC1Conf = jdbc1.getJDBCConfiguration("user2");
@@ -450,7 +451,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // user2 runs jdbc2
     jdbc2.open();
     InterpreterContext ctx4 = new InterpreterContext("", "1", "jdbc2", "", "", user2Credential,
-      null, null, null, null, null, null);
+      null, null, null, null, null, null, null);
     jdbc2.interpret("", ctx4);
 
     JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");

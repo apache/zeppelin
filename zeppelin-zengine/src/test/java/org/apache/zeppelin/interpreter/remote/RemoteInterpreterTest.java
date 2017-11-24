@@ -20,6 +20,8 @@ package org.apache.zeppelin.interpreter.remote;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.mock.GetAngularObjectSizeInterpreter;
@@ -32,11 +34,11 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 
 public class RemoteInterpreterTest {
 
@@ -52,7 +54,6 @@ public class RemoteInterpreterTest {
   public void setUp() throws Exception {
     InterpreterOption interpreterOption = new InterpreterOption();
 
-    interpreterOption.setRemote(true);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     InterpreterInfo interpreterInfo3 = new InterpreterInfo(SleepInterpreter.class.getName(), "sleep", false, new HashMap<String, Object>());
@@ -82,7 +83,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testSharedMode() {
+  public void testSharedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -93,7 +94,7 @@ public class RemoteInterpreterTest {
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
 
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
     assertEquals(Interpreter.FormType.NATIVE, interpreter1.getFormType());
@@ -125,7 +126,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testScopedMode() {
+  public void testScopedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -136,7 +137,7 @@ public class RemoteInterpreterTest {
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
 
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
@@ -171,7 +172,7 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testIsolatedMode() {
+  public void testIsolatedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -182,7 +183,7 @@ public class RemoteInterpreterTest {
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
 
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
@@ -218,29 +219,29 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testExecuteIncorrectPrecode() throws TTransportException, IOException {
+  public void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "fail test");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     assertEquals(Code.ERROR, interpreter1.interpret("10", context1).code());
   }
 
   @Test
-  public void testExecuteCorrectPrecode() throws TTransportException, IOException {
+  public void testExecuteCorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "1");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     assertEquals(Code.SUCCESS, interpreter1.interpret("10", context1).code());
   }
 
   @Test
-  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
+  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.setProperty("zeppelin.interpreter.echo.fail", "true");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
@@ -249,19 +250,19 @@ public class RemoteInterpreterTest {
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
 
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     assertEquals(Code.ERROR, remoteInterpreter1.interpret("hello", context1).code());
   }
 
   @Test
-  public void testFIFOScheduler() throws InterruptedException {
+  public void testFIFOScheduler() throws InterruptedException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     // by default SleepInterpreter would use FIFOScheduler
 
     final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     final InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
     // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
     // time overhead of launching the process.
@@ -269,13 +270,23 @@ public class RemoteInterpreterTest {
     Thread thread1 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     Thread thread2 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     long start = System.currentTimeMillis();
@@ -288,13 +299,13 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testParallelScheduler() throws InterruptedException {
+  public void testParallelScheduler() throws InterruptedException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.parallel", "true");
 
     final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     final InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
 
     // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
@@ -303,13 +314,23 @@ public class RemoteInterpreterTest {
     Thread thread1 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     Thread thread2 = new Thread() {
       @Override
       public void run() {
-        assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
       }
     };
     long start = System.currentTimeMillis();
@@ -357,7 +378,7 @@ public class RemoteInterpreterTest {
     interpreter.getInterpreterGroup().setAngularObjectRegistry(registry);
 
     final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
 
     InterpreterResult result = interpreter.interpret("dummy", context);
@@ -377,14 +398,14 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testEnvironmentAndProperty() {
+  public void testEnvironmentAndProperty() throws InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("ENV_1", "VALUE_1");
     interpreterSetting.setProperty("property_1", "value_1");
 
     final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "get");
     final InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
+        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
 
     assertEquals("VALUE_1", interpreter1.interpret("getEnv ENV_1", context1).message().get(0).getData());
@@ -392,6 +413,29 @@ public class RemoteInterpreterTest {
 
     assertEquals("value_1", interpreter1.interpret("getProperty property_1", context1).message().get(0).getData());
     assertEquals("null", interpreter1.interpret("getProperty property_2", context1).message().get(0).getData());
+  }
+
+  @Test
+  public void testConvertDynamicForms() throws InterpreterException {
+    GUI gui = new GUI();
+    OptionInput.ParamOption[] paramOptions = {
+        new OptionInput.ParamOption("value1", "param1"),
+        new OptionInput.ParamOption("value2", "param2")
+    };
+    List<Object> defaultValues = new ArrayList();
+    defaultValues.add("default1");
+    defaultValues.add("default2");
+    gui.checkbox("checkbox_id", defaultValues, paramOptions);
+    gui.select("select_id", "default", paramOptions);
+    gui.textbox("textbox_id");
+    Map<String, Input> expected = new LinkedHashMap<>(gui.getForms());
+    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl", null,
+        null, AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), gui, new GUI(),
+        null, null, new ArrayList<InterpreterContextRunner>(), null);
+
+    interpreter.interpret("text", context);
+    assertArrayEquals(expected.values().toArray(), gui.getForms().values().toArray());
   }
 
 }

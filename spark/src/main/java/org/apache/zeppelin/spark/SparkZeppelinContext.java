@@ -33,7 +33,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
 import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
@@ -79,7 +78,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
     }
 
     if (supportedClasses.isEmpty()) {
-      throw new InterpreterException("Can not load Dataset/DataFrame/SchemaRDD class");
+      throw new RuntimeException("Can not load Dataset/DataFrame/SchemaRDD class");
     }
   }
 
@@ -112,7 +111,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
       sc.clearJobGroup();
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     List<Attribute> columns = null;
@@ -129,7 +128,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
           .asJava();
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     StringBuilder msg = new StringBuilder();
@@ -165,7 +164,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
+      throw new RuntimeException(e);
     }
 
     if (rows.length > maxResult) {
@@ -205,9 +204,44 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
       String name,
       scala.collection.Iterable<Object> defaultChecked,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return scala.collection.JavaConversions.asScalaBuffer(
-        gui.checkbox(name, asJavaCollection(defaultChecked),
-            tuplesToParamOptions(options))).toSeq();
+    List<Object> defaultCheckedList = Lists.newArrayList(asJavaIterable(defaultChecked).iterator());
+    Collection<Object> checkbox = checkbox(name, defaultCheckedList, tuplesToParamOptions(options));
+    List<Object> checkboxList = Arrays.asList(checkbox.toArray());
+    return scala.collection.JavaConversions.asScalaBuffer(checkboxList).toSeq();
+  }
+
+  @ZeppelinApi
+  public Object noteSelect(String name, scala.collection.Iterable<Tuple2<Object, String>> options) {
+    return noteSelect(name, "", options);
+  }
+
+  @ZeppelinApi
+  public Object noteSelect(String name, Object defaultValue,
+                       scala.collection.Iterable<Tuple2<Object, String>> options) {
+    return noteSelect(name, defaultValue, tuplesToParamOptions(options));
+  }
+
+  @ZeppelinApi
+  public scala.collection.Seq<Object> noteCheckbox(
+      String name,
+      scala.collection.Iterable<Tuple2<Object, String>> options) {
+    List<Object> allChecked = new LinkedList<>();
+    for (Tuple2<Object, String> option : asJavaIterable(options)) {
+      allChecked.add(option._1());
+    }
+    return noteCheckbox(name, collectionAsScalaIterable(allChecked), options);
+  }
+
+  @ZeppelinApi
+  public scala.collection.Seq<Object> noteCheckbox(
+      String name,
+      scala.collection.Iterable<Object> defaultChecked,
+      scala.collection.Iterable<Tuple2<Object, String>> options) {
+    List<Object> defaultCheckedList = Lists.newArrayList(asJavaIterable(defaultChecked).iterator());
+    Collection<Object> checkbox = noteCheckbox(name, defaultCheckedList,
+        tuplesToParamOptions(options));
+    List<Object> checkboxList = Arrays.asList(checkbox.toArray());
+    return scala.collection.JavaConversions.asScalaBuffer(checkboxList).toSeq();
   }
 
   private OptionInput.ParamOption[] tuplesToParamOptions(
