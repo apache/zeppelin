@@ -652,6 +652,22 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return true;
   }
 
+  /**
+   * Return true if there is a running or pending paragraph
+   */
+  boolean isRunningOrPending() {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        Status status = p.getStatus();
+        if (status.isRunning() || status.isPending()) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   public boolean isTrash() {
     String path = getName();
     if (path.charAt(0) == '/') {
