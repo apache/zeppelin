@@ -1180,6 +1180,81 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
    ** $scope.$on functions below
    */
 
+  $scope.$on('runAllFromFirstToThis', function (event, paragraph, isNeedConfirm) {
+    let allParagraphs = $scope.note.paragraphs
+    let toRunParagraphs = []
+
+    for (let i = 0; allParagraphs[i] !== paragraph; i++) {
+      if (i === allParagraphs.length - 1) { return } // if paragraph not in array of all paragraphs
+      toRunParagraphs.push(allParagraphs[i])
+    }
+
+    toRunParagraphs.push(paragraph)
+
+    const paragraphs = toRunParagraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }
+    })
+
+    if (!isNeedConfirm) {
+      websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run all paragraphs from first to this?',
+        callback: function (result) {
+          if (result) {
+            websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+          }
+        }
+      })
+    }
+  })
+
+  $scope.$on('runAllFromThisToLast', function (event, paragraph, isNeedConfirm) {
+    let allParagraphs = $scope.note.paragraphs
+    let toRunParagraphs = []
+
+    for (let i = allParagraphs.length - 1; allParagraphs[i] !== paragraph; i--) {
+      if (i < 0) { return } // if paragraph not in array of all paragraphs
+      toRunParagraphs.push(allParagraphs[i])
+    }
+
+    toRunParagraphs.push(paragraph)
+    toRunParagraphs.reverse()
+
+    const paragraphs = toRunParagraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }
+    })
+
+    if (!isNeedConfirm) {
+      websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run all paragraphs from this to this?',
+        callback: function (result) {
+          if (result) {
+            websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+          }
+        }
+      })
+    }
+  })
+
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
       initNotebook()

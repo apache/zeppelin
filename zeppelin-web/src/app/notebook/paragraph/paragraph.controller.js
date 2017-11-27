@@ -471,6 +471,43 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.runParagraph($scope.getEditorValue(), false, false)
   }
 
+  $scope.runAllToThis = function(paragraph) {
+    $scope.$emit('runAllFromFirstToThis', paragraph, true)
+  }
+
+  $scope.runAllFromThis = function(paragraph) {
+    $scope.$emit('runAllFromThisToLast', paragraph, true)
+  }
+
+  $scope.runAllToOrFromThis = function (paragraph) {
+    BootstrapDialog.show({
+      message: 'Run paragraphs:',
+      title: '',
+      buttons: [{
+        label: 'Close',
+        action: function(dialog) {
+          dialog.close()
+        }
+      },
+      {
+        label: 'From first to this',
+        cssClass: 'btn-primary',
+        action: function(dialog) {
+          $scope.$emit('runAllFromFirstToThis', paragraph, false)
+          dialog.close()
+        }
+      },
+      {
+        label: 'From this to the last',
+        cssClass: 'btn-primary',
+        action: function(dialog) {
+          $scope.$emit('runAllFromThisToLast', paragraph, false)
+          dialog.close()
+        }
+      }]
+    })
+  }
+
   $scope.turnOnAutoRun = function (paragraph) {
     paragraph.config.runOnSelectionChange = !paragraph.config.runOnSelectionChange
     commitParagraph(paragraph)
@@ -1446,8 +1483,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         // move focus to next paragraph
         // $timeout stops chaining effect of focus propogation
         $timeout(() => $scope.$emit('moveFocusToNextParagraph', paragraphId))
-      } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
+      } else if (!keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue())
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13) { // Ctrl + Shift + Enter
+        $scope.runAllToOrFromThis($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
