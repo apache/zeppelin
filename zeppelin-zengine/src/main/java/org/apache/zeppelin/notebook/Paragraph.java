@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,12 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.security.SecureRandom;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -74,7 +73,8 @@ import com.google.common.collect.Maps;
 public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
+  private static Pattern REPL_PATTERN = Pattern
+      .compile("(\\s*)%([^\\s\\(]+).*", Pattern.DOTALL);
 
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -827,6 +827,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return result1;
   }
 
+  @Override
   public String toJson() {
     return Note.getGson().toJson(this);
   }
