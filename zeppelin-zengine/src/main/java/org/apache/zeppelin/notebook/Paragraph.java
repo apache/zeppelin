@@ -250,14 +250,18 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return note.getInterpreterCompletion();
       }
     }
+    this.interpreter = getBindedInterpreter();
+
     String trimmedBuffer = buffer != null ? buffer.trim() : null;
     cursor = calculateCursorPosition(buffer, trimmedBuffer, cursor);
+
+    setText(trimmedBuffer);
 
     InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
 
     try {
       if (this.interpreter != null) {
-        return this.interpreter.completion(scriptText, cursor, interpreterContext);
+        return this.interpreter.completion(this.scriptText, cursor, interpreterContext);
       } else {
         return null;
       }
