@@ -1180,7 +1180,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
    ** $scope.$on functions below
    */
 
-  $scope.$on('runAllFromFirstToThis', function (event, paragraph, isNeedConfirm) {
+  $scope.$on('runAllAbove', function (event, paragraph, isNeedConfirm) {
     let allParagraphs = $scope.note.paragraphs
     let toRunParagraphs = []
 
@@ -1188,8 +1188,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       if (i === allParagraphs.length - 1) { return } // if paragraph not in array of all paragraphs
       toRunParagraphs.push(allParagraphs[i])
     }
-
-    toRunParagraphs.push(paragraph)
 
     const paragraphs = toRunParagraphs.map(p => {
       return {
@@ -1207,7 +1205,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Run all paragraphs from first to this?',
+        message: 'Run all above?',
         callback: function (result) {
           if (result) {
             websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
@@ -1217,7 +1215,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   })
 
-  $scope.$on('runAllFromThisToLast', function (event, paragraph, isNeedConfirm) {
+  $scope.$on('runAllBelowAndCurrent', function (event, paragraph, isNeedConfirm) {
     let allParagraphs = $scope.note.paragraphs
     let toRunParagraphs = []
 
@@ -1245,7 +1243,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Run all paragraphs from this to this?',
+        message: 'Run current and all below?',
         callback: function (result) {
           if (result) {
             websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)

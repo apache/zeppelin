@@ -472,11 +472,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.runAllToThis = function(paragraph) {
-    $scope.$emit('runAllFromFirstToThis', paragraph, true)
+    $scope.$emit('runAllAbove', paragraph, true)
   }
 
   $scope.runAllFromThis = function(paragraph) {
-    $scope.$emit('runAllFromThisToLast', paragraph, true)
+    $scope.$emit('runAllBelowAndCurrent', paragraph, true)
   }
 
   $scope.runAllToOrFromThis = function (paragraph) {
@@ -493,7 +493,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         label: 'From first to this',
         cssClass: 'btn-primary',
         action: function(dialog) {
-          $scope.$emit('runAllFromFirstToThis', paragraph, false)
+          $scope.$emit('runAllAbove', paragraph, false)
           dialog.close()
         }
       },
@@ -501,7 +501,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         label: 'From this to the last',
         cssClass: 'btn-primary',
         action: function(dialog) {
-          $scope.$emit('runAllFromThisToLast', paragraph, false)
+          $scope.$emit('runAllBelowAndCurrent', paragraph, false)
           dialog.close()
         }
       }]
