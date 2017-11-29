@@ -164,7 +164,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       let paragraphId = $scope.note.paragraphs[i].id
       if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
-        $scope.$broadcast('focusParagraph', paragraphId, 0, true)
+        $scope.$broadcast('focusParagraph', paragraphId, 0, null, true)
         break
       }
     }
@@ -504,7 +504,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         para.focus = true
 
         // we need `$timeout` since angular DOM might not be initialized
-        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, false) })
+        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, null, false) })
       }
     })
   }
@@ -1213,6 +1213,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         }
       })
     }
+
+    $scope.saveCursorPosition(paragraph)
   })
 
   $scope.$on('runAllBelowAndCurrent', function (event, paragraph, isNeedConfirm) {
@@ -1251,7 +1253,18 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         }
       })
     }
+
+    $scope.saveCursorPosition(paragraph)
   })
+
+  $scope.saveCursorPosition = function (paragraph) {
+    let angParagEditor = angular
+      .element('#' + paragraph.id + '_paragraphColumn_main')
+      .scope().editor
+    let col = angParagEditor.selection.lead.column
+    let row = angParagEditor.selection.lead.row
+    $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col)
+  }
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {

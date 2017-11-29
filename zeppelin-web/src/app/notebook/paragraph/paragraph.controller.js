@@ -490,7 +490,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         }
       },
       {
-        label: 'From first to this',
+        label: 'Run all above',
         cssClass: 'btn-primary',
         action: function(dialog) {
           $scope.$emit('runAllAbove', paragraph, false)
@@ -498,7 +498,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         }
       },
       {
-        label: 'From this to the last',
+        label: 'Run current and all below',
         cssClass: 'btn-primary',
         action: function(dialog) {
           $scope.$emit('runAllBelowAndCurrent', paragraph, false)
@@ -1539,7 +1539,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   })
 
-  $scope.$on('focusParagraph', function (event, paragraphId, cursorPos, mouseEvent) {
+  $scope.$on('focusParagraph', function (event, paragraphId, cursorPosRow, cursorPosCol, mouseEvent) {
+    if (cursorPosCol === null || cursorPosCol === undefined) {
+      cursorPosCol = 0
+    }
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
@@ -1547,14 +1550,14 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           $scope.editor.focus()
           // move cursor to the first row (or the last row)
           let row
-          if (cursorPos >= 0) {
-            row = cursorPos
-            $scope.editor.gotoLine(row, 0)
+          if (cursorPosRow >= 0) {
+            row = cursorPosRow
+            $scope.editor.gotoLine(row, cursorPosCol)
           } else {
             row = $scope.editor.session.getLength()
-            $scope.editor.gotoLine(row, 0)
+            $scope.editor.gotoLine(row, cursorPosCol)
           }
-          $scope.scrollToCursor($scope.paragraph.id, 0)
+          $scope.scrollToCursor($scope.paragraph.id, cursorPosCol)
         }
       }
       handleFocus(true)
