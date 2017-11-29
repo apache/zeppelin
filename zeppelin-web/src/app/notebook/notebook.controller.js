@@ -27,10 +27,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   ngToast.dismiss()
 
   $scope.note = null
+  $scope.actionOnFormSelectionChange = true
+  $scope.hideForms = false
+  $scope.disableForms = false
   $scope.editorToggled = false
   $scope.tableToggled = false
   $scope.viewOnly = false
   $scope.showSetting = false
+  $scope.showRevisionsComparator = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
   $scope.cronOption = [
     {name: 'None', value: undefined},
@@ -169,15 +173,23 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick)
 
-  $scope.keyboardShortcut = function (keyEvent) {
+  let keyboardShortcut = function (keyEvent) {
     // handle keyevent
     if (!$scope.viewOnly && !$scope.revisionView) {
       $scope.$broadcast('keyEvent', keyEvent)
     }
   }
 
+  $scope.keydownEvent = function (keyEvent) {
+    if ((keyEvent.ctrlKey || keyEvent.metaKey) && String.fromCharCode(keyEvent.which).toLowerCase() === 's') {
+      keyEvent.preventDefault()
+    }
+
+    keyboardShortcut(keyEvent)
+  }
+
   // register mouseevent handler for focus paragraph
-  document.addEventListener('keydown', $scope.keyboardShortcut)
+  document.addEventListener('keydown', $scope.keydownEvent)
 
   $scope.paragraphOnDoubleClick = function (paragraphId) {
     $scope.$broadcast('doubleClickParagraph', paragraphId)
@@ -247,13 +259,24 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     })
   }
 
+  $scope.preVisibleRevisionsComparator = function() {
+    $scope.mergeNoteRevisionsForCompare = null
+    $scope.firstNoteRevisionForCompare = null
+    $scope.secondNoteRevisionForCompare = null
+    $scope.currentFirstRevisionForCompare = 'Choose...'
+    $scope.currentSecondRevisionForCompare = 'Choose...'
+    $scope.$apply()
+  }
+
   $scope.$on('listRevisionHistory', function (event, data) {
     console.debug('received list of revisions %o', data)
     $scope.noteRevisions = data.revisionList
-    $scope.noteRevisions.splice(0, 0, {
-      id: 'Head',
-      message: 'Head'
-    })
+    if ($scope.noteRevisions.length === 0 || $scope.noteRevisions[0].id !== 'Head') {
+      $scope.noteRevisions.splice(0, 0, {
+        id: 'Head',
+        message: 'Head'
+      })
+    }
     if ($routeParams.revisionId) {
       let index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId})
       if (index > -1) {
@@ -579,6 +602,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     orderChanged: function (event) {}
   }
 
+  $scope.closeAdditionalBoards = function() {
+    $scope.closeSetting()
+    $scope.closePermissions()
+    $scope.closeRevisionsComparator()
+  }
+
   $scope.openSetting = function () {
     $scope.showSetting = true
     getInterpreterBindings()
@@ -628,8 +657,26 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.showSetting) {
       $scope.closeSetting()
     } else {
+      $scope.closeAdditionalBoards()
       $scope.openSetting()
-      $scope.closePermissions()
+      angular.element('html, body').animate({ scrollTop: 0 }, 'slow')
+    }
+  }
+
+  $scope.openRevisionsComparator = function () {
+    $scope.showRevisionsComparator = true
+  }
+
+  $scope.closeRevisionsComparator = function () {
+    $scope.showRevisionsComparator = false
+  }
+
+  $scope.toggleRevisionsComparator = function () {
+    if ($scope.showRevisionsComparator) {
+      $scope.closeRevisionsComparator()
+    } else {
+      $scope.closeAdditionalBoards()
+      $scope.openRevisionsComparator()
       angular.element('html, body').animate({ scrollTop: 0 }, 'slow')
     }
   }
@@ -1064,8 +1111,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         angular.element('#selectRunners').select2({})
         angular.element('#selectWriters').select2({})
       } else {
+        $scope.closeAdditionalBoards()
         $scope.openPermissions()
-        $scope.closeSetting()
       }
     }
   }
@@ -1329,6 +1376,26 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         }]
       })
     }
+  }
+
+  $scope.$on('saveNoteForms', function (event, data) {
+    $scope.note.noteForms = data.formsData.forms
+    $scope.note.noteParams = data.formsData.params
+  })
+
+  $scope.isShowNoteForms = function() {
+    if ($scope.note && !angular.equals({}, $scope.note.noteForms)) {
+      return true
+    }
+    return false
+  }
+
+  $scope.saveNoteForms = function () {
+    websocketMsgSrv.saveNoteForms($scope.note)
+  }
+
+  $scope.removeNoteForms = function (formName) {
+    websocketMsgSrv.removeNoteForms($scope.note, formName)
   }
 
   $scope.$on('$destroy', function () {

@@ -35,7 +35,7 @@ trait AbstractAngularElemTest
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
     val context = new InterpreterContext("note", "paragraph", null, "title", "text",
-      new AuthenticationInfo(), new util.HashMap[String, Object](), new GUI(),
+      new AuthenticationInfo(), new util.HashMap[String, Object](), new GUI(), new GUI(),
       new AngularObjectRegistry(intpGroup.getId(), null),
       null,
       new util.LinkedList[InterpreterContextRunner](),

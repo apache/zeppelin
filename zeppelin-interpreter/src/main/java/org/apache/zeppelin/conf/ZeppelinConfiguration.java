@@ -488,6 +488,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE);
   }
 
+  public String getInterpreterPortRange() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_PORTRANGE);
+  }
+
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
   }
@@ -496,7 +500,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
-  public boolean isNotebokPublic() {
+  public boolean isNotebookPublic() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
 
@@ -519,6 +523,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getJettyName() {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
+  }
+
+  public Integer getJettyRequestHeaderSize() {
+    return getInt(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE);
   }
 
 
@@ -698,6 +706,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
+    ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE("zeppelin.server.jetty.request.header.size", 8192),
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
     ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
 
@@ -705,13 +714,17 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
 
     ZEPPELIN_INTERPRETER_CALLBACK_PORTRANGE("zeppelin.interpreter.callback.portRange", ":"),
+    ZEPPELIN_INTERPRETER_PORTRANGE("zeppelin.interpreter.portRange", ":"),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
         "org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager"),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
         "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
-        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L);
+        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
+
+    ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", "");
+
 
     private String varName;
     @SuppressWarnings("rawtypes")

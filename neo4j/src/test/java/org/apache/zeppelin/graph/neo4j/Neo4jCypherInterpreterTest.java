@@ -93,6 +93,7 @@ public class Neo4jCypherInterpreterTest {
             new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
+            new GUI(),
             new AngularObjectRegistry(new InterpreterGroup().getId(), null),
             new LocalResourcePool("id"),
             new LinkedList<InterpreterContextRunner>(),

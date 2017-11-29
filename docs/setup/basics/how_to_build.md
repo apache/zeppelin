@@ -254,6 +254,8 @@ sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
+sudo apt-get install r-base-dev
+sudo apt-get install r-cran-evaluate
 ```
 
 

@@ -74,6 +74,9 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   private String name = "";
   private String id;
+  private Map<String, Object> noteParams = new HashMap<>();
+  private LinkedHashMap<String, Input> noteForms = new LinkedHashMap<>();
+
 
   private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
@@ -156,6 +159,22 @@ public class Note implements ParagraphJobListener, JsonSerializable {
       name = getId();
     }
     return name;
+  }
+
+  public Map<String, Object> getNoteParams() {
+    return noteParams;
+  }
+
+  public void setNoteParams(Map<String, Object> noteParams) {
+    this.noteParams = noteParams;
+  }
+
+  public LinkedHashMap<String, Input> getNoteForms() {
+    return noteForms;
+  }
+
+  public void setNoteForms(LinkedHashMap<String, Input> noteForms) {
+    this.noteForms = noteForms;
   }
 
   public String getNameWithoutPath() {

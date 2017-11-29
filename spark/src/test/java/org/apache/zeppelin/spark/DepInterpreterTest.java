@@ -64,7 +64,7 @@ public class DepInterpreterTest {
     dep.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
-        new HashMap<String, Object>(), new GUI(),
+        new HashMap<String, Object>(), new GUI(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         null,
         new LinkedList<InterpreterContextRunner>(), null);

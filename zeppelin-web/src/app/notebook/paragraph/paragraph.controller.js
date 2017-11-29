@@ -466,9 +466,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     $scope.runParagraph(paragraphText, true, false)
   }
 
-  $scope.runParagraphFromButton = function (paragraphText) {
+  $scope.runParagraphFromButton = function () {
     // we come here from the view, so we don't need to call `$digest()`
-    $scope.runParagraph(paragraphText, false, false)
+    $scope.runParagraph($scope.getEditorValue(), false, false)
   }
 
   $scope.turnOnAutoRun = function (paragraph) {
@@ -655,24 +655,6 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.toggleOutput = function (paragraph) {
     paragraph.config.tableHide = !paragraph.config.tableHide
     commitParagraph(paragraph)
-  }
-
-  $scope.loadForm = function (formulaire, params) {
-    let value = formulaire.defaultValue
-    if (params[formulaire.name]) {
-      value = params[formulaire.name]
-    }
-
-    $scope.paragraph.settings.params[formulaire.name] = value
-  }
-
-  $scope.toggleCheckbox = function (formulaire, option) {
-    let idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value)
-    if (idx > -1) {
-      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1)
-    } else {
-      $scope.paragraph.settings.params[formulaire.name].push(option.value)
-    }
   }
 
   $scope.aceChanged = function (_, editor) {

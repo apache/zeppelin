@@ -309,30 +309,37 @@ public class InterpreterSetting {
     return interpreterSettingManager;
   }
 
-  public void setAngularObjectRegistryListener(AngularObjectRegistryListener
+  public InterpreterSetting setAngularObjectRegistryListener(AngularObjectRegistryListener
                                                    angularObjectRegistryListener) {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
+    return this;
   }
 
-  public void setAppEventListener(ApplicationEventListener appEventListener) {
+  public InterpreterSetting setAppEventListener(ApplicationEventListener appEventListener) {
     this.appEventListener = appEventListener;
+    return this;
   }
 
-  public void setRemoteInterpreterProcessListener(RemoteInterpreterProcessListener
+  public InterpreterSetting setRemoteInterpreterProcessListener(RemoteInterpreterProcessListener
                                                       remoteInterpreterProcessListener) {
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
+    return this;
   }
 
-  public void setDependencyResolver(DependencyResolver dependencyResolver) {
+  public InterpreterSetting setDependencyResolver(DependencyResolver dependencyResolver) {
     this.dependencyResolver = dependencyResolver;
+    return this;
   }
 
-  public void setInterpreterSettingManager(InterpreterSettingManager interpreterSettingManager) {
+  public InterpreterSetting setInterpreterSettingManager(
+      InterpreterSettingManager interpreterSettingManager) {
     this.interpreterSettingManager = interpreterSettingManager;
+    return this;
   }
 
-  public void setLifecycleManager(LifecycleManager lifecycleManager) {
+  public InterpreterSetting setLifecycleManager(LifecycleManager lifecycleManager) {
     this.lifecycleManager = lifecycleManager;
+    return this;
   }
 
   public LifecycleManager getLifecycleManager() {
@@ -511,8 +518,9 @@ public class InterpreterSetting {
     return conf;
   }
 
-  public void setConf(ZeppelinConfiguration conf) {
+  public InterpreterSetting setConf(ZeppelinConfiguration conf) {
     this.conf = conf;
+    return this;
   }
 
   public List<Dependency> getDependencies() {
@@ -663,7 +671,7 @@ public class InterpreterSetting {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, group);
+        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, group, name);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
         new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));

@@ -451,6 +451,88 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
+  public void testCronWithReleaseResourceClosesOnlySpecificInterpreters()
+          throws IOException, InterruptedException {
+    // create a cron scheduled note.
+    Note cronNote = notebook.createNote(anonymous);
+    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), cronNote.getId(),
+            Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock1").getId()));
+    cronNote.setConfig(new HashMap() {
+      {
+        put("cron", "1/5 * * * * ?");
+        put("cronExecutingUser", anonymous.getUser());
+        put("releaseresource", true);
+      }
+    });
+    RemoteInterpreter cronNoteInterpreter =
+            (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
+                    cronNote.getId(), "mock1");
+
+    // create a paragraph of the cron scheduled note.
+    Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    cronNoteParagraph.setConfig(new HashMap() {
+      { put("enabled", true); }
+    });
+    cronNoteParagraph.setText("%mock1 sleep 1000");
+
+    // create another note
+    Note anotherNote = notebook.createNote(anonymous);
+    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), anotherNote.getId(),
+            Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock2").getId()));
+    RemoteInterpreter anotherNoteInterpreter =
+            (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
+                    anotherNote.getId(), "mock2");
+
+    // create a paragraph of another note
+    Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    anotherNoteParagraph.setConfig(new HashMap() {
+      { put("enabled", true); }
+    });
+    anotherNoteParagraph.setText("%mock2 echo 1");
+
+    // run the paragraph of another note
+    anotherNote.run(anotherNoteParagraph.getId());
+
+    // wait until anotherNoteInterpreter is opened
+    while (!anotherNoteInterpreter.isOpened()) {
+      Thread.yield();
+    }
+
+    // refresh the cron schedule
+    notebook.refreshCron(cronNote.getId());
+
+    // wait until cronNoteInterpreter is opened
+    while (!cronNoteInterpreter.isOpened()) {
+      Thread.yield();
+    }
+
+    // wait until cronNoteInterpreter is closed
+    while (cronNoteInterpreter.isOpened()) {
+      Thread.yield();
+    }
+
+    // wait for a few seconds
+    Thread.sleep(5 * 1000);
+
+    // test that anotherNoteInterpreter is still opened
+    assertTrue(anotherNoteInterpreter.isOpened());
+
+    // remove cron scheduler
+    cronNote.setConfig(new HashMap() {
+      {
+        put("cron", null);
+        put("cronExecutingUser", null);
+        put("releaseresource", null);
+      }
+    });
+    notebook.refreshCron(cronNote.getId());
+
+    // remove notebooks
+    notebook.removeNote(cronNote.getId(), anonymous);
+    notebook.removeNote(anotherNote.getId(), anonymous);
+  }
+
+  @Test
   public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
           InterruptedException, InterpreterException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);
@@ -1130,7 +1212,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     HashSet<String> user2 = Sets.newHashSet("user2");
     
     // case of public note
-    assertTrue(conf.isNotebokPublic());
+    assertTrue(conf.isNotebookPublic());
     assertTrue(notebookAuthorization.isPublic());
     
     List<Note> notes1 = notebook.getAllNotes(user1);
@@ -1158,7 +1240,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // case of private note
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
     ZeppelinConfiguration conf2 = ZeppelinConfiguration.create();
-    assertFalse(conf2.isNotebokPublic());
+    assertFalse(conf2.isNotebookPublic());
     // notebook authorization reads from conf, so no need to re-initilize
     assertFalse(notebookAuthorization.isPublic());
     

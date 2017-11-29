@@ -39,7 +39,7 @@ public class LazyOpenInterpreterTest {
 
     assertFalse("Interpreter is not open", lazyOpenInterpreter.isOpen());
     InterpreterContext interpreterContext =
-        new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null);
+        new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null, null);
     lazyOpenInterpreter.interpret("intp 1", interpreterContext);
     assertTrue("Interpeter is open", lazyOpenInterpreter.isOpen());
   }

@@ -1,0 +1,124 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="col-md-4">
+
+  <div class="commit-tree">
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Revision name</th>
+        <th>Date</th>
+      </tr>
+      </thead>
+      <tbody class="commit-rows">
+      <tr ng-repeat="revision in $ctrl.noteRevisions | orderBy:'time':true"
+          ng-class="{'cursor-hand': !$last, 'selected-revision': revision.message === currentSecondRevisionForCompare}"
+          ng-click="getNoteRevisionForReview($ctrl.noteRevisions[$index + 1], 'first'); getNoteRevisionForReview(revision, 'second')">
+        <td>{{revision.message}}</td>
+        <td>{{formatRevisionDate(revision.time)}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="revisions-comparator-bar">
+    <div class="btn-group">
+      <button type="button" ng-if="$ctrl.noteRevisions.length > 0"
+              class="btn btn-default revisions-comparator-dropdown dropdown-toggle"
+              data-toggle="dropdown" id="firstRevisionDropdown" title="{{currentFirstRevisionForCompare}}">
+        <div class="revision-name-for-compare">{{currentFirstRevisionForCompare}}</div>
+        <span class="caret revisions-comparator-caret"></span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-left" aria-labelledby="firstRevisionDropdown">
+        <li></li>
+        <li ng-repeat="revision in $ctrl.noteRevisions | orderBy:'time':true" class="revision">
+          <a style="cursor:pointer" ng-click="getNoteRevisionForReview(revision, 'first')">
+          <span style="display: block;">
+            <strong>{{revision.message}}</strong>
+          </span>
+            <span class="revisionDate">
+            <em>{{formatRevisionDate(revision.time)}}</em>
+          </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <span>compare with</span>
+    <div class="btn-group">
+      <button type="button" ng-if="$ctrl.noteRevisions.length > 0"
+              class="btn btn-default revisions-comparator-dropdown dropdown-toggle"
+              ng-disabled="firstNoteRevisionForCompare === null"
+              data-toggle="dropdown" id="secondRevisionDropdown" title="{{currentSecondRevisionForCompare}}">
+        <div class="revision-name-for-compare">{{currentSecondRevisionForCompare}}</div>
+        <span class="caret revisions-comparator-caret"></span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-left" aria-labelledby="secondRevisionDropdown">
+        <li ng-repeat="revision in $ctrl.noteRevisions | orderBy:'time':true" class="revision">
+          <a style="cursor:pointer" ng-click="getNoteRevisionForReview(revision, 'second')">
+          <span style="display: block;">
+            <strong>{{revision.message}}</strong>
+          </span>
+            <span class="revisionDate">
+            <em>{{formatRevisionDate(revision.time)}}</em>
+          </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="diffPanel">
+    <div class="panel-group" style="margin-bottom: 0px">
+      <div class="paragraphs-div">
+        <div class="panel revisions-comparator-panel" data-ng-repeat="p in mergeNoteRevisionsForCompare | orderBy:'time':true"
+             ng-class="{'revisions-comparator-panel-selected' : currentParagraphDiffDisplay.paragraph.id === p.paragraph.id}">
+          <div class="revisions-comparator-panel-heading"
+               ng-click="changeCurrentParagraphDiffDisplay(p.paragraph.id)">
+            <h4 class="panel-title">
+              {{p.paragraph.id}}<strong style="padding: 5px;" ng-if="p.paragraph.title">({{p.paragraph.title}})</strong>
+              <i ng-if="p.type === 'added'" class="revisions-comparator-status color-green">added</i>
+              <i ng-if="p.type === 'deleted'" class="revisions-comparator-status color-red">deleted</i>
+              <i ng-if="p.type === 'compared' && !(p.identical)" class="revisions-comparator-status color-orange">there
+                are differences</i>
+              <i ng-if="p.type === 'compared' && p.identical" class="revisions-comparator-status">contents are
+                identical</i>
+              <i class="revisions-comparator-first-string">{{p.firstString}}</i>
+            </h4>
+          </div>
+        </div>
+        <div style="display: table; width: 100%; height: 100%"
+             ng-if="currentSecondRevisionForCompare === 'Choose...'">
+          <div class="empty-paragraph-message">
+            Please select a revision
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="revisions-comparator-code-panel-id center-block" class="panel col-md-8">
+  <span
+    class="revisions-comparator-code-panel-title">Revision: <strong>{{currentFirstRevisionForCompare}} --> {{currentSecondRevisionForCompare}}</strong></span>
+  <pre ng-if="currentParagraphDiffDisplay.type === 'added'"
+       class="revisions-comparator-code-panel color-green-row">{{currentParagraphDiffDisplay.paragraph.text}}</pre>
+  <pre ng-if="currentParagraphDiffDisplay.type === 'deleted'"
+       class="revisions-comparator-code-panel color-red-row">{{currentParagraphDiffDisplay.paragraph.text}}</pre>
+  <pre ng-if="currentParagraphDiffDisplay.type === 'compared'"
+       class="revisions-comparator-code-panel" ng-bind-html="currentParagraphDiffDisplay.diff"></pre>
+  <pre ng-if="currentParagraphDiffDisplay === null"
+       class="revisions-comparator-code-panel empty-code-panel"><div>Nothing to display</div></pre>
+</div>
+
+<div class="clearfix"></div>

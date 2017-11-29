@@ -303,6 +303,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     zeppelinContext.setGui(context.getGui());
+    zeppelinContext.setNoteGui(context.getNoteGui());
     interpreterOutput.setInterpreterOutput(context.out);
     ExecuteResponse response =
         ipythonClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),

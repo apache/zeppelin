@@ -47,7 +47,7 @@ public class InputTest {
 	public void testFormExtraction() {
 		// textbox form
 		String script = "${input_form=}";
-		Map<String, Input> forms = Input.extractSimpleQueryForm(script);
+		Map<String, Input> forms = Input.extractSimpleQueryForm(script, false);
 		assertEquals(1, forms.size());
 		Input form = forms.get("input_form");
 		assertEquals("input_form", form.name);
@@ -57,14 +57,14 @@ public class InputTest {
 
 		// textbox form with display name & default value
 		script = "${input_form(Input Form)=xxx}";
-		forms = Input.extractSimpleQueryForm(script);
+		forms = Input.extractSimpleQueryForm(script, false);
 		form = forms.get("input_form");
 		assertEquals("xxx", form.defaultValue);
 		assertTrue(form instanceof TextBox);
 
 		// selection form
 		script = "${select_form(Selection Form)=op1,op1|op2(Option 2)|op3}";
-		form = Input.extractSimpleQueryForm(script).get("select_form");
+		form = Input.extractSimpleQueryForm(script, false).get("select_form");
 		assertEquals("select_form", form.name);
 		assertEquals("op1", form.defaultValue);
 		assertTrue(form instanceof Select);
@@ -74,7 +74,7 @@ public class InputTest {
 
 		// checkbox form
 		script = "${checkbox:checkbox_form=op1,op1|op2|op3}";
-		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script, false).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertTrue(form instanceof CheckBox);
 
@@ -85,7 +85,7 @@ public class InputTest {
 
 		// checkbox form with multiple default checks
 		script = "${checkbox:checkbox_form(Checkbox Form)=op1|op3,op1(Option 1)|op2|op3}";
-		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script, false).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("Checkbox Form", form.displayName);
 		assertTrue(form instanceof CheckBox);
@@ -96,7 +96,7 @@ public class InputTest {
 
 		// checkbox form with no default check
 		script = "${checkbox:checkbox_form(Checkbox Form)=,op1(Option 1)|op2(Option 2)|op3(Option 3)}";
-		form = Input.extractSimpleQueryForm(script).get("checkbox_form");
+		form = Input.extractSimpleQueryForm(script, false).get("checkbox_form");
 		assertEquals("checkbox_form", form.name);
 		assertEquals("Checkbox Form", form.displayName);
 		assertTrue(form instanceof CheckBox);
@@ -116,14 +116,14 @@ public class InputTest {
 		params.put("input_form", "some_input");
 		params.put("select_form", "s_op2");
 		params.put("checkbox_form", new String[]{"c_op1", "c_op3"});
-		String replaced = Input.getSimpleQuery(params, script);
+		String replaced = Input.getSimpleQuery(params, script, false);
 		assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1,c_op3", replaced);
 
 		// test form substitution with new forms
 		script = "INPUT=${input_form=}SELECTED=${select_form(Selection Form)=,s_op1|s_op2|s_op3}\n" +
 				"CHECKED=${checkbox:checkbox_form=c_op1|c_op2,c_op1|c_op2|c_op3}\n" +
 				"NEW_CHECKED=${checkbox( and ):new_check=nc_a|nc_c,nc_a|nc_b|nc_c}";
-		replaced = Input.getSimpleQuery(params, script);
+		replaced = Input.getSimpleQuery(params, script, false);
 		assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1,c_op3\n" +
 				"NEW_CHECKED=nc_a and nc_c", replaced);
 
@@ -131,7 +131,7 @@ public class InputTest {
 		script = "INPUT=${input_form=}SELECTED=${select_form(Selection Form)=,s_op1|s_op2|s_op3}\n" +
 				"CHECKED=${checkbox:checkbox_form=c_op1|c_op2,c_op1|c_op2|c_op3_new}\n" +
 				"NEW_CHECKED=${checkbox( and ):new_check=nc_a|nc_c,nc_a|nc_b|nc_c}";
-		replaced = Input.getSimpleQuery(params, script);
+		replaced = Input.getSimpleQuery(params, script, false);
 		assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1\n" +
 				"NEW_CHECKED=nc_a and nc_c", replaced);
 	}

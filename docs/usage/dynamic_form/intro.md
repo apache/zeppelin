@@ -24,9 +24,10 @@ limitations under the License.
 <div id="toc"></div>
 
 Apache Zeppelin dynamically creates input forms. Depending on language backend, there're two different ways to create dynamic form.
-Custom language backend can select which type of form creation it wants to use.
+Custom language backend can select which type of form creation it wants to use. Forms can have different scope (paragraph or note). 
+Forms with scope "note" available in all paragraphs regardless of which paragraph has code to create these forms.
 
-## Using form Templates
+## Using form Templates (scope: paragraph)
 
 This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, Spark SQL language backend uses it.
 
@@ -81,7 +82,11 @@ Even if you uncheck this option, still you can run it by pressing `Enter`.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/selectForm-checkbox.png" />
 
-## Creates Programmatically
+## Using form Templates (scope: note)
+
+Has a same syntax but starts with two symbols `$`. (for ex. input `$${forName}`)
+
+## Creates Programmatically (scope: paragraph)
 
 Some language backends can programmatically create forms. For example [ZeppelinContext](../../interpreter/spark.html#zeppelincontext) provides a form creation API
 
@@ -93,7 +98,7 @@ Here are some examples:
 
 {% highlight scala %}
 %spark
-println("Hello "+z.input("name"))
+println("Hello "+z.textbox("name"))
 {% endhighlight %}
 
     </div>
@@ -101,7 +106,7 @@ println("Hello "+z.input("name"))
 
 {% highlight python %}
 %pyspark
-print("Hello "+z.input("name"))
+print("Hello "+z.textbox("name"))
 {% endhighlight %}
 
     </div>
@@ -114,7 +119,7 @@ print("Hello "+z.input("name"))
 
 {% highlight scala %}
 %spark
-println("Hello "+z.input("name", "sun")) 
+println("Hello "+z.textbox("name", "sun")) 
 {% endhighlight %}
 
     </div>
@@ -122,7 +127,7 @@ println("Hello "+z.input("name", "sun"))
 
 {% highlight python %}
 %pyspark
-print("Hello "+z.input("name", "sun"))
+print("Hello "+z.textbox("name", "sun"))
 {% endhighlight %}
 
     </div>
@@ -184,3 +189,27 @@ print("Hello "+ " and ".join(z.checkbox("fruit", options, ["apple"])))
     </div>
 </div>
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />
+
+## Creates Programmatically (scope: note)
+
+The difference in the method names:
+
+<table class="table-configuration">
+  <tr>
+    <th>Scope paragraph</th>
+    <th>Scope note</th>
+  </tr>
+  <tr>
+    <td>input (or textbox)</td>
+    <td>noteTextbox</td>
+  </tr>
+  <tr>
+    <td>select</td>
+    <td>noteSelect</td>
+  </tr>
+  <tr>
+    <td>checkbox</td>
+    <td>noteCheckbox</td>
+  </tr>
+</table>
+
