@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -39,6 +40,7 @@ public class FileSystemStorage {
   private FileSystemStorage(ZeppelinConfiguration zConf) throws IOException {
     this.zConf = zConf;
     this.hadoopConf = new Configuration();
+    this.hadoopConf.set("fs.file.impl", RawLocalFileSystem.class.getName());
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
 
     if (isSecurityEnabled) {
@@ -54,7 +56,7 @@ public class FileSystemStorage {
     }
 
     try {
-      this.fs = FileSystem.get(new URI(zConf.getNotebookDir()), new Configuration());
+      this.fs = FileSystem.get(new URI(zConf.getNotebookDir()), this.hadoopConf);
       LOGGER.info("Creating FileSystem: " + this.fs.getClass().getCanonicalName());
     } catch (URISyntaxException e) {
       throw new IOException(e);

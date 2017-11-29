@@ -199,6 +199,9 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
+          if (!conf.isRecoveryEnabled()) {
+            ZeppelinServer.notebook.getInterpreterSettingManager().close();
+          }
           notebook.close();
           Thread.sleep(3000);
         } catch (Exception e) {

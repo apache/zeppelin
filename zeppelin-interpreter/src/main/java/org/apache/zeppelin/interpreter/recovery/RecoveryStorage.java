@@ -25,7 +25,7 @@ import java.util.Map;
 
 
 /**
- * Interface for Interpreter Process Recovery.
+ * Interface for storing interpreter process recovery metadata.
  *
  */
 public abstract class RecoveryStorage {
@@ -53,7 +53,7 @@ public abstract class RecoveryStorage {
 
   /**
    *
-   * It is only called one time when Zeppelin Server is started.
+   * It is only called when Zeppelin Server is started.
    *
    * @return
    * @throws IOException

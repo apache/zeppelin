@@ -67,11 +67,11 @@ public class ShellScriptLauncher extends InterpreterLauncher {
             recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
         if (recoveredClient != null) {
           if (recoveredClient.isRunning()) {
-            LOGGER.info("Recover InterpreterProcess: " + recoveredClient.getHost() + ":" +
+            LOGGER.info("Recover interpreter process: " + recoveredClient.getHost() + ":" +
                 recoveredClient.getPort());
             return recoveredClient;
           } else {
-            LOGGER.warn("Cannot recovery interpreter process: " + recoveredClient.getHost() + ":"
+            LOGGER.warn("Cannot recover interpreter process: " + recoveredClient.getHost() + ":"
                 + recoveredClient.getPort() + ", as it is already terminated.");
           }
         }

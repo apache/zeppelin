@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.notebook.FileSystemStorage;
@@ -69,7 +70,7 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
     this.interpreterSettingManager = interpreterSettingManager;
     this.zConf = zConf;
     this.fs = FileSystemStorage.get(zConf);
-    this.recoveryDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
+    this.recoveryDir = this.fs.makeQualified(new Path(zConf.getRecoveryDir()));
     LOGGER.info("Using folder {} to store recovery data", recoveryDir);
     this.fs.tryMkDir(recoveryDir);
   }
@@ -118,9 +119,17 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
           String[] hostPort = tokens[1].split(":");
           int connectTimeout =
               zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-          InterpreterClient client = new RemoteInterpreterRunningProcess(interpreterSettingName,
-              connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
+          RemoteInterpreterRunningProcess client = new RemoteInterpreterRunningProcess(
+              interpreterSettingName, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
+          // interpreterSettingManager may be null when this class is used when it is used
+          // stop-interpreter.sh
+          if (interpreterSettingManager != null) {
+            client.setRemoteInterpreterEventPoller(new RemoteInterpreterEventPoller(
+                interpreterSettingManager.getRemoteInterpreterProcessListener(),
+                interpreterSettingManager.getAppEventListener()));
+          }
           clients.put(groupId, client);
+          LOGGER.info("Recovering Interpreter Process: " + hostPort[0] + ":" + hostPort[1]);
         }
       }
     }

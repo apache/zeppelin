@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
 import java.io.IOException;
@@ -30,7 +31,9 @@ import java.util.Map;
  */
 public class NullRecoveryStorage extends RecoveryStorage {
 
-  public NullRecoveryStorage(ZeppelinConfiguration zConf) throws IOException {
+  public NullRecoveryStorage(ZeppelinConfiguration zConf,
+                             InterpreterSettingManager interpreterSettingManager)
+      throws IOException {
     super(zConf);
   }
 

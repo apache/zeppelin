@@ -1,5 +1,7 @@
 package org.apache.zeppelin.interpreter.recovery;
 
+import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
@@ -14,6 +16,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,10 +25,21 @@ import static org.junit.Assert.assertEquals;
 
 public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
 
+  private File recoveryDir = null;
+
   @Before
   public void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_ENABLED.getVarName(), "true");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
+        FileSystemRecoveryStorage.class.getName());
+    recoveryDir = Files.createTempDir();
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(), recoveryDir.getAbsolutePath());
     super.setUp();
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    super.tearDown();
+    FileUtils.deleteDirectory(recoveryDir);
   }
 
   @Test
