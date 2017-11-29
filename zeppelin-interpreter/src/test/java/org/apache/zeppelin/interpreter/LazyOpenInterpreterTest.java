@@ -72,6 +72,7 @@ public class LazyOpenInterpreterTest {
                     null,
                     null,
                     null,
+                    null,
                     null);
     InterpreterContext.set(interpreterContext);
     lazyOpenInterpreter.interpret("intp 1", interpreterContext);
