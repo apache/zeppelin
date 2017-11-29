@@ -35,8 +35,8 @@ function ArrayOrderingService(TRASH_FOLDER_ID) {
   }
 
   this.noteComparator = function (v1, v2) {
-    let note1 = v1.value
-    let note2 = v2.value
+    let note1 = v1.value || v1
+    let note2 = v2.value || v2
 
     if (note1.id === TRASH_FOLDER_ID) {
       return 1
