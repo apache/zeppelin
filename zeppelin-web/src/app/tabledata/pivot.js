@@ -262,4 +262,3 @@ export default class PivotTransformation extends Transformation {
     }
   }
 }
-
