@@ -164,7 +164,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       let paragraphId = $scope.note.paragraphs[i].id
       if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
-        $scope.$broadcast('focusParagraph', paragraphId, 0, true)
+        $scope.$broadcast('focusParagraph', paragraphId, 0, null, true)
         break
       }
     }
@@ -512,7 +512,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         para.focus = true
 
         // we need `$timeout` since angular DOM might not be initialized
-        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, false) })
+        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, null, false) })
       }
     })
   }
@@ -1187,6 +1187,92 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   /*
    ** $scope.$on functions below
    */
+
+  $scope.$on('runAllAbove', function (event, paragraph, isNeedConfirm) {
+    let allParagraphs = $scope.note.paragraphs
+    let toRunParagraphs = []
+
+    for (let i = 0; allParagraphs[i] !== paragraph; i++) {
+      if (i === allParagraphs.length - 1) { return } // if paragraph not in array of all paragraphs
+      toRunParagraphs.push(allParagraphs[i])
+    }
+
+    const paragraphs = toRunParagraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }
+    })
+
+    if (!isNeedConfirm) {
+      websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run all above?',
+        callback: function (result) {
+          if (result) {
+            websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+          }
+        }
+      })
+    }
+
+    $scope.saveCursorPosition(paragraph)
+  })
+
+  $scope.$on('runAllBelowAndCurrent', function (event, paragraph, isNeedConfirm) {
+    let allParagraphs = $scope.note.paragraphs
+    let toRunParagraphs = []
+
+    for (let i = allParagraphs.length - 1; allParagraphs[i] !== paragraph; i--) {
+      if (i < 0) { return } // if paragraph not in array of all paragraphs
+      toRunParagraphs.push(allParagraphs[i])
+    }
+
+    toRunParagraphs.push(paragraph)
+    toRunParagraphs.reverse()
+
+    const paragraphs = toRunParagraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }
+    })
+
+    if (!isNeedConfirm) {
+      websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run current and all below?',
+        callback: function (result) {
+          if (result) {
+            websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+          }
+        }
+      })
+    }
+
+    $scope.saveCursorPosition(paragraph)
+  })
+
+  $scope.saveCursorPosition = function (paragraph) {
+    let angParagEditor = angular
+      .element('#' + paragraph.id + '_paragraphColumn_main')
+      .scope().editor
+    let col = angParagEditor.selection.lead.column
+    let row = angParagEditor.selection.lead.row
+    $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col)
+  }
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
