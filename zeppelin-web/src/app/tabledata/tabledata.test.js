@@ -13,6 +13,7 @@
  */
 
 import TableData from './tabledata.js'
+import PivotTransformation from './pivot.js'
 
 describe('TableData build', function () {
   let td
@@ -37,5 +38,49 @@ describe('TableData build', function () {
     expect(td.columns.length).toBe(2)
     expect(td.rows.length).toBe(2)
     expect(td.comment).toBe('hello')
+  })
+})
+
+describe('PivotTransformation build', function() {
+  let pt
+
+  beforeEach(function () {
+    console.log(PivotTransformation)
+    pt = new PivotTransformation()
+  })
+
+  it('check the result of keys, groups and values unique', function() {
+    // set inited mock data
+    let config = {
+      common: {
+        pivot: {
+          keys: [{index: 4, name: '4'},
+                 {index: 3, name: '3'},
+                 {index: 4, name: '4'},
+                 {index: 3, name: '3'},
+                 {index: 3, name: '3'},
+                 {index: 3, name: '3'},
+                 {index: 3, name: '3'},
+                 {index: 5, name: '5'}],
+          groups: [],
+          values: []
+        }
+      }
+    }
+    pt.tableDataColumns = [
+        {index: 1, name: '1'},
+        {index: 2, name: '2'},
+        {index: 3, name: '3'},
+        {index: 4, name: '4'},
+        {index: 5, name: '5'}]
+
+    pt.setConfig(config)
+
+    pt.removeUnknown()
+
+    expect(config.common.pivot.keys.length).toBe(3)
+    expect(config.common.pivot.keys[0].index).toBe(4)
+    expect(config.common.pivot.keys[1].index).toBe(3)
+    expect(config.common.pivot.keys[2].index).toBe(5)
   })
 })
