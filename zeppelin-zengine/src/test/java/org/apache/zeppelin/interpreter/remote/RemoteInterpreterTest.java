@@ -447,7 +447,7 @@ public class RemoteInterpreterTest {
     Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
         "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+        new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
     InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
@@ -464,7 +464,7 @@ public class RemoteInterpreterTest {
     Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
         "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+        new GUI(),null, null, new ArrayList<InterpreterContextRunner>(), null);
     InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
@@ -481,7 +481,7 @@ public class RemoteInterpreterTest {
     Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
         "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+        new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
     InterpreterContext.set(context);
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
     assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
