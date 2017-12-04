@@ -228,10 +228,18 @@ public class Folder {
     return getId().equals(ROOT_FOLDER_ID);
   }
 
-  public boolean isTrash() {
+  public boolean isUnderTrash() {
     if (isRoot())
       return false;
 
     return getId().split("/")[0].equals(TRASH_FOLDER_ID);
+  }
+
+  public boolean isTrashFolder(String userName) {
+    return getId().equals(getTrashFolderPath(userName));
+  }
+
+  public static String getTrashFolderPath(String loginUser) {
+    return TRASH_FOLDER_ID + "/" + loginUser;
   }
 }

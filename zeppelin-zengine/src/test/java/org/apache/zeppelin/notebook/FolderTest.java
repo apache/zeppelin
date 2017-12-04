@@ -194,21 +194,21 @@ public class FolderTest {
   }
 
   @Test
-  public void isTrashTest() {
+  public void isUnderTrashTest() {
     Folder folder;
     // Not trash
     folder = new Folder(Folder.ROOT_FOLDER_ID);
-    assertFalse(folder.isTrash());
+    assertFalse(folder.isUnderTrash());
     folder = new Folder("a");
-    assertFalse(folder.isTrash());
+    assertFalse(folder.isUnderTrash());
     folder = new Folder("a/b");
-    assertFalse(folder.isTrash());
+    assertFalse(folder.isUnderTrash());
     // trash
     folder = new Folder(Folder.TRASH_FOLDER_ID);
-    assertTrue(folder.isTrash());
+    assertTrue(folder.isUnderTrash());
     folder = new Folder(Folder.TRASH_FOLDER_ID + "/a");
-    assertTrue(folder.isTrash());
+    assertTrue(folder.isUnderTrash());
     folder = new Folder(Folder.TRASH_FOLDER_ID + "/a/b");
-    assertTrue(folder.isTrash());
+    assertTrue(folder.isUnderTrash());
   }
 }
