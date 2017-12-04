@@ -86,8 +86,9 @@ public class LoginRestApi {
         data.put("redirectURL", constructKnoxUrl(knoxJwtRealm, knoxJwtRealm.getLogin()));
         response = new JsonResponse(Status.OK, "", data);
       }
+      return response.build();
     }
-    return response.build();
+    return new JsonResponse(Status.FORBIDDEN).build();
   }
 
   private KnoxJwtRealm getJTWRealm() {
