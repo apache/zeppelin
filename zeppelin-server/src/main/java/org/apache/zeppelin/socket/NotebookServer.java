@@ -1109,7 +1109,8 @@ public class NotebookServer extends WebSocketServlet
 
     Note note = notebook.getNote(noteId);
     if (note != null && !note.isTrash()){
-      fromMessage.put("name", Folder.getTrashFolderPath(fromMessage.principal) + "/" + note.getName());
+      fromMessage.put("name", Folder.getTrashFolderPath(fromMessage.principal) +
+                              "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
       notebook.moveNoteToTrash(note.getId());
     }
@@ -1148,7 +1149,9 @@ public class NotebookServer extends WebSocketServlet
 
     Note note = notebook.getNote(noteId);
     if (note != null && note.isTrash()) {
-      fromMessage.put("name", note.getName().replaceFirst(Folder.getTrashFolderPath(fromMessage.principal) + "/", ""));
+      fromMessage.put("name", note.getName()
+                                  .replaceFirst(Folder.getTrashFolderPath(fromMessage.principal) +
+                                                "/", ""));
       renameNote(conn, userAndRoles, notebook, fromMessage, "restore");
     }
   }
@@ -1173,7 +1176,9 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
     if (folder.isUnderTrash()) {
-      String restoreName = folder.getId().replaceFirst(Folder.getTrashFolderPath(fromMessage.principal) + "/", "").trim();
+      String restoreName = folder.getId()
+                                 .replaceFirst(Folder.getTrashFolderPath(fromMessage.principal) +
+                                               "/", "").trim();
 
       // if the folder had conflict when it had moved to trash before
       Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
