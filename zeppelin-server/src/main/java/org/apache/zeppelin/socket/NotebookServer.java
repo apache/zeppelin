@@ -1141,7 +1141,10 @@ public class NotebookServer extends WebSocketServlet
 
       List<Note> noteList = folder.getNotesRecursively();
       for (Note note: noteList) {
-        notebook.removeCron(note.getId());
+        Map<String, Object> config = note.getConfig();
+        if (config.get("cron") != null) {
+          notebook.removeCron(note.getId());
+        }
       }
 
       fromMessage.put("name", trashFolderId);
