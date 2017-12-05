@@ -18,6 +18,8 @@ spark-1.*-bin-hadoop*
 
 lens/lens-cli-hist.log
 
+# Zeppelin server
+zeppelin-server/local-repo
 
 # conf file
 conf/zeppelin-env.sh
