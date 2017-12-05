@@ -318,8 +318,10 @@ public abstract class AbstractTestRestApi {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
-      for (InterpreterSetting setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+        for (InterpreterSetting setting : settingList) {
+          ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+        }
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);
@@ -350,7 +352,12 @@ public abstract class AbstractTestRestApi {
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
-      FileUtils.deleteDirectory(confDir);
+      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+        // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
+        // id will change after zeppelin restart, then we can not recover interpreter process
+        // properly
+        FileUtils.deleteDirectory(confDir);
+      }
     }
   }
 

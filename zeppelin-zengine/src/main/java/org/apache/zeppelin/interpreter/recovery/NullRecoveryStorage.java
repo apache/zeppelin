@@ -15,27 +15,40 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.launcher;
+package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Map;
+
 
 /**
- * Component to Launch interpreter process.
+ * RecoveryStorage that do nothing, used when recovery is not enabled.
+ *
  */
-public abstract class InterpreterLauncher {
+public class NullRecoveryStorage extends RecoveryStorage {
 
-  protected ZeppelinConfiguration zConf;
-  protected Properties properties;
-  protected RecoveryStorage recoveryStorage;
-
-  public InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    this.zConf = zConf;
-    this.recoveryStorage = recoveryStorage;
+  public NullRecoveryStorage(ZeppelinConfiguration zConf,
+                             InterpreterSettingManager interpreterSettingManager)
+      throws IOException {
+    super(zConf);
   }
 
-  public abstract  InterpreterClient launch(InterpreterLaunchContext context) throws IOException;
+  @Override
+  public void onInterpreterClientStart(InterpreterClient client) throws IOException {
+
+  }
+
+  @Override
+  public void onInterpreterClientStop(InterpreterClient client) throws IOException {
+
+  }
+
+  @Override
+  public Map<String, InterpreterClient> restore() throws IOException {
+    return null;
+  }
 }
