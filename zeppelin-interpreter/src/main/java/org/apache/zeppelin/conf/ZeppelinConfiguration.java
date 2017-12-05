@@ -546,8 +546,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
   }
 
-  public String getZeppelinNotebookGitURL() { return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL); }
-  public String getZeppelinNotebookGitUsername() { return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME); }
+  public String getZeppelinNotebookGitURL() {
+    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL);
+  }
+
+  public String getZeppelinNotebookGitUsername() {
+    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME);
+  }
+
   public String getZeppelinNotebookGitAccessToken() {
     return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN);
   }

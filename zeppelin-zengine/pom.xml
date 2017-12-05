@@ -625,6 +625,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+      <dependency>
+          <groupId>org.eclipse.jgit</groupId>
+          <artifactId>org.eclipse.jgit</artifactId>
+          <version>4.3.1.201605051710-r</version>
+      </dependency>
   </dependencies>
 
   <build>
