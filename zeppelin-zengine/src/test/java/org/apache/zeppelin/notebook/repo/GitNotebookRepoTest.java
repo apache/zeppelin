@@ -60,6 +60,7 @@ public class GitNotebookRepoTest {
   @Before
   public void setUp() throws Exception {
     String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinTest_" + System.currentTimeMillis();
+    String currentPath = new File(".").getCanonicalFile().getPath();
     zeppelinDir = new File(zpath);
     zeppelinDir.mkdirs();
     new File(zeppelinDir, "conf").mkdirs();
@@ -70,9 +71,19 @@ public class GitNotebookRepoTest {
 
     String testNoteDir = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID);
     String testNoteDir2 = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID2);
-    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID)),
-        new File(testNoteDir));
-    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID2)),
+    FileUtils.copyDirectory(
+            new File(
+                    Joiner.on(File.separator).join(
+                            currentPath,"zeppelin-server", "src", "test", "resources", TEST_NOTE_ID
+                    )
+            ),
+            new File(testNoteDir));
+    FileUtils.copyDirectory(
+            new File(
+                    Joiner.on(File.separator).join(
+                            currentPath,"zeppelin-server", "src", "test", "resources", TEST_NOTE_ID2
+                    )
+            ),
         new File(testNoteDir2)
     );
 
