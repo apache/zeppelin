@@ -173,7 +173,7 @@ public class KylinInterpreter extends Interpreter {
       result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 
       if (code != 200) {
-        StringBuilder errorMessage = new StringBuilder("Failed : HTTP error code " + code);
+        StringBuilder errorMessage = new StringBuilder("Failed : HTTP error code " + code + " .");
         logger.error("Failed to execute query: " + result);
 
         KylinErrorResponse kylinErrorResponse = KylinErrorResponse.fromJson(result);
@@ -181,16 +181,16 @@ public class KylinInterpreter extends Interpreter {
           logger.error("Cannot get json from string: " + result);
           // when code is 401, the response is html, not json
           if (code == 401) {
-            errorMessage.append(". Error message: Unauthorized. This request requires "
-                + "HTTP authentication. Please make sure your have set your credentials"
-                + " correctly.");
+            errorMessage.append(" Error message: Unauthorized. This request requires "
+                + "HTTP authentication. Please make sure your have set your credentials "
+                + "correctly.");
           } else {
-            errorMessage.append(". Error message: " + result);
+            errorMessage.append(" Error message: " + result + " .");
           }
         } else {
           String exception = kylinErrorResponse.getException();
           logger.error("The exception is " + exception);
-          errorMessage.append(". Error message: " + exception);
+          errorMessage.append(" Error message: " + exception + " .");
         }
 
         return new InterpreterResult(InterpreterResult.Code.ERROR, errorMessage.toString());
