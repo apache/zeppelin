@@ -220,8 +220,8 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUB
 fi
 
 eval $INTERPRETER_RUN_COMMAND &
-
 pid=$!
+
 if [[ -z "${pid}" ]]; then
   exit 1;
 else

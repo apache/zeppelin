@@ -22,6 +22,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -30,9 +31,9 @@ import static org.junit.Assert.assertTrue;
 public class SparkInterpreterLauncherTest {
 
   @Test
-  public void testLocalMode() {
+  public void testLocalMode() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", "/user/spark");
     properties.setProperty("property_1", "value_1");
@@ -41,7 +42,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "intpGroupId", "groupId", "spark", "spark");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -55,9 +56,9 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClientMode_1() {
+  public void testYarnClientMode_1() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", "/user/spark");
     properties.setProperty("property_1", "value_1");
@@ -66,7 +67,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "intpGroupId", "groupId", "spark", "spark");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -80,9 +81,9 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClientMode_2() {
+  public void testYarnClientMode_2() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", "/user/spark");
     properties.setProperty("property_1", "value_1");
@@ -92,7 +93,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "intpGroupId", "groupId", "spark", "spark");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -106,9 +107,9 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClusterMode_1() {
+  public void testYarnClusterMode_1() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", "/user/spark");
     properties.setProperty("property_1", "value_1");
@@ -117,7 +118,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "intpGroupId", "groupId", "spark", "spark");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -132,9 +133,9 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
-  public void testYarnClusterMode_2() {
+  public void testYarnClusterMode_2() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", "/user/spark");
     properties.setProperty("property_1", "value_1");
@@ -144,7 +145,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "intpGroupId", "groupId", "spark", "spark");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
