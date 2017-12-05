@@ -1108,6 +1108,15 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Note note = notebook.getNote(noteId);
+
+    // drop cron
+    Map<String, Object> config = note.getConfig();
+    if (config.get("cron") != null) {
+      config.remove("cron");
+      note.setConfig(config);
+      notebook.refreshCron(note.getId());
+    }
+
     if (note != null && !note.isTrash()){
       fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
