@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Run Zeppelin
+# Stop Zeppelin Interpreter Processes
 #
 
 bin=$(dirname "${BASH_SOURCE-$0}")

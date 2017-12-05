@@ -78,7 +78,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
             }
           });
         } catch (Exception e) {
-          logger.warn("ignore the exception when shutting down");
+          logger.warn("ignore the exception when shutting down interpreter process.", e);
         }
       }
     }
