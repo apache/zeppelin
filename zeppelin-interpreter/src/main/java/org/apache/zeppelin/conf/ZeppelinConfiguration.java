@@ -355,6 +355,19 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
 
+  public String getRecoveryDir() {
+    return getRelativeDir(ConfVars.ZEPPELIN_RECOVERY_DIR);
+  }
+
+  public String getRecoveryStorageClass() {
+    return getString(ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS);
+  }
+
+  public boolean isRecoveryEnabled() {
+    return !getString(ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS).equals(
+        "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage");
+  }
+
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -658,6 +671,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_RECOVERY_DIR("zeppelin.recovery.dir", "recovery"),
+    ZEPPELIN_RECOVERY_STORAGE_CLASS("zeppelin.recovery.storage.class",
+        "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage"),
+
     // use specified notebook (id) as homescreen
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
     // whether homescreen notebook will be hidden from notebook list or not

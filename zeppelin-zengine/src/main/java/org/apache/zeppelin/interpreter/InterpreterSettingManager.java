@@ -34,12 +34,16 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.Authentication;
@@ -118,6 +122,7 @@ public class InterpreterSettingManager {
   private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
   private LifecycleManager lifecycleManager;
+  private RecoveryStorage recoveryStorage;
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
@@ -154,13 +159,17 @@ public class InterpreterSettingManager {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
-    try {
-      this.lifecycleManager = (LifecycleManager)
-          Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
-              .newInstance(conf);
-    } catch (Exception e) {
-      throw new IOException("Fail to create LifecycleManager", e);
-    }
+
+    this.recoveryStorage = ReflectionUtils.createClazzInstance(conf.getRecoveryStorageClass(),
+        new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
+        new Object[] {conf, this});
+    this.recoveryStorage.init();
+    LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
+
+    this.lifecycleManager = ReflectionUtils.createClazzInstance(conf.getLifecycleManagerClass(),
+        new Class[] {ZeppelinConfiguration.class},
+        new Object[] {conf});
+    LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
 
     init();
   }
@@ -174,6 +183,7 @@ public class InterpreterSettingManager {
         .setAppEventListener(appEventListener)
         .setDependencyResolver(dependencyResolver)
         .setLifecycleManager(lifecycleManager)
+        .setRecoveryStorage(recoveryStorage)
         .postProcessing();
   }
 
@@ -307,8 +317,16 @@ public class InterpreterSettingManager {
     saveToFile();
   }
 
+  public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
+    return remoteInterpreterProcessListener;
+  }
+
+  public ApplicationEventListener getAppEventListener() {
+    return appEventListener;
+  }
+
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-      String interpreterJson) throws IOException {
+                                                  String interpreterJson) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
@@ -505,6 +523,10 @@ public class InterpreterSettingManager {
       }
     }
     return resourceSet;
+  }
+
+  public RecoveryStorage getRecoveryStorage() {
+    return recoveryStorage;
   }
 
   public void removeResourcesBelongsToParagraph(String noteId, String paragraphId) {
