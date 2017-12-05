@@ -257,6 +257,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (Apache 2.0) Software under ./bigquery/*  was developed at Google (http://www.google.com/). Licensed under the Apache v2.0 License.
     (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
     (Apache 2.0) Gson extra (https://github.com/DanySK/gson-extras)
+    (Apache 2.0) Nimbus JOSE+JWT (https://bitbucket.org/connect2id/nimbus-jose-jwt/wiki/Home)
 
 ========================================================================
 BSD 3-Clause licenses
