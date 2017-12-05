@@ -974,7 +974,7 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  private void removeCron(String id) {
+  public void removeCron(String id) {
     try {
       quartzSched.deleteJob(new JobKey(id, "note"));
     } catch (SchedulerException e) {
