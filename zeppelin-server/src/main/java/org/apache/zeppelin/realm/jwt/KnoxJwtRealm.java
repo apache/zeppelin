@@ -88,7 +88,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     }
 
     try {
-      hadoopConfig = new Configuration(false);
+      hadoopConfig = new Configuration();
       hadoopGroups = new Groups(hadoopConfig);
     } catch (final Exception e) {
       LOGGER.error("Exception in onInit", e);
