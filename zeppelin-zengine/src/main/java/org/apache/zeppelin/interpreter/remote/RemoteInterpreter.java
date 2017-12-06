@@ -346,8 +346,7 @@ public class RemoteInterpreter extends Interpreter {
                                                 final InterpreterContext interpreterContext)
       throws InterpreterException {
     if (!isOpened) {
-      LOGGER.warn("completion is called when RemoterInterpreter is not opened for " + className);
-      return new ArrayList<>();
+      open();
     }
     RemoteInterpreterProcess interpreterProcess = null;
     try {

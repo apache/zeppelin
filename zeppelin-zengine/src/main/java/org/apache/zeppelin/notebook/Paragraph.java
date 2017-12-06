@@ -191,7 +191,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
       } else {
         this.intpText = "";
-        this.scriptText = this.text;
+        this.scriptText = this.text.trim();
       }
     }
   }
@@ -250,14 +250,17 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return note.getInterpreterCompletion();
       }
     }
-    String trimmedBuffer = buffer != null ? buffer.trim() : null;
-    cursor = calculateCursorPosition(buffer, trimmedBuffer, cursor);
+    this.interpreter = getBindedInterpreter();
+
+    setText(buffer);
+
+    cursor = calculateCursorPosition(buffer, cursor);
 
     InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
 
     try {
       if (this.interpreter != null) {
-        return this.interpreter.completion(scriptText, cursor, interpreterContext);
+        return this.interpreter.completion(this.scriptText, cursor, interpreterContext);
       } else {
         return null;
       }
@@ -266,24 +269,15 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
   }
 
-  public int calculateCursorPosition(String buffer, String trimmedBuffer, int cursor) {
-    int countWhitespacesAtStart = buffer.indexOf(trimmedBuffer);
-    if (countWhitespacesAtStart > 0) {
-      cursor -= countWhitespacesAtStart;
-    }
+  public int calculateCursorPosition(String buffer, int cursor) {
+    // scriptText trimmed
 
-    // parse text to get interpreter component
-    String repl = null;
-    if (trimmedBuffer != null) {
-      Matcher matcher = REPL_PATTERN.matcher(trimmedBuffer);
-      if (matcher.matches()) {
-        repl = matcher.group(2);
-      }
+    if (this.scriptText.isEmpty()) {
+      return 0;
     }
-
-    if (repl != null && cursor > repl.length()) {
-      String body = trimmedBuffer.substring(repl.length() + 1);
-      cursor -= repl.length() + 1 + body.indexOf(body.trim());
+    int countCharactersBeforeScript = buffer.indexOf(this.scriptText);
+    if (countCharactersBeforeScript > 0) {
+      cursor -= countCharactersBeforeScript;
     }
 
     return cursor;
