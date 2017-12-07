@@ -846,6 +846,20 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.info = info;
   }
 
+  public void  setSequentialRunStatus(boolean isRunning) {
+    Map<String, Object> infoMap = getInfo();
+    infoMap.put("isRunning", isRunning);
+  }
+
+  public boolean isNowRunningSequentially() {
+    Map<String, Object> infoMap = getInfo();
+    if (infoMap.containsKey("isRunning")) {
+      return (boolean) infoMap.get("isRunning");
+    } else {
+      return false;
+    }
+  }
+
   @Override
   public void beforeStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {

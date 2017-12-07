@@ -38,6 +38,7 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.Folder;
@@ -836,10 +837,30 @@ public class NotebookServer extends WebSocketServlet
       if (note.isPersonalizedMode()) {
         note = note.getUserNote(user);
       }
+      checkSequentialRunStatus(note);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, user, conn);
     } else {
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
+    }
+  }
+
+  //check sequential running status (if NoteServer crash last time, it recover really status)
+  private void checkSequentialRunStatus(Note note) {
+    boolean isRunInInfo = note.isNowRunningSequentially();
+    if (!isRunInInfo) {return;}
+    List<Paragraph> paragraphs = note.getParagraphs();
+
+    boolean isRunReally = false;
+    for (Paragraph p: paragraphs) {
+      if (p.getStatus().isRunning()) {
+        isRunReally = true;
+        break;
+      }
+    }
+
+    if (!isRunReally) {
+      note.setSequentialRunStatus(false);
     }
   }
 
@@ -1666,10 +1687,13 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
+    Note note = notebook.getNote(noteId);
+
     List<Map<String, Object>> paragraphs =
         gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
             new TypeToken<List<Map<String, Object>>>() {}.getType());
 
+    runAllStatusBroadcast(note, true);
     for (Map<String, Object> raw : paragraphs) {
       String paragraphId = (String) raw.get("id");
       if (paragraphId == null) {
@@ -1681,15 +1705,28 @@ public class NotebookServer extends WebSocketServlet
       Map<String, Object> params = (Map<String, Object>) raw.get("params");
       Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-      Note note = notebook.getNote(noteId);
       Paragraph p = setParagraphUsingMessage(note, fromMessage,
           paragraphId, text, title, params, config);
 
       if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
         // stop execution when one paragraph fails.
+        runAllStatusBroadcast(note, false);
         break;
       }
     }
+    runAllStatusBroadcast(note, false);
+  }
+
+  private void runAllStatusBroadcast(Note note, boolean status) throws IOException {
+    if (note == null) {return;}
+    if (note.isNowRunningSequentially() == status) {return;}
+    note.setSequentialRunStatus(status);
+    //AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    //note.persist(subject);
+    broadcastNote(note);
+    LoggerFactory.getLogger(RemoteInterpreterEventPoller.class).debug("NOTE BROADCAST COMPLETE. STATUS: " + status);
+//    broadcastNoteList(subject, userAndRoles);
+
   }
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,

@@ -212,6 +212,11 @@
   float: left;
 }
 
+.item-disable {
+  color: rgba(128, 128, 128, 0.61) !important;
+  cursor: default !important;
+}
+
 .dropdown-menu .shortcut-keys {
   float: right;
   color: #999;

@@ -149,6 +149,13 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     initializeDefault($scope.paragraph.config)
   }
 
+  $scope.isSequentialRun = function () {
+    if ($scope.parentNote.info.isRunning === true) {
+      return true
+    }
+    return false
+  }
+
   const initializeDefault = function (config) {
     let forms = $scope.paragraph.settings.forms
 
@@ -263,6 +270,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.cancelParagraph = function (paragraph) {
+    if ($scope.isSequentialRun()) return
     console.log('Cancel %o', paragraph.id)
     websocketMsgSrv.cancelParagraphRun(paragraph.id)
   }
@@ -425,6 +433,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.toggleEnableDisable = function (paragraph) {
+    if ($scope.isSequentialRun()) return
     paragraph.config.enabled = !paragraph.config.enabled
     commitParagraph(paragraph)
   }
@@ -467,6 +476,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.runParagraphFromButton = function () {
+    if ($scope.isSequentialRun()) return
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph($scope.getEditorValue(), false, false)
   }
@@ -477,14 +487,17 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.moveUp = function (paragraph) {
+    if ($scope.isSequentialRun()) return
     $scope.$emit('moveParagraphUp', paragraph)
   }
 
   $scope.moveDown = function (paragraph) {
+    if ($scope.isSequentialRun()) return
     $scope.$emit('moveParagraphDown', paragraph)
   }
 
   $scope.insertNew = function (position) {
+    if ($scope.isSequentialRun()) return
     $scope.$emit('insertParagraph', $scope.paragraph.id, position)
   }
 
@@ -496,6 +509,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.copyParagraph = function (data, position) {
+    if ($scope.isSequentialRun()) return
     let newIndex = -1
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === $scope.paragraph.id) {
@@ -521,6 +535,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.removeParagraph = function (paragraph) {
+    if ($scope.isSequentialRun()) return
     if ($scope.note.paragraphs.length === 1) {
       BootstrapDialog.alert({
         closable: true,

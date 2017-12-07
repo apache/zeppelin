@@ -1117,6 +1117,13 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
+  $scope.isSequentialRun = function () {
+    if ($scope.info.isRunning === true) {
+      return true
+    }
+    return false
+  }
+
   $scope.setIamOwner = function () {
     if ($scope.permissions.owners.length > 0 &&
       _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0) {
