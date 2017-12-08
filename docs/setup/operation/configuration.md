@@ -455,7 +455,7 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 
 ### Storing user credentials
 
-In order to avoid having to re-enter credentials every?time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
+In order to avoid having to re-enter credentials every time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
 
 Please notice that passwords will be stored in *plain text* by default. To encrypt the passwords, use the ZEPPELIN_CREDENTIALS_ENCRYPT_KEY config variable. This will encrypt passwords using the AES-128 algorithm.
 
