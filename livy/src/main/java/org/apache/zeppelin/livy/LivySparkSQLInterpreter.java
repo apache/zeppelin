@@ -168,7 +168,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     List<String> rows = new ArrayList<>();
     // Get first line by breaking on \n. We can guarantee
     // that \n marks the end of the first line, but not for
-    // subsequent lines (as it could be in the data)
+    // subsequent lines (as it could be in the cells)
     String firstLine = output.split("\n", 2)[0];
     // at least 4 lines, even for empty sql output
     //    +---+---+
