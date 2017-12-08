@@ -480,4 +480,31 @@
   <value>10000:10010</value>
 </property>
 -->
+
+<!-- GitHub configurations
+<property>
+  <name>zeppelin.notebook.git.remote.url</name>
+  <value>git@github.com:mohamagdy/zeppelin-notebooks.git</value>
+  <description>remote Git repository URL</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.username</name>
+  <value>token</value>
+  <description>remote Git repository username</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.access-token</name>
+  <value>1b29e853bc73b90af0d280233101f91b9105d7cb</value>
+  <description>remote Git repository password</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.remote</name>
+  <value>origin</value>
+  <description>Git repository remote</description>
+</property>
+-->
+
 </configuration>
