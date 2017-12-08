@@ -19,7 +19,6 @@ package org.apache.zeppelin.notebook.repo;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,7 +35,6 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +56,9 @@ public class GitNotebookRepo extends VFSNotebookRepo {
 
   private String localPath;
   private Git git;
-  private ZeppelinConfiguration zeppelinConfiguration;
 
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     super(conf);
-
-    this.zeppelinConfiguration = conf;
 
     localPath = getRootDir().getName().getPath();
     LOG.debug("Opening a git repo at '{}'", localPath);
@@ -74,9 +69,6 @@ public class GitNotebookRepo extends VFSNotebookRepo {
     }
 
     git = new Git(localRepo);
-
-    configureRemoteStream();
-    pullFromRemoteStream();
   }
 
   @Override
@@ -101,10 +93,6 @@ public class GitNotebookRepo extends VFSNotebookRepo {
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
         RevCommit commit = git.commit().setMessage(commitMessage).call();
         revision = new Revision(commit.getName(), commit.getShortMessage(), commit.getCommitTime());
-
-        if(isRemoteStreamUpdatable())
-          updateRemoteStream();
-
       } else {
         LOG.debug("No changes found {}", pattern);
       }
@@ -161,8 +149,6 @@ public class GitNotebookRepo extends VFSNotebookRepo {
     List<Revision> history = Lists.newArrayList();
     LOG.debug("Listing history for {}:", noteId);
     try {
-      pullFromRemoteStream();
-
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
         history.add(new Revision(log.getName(), log.getShortMessage(), log.getCommitTime()));
@@ -194,82 +180,11 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   //DI replacements for Tests
-  Git getGit() {
+  protected Git getGit() {
     return git;
   }
 
   void setGit(Git git) {
     this.git = git;
-  }
-
-  private boolean isRemoteStreamUpdatable() {
-    return !zeppelinConfiguration.getZeppelinNotebookGitURL().isEmpty();
-  }
-
-  private void configureRemoteStream() {
-    if(!isRemoteStreamUpdatable())
-      return;
-
-    try {
-      LOG.debug("Setting up remote stream");
-      RemoteAddCommand remoteAddCommand = git.remoteAdd();
-      remoteAddCommand.setName("origin");
-      remoteAddCommand.setUri(new URIish(zeppelinConfiguration.getZeppelinNotebookGitURL()));
-      remoteAddCommand.call();
-    } catch (GitAPIException e) {
-      e.printStackTrace();
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void updateRemoteStream() {
-    LOG.debug("Updating remote stream");
-
-    pullFromRemoteStream();
-    pushToRemoteSteam();
-  }
-
-  private void pullFromRemoteStream() {
-    if(!isRemoteStreamUpdatable())
-      return;
-
-    try {
-      LOG.debug("Pull latest changed from remote stream");
-      PullCommand pullCommand = git.pull();
-      pullCommand.setCredentialsProvider(
-              new UsernamePasswordCredentialsProvider(
-                      zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-                      zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
-              )
-      );
-
-      pullCommand.call();
-
-    } catch (GitAPIException e) {
-      LOG.error("Error when pulling latest changes from remote repository");
-      e.printStackTrace();
-    }
-  }
-
-  private void pushToRemoteSteam() {
-    if(!isRemoteStreamUpdatable())
-      return;
-
-    try {
-      LOG.debug("Push latest changed from remote stream");
-      PushCommand pushCommand = git.push();
-      pushCommand.setCredentialsProvider(
-              new UsernamePasswordCredentialsProvider(
-                      zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-                      zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
-              )
-      );
-
-      pushCommand.call();
-    } catch (GitAPIException e) {
-      LOG.error("Error when pushing latest changes from remote repository");
-      e.printStackTrace();
-    }
   }
 }
