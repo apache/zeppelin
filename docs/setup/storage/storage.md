@@ -393,4 +393,13 @@ To enable GitHub tracking, uncomment the following properties in `zeppelin-site.
 </property>
 ```
 
+And set the `zeppelin.notebook.storage` propery to `org.apache.zeppelin.notebook.repo.GitHubNotebookRepo`
+
+```sh
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitHubNotebookRepo</value>
+</property>
+```
+
 The access token could be obtained by following the steps on this link https://github.com/settings/tokens.
