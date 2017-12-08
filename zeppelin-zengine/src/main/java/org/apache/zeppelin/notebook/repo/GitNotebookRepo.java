@@ -109,7 +109,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
    */
   @Override
   public synchronized Note get(String noteId, String revId, AuthenticationInfo subject)
-          throws IOException {
+      throws IOException {
     Note note = null;
     RevCommit stash = null;
     try {
@@ -134,7 +134,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
         ObjectId dropped = git.stashDrop().setStashRef(0).call();
         Collection<RevCommit> stashes = git.stashList().call();
         LOG.debug("Stash applied as : {}, and dropped : {}, stash size: {}", applied, dropped,
-                stashes.size());
+            stashes.size());
       }
     } catch (GitAPIException e) {
       LOG.error("Failed to return note from revision \"{}\"", revId, e);
@@ -163,14 +163,14 @@ public class GitNotebookRepo extends VFSNotebookRepo {
 
   @Override
   public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-          throws IOException {
+      throws IOException {
     Note revisionNote = get(noteId, revId, subject);
     if (revisionNote != null) {
       save(revisionNote, subject);
     }
     return revisionNote;
   }
-
+  
   @Override
   public void close() {
     git.getRepository().close();
