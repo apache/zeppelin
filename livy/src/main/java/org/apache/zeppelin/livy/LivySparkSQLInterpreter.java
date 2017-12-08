@@ -197,6 +197,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       // Only match format "|....|"
       // skip line like "+---+---+" and "only showing top 1 row"
       String line = output.substring(lineStart, lineEnd);
+      // Use the DOTALL regex mode to match newlines
       if (line.matches("(?s)^\\|.*\\|$")) {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
