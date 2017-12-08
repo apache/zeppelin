@@ -40,7 +40,10 @@ limitations under the License.
                    ng-keypress="loginParams.errorText = ''"
                    ng-model="loginParams.password" />
           </div>
-
+          <div class="form-group">
+            <input id="rememberMe" ng-model="loginParams.rememberMe" type="checkbox"/>
+            <label for="rememberMe">Remember Me</label>
+          </div>
         </div>
         <div class="modal-footer" ng-switch on="SigningIn">
           <div ng-switch-when="true">
