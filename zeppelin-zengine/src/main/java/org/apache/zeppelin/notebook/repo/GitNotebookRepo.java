@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -59,15 +59,13 @@ public class GitNotebookRepo extends VFSNotebookRepo {
 
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     super(conf);
-
     localPath = getRootDir().getName().getPath();
-    LOG.debug("Opening a git repo at '{}'", localPath);
+    LOG.info("Opening a git repo at '{}'", localPath);
     Repository localRepo = new FileRepository(Joiner.on(File.separator).join(localPath, ".git"));
     if (!localRepo.getDirectory().exists()) {
-      LOG.debug("Git repo {} does not exist, creating a new one", localRepo.getDirectory());
+      LOG.info("Git repo {} does not exist, creating a new one", localRepo.getDirectory());
       localRepo.create();
     }
-
     git = new Git(localRepo);
   }
 
@@ -111,7 +109,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
    */
   @Override
   public synchronized Note get(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
+          throws IOException {
     Note note = null;
     RevCommit stash = null;
     try {
@@ -136,7 +134,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
         ObjectId dropped = git.stashDrop().setStashRef(0).call();
         Collection<RevCommit> stashes = git.stashList().call();
         LOG.debug("Stash applied as : {}, and dropped : {}, stash size: {}", applied, dropped,
-            stashes.size());
+                stashes.size());
       }
     } catch (GitAPIException e) {
       LOG.error("Failed to return note from revision \"{}\"", revId, e);
@@ -165,15 +163,14 @@ public class GitNotebookRepo extends VFSNotebookRepo {
 
   @Override
   public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    LOG.debug("Setting log revision");
+          throws IOException {
     Note revisionNote = get(noteId, revId, subject);
     if (revisionNote != null) {
       save(revisionNote, subject);
     }
     return revisionNote;
   }
-  
+
   @Override
   public void close() {
     git.getRepository().close();
@@ -187,4 +184,5 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   void setGit(Git git) {
     this.git = git;
   }
+
 }
