@@ -83,7 +83,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   let currentSearchParagraph = 0
 
   $scope.$watch('note', function (value) {
-    $rootScope.pageTitle = value ? value.name : 'Zeppelin'
+    $rootScope.pageTitle = value ? (value.name + ' - Zeppelin') : 'Zeppelin'
   }, true)
 
   $scope.$on('setConnectedStatus', function (event, param) {
