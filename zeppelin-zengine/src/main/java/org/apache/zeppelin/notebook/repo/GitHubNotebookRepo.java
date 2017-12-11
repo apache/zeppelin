@@ -15,6 +15,18 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+/**
+ * GitHub integration to store notebooks in a GitHub repository.
+ * It uses the same simple logic implemented in @see
+ * {@link org.apache.zeppelin.notebook.repo.GitNotebookRepo}
+ *
+ * The logic for updating the local repository from the remote repository is the following:
+ * - When the <code>GitHubNotebookRepo</code> is initialized
+ * - When pushing the changes to the remote repository
+ *
+ * The logic for updating the remote repository on GitHub from local repository is the following:
+ * - When commit the changes (saving the notebook)
+ */
 public class GitHubNotebookRepo extends GitNotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
   private ZeppelinConfiguration zeppelinConfiguration;
@@ -65,10 +77,10 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       LOG.debug("Pull latest changed from remote stream");
       PullCommand pullCommand = git.pull();
       pullCommand.setCredentialsProvider(
-              new UsernamePasswordCredentialsProvider(
-                      zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-                      zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
-              )
+        new UsernamePasswordCredentialsProvider(
+          zeppelinConfiguration.getZeppelinNotebookGitUsername(),
+          zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
+        )
       );
 
       pullCommand.call();
@@ -84,10 +96,10 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       LOG.debug("Push latest changed from remote stream");
       PushCommand pushCommand = git.push();
       pushCommand.setCredentialsProvider(
-              new UsernamePasswordCredentialsProvider(
-                      zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-                      zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
-              )
+        new UsernamePasswordCredentialsProvider(
+          zeppelinConfiguration.getZeppelinNotebookGitUsername(),
+          zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
+        )
       );
 
       pushCommand.call();
