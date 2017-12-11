@@ -89,6 +89,7 @@ export default class PivotTransformation extends Transformation {
         for (let j = i + 1; j < list.length; j++) {
           if (angular.equals(list[i], list[j])) {
             list.splice(j, 1)
+            j--
           }
         }
       }
