@@ -1674,9 +1674,8 @@ public class NotebookServer extends WebSocketServlet
     p.abort();
   }
 
-  private void runAllParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
-                                Notebook notebook,
-      Message fromMessage) throws IOException {
+  private void runAllParagraphs(final NotebookSocket conn, HashSet<String> userAndRoles,
+                                Notebook notebook, final Message fromMessage) throws IOException {
     final String noteId = (String) fromMessage.get("noteId");
     if (StringUtils.isBlank(noteId)) {
       return;
@@ -1687,37 +1686,49 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
-    Note note = notebook.getNote(noteId);
+    final Note note = notebook.getNote(noteId);
 
-    List<Map<String, Object>> paragraphs =
+    final List<Map<String, Object>> paragraphs =
         gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
             new TypeToken<List<Map<String, Object>>>() {}.getType());
 
     runAllStatusBroadcast(note, true);
-    for (Map<String, Object> raw : paragraphs) {
-      String paragraphId = (String) raw.get("id");
-      if (paragraphId == null) {
-        continue;
+
+    Thread runAllThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        for (Map<String, Object> raw : paragraphs) {
+          String paragraphId = (String) raw.get("id");
+          if (paragraphId == null) {
+            continue;
+          }
+
+          String text = (String) raw.get("paragraph");
+          String title = (String) raw.get("title");
+          Map<String, Object> params = (Map<String, Object>) raw.get("params");
+          Map<String, Object> config = (Map<String, Object>) raw.get("config");
+
+          Paragraph p = setParagraphUsingMessage(note, fromMessage,
+              paragraphId, text, title, params, config);
+
+          try {
+            if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
+              // stop execution when one paragraph fails.
+              break;
+            }
+          } catch (Exception e) {
+            LoggerFactory.getLogger(NotebookServer.class)
+                .error("Can't execute paragraph in runAllParagraphs() method. error: " + e.toString());
+          } finally {
+            runAllStatusBroadcast(note, false);
+          }
+        }
       }
-
-      String text = (String) raw.get("paragraph");
-      String title = (String) raw.get("title");
-      Map<String, Object> params = (Map<String, Object>) raw.get("params");
-      Map<String, Object> config = (Map<String, Object>) raw.get("config");
-
-      Paragraph p = setParagraphUsingMessage(note, fromMessage,
-          paragraphId, text, title, params, config);
-
-      if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
-        // stop execution when one paragraph fails.
-        runAllStatusBroadcast(note, false);
-        break;
-      }
-    }
-    runAllStatusBroadcast(note, false);
+    });
+    runAllThread.start();
   }
 
-  private void runAllStatusBroadcast(Note note, boolean status) throws IOException {
+  private void runAllStatusBroadcast(Note note, boolean status) {
     if (note == null) {return;}
     if (note.isNowRunningSequentially() == status) {return;}
     note.setSequentialRunStatus(status);

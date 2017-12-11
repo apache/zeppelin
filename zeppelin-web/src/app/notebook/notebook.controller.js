@@ -1118,7 +1118,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.isSequentialRun = function () {
-    if ($scope.info.isRunning === true) {
+    if ($scope.hasOwnProperty('info') && $scope.info.hasOwnProperty('isRunning') && $scope.info.isRunning === true) {
       return true
     }
     return false
