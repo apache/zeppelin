@@ -132,6 +132,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
   private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
 
+  private final String JDBC_AUTOCOMMIT = "zeppelin.jdbc.autocommit";
+
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
   private final HashMap<String, SqlCompleter> sqlCompletersMap;
@@ -667,6 +669,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     ResultSet resultSet = null;
     String paragraphId = interpreterContext.getParagraphId();
     String user = interpreterContext.getAuthenticationInfo().getUser();
+    boolean commit = Boolean.valueOf(getProperty(String.format(JDBC_AUTOCOMMIT, propertyKey)));
 
     boolean splitQuery = false;
     String splitQueryProperty = getProperty(String.format("%s.%s", propertyKey, SPLIT_QURIES_KEY));
@@ -763,7 +766,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {
         try {
-          if (!connection.getAutoCommit()) {
+          if (!connection.getAutoCommit() && commit) {
             connection.commit();
           }
           connection.close();
