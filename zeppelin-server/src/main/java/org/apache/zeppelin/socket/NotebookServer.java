@@ -848,7 +848,9 @@ public class NotebookServer extends WebSocketServlet
   //check sequential running status (if NoteServer crash last time, it recover really status)
   private void checkSequentialRunStatus(Note note) {
     boolean isRunInInfo = note.isNowRunningSequentially();
-    if (!isRunInInfo) {return;}
+    if (!isRunInInfo) {
+      return;
+    }
     List<Paragraph> paragraphs = note.getParagraphs();
 
     boolean isRunReally = false;
@@ -1718,7 +1720,7 @@ public class NotebookServer extends WebSocketServlet
             }
           } catch (Exception e) {
             LoggerFactory.getLogger(NotebookServer.class)
-                .error("Can't execute paragraph in runAllParagraphs() method. error: " + e.toString());
+                .error("Error in runAllParagraphs(). Error: " + e.toString());
           } finally {
             runAllStatusBroadcast(note, false);
           }
@@ -1729,15 +1731,14 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void runAllStatusBroadcast(Note note, boolean status) {
-    if (note == null) {return;}
-    if (note.isNowRunningSequentially() == status) {return;}
+    if (note == null) {
+      return;
+    }
+    if (note.isNowRunningSequentially() == status) {
+      return;
+    }
     note.setSequentialRunStatus(status);
-    //AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    //note.persist(subject);
     broadcastNote(note);
-    LoggerFactory.getLogger(RemoteInterpreterEventPoller.class).debug("NOTE BROADCAST COMPLETE. STATUS: " + status);
-//    broadcastNoteList(subject, userAndRoles);
-
   }
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,
