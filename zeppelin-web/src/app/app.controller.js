@@ -46,9 +46,7 @@ function MainCtrl ($scope, $rootScope, $window, arrayOrderingSrv) {
 
   $rootScope.noteName = function (note) {
     if (!_.isEmpty(note)) {
-      let name = arrayOrderingSrv.getNoteName(note)
-      name = name.substr(name.lastIndexOf('/') + 1, name.length)
-      return name
+      return arrayOrderingSrv.getNoteName(note)
     }
   }
 
