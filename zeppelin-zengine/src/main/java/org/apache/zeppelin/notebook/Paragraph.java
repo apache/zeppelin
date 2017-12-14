@@ -351,6 +351,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       setStatus(Job.Status.ERROR);
       throw intpException;
     }
+    setStatus(Status.READY);
     if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
       setAuthenticationInfo(getAuthenticationInfo());
       interpreter.getScheduler().submit(this);
