@@ -83,4 +83,49 @@ describe('PivotTransformation build', function() {
     expect(config.common.pivot.keys[1].index).toBe(3)
     expect(config.common.pivot.keys[2].index).toBe(5)
   })
+
+  it('should aggregate values correctly', function() {
+    let td = new TableData()
+    td.loadParagraphResult({
+      type: 'TABLE',
+      msg: 'key\tvalue\na\t10\na\tnull\na\t0\na\t1\n'
+    })
+
+    let config = {
+      common: {
+        pivot: {
+          keys: [
+            {
+              'name': 'key',
+              'index': 0.0,
+            }
+          ],
+          groups: [],
+          values: [
+            {
+              'name': 'value',
+              'index': 1.0,
+              'aggr': 'sum'
+            }
+          ]
+        }
+      }
+    }
+
+    pt.setConfig(config)
+    let transformed = pt.transform(td)
+    expect(transformed.rows['a']['value(sum)'].value).toBe(11)
+
+    pt.config.common.pivot.values[0].aggr = 'max'
+    transformed = pt.transform(td)
+    expect(transformed.rows['a']['value(max)'].value).toBe(10)
+
+    pt.config.common.pivot.values[0].aggr = 'min'
+    transformed = pt.transform(td)
+    expect(transformed.rows['a']['value(min)'].value).toBe(0)
+
+    pt.config.common.pivot.values[0].aggr = 'count'
+    transformed = pt.transform(td)
+    expect(transformed.rows['a']['value(count)'].value).toBe(4)
+  })
 })
