@@ -146,7 +146,8 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="runAllToThis(paragraph)" ng-hide="$first">
+          <a ng-click="runAllToThis(paragraph)" ng-hide="$first"
+             ng-class="{'item-disable' : isSequentialRun()}">
             <span class="icon-action-redo shortcut-icon"
                   style="position: relative; transform: rotate(-90deg); left: -4px;">
             </span>
@@ -155,7 +156,8 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="runAllFromThis(paragraph)" ng-hide="$last">
+          <a ng-click="runAllFromThis(paragraph)" ng-hide="$last"
+             ng-class="{'item-disable' : isSequentialRun()}">
             <span class="icon-action-undo shortcut-icon"
                   style="position: relative; transform: rotate(-90deg); left: -4px;">
             </span>
@@ -163,7 +165,6 @@ limitations under the License.
              Run all below
           </a>
         </li>
-        <li>
         <li>
           <a ng-click="copyParagraph(getEditorValue())" ng-class="{'item-disable' : isSequentialRun()}">
             <span class="fa fa-copy shortcut-icon" ng-class="{'item-disable' : isSequentialRun()}"></span>
