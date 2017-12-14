@@ -214,7 +214,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       callbackServer.stop();
     }
     if (isRunning()) {
-      logger.info("kill interpreter process");
+      logger.info("Kill interpreter process");
       try {
         callRemoteFunction(new RemoteFunction<Void>() {
           @Override
@@ -263,7 +263,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     return interpreterDir;
   }
 
-  @VisibleForTesting
   public String getInterpreterSettingName() {
     return interpreterSettingName;
   }
