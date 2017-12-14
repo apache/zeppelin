@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * ManagedInterpreterGroup runs under zeppelin server
@@ -54,10 +55,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return interpreterSetting;
   }
 
-  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() throws IOException {
+  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(Properties properties)
+      throws IOException {
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
-      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess();
+      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(properties);
     }
     return remoteInterpreterProcess;
   }
@@ -131,7 +133,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     if (sessions.containsKey(sessionId)) {
       return sessions.get(sessionId);
     } else {
-      List<Interpreter> interpreters = interpreterSetting.createInterpreters(user, sessionId);
+      List<Interpreter> interpreters = interpreterSetting.createInterpreters(user, id, sessionId);
       for (Interpreter interpreter : interpreters) {
         interpreter.setInterpreterGroup(this);
       }

@@ -138,9 +138,11 @@ public class InterpreterSetting {
   // launcher in future when we have other launcher implementation. e.g. third party launcher
   // service like livy
   private transient InterpreterLauncher launcher;
-  ///////////////////////////////////////////////////////////////////////////////////////////
 
   private transient LifecycleManager lifecycleManager;
+  ///////////////////////////////////////////////////////////////////////////////////////////
+
+
 
   /**
    * Builder class for InterpreterSetting
@@ -648,12 +650,11 @@ public class InterpreterSetting {
   ///////////////////////////////////////////////////////////////////////////////////////
   // This is the only place to create interpreters. For now we always create multiple interpreter
   // together (one session). We don't support to create single interpreter yet.
-  List<Interpreter> createInterpreters(String user, String sessionId) {
+  List<Interpreter> createInterpreters(String user, String interpreterGroupId, String sessionId) {
     List<Interpreter> interpreters = new ArrayList<>();
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
     for (InterpreterInfo info : interpreterInfos) {
-      Interpreter interpreter = null;
-      interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
+      Interpreter interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
           info.getClassName(), user, lifecycleManager);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
@@ -663,15 +664,17 @@ public class InterpreterSetting {
       LOGGER.info("Interpreter {} created for user: {}, sessionId: {}",
           interpreter.getClassName(), user, sessionId);
     }
+    interpreters.add(new ConfInterpreter(getJavaProperties(), interpreterGroupId, this));
     return interpreters;
   }
 
-  synchronized RemoteInterpreterProcess createInterpreterProcess() throws IOException {
+  synchronized RemoteInterpreterProcess createInterpreterProcess(Properties properties)
+      throws IOException {
     if (launcher == null) {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(getJavaProperties(), option, interpreterRunner, id, group, name);
+        InterpreterLaunchContext(properties, option, interpreterRunner, id, group, name);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
         new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
@@ -716,6 +719,11 @@ public class InterpreterSetting {
         return info.getClassName();
       }
     }
+    //TODO(zjffdu) It requires user can not create interpreter with name `conf`,
+    // conf is a reserved word of interpreter name
+    if (replName.equals("conf")) {
+      return ConfInterpreter.class.getName();
+    }
     return null;
   }
 
@@ -726,6 +734,29 @@ public class InterpreterSetting {
         new RemoteAngularObjectRegistry(groupId, angularObjectRegistryListener, interpreterGroup);
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
     return interpreterGroup;
+  }
+
+  /**
+   * Throw exception when interpreter process has already launched
+   *
+   * @param interpreterGroupId
+   * @param properties
+   * @throws IOException
+   */
+  public void setInterpreterGroupProperties(String interpreterGroupId, Properties properties)
+      throws IOException {
+    ManagedInterpreterGroup interpreterGroup = this.interpreterGroups.get(interpreterGroupId);
+    for (List<Interpreter> session : interpreterGroup.sessions.values()) {
+      for (Interpreter intp : session) {
+        if (!intp.getProperties().equals(properties) &&
+            interpreterGroup.getRemoteInterpreterProcess() != null &&
+            interpreterGroup.getRemoteInterpreterProcess().isRunning()) {
+          throw new IOException("Can not change interpreter properties when interpreter process " +
+              "has already been launched");
+        }
+        intp.setProperties(properties);
+      }
+    }
   }
 
   private void loadInterpreterDependencies() {

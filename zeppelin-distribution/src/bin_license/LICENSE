@@ -311,7 +311,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 
 The following components are provided under the BSD-style License.
 
-    (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.1.1.201511131810-r - https://eclipse.org/jgit/)
+    (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.5.4.201711221230-r - https://eclipse.org/jgit/)
     (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:3.0.3 - http://code.google.com/p/kryo/)
     (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.3 - http://code.google.com/p/minlog/)
     (New BSD License) ReflectASM (com.esotericsoftware.reflectasm:reflectasm:1.07 - http://code.google.com/p/reflectasm/)

@@ -29,6 +29,7 @@ limitations under the License.
           <div class="form-group">
             <label for="userName">User Name</label>
             <input placeholder="User Name" type="text" class="form-control" id="userName"
+                   ng-enter="login()"
                    ng-keypress="loginParams.errorText = ''"
                    ng-model="loginParams.userName" />
           </div>
