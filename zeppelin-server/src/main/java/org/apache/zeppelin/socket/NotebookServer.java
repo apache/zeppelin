@@ -1716,15 +1716,16 @@ public class NotebookServer extends WebSocketServlet
           try {
             if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
               // stop execution when one paragraph fails.
+              runAllStatusBroadcast(note, false);
               break;
             }
           } catch (Exception e) {
             LoggerFactory.getLogger(NotebookServer.class)
                 .error("Error in runAllParagraphs(). Error: " + e.toString());
-          } finally {
             runAllStatusBroadcast(note, false);
           }
         }
+        runAllStatusBroadcast(note, false);
       }
     });
     runAllThread.start();
