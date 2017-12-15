@@ -54,8 +54,6 @@ public class GitHubNotebookRepoTest {
     String localRepositoryPath = System.getProperty("java.io.tmpdir") + "/ZeppelinTest_" +
             System.currentTimeMillis();
 
-    String currentPath = new File(".").getCanonicalFile().getPath();
-
     // Create a fake remote notebook Git repository locally in another directory
     remoteZeppelinDir = new File(remoteRepositoryPath);
     remoteZeppelinDir.mkdirs();
@@ -75,9 +73,9 @@ public class GitHubNotebookRepoTest {
     String remoteTestNoteDir = Joiner.on(File.separator).join(remoteNotebooksDir, TEST_NOTE_ID);
     FileUtils.copyDirectory(
             new File(
-                    Joiner.on(File.separator).join(
-                            currentPath,"zeppelin-server", "src", "test", "resources", TEST_NOTE_ID
-                    )
+              GitHubNotebookRepoTest.class.getResource(
+                Joiner.on(File.separator).join("", TEST_NOTE_ID)
+              ).getFile()
             ), new File(remoteTestNoteDir)
     );
 
