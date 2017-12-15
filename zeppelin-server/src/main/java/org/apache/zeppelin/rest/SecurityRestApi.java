@@ -19,10 +19,12 @@ package org.apache.zeppelin.rest;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
@@ -123,6 +125,15 @@ public class SecurityRestApi {
                 searchText));
           } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
             usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
+          } else if(realm instanceof AuthorizingRealm) {
+        	  Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+        	  List<Object> listPrincipals = subject.getPrincipals().asList();
+              Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
+              Map<String,String> allRoles = (Map<String,String>)attributes.get("roles");
+              usersList.add(subject.getPrincipal().toString());
+              for(String key : allRoles.keySet()) {
+            	  rolesList.add(key);
+              }
           }
         }
       }
