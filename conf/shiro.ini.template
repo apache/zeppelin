@@ -67,6 +67,7 @@ user3 = password4, role2
 #
 #knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
 #knoxJwtRealm.principalMapping = principal.mapping
+#authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
