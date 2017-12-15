@@ -387,7 +387,7 @@ To enable GitHub tracking, uncomment the following properties in `zeppelin-site.
 </property>
 
 <property>
-  <name>zeppelin.notebook.git.remote.remote</name>
+  <name>zeppelin.notebook.git.remote.origin</name>
   <value>origin</value>
   <description>Git repository remote</description>
 </property>
