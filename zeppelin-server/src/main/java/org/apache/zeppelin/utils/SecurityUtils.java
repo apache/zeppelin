@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -32,6 +33,7 @@ import javax.naming.NamingException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.SimplePrincipalCollection;
@@ -53,9 +55,11 @@ import com.google.common.collect.Sets;
 public class SecurityUtils {
 
   private static final String ANONYMOUS = "anonymous";
+  private static final String ROLES = "roles";
   private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
   private static boolean isEnabled = false;
   private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
+  
   
   public static void setIsEnabled(boolean value) {
     isEnabled = value;
@@ -158,6 +162,11 @@ public class SecurityUtils {
         } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
+        } else if(realm instanceof AuthorizingRealm) {
+            List<Object> listPrincipals = subject.getPrincipals().asList();
+            Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
+            allRoles = (Map)attributes.get(ROLES);
+            break;
         }
       }
       if (allRoles != null) {
