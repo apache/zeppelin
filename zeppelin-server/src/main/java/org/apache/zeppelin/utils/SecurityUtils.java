@@ -162,11 +162,11 @@ public class SecurityUtils {
         } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
-        } else if(realm instanceof AuthorizingRealm) {
-            List<Object> listPrincipals = subject.getPrincipals().asList();
-            Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
-            allRoles = (Map)attributes.get(ROLES);
-            break;
+        } else if (realm instanceof AuthorizingRealm) {
+          List<Object> listPrincipals = subject.getPrincipals().asList();
+          Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
+          allRoles = (Map) attributes.get(ROLES);
+          break;
         }
       }
       if (allRoles != null) {

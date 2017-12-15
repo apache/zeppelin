@@ -125,15 +125,15 @@ public class SecurityRestApi {
                 searchText));
           } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
             usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
-          } else if(realm instanceof AuthorizingRealm) {
-        	  Subject subject = org.apache.shiro.SecurityUtils.getSubject();
-        	  List<Object> listPrincipals = subject.getPrincipals().asList();
-              Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
-              Map<String,String> allRoles = (Map<String,String>)attributes.get("roles");
-              usersList.add(subject.getPrincipal().toString());
-              for(String key : allRoles.keySet()) {
-            	  rolesList.add(key);
-              }
+          } else if (realm instanceof AuthorizingRealm) {
+        	Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+        	List<Object> listPrincipals = subject.getPrincipals().asList();
+            Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
+            Map<String,String> allRoles = (Map<String, String>) attributes.get("roles");
+            usersList.add(subject.getPrincipal().toString());
+            for (String key : allRoles.keySet()) {
+            	rolesList.add(key);
+            }
           }
         }
       }
