@@ -370,7 +370,7 @@ To enable GitHub tracking, uncomment the following properties in `zeppelin-site.
 ```sh
 <property>
   <name>zeppelin.notebook.git.remote.url</name>
-  <value>git@github.com:mohamagdy/zeppelin-notebooks.git</value>
+  <value></value>
   <description>remote Git repository URL</description>
 </property>
 
@@ -382,7 +382,7 @@ To enable GitHub tracking, uncomment the following properties in `zeppelin-site.
 
 <property>
   <name>zeppelin.notebook.git.remote.access-token</name>
-  <value>1b29e853bc73b90af0d280233101f91b9105d7cb</value>
+  <value></value>
   <description>remote Git repository password</description>
 </property>
 
