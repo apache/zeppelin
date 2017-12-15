@@ -108,6 +108,30 @@ public class KylinInterpreterTest {
     Assert.assertEquals(expected, actual);
   }
 
+  @Test
+  public void testParseEmptyResult() {
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\",\"name\":\"COUNTRY\","
+        + "\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\",\"precision\":256,"
+        + "\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
+        + "\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,\"searchable\":false,"
+        + "\"currency\":false,\"signed\":true},{\"isNullable\":1,\"displaySize\":256,\"label\":\"CURRENCY\","
+        + "\"name\":\"CURRENCY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\","
+        + "\"precision\":256,\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,"
+        + "\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,"
+        + "\"searchable\":false,\"currency\":false,\"signed\":true},{\"isNullable\":0,\"displaySize\":19,"
+        + "\"label\":\"COUNT__\",\"name\":\"COUNT__\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
+        + "\"tableName\":\"SALES_TABLE\",\"precision\":19,\"scale\":0,\"columnType\":-5,\"columnTypeName\":"
+        + "\"BIGINT\",\"writable\":false,\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
+        + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],\"results\":"
+        + "[]," + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,\"isException\":false,\"exceptionMessage\":null,"
+        + "\"duration\":134,\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
+        + "\"partial\":false}";
+    String expected="%table COUNTRY \tCURRENCY \tCOUNT__ \t \n";
+    KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
+    String actual = t.formatResult(msg);
+    Assert.assertEquals(expected, actual);
+  }
+
   private Properties getDefaultProperties() {
     Properties prop = new Properties();
     prop.put("kylin.api.username", "ADMIN");

@@ -271,7 +271,6 @@ public class ParagraphTest extends AbstractInterpreterTest {
   @Test
   public void testCursorPosition() {
     Paragraph paragraph = spy(new Paragraph());
-    doReturn(null).when(paragraph).getIntpText();
     // left = buffer, middle = cursor position into source code, right = cursor position after parse
     List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
         Triple.of("%jdbc schema.", 13, 7),
@@ -294,7 +293,8 @@ public class ParagraphTest extends AbstractInterpreterTest {
     );
 
     for (Triple<String, Integer, Integer> data : dataSet) {
-      Integer actual = paragraph.calculateCursorPosition(data.getLeft(), data.getLeft().trim(), data.getMiddle());
+      paragraph.setText(data.getLeft());
+      Integer actual = paragraph.calculateCursorPosition(data.getLeft(), data.getMiddle());
       assertEquals(data.getRight(), actual);
     }
   }
