@@ -87,7 +87,7 @@ public class NoteTest {
 
     ArgumentCaptor<Paragraph> pCaptor = ArgumentCaptor.forClass(Paragraph.class);
     verify(scheduler, only()).submit(pCaptor.capture());
-    verify(interpreterFactory, times(2)).getInterpreter(anyString(), anyString(), eq("spark"));
+    verify(interpreterFactory, times(1)).getInterpreter(anyString(), anyString(), eq("spark"));
 
     assertEquals("Paragraph text", pText, pCaptor.getValue().getText());
   }

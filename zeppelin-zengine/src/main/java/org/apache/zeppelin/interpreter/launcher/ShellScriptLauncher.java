@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
@@ -45,11 +44,12 @@ public class ShellScriptLauncher extends InterpreterLauncher {
 
   @Override
   public InterpreterClient launch(InterpreterLaunchContext context) {
-    LOGGER.info("Launching Interpreter: " + context.getInterpreterGroupName());
+    LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
     this.properties = context.getProperties();
     InterpreterOption option = context.getOption();
     InterpreterRunner runner = context.getRunner();
-    String groupName = context.getInterpreterGroupName();
+    String groupName = context.getInterpreterSettingGroup();
+    String name = context.getInterpreterSettingName();
 
     int connectTimeout =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
@@ -61,12 +61,12 @@ public class ShellScriptLauncher extends InterpreterLauncher {
     } else {
       // create new remote process
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
-          + context.getInterpreterGroupId();
+          + context.getInterpreterSettingId();
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          zConf.getCallbackPortRange(),
+          zConf.getCallbackPortRange(),  zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
-          buildEnvFromProperties(), connectTimeout, groupName);
+          buildEnvFromProperties(), connectTimeout, name);
     }
   }
 

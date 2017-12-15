@@ -188,11 +188,9 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       if (matcher.matches()) {
         String headingSpace = matcher.group(1);
         this.intpText = matcher.group(2);
-        this.interpreter = interpreterFactory.getInterpreter(user, note.getId(), intpText);
         this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
       } else {
         this.intpText = "";
-        this.interpreter = interpreterFactory.getInterpreter(user, note.getId(), "");
         this.scriptText = this.text;
       }
     }
@@ -380,7 +378,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   @Override
   protected Object jobRun() throws Throwable {
-    logger.info("Run paragraph {} using {} ", getId(), intpText);
+    logger.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+            getId(), intpText, note.getId(), authenticationInfo.getUser());
     this.interpreter = getBindedInterpreter();
     if (this.interpreter == null) {
       logger.error("Can not find interpreter name " + intpText);

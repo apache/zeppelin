@@ -123,3 +123,11 @@ Snippet of code (language of interpreter) that executes after initialization of 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_precode.png" width="800px">
 
  
+## Interpreter Lifecycle Management
+
+Before 0.8.0, Zeppelin don't have lifecycle management on interpreter. User have to shutdown interpreters explicitly via UI. Starting from 0.8.0, Zeppelin provides a new interface
+`LifecycleManager` to control the lifecycle of interpreters. For now, there're 2 implementations: `NullLifecycleManager` and `TimeoutLifecycleManager` which is default. 
+
+`NullLifecycleManager` will do nothing,
+user need to control the lifecycle of interpreter by themselves as before. `TimeoutLifecycleManager` will shutdown interpreters after interpreter idle for a while. By default, the idle threshold is 1 hour.
+User can change it via `zeppelin.interpreter.lifecyclemanager.timeout.threshold`. `TimeoutLifecycleManager` is the default lifecycle manager, user can change it via `zeppelin.interpreter.lifecyclemanager.class`.

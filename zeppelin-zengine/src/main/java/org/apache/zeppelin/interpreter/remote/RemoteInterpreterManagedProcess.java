@@ -31,8 +31,6 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -54,39 +52,42 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       RemoteInterpreterManagedProcess.class);
 
   private final String interpreterRunner;
-  private final String portRange;
+  private final String callbackPortRange;
+  private final String interpreterPortRange;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   private AtomicBoolean running = new AtomicBoolean(false);
-  TServer callbackServer;
+  private TServer callbackServer;
   private String host = null;
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
-  private final String interpreterGroupName;
+  private final String interpreterSettingName;
 
   private Map<String, String> env;
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
-      String portRange,
+      String callbackPortRange,
+      String interpreterPortRange,
       String intpDir,
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
-      String interpreterGroupName) {
+      String interpreterSettingName) {
     super(connectTimeout);
     this.interpreterRunner = intpRunner;
-    this.portRange = portRange;
+    this.callbackPortRange = callbackPortRange;
+    this.interpreterPortRange = interpreterPortRange;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
-    this.interpreterGroupName = interpreterGroupName;
+    this.interpreterSettingName = interpreterSettingName;
   }
 
   @Override
   public String getHost() {
-    return "localhost";
+    return host;
   }
 
   @Override
@@ -99,11 +100,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     // start server process
     final String callbackHost;
     final int callbackPort;
+    TServerSocket tSocket = null;
     try {
-      port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(portRange);
-      logger.info("Choose port {} for RemoteInterpreterProcess", port);
+      tSocket = RemoteInterpreterUtils.createTServerSocket(callbackPortRange);
+      callbackPort = tSocket.getServerSocket().getLocalPort();
       callbackHost = RemoteInterpreterUtils.findAvailableHostAddress();
-      callbackPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     } catch (IOException e1) {
       throw new RuntimeException(e1);
     }
@@ -111,12 +112,12 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     logger.info("Thrift server for callback will start. Port: {}", callbackPort);
     try {
       callbackServer = new TThreadPoolServer(
-        new TThreadPoolServer.Args(new TServerSocket(callbackPort)).processor(
+        new TThreadPoolServer.Args(tSocket).processor(
           new RemoteInterpreterCallbackService.Processor<>(
             new RemoteInterpreterCallbackService.Iface() {
               @Override
               public void callback(CallbackInfo callbackInfo) throws TException {
-                logger.info("Registered: {}", callbackInfo);
+                logger.info("RemoteInterpreterServer Registered: {}", callbackInfo);
                 host = callbackInfo.getHost();
                 port = callbackInfo.getPort();
                 running.set(true);
@@ -147,8 +148,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
         Thread.sleep(500);
       }
       logger.debug("callbackServer is serving now");
-    } catch (TTransportException e) {
-      logger.error("callback server error.", e);
     } catch (InterruptedException e) {
       logger.warn("", e);
     }
@@ -160,6 +159,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(callbackHost, false);
     cmdLine.addArgument("-p", false);
     cmdLine.addArgument(Integer.toString(callbackPort), false);
+    cmdLine.addArgument("-r", false);
+    cmdLine.addArgument(interpreterPortRange, false);
     if (isUserImpersonate && !userName.equals("anonymous")) {
       cmdLine.addArgument("-u", false);
       cmdLine.addArgument(userName, false);
@@ -167,7 +168,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
     cmdLine.addArgument("-g", false);
-    cmdLine.addArgument(interpreterGroupName, false);
+    cmdLine.addArgument(interpreterSettingName, false);
 
     executor = new DefaultExecutor();
 
@@ -263,8 +264,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @VisibleForTesting
-  public String getInterpreterGroupName() {
-    return interpreterGroupName;
+  public String getInterpreterSettingName() {
+    return interpreterSettingName;
   }
 
   @VisibleForTesting

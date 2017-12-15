@@ -29,11 +29,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +52,12 @@ public class RemoteInterpreterUtils {
 
 
   public static int findRandomAvailablePortOnAllLocalInterfaces() throws IOException {
-    return findRandomAvailablePortOnAllLocalInterfaces(":");
+    int port;
+    try (ServerSocket socket = new ServerSocket(0);) {
+      port = socket.getLocalPort();
+      socket.close();
+    }
+    return port;
   }
 
   /**
@@ -58,21 +67,22 @@ public class RemoteInterpreterUtils {
    * @return
    * @throws IOException
    */
-  public static int findRandomAvailablePortOnAllLocalInterfaces(String portRange)
+  public static TServerSocket createTServerSocket(String portRange)
       throws IOException {
 
+    TServerSocket tSocket = null;
     // ':' is the default value which means no constraints on the portRange
-    if (portRange == null || portRange.equals(":")) {
-      int port;
-      try (ServerSocket socket = new ServerSocket(0);) {
-        port = socket.getLocalPort();
-        socket.close();
+    if (StringUtils.isBlank(portRange) || portRange.equals(":")) {
+      try {
+        tSocket = new TServerSocket(0);
+        return tSocket;
+      } catch (TTransportException e) {
+        throw new IOException("Fail to create TServerSocket", e);
       }
-      return port;
     }
     // valid user registered port https://en.wikipedia.org/wiki/Registered_port
     int start = 1024;
-    int end = 49151;
+    int end = 65535;
     String[] ports = portRange.split(":", -1);
     if (!ports[0].isEmpty()) {
       start = Integer.parseInt(ports[0]);
@@ -82,8 +92,8 @@ public class RemoteInterpreterUtils {
     }
     for (int i = start; i <= end; ++i) {
       try {
-        ServerSocket socket = new ServerSocket(i);
-        return socket.getLocalPort();
+        tSocket = new TServerSocket(i);
+        return tSocket;
       } catch (Exception e) {
         // ignore this
       }
