@@ -165,6 +165,18 @@ public class InterpreterSettingManager {
     init();
   }
 
+
+  private void initInterpreterSetting(InterpreterSetting interpreterSetting) {
+    interpreterSetting.setConf(conf)
+        .setInterpreterSettingManager(this)
+        .setAngularObjectRegistryListener(angularObjectRegistryListener)
+        .setRemoteInterpreterProcessListener(remoteInterpreterProcessListener)
+        .setAppEventListener(appEventListener)
+        .setDependencyResolver(dependencyResolver)
+        .setLifecycleManager(lifecycleManager)
+        .postProcessing();
+  }
+
   /**
    * Load interpreter setting from interpreter-setting.json
    */
@@ -172,6 +184,11 @@ public class InterpreterSettingManager {
     if (!Files.exists(interpreterSettingPath)) {
       // nothing to read
       LOGGER.warn("Interpreter Setting file {} doesn't exist", interpreterSettingPath);
+      for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
+        InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
+        initInterpreterSetting(interpreterSetting);
+        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+      }
       return;
     }
 
@@ -179,17 +196,10 @@ public class InterpreterSettingManager {
       InterpreterInfoSaving infoSaving = InterpreterInfoSaving.loadFromFile(interpreterSettingPath);
       //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
       for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
-        savedInterpreterSetting.setConf(conf);
-        savedInterpreterSetting.setInterpreterSettingManager(this);
-        savedInterpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-        savedInterpreterSetting.setRemoteInterpreterProcessListener(
-            remoteInterpreterProcessListener);
-        savedInterpreterSetting.setAppEventListener(appEventListener);
-        savedInterpreterSetting.setDependencyResolver(dependencyResolver);
-        savedInterpreterSetting.setLifecycleManager(lifecycleManager);
         savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
             savedInterpreterSetting.getProperties()
         ));
+        initInterpreterSetting(savedInterpreterSetting);
 
         InterpreterSetting interpreterSettingTemplate =
             interpreterSettingTemplates.get(savedInterpreterSetting.getGroup());
@@ -377,14 +387,7 @@ public class InterpreterSettingManager {
         interpreterSettingTemplate);
 
     InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
-    interpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-    interpreterSetting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
-    interpreterSetting.setAppEventListener(appEventListener);
-    interpreterSetting.setDependencyResolver(dependencyResolver);
-    interpreterSetting.setInterpreterSettingManager(this);
-    interpreterSetting.setLifecycleManager(lifecycleManager);
-    interpreterSetting.postProcessing();
-    interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+    initInterpreterSetting(interpreterSetting);
   }
 
   @VisibleForTesting
@@ -640,13 +643,7 @@ public class InterpreterSettingManager {
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
     setting.setProperties(p);
-    setting.setAppEventListener(appEventListener);
-    setting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
-    setting.setDependencyResolver(dependencyResolver);
-    setting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-    setting.setLifecycleManager(lifecycleManager);
-    setting.setInterpreterSettingManager(this);
-    setting.postProcessing();
+    initInterpreterSetting(setting);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
     return setting;
@@ -655,12 +652,7 @@ public class InterpreterSettingManager {
   @VisibleForTesting
   public void addInterpreterSetting(InterpreterSetting interpreterSetting) {
     interpreterSettingTemplates.put(interpreterSetting.getName(), interpreterSetting);
-    interpreterSetting.setAppEventListener(appEventListener);
-    interpreterSetting.setDependencyResolver(dependencyResolver);
-    interpreterSetting.setLifecycleManager(lifecycleManager);
-    interpreterSetting.setAngularObjectRegistryListener(angularObjectRegistryListener);
-    interpreterSetting.setRemoteInterpreterProcessListener(remoteInterpreterProcessListener);
-    interpreterSetting.setInterpreterSettingManager(this);
+    initInterpreterSetting(interpreterSetting);
     interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
   }
 

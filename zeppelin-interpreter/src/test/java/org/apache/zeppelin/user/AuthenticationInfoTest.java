@@ -15,30 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.remote;
+package org.apache.zeppelin.user;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.junit.Test;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertTrue;
-
-public class RemoteInterpreterUtilsTest {
+public class AuthenticationInfoTest {
 
   @Test
-  public void testCreateTServerSocket() throws IOException {
-    assertTrue(RemoteInterpreterUtils.createTServerSocket(":").getServerSocket().getLocalPort() > 0);
+  public void testRoles() {
+    final String roles = "[role1, role2, role with space]";
 
-    String portRange = ":30000";
-    assertTrue(RemoteInterpreterUtils.createTServerSocket(portRange).getServerSocket().getLocalPort() <= 30000);
+    final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo",
+        roles, "bar");
 
-    portRange = "30000:";
-    assertTrue(RemoteInterpreterUtils.createTServerSocket(portRange).getServerSocket().getLocalPort()  >= 30000);
+    assertEquals(
+        new ArrayList<>(Arrays.asList("role1", "role2", "role with space")),
+        authenticationInfo.getRoles());
 
-    portRange = "30000:40000";
-    int port = RemoteInterpreterUtils.createTServerSocket(portRange).getServerSocket().getLocalPort();
-    assertTrue(port >= 30000 && port <= 40000);
   }
-
 
 }

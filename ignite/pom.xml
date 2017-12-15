@@ -33,7 +33,7 @@
 
   <properties>
     <interpreter.name>ignite</interpreter.name>
-    <ignite.version>2.2.0</ignite.version>
+    <ignite.version>2.3.0</ignite.version>
   </properties>
 
   <dependencies>
