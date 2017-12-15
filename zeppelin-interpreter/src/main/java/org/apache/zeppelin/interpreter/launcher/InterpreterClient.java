@@ -26,7 +26,7 @@ public interface InterpreterClient {
 
   String getInterpreterSettingName();
 
-  void start(String userName, Boolean isUserImpersonate);
+  void start(String userName);
 
   void stop();
 
