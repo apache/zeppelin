@@ -42,7 +42,7 @@ abstract public class AbstractZeppelinIT {
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
   protected static final long MIN_IMPLICIT_WAIT = 5;
   protected static final long MAX_IMPLICIT_WAIT = 30;
-  protected static final long MAX_BROWSER_TIMEOUT_SEC = 90;
+  protected static final long MAX_BROWSER_TIMEOUT_SEC = 180;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 180;
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
