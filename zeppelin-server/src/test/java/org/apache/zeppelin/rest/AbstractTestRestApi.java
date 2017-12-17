@@ -17,16 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -54,9 +47,16 @@ import org.hamcrest.TypeSafeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 public abstract class AbstractTestRestApi {
 
@@ -315,6 +315,10 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown() throws Exception {
+    shutDown(true);
+  }
+
+  protected static void shutDown(final boolean deleteConfDir) throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
@@ -352,7 +356,7 @@ public abstract class AbstractTestRestApi {
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
-      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
         // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
         // id will change after zeppelin restart, then we can not recover interpreter process
         // properly
