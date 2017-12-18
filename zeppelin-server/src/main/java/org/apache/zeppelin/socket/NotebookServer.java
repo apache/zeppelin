@@ -823,7 +823,7 @@ public class NotebookServer extends WebSocketServlet
 
     String user = fromMessage.principal;
 
-    Note note = notebook.getNoteAfterReloadFromRepo(noteId);
+    Note note = notebook.getNote(noteId);
 
     if (note != null) {
       if (!hasParagraphReaderPermission(conn, notebook, noteId,
