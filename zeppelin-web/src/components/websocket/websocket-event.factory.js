@@ -65,6 +65,8 @@ function WebsocketEventFactory ($rootScope, $websocket, $location, baseUrlSrv) {
       $location.path('/notebook/' + data.note.id)
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes)
+    } else if (op === 'SEQEUNTIAL_RUN_STATUS') {
+      $rootScope.$broadcast('seqeuntialRunStatus', data.status)
     } else if (op === 'LIST_NOTE_JOBS') {
       $rootScope.$emit('jobmanager:set-jobs', data.noteJobs)
     } else if (op === 'LIST_UPDATE_NOTE_JOBS') {

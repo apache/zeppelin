@@ -1738,7 +1738,7 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
     note.setSequentialRunStatus(status);
-    broadcastNote(note);
+    broadcast(note.getId(), new Message(OP.SEQEUNTIAL_RUN_STATUS).put("status", status));
   }
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,

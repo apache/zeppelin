@@ -393,7 +393,9 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
    * @returns {boolean} true if one more paragraphs are running. otherwise return false.
    */
   $scope.isNoteRunning = function () {
-    if (!$scope.note) { return false }
+    if (!$scope.note) {
+      return false
+    }
 
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       if (isParagraphRunning($scope.note.paragraphs[i])) {
@@ -1280,6 +1282,13 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     let row = angParagEditor.selection.lead.row
     $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col)
   }
+
+  $scope.$on('seqeuntialRunStatus', function (event, status) {
+    if (!$scope.hasOwnProperty('info')) {
+      $scope.info = {}
+    }
+    $scope.info.isRunning = status
+  })
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
