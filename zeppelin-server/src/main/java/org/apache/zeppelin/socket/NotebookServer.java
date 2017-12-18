@@ -853,15 +853,15 @@ public class NotebookServer extends WebSocketServlet
     }
     List<Paragraph> paragraphs = note.getParagraphs();
 
-    boolean isRunReally = false;
+    boolean isRun = false;
     for (Paragraph p: paragraphs) {
       if (p.getStatus().isRunning()) {
-        isRunReally = true;
+        isRun = true;
         break;
       }
     }
 
-    if (!isRunReally) {
+    if (!isRun) {
       note.setSequentialRunStatus(false);
     }
   }
@@ -1720,8 +1720,7 @@ public class NotebookServer extends WebSocketServlet
               break;
             }
           } catch (Exception e) {
-            LoggerFactory.getLogger(NotebookServer.class)
-                .error("Error in runAllParagraphs(). Error: " + e.toString());
+            LOG.error("Error in runAllParagraphs(). Error: " + e.toString());
             runAllStatusBroadcast(note, false);
           }
         }

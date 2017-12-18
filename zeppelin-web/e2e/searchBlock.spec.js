@@ -99,7 +99,8 @@ describe('Search block e2e Test', function() {
     waitVisibility(element(by.repeater('currentParagraph in note.paragraphs')))
     browser.switchTo().activeElement().sendKeys(testData.textInFirstP)
     let addBelow = element(
-      by.xpath('//div[@class="new-paragraph last-paragraph" and @ng-click="insertNew(\'below\');"]'))
+      by.xpath('//div[@class="new-paragraph last-paragraph" and @ng-click="insertNew(\'below\');"' +
+        ' and @ng-if="!isSequentialRun()]'))
     clickAndWait(addBelow)
     browser.switchTo().activeElement().sendKeys(testData.textInSecondP)
   }

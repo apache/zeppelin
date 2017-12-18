@@ -150,7 +150,9 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.isSequentialRun = function () {
-    if ($scope.parentNote.info.isRunning === true) {
+    if ($scope.parentNote.hasOwnProperty('info') &&
+        $scope.parentNote.info.hasOwnProperty('isRunning') &&
+        $scope.parentNote.info.isRunning === true) {
       return true
     }
     return false
@@ -482,10 +484,12 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   }
 
   $scope.runAllToThis = function(paragraph) {
+    if ($scope.isSequentialRun()) return
     $scope.$emit('runAllAbove', paragraph, true)
   }
 
   $scope.runAllFromThis = function(paragraph) {
+    if ($scope.isSequentialRun()) return
     $scope.$emit('runAllBelowAndCurrent', paragraph, true)
   }
 
