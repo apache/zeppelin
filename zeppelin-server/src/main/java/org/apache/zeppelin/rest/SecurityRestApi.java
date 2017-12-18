@@ -129,7 +129,7 @@ public class SecurityRestApi {
         	Subject subject = org.apache.shiro.SecurityUtils.getSubject();
         	List<Object> listPrincipals = subject.getPrincipals().asList();
             Map<String, Object> attributes = (Map<String, Object>) listPrincipals.get(1);
-            Map<String,String> allRoles = (Map<String, String>) attributes.get("roles");
+            Map<String, String> allRoles = (Map<String, String>) attributes.get("roles");
             usersList.add(subject.getPrincipal().toString());
             for (String key : allRoles.keySet()) {
             	rolesList.add(key);
