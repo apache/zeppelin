@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +36,8 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
 
-  public SparkInterpreterLauncher(ZeppelinConfiguration zConf) {
-    super(zConf);
+  public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
   }
 
   @Override
