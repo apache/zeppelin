@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.common.PostJsonDeserProcessable;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -74,7 +73,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
       .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-      .registerTypeAdapterFactory(PostJsonDeserProcessable.TypeAdapterFactory)
       .create();
 
   // threadpool for delayed persist of note
@@ -941,13 +939,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public static Note fromJson(String json) {
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
-    note.resetRuntimeInfos();
+    note.postProcessParagraphs();
     return note;
   }
 
-  public void resetRuntimeInfos() {
+  public void postProcessParagraphs() {
     for (Paragraph p : paragraphs) {
       p.clearRuntimeInfos();
+      p.parseText();
     }
   }
 

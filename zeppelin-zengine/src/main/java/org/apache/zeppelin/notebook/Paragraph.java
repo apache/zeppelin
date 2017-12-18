@@ -32,7 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.common.PostJsonDeserProcessable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
@@ -71,11 +70,7 @@ import com.google.common.collect.Maps;
 /**
  * Paragraph is a representation of an execution unit.
  */
-public class Paragraph extends Job
-    implements
-      Cloneable,
-      JsonSerializable,
-      PostJsonDeserProcessable {
+public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
@@ -189,7 +184,7 @@ public class Paragraph extends Job
     parseText();
   }
 
-  private void parseText() {
+  public void parseText() {
     // parse text to get interpreter component
     if (this.text != null) {
       Matcher matcher = REPL_PATTERN.matcher(this.text);
@@ -837,11 +832,6 @@ public class Paragraph extends Job
 
   public static Paragraph fromJson(String json) {
     return Note.getGson().fromJson(json, Paragraph.class);
-  }
-
-  @Override
-  public void postJsonDeser() {
-    parseText();
   }
 
 }
