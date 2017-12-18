@@ -145,12 +145,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.paragraph.config = {}
     }
 
-    if ($scope.parentNote.hasOwnProperty('info') &&
-      $scope.parentNote.info.hasOwnProperty('isRunning') &&
-      $scope.parentNote.info.isRunning === true) {
+    if (note && note.hasOwnProperty('info') &&
+        note.info.hasOwnProperty('isRunning') && note.info.isRunning === true) {
       $scope.isNoteRunSequential = true
     } else {
-      return false
+      $scope.isNoteRunSequential = false
     }
 
     noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope)
