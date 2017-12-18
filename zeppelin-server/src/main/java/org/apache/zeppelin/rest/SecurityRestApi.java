@@ -132,7 +132,7 @@ public class SecurityRestApi {
             Map<String, String> allRoles = (Map<String, String>) attributes.get("roles");
             usersList.add(subject.getPrincipal().toString());
             for (String key : allRoles.keySet()) {
-            	rolesList.add(key);
+              rolesList.add(key);
             }
           }
         }
