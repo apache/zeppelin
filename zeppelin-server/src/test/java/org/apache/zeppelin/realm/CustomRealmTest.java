@@ -61,7 +61,7 @@ public class CustomRealmTest {
 				PrincipalCollection principalCollection = new SimplePrincipalCollection(principals, getName());
 				return new SimpleAuthenticationInfo(principalCollection, null);
 			} catch (AuthenticationException e) {
-				log.error("Unable to validate token ", e);
+				log.error("Unable to fetch roles for the user ", e);
 			}
 			return new SimpleAuthenticationInfo();
 		}
