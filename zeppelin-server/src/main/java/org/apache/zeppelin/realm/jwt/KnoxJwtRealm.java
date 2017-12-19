@@ -124,7 +124,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     return userName;
   }
 
-  private boolean validateToken(String token) {
+  protected boolean validateToken(String token) {
     try {
       SignedJWT signed = SignedJWT.parse(token);
       return validateSignature(signed);

@@ -18,6 +18,9 @@ package org.apache.zeppelin.realm.jwt;
 
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
+import org.apache.zeppelin.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -28,7 +31,7 @@ import javax.servlet.http.Cookie;
  */
 public class KnoxAuthenticationFilter extends FormAuthenticationFilter {
 
-  private String cookieName = "hadoop-jwt";
+  private static final Logger LOGGER = LoggerFactory.getLogger(KnoxAuthenticationFilter.class);
 
   protected boolean isAccessAllowed(ServletRequest request,
                                     ServletResponse response, Object mappedValue) {
@@ -41,21 +44,28 @@ public class KnoxAuthenticationFilter extends FormAuthenticationFilter {
 
     if (accessAllowed) {
       accessAllowed = false;
-      for (Cookie cookie : ((ShiroHttpServletRequest) request).getCookies()) {
-        if (cookie.getName().equals(cookieName)) {
-          accessAllowed = true;
+      KnoxJwtRealm knoxJwtRealm = null;
+      for (Object realm : SecurityUtils.getRealmsList()) {
+        if (realm instanceof KnoxJwtRealm) {
+          knoxJwtRealm = (KnoxJwtRealm) realm;
           break;
         }
       }
+      if (knoxJwtRealm != null) {
+        for (Cookie cookie : ((ShiroHttpServletRequest) request).getCookies()) {
+          if (cookie.getName().equals(knoxJwtRealm.getCookieName())) {
+            if (knoxJwtRealm.validateToken(cookie.getValue())) {
+              accessAllowed = true;
+            }
+            break;
+          }
+        }
+      } else {
+        LOGGER.error("Looks like this filter is enabled without enabling KnoxJwtRealm, please " +
+          "refer https://zeppelin.apache.org/docs/latest/security/shiroauthentication.html#" +
+          "knox-sso");
+      }
     }
     return accessAllowed;
-  }
-
-  public String getCookieName() {
-    return cookieName;
-  }
-
-  public void setCookieName(String cookieName) {
-    this.cookieName = cookieName;
   }
 }
