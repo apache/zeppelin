@@ -302,7 +302,7 @@ public class Notebook implements NoteEventListener {
       // in fetching the latest versions of the notebook if a remote repository is used.
       // For example, if GitHub is integrated, whenever the notebook is requested, it is pulled from
       // the remote repository.
-      loadNoteFromRepo(noteId, new AuthenticationInfo(StringUtils.EMPTY));
+      loadNoteFromRepo(noteId, AuthenticationInfo.ANONYMOUS);
       return notes.get(noteId);
     }
   }
