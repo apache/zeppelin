@@ -97,9 +97,9 @@ public class LoginRestApi {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
         String name = realm.getClass().getName();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("RealmClass.getName: " + name);
-        }
+
+        LOG.debug("RealmClass.getName: " + name);
+
         if (name.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
           return (KnoxJwtRealm) realm;
         }
@@ -114,9 +114,7 @@ public class LoginRestApi {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
         String name = realm.getClass().getName();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("RealmClass.getName: " + name);
-        }
+        LOG.debug("RealmClass.getName: " + name);
         if (name.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
           return true;
         }
@@ -188,7 +186,6 @@ public class LoginRestApi {
     if (!currentUser.isAuthenticated()) {
 
       UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
-      //      token.setRememberMe(true);
 
       response = procedeToLogin(currentUser, token);
     }

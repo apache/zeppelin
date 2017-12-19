@@ -27,22 +27,35 @@ import javax.servlet.http.Cookie;
  * Created for org.apache.zeppelin.server
  */
 public class KnoxAuthenticationFilter extends FormAuthenticationFilter {
+
+  private String cookieName = "hadoop-jwt";
+
   protected boolean isAccessAllowed(ServletRequest request,
                                     ServletResponse response, Object mappedValue) {
 
+    //Check with existing shiro authentication logic
+    //https://github.com/apache/shiro/blob/shiro-root-1.3.2/web/src/main/java/org/apache/shiro/
+    // web/filter/authc/AuthenticatingFilter.java#L123-L124
     Boolean accessAllowed = super.isAccessAllowed(request, response, mappedValue) ||
-      !this.isLoginRequest(request, response) && this
-        .isPermissive(mappedValue);
+      !isLoginRequest(request, response) && isPermissive(mappedValue);
 
     if (accessAllowed) {
       accessAllowed = false;
       for (Cookie cookie : ((ShiroHttpServletRequest) request).getCookies()) {
-        if (cookie.getName().equals("hadoop-jwt")) {
+        if (cookie.getName().equals(cookieName)) {
           accessAllowed = true;
           break;
         }
       }
     }
     return accessAllowed;
+  }
+
+  public String getCookieName() {
+    return cookieName;
+  }
+
+  public void setCookieName(String cookieName) {
+    this.cookieName = cookieName;
   }
 }

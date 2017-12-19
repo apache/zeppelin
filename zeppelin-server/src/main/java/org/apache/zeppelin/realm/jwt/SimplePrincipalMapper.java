@@ -39,7 +39,6 @@ public class SimplePrincipalMapper implements PrincipalMapper {
   @Override
   public void loadMappingTable(String principalMapping, String groupMapping)
       throws PrincipalMappingException {
-//    System.out.println("+++++++++++++ Loading the Mapping Table");
     if (principalMapping != null) {
       principalMappings = parseMapping(principalMapping);
       groupMappings = parseMapping(groupMapping);
@@ -57,15 +56,12 @@ public class SimplePrincipalMapper implements PrincipalMapper {
       if (t.hasMoreTokens()) {
         do {
           String mapping = t.nextToken();
-          //System.out.println("+++++++++++++ Mapping: " + mapping);
           String principals = mapping.substring(0, mapping.indexOf('='));
-          //System.out.println("+++++++++++++ Principals: " + principals);
           String value = mapping.substring(mapping.indexOf('=') + 1);
           String[] v = value.split(",");
           String[] p = principals.split(",");
           for (int i = 0; i < p.length; i++) {
             table.put(p[i], v);
-            //System.out.println("+++++++++++++ Mapping into Table: " + p[i] + "->" + value);
           }
         } while (t.hasMoreTokens());
       }

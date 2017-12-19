@@ -135,8 +135,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   }
 
   public static RSAPublicKey parseRSAPublicKey(String pem)
-      throws CertificateException, IOException,
-      ServletException {
+      throws IOException, ServletException {
     String PEM_HEADER = "-----BEGIN CERTIFICATE-----\n";
     String PEM_FOOTER = "\n-----END CERTIFICATE-----";
     String fullPem = PEM_HEADER + pem + PEM_FOOTER;
@@ -175,12 +174,9 @@ public class KnoxJwtRealm extends AuthorizingRealm {
           JWSVerifier verifier = new RSASSAVerifier(publicKey);
           if (verifier != null && jwtToken.verify(verifier)) {
             valid = true;
-
-          } else {
-
           }
         } catch (Exception e) {
-          LOGGER.info("Exception in validateSignature nothing to worry", e);
+          LOGGER.info("Exception in validateSignature", e);
         }
       }
     }
