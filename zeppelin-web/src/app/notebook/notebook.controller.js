@@ -1283,7 +1283,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col)
   }
 
-  $scope.$on('seqeuntialRunStatus', function (event, status) {
+  $scope.$on('sequentialRunStatus', function (event, status) {
     if (!$scope.hasOwnProperty('info')) {
       $scope.info = {}
     }

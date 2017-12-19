@@ -1720,7 +1720,7 @@ public class NotebookServer extends WebSocketServlet
               break;
             }
           } catch (Exception e) {
-            LOG.error("Error in runAllParagraphs(). Error: " + e.toString());
+            LOG.error("Error in runAllParagraphs()", e);
             runAllStatusBroadcast(note, false);
           }
         }
@@ -1738,7 +1738,7 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
     note.setSequentialRunStatus(status);
-    broadcast(note.getId(), new Message(OP.SEQEUNTIAL_RUN_STATUS).put("status", status));
+    broadcast(note.getId(), new Message(OP.SEQUENTIAL_RUN_STATUS).put("status", status));
   }
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,

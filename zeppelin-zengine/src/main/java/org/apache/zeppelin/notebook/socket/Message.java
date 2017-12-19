@@ -186,7 +186,7 @@ public class Message implements JsonSerializable {
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
     REMOVE_NOTE_FORMS,            // remove note forms
-    SEQEUNTIAL_RUN_STATUS         // [s-c] seqeuntial run status will be change
+    SEQUENTIAL_RUN_STATUS         // [s-c] sequential run status will be change
   }
 
   private static final Gson gson = new Gson();

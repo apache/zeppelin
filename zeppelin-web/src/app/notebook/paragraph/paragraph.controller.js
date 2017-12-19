@@ -161,7 +161,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     return $scope.isNoteRunSequential
   }
 
-  $scope.$on('seqeuntialRunStatus', function (event, status) {
+  $scope.$on('sequentialRunStatus', function (event, status) {
     $scope.isNoteRunSequential = status
   })
 
