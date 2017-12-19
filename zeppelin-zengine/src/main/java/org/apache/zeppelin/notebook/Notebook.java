@@ -296,17 +296,6 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public Note getNoteAfterReloadFromRepo(String noteId) {
-    synchronized (notes) {
-      // Each time the notebook is requested, it is loaded from the storage repository. This helps
-      // in fetching the latest versions of the notebook if a remote repository is used.
-      // For example, if GitHub is integrated, whenever the notebook is requested, it is pulled from
-      // the remote repository.
-      loadNoteFromRepo(noteId, AuthenticationInfo.ANONYMOUS);
-      return notes.get(noteId);
-    }
-  }
-
   public Folder getFolder(String folderId) {
     synchronized (folders) {
       return folders.getFolder(folderId);
