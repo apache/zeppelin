@@ -61,9 +61,9 @@ public class KnoxAuthenticationFilter extends FormAuthenticationFilter {
           }
         }
       } else {
-        LOGGER.error("Looks like this filter is enabled without enabling KnoxJwtRealm, please " +
-          "refer https://zeppelin.apache.org/docs/latest/security/shiroauthentication.html#" +
-          "knox-sso");
+        LOGGER.error("Looks like this filter is enabled without enabling KnoxJwtRealm, please refer"
+            + " to https://zeppelin.apache.org/docs/latest/security/shiroauthentication.html"
+            + "#knox-sso");
       }
     }
     return accessAllowed;
