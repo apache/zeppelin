@@ -88,7 +88,7 @@ public class LoginRestApi {
       }
       return response.build();
     }
-    return new JsonResponse(Status.FORBIDDEN).build();
+    return new JsonResponse(Status.METHOD_NOT_ALLOWED).build();
   }
 
   private KnoxJwtRealm getJTWRealm() {
