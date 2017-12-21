@@ -84,15 +84,15 @@ public class ShellScriptLauncher extends InterpreterLauncher {
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
           zConf.getCallbackPortRange(), zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
-          buildEnvFromProperties(), connectTimeout, name);
+          buildEnvFromProperties(context), connectTimeout, name, option.isUserImpersonate());
     }
   }
 
-  protected Map<String, String> buildEnvFromProperties() {
+  protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
     Map<String, String> env = new HashMap<>();
-    for (Object key : properties.keySet()) {
+    for (Object key : context.getProperties().keySet()) {
       if (RemoteInterpreterUtils.isEnvString((String) key)) {
-        env.put((String) key, properties.getProperty((String) key));
+        env.put((String) key, context.getProperties().getProperty((String) key));
       }
     }
     return env;

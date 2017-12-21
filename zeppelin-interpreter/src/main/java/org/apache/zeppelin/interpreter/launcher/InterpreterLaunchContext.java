@@ -30,6 +30,7 @@ public class InterpreterLaunchContext {
   private Properties properties;
   private InterpreterOption option;
   private InterpreterRunner runner;
+  private String userName;
   private String interpreterGroupId;
   private String interpreterSettingId;
   private String interpreterSettingGroup;
@@ -38,6 +39,7 @@ public class InterpreterLaunchContext {
   public InterpreterLaunchContext(Properties properties,
                                   InterpreterOption option,
                                   InterpreterRunner runner,
+                                  String userName,
                                   String interpreterGroupId,
                                   String interpreterSettingId,
                                   String interpreterSettingGroup,
@@ -45,6 +47,7 @@ public class InterpreterLaunchContext {
     this.properties = properties;
     this.option = option;
     this.runner = runner;
+    this.userName = userName;
     this.interpreterGroupId = interpreterGroupId;
     this.interpreterSettingId = interpreterSettingId;
     this.interpreterSettingGroup = interpreterSettingGroup;
@@ -77,5 +80,9 @@ public class InterpreterLaunchContext {
 
   public String getInterpreterSettingName() {
     return interpreterSettingName;
+  }
+
+  public String getUserName() {
+    return userName;
   }
 }
