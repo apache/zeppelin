@@ -59,9 +59,9 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       remoteAddCommand.setUri(new URIish(zeppelinConfiguration.getZeppelinNotebookGitURL()));
       remoteAddCommand.call();
     } catch (GitAPIException e) {
-      e.printStackTrace();
+      LOG.error("Error configuring GitHub", e);
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      LOG.error("Error in GitHub URL provided", e);
     }
   }
 
@@ -86,8 +86,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       pullCommand.call();
 
     } catch (GitAPIException e) {
-      LOG.error("Error when pulling latest changes from remote repository");
-      e.printStackTrace();
+      LOG.error("Error when pulling latest changes from remote repository", e);
     }
   }
 
@@ -104,8 +103,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
       pushCommand.call();
     } catch (GitAPIException e) {
-      LOG.error("Error when pushing latest changes from remote repository");
-      e.printStackTrace();
+      LOG.error("Error when pushing latest changes from remote repository", e);
     }
   }
 }
