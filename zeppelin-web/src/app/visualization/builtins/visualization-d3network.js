@@ -55,25 +55,36 @@ export default class NetworkVisualization extends Visualization {
       console.log('graph not found')
       return
     }
-    console.log('Render Graph Visualization')
+    if (!networkData.isRendered) {
+      networkData.isRendered = true
+    } else {
+      return
+    }
+    console.log('Rendering the graph')
 
-    let transformationConfig = this.transformation.getSetting().scope.config
+    if (networkData.graph.edges.length &&
+        !networkData.isDefaultSet) {
+      networkData.isDefaultSet = true
+      this._setEdgesDefaults(networkData.graph)
+    }
+
+    const transformationConfig = this.transformation.getSetting().scope.config
     console.log('cfg', transformationConfig)
     if (transformationConfig && angular.equals({}, transformationConfig.properties)) {
-      transformationConfig.properties = networkData.getNetworkProperties()
+      transformationConfig.properties = this.getNetworkProperties(networkData.graph)
     }
 
     this.targetEl.empty().append('<svg></svg>')
 
-    let width = this.targetEl.width()
-    let height = this.targetEl.height()
-    let self = this
-    let defaultOpacity = 0
-    let nodeSize = 10
-    let textOffset = 3
-    let linkSize = 10
+    const width = this.targetEl.width()
+    const height = this.targetEl.height()
+    const self = this
+    const defaultOpacity = 0
+    const nodeSize = 10
+    const textOffset = 3
+    const linkSize = 10
 
-    let arcPath = (leftHand, d) => {
+    const arcPath = (leftHand, d) => {
       let start = leftHand ? d.source : d.target
       let end = leftHand ? d.target : d.source
       let dx = end.x - start.x
@@ -84,7 +95,7 @@ export default class NetworkVisualization extends Visualization {
       return `M${start.x},${start.y}A${dr},${dr} 0 0,${sweep} ${end.x},${end.y}`
     }
     // Use elliptical arc path segments to doubly-encode directionality.
-    let tick = () => {
+    const tick = () => {
       // Links
       linkPath.attr('d', function(d) {
         return arcPath(true, d)
@@ -97,7 +108,7 @@ export default class NetworkVisualization extends Visualization {
       text.attr('transform', (d) => `translate(${d.x},${d.y})`)
     }
 
-    let setOpacity = (scale) => {
+    const setOpacity = (scale) => {
       let opacity = scale >= +transformationConfig.d3Graph.zoom.minScale ? 1 : 0
       this.svg.selectAll('.nodeLabel')
         .style('opacity', opacity)
@@ -105,7 +116,7 @@ export default class NetworkVisualization extends Visualization {
         .style('opacity', opacity)
     }
 
-    let zoom = d3.behavior.zoom()
+    const zoom = d3.behavior.zoom()
       .scaleExtent([1, 10])
       .on('zoom', () => {
         console.log('zoom')
@@ -135,13 +146,15 @@ export default class NetworkVisualization extends Visualization {
       })
       .start()
 
-    let renderFooterOnClick = (entity, type) => {
-      let footerId = this.containerId + '_footer'
-      let obj = {id: entity.id, label: entity.defaultLabel || entity.label, type: type}
-      let html = [this.$interpolate(['<li><b>{{type}}_id:</b>&nbsp{{id}}</li>',
-        '<li><b>{{type}}_type:</b>&nbsp{{label}}</li>'].join(''))(obj)]
+    const renderFooterOnClick = (entity, type) => {
+      const footerId = this.containerId + '_footer'
+      const obj = {id: entity.id, label: entity.defaultLabel || entity.label, type: type}
+      let html = [`<li><b>${obj.type}_id:</b>&nbsp${obj.id}</li>`]
+      if (obj.label) {
+        html.push(`<li><b>${obj.type}_type:</b>&nbsp${obj.label}</li>`)
+      }
       html = html.concat(_.map(entity.data, (v, k) => {
-        return this.$interpolate('<li><b>{{field}}:</b>&nbsp{{value}}</li>')({field: k, value: v})
+        return `<li><b>${k}:</b>&nbsp${v}</li>`
       }))
       angular.element('#' + footerId)
         .find('.list-inline')
@@ -149,7 +162,7 @@ export default class NetworkVisualization extends Visualization {
         .append(html.join(''))
     }
 
-    let drag = d3.behavior.drag()
+    const drag = d3.behavior.drag()
       .origin((d) => d)
       .on('dragstart', function(d) {
         console.log('dragstart')
@@ -171,7 +184,7 @@ export default class NetworkVisualization extends Visualization {
         self.force.resume()
       })
 
-    let container = this.svg.append('g')
+    const container = this.svg.append('g')
     if (networkData.graph.directed) {
       container.append('svg:defs').selectAll('marker')
         .data(['arrowMarker-' + this.containerId])
@@ -188,7 +201,7 @@ export default class NetworkVisualization extends Visualization {
         .attr('d', 'M0,-5L10,0L0,5')
     }
     // Links
-    let link = container.append('svg:g')
+    const link = container.append('svg:g')
       .on('click', () => {
         renderFooterOnClick(d3.select(d3.event.target).datum(), 'edge')
       })
@@ -196,13 +209,13 @@ export default class NetworkVisualization extends Visualization {
       .data(self.force.links())
       .enter()
       .append('g')
-    let getPathId = (d) => this.containerId + '_' + d.source.index + '_' + d.target.index + '_' + d.count
-    let showLabel = (d) => this._showNodeLabel(d)
-    let linkPath = link.append('svg:path')
+    const getPathId = (d) => this.containerId + '_' + d.source.index + '_' + d.target.index + '_' + d.count
+    const showLabel = (d) => this._showNodeLabel(d)
+    const linkPath = link.append('svg:path')
       .attr('class', 'link')
       .attr('size', linkSize)
       .attr('marker-end', `url(#arrowMarker-${this.containerId})`)
-    let textPath = link.append('svg:path')
+    const textPath = link.append('svg:path')
       .attr('id', getPathId)
       .attr('class', 'textpath')
     container.append('svg:g')
@@ -218,7 +231,7 @@ export default class NetworkVisualization extends Visualization {
       .text((d) => d.label)
       .style('opacity', defaultOpacity)
     // Nodes
-    let circle = container.append('svg:g')
+    const circle = container.append('svg:g')
       .on('click', () => {
         renderFooterOnClick(d3.select(d3.event.target).datum(), 'node')
       })
@@ -229,7 +242,7 @@ export default class NetworkVisualization extends Visualization {
       .attr('fill', (d) => networkData.graph.labels && d.label in networkData.graph.labels
                   ? networkData.graph.labels[d.label] : '#000000')
       .call(drag)
-    let text = container.append('svg:g').selectAll('g')
+    const text = container.append('svg:g').selectAll('g')
       .data(self.force.nodes())
       .enter().append('svg:g')
     text.append('svg:text')
@@ -252,12 +265,72 @@ export default class NetworkVisualization extends Visualization {
   }
 
   _showNodeLabel(d) {
-    let transformationConfig = this.transformation.getSetting().scope.config
-    let selectedLabel = (transformationConfig.properties[d.label] || {selected: 'label'}).selected
+    const transformationConfig = this.transformation.getSetting().scope.config
+    const selectedLabel = (transformationConfig.properties[d.label] || {selected: 'label'}).selected
     return d.data[selectedLabel] || d[selectedLabel]
   }
 
   getTransformation() {
     return this.transformation
+  }
+
+  setNodesDefaults() {
+  }
+
+  _setEdgesDefaults(graph) {
+    graph.edges
+      .sort((a, b) => {
+        if (a.source > b.source) {
+          return 1
+        } else if (a.source < b.source) {
+          return -1
+        } else if (a.target > b.target) {
+          return 1
+        } else if (a.target < b.target) {
+          return -1
+        } else {
+          return 0
+        }
+      })
+    graph.edges
+      .forEach((edge, index) => {
+        let prevEdge = graph.edges[index - 1]
+        edge.count = (index > 0 && +edge.source === +prevEdge.source && +edge.target === +prevEdge.target
+            ? prevEdge.count : 0) + 1
+        edge.totalCount = graph.edges
+          .filter((innerEdge) => +edge.source === +innerEdge.source && +edge.target === +innerEdge.target)
+          .length
+      })
+    graph.edges
+      .forEach((edge) => {
+        if (typeof +edge.source === 'number') {
+          // edge.source = graph.nodes.filter((node) => +edge.source === +node.id)[0] || null
+          edge.source = _.find(graph.nodes, (node) => +edge.source === +node.id)
+        }
+        if (typeof +edge.target === 'number') {
+          // edge.target = graph.nodes.filter((node) => +edge.target === +node.id)[0] || null
+          edge.target = _.find(graph.nodes, (node) => +edge.target === +node.id)
+        }
+      })
+  }
+
+  getNetworkProperties(graph) {
+    const baseCols = ['id', 'label']
+    const properties = {}
+    graph.nodes.forEach(function(node) {
+      const hasLabel = 'label' in node && node.label !== ''
+      if (!hasLabel) {
+        return
+      }
+      const label = node.label
+      const hasKey = hasLabel && label in properties
+      const keys = _.uniq(Object.keys(node.data || {})
+              .concat(hasKey ? properties[label].keys : baseCols))
+      if (!hasKey) {
+        properties[label] = {selected: 'label'}
+      }
+      properties[label].keys = keys
+    })
+    return properties
   }
 }
