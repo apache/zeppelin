@@ -60,10 +60,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       throws IOException {
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
-      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, properties);
+      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
+          properties);
       synchronized (remoteInterpreterProcess) {
         if (!remoteInterpreterProcess.isRunning()) {
-          remoteInterpreterProcess.start(userName, false);
+          remoteInterpreterProcess.start(userName);
           remoteInterpreterProcess.getRemoteInterpreterEventPoller()
               .setInterpreterProcess(remoteInterpreterProcess);
           remoteInterpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(this);
