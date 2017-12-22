@@ -890,15 +890,14 @@ public class Notebook implements NoteEventListener {
 
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
-      note.runAll();
 
-      while (!note.isTerminated()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.toString(), e);
-        }
+      if (note.isRunningOrPending()) {
+        logger.warn("execution of the cron job is skipped because there is a running or pending " +
+            "paragraph (note id: {})", noteId);
+        return;
       }
+
+      note.runAll();
 
       boolean releaseResource = false;
       String cronExecutingUser = null;

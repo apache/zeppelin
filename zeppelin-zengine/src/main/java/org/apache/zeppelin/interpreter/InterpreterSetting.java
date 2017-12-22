@@ -699,13 +699,14 @@ public class InterpreterSetting {
   }
 
   synchronized RemoteInterpreterProcess createInterpreterProcess(String interpreterGroupId,
+                                                                 String userName,
                                                                  Properties properties)
       throws IOException {
     if (launcher == null) {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(properties, option, interpreterRunner,
+        InterpreterLaunchContext(properties, option, interpreterRunner, userName,
         interpreterGroupId, id, group, name);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
