@@ -72,6 +72,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.DateFormat;
 
 /**
  * BigQuery interpreter for Zeppelin.
@@ -99,7 +103,7 @@ import java.util.NoSuchElementException;
 
 public class BigQueryInterpreter extends Interpreter {
 
-  private Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
+  private static Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static Bigquery service = null;
@@ -109,9 +113,11 @@ public class BigQueryInterpreter extends Interpreter {
   static final String PROJECT_ID = "zeppelin.bigquery.project_id";
   static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
   static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
+  static final String TIME_ZONE = "zeppelin.bigquery.time_zone";
 
   private static String jobId = null;
   private static String projectId = null;
+  private static int FORMAT_MAX_COL_CNT = 1000;
 
   private static final List NO_COMPLETION = new ArrayList<>();
   private Exception exceptionOnConnect;
@@ -163,19 +169,57 @@ public class BigQueryInterpreter extends Interpreter {
         .setApplicationName("Zeppelin/1.0 (GPN:Apache Zeppelin;)").build();
   }
 
-  //Function that generates and returns the schema and the rows as string
-  public static String printRows(final GetQueryResultsResponse response) {
+  public static String getFormattedString(TableCell field, String type, String tZone) {
+    String formVal = field.getV().toString();
+    switch (type) {
+        case "TIMESTAMP":
+          try {
+            long tsTest = Double.valueOf(field.getV().toString()).longValue() * 1000;
+            Date date = new Date(tsTest);
+            DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+            if (tZone == null || tZone == "") {
+              tZone = "Pacific/Truk";
+            }
+
+            format.setTimeZone(TimeZone.getTimeZone(tZone));
+            formVal = format.format(date);
+          } catch (Exception e) {
+            logger.error("Exception occured {}", e);
+          }
+          break;
+        default:
+          break;
+    }
+    logger.debug("fix  getFormattedString formatted field value  is {}", formVal);
+    return formVal;
+
+  }
+
+  // Function that generates and returns the schema and the rows as string
+  public static String printRows(final GetQueryResultsResponse response, String tZone) {
     StringBuilder msg = null;
     msg = new StringBuilder();
+    int size = FORMAT_MAX_COL_CNT;
+    int i = 0;
+    String typeSchema[] = new String[size];
+    for (i = 0; i < size; i++) {
+      typeSchema[i] = "";
+    }
+
     try {
-      for (TableFieldSchema schem: response.getSchema().getFields()) {
+      i = 0;
+      for (TableFieldSchema schem : response.getSchema().getFields()) {
+        typeSchema[i++] = schem.getType();
         msg.append(schem.getName());
         msg.append(TAB);
       }      
       msg.append(NEWLINE);
       for (TableRow row : response.getRows()) {
+        i = 0;
         for (TableCell field : row.getF()) {
-          msg.append(field.getV().toString());
+          String formVal = getFormattedString(field, typeSchema[i++], tZone);
+          msg.append(formVal);
           msg.append(TAB);
         }
         msg.append(NEWLINE);
@@ -245,6 +289,7 @@ public class BigQueryInterpreter extends Interpreter {
     String projId = getProperty(PROJECT_ID);
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
+    String tZone = getProperty(TIME_ZONE);
     Iterator<GetQueryResultsResponse> pages;
     try {
       pages = run(sql, projId, wTime, maxRows);
@@ -254,7 +299,7 @@ public class BigQueryInterpreter extends Interpreter {
     }
     try {
       while (pages.hasNext()) {
-        finalmessage.append(printRows(pages.next()));
+        finalmessage.append(printRows(pages.next(), tZone));
       }
       return new InterpreterResult(Code.SUCCESS, finalmessage.toString());
     } catch ( NullPointerException ex ) {
