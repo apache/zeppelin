@@ -235,7 +235,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     //avoid NullPointException when method isTerminated
     //invoked in ParagraphListenerImpl.afterStatusChange
     if (config == null) {
-      return true;
+      return false;
     }
     Boolean enabled = (Boolean) config.get("enabled");
     return enabled == null || enabled.booleanValue();
