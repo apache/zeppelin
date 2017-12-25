@@ -70,6 +70,33 @@
   <description>notebook persistence layer implementation</description>
 </property>
 -->
+<!-- If used Google cloud storage is used to stor the notebooks, it is necessary the following folder structure bucketname/username/notebook/ -->
+<!--
+<property>
+ <name>zeppelin.notebook.storage</name>
+ <value>org.apache.zeppelin.notebook.repo.GoogleCloudStorageNotebookRepo</value>
+ <description>notebook persistence layer implementation</description>
+</property>
+
+
+<property>
+ <name>zeppelin.notebook.google.credentialsFile</name>
+ <value>/data/keyfile.json</value>
+ <description>Zeppelin google service account credentials</description>
+</property>
+
+<property>
+ <name>zeppelin.notebook.google.applicationName</name>
+ <value>zeppelin-v01</value>
+ <description>share name for notebook storage</description>
+</property>
+
+<property>
+ <name>zeppelin.notebook.google.projectId</name>
+ <value>projectid</value>
+ <description>Google project ID, project ID is a unique identifier for a project</description>
+</property>
+-->
 
 <property>
   <name>zeppelin.notebook.storage</name>

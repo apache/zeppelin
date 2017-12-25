@@ -492,6 +492,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_STRICT_TRANSPORT);
   }
 
+  public String getInterpreterPortRange() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_PORTRANGE);
+  }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
@@ -590,6 +593,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.bigquery.BigQueryInterpreter,"
         + "org.apache.zeppelin.beam.BeamInterpreter,"
         + "org.apache.zeppelin.scio.ScioInterpreter"),
+    
+    ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
+    ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
+    
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
@@ -613,6 +620,13 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_EMP("zeppelin.notebook.s3.encryptionMaterialsProvider", null),
     ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID("zeppelin.notebook.s3.kmsKeyID", null),
     ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION("zeppelin.notebook.s3.kmsKeyRegion", null),
+    
+    ZEPPELIN_NOTEBOOK_GOOGLE_CREDENTIALS_FILE("zeppelin.notebook.google.credentialsFile", 
+     "conf/keyfile.json"),
+    ZEPPELIN_NOTEBOOK_GOOGLE_APPLICATION_NAME("zeppelin.notebook.google.applicationName", 
+     "zeppelin-v01"),
+    ZEPPELIN_NOTEBOOK_GOOGLE_PROJECT_ID("zeppelin.notebook.google.projectId", "sk-data-platform"),
+    
     ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING("zeppelin.notebook.azure.connectionString", null),
     ZEPPELIN_NOTEBOOK_AZURE_SHARE("zeppelin.notebook.azure.share", "zeppelin"),
     ZEPPELIN_NOTEBOOK_AZURE_USER("zeppelin.notebook.azure.user", "user"),
@@ -639,7 +653,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
-    ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1");
+    ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
+
+    ZEPPELIN_INTERPRETER_PORTRANGE("zeppelin.interpreter.portRange", ":");
 
     private String varName;
     @SuppressWarnings("rawtypes")
