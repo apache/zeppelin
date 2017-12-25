@@ -1,0 +1,57 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div id="folderPermissionsModal" class="modal fade"
+     role="dialog" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- modal-header -->
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Folder permissions</h4>
+      </div>
+
+      <!-- modal-body -->
+      <div class="modal-body" style="overflow:hidden;">
+        <div class="permissionsForm" data-ng-model="permissions">
+          <p><span class="owners">Owners </span>
+            <select id="selectOwners" multiple="multiple">
+              <option is-select2="false" ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
+            </select>
+          </p>
+          <p><span class="writers">Writers </span>
+            <select id="selectWriters" multiple="multiple">
+              <option is-select2="false" ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
+            </select>
+          </p>
+          <p><span class="runners">Runners </span>
+            <select id="selectRunners" multiple="multiple">
+              <option is-select2="false" ng-repeat="runners in permissions.readers" selected="selected">{{runners}}</option>
+            </select>
+          </p>
+          <p><span class="readers">Readers </span>
+            <select id="selectReaders" multiple="multiple">
+              <option is-select2="false" ng-repeat="readers in permissions.readers" selected="selected">{{readers}}</option>
+            </select>
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div>
+          <button class="btn btn-primary" ng-click="savePermissions()">Save</button>
+          <button class="btn btn-default" ng-click="closePermissions()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

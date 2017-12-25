@@ -191,7 +191,7 @@ public class NotebookServer extends WebSocketServlet
         throw new Exception("Anonymous access not allowed ");
       }
 
-      HashSet<String> userAndRoles = new HashSet<>();
+      Set<String> userAndRoles = new HashSet<>();
       userAndRoles.add(messagereceived.principal);
       if (!messagereceived.roles.equals("")) {
         HashSet<String> roles =
@@ -631,6 +631,22 @@ public class NotebookServer extends WebSocketServlet
     broadcast(note.getId(), new Message(OP.NOTE).put("note", note));
   }
 
+  public void broadcastFolderPermissions(String folderId, AuthenticationInfo subject) {
+    if (subject == null) {
+      subject = new AuthenticationInfo(StringUtils.EMPTY);
+    }
+    Message message = new Message(OP.FOLDER_PERMISSIONS);
+    message.put("folderId", folderId);
+    multicastToUser(subject.getUser(), message);
+    Set<String> usersToSend = userConnectedSockets.keySet();
+    for (String user : usersToSend) {
+      if (subject.getUser().equals(user)) {
+        continue;
+      }
+      multicastToUser(user, message);
+    }
+  }
+
   public void broadcastInterpreterBindings(String noteId, List settingList) {
     broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
   }
@@ -678,7 +694,7 @@ public class NotebookServer extends WebSocketServlet
         new Message(OP.PARAGRAPH_ADDED).put("paragraph", para).put("index", paraIndex));
   }
 
-  public void broadcastNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
+  public void broadcastNoteList(AuthenticationInfo subject, Set<String> userAndRoles) {
     if (subject == null) {
       subject = new AuthenticationInfo(StringUtils.EMPTY);
     }
@@ -690,12 +706,12 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void unicastNoteList(NotebookSocket conn, AuthenticationInfo subject,
-      HashSet<String> userAndRoles) {
+      Set<String> userAndRoles) {
     List<Map<String, String>> notesInfo = generateNotesInfo(false, subject, userAndRoles);
     unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
   }
 
-  public void broadcastReloadedNoteList(AuthenticationInfo subject, HashSet userAndRoles) {
+  public void broadcastReloadedNoteList(AuthenticationInfo subject, Set<String> userAndRoles) {
     if (subject == null) {
       subject = new AuthenticationInfo(StringUtils.EMPTY);
     }
@@ -738,7 +754,7 @@ public class NotebookServer extends WebSocketServlet
    */
   private boolean hasParagraphReaderPermission(NotebookSocket conn,
                                               Notebook notebook, String noteId,
-                                              HashSet<String> userAndRoles,
+                                              Set<String> userAndRoles,
                                               String principal, String op)
       throws IOException {
 
@@ -757,7 +773,7 @@ public class NotebookServer extends WebSocketServlet
    */
   private boolean hasParagraphRunnerPermission(NotebookSocket conn,
                                                Notebook notebook, String noteId,
-                                               HashSet<String> userAndRoles,
+                                               Set<String> userAndRoles,
                                                String principal, String op)
       throws IOException {
 
@@ -776,7 +792,7 @@ public class NotebookServer extends WebSocketServlet
    */
   private boolean hasParagraphWriterPermission(NotebookSocket conn,
                                                Notebook notebook, String noteId,
-                                               HashSet<String> userAndRoles,
+                                               Set<String> userAndRoles,
                                                String principal, String op)
       throws IOException {
 
@@ -795,7 +811,7 @@ public class NotebookServer extends WebSocketServlet
    */
   private boolean hasParagraphOwnerPermission(NotebookSocket conn,
                                               Notebook notebook, String noteId,
-                                              HashSet<String> userAndRoles,
+                                              Set<String> userAndRoles,
                                               String principal, String op)
       throws IOException {
 
@@ -809,7 +825,7 @@ public class NotebookServer extends WebSocketServlet
     return true;
   }
 
-  private void sendNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void sendNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
 
     LOG.info("New operation from {} : {} : {} : {} : {}", conn.getRequest().getRemoteAddr(),
@@ -843,7 +859,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void sendHomeNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void sendHomeNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     String noteId = notebook.getConf().getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     String user = fromMessage.principal;
@@ -868,7 +884,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void updateNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void updateNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
@@ -902,7 +918,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void updatePersonalizedMode(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void updatePersonalizedMode(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String personalized = (String) fromMessage.get("personalized");
@@ -926,13 +942,13 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void renameNote(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void renameNote(NotebookSocket conn, Set<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     renameNote(conn, userAndRoles, notebook, fromMessage, "rename");
   }
 
-  private void renameNote(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void renameNote(NotebookSocket conn, Set<String> userAndRoles,
                           Notebook notebook, Message fromMessage, String op)
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
@@ -958,13 +974,13 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void renameFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void renameFolder(NotebookSocket conn, Set<String> userAndRoles,
                             Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     renameFolder(conn, userAndRoles, notebook, fromMessage, "rename");
   }
 
-  private void renameFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void renameFolder(NotebookSocket conn, Set<String> userAndRoles,
                           Notebook notebook, Message fromMessage, String op)
       throws SchedulerException, IOException {
     String oldFolderId = (String) fromMessage.get("id");
@@ -1011,13 +1027,14 @@ public class NotebookServer extends WebSocketServlet
     return cronUpdated;
   }
 
-  private void createNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void createNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message message) throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(message.principal);
 
     try {
       Note note = null;
 
+      String noteName = (String) message.get("name");
       String defaultInterpreterId = (String) message.get("defaultInterpreterId");
       if (!StringUtils.isEmpty(defaultInterpreterId)) {
         List<String> interpreterSettingIds = new LinkedList<>();
@@ -1028,19 +1045,12 @@ public class NotebookServer extends WebSocketServlet
             interpreterSettingIds.add(interpreterSettingId);
           }
         }
-        note = notebook.createNote(interpreterSettingIds, subject);
+        note = notebook.createNote(interpreterSettingIds, subject, noteName);
       } else {
-        note = notebook.createNote(subject);
+        note = notebook.createNote(subject, noteName);
       }
 
       note.addNewParagraph(subject); // it's an empty note. so add one paragraph
-      if (message != null) {
-        String noteName = (String) message.get("name");
-        if (StringUtils.isEmpty(noteName)) {
-          noteName = "Note " + note.getId();
-        }
-        note.setName(noteName);
-      }
 
       note.persist(subject);
       addConnectionToNote(note.getId(), (NotebookSocket) conn);
@@ -1055,7 +1065,7 @@ public class NotebookServer extends WebSocketServlet
     broadcastNoteList(subject, userAndRoles);
   }
 
-  private void removeNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void removeNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
@@ -1073,7 +1083,7 @@ public class NotebookServer extends WebSocketServlet
     broadcastNoteList(subject, userAndRoles);
   }
 
-  private void removeFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void removeFolder(NotebookSocket conn, Set<String> userAndRoles,
                             Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String folderId = (String) fromMessage.get("id");
@@ -1099,7 +1109,7 @@ public class NotebookServer extends WebSocketServlet
     broadcastNoteList(subject, userAndRoles);
   }
 
-  private void moveNoteToTrash(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void moveNoteToTrash(NotebookSocket conn, Set<String> userAndRoles,
                                Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
@@ -1115,7 +1125,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void moveFolderToTrash(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void moveFolderToTrash(NotebookSocket conn, Set<String> userAndRoles,
                                  Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String folderId = (String) fromMessage.get("id");
@@ -1137,7 +1147,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void restoreNote(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void restoreNote(NotebookSocket conn, Set<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
@@ -1153,7 +1163,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void restoreFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void restoreFolder(NotebookSocket conn, Set<String> userAndRoles,
                             Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String folderId = (String) fromMessage.get("id");
@@ -1176,7 +1186,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void restoreAll(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void restoreAll(NotebookSocket conn, Set<String> userAndRoles,
                              Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     Folder trashFolder = notebook.getFolder(Folder.TRASH_FOLDER_ID);
@@ -1188,7 +1198,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void emptyTrash(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void emptyTrash(NotebookSocket conn, Set<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     fromMessage.data = new HashMap<>();
@@ -1196,7 +1206,7 @@ public class NotebookServer extends WebSocketServlet
     removeFolder(conn, userAndRoles, notebook, fromMessage);
   }
 
-  private void updateParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void updateParagraph(NotebookSocket conn, Set<String> userAndRoles,
                                Notebook notebook, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -1243,7 +1253,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void cloneNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
@@ -1254,7 +1264,7 @@ public class NotebookServer extends WebSocketServlet
     broadcastNoteList(subject, userAndRoles);
   }
 
-  private void clearAllParagraphOutput(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void clearAllParagraphOutput(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws IOException {
     final String noteId = (String) fromMessage.get("id");
     if (StringUtils.isBlank(noteId)) {
@@ -1271,7 +1281,7 @@ public class NotebookServer extends WebSocketServlet
     broadcastNote(note);
   }
 
-  protected Note importNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  protected Note importNote(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     Note note = null;
     if (fromMessage != null) {
@@ -1291,7 +1301,7 @@ public class NotebookServer extends WebSocketServlet
     return note;
   }
 
-  private void removeParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void removeParagraph(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -1318,7 +1328,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void clearParagraphOutput(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void clearParagraphOutput(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -1343,7 +1353,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void completion(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     String buffer = (String) fromMessage.get("buf");
@@ -1367,7 +1377,7 @@ public class NotebookServer extends WebSocketServlet
    * @param notebook the notebook.
    * @param fromMessage the message.
    */
-  private void angularObjectUpdated(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void angularObjectUpdated(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) {
     String noteId = (String) fromMessage.get("noteId");
     String paragraphId = (String) fromMessage.get("paragraphId");
@@ -1453,7 +1463,7 @@ public class NotebookServer extends WebSocketServlet
    * interpreter angular registry given a noteId
    * and a paragraph id
    */
-  protected void angularObjectClientBind(NotebookSocket conn, HashSet<String> userAndRoles,
+  protected void angularObjectClientBind(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws Exception {
     String noteId = fromMessage.getType("noteId");
     String varName = fromMessage.getType("name");
@@ -1488,7 +1498,7 @@ public class NotebookServer extends WebSocketServlet
    * interpreter(s) angular registry given a noteId
    * and an optional list of paragraph id(s)
    */
-  protected void angularObjectClientUnbind(NotebookSocket conn, HashSet<String> userAndRoles,
+  protected void angularObjectClientUnbind(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws Exception {
     String noteId = fromMessage.getType("noteId");
     String varName = fromMessage.getType("name");
@@ -1573,7 +1583,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void moveParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void moveParagraph(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -1596,7 +1606,7 @@ public class NotebookServer extends WebSocketServlet
         new Message(OP.PARAGRAPH_MOVED).put("id", paragraphId).put("index", newIndex));
   }
 
-  private String insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+  private String insertParagraph(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws IOException {
     final int index = (int) Double.parseDouble(fromMessage.get("index").toString());
     String noteId = getOpenNoteId(conn);
@@ -1622,7 +1632,7 @@ public class NotebookServer extends WebSocketServlet
     return newPara.getId();
   }
 
-  private void copyParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void copyParagraph(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     String newParaId = insertParagraph(conn, userAndRoles, notebook, fromMessage);
 
@@ -1634,7 +1644,7 @@ public class NotebookServer extends WebSocketServlet
     updateParagraph(conn, userAndRoles, notebook, fromMessage);
   }
 
-  private void cancelParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void cancelParagraph(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -1653,7 +1663,7 @@ public class NotebookServer extends WebSocketServlet
     p.abort();
   }
 
-  private void runAllParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void runAllParagraphs(NotebookSocket conn, Set<String> userAndRoles,
                                 Notebook notebook,
       Message fromMessage) throws IOException {
     final String noteId = (String) fromMessage.get("noteId");
@@ -1692,7 +1702,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void broadcastSpellExecution(NotebookSocket conn, Set<String> userAndRoles,
                                        Notebook notebook, Message fromMessage)
       throws IOException {
 
@@ -1748,7 +1758,7 @@ public class NotebookServer extends WebSocketServlet
         new Message(OP.RUN_PARAGRAPH_USING_SPELL).put("paragraph", p), conn);
   }
 
-  private void runParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void runParagraph(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
                             Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -1857,7 +1867,7 @@ public class NotebookServer extends WebSocketServlet
     return p;
   }
 
-  private void sendAllConfigurations(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void sendAllConfigurations(NotebookSocket conn, Set<String> userAndRoles,
       Notebook notebook) throws IOException {
     ZeppelinConfiguration conf = notebook.getConf();
 
@@ -1902,7 +1912,7 @@ public class NotebookServer extends WebSocketServlet
         serializeMessage(new Message(OP.LIST_REVISION_HISTORY).put("revisionList", revisions)));
   }
 
-  private void setNoteRevision(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void setNoteRevision(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
 
     String noteId = (String) fromMessage.get("noteId");
@@ -2103,7 +2113,7 @@ public class NotebookServer extends WebSocketServlet
         throw new Exception(String.format("Can't found paragraph %s %s", noteId, paragraphId));
       }
 
-      Set<String> userAndRoles = Sets.newHashSet();
+      Set<String> userAndRoles = new HashSet<>();
       userAndRoles.add(SecurityUtils.getPrincipal());
       userAndRoles.addAll(SecurityUtils.getRoles());
       if (!notebookIns.getNotebookAuthorization().hasRunAuthorization(userAndRoles, noteId)) {
@@ -2543,7 +2553,7 @@ public class NotebookServer extends WebSocketServlet
     broadcast(note.getId(), new Message(OP.SAVE_NOTE_FORMS).put("formsData", formsSettings));
   }
 
-  private void saveNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void saveNoteForms(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
                              Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     Map<String, Object> noteParams = (Map<String, Object>) fromMessage.get("noteParams");
@@ -2563,7 +2573,7 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void removeNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+  private void removeNoteForms(NotebookSocket conn, Set<String> userAndRoles, Notebook notebook,
                              Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     String formName = (String) fromMessage.get("formName");

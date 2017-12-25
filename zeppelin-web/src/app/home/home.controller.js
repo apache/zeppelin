@@ -118,6 +118,10 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
     vm.noteActionService.renameFolder(node.id)
   }
 
+  $scope.showFolderPermissions = function(node) {
+    vm.noteActionService.showFolderPermissions(node)
+  }
+
   $scope.removeNote = function (noteId) {
     vm.noteActionService.removeNote(noteId, false)
   }

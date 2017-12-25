@@ -81,3 +81,76 @@ For example, before executing a **Read** operation, it checks if the user and th
 Zeppelin executes a [REST API call](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/rest/NotebookRestApi.java) for the notebook permission information.
 In the backend side, Zeppelin gets the user information for the connection and allows the operation if the users and groups
 associated with the current user have at least one entity that belongs to owner entities for the notebook.
+
+## Permissions for folders
+Folder with permissions is way to unite notes with the same permissions and change the permissions together.
+
+Folder without permissions (with empty permissions) continues to work like common folder.
+
+Folder with permissions sets permissions to all its content (subfolders, notes). Nobody can change permissions on content of folder with permissions. Permissions are regulated by folder.
+Only owners of the folder can change its permissions. If permissions is empty (folder without permissions), anybody can set permissions. Owners of the folder can remove all permissions, then folder becomes 'folder without permissions'.
+Examples:
+<table class="table-configuration">
+  <tr>
+    <th>Case</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>
+      <ul>
+        <li><b>User1</b> create note in new folder (/new_folder/Note).</li>
+        <li><b>User1</b> change permissions of folder <b>new_folder</b></li>
+    </ul>
+    </td>
+    <td>Permissions succesufully changed.
+    Owner of <b>Note</b> will be <b>User1</b> (creator by default) 
+    All new notes and subfolders created in the <b>new_folder</b> will inherit permissions</td>
+  </tr>
+  <tr>
+    <td>
+      <ul>
+        <li><b>User1</b> create note in new folder (/new_folder/Note).</li>
+        <li><b>User2</b> create note in new folder (/new_folder/Note2).</li>
+        <li><b>User1</b> change permissions of folder <b>new_folder</b></li>
+    </ul>
+    </td>
+    <td>Permissions will not changed.
+    Owner of <b>Note</b> will be <b>User1</b>.
+    Owner of <b>Note2</b> will be <b>User2</b>.
+    Anybody can be owner of folder <b>new_folder</b> (more than one owner of children)     
+    </td>
+  </tr>  
+  <tr>
+    <td>
+      <ul>
+        <li><b>User1</b> create note in new subfolder  (/new_folder/subfolder/Note).</li>
+        <li><b>User1</b> change permissions of <b>subfolder</b>. Sets owner User1, Readers User1 and User2</li>
+        <li><b>User1</b> change permissions of <b>new_folder</b>. Sets owner User1, Readers User1</li>
+      </ul>
+    </td>
+    <td>Permissions succesufully changed. <b>new_folder</b>, <b>subfolderfolder</b> and 
+        <b>Note</b> have the same permissions as <b>new_folder</b> (owner User1, Readers User1).
+    </td>
+  </tr> 
+  <tr>
+    <td>
+      <ul>
+        <li><b>User1</b> create note in new folder (/new_folder/Note).</li>
+        <li><b>User1</b> change permissions of <b>Note</b>.
+      </ul>
+    </td>
+    <td>Permissions succesufully changed. Parent folder have empty permissions.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <ul>
+        <li><b>User1</b> create note in new folder (/new_folder/Note).</li>
+        <li><b>User1</b> change permissions of folder <b>new_folder</b></li>
+        <li><b>User1</b> change permissions of <b>Note</b>.
+      </ul>
+    </td>
+    <td>Permissions will not changed. Parent folder have permissions.
+    </td>
+  </tr>      
+</table>

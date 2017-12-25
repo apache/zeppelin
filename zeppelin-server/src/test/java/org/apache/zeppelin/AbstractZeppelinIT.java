@@ -22,6 +22,7 @@ import com.google.common.base.Function;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
@@ -34,7 +35,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertNotNull;
 
 abstract public class AbstractZeppelinIT {
   protected static WebDriver driver;
@@ -117,6 +121,16 @@ abstract public class AbstractZeppelinIT {
     block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
   }
 
+  protected void createNewNote(String name) {
+    clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
+        " note')]"));
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteCreateModal")));
+    driver.findElement(By.id("noteName")).sendKeys(name);
+    clickAndWait(By.id("createNoteButton"));
+    block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
+  }
+
   protected void deleteTestNotebook(final WebDriver driver) {
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
     driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
@@ -127,8 +141,50 @@ abstract public class AbstractZeppelinIT {
     ZeppelinITUtils.sleep(100, true);
   }
 
+  protected void deleteTestFolder(final WebDriver driver, WebElement folder) {
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    folder.findElement(By.xpath(".//..//a//i[@uib-tooltip='Move folder to Trash']")).click();
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='modal-dialog'][contains(.,'This folder will be moved to trash')]" +
+        "//div[@class='modal-footer']//button[contains(.,'OK')]")));
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This folder will be moved to trash')]" +
+        "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+    ZeppelinITUtils.sleep(100, true);
+  }
+
+  protected void goToHome() {
+    WebElement webElement = driver.findElement(By.className("navbar-brand"));
+    clickAndWait(webElement);
+  }
+
+  protected WebElement moveCursorToFolderInTree(String folderName) {
+    //find folder element
+    String noteXPath = "//ul[@id='notebook-names']/div/li/div/div/div//a";
+    List<WebElement> elements = driver.findElements(By.xpath(noteXPath));
+    WebElement needed = null;
+    for (WebElement elem: elements) {
+      if (elem.getText().equals(folderName)) {
+        needed = elem;
+        break;
+      }
+    }
+    if (needed == null) {
+      return null;
+    }
+    //move mouse (for show permissions button will shown)
+    Actions action = new Actions(driver);
+    action.moveToElement(needed);
+    action.perform();
+
+    return needed;
+  }
+
   protected void clickAndWait(final By locator) {
     pollingWait(locator, MAX_IMPLICIT_WAIT).click();
+    ZeppelinITUtils.sleep(1000, true);
+  }
+
+  protected void clickAndWait(final WebElement element) {
+    element.click();
     ZeppelinITUtils.sleep(1000, true);
   }
 

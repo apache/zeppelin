@@ -70,6 +70,11 @@ limitations under the License.
            tooltip-placement="bottom" uib-tooltip="Rename folder">
         </i>
       </a>
+      <a ng-if="!node.isTrash" style="text-decoration: none;">
+        <i class="fa fa-lock notebook-list-btn" ng-show="showFolderButton" ng-click="showFolderPermissions(node)"
+           tooltip-placement="bottom" uib-tooltip="Show permissions">
+        </i>
+      </a>
       <!-- if folder is not in trash -->
       <a ng-if="!node.isTrash">
         <i class="fa fa-trash-o notebook-list-btn" ng-show="showFolderButton" ng-click="moveFolderToTrash(node.id)"

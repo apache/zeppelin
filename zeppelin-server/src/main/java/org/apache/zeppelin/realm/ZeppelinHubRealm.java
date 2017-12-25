@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -220,7 +221,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     UserSessionContainer.instance.setSession(username, session);
 
     /* TODO(xxx): add proper roles */
-    HashSet<String> userAndRoles = new HashSet<String>();
+    Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(username);
     ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
         new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);

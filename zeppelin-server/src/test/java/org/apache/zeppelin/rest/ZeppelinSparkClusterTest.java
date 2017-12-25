@@ -214,8 +214,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(anonymous);
-        note.setName("note");
+        Note note = ZeppelinServer.notebook.createNote(anonymous, "note");
         int sparkVersion = getSparkVersionNumber(note);
 
         if (isPyspark() && sparkVersion >= 12) {   // pyspark supported from 1.2.1
@@ -333,9 +332,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     @Test
     public void pySparkAutoConvertOptionTest() throws IOException {
         // create new note
-        Note note = ZeppelinServer.notebook.createNote(anonymous);
-        note.setName("note");
-
+        Note note = ZeppelinServer.notebook.createNote(anonymous, "note");
         int sparkVersionNumber = getSparkVersionNumber(note);
 
         if (isPyspark() && sparkVersionNumber >= 14) {   // auto_convert enabled from spark 1.4
@@ -505,9 +502,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     @Test
     public void testSparkZeppelinContextDynamicForms() throws IOException {
-        Note note = ZeppelinServer.notebook.createNote(anonymous);
+        Note note = ZeppelinServer.notebook.createNote(anonymous, "note");
         Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-        note.setName("note");
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
@@ -541,9 +537,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     @Test
     public void testPySparkZeppelinContextDynamicForms() throws IOException {
-        Note note = ZeppelinServer.notebook.createNote(anonymous);
+        Note note = ZeppelinServer.notebook.createNote(anonymous, "note");
         Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-        note.setName("note");
         Map config = p.getConfig();
         config.put("enabled", true);
         p.setConfig(config);
