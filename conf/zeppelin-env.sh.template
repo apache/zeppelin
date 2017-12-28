@@ -36,6 +36,12 @@
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID    # AWS KMS key ID
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION      # AWS KMS key region
 # export ZEPPELIN_NOTEBOOK_S3_SSE      # Server-side encryption enabled for notebooks
+# export ZEPPELIN_NOTEBOOK_MINIO_BUCKET		# Minio bucket name
+# export ZEPPELIN_NOTEBOOK_MINIO_USER		# User for Minio folder structure
+# export ZEPPELIN_NOTEBOOK_MINIO_ENDPOINT	# Minio endpoint
+# export ZEPPELIN_NOTEBOOK_MINIO_ACCESSKEY 	# Minio access key
+# export ZEPPELIN_NOTEBOOK_MINIO_SECRETKEY	# Minio secret key
+# export ZEPPELIN_NOTEBOOK_MINIO_HTTPS		# Use HTTPS when connecting to Minio server
 # export ZEPPELIN_NOTEBOOK_MONGO_URI				# MongoDB connection URI used to connect to a MongoDB database server. Default "mongodb://localhost"
 # export ZEPPELIN_NOTEBOOK_MONGO_DATABASE		# Database name to store notebook. Default "zeppelin"
 # export ZEPPELIN_NOTEBOOK_MONGO_COLLECTION # Collection name to store notebook. Default "notes"
