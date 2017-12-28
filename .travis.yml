@@ -135,6 +135,8 @@ before_install:
 install:
   - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
   - mvn $BUILD_FLAG $MODULES $PROFILE -B
+  - pip install --user -U pip
+  - pip install --user pandas
 
 before_script:
   - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
