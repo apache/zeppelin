@@ -45,6 +45,11 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
+  protected void setText(String inputSelector, String text) {
+    WebElement input = driver.findElement(By.xpath(inputSelector));
+    input.sendKeys(text);
+  }
+
   protected void setTextOfParagraph(int paragraphNo, String text) {
     String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
     if (driver instanceof JavascriptExecutor) {

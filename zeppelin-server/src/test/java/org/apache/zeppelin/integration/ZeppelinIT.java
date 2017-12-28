@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -70,6 +71,21 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
 
     driver.quit();
+  }
+
+
+  @Test
+  public void testLogin() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      // anonymous should display a Login button
+      WebElement button = driver.findElement(By.xpath("//button[@class=\"btn nav-login-btn\"]"));
+      assertTrue(button.isDisplayed());
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testLogin", e);
+    }
   }
 
   @Test

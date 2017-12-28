@@ -107,7 +107,7 @@ limitations under the License.
             </ul>
           </div>
         </li>
-        <li class="nav-component" ng-if="!ticket">
+        <li class="nav-component" ng-if="!ticket || ticket.principal === 'anonymous'">
           <button class="btn nav-login-btn" data-toggle="modal" data-target="#loginModal"
                   ng-click="navbar.showLoginWindow()">Login
           </button>
