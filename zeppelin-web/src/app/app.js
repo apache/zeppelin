@@ -44,6 +44,7 @@ const requiredModules = [
   'ngResource',
   'ngclipboard',
   'angularViewportWatch',
+  'infinite-scroll',
   'ui.grid',
   'ui.grid.exporter',
   'ui.grid.edit', 'ui.grid.rowEdit',
@@ -182,12 +183,16 @@ function auth () {
   let config = (process.env.PROD) ? {headers: { 'X-Requested-With': 'XMLHttpRequest' }} : {}
   return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket', config).then(function (response) {
     zeppelinWebApp.run(function ($rootScope) {
-      $rootScope.ticket = angular.fromJson(response.data).body
-
-      $rootScope.ticket.screenUsername = $rootScope.ticket.principal
-      if ($rootScope.ticket.principal.indexOf('#Pac4j') === 0) {
-        let re = ', name=(.*?),'
-        $rootScope.ticket.screenUsername = $rootScope.ticket.principal.match(re)[1]
+      let res = angular.fromJson(response.data).body
+      if (res['redirectURL']) {
+        window.location.href = res['redirectURL'] + window.location.href
+      } else {
+        $rootScope.ticket = res
+        $rootScope.ticket.screenUsername = $rootScope.ticket.principal
+        if ($rootScope.ticket.principal.indexOf('#Pac4j') === 0) {
+          let re = ', name=(.*?),'
+          $rootScope.ticket.screenUsername = $rootScope.ticket.principal.match(re)[1]
+        }
       }
     })
   }, function (errorResponse) {
