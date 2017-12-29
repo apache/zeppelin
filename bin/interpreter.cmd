@@ -57,7 +57,7 @@ call "%bin%\functions.cmd" ADDJARINDIR "%INTERPRETER_DIR%"
 set HOSTNAME=%COMPUTERNAME%
 set ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
-set ZEPPELIN_LOGFILE=%ZEPPELIN_LOG_DIR%\zeppelin-interpreter-%INTERPRETER_ID%-%ZEPPELIN_IDENT_STRING%-%HOSTNAME%.log
+set ZEPPELIN_LOGFILE=%ZEPPELIN_LOG_DIR%\zeppelin-interpreter-%INTERPRETER_ID%-%ZEPPELIN_IDENT_STRING%-%HOSTNAME%-%PORT%.log
 
 if not exist "%ZEPPELIN_LOG_DIR%" (
     echo Log dir doesn't exist, create %ZEPPELIN_LOG_DIR%
