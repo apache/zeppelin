@@ -20,6 +20,7 @@ lens/lens-cli-hist.log
 
 # Zeppelin server
 zeppelin-server/local-repo
+zeppelin-server/src/main/resources/zeppelin-site.xml
 
 # conf file
 conf/zeppelin-env.sh
