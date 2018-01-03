@@ -58,6 +58,7 @@ public class InterpreterContext {
   private AuthenticationInfo authenticationInfo;
   private Map<String, Object> config = new HashMap<>();
   private GUI gui = new GUI();
+  private GUI noteGui = new GUI();
   private AngularObjectRegistry angularObjectRegistry;
   private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners = new ArrayList<>();
@@ -100,13 +101,14 @@ public class InterpreterContext {
                             AuthenticationInfo authenticationInfo,
                             Map<String, Object> config,
                             GUI gui,
+                            GUI noteGui,
                             AngularObjectRegistry angularObjectRegistry,
                             ResourcePool resourcePool,
                             List<InterpreterContextRunner> runners,
                             InterpreterOutput out
                             ) {
     this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
-        config, gui, angularObjectRegistry, resourcePool, runners, out, null, null);
+        config, gui, noteGui, angularObjectRegistry, resourcePool, runners, out, null, null);
   }
 
   public InterpreterContext(String noteId,
@@ -117,6 +119,7 @@ public class InterpreterContext {
                             AuthenticationInfo authenticationInfo,
                             Map<String, Object> config,
                             GUI gui,
+                            GUI noteGui,
                             AngularObjectRegistry angularObjectRegistry,
                             ResourcePool resourcePool,
                             List<InterpreterContextRunner> runners,
@@ -132,6 +135,7 @@ public class InterpreterContext {
     this.authenticationInfo = authenticationInfo;
     this.config = config;
     this.gui = gui;
+    this.noteGui = noteGui;
     this.angularObjectRegistry = angularObjectRegistry;
     this.resourcePool = resourcePool;
     this.runners = runners;
@@ -148,6 +152,7 @@ public class InterpreterContext {
                             AuthenticationInfo authenticationInfo,
                             Map<String, Object> config,
                             GUI gui,
+                            GUI noteGui,
                             AngularObjectRegistry angularObjectRegistry,
                             ResourcePool resourcePool,
                             List<InterpreterContextRunner> contextRunners,
@@ -156,7 +161,7 @@ public class InterpreterContext {
                             RemoteInterpreterEventClient eventClient,
                             Map<String, Integer> progressMap) {
     this(noteId, paragraphId, replName, paragraphTitle, paragraphText, authenticationInfo,
-        config, gui, angularObjectRegistry, resourcePool, contextRunners, output,
+        config, gui, noteGui, angularObjectRegistry, resourcePool, contextRunners, output,
         remoteWorksController, progressMap);
     this.client = new RemoteEventClient(eventClient);
   }
@@ -191,6 +196,10 @@ public class InterpreterContext {
 
   public GUI getGui() {
     return gui;
+  }
+
+  public GUI getNoteGui() {
+    return noteGui;
   }
 
   public AngularObjectRegistry getAngularObjectRegistry() {

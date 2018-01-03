@@ -29,24 +29,19 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Folder;
+import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -77,7 +72,9 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -332,6 +329,9 @@ public class NotebookServer extends WebSocketServlet
         case NOTE_REVISION:
           getNoteByRevision(conn, notebook, messagereceived);
           break;
+        case NOTE_REVISION_FOR_COMPARE:
+          getNoteByRevisionForCompare(conn, notebook, messagereceived);
+          break;
         case LIST_NOTE_JOBS:
           unicastNoteJobInfo(conn, messagereceived);
           break;
@@ -352,6 +352,12 @@ public class NotebookServer extends WebSocketServlet
           break;
         case WATCHER:
           switchConnectionToWatcher(conn, messagereceived);
+          break;
+        case SAVE_NOTE_FORMS:
+          saveNoteForms(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case REMOVE_NOTE_FORMS:
+          removeNoteForms(conn, userAndRoles, notebook, messagereceived);
           break;
         default:
           break;
@@ -646,6 +652,8 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void broadcastParagraph(Note note, Paragraph p) {
+    broadcastNoteForms(note);
+
     if (note.isPersonalizedMode()) {
       broadcastParagraphs(p.getUserParagraphMap(), p);
     } else {
@@ -1100,6 +1108,13 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Note note = notebook.getNote(noteId);
+
+    // drop cron
+    Map<String, Object> config = note.getConfig();
+    if (config.get("cron") != null) {
+      notebook.removeCron(note.getId());
+    }
+
     if (note != null && !note.isTrash()){
       fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
@@ -1124,6 +1139,14 @@ public class NotebookServer extends WebSocketServlet
         trashFolderId += Folder.TRASH_FOLDER_CONFLICT_INFIX + formatter.print(currentDate);
       }
 
+      List<Note> noteList = folder.getNotesRecursively();
+      for (Note note: noteList) {
+        Map<String, Object> config = note.getConfig();
+        if (config.get("cron") != null) {
+          notebook.removeCron(note.getId());
+        }
+      }
+
       fromMessage.put("name", trashFolderId);
       renameFolder(conn, userAndRoles, notebook, fromMessage, "move");
     }
@@ -1139,6 +1162,13 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Note note = notebook.getNote(noteId);
+
+    //restore cron
+    Map<String, Object> config = note.getConfig();
+    if (config.get("cron") != null) {
+      notebook.refreshCron(note.getId());
+    }
+
     if (note != null && note.isTrash()) {
       fromMessage.put("name", note.getName().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
       renameNote(conn, userAndRoles, notebook, fromMessage, "restore");
@@ -1157,6 +1187,15 @@ public class NotebookServer extends WebSocketServlet
     Folder folder = notebook.getFolder(folderId);
     if (folder != null && folder.isTrash()) {
       String restoreName = folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "").trim();
+
+      //restore cron for each paragraph
+      List<Note> noteList = folder.getNotesRecursively();
+      for (Note note : noteList) {
+        Map<String, Object> config = note.getConfig();
+        if (config.get("cron") != null) {
+          notebook.refreshCron(note.getId());
+        }
+      }
 
       // if the folder had conflict when it had moved to trash before
       Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
@@ -1223,7 +1262,6 @@ public class NotebookServer extends WebSocketServlet
       p.setTitle((String) fromMessage.get("title"));
       p.setText((String) fromMessage.get("paragraph"));
     }
-
 
     note.persist(subject);
 
@@ -1943,6 +1981,25 @@ public class NotebookServer extends WebSocketServlet
             .put("note", revisionNote)));
   }
 
+  private void getNoteByRevisionForCompare(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String revisionId = (String) fromMessage.get("revisionId");
+
+    String position = (String) fromMessage.get("position");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    Note revisionNote;
+    if (revisionId.equals("Head")) {
+      revisionNote = notebook.getNote(noteId);
+    } else {
+      revisionNote = notebook.getNoteByRevision(noteId, revisionId, subject);
+    }
+
+    conn.send(serializeMessage(
+        new Message(OP.NOTE_REVISION_FOR_COMPARE).put("noteId", noteId)
+            .put("revisionId", revisionId).put("position", position).put("note", revisionNote)));
+  }
+
   /**
    * This callback is for the paragraph that runs on ZeppelinServer
    *
@@ -2507,5 +2564,54 @@ public class NotebookServer extends WebSocketServlet
       }
     }
     setting.clearNoteIdAndParaMap();
+  }
+
+  public void broadcastNoteForms(Note note) {
+    GUI formsSettings = new GUI();
+    formsSettings.setForms(note.getNoteForms());
+    formsSettings.setParams(note.getNoteParams());
+
+    broadcast(note.getId(), new Message(OP.SAVE_NOTE_FORMS).put("formsData", formsSettings));
+  }
+
+  private void saveNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+                             Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    Map<String, Object> noteParams = (Map<String, Object>) fromMessage.get("noteParams");
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "update")) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.setNoteParams(noteParams);
+
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note.persist(subject);
+      broadcastNoteForms(note);
+    }
+  }
+
+  private void removeNoteForms(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
+                             Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String formName = (String) fromMessage.get("formName");
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "update")) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.getNoteForms().remove(formName);
+      note.getNoteParams().remove(formName);
+
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+      note.persist(subject);
+      broadcastNoteForms(note);
+    }
   }
 }

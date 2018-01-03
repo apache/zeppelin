@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,12 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
 
-  public SparkInterpreterLauncher(ZeppelinConfiguration zConf) {
-    super(zConf);
+  public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
   }
 
   @Override
-  protected Map<String, String> buildEnvFromProperties() {
+  protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
     Map<String, String> env = new HashMap<String, String>();
     Properties sparkProperties = new Properties();
     String sparkMaster = getSparkMaster(properties);
@@ -68,6 +69,11 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     }
     for (String name : sparkProperties.stringPropertyNames()) {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
+    }
+    String useProxyUserEnv = System.getenv("ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER");
+    if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
+        !useProxyUserEnv.equals("false"))) {
+      sparkConfBuilder.append(" --proxy-user " + context.getUserName());
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
@@ -193,12 +199,12 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
   }
 
   private String toShellFormat(String value) {
-    if (value.contains("\'") && value.contains("\"")) {
+    if (value.contains("'") && value.contains("\"")) {
       throw new RuntimeException("Spark property value could not contain both \" and '");
-    } else if (value.contains("\'")) {
+    } else if (value.contains("'")) {
       return "\"" + value + "\"";
     } else {
-      return "\'" + value + "\'";
+      return "'" + value + "'";
     }
   }
 

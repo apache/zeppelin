@@ -462,7 +462,8 @@ public class RemoteInterpreterServer
     }
     return convert(result,
         context.getConfig(),
-        context.getGui());
+        context.getGui(),
+        context.getNoteGui());
   }
 
   @Override
@@ -749,6 +750,7 @@ public class RemoteInterpreterServer
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
         GUI.fromJson(ric.getGui()),
+        GUI.fromJson(ric.getNoteGui()),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
         contextRunners, output, remoteWorksController, eventClient, progressMap);
@@ -880,7 +882,7 @@ public class RemoteInterpreterServer
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,
-      Map<String, Object> config, GUI gui) {
+      Map<String, Object> config, GUI gui, GUI noteGui) {
 
     List<RemoteInterpreterResultMessage> msg = new LinkedList<>();
     for (InterpreterResultMessage m : result.message()) {
@@ -893,7 +895,8 @@ public class RemoteInterpreterServer
         result.code().name(),
         msg,
         gson.toJson(config),
-        gui.toJson());
+        gui.toJson(),
+        noteGui.toJson());
   }
 
   @Override

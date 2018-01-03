@@ -27,10 +27,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   ngToast.dismiss()
 
   $scope.note = null
+  $scope.actionOnFormSelectionChange = true
+  $scope.hideForms = false
+  $scope.disableForms = false
   $scope.editorToggled = false
   $scope.tableToggled = false
   $scope.viewOnly = false
   $scope.showSetting = false
+  $scope.showRevisionsComparator = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
   $scope.cronOption = [
     {name: 'None', value: undefined},
@@ -79,7 +83,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   let currentSearchParagraph = 0
 
   $scope.$watch('note', function (value) {
-    $rootScope.pageTitle = value ? value.name : 'Zeppelin'
+    let title
+    if (value) {
+      title = value.name.substr(value.name.lastIndexOf('/') + 1, value.name.length)
+      title += ' - Zeppelin'
+    } else {
+      title = 'Zeppelin'
+    }
+    $rootScope.pageTitle = title
   }, true)
 
   $scope.$on('setConnectedStatus', function (event, param) {
@@ -160,7 +171,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       let paragraphId = $scope.note.paragraphs[i].id
       if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
-        $scope.$broadcast('focusParagraph', paragraphId, 0, true)
+        $scope.$broadcast('focusParagraph', paragraphId, 0, null, true)
         break
       }
     }
@@ -169,15 +180,23 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick)
 
-  $scope.keyboardShortcut = function (keyEvent) {
+  let keyboardShortcut = function (keyEvent) {
     // handle keyevent
     if (!$scope.viewOnly && !$scope.revisionView) {
       $scope.$broadcast('keyEvent', keyEvent)
     }
   }
 
+  $scope.keydownEvent = function (keyEvent) {
+    if ((keyEvent.ctrlKey || keyEvent.metaKey) && String.fromCharCode(keyEvent.which).toLowerCase() === 's') {
+      keyEvent.preventDefault()
+    }
+
+    keyboardShortcut(keyEvent)
+  }
+
   // register mouseevent handler for focus paragraph
-  document.addEventListener('keydown', $scope.keyboardShortcut)
+  document.addEventListener('keydown', $scope.keydownEvent)
 
   $scope.paragraphOnDoubleClick = function (paragraphId) {
     $scope.$broadcast('doubleClickParagraph', paragraphId)
@@ -247,13 +266,24 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     })
   }
 
+  $scope.preVisibleRevisionsComparator = function() {
+    $scope.mergeNoteRevisionsForCompare = null
+    $scope.firstNoteRevisionForCompare = null
+    $scope.secondNoteRevisionForCompare = null
+    $scope.currentFirstRevisionForCompare = 'Choose...'
+    $scope.currentSecondRevisionForCompare = 'Choose...'
+    $scope.$apply()
+  }
+
   $scope.$on('listRevisionHistory', function (event, data) {
     console.debug('received list of revisions %o', data)
     $scope.noteRevisions = data.revisionList
-    $scope.noteRevisions.splice(0, 0, {
-      id: 'Head',
-      message: 'Head'
-    })
+    if ($scope.noteRevisions.length === 0 || $scope.noteRevisions[0].id !== 'Head') {
+      $scope.noteRevisions.splice(0, 0, {
+        id: 'Head',
+        message: 'Head'
+      })
+    }
     if ($routeParams.revisionId) {
       let index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId})
       if (index > -1) {
@@ -489,7 +519,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         para.focus = true
 
         // we need `$timeout` since angular DOM might not be initialized
-        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, false) })
+        $timeout(() => { $scope.$broadcast('focusParagraph', para.id, 0, null, false) })
       }
     })
   }
@@ -579,6 +609,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     orderChanged: function (event) {}
   }
 
+  $scope.closeAdditionalBoards = function() {
+    $scope.closeSetting()
+    $scope.closePermissions()
+    $scope.closeRevisionsComparator()
+  }
+
   $scope.openSetting = function () {
     $scope.showSetting = true
     getInterpreterBindings()
@@ -628,8 +664,26 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.showSetting) {
       $scope.closeSetting()
     } else {
+      $scope.closeAdditionalBoards()
       $scope.openSetting()
-      $scope.closePermissions()
+      angular.element('html, body').animate({ scrollTop: 0 }, 'slow')
+    }
+  }
+
+  $scope.openRevisionsComparator = function () {
+    $scope.showRevisionsComparator = true
+  }
+
+  $scope.closeRevisionsComparator = function () {
+    $scope.showRevisionsComparator = false
+  }
+
+  $scope.toggleRevisionsComparator = function () {
+    if ($scope.showRevisionsComparator) {
+      $scope.closeRevisionsComparator()
+    } else {
+      $scope.closeAdditionalBoards()
+      $scope.openRevisionsComparator()
       angular.element('html, body').animate({ scrollTop: 0 }, 'slow')
     }
   }
@@ -1064,8 +1118,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         angular.element('#selectRunners').select2({})
         angular.element('#selectWriters').select2({})
       } else {
+        $scope.closeAdditionalBoards()
         $scope.openPermissions()
-        $scope.closeSetting()
       }
     }
   }
@@ -1140,6 +1194,92 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   /*
    ** $scope.$on functions below
    */
+
+  $scope.$on('runAllAbove', function (event, paragraph, isNeedConfirm) {
+    let allParagraphs = $scope.note.paragraphs
+    let toRunParagraphs = []
+
+    for (let i = 0; allParagraphs[i] !== paragraph; i++) {
+      if (i === allParagraphs.length - 1) { return } // if paragraph not in array of all paragraphs
+      toRunParagraphs.push(allParagraphs[i])
+    }
+
+    const paragraphs = toRunParagraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }
+    })
+
+    if (!isNeedConfirm) {
+      websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run all above?',
+        callback: function (result) {
+          if (result) {
+            websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+          }
+        }
+      })
+    }
+
+    $scope.saveCursorPosition(paragraph)
+  })
+
+  $scope.$on('runAllBelowAndCurrent', function (event, paragraph, isNeedConfirm) {
+    let allParagraphs = $scope.note.paragraphs
+    let toRunParagraphs = []
+
+    for (let i = allParagraphs.length - 1; allParagraphs[i] !== paragraph; i--) {
+      if (i < 0) { return } // if paragraph not in array of all paragraphs
+      toRunParagraphs.push(allParagraphs[i])
+    }
+
+    toRunParagraphs.push(paragraph)
+    toRunParagraphs.reverse()
+
+    const paragraphs = toRunParagraphs.map(p => {
+      return {
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }
+    })
+
+    if (!isNeedConfirm) {
+      websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+    } else {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Run current and all below?',
+        callback: function (result) {
+          if (result) {
+            websocketMsgSrv.runAllParagraphs($scope.note.id, paragraphs)
+          }
+        }
+      })
+    }
+
+    $scope.saveCursorPosition(paragraph)
+  })
+
+  $scope.saveCursorPosition = function (paragraph) {
+    let angParagEditor = angular
+      .element('#' + paragraph.id + '_paragraphColumn_main')
+      .scope().editor
+    let col = angParagEditor.selection.lead.column
+    let row = angParagEditor.selection.lead.row
+    $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col)
+  }
 
   $scope.$on('setConnectedStatus', function (event, param) {
     if (connectedOnce && param) {
@@ -1329,6 +1469,26 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
         }]
       })
     }
+  }
+
+  $scope.$on('saveNoteForms', function (event, data) {
+    $scope.note.noteForms = data.formsData.forms
+    $scope.note.noteParams = data.formsData.params
+  })
+
+  $scope.isShowNoteForms = function() {
+    if ($scope.note && !angular.equals({}, $scope.note.noteForms)) {
+      return true
+    }
+    return false
+  }
+
+  $scope.saveNoteForms = function () {
+    websocketMsgSrv.saveNoteForms($scope.note)
+  }
+
+  $scope.removeNoteForms = function (formName) {
+    websocketMsgSrv.removeNoteForms($scope.note, formName)
   }
 
   $scope.$on('$destroy', function () {

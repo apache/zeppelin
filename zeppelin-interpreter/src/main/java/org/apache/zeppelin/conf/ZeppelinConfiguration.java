@@ -355,6 +355,19 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
 
+  public String getRecoveryDir() {
+    return getRelativeDir(ConfVars.ZEPPELIN_RECOVERY_DIR);
+  }
+
+  public String getRecoveryStorageClass() {
+    return getString(ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS);
+  }
+
+  public boolean isRecoveryEnabled() {
+    return !getString(ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS).equals(
+        "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage");
+  }
+
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -500,7 +513,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
-  public boolean isNotebokPublic() {
+  public boolean isNotebookPublic() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
 
@@ -523,6 +536,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getJettyName() {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
+  }
+
+  public Integer getJettyRequestHeaderSize() {
+    return getInt(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE);
   }
 
 
@@ -654,6 +671,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_RECOVERY_DIR("zeppelin.recovery.dir", "recovery"),
+    ZEPPELIN_RECOVERY_STORAGE_CLASS("zeppelin.recovery.storage.class",
+        "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage"),
+
     // use specified notebook (id) as homescreen
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
     // whether homescreen notebook will be hidden from notebook list or not
@@ -702,6 +723,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
+    ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE("zeppelin.server.jetty.request.header.size", 8192),
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
     ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
 

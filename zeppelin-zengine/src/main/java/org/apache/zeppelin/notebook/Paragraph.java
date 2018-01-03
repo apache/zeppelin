@@ -191,7 +191,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
       } else {
         this.intpText = "";
-        this.scriptText = this.text;
+        this.scriptText = this.text.trim();
       }
     }
   }
@@ -250,14 +250,17 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return note.getInterpreterCompletion();
       }
     }
-    String trimmedBuffer = buffer != null ? buffer.trim() : null;
-    cursor = calculateCursorPosition(buffer, trimmedBuffer, cursor);
+    this.interpreter = getBindedInterpreter();
+
+    setText(buffer);
+
+    cursor = calculateCursorPosition(buffer, cursor);
 
     InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
 
     try {
       if (this.interpreter != null) {
-        return this.interpreter.completion(scriptText, cursor, interpreterContext);
+        return this.interpreter.completion(this.scriptText, cursor, interpreterContext);
       } else {
         return null;
       }
@@ -266,24 +269,15 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
   }
 
-  public int calculateCursorPosition(String buffer, String trimmedBuffer, int cursor) {
-    int countWhitespacesAtStart = buffer.indexOf(trimmedBuffer);
-    if (countWhitespacesAtStart > 0) {
-      cursor -= countWhitespacesAtStart;
-    }
+  public int calculateCursorPosition(String buffer, int cursor) {
+    // scriptText trimmed
 
-    // parse text to get interpreter component
-    String repl = null;
-    if (trimmedBuffer != null) {
-      Matcher matcher = REPL_PATTERN.matcher(trimmedBuffer);
-      if (matcher.matches()) {
-        repl = matcher.group(2);
-      }
+    if (this.scriptText.isEmpty()) {
+      return 0;
     }
-
-    if (repl != null && cursor > repl.length()) {
-      String body = trimmedBuffer.substring(repl.length() + 1);
-      cursor -= repl.length() + 1 + body.indexOf(body.trim());
+    int countCharactersBeforeScript = buffer.indexOf(this.scriptText);
+    if (countCharactersBeforeScript > 0) {
+      cursor -= countCharactersBeforeScript;
     }
 
     return cursor;
@@ -357,6 +351,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       setStatus(Job.Status.ERROR);
       throw intpException;
     }
+    setStatus(Status.READY);
     if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
       setAuthenticationInfo(getAuthenticationInfo());
       interpreter.getScheduler().submit(this);
@@ -408,20 +403,39 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (interpreter.getFormType() == FormType.NATIVE) {
       settings.clear();
     } else if (interpreter.getFormType() == FormType.SIMPLE) {
-      // inputs will be built from script scriptText
-      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(this.scriptText);
+      // inputs will be built from script body
+      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
+      LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
       final AngularObjectRegistry angularRegistry =
           interpreter.getInterpreterGroup().getAngularObjectRegistry();
-      String scriptBody = extractVariablesFromAngularRegistry(this.scriptText, inputs,
-          angularRegistry);
+      String scriptBody = extractVariablesFromAngularRegistry(script, inputs, angularRegistry);
+
       settings.setForms(inputs);
-      script = Input.getSimpleQuery(settings.getParams(), scriptBody);
+      if (!noteInputs.isEmpty()) {
+        if (!note.getNoteForms().isEmpty()) {
+          Map<String, Input> currentNoteForms =  note.getNoteForms();
+          for (String s : noteInputs.keySet()) {
+            if (!currentNoteForms.containsKey(s)) {
+              currentNoteForms.put(s, noteInputs.get(s));
+            }
+          }
+        } else {
+          note.setNoteForms(noteInputs);
+        }
+      }
+      script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
+      script = Input.getSimpleQuery(settings.getParams(), script, false);
     }
     logger.debug("RUN : " + script);
     try {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
       InterpreterResult ret = interpreter.interpret(script, context);
+
+      if (interpreter.getFormType() == FormType.NATIVE) {
+        note.setNoteParams(context.getNoteGui().getParams());
+        note.setNoteForms(context.getNoteGui().getForms());
+      }
 
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
@@ -545,8 +559,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     InterpreterContext interpreterContext =
         new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
-            resourcePool, runners, output);
+            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
+            getNoteGui(), registry, resourcePool, runners, output);
     return interpreterContext;
   }
 
@@ -575,13 +589,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     InterpreterContext interpreterContext =
         new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings, registry,
-            resourcePool, runners, output);
+            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
+            getNoteGui(), registry, resourcePool, runners, output);
     return interpreterContext;
   }
 
   public InterpreterContextRunner getInterpreterContextRunner() {
-
     return new ParagraphRunner(note, note.getId(), getId());
   }
 
@@ -741,6 +754,13 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public Map<String, ParagraphRuntimeInfo> getRuntimeInfos() {
     return runtimeInfos;
+  }
+
+  private GUI getNoteGui() {
+    GUI gui = new GUI();
+    gui.setParams(this.note.getNoteParams());
+    gui.setForms(this.note.getNoteForms());
+    return gui;
   }
 
   @Override

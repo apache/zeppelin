@@ -59,6 +59,7 @@ limitations under the License.
   * [Text Display (`%text`)](./usage/display_system/basic.html#text)
   * [HTML Display (`%html`)](./usage/display_system/basic.html#html)
   * [Table Display (`%table`)](./usage/display_system/basic.html#table)
+  * [Network Display (`%network`)](./usage/display_system/basic.html#network)
   * [Angular Display using Backend API (`%angular`)](./usage/display_system/angular_backend.html)
   * [Angular Display using Frontend API (`%angular`)](./usage/display_system/angular_frontend.html)
 * Interpreter  
@@ -72,6 +73,7 @@ limitations under the License.
   * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
   * [Personalized Mode](./usage/other_features/personalized_mode.html) 
   * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
+  * [Notebook actions](./usage/other_features/notebook_actions.html)
 * REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./usage/rest_api/interpreter.html)
   * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)

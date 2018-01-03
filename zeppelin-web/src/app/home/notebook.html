@@ -27,12 +27,12 @@ limitations under the License.
            <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
        <ul id="notebook-names">
          <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
-         <div ng-if="!query.q || query.q === ''">
-           <li ng-repeat="node in home.notes.root.children | orderBy:node:false:home.arrayOrderingSrv.noteComparator track by $index"
+         <div ng-if="!query.q || query.q === ''" infinite-scroll="loadMoreNotes()">
+           <li ng-repeat="node in home.notes.root.children | limitTo:home.numberOfNotesDisplayed track by $index"
                ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
          </div>
-         <div ng-if="query.q">
-           <li ng-repeat="node in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteFlatListOrdering track by $index"
+         <div ng-if="query.q" infinite-scroll="loadMoreNotes()">
+           <li ng-repeat="node in home.notes.flatList | filter:query.q | orderBy:home.arrayOrderingSrv.noteFlatListOrdering | limitTo:home.numberOfNotesDisplayed track by $index"
                ng-include src="'app/home/notebook-template.html'" ng-class="note_folder_renderer"></li>
          </div>
        </ul>

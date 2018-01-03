@@ -443,6 +443,15 @@
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
 </property>
 -->
+
+<!--
+<property>
+    <name>zeppelin.server.jetty.request.header.size</name>
+    <value>8192</value>
+    <description>Http Request Header Size Limit (to prevent HTTP 413)</description>
+</property>
+-->
+
 <!--
 <property>
   <name>zeppelin.server.xframe.options</name>
@@ -471,4 +480,45 @@
   <value>10000:10010</value>
 </property>
 -->
+
+<!--
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.class</name>
+  <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
+  <value>6000</value>
+  <description>Check interval of interpreter expiration in seconds</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
+  <value>3600000</value>
+  <description>Threshold of interpreter idle time in seconds, interpeter exceed this threshold will be killed</description>  
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.recovery.storage.class</name>
+  <value>org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage</value>
+  <description>ReoveryStorage implementation</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.recovery.dir</name>
+  <value>recovery</value>
+  <description>Location where recovery metadata is stored</description>
+</property>
+-->
+
+
 </configuration>

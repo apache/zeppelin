@@ -89,6 +89,7 @@ export default class PivotTransformation extends Transformation {
         for (let j = i + 1; j < list.length; j++) {
           if (angular.equals(list[i], list[j])) {
             list.splice(j, 1)
+            j--
           }
         }
       }
@@ -137,8 +138,8 @@ export default class PivotTransformation extends Transformation {
   pivot (data, keys, groups, values) {
     let aggrFunc = {
       sum: function (a, b) {
-        let varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
-        let varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
+        let varA = (a !== undefined) ? (isNaN(a) ? 0 : parseFloat(a)) : 0
+        let varB = (b !== undefined) ? (isNaN(b) ? 0 : parseFloat(b)) : 0
         return varA + varB
       },
       count: function (a, b) {
@@ -147,20 +148,36 @@ export default class PivotTransformation extends Transformation {
         return varA + varB
       },
       min: function (a, b) {
-        let varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
-        let varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
-        return Math.min(varA, varB)
+        let aIsValid = isValidNumber(a)
+        let bIsValid = isValidNumber(b)
+        if (!aIsValid) {
+          return parseFloat(b)
+        } else if (!bIsValid) {
+          return parseFloat(a)
+        } else {
+          return Math.min(parseFloat(a), parseFloat(b))
+        }
       },
       max: function (a, b) {
-        let varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
-        let varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
-        return Math.max(varA, varB)
+        let aIsValid = isValidNumber(a)
+        let bIsValid = isValidNumber(b)
+        if (!aIsValid) {
+          return parseFloat(b)
+        } else if (!bIsValid) {
+          return parseFloat(a)
+        } else {
+          return Math.max(parseFloat(a), parseFloat(b))
+        }
       },
       avg: function (a, b, c) {
-        let varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0
-        let varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0
+        let varA = (a !== undefined) ? (isNaN(a) ? 0 : parseFloat(a)) : 0
+        let varB = (b !== undefined) ? (isNaN(b) ? 0 : parseFloat(b)) : 0
         return varA + varB
       }
+    }
+
+    let isValidNumber = function(num) {
+      return num !== undefined && !isNaN(num)
     }
 
     let aggrFuncDiv = {
