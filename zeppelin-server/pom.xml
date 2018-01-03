@@ -37,7 +37,6 @@
     <!--library versions-->
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
     <jersey.version>2.22.2</jersey.version>
-    <hadoop-common.version>2.6.0</hadoop-common.version>
     <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <jersey.servlet.version>1.13</jersey.servlet.version>
     <javax.ws.rsapi.version>2.0.1</javax.ws.rsapi.version>
@@ -215,6 +214,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>4.41.2</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.quartz-scheduler</groupId>
       <artifactId>quartz</artifactId>
       <version>${quartz.scheduler.version}</version>
@@ -348,6 +353,21 @@
           <argLine>-Xmx2048m</argLine>
         </configuration>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${plugin.surefire.version}</version>
+        <configuration combine.children="append">
+          <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+          <excludes>
+            <exclude>${tests.to.exclude}</exclude>
+          </excludes>
+          <environmentVariables>
+            <ZEPPELIN_FORCE_STOP>1</ZEPPELIN_FORCE_STOP>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+
 
       <plugin>
         <groupId>org.scala-tools</groupId>

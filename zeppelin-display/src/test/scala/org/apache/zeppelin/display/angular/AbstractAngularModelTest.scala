@@ -30,7 +30,7 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
     val context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
-      new java.util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
+      new java.util.HashMap[String, Object](), new GUI(), new GUI(), new AngularObjectRegistry(
         intpGroup.getId(), null),
       null,
       new java.util.LinkedList[InterpreterContextRunner](),

@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.ConfInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
@@ -101,16 +102,7 @@ public class RemoteInterpreter extends Interpreter {
       return this.interpreterProcess;
     }
     ManagedInterpreterGroup intpGroup = getInterpreterGroup();
-    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess();
-    synchronized (interpreterProcess) {
-      if (!interpreterProcess.isRunning()) {
-        interpreterProcess.start(this.getUserName(), false);
-        interpreterProcess.getRemoteInterpreterEventPoller()
-            .setInterpreterProcess(interpreterProcess);
-        interpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(intpGroup);
-        interpreterProcess.getRemoteInterpreterEventPoller().start();
-      }
-    }
+    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess(getUserName(), properties);
     return interpreterProcess;
   }
 
@@ -130,7 +122,9 @@ public class RemoteInterpreter extends Interpreter {
         for (Interpreter interpreter : getInterpreterGroup()
                                         .getOrCreateSession(this.getUserName(), sessionId)) {
           try {
-            ((RemoteInterpreter) interpreter).internal_create();
+            if (!(interpreter instanceof ConfInterpreter)) {
+              ((RemoteInterpreter) interpreter).internal_create();
+            }
           } catch (IOException e) {
             throw new InterpreterException(e);
           }
@@ -238,11 +232,15 @@ public class RemoteInterpreter extends Interpreter {
             context.getConfig().clear();
             context.getConfig().putAll(remoteConfig);
             GUI currentGUI = context.getGui();
+            GUI currentNoteGUI = context.getNoteGui();
             if (form == FormType.NATIVE) {
               GUI remoteGui = GUI.fromJson(remoteResult.getGui());
+              GUI remoteNoteGui = GUI.fromJson(remoteResult.getNoteGui());
               currentGUI.clear();
               currentGUI.setParams(remoteGui.getParams());
               currentGUI.setForms(remoteGui.getForms());
+              currentNoteGUI.setParams(remoteNoteGui.getParams());
+              currentNoteGUI.setForms(remoteNoteGui.getForms());
             } else if (form == FormType.SIMPLE) {
               final Map<String, Input> currentForms = currentGUI.getForms();
               final Map<String, Object> currentParams = currentGUI.getParams();
@@ -342,8 +340,7 @@ public class RemoteInterpreter extends Interpreter {
                                                 final InterpreterContext interpreterContext)
       throws InterpreterException {
     if (!isOpened) {
-      LOGGER.warn("completion is called when RemoterInterpreter is not opened for " + className);
-      return new ArrayList<>();
+      open();
     }
     RemoteInterpreterProcess interpreterProcess = null;
     try {
@@ -403,7 +400,8 @@ public class RemoteInterpreter extends Interpreter {
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(ic.getNoteId(), ic.getParagraphId(), ic.getReplName(),
         ic.getParagraphTitle(), ic.getParagraphText(), gson.toJson(ic.getAuthenticationInfo()),
-        gson.toJson(ic.getConfig()), ic.getGui().toJson(), gson.toJson(ic.getRunners()));
+        gson.toJson(ic.getConfig()), ic.getGui().toJson(), gson.toJson(ic.getNoteGui()),
+        gson.toJson(ic.getRunners()));
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {

@@ -76,6 +76,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
+        new GUI(),
         null,
         null,
         new LinkedList<InterpreterContextRunner>(), null);

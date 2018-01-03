@@ -447,6 +447,25 @@ public class Notebook implements NoteEventListener {
             }
             config.put("results", results);
           }
+        } else if (ret == null && p.getConfig() != null) {
+          //ZEPPELIN-3063 Notebook loses formatting when importing from 0.6.x
+          if (p.getConfig().get("graph") != null && p.getConfig().get("graph") instanceof Map
+            && !((Map) p.getConfig().get("graph")).get("mode").equals("table")) {
+            Map<String, Object> config = p.getConfig();
+            Object graph = config.remove("graph");
+            Object apps = config.remove("apps");
+            Object helium = config.remove("helium");
+
+            List<Object> results = new LinkedList<>();
+
+            HashMap<Object, Object> res = new HashMap<>();
+            res.put("graph", graph);
+            res.put("apps", apps);
+            res.put("helium", helium);
+            results.add(res);
+
+            config.put("results", results);
+          }
         }
       } catch (Exception e) {
         logger.error("Conversion failure", e);
@@ -871,21 +890,24 @@ public class Notebook implements NoteEventListener {
 
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
-      note.runAll();
 
-      while (!note.isTerminated()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.toString(), e);
-        }
+      if (note.isRunningOrPending()) {
+        logger.warn("execution of the cron job is skipped because there is a running or pending " +
+            "paragraph (note id: {})", noteId);
+        return;
       }
 
+      note.runAll();
+
       boolean releaseResource = false;
+      String cronExecutingUser = null;
       try {
         Map<String, Object> config = note.getConfig();
-        if (config != null && config.containsKey("releaseresource")) {
-          releaseResource = (boolean) note.getConfig().get("releaseresource");
+        if (config != null) {
+          if (config.containsKey("releaseresource")) {
+            releaseResource = (boolean) config.get("releaseresource");
+          }
+          cronExecutingUser = (String) config.get("cronExecutingUser");
         }
       } catch (ClassCastException e) {
         logger.error(e.getMessage(), e);
@@ -894,7 +916,8 @@ public class Notebook implements NoteEventListener {
         for (InterpreterSetting setting : notebook.getInterpreterSettingManager()
             .getInterpreterSettings(note.getId())) {
           try {
-            notebook.getInterpreterSettingManager().restart(setting.getId());
+            notebook.getInterpreterSettingManager().restart(setting.getId(), noteId,
+                    cronExecutingUser != null ? cronExecutingUser : "anonymous");
           } catch (InterpreterException e) {
             logger.error("Fail to restart interpreter: " + setting.getId(), e);
           }
@@ -950,7 +973,7 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  private void removeCron(String id) {
+  public void removeCron(String id) {
     try {
       quartzSched.deleteJob(new JobKey(id, "note"));
     } catch (SchedulerException e) {

@@ -130,8 +130,8 @@
 }
 
 .noteAction {
-  margin-left: -10px;
-  margin-right: -10px;
+  margin-left: 0px;
+  margin-right: 0px;
   font-family: 'Roboto', sans-serif;
   background: white;
   position: fixed;
@@ -182,6 +182,53 @@
   white-space: nowrap;
   overflow: hidden;
 }
+
+.ellipsis {
+  padding-left: 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reverse-ellipsis {
+  /* Your move. */
+  text-overflow: clip;
+  position: relative;
+  background-color: #FFF;
+}
+
+.reverse-ellipsis:before {
+  content: '\02026';
+  position: absolute;
+  z-index: 1;
+  left: -1em;
+  background-color: inherit;
+  padding-left: 1em;
+  margin-left: 0.5em;
+}
+
+.reverse-ellipsis span {
+  min-width: 100%;
+  position: relative;
+  display: inline-block;
+  float: right;
+  overflow: visible;
+  background-color: inherit;
+  text-indent: 0.5em;
+}
+
+.reverse-ellipsis span:before {
+  content: '';
+  position: absolute;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-color: inherit;
+  z-index: 200;
+  left: -.5em;
+}
+
+
 
 .noOverflow {
     overflow: hidden !important;

@@ -14,6 +14,14 @@ limitations under the License.
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
 <div id="actionbar" ng-include src="'app/notebook/notebook-actionBar.html'"></div>
 <div id="content" class="notebookContent">
+  <!-- revisions comparator-->
+  <div ng-if="showRevisionsComparator" class="revisions-comparator">
+    <div>
+      <h4>Revisions comparator</h4>
+    </div>
+    <hr />
+    <revisions-comparator note-revisions="noteRevisions"></revisions-comparator>
+  </div>
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
     <div>
@@ -111,6 +119,23 @@ limitations under the License.
   </div>
 
   <div class="note-jump"></div>
+  <div id="noteForms" ng-if="isShowNoteForms()" class="paragraph-space box">
+    <div>
+      <h4>Note forms</h4>
+    </div>
+    <hr />
+    <div>
+      <dynamic-forms
+        id="note.id"
+        hide="hideForms"
+        disable="disableForms"
+        actiononchange="actionOnFormSelectionChange"
+        forms="note.noteForms"
+        params="note.noteParams"
+        action="saveNoteForms"
+        removeaction="removeNoteForms"></dynamic-forms>
+    </div>
+  </div>
 
   <!-- Include the paragraphs according to the note, pass the note to init function -->
   <div id="{{currentParagraph.id}}_paragraphColumn_main"

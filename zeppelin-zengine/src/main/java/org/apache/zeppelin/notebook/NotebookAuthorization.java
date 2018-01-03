@@ -158,7 +158,7 @@ public class NotebookAuthorization {
   }
   
   public boolean isPublic() {
-    return conf.isNotebokPublic();
+    return conf.isNotebookPublic();
   }
 
   private Set<String> validateUser(Set<String> users) {
