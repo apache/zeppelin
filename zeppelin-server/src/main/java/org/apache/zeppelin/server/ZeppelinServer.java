@@ -9,13 +9,20 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,//
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
 package org.apache.zeppelin.server;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Inject;
+
+import org.apache.zeppelin.web.WebSecurity;
+import org.apache.zeppelin.inject.ZeppelinModule;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,17 +85,26 @@ public class ZeppelinServer extends Application {
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
   public static Helium helium;
+  public static HeliumApplicationFactory heliumApplicationFactory;
+  public static Injector injector;
+  @Inject
+  private static WebSecurity webSecurity;
 
   private final InterpreterSettingManager interpreterSettingManager;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
+
+  @Inject
+  private ZeppelinConfiguration conf;
+  @Inject
   private SearchService noteSearchService;
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
 
   public ZeppelinServer() throws Exception {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+
+    injector.injectMembers(this);
 
 
 
@@ -158,12 +174,15 @@ public class ZeppelinServer extends Application {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
+
   }
 
   public static void main(String[] args) throws InterruptedException {
 
     final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
+
+    injector = Guice.createInjector(new ZeppelinModule(conf));
 
     jettyWebServer = setupJettyServer(conf);
 
@@ -330,14 +349,8 @@ public class ZeppelinServer extends Application {
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(servletHolder, "/api/*");
 
-    String shiroIniPath = conf.getShiroPath();
-    if (!StringUtils.isBlank(shiroIniPath)) {
-      webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
-      SecurityUtils.setIsEnabled(true);
-      webapp.addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class))
-              .setInitParameter("staticSecurityManagerEnabled", "true");
-      webapp.addEventListener(new EnvironmentLoaderListener());
-    }
+    webSecurity.addSecurityFilter(webapp);
+
   }
 
   private static WebAppContext setupWebAppContext(ContextHandlerCollection contexts,
@@ -363,8 +376,7 @@ public class ZeppelinServer extends Application {
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
     contexts.addHandler(webApp);
 
-    webApp.addFilter(new FilterHolder(CorsFilter.class), "/*",
-        EnumSet.allOf(DispatcherType.class));
+    webSecurity.addCorFilter(webApp);
 
     webApp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
             Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));

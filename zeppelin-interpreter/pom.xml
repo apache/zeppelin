@@ -186,7 +186,17 @@
           <groupId>org.apache.maven.wagon</groupId>
           <artifactId>wagon-provider-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-guice</artifactId>
+        </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>${guice.version}</version>
     </dependency>
 
     <dependency>

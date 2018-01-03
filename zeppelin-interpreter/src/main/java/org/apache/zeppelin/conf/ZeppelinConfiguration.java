@@ -265,6 +265,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBooleanValue(propertyName, defaultValue);
   }
 
+  public Class<?> getClass(ConfVars c) {
+    try {
+      return Class.forName(c.getStringValue());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public boolean useSsl() {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
@@ -349,6 +357,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     } else {
       return password;
     }
+  }
+
+  public Class<?> getZeppelinWebSecurityClassname() {
+    return getClass(ConfVars.ZEPPELIN_WEB_SECURITY_CLASSNAME);
+  }
+
+  public Class<?> getZeppelinSearchServiceClassname() {
+    return getClass(ConfVars.ZEPPELIN_SEARCH_SERVICE_CLASSNAME);
   }
 
   public String getNotebookDir() {
@@ -720,6 +736,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
+    ZEPPELIN_USE_JDBC_ALIAS("zeppelin.use.jdbc.alias", true),
+    ZEPPELIN_WEB_SECURITY_CLASSNAME("zeppelin.web.security.classname",
+        "org.apache.zeppelin.web.DefaultWebSecurity"),
+    ZEPPELIN_SEARCH_SERVICE_CLASSNAME("zeppelin.search.service.classname",
+        "org.apache.zeppelin.search.LuceneSearch"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
