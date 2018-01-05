@@ -139,7 +139,7 @@ public class GetUserList {
       constraints.setReturningAttributes(attrIDs);
       NamingEnumeration result = ctx.search(userSearchRealm, "(&(objectclass=" + 
             userObjectClass + ")(" 
-            + userAttribute + "=" + searchText + "))", constraints);
+            + userAttribute + "=" + searchText + "*))", constraints);
       while (result.hasMore()) {
         Attributes attrs = ((SearchResult) result.next()).getAttributes();
         if (attrs.get(userAttribute) != null) {
