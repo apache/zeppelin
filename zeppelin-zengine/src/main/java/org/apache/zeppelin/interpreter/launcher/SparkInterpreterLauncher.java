@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -25,9 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Spark specific launcher.
@@ -67,13 +70,15 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       sparkConfBuilder.append(" --files " + zConf.getConfDir() + "/log4j_yarn_cluster.properties");
     }
-    for (String name : sparkProperties.stringPropertyNames()) {
-      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
-    }
     String useProxyUserEnv = System.getenv("ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER");
     if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
         !useProxyUserEnv.equals("false"))) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+      sparkProperties.remove("spark.yarn.principal");
+      sparkProperties.remove("spark.yarn.keytab");
+    }
+    for (String name : sparkProperties.stringPropertyNames()) {
+      sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
@@ -92,6 +97,54 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     LOGGER.debug("buildEnvFromProperties: " + env);
     return env;
 
+  }
+
+  private void kinit(String principal, String keytab) throws IOException {
+    Executor executor = new DefaultExecutor();
+    CommandLine cmdLine = CommandLine.parse(String.format("kinit %s -kt %s", principal, keytab));
+    LOGGER.info(cmdLine.toString());
+    int exitValue = executor.execute(cmdLine);
+    if (exitValue != 0) {
+      throw new IOException(String.format("Failed to kinit witjh exit code %d", exitValue));
+    }
+    else {
+      LOGGER.info ("kinit succeeded");
+    }
+  }
+
+  class KinitTask extends TimerTask {
+    private final String principal;
+    private final String keytab;
+
+    KinitTask(String principal, String keytab) {
+      this.principal = principal;
+      this.keytab = keytab;
+    }
+
+    public void run() {
+      try {
+        kinit(principal, keytab);
+      } catch (IOException e) {
+        LOGGER.error(e.getMessage());
+      }
+    }
+  }
+
+  @Override
+  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
+    long renewPeriod = zConf.getLong(
+            "ZEPPELIN_KERBEROS_RENEW_PERIOD",
+            "zeppelin.kerberos.renew.period",
+            120);
+    String principal = context.getProperties().getProperty("spark.yarn.principal");
+    String keytab = context.getProperties().getProperty("spark.yarn.keytab");
+    if (keytab != null && principal != null) {
+      kinit(principal, keytab);
+      Timer time = new Timer();
+      time.schedule(new KinitTask(principal, keytab), 0L, renewPeriod * 60 * 1000);
+      
+    }
+    return super.launch(context);
   }
 
 
