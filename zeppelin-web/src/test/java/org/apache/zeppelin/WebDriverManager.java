@@ -48,6 +48,8 @@ public class WebDriverManager {
 
   private static String downLoadsDir = "";
 
+  private static String GECKODRIVER_VERSION = "0.19.1";
+
   public static WebDriver getWebDriver() {
     WebDriver driver = null;
 
@@ -78,7 +80,8 @@ public class WebDriverManager {
         profile.setPreference("app.update.enabled", false);
         profile.setPreference("dom.max_script_run_time", 0);
         profile.setPreference("dom.max_chrome_script_run_time", 0);
-        profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
+        profile.setPreference("browser.helperApps.neverAsk.saveToDisk",
+          "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
         profile.setPreference("network.proxy.type", 0);
 
         System.setProperty("webdriver.gecko.driver", tempPath + "geckodriver");
@@ -119,7 +122,7 @@ public class WebDriverManager {
     long start = System.currentTimeMillis();
     boolean loaded = false;
     driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
-        TimeUnit.SECONDS);
+      TimeUnit.SECONDS);
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
@@ -129,7 +132,7 @@ public class WebDriverManager {
           @Override
           public Boolean apply(WebDriver d) {
             return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
-                .isDisplayed();
+              .isDisplayed();
           }
         });
         loaded = true;
@@ -149,28 +152,30 @@ public class WebDriverManager {
   }
 
   public static void downloadGeekoDriver(int firefoxVersion, String tempPath) {
-    String geekoDriverUrlString = null;
+    String geekoDriverUrlString =
+      "https://github.com/mozilla/geckodriver/releases/download/v" + GECKODRIVER_VERSION
+        + "/geckodriver-v" + GECKODRIVER_VERSION + "-";
 
     LOG.info("Geeko version: " + firefoxVersion + ", will be downloaded to " + tempPath);
     try {
       if (SystemUtils.IS_OS_WINDOWS) {
         if (System.getProperty("sun.arch.data.model").equals("64")) {
-          geekoDriverUrlString = "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-win64.zip";
+          geekoDriverUrlString += "win64.zip";
         } else {
-          geekoDriverUrlString = "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-win32.zip";
+          geekoDriverUrlString += "win32.zip";
         }
       } else if (SystemUtils.IS_OS_LINUX) {
         if (System.getProperty("sun.arch.data.model").equals("64")) {
-          geekoDriverUrlString = "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-linux64.tar.gz";
+          geekoDriverUrlString += "linux64.tar.gz";
         } else {
-          geekoDriverUrlString = "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-linux32.tar.gz";
+          geekoDriverUrlString += "linux32.tar.gz";
         }
       } else if (SystemUtils.IS_OS_MAC_OSX) {
-        geekoDriverUrlString = "https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-macos.tar.gz";
+        geekoDriverUrlString += "macos.tar.gz";
       }
 
       File geekoDriver = new File(tempPath + "geckodriver");
-      File geekoDriverZip = new File(tempPath  + "geckodriver.tar");
+      File geekoDriverZip = new File(tempPath + "geckodriver.tar");
       File geekoDriverDir = new File(tempPath);
       URL geekoDriverUrl = new URL(geekoDriverUrlString);
       if (!geekoDriver.exists()) {
@@ -196,8 +201,10 @@ public class WebDriverManager {
       if (System.getProperty("os.name").startsWith("Mac OS")) {
         firefoxVersionCmd = "/Applications/Firefox.app/Contents/MacOS/" + firefoxVersionCmd;
       }
-      String versionString = (String) CommandExecutor.executeCommandLocalHost(firefoxVersionCmd, false, ProcessData.Types_Of_Data.OUTPUT);
-      return Integer.valueOf(versionString.replaceAll("Mozilla Firefox", "").trim().substring(0, 2));
+      String versionString = (String) CommandExecutor
+        .executeCommandLocalHost(firefoxVersionCmd, false, ProcessData.Types_Of_Data.OUTPUT);
+      return Integer
+        .valueOf(versionString.replaceAll("Mozilla Firefox", "").trim().substring(0, 2));
     } catch (Exception e) {
       LOG.error("Exception in WebDriverManager while getWebDriver ", e);
       return -1;
