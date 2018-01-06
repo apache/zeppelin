@@ -14,25 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.realm.jwt;
 
-package org.apache.zeppelin.interpreter.launcher;
+import org.apache.shiro.authc.AuthenticationToken;
 
 /**
- * Interface to InterpreterClient which is created by InterpreterLauncher. This is the component
- * that is used to for the communication from zeppelin-server process to zeppelin interpreter
- * process.
+ * Created for org.apache.zeppelin.server
  */
-public interface InterpreterClient {
+public class JWTAuthenticationToken implements AuthenticationToken {
 
-  String getInterpreterSettingName();
+  private Object userId;
+  private String token;
 
-  void start(String userName);
+  public JWTAuthenticationToken(Object userId, String token) {
+    this.userId = userId;
+    this.token = token;
+  }
 
-  void stop();
+  @Override
+  public Object getPrincipal() {
+    return getUserId();
+  }
 
-  String getHost();
+  @Override
+  public Object getCredentials() {
+    return getToken();
+  }
 
-  int getPort();
+  public Object getUserId() {
+    return userId;
+  }
 
-  boolean isRunning();
+  public void setUserId(long userId) {
+    this.userId = userId;
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
+  }
 }

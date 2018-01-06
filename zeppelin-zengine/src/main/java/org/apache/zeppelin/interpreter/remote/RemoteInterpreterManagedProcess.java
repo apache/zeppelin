@@ -63,6 +63,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private final String interpreterDir;
   private final String localRepoDir;
   private final String interpreterSettingName;
+  private final boolean isUserImpersonated;
 
   private Map<String, String> env;
 
@@ -74,7 +75,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
-      String interpreterSettingName) {
+      String interpreterSettingName,
+      boolean isUserImpersonated) {
     super(connectTimeout);
     this.interpreterRunner = intpRunner;
     this.callbackPortRange = callbackPortRange;
@@ -83,6 +85,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
     this.interpreterSettingName = interpreterSettingName;
+    this.isUserImpersonated = isUserImpersonated;
   }
 
   @Override
@@ -96,7 +99,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @Override
-  public void start(String userName, Boolean isUserImpersonate) {
+  public void start(String userName) {
     // start server process
     final String callbackHost;
     final int callbackPort;
@@ -161,7 +164,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument(Integer.toString(callbackPort), false);
     cmdLine.addArgument("-r", false);
     cmdLine.addArgument(interpreterPortRange, false);
-    if (isUserImpersonate && !userName.equals("anonymous")) {
+    if (isUserImpersonated && !userName.equals("anonymous")) {
       cmdLine.addArgument("-u", false);
       cmdLine.addArgument(userName, false);
     }
@@ -270,6 +273,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   @VisibleForTesting
   public String getInterpreterRunner() {
     return interpreterRunner;
+  }
+
+  @VisibleForTesting
+  public boolean isUserImpersonated() {
+    return isUserImpersonated;
   }
 
   public boolean isRunning() {
