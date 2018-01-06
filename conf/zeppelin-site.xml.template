@@ -520,5 +520,12 @@
 </property>
 -->
 
+<!--
+<property>
+  <name>zeppelin.kerberos.renew.period</name>
+  <value>120</value>
+  <description>Period in minutes the kerberos ticket should be renewed</description>
+</property>
+-->
 
 </configuration>
