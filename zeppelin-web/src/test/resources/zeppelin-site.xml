@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<configuration>
+
+<property>
+  <name>zeppelin.server.addr</name>
+  <value>0.0.0.0</value>
+  <description>Server address</description>
+</property>
+
+<property>
+  <name>zeppelin.server.port</name>
+  <value>8080</value>
+  <description>Server port.</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.dir</name>
+  <value>notebook</value>
+  <description>path or URI for notebook persist</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.homescreen</name>
+  <value></value>
+  <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.homescreen.hide</name>
+  <value>false</value>
+  <description>hide homescreen notebook from list when this value set to true</description>
+</property>
+
+
+<!-- If used S3 to storage the notebooks, it is necessary the following folder structure bucketname/username/notebook/ -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.user</name>
+  <value>user</value>
+  <description>user name for s3 folder structure</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.s3.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.dir</name>
+  <value>interpreter</value>
+  <description>Interpreter implementation base directory</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.connect.timeout</name>
+  <value>30000</value>
+  <description>Interpreter process connect timeout in msec.</description>
+</property>
+
+
+<property>
+  <name>zeppelin.ssl</name>
+  <value>false</value>
+  <description>Should SSL be used by the servers?</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.client.auth</name>
+  <value>false</value>
+  <description>Should client authentication be used for SSL connections?</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.keystore.path</name>
+  <value>keystore</value>
+  <description>Path to keystore relative to Zeppelin configuration directory</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.keystore.type</name>
+  <value>JKS</value>
+  <description>The format of the given keystore (e.g. JKS or PKCS12)</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.keystore.password</name>
+  <value>change me</value>
+  <description>Keystore password. Can be obfuscated by the Jetty Password tool</description>
+</property>
+
+<!--
+<property>
+  <name>zeppelin.ssl.key.manager.password</name>
+  <value>change me</value>
+  <description>Key Manager password. Defaults to keystore password. Can be obfuscated.</description>
+</property>
+-->
+
+<property>
+  <name>zeppelin.ssl.truststore.path</name>
+  <value>truststore</value>
+  <description>Path to truststore relative to Zeppelin configuration directory. Defaults to the keystore path</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.truststore.type</name>
+  <value>JKS</value>
+  <description>The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type</description>
+</property>
+
+  <property>
+    <name>zeppelin.server.allowed.origins</name>
+    <value>http://onehost:8080,http://otherhost.com,</value>
+    <description>Allowed sources for REST and WebSocket requests.</description>
+  </property>
+<!--
+<property>
+  <name>zeppelin.ssl.truststore.password</name>
+  <value>change me</value>
+  <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
+</property>
+-->
+
+</configuration>
+

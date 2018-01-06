@@ -17,10 +17,11 @@
 
 package org.apache.zeppelin
 
+import org.apache.commons.io.FileUtils
 import org.apache.zeppelin.AbstractFunctionalSuite.SERVER_ADDRESS
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.firefox.{FirefoxBinary, FirefoxDriver, FirefoxProfile}
+import org.openqa.selenium.firefox.{FirefoxBinary, FirefoxDriver, FirefoxOptions, FirefoxProfile}
 import org.openqa.selenium.safari.SafariDriver
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.time._
@@ -78,7 +79,18 @@ class AbstractFunctionalSuite extends FunSuite with WebBrowser with BeforeAndAft
     if ("true" == System.getenv("TRAVIS")) {
       ffox.setEnvironmentProperty("DISPLAY", ":99")
     }
+    val downLoadsDir = FileUtils.getTempDirectory.toString
+    val tempPath = downLoadsDir + "/firefox/"
+
+    WebDriverManager.downloadGeekoDriver(WebDriverManager.getFirefoxVersion, tempPath)
+
+    System.setProperty("webdriver.gecko.driver", tempPath + "geckodriver")
+    System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "false")
+
     val profile: FirefoxProfile = new FirefoxProfile
-    new FirefoxDriver(ffox, profile)
+    val ffoxOption: FirefoxOptions = new FirefoxOptions
+    ffoxOption.setBinary(ffox)
+    ffoxOption.setProfile(profile)
+    new FirefoxDriver(ffoxOption)
   }
 }
