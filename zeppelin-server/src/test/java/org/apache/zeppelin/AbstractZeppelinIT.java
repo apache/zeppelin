@@ -19,20 +19,9 @@ package org.apache.zeppelin;
 
 
 import com.google.common.base.Function;
-import java.io.File;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
@@ -43,8 +32,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class AbstractZeppelinIT {
+import java.io.File;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
+abstract public class AbstractZeppelinIT {
   protected static WebDriver driver;
 
   protected final static Logger LOG = LoggerFactory.getLogger(AbstractZeppelinIT.class);
@@ -54,20 +46,16 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void setTextOfParagraph(int paragraphNo, String text) {
-    String editorId = driver
-        .findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]"))
-        .getAttribute("id");
+    String editorId = driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//div[contains(@class, 'editor')]")).getAttribute("id");
     if (driver instanceof JavascriptExecutor) {
-      ((JavascriptExecutor) driver)
-          .executeScript("ace.edit('" + editorId + "'). setValue('" + text + "')");
+      ((JavascriptExecutor) driver).executeScript("ace.edit('" + editorId + "'). setValue('" + text + "')");
     } else {
       throw new IllegalStateException("This driver does not support JavaScript!");
     }
   }
 
   protected void runParagraph(int paragraphNo) {
-    driver.findElement(
-        By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']")).click();
+    driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']")).click();
   }
 
 
@@ -133,11 +121,9 @@ abstract public class AbstractZeppelinIT {
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
     driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
         .sendKeys(Keys.ENTER);
-    block.until(ExpectedConditions.visibilityOfElementLocated(
-        By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]")));
-    driver.findElement(
-        By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
-            "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']")));
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
+        "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     ZeppelinITUtils.sleep(100, true);
   }
 
@@ -153,8 +139,7 @@ abstract public class AbstractZeppelinIT {
       LOG.error(new Date(entry.getTimestamp()) + " " + entry.getLevel() + " " + entry.getMessage());
     }
     File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-    LOG.error("ScreenShot::\ndata:image/png;base64," + new String(
-        Base64.encodeBase64(FileUtils.readFileToByteArray(scrFile))));
+    LOG.error("ScreenShot::\ndata:image/png;base64," + new String(Base64.encodeBase64(FileUtils.readFileToByteArray(scrFile))));
     throw e;
   }
 
