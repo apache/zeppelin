@@ -33,6 +33,8 @@ import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.GeckoDriverService;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -55,11 +57,6 @@ public class WebDriverManager {
 
     if (driver == null) {
       try {
-        FirefoxBinary ffox = new FirefoxBinary();
-        if ("true".equals(System.getenv("TRAVIS"))) {
-          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
-          // run with DISPLAY 99
-        }
         int firefoxVersion = WebDriverManager.getFirefoxVersion();
         LOG.info("Firefox version " + firefoxVersion + " detected");
 
@@ -84,12 +81,22 @@ public class WebDriverManager {
             "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
         profile.setPreference("network.proxy.type", 0);
 
-        System.setProperty("webdriver.gecko.driver", tempPath + "geckodriver");
-        System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "false");
+        System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver");
+        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+        capabilities.setCapability("marionette", true);
 
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
+        FirefoxBinary ffox = new FirefoxBinary();
+        FirefoxOptions firefoxOptions = new FirefoxOptions(capabilities);
         firefoxOptions.setBinary(ffox);
         firefoxOptions.setProfile(profile);
+        firefoxOptions.setBinary(ffox);
+
+        if ("true".equals(System.getenv("TRAVIS"))) {
+          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
+          // run with DISPLAY 99
+          firefoxOptions.addArguments("--display=99");
+          firefoxOptions.setHeadless(true);
+        }
         driver = new FirefoxDriver(firefoxOptions);
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while FireFox Driver ", e);

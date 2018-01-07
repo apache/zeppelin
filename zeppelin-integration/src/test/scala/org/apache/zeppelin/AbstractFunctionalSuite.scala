@@ -21,11 +21,12 @@ import org.apache.commons.io.FileUtils
 import org.apache.zeppelin.AbstractFunctionalSuite.SERVER_ADDRESS
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.firefox.{FirefoxBinary, FirefoxDriver, FirefoxOptions, FirefoxProfile}
+import org.openqa.selenium.firefox._
+import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.safari.SafariDriver
 import org.scalatest.concurrent.Eventually._
-import org.scalatest.time._
 import org.scalatest.selenium.WebBrowser
+import org.scalatest.time._
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Suite}
 
 import scala.sys.process._
@@ -75,22 +76,31 @@ class AbstractFunctionalSuite extends FunSuite with WebBrowser with BeforeAndAft
   }
 
   def firefox(): WebDriver = {
-    val ffox: FirefoxBinary = new FirefoxBinary
-    if ("true" == System.getenv("TRAVIS")) {
-      ffox.setEnvironmentProperty("DISPLAY", ":99")
-    }
     val downLoadsDir = FileUtils.getTempDirectory.toString
     val tempPath = downLoadsDir + "/firefox/"
 
     WebDriverManager.downloadGeekoDriver(WebDriverManager.getFirefoxVersion, tempPath)
 
-    System.setProperty("webdriver.gecko.driver", tempPath + "geckodriver")
-    System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "false")
+    System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver")
+    val capabilities = DesiredCapabilities.firefox
+    capabilities.setCapability("marionette", true)
 
+    val ffox = new FirefoxBinary
+    val firefoxOptions = new FirefoxOptions(capabilities)
     val profile: FirefoxProfile = new FirefoxProfile
-    val ffoxOption: FirefoxOptions = new FirefoxOptions
-    ffoxOption.setBinary(ffox)
-    ffoxOption.setProfile(profile)
-    new FirefoxDriver(ffoxOption)
+
+    firefoxOptions.setBinary(ffox)
+    firefoxOptions.setProfile(profile)
+    firefoxOptions.setBinary(ffox)
+
+    if ("true" == System.getenv("TRAVIS")) {
+      ffox.setEnvironmentProperty("DISPLAY", ":99") // xvfb is supposed to
+
+      // run with DISPLAY 99
+      firefoxOptions.addArguments("--display=99")
+      firefoxOptions.setHeadless(true)
+    }
+
+    new FirefoxDriver(firefoxOptions)
   }
 }
