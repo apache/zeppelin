@@ -31,6 +31,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
@@ -89,13 +90,10 @@ public class WebDriverManager {
         FirefoxOptions firefoxOptions = new FirefoxOptions(capabilities);
         firefoxOptions.setBinary(ffox);
         firefoxOptions.setProfile(profile);
-        firefoxOptions.setBinary(ffox);
 
         if ("true".equals(System.getenv("TRAVIS"))) {
-          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
-          // run with DISPLAY 99
-          firefoxOptions.addArguments("--display=99");
           firefoxOptions.setHeadless(true);
+          firefoxOptions.setLogLevel(FirefoxDriverLogLevel.ERROR);
         }
         driver = new FirefoxDriver(firefoxOptions);
       } catch (Exception e) {
