@@ -42,6 +42,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <!--test library versions-->
     <selenium.java.version>3.8.1</selenium.java.version>
     <commons.lang3.version>3.4</commons.lang3.version>
 
@@ -50,7 +51,31 @@
     <plugin.scala.version>2.15.2</plugin.scala.version>
     <plugin.scalatest.version>1.0</plugin.scalatest.version>
   </properties>
-  
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-compiler</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-reflect</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scalap</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -99,32 +124,11 @@
       </exclusions>
       <scope>test</scope>
     </dependency>
-
+    
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${commons.lang3.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>${scalatest.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.scala-lang</groupId>
-          <artifactId>scala-library</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.rauschig</groupId>
@@ -137,8 +141,40 @@
         </exclusion>
       </exclusions>
     </dependency>
-  </dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
 
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-compiler</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-reflect</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <!--test libraries-->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <version>${scalatest.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
@@ -157,7 +193,31 @@
           <argLine>-Xmx2048m</argLine>
         </configuration>
       </plugin>
-
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${plugin.surefire.version}</version>
+        <configuration combine.children="append">
+          <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+          <excludes>
+            <exclude>${tests.to.exclude}</exclude>
+          </excludes>
+          <environmentVariables>
+            <ZEPPELIN_FORCE_STOP>1</ZEPPELIN_FORCE_STOP>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <version>${plugin.scala.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest-maven-plugin</artifactId>
@@ -178,7 +238,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -188,8 +247,9 @@
             <phase>pre-integration-test</phase>
             <configuration>
               <target unless="skipTests">
-                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="true">
-                  <arg value="start" />
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}"
+                  spawn="true">
+                  <arg value="start"/>
                 </exec>
               </target>
             </configuration>
@@ -197,14 +257,14 @@
               <goal>run</goal>
             </goals>
           </execution>
-
           <execution>
             <id>stop-zeppelin</id>
             <phase>post-integration-test</phase>
             <configuration>
               <target unless="skipTests">
-                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
-                  <arg value="stop" />
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}"
+                  spawn="false">
+                  <arg value="stop"/>
                 </exec>
               </target>
             </configuration>
@@ -214,9 +274,9 @@
           </execution>
         </executions>
       </plugin>
-      
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>scala-2.11</id>
@@ -241,7 +301,6 @@
         </zeppelin.daemon.package.base>
       </properties>
     </profile>
-
     <profile>
       <id>using-packaged-distr</id>
       <activation>
