@@ -210,6 +210,22 @@ securityManager.realms = $zeppelinHubRealm
 
 > Note: ZeppelinHub is not releated to Apache Zeppelin project.
 
+### Custom CASRealm
+Apache Shiro provides the capability of single sign-on functionality which can be integrated to any application as a custom realm, from where the user credentials along with roles are passed to Zeppelin for login. Handling should be done in corresponding overrided classes, by overriding Shiro's AuthorizingRealm class as mentioned in https://shiro.apache.org/cas.html.
+
+To enable login with your custom realm credentials and roles, apply the following change in `conf/shiro.ini` under `[main]` section.
+
+```
+### A sample for configuring Shiro's CAS Realm
+[main]
+customRealm = org.apache.zeppelin.realm.CustomRealm
+customRealm.casServerUrlPrefix = https://server.cas.com/ 
+casRealm.casService = http://application.examples.com/shiro-cas
+customFilter = org.apache.zeppelin.filter.CustomFilter
+customFilter.failureUrl = /error.jsp
+securityManager.realms = $customRealm
+```
+
 ### Knox SSO
 [KnoxSSO](https://knox.apache.org/books/knox-0-13-0/dev-guide.html#KnoxSSO+Integration) provides an abstraction for integrating any number of authentication systems and SSO solutions and enables participating web applications to scale to those solutions more easily. Without the token exchange capabilities offered by KnoxSSO each component UI would need to integrate with each desired solution on its own.
 
