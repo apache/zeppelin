@@ -103,10 +103,6 @@ abstract public class AbstractZeppelinIT {
     });
   }
 
-  protected static boolean endToEndTestEnabled() {
-    return null != System.getenv("TEST_SELENIUM");
-  }
-
   protected void createNewNote() {
     clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
         " note')]"));
