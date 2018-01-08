@@ -134,10 +134,6 @@ abstract public class AbstractZeppelinIT {
 
   protected void handleException(String message, Exception e) throws Exception {
     LOG.error(message, e);
-    LogEntries logEntries = driver.manage().logs().get(LogType.BROWSER);
-    for (LogEntry entry : logEntries) {
-      LOG.error(new Date(entry.getTimestamp()) + " " + entry.getLevel() + " " + entry.getMessage());
-    }
     File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
     LOG.error("ScreenShot::\ndata:image/png;base64," + new String(Base64.encodeBase64(FileUtils.readFileToByteArray(scrFile))));
     throw e;
