@@ -70,9 +70,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @BeforeClass
   public static void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -91,9 +88,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @AfterClass
   public static void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       if (!StringUtils.isBlank(shiroPath)) {
         File file = new File(shiroPath);
@@ -118,9 +112,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testSimpleAction() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       // step 1 : (admin) create a new note, run a paragraph and turn on personalized mode
       AuthenticationIT authenticationIT = new AuthenticationIT();
@@ -197,9 +188,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testGraphAction() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       // step 1 : (admin) create a new note, run a paragraph, change active graph to 'Bar chart', turn on personalized mode
       AuthenticationIT authenticationIT = new AuthenticationIT();
@@ -273,9 +261,6 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testDynamicFormAction() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       // step 1 : (admin) login, create a new note, run a paragraph with data of spark tutorial, logout.
       AuthenticationIT authenticationIT = new AuthenticationIT();
