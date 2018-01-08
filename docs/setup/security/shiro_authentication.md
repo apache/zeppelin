@@ -211,7 +211,7 @@ securityManager.realms = $zeppelinHubRealm
 > Note: ZeppelinHub is not releated to Apache Zeppelin project.
 
 ### Custom CASRealm
-Apache Shiro provides the capability of single sign-on functionality which can be integrated to any application as a custom realm, from where the user credentials along with roles are passed to Zeppelin for login. Handling should be done in corresponding overrided classes, by overriding Shiro's AuthorizingRealm class as mentioned in https://shiro.apache.org/cas.html.
+Apache Shiro provides the capability of single sign-on functionality which can be integrated to any application as a custom realm, from where the user credentials along with roles are passed to Zeppelin for login. Handling should be done in corresponding overridden classes, by overriding Shiro's AuthorizingRealm class as mentioned in https://shiro.apache.org/cas.html.
 
 To enable login with your custom realm credentials and roles, apply the following change in `conf/shiro.ini` under `[main]` section.
 
