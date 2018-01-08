@@ -31,11 +31,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
+import org.openqa.selenium.firefox.FirefoxDriver.SystemProperty;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -58,6 +57,11 @@ public class WebDriverManager {
 
     if (driver == null) {
       try {
+        FirefoxBinary ffox = new FirefoxBinary();
+        if ("true".equals(System.getenv("TRAVIS"))) {
+          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
+          // run with DISPLAY 99
+        }
         int firefoxVersion = WebDriverManager.getFirefoxVersion();
         LOG.info("Firefox version " + firefoxVersion + " detected");
 
@@ -83,18 +87,11 @@ public class WebDriverManager {
         profile.setPreference("network.proxy.type", 0);
 
         System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver");
-        DesiredCapabilities capabilities = DesiredCapabilities.firefox();
-        capabilities.setCapability("marionette", true);
+        System.setProperty(SystemProperty.DRIVER_USE_MARIONETTE, "false");
 
-        FirefoxBinary ffox = new FirefoxBinary();
-        FirefoxOptions firefoxOptions = new FirefoxOptions(capabilities);
+        FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.setBinary(ffox);
         firefoxOptions.setProfile(profile);
-
-        if ("true".equals(System.getenv("TRAVIS"))) {
-          firefoxOptions.setHeadless(true);
-          firefoxOptions.setLogLevel(FirefoxDriverLogLevel.ERROR);
-        }
         driver = new FirefoxDriver(firefoxOptions);
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
