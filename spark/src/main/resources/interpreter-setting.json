@@ -61,7 +61,7 @@
         "description": "Spark master uri. ex) spark://masterhost:7077",
         "type": "string"
       },
-      "zeppelin.spark.unSupportedVersionCheck": {
+      "zeppelin.spark.enableSupportedVersionCheck": {
         "envName": null,
         "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
         "defaultValue": true,

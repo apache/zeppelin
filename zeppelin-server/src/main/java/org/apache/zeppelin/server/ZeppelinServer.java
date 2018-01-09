@@ -165,7 +165,7 @@ public class ZeppelinServer extends Application {
 
   public static void main(String[] args) throws InterruptedException {
 
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
@@ -202,7 +202,9 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterSettingManager().close();
+          if (!conf.isRecoveryEnabled()) {
+            ZeppelinServer.notebook.getInterpreterSettingManager().close();
+          }
           notebook.close();
           Thread.sleep(3000);
         } catch (Exception e) {
@@ -225,7 +227,9 @@ public class ZeppelinServer extends Application {
     }
 
     jettyWebServer.join();
-    ZeppelinServer.notebook.getInterpreterSettingManager().close();
+    if (!conf.isRecoveryEnabled()) {
+      ZeppelinServer.notebook.getInterpreterSettingManager().close();
+    }
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {

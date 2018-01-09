@@ -535,6 +535,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals("1", result[1]);
         assertEquals("items: Seq[Object] = Buffer(2)", result[2]);
         assertEquals("2", result[3]);
+
+        ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
 
     @Test
@@ -568,5 +570,33 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         assertEquals("default_name", result[0]);
         assertEquals("1", result[1]);
         assertEquals("2", result[2]);
+
+        ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    }
+
+    @Test
+    public void testConfInterpreter() throws IOException {
+        Note note = ZeppelinServer.notebook.createNote(AuthenticationInfo.ANONYMOUS);
+        Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        Map config = p.getConfig();
+        config.put("enabled", true);
+        p.setConfig(config);
+        p.setText("%spark.conf spark.jars.packages\tcom.databricks:spark-csv_2.11:1.2.0");
+        p.setAuthenticationInfo(anonymous);
+        note.run(p.getId());
+        waitForFinish(p);
+        assertEquals(Status.FINISHED, p.getStatus());
+
+        Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p1.setConfig(config);
+        p1.setText("%spark\nimport com.databricks.spark.csv._");
+        p1.setAuthenticationInfo(anonymous);
+        note.run(p1.getId());
+
+        waitForFinish(p1);
+        assertEquals(Status.FINISHED, p1.getStatus());
+
+        ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+
     }
 }
