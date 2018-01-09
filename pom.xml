@@ -766,6 +766,13 @@
     </profile>
 
     <profile>
+      <id>integration</id>
+      <modules>
+        <module>zeppelin-integration</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>r</id>
       <modules>
         <module>r</module>

@@ -39,25 +39,16 @@ public class InterpreterIT extends AbstractZeppelinIT {
 
   @Before
   public void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     driver = WebDriverManager.getWebDriver();
   }
 
   @After
   public void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     driver.quit();
   }
 
   @Test
   public void testShowDescriptionOnInterpreterCreate() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       // navigate to interpreter page
       WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));

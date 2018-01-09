@@ -18,11 +18,15 @@
 package org.apache.zeppelin;
 
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.util.concurrent.TimeUnit;
 
 public class ProcessData {
   public enum Types_Of_Data {
@@ -225,13 +229,16 @@ public class ProcessData {
               (System.currentTimeMillis() > unconditionalExitTime));
           this.checked_process.destroy();
           try {
-            if ((System.currentTimeMillis() > unconditionalExitTime))
-              LOG.error("!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Unconditional exit occured@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!\nsome process hag up for more than " + unconditionalExitDelayMinutes + " minutes.");
+            if ((System.currentTimeMillis() > unconditionalExitTime)) {
+              LOG.error(
+                  "!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Unconditional exit occured@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!\nsome process hag up for more than "
+                      + unconditionalExitDelayMinutes + " minutes.");
+            }
             LOG.error("!##################################!");
             StringWriter sw = new StringWriter();
-            new Exception("Exited from buildOutputAndErrorStreamData by timeout").printStackTrace(new PrintWriter(sw)); //Get stack trace
-            String exceptionAsString = sw.toString();
-            LOG.error(exceptionAsString);
+            Exception e = new Exception("Exited from buildOutputAndErrorStreamData by timeout");
+            e.printStackTrace(new PrintWriter(sw)); //Get stack trace
+            LOG.error(String.valueOf(e), e);
           } catch (Exception ignore) {
             LOG.info("Exception in ProcessData while buildOutputAndErrorStreamData ", ignore);
           }
