@@ -63,26 +63,16 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
   @Before
   public void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     driver = WebDriverManager.getWebDriver();
   }
 
   @After
   public void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
-
     driver.quit();
   }
 
   @Test
   public void testAngularDisplay() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       createNewNote();
 
@@ -215,9 +205,6 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
   @Test
   public void testSparkInterpreterDependencyLoading() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       // navigate to interpreter page
       WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
@@ -285,10 +272,6 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
   @Test
   public void testAngularRunParagraph() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
-
     try {
       createNewNote();
 

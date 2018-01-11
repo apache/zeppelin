@@ -78,10 +78,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @BeforeClass
   public static void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
-
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -101,9 +97,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @AfterClass
   public static void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       if (!StringUtils.isBlank(shiroPath)) {
         File file = new File(shiroPath);
@@ -133,9 +126,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   }
 
   private void testShowNotebookListOnNavbar() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -167,9 +157,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   //  @Test
   public void testSimpleAuthentication() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       AuthenticationIT authenticationIT = new AuthenticationIT();
       authenticationIT.authenticationUser("admin", "password1");
@@ -186,9 +173,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @Test
   public void testAnyOfRoles() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       AuthenticationIT authenticationIT = new AuthenticationIT();
       authenticationIT.authenticationUser("admin", "password1");
@@ -242,9 +226,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @Test
   public void testGroupPermission() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       AuthenticationIT authenticationIT = new AuthenticationIT();
       authenticationIT.authenticationUser("finance1", "finance1");
