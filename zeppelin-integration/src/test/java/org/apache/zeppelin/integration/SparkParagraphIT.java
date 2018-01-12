@@ -42,9 +42,6 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
   @Before
   public void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     driver = WebDriverManager.getWebDriver();
     createNewNote();
     waitForParagraph(1, "READY");
@@ -52,18 +49,12 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
   @After
   public void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     deleteTestNotebook(driver);
     driver.quit();
   }
 
   @Test
   public void testSpark() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       setTextOfParagraph(1, "sc.version");
       runParagraph(1);
@@ -116,9 +107,6 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
   @Test
   public void testPySpark() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       setTextOfParagraph(1, "%pyspark\\n" +
           "for x in range(0, 3):\\n" +
@@ -167,9 +155,6 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
   @Test
   public void testSqlSpark() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       setTextOfParagraph(1,"%sql\\n" +
           "select * from bank limit 1");
@@ -201,9 +186,6 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
   @Test
   public void testDep() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       // restart spark interpreter before running %dep
       clickAndWait(By.xpath("//span[@uib-tooltip='Interpreter binding']"));

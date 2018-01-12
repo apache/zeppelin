@@ -78,9 +78,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @BeforeClass
   public static void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -105,9 +102,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @AfterClass
   public static void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       if (!StringUtils.isBlank(shiroPath)) {
         File shiroFile = new File(shiroPath);
@@ -174,9 +168,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testGloballyAction() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       //step 1: (admin) login, set 'globally in shared' mode of python interpreter, logout
       InterpreterModeActionsIT interpreterModeActionsIT = new InterpreterModeActionsIT();
@@ -326,9 +317,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testPerUserScopedAction() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       //step 1: (admin) login, set 'Per user in scoped' mode of python interpreter, logout
       InterpreterModeActionsIT interpreterModeActionsIT = new InterpreterModeActionsIT();
@@ -611,9 +599,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
 
   @Test
   public void testPerUserIsolatedAction() throws Exception {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
     try {
       //step 1: (admin) login, set 'Per user in isolated' mode of python interpreter, logout
       InterpreterModeActionsIT interpreterModeActionsIT = new InterpreterModeActionsIT();
