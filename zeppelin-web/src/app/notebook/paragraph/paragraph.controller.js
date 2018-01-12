@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-import { SpellResult, } from '../../spell'
-import {
-  ParagraphStatus, isParagraphRunning,
-} from './paragraph.status'
+import {SpellResult} from '../../spell'
+import {isParagraphRunning, ParagraphStatus} from './paragraph.status'
 
 import moment from 'moment'
+
 require('moment-duration-format')
 
 const ParagraphExecutor = {
@@ -1466,6 +1465,30 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.$on('updateProgress', function (event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress
+    }
+  })
+
+  $scope.$on('appendParagraphOutput', function (event, data) {
+    if (data.paragraphId === $scope.paragraph.id) {
+      if (!$scope.paragraph.results) {
+        $scope.paragraph.results = {}
+
+        if (!$scope.paragraph.results.msg) {
+          $scope.paragraph.results.msg = []
+        }
+
+        $scope.paragraph.results.msg[data.index] = {
+          data: data.data,
+          type: data.type
+        }
+
+        $rootScope.$broadcast(
+          'updateResult',
+          $scope.paragraph.results.msg[data.index],
+          $scope.paragraph.config.results[data.index],
+          $scope.paragraph,
+          data.index)
+      }
     }
   })
 
