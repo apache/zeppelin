@@ -336,14 +336,19 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
+    LOGGER.debug("Call completion for: " + buf);
     List<InterpreterCompletion> completions = new ArrayList<>();
     CompletionResponse response =
         ipythonClient.complete(
             CompletionRequest.getDefaultInstance().newBuilder().setCode(buf)
                 .setCursor(cursor).build());
     for (int i = 0; i < response.getMatchesCount(); i++) {
-      completions.add(new InterpreterCompletion(
-          response.getMatches(i), response.getMatches(i), ""));
+      String match = response.getMatches(i);
+      int lastIndexOfDot = match.lastIndexOf(".");
+      if (lastIndexOfDot != -1) {
+        match = match.substring(lastIndexOfDot + 1);
+      }
+      completions.add(new InterpreterCompletion(match, match, ""));
     }
     return completions;
   }
