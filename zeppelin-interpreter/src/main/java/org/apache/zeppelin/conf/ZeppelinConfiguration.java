@@ -510,7 +510,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getConfDir() {
-    return getRelativeDir(getString(ConfVars.ZEPPELIN_CONF_DIR));
+    return getRelativeDir(ConfVars.ZEPPELIN_CONF_DIR);
   }
 
   public String getConfigFSDir() {

@@ -121,7 +121,7 @@ public class NotebookAuthorization {
       try {
         configStorage.save(info);
       } catch (IOException e) {
-        LOG.error("Error saving notebook authorization file: " + e.getMessage());
+        LOG.error("Error saving notebook authorization file", e);
       }
     }
   }

@@ -97,7 +97,7 @@ public class ZeppelinConfigurationTest {
   public void getPathTest() throws ConfigurationException {
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
     ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
-    assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
-    assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
+    Assert.assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
+    Assert.assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
   }
 }
