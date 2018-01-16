@@ -59,7 +59,7 @@ limitations under the License.
       <property name="severity" value="error"/>
     </module>
     <module name="ImportOrder"> Checks for out of order import statements
-      <property name="severity" value="warning"/> <property name="groups" value="com.google,android,junit,net,org,java,javax"/>
+      <property name="severity" value="warning"/> <property name="groups" value="com.google,junit,net,org,java,javax,*,org.apache.zeppelin"/>
       This ensures that static imports go first <property name="option" value="top"/>
       <property name="tokens" value="STATIC_IMPORT, IMPORT"/>
     </module>
