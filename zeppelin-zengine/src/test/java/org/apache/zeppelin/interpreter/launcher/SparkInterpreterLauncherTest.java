@@ -47,8 +47,8 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/spark", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(2, interpreterProcess.getEnv().size());
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
@@ -72,8 +72,8 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/spark", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(2, interpreterProcess.getEnv().size());
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
@@ -98,8 +98,8 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/spark", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(2, interpreterProcess.getEnv().size());
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
@@ -123,8 +123,8 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/spark", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(3, interpreterProcess.getEnv().size());
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
@@ -151,8 +151,8 @@ public class SparkInterpreterLauncherTest {
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("spark", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/spark", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(3, interpreterProcess.getEnv().size());
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));

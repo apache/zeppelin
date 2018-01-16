@@ -20,18 +20,22 @@ package org.apache.zeppelin.user;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
@@ -48,7 +52,7 @@ public class Credentials {
   File credentialsFile;
 
   private Encryptor encryptor;
-
+  
   /**
    * Wrapper fro user credentials. It can load credentials from a file if credentialsPath is
    * supplied, and will encrypt the file if an encryptKey is supplied.

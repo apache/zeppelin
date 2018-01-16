@@ -92,4 +92,12 @@ public class ZeppelinConfigurationTest {
     boolean isIt = conf.isNotebookPublic();
     assertTrue(isIt);
   }
+
+  @Test
+  public void getPathTest() throws ConfigurationException {
+    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    Assert.assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
+    Assert.assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
+  }
 }

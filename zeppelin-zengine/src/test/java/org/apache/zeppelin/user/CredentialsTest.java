@@ -17,11 +17,11 @@
 
 package org.apache.zeppelin.user;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 public class CredentialsTest {
 
