@@ -22,11 +22,8 @@ import AreachartVisualization from '../../../visualization/builtins/visualizatio
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart'
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart'
 import NetworkVisualization from '../../../visualization/builtins/visualization-d3network'
-import {
-  DefaultDisplayType,
-  SpellResult,
-} from '../../../spell'
-import { ParagraphStatus, } from '../paragraph.status'
+import {DefaultDisplayType, SpellResult} from '../../../spell'
+import {ParagraphStatus} from '../paragraph.status'
 
 const AnsiUp = require('ansi_up')
 const AnsiUpConverter = new AnsiUp.default // eslint-disable-line new-parens,new-cap
@@ -319,7 +316,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
       } else if (type === DefaultDisplayType.ANGULAR) {
         renderAngular(targetElemId, data)
       } else if (type === DefaultDisplayType.TEXT) {
-        renderText(targetElemId, data)
+        renderText(targetElemId, data, refresh)
       } else if (type === DefaultDisplayType.ELEMENT) {
         renderElem(targetElemId, data)
       } else {
@@ -464,7 +461,26 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     return `p${resultId}_text`
   }
 
-  const renderText = function (targetElemId, data) {
+  const checkAndReplaceCarriageReturn = function (str) {
+    if (/\r/.test(str)) {
+      let newGenerated = ''
+      let strArr = str.split('\n')
+      for (let str of strArr) {
+        if (/\r/.test(str)) {
+          let splitCR = str.split('\r')
+          newGenerated += splitCR[splitCR.length - 1] + '\n'
+        } else {
+          newGenerated += str + '\n'
+        }
+      }
+      // remove last "\n" character
+      return newGenerated.slice(0, -1)
+    } else {
+      return str
+    }
+  }
+
+  const renderText = function (targetElemId, data, refresh) {
     const elem = angular.element(`#${targetElemId}`)
     handleData(data, DefaultDisplayType.TEXT,
       (generated) => {
@@ -472,9 +488,16 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         removeChildrenDOM(targetElemId)
 
         if (generated) {
+          generated = checkAndReplaceCarriageReturn(generated)
           const escaped = AnsiUpConverter.ansi_to_html(generated)
           const divDOM = angular.element('<div></div>').innerHTML = escaped
-          elem.append(divDOM)
+          if (refresh) {
+            elem.html(divDOM)
+          } else {
+            elem.append(divDOM)
+          }
+        } else if (refresh) {
+          elem.html('')
         }
 
         elem.bind('mousewheel', (e) => { $scope.keepScrollDown = false })
@@ -503,9 +526,10 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
 
     // pop all stacked data and append to the DOM
     while (textResultQueueForAppend.length > 0) {
-      const line = textResultQueueForAppend.pop()
-      elem.append(angular.element('<div></div>').text(line))
-
+      const line = checkAndReplaceCarriageReturn(textResultQueueForAppend.pop())
+      const escaped = AnsiUpConverter.ansi_to_html(line)
+      const divDOM = angular.element('<div></div>').innerHTML = escaped
+      elem.append(divDOM)
       if ($scope.keepScrollDown) {
         const doc = angular.element(`#${elemId}`)
         doc[0].scrollTop = doc[0].scrollHeight
