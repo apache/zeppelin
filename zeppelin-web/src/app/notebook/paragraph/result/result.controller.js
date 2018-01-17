@@ -526,10 +526,8 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
 
     // pop all stacked data and append to the DOM
     while (textResultQueueForAppend.length > 0) {
-      const line = checkAndReplaceCarriageReturn(textResultQueueForAppend.pop())
-      const escaped = AnsiUpConverter.ansi_to_html(line)
-      const divDOM = angular.element('<div></div>').innerHTML = escaped
-      elem.append(divDOM)
+      const line = elem.html() + AnsiUpConverter.ansi_to_html(textResultQueueForAppend.pop())
+      elem.html(checkAndReplaceCarriageReturn(line))
       if ($scope.keepScrollDown) {
         const doc = angular.element(`#${elemId}`)
         doc[0].scrollTop = doc[0].scrollHeight
