@@ -108,8 +108,8 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}})
     },
 
-    moveSeveralParagraphs: function (paragraphsId, newIndex) {
-      websocketEvents.sendNewEvent({op: 'MOVE_SEVERAL_PARAGRAPHS', data: {id: paragraphsId, index: newIndex}})
+    moveSeveralParagraphs: function (paragraphsIds, newIndex) {
+      websocketEvents.sendNewEvent({op: 'MOVE_SEVERAL_PARAGRAPHS', data: {ids: paragraphsIds, index: newIndex}})
     },
 
     insertParagraph: function (newIndex) {
@@ -225,7 +225,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}})
     },
 
-    removeSelectedParagraphs: function (noteId, paragraphs) {
+    removeSelectedParagraph: function (noteId, paragraphs) {
       websocketEvents.sendNewEvent({
         op: 'REMOVE_SELECTED_PARAGRAPHS',
         data: {

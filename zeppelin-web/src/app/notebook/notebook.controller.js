@@ -32,12 +32,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.disableForms = false
   $scope.editorToggled = false
   $scope.tableToggled = false
-  $scope.anableRunParag = true
+  $scope.isAnableRun = true
   $scope.viewOnly = false
   $scope.showSetting = false
   $scope.showRevisionsComparator = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
-  $scope.selectedParagraphsId = new Set()
+  $scope.selectedParagraphsIds = new Set()
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -550,11 +550,11 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     removePara(paragraphId)
   })
 
-  $scope.$on('selected_paragraphs_removed', function (event, paragraphsId) {
+  $scope.$on('selectedParagraphsRemoved', function (event, paragraphsIds) {
     if ($scope.paragraphUrl || $scope.revisionView === true) {
       return
     }
-    paragraphsId.forEach(function(paragraphId) {
+    paragraphsIds.forEach(function(paragraphId) {
       removePara(paragraphId)
     })
   })
@@ -569,12 +569,12 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   })
 
-  $scope.$on('moveSeveralParagraph', function (event, paragraphsId, newIdx) {
+  $scope.$on('severalParagraphsMoved', function (event, paragraphsIds, newIdx) {
     if ($scope.revisionView === true) {
       return
     }
-    for (let i = 0; i < paragraphsId.length; i++) {
-      let removedPara = removePara(paragraphsId[i])
+    for (let i = 0; i < paragraphsIds.length; i++) {
+      let removedPara = removePara(paragraphsIds[i])
       if (removedPara && removedPara.length === 1) {
         addPara(removedPara[0], newIdx[i])
       }
@@ -1214,8 +1214,8 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
-  $scope.switchSelection = function (paragraph) {
-    let paragraphs = $scope.selectedParagraphsId
+  $scope.toggleSelection = function (paragraph) {
+    let paragraphs = $scope.selectedParagraphsIds
     if (paragraphs.has(paragraph.id)) {
       paragraphs.delete(paragraph.id)
     } else {
@@ -1223,14 +1223,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
   }
 
-  $scope.clearParagraphsSelection = function () {
-    if ($scope.selectedParagraphsId !== null) {
-      $scope.selectedParagraphsId.clear()
+  $scope.clearSelection = function () {
+    if ($scope.selectedParagraphsIds !== null) {
+      $scope.selectedParagraphsIds.clear()
     }
   }
 
   $scope.isSelectionMode = function () {
-    if ($scope.selectedParagraphsId === null || $scope.selectedParagraphsId.size === 0) {
+    if ($scope.selectedParagraphsIds === null || $scope.selectedParagraphsIds.size === 0) {
       return false
     }
     return true
@@ -1241,10 +1241,10 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       return
     }
     let allParagraphs = $scope.note.paragraphs
-    let selectedParagraphsId = $scope.selectedParagraphsId
+    let selectedParagraphsIds = $scope.selectedParagraphsIds
     let paragraphs = []
     for (let i = 0; i < allParagraphs.length; i++) {
-      if (selectedParagraphsId.has(allParagraphs[i].id)) {
+      if (selectedParagraphsIds.has(allParagraphs[i].id)) {
         paragraphs.push(allParagraphs[i])
       }
     }
@@ -1252,7 +1252,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.moveToTop = function () {
-    let selectParagraphId = $scope.selectedParagraphsId
+    let selectParagraphId = $scope.selectedParagraphsIds
     let allParagraphs = $scope.note.paragraphs
     let id = []
     let newIndex = []
@@ -1282,7 +1282,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.moveToBottom = function () {
-    let selectParagraphId = $scope.selectedParagraphsId
+    let selectParagraphId = $scope.selectedParagraphsIds
     let allParagraphs = $scope.note.paragraphs
     let id = []
     let newIndex = []
@@ -1311,32 +1311,32 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   }
 
   $scope.toggleToRunParagraphs = function () {
-    let paragraphsId = $scope.selectedParagraphsId
+    let paragraphsIds = $scope.selectedParagraphsIds
     let broadcastMessage
-    if ($scope.anableRunParag) {
+    if ($scope.isAnableRun) {
       broadcastMessage = 'disableForRunById'
     } else {
       broadcastMessage = 'enableForRunById'
     }
-    paragraphsId.forEach((id) => {
+    paragraphsIds.forEach((id) => {
       $rootScope.$broadcast(broadcastMessage, id)
     })
 
-    $scope.anableRunParag = !$scope.anableRunParag
+    $scope.isAnableRun = !$scope.isAnableRun
   }
 
   $scope.toggleParagraphsTable = function () {
     if (!$scope.isSelectionMode()) {
       $scope.toggleAllTable()
     } else {
-      let paragraphsId = $scope.selectedParagraphsId
+      let paragraphsIds = $scope.selectedParagraphsIds
       let broadcastMessage
       if ($scope.tableToggled) {
         broadcastMessage = 'openTableById'
       } else {
         broadcastMessage = 'closeTableById'
       }
-      paragraphsId.forEach((id) => {
+      paragraphsIds.forEach((id) => {
         $rootScope.$broadcast(broadcastMessage, id)
       })
 
@@ -1348,14 +1348,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if (!$scope.isSelectionMode()) {
       $scope.toggleAllEditor()
     } else {
-      let paragraphsId = $scope.selectedParagraphsId
+      let paragraphsIds = $scope.selectedParagraphsIds
       let broadcastMessage
       if ($scope.editorToggled) {
         broadcastMessage = 'openEditorById'
       } else {
         broadcastMessage = 'closeEditorById'
       }
-      paragraphsId.forEach((id) => {
+      paragraphsIds.forEach((id) => {
         $rootScope.$broadcast(broadcastMessage, id)
       })
       $scope.editorToggled = !$scope.editorToggled
@@ -1366,15 +1366,15 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if (!$scope.isSelectionMode()) {
       $scope.runAllParagraphs(noteId)
     } else {
-      let message = 'Run ' + $scope.selectedParagraphsId.size + ' selected paragraph(s)?'
+      let message = 'Run ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?'
       $scope.showConfirmDialog(noteId, message, websocketMsgSrv.runAllParagraphs, false)
     }
   }
 
-  $scope.removeSelectedParagraphs = function (noteId) {
-    if ($scope.selectedParagraphsId.size < $scope.note.paragraphs.length) {
-      let message = 'Delete ' + $scope.selectedParagraphsId.size + ' selected paragraph(s)?'
-      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.removeSelectedParagraphs, true)
+  $scope.removeSelectedParagraph = function (noteId) {
+    if ($scope.selectedParagraphsIds.size < $scope.note.paragraphs.length) {
+      let message = 'Delete ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?'
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.removeSelectedParagraph, true)
     } else {
       BootstrapDialog.alert({
         closable: true,
@@ -1387,13 +1387,13 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if (!$scope.isSelectionMode()) {
       $scope.clearAllParagraphOutput(noteId)
     } else {
-      let message = 'Clear output ' + $scope.selectedParagraphsId.size + ' selected paragraph(s)?'
+      let message = 'Clear output ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?'
       $scope.showConfirmDialog(noteId, message, websocketMsgSrv.clearSelectedParagraphsOutput, false)
     }
   }
 
   $scope.showConfirmDialog = function (noteId, dialogMessage, action, isCleanAfter) {
-    if ($scope.selectedParagraphsId.length === 0) {
+    if ($scope.selectedParagraphsIds.length === 0) {
       return false
     }
 
@@ -1414,7 +1414,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
           })
           action(noteId, paragraphs)
           if (isCleanAfter) {
-            $scope.clearParagraphsSelection()
+            $scope.clearSelection()
           }
         }
       }

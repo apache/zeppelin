@@ -59,7 +59,7 @@ limitations under the License.
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Enable/Disable for running"
               ng-disabled="revisionView">
-        <i ng-class="anableRunParag ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+        <i ng-class="isAnableRun ? 'fa fa-lock' : 'fa fa-unlock'"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
@@ -89,7 +89,7 @@ limitations under the License.
               ng-if="!isSelectionMode()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Clone this note" data-source-note-name="{{note.name}}"
-              data-toggle="modal" data-target="#noteCreateModal" data-clone="true"
+              data-toggle="modal" data-target="#noteCreateModal" data-clone-note="true"
               ng-disabled="revisionView">
         <i class="fa fa-copy"></i>
       </button>
@@ -97,7 +97,9 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-if="isSelectionMode()"
               data-source-note-name="{{note.name}}"
-              data-toggle="modal" data-target="#noteCreateModal" data-clone="true" data-use-selec-parag="true" data-selected-paragraphs="{{getSelectedParagraphs()}}"
+              data-toggle="modal" data-target="#noteCreateModal" data-clone-note="true"
+              data-only-selected-paragraphs="true"
+              data-selected-paragraphs="{{getSelectedParagraphs()}}"
               tooltip-placement="bottom" uib-tooltip="Clone this note use selected paragraphs">
         <i class="fa fa-copy"></i>
       </button>
@@ -135,7 +137,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-if="isSelectionMode()"
-              ng-click="removeSelectedParagraphs(note.id)"
+              ng-click="removeSelectedParagraph(note.id)"
               tooltip-placement="bottom" uib-tooltip="Delete selected paragraph">
         <i class="fa fa-recycle"></i>
       </button>
@@ -143,7 +145,7 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               ng-if="isSelectionMode()"
-              ng-click="clearParagraphsSelection()"
+              ng-click="clearSelection()"
               tooltip-placement="bottom" uib-tooltip="Reset selections"
               ng-disabled="revisionView">
       <i class="fa fa-times-circle-o "></i>

@@ -21,7 +21,7 @@ function NoteCreateCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv)
 
   let vm = this
   vm.clone = false
-  vm.useSelectedParagraph = false
+  vm.onlySelectedParagraph = false
   vm.selectedParagraphs = null
   vm.notes = noteListFactory
   vm.websocketMsgSrv = websocketMsgSrv
@@ -37,7 +37,7 @@ function NoteCreateCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv)
       }
       vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterId)
       $scope.note.defaultInterpreter = $scope.interpreterSettings[0]
-    } else if (!vm.useSelectedParagraph) {
+    } else if (!vm.onlySelectedParagraph) {
       let noteId = $routeParams.noteId
       vm.websocketMsgSrv.cloneNote(noteId, $scope.note.notename, null)
     } else {
@@ -52,9 +52,9 @@ function NoteCreateCtrl ($scope, noteListFactory, $routeParams, websocketMsgSrv)
     vm.createNote()
   }
 
-  vm.preVisible = function(clone, useSelectedParagraph, selectedParagraphs, sourceNoteName, path) {
+  vm.preVisible = function(clone, onlySelectedParagraph, selectedParagraphs, sourceNoteName, path) {
     vm.clone = clone
-    vm.useSelectedParagraph = useSelectedParagraph
+    vm.onlySelectedParagraph = onlySelectedParagraph
     vm.selectedParagraphs = selectedParagraphs
     vm.sourceNoteName = sourceNoteName
     $scope.note.notename = vm.clone ? vm.cloneNoteName() : vm.newNoteName(path)
