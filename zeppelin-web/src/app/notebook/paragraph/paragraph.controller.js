@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-import { SpellResult, } from '../../spell'
-import {
-  ParagraphStatus, isParagraphRunning,
-} from './paragraph.status'
+import {SpellResult} from '../../spell'
+import {isParagraphRunning, ParagraphStatus} from './paragraph.status'
 
 import moment from 'moment'
+
 require('moment-duration-format')
 
 const ParagraphExecutor = {
@@ -469,6 +468,43 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.runParagraphFromButton = function () {
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph($scope.getEditorValue(), false, false)
+  }
+
+  $scope.runAllToThis = function(paragraph) {
+    $scope.$emit('runAllAbove', paragraph, true)
+  }
+
+  $scope.runAllFromThis = function(paragraph) {
+    $scope.$emit('runAllBelowAndCurrent', paragraph, true)
+  }
+
+  $scope.runAllToOrFromThis = function (paragraph) {
+    BootstrapDialog.show({
+      message: 'Run paragraphs:',
+      title: '',
+      buttons: [{
+        label: 'Close',
+        action: function(dialog) {
+          dialog.close()
+        }
+      },
+      {
+        label: 'Run all above',
+        cssClass: 'btn-primary',
+        action: function(dialog) {
+          $scope.$emit('runAllAbove', paragraph, false)
+          dialog.close()
+        }
+      },
+      {
+        label: 'Run current and all below',
+        cssClass: 'btn-primary',
+        action: function(dialog) {
+          $scope.$emit('runAllBelowAndCurrent', paragraph, false)
+          dialog.close()
+        }
+      }]
+    })
   }
 
   $scope.turnOnAutoRun = function (paragraph) {
@@ -1432,6 +1468,30 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   })
 
+  $scope.$on('appendParagraphOutput', function (event, data) {
+    if (data.paragraphId === $scope.paragraph.id) {
+      if (!$scope.paragraph.results) {
+        $scope.paragraph.results = {}
+
+        if (!$scope.paragraph.results.msg) {
+          $scope.paragraph.results.msg = []
+        }
+
+        $scope.paragraph.results.msg[data.index] = {
+          data: data.data,
+          type: data.type
+        }
+
+        $rootScope.$broadcast(
+          'updateResult',
+          $scope.paragraph.results.msg[data.index],
+          $scope.paragraph.config.results[data.index],
+          $scope.paragraph,
+          data.index)
+      }
+    }
+  })
+
   $scope.$on('keyEvent', function (event, keyEvent) {
     if ($scope.paragraphFocused) {
       let paragraphId = $scope.paragraph.id
@@ -1446,8 +1506,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
         // move focus to next paragraph
         // $timeout stops chaining effect of focus propogation
         $timeout(() => $scope.$emit('moveFocusToNextParagraph', paragraphId))
-      } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
+      } else if (!keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue())
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13) { // Ctrl + Shift + Enter
+        $scope.runAllToOrFromThis($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph($scope.paragraph)
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
@@ -1500,7 +1562,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
   })
 
-  $scope.$on('focusParagraph', function (event, paragraphId, cursorPos, mouseEvent) {
+  $scope.$on('focusParagraph', function (event, paragraphId, cursorPosRow, cursorPosCol, mouseEvent) {
+    if (cursorPosCol === null || cursorPosCol === undefined) {
+      cursorPosCol = 0
+    }
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
@@ -1508,14 +1573,14 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           $scope.editor.focus()
           // move cursor to the first row (or the last row)
           let row
-          if (cursorPos >= 0) {
-            row = cursorPos
-            $scope.editor.gotoLine(row, 0)
+          if (cursorPosRow >= 0) {
+            row = cursorPosRow
+            $scope.editor.gotoLine(row, cursorPosCol)
           } else {
             row = $scope.editor.session.getLength()
-            $scope.editor.gotoLine(row, 0)
+            $scope.editor.gotoLine(row, cursorPosCol)
           }
-          $scope.scrollToCursor($scope.paragraph.id, 0)
+          $scope.scrollToCursor($scope.paragraph.id, cursorPosCol)
         }
       }
       handleFocus(true)

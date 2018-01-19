@@ -49,7 +49,11 @@ limitations under the License.
             data-drop="true" jqyoui-droppable="{multiple:true, onDrop:'save()'}"
             class="list-unstyled"
             style="border-radius: 6px; margin-top: 7px;">
-          <li ng-repeat="item in config.keys">
+          <li ng-repeat="item in config.keys track by $index"
+              ng-model="config.keys"
+              data-drag="true"
+              jqyoui-draggable="{index: {{$index}}, animate: false}"
+              data-jqyoui-options="{revert: 'invalid', placeholder: 'keep', helper: 'clone'}">
             <div class="btn btn-default btn-xs"
                  style="background-color: #EFEFEF; margin: 2px 0px 0px 2px;">
               {{item.name}}
@@ -69,7 +73,11 @@ limitations under the License.
             jqyoui-droppable="{multiple:true, onDrop:'save()'}"
             class="list-unstyled"
             style="border-radius: 6px; margin-top: 7px;">
-          <li ng-repeat="item in config.groups">
+          <li ng-repeat="item in config.groups track by $index"
+              ng-model="config.groups"
+              data-drag="true"
+              jqyoui-draggable="{index: {{$index}}, animate: false}"
+              data-jqyoui-options="{revert: 'invalid', placeholder: 'keep', helper: 'clone'}">
             <div class="btn btn-default btn-xs"
                  style="background-color: #EFEFEF; margin: 2px 0px 0px 2px;">
               {{item.name}}
@@ -89,7 +97,11 @@ limitations under the License.
             jqyoui-droppable="{multiple:true, onDrop:'save()'}"
             class="list-unstyled"
             style="border-radius: 6px; margin-top: 7px;">
-          <li ng-repeat="item in config.values">
+          <li ng-repeat="item in config.values track by $index"
+              ng-model="config.values"
+              data-drag="true"
+              jqyoui-draggable="{index: {{$index}}, animate: false}"
+              data-jqyoui-options="{revert: 'invalid', placeholder: 'keep', helper: 'clone'}">
             <div class="btn-group">
               <div class="btn btn-default btn-xs dropdown-toggle"
                    style="background-color: #EFEFEF;"
@@ -112,3 +124,4 @@ limitations under the License.
     </div>
   </div> <!-- panel-body -->
 </div> <!-- panel -->
+

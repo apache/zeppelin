@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('noteListFactory', NoteListFactory)
 
-function NoteListFactory(TRASH_FOLDER_ID) {
+function NoteListFactory(arrayOrderingSrv, TRASH_FOLDER_ID) {
   'ngInject'
 
   const notes = {
@@ -42,6 +42,7 @@ function NoteListFactory(TRASH_FOLDER_ID) {
 
         return root
       }, notes.root)
+      notes.root.children.sort(arrayOrderingSrv.noteComparator)
     }
   }
 

@@ -33,7 +33,8 @@
     "select2": "^4.0.3",
     "MathJax": "2.7.0",
     "ngclipboard": "^1.1.1",
-    "jsdiff": "3.3.0"
+    "jsdiff": "3.3.0",
+    "ngInfiniteScroll": "^1.3.4"
   },
   "devDependencies": {
     "angular-mocks": "1.5.7"

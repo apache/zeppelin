@@ -196,9 +196,9 @@ public class IPythonInterpreterTest {
     context = getInterpreterContext();
     completions = interpreter.completion("sys.std", 7, context);
     assertEquals(3, completions.size());
-    assertEquals("sys.stderr", completions.get(0).getValue());
-    assertEquals("sys.stdin", completions.get(1).getValue());
-    assertEquals("sys.stdout", completions.get(2).getValue());
+    assertEquals("stderr", completions.get(0).getValue());
+    assertEquals("stdin", completions.get(1).getValue());
+    assertEquals("stdout", completions.get(2).getValue());
 
     // there's no completion for 'a.' because it is not recognized by compiler for now.
     context = getInterpreterContext();
@@ -227,14 +227,14 @@ public class IPythonInterpreterTest {
     st = "a.co";
     completions = interpreter.completion(st, st.length(), context);
     assertEquals(1, completions.size());
-    assertEquals("a.count", completions.get(0).getValue());
+    assertEquals("count", completions.get(0).getValue());
 
     // cursor is in the middle of code
     context = getInterpreterContext();
     st = "a.co\b='hello";
     completions = interpreter.completion(st, 4, context);
     assertEquals(1, completions.size());
-    assertEquals("a.count", completions.get(0).getValue());
+    assertEquals("count", completions.get(0).getValue());
 
     // ipython help
     context = getInterpreterContext();

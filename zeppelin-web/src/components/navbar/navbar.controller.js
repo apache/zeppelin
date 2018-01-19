@@ -30,6 +30,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
   vm.showLoginWindow = showLoginWindow
   vm.TRASH_FOLDER_ID = TRASH_FOLDER_ID
   vm.isFilterNote = isFilterNote
+  vm.numberOfNotesDisplayed = 10
 
   $scope.query = {q: ''}
 
@@ -85,13 +86,55 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
     websocketMsgSrv.getHomeNote()
   }
 
-  function logout () {
+  function logout() {
     let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout'
 
-    // for firefox and safari
-    logoutURL = logoutURL.replace('//', '//false:false@')
-    $http.post(logoutURL).error(function () {
+    $http.post(logoutURL).then(function () {}, function (response) {
+      if (response.data) {
+        let res = angular.fromJson(response.data).body
+        if (res['redirectURL']) {
+          window.location.href = res['redirectURL'] + window.location.href
+        }
+      }
+
       // force authcBasic (if configured) to logout
+      if (detectIE()) {
+        let outcome
+        try {
+          outcome = document.execCommand('ClearAuthenticationCache')
+        } catch (e) {
+          console.log(e)
+        }
+        if (!outcome) {
+          // Let's create an xmlhttp object
+          outcome = (function (x) {
+            if (x) {
+              // the reason we use "random" value for password is
+              // that browsers cache requests. changing
+              // password effectively behaves like cache-busing.
+              x.open('HEAD', location.href, true, 'logout',
+                (new Date()).getTime().toString())
+              x.send('')
+              // x.abort()
+              return 1 // this is **speculative** "We are done."
+            } else {
+              // eslint-disable-next-line no-useless-return
+              return
+            }
+          })(window.XMLHttpRequest ? new window.XMLHttpRequest()
+            // eslint-disable-next-line no-undef
+            : (window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : u))
+        }
+        if (!outcome) {
+          let m = 'Your browser is too old or too weird to support log out functionality. Close all windows and ' +
+            'restart the browser.'
+          alert(m)
+        }
+      } else {
+        // for firefox and safari
+        logoutURL = logoutURL.replace('//', '//false:false@')
+      }
+
       $http.post(logoutURL).error(function () {
         $rootScope.userName = ''
         $rootScope.ticket.principal = ''
@@ -106,6 +149,32 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
         }, 1000)
       })
     })
+  }
+
+  function detectIE() {
+    let ua = window.navigator.userAgent
+
+    let msie = ua.indexOf('MSIE ')
+    if (msie > 0) {
+      // IE 10 or older => return version number
+      return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10)
+    }
+
+    let trident = ua.indexOf('Trident/')
+    if (trident > 0) {
+      // IE 11 => return version number
+      let rv = ua.indexOf('rv:')
+      return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10)
+    }
+
+    let edge = ua.indexOf('Edge/')
+    if (edge > 0) {
+      // Edge (IE 12+) => return version number
+      return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10)
+    }
+
+    // other browser
+    return false
   }
 
   function search (searchTerm) {
@@ -151,6 +220,10 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
         $scope.isDrawNavbarNoteList = false
       })
     })
+  }
+
+  $scope.loadMoreNotes = function () {
+    vm.numberOfNotesDisplayed += 10
   }
 
   $scope.calculateTooltipPlacement = function (note) {

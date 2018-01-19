@@ -33,7 +33,7 @@ public abstract class AbstractInterpreterTest {
   protected File interpreterDir;
   protected File confDir;
   protected File notebookDir;
-  protected ZeppelinConfiguration conf = new ZeppelinConfiguration();
+  protected ZeppelinConfiguration conf;
 
   @Before
   public void setUp() throws Exception {

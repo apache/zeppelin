@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,12 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.security.SecureRandom;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -182,6 +181,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     // strip white space from the beginning
     this.text = newText;
     this.dateUpdated = new Date();
+    parseText();
+  }
+
+  public void parseText() {
     // parse text to get interpreter component
     if (this.text != null) {
       Matcher matcher = REPL_PATTERN.matcher(this.text);
@@ -191,7 +194,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
       } else {
         this.intpText = "";
-        this.scriptText = this.text;
+        this.scriptText = this.text.trim();
       }
     }
   }
@@ -250,14 +253,17 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return note.getInterpreterCompletion();
       }
     }
-    String trimmedBuffer = buffer != null ? buffer.trim() : null;
-    cursor = calculateCursorPosition(buffer, trimmedBuffer, cursor);
+    this.interpreter = getBindedInterpreter();
+
+    setText(buffer);
+
+    cursor = calculateCursorPosition(buffer, cursor);
 
     InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
 
     try {
       if (this.interpreter != null) {
-        return this.interpreter.completion(scriptText, cursor, interpreterContext);
+        return this.interpreter.completion(this.scriptText, cursor, interpreterContext);
       } else {
         return null;
       }
@@ -266,24 +272,15 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
   }
 
-  public int calculateCursorPosition(String buffer, String trimmedBuffer, int cursor) {
-    int countWhitespacesAtStart = buffer.indexOf(trimmedBuffer);
-    if (countWhitespacesAtStart > 0) {
-      cursor -= countWhitespacesAtStart;
-    }
+  public int calculateCursorPosition(String buffer, int cursor) {
+    // scriptText trimmed
 
-    // parse text to get interpreter component
-    String repl = null;
-    if (trimmedBuffer != null) {
-      Matcher matcher = REPL_PATTERN.matcher(trimmedBuffer);
-      if (matcher.matches()) {
-        repl = matcher.group(2);
-      }
+    if (this.scriptText.isEmpty()) {
+      return 0;
     }
-
-    if (repl != null && cursor > repl.length()) {
-      String body = trimmedBuffer.substring(repl.length() + 1);
-      cursor -= repl.length() + 1 + body.indexOf(body.trim());
+    int countCharactersBeforeScript = buffer.indexOf(this.scriptText);
+    if (countCharactersBeforeScript > 0) {
+      cursor -= countCharactersBeforeScript;
     }
 
     return cursor;
@@ -357,6 +354,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       setStatus(Job.Status.ERROR);
       throw intpException;
     }
+    setStatus(Status.READY);
     if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
       setAuthenticationInfo(getAuthenticationInfo());
       interpreter.getScheduler().submit(this);
@@ -827,6 +825,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return result1;
   }
 
+  @Override
   public String toJson() {
     return Note.getGson().toJson(this);
   }

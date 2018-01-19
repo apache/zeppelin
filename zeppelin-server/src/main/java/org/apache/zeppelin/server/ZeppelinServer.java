@@ -53,15 +53,12 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.storage.ConfigStorage;
+import org.apache.zeppelin.storage.FileSystemConfigStorage;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -87,6 +84,7 @@ public class ZeppelinServer extends Application {
   private final InterpreterSettingManager interpreterSettingManager;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
+  private ConfigStorage configStorage;
   private SearchService noteSearchService;
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
@@ -131,7 +129,7 @@ public class ZeppelinServer extends Application {
     this.replFactory = new InterpreterFactory(interpreterSettingManager);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.noteSearchService = new LuceneSearch();
-    this.notebookAuthorization = NotebookAuthorization.init(conf);
+    this.notebookAuthorization = NotebookAuthorization.getInstance();
     this.credentials = new Credentials(
         conf.credentialsPersist(),
         conf.getCredentialsPath(),
@@ -139,6 +137,7 @@ public class ZeppelinServer extends Application {
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
             noteSearchService, notebookAuthorization, credentials);
+    this.configStorage = ConfigStorage.getInstance(conf);
 
     ZeppelinServer.helium = new Helium(
         conf.getHeliumConfPath(),
@@ -167,7 +166,7 @@ public class ZeppelinServer extends Application {
 
   public static void main(String[] args) throws InterruptedException {
 
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
@@ -204,7 +203,9 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterSettingManager().close();
+          if (!conf.isRecoveryEnabled()) {
+            ZeppelinServer.notebook.getInterpreterSettingManager().close();
+          }
           notebook.close();
           Thread.sleep(3000);
         } catch (Exception e) {
@@ -227,7 +228,9 @@ public class ZeppelinServer extends Application {
     }
 
     jettyWebServer.join();
-    ZeppelinServer.notebook.getInterpreterSettingManager().close();
+    if (!conf.isRecoveryEnabled()) {
+      ZeppelinServer.notebook.getInterpreterSettingManager().close();
+    }
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
@@ -241,7 +244,6 @@ public class ZeppelinServer extends Application {
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(conf.getServerSslPort());
       httpConfig.setOutputBufferSize(32768);
-      httpConfig.setRequestHeaderSize(8192);
       httpConfig.setResponseHeaderSize(8192);
       httpConfig.setSendServerVersion(true);
 
@@ -260,6 +262,7 @@ public class ZeppelinServer extends Application {
       connector = new ServerConnector(server);
     }
 
+    configureRequestHeaderSize(conf, connector);
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
@@ -274,6 +277,14 @@ public class ZeppelinServer extends Application {
     server.addConnector(connector);
 
     return server;
+  }
+
+  private static void configureRequestHeaderSize(ZeppelinConfiguration conf,
+                                                 ServerConnector connector) {
+    HttpConnectionFactory cf = (HttpConnectionFactory)
+            connector.getConnectionFactory(HttpVersion.HTTP_1_1.toString());
+    int requestHeaderSize = conf.getJettyRequestHeaderSize();
+    cf.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
   }
 
   private static void setupNotebookServer(WebAppContext webapp,

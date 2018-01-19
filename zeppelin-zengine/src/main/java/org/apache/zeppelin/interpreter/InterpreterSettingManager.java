@@ -34,24 +34,30 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.util.ReflectionUtils;
+import org.apache.zeppelin.storage.ConfigStorage;
+import org.apache.zeppelin.storage.FileSystemConfigStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.Authentication;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -71,6 +77,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * InterpreterSettingManager is the component which manage all the interpreter settings.
  * (load/create/update/remove/get)
@@ -86,7 +93,6 @@ public class InterpreterSettingManager {
 
   private final ZeppelinConfiguration conf;
   private final Path interpreterDirPath;
-  private final Path interpreterSettingPath;
 
   /**
    * This is only InterpreterSetting templates with default name and properties
@@ -118,6 +124,10 @@ public class InterpreterSettingManager {
   private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
   private LifecycleManager lifecycleManager;
+  private RecoveryStorage recoveryStorage;
+  private ConfigStorage configStorage;
+
+
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
@@ -128,22 +138,21 @@ public class InterpreterSettingManager {
     this(zeppelinConfiguration, new InterpreterOption(),
         angularObjectRegistryListener,
         remoteInterpreterProcessListener,
-        appEventListener);
+        appEventListener,
+        ConfigStorage.getInstance(zeppelinConfiguration));
   }
 
-  @VisibleForTesting
   public InterpreterSettingManager(ZeppelinConfiguration conf,
                                    InterpreterOption defaultOption,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
                                          remoteInterpreterProcessListener,
-                                   ApplicationEventListener appEventListener) throws IOException {
+                                   ApplicationEventListener appEventListener,
+                                   ConfigStorage configStorage) throws IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.interpreterDirPath = Paths.get(conf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
-    this.interpreterSettingPath = Paths.get(conf.getInterpreterSettingPath());
-    LOGGER.debug("InterpreterSettingPath: {}", interpreterSettingPath);
     this.dependencyResolver = new DependencyResolver(
         conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
     this.interpreterRepositories = dependencyResolver.getRepos();
@@ -154,13 +163,17 @@ public class InterpreterSettingManager {
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
-    try {
-      this.lifecycleManager = (LifecycleManager)
-          Class.forName(conf.getLifecycleManagerClass()).getConstructor(ZeppelinConfiguration.class)
-              .newInstance(conf);
-    } catch (Exception e) {
-      throw new IOException("Fail to create LifecycleManager", e);
-    }
+    this.recoveryStorage = ReflectionUtils.createClazzInstance(conf.getRecoveryStorageClass(),
+        new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
+        new Object[] {conf, this});
+    this.recoveryStorage.init();
+    LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
+    this.lifecycleManager = ReflectionUtils.createClazzInstance(conf.getLifecycleManagerClass(),
+        new Class[] {ZeppelinConfiguration.class},
+        new Object[] {conf});
+    LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
+
+    this.configStorage = configStorage;
 
     init();
   }
@@ -174,16 +187,18 @@ public class InterpreterSettingManager {
         .setAppEventListener(appEventListener)
         .setDependencyResolver(dependencyResolver)
         .setLifecycleManager(lifecycleManager)
+        .setRecoveryStorage(recoveryStorage)
         .postProcessing();
   }
 
   /**
    * Load interpreter setting from interpreter-setting.json
    */
-  private void loadFromFile() {
-    if (!Files.exists(interpreterSettingPath)) {
+  private void loadFromFile() throws IOException {
+    InterpreterInfoSaving infoSaving =
+        configStorage.loadInterpreterSettings();
+    if (infoSaving == null) {
       // nothing to read
-      LOGGER.warn("Interpreter Setting file {} doesn't exist", interpreterSettingPath);
       for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
@@ -192,71 +207,65 @@ public class InterpreterSettingManager {
       return;
     }
 
-    try {
-      InterpreterInfoSaving infoSaving = InterpreterInfoSaving.loadFromFile(interpreterSettingPath);
-      //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
-      for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
-        savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
-            savedInterpreterSetting.getProperties()
-        ));
-        initInterpreterSetting(savedInterpreterSetting);
+    //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
+    for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
+      savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
+          savedInterpreterSetting.getProperties()
+      ));
+      initInterpreterSetting(savedInterpreterSetting);
 
-        InterpreterSetting interpreterSettingTemplate =
-            interpreterSettingTemplates.get(savedInterpreterSetting.getGroup());
-        // InterpreterSettingTemplate is from interpreter-setting.json which represent the latest
-        // InterpreterSetting, while InterpreterSetting is from interpreter.json which represent
-        // the user saved interpreter setting
-        if (interpreterSettingTemplate != null) {
-          savedInterpreterSetting.setInterpreterDir(interpreterSettingTemplate.getInterpreterDir());
-          // merge properties from interpreter-setting.json and interpreter.json
-          Map<String, InterpreterProperty> mergedProperties =
-              new HashMap<>(InterpreterSetting.convertInterpreterProperties(
-                  interpreterSettingTemplate.getProperties()));
-          Map<String, InterpreterProperty> savedProperties = InterpreterSetting
-              .convertInterpreterProperties(savedInterpreterSetting.getProperties());
-          for (Map.Entry<String, InterpreterProperty> entry : savedProperties.entrySet()) {
-            // only merge properties whose value is not empty
-            if (entry.getValue().getValue() != null && !
-                StringUtils.isBlank(entry.getValue().toString())) {
-              mergedProperties.put(entry.getKey(), entry.getValue());
-            }
-          }
-          savedInterpreterSetting.setProperties(mergedProperties);
-          // merge InterpreterInfo
-          savedInterpreterSetting.setInterpreterInfos(
-              interpreterSettingTemplate.getInterpreterInfos());
-          savedInterpreterSetting.setInterpreterRunner(
-              interpreterSettingTemplate.getInterpreterRunner());
-        } else {
-          LOGGER.warn("No InterpreterSetting Template found for InterpreterSetting: "
-              + savedInterpreterSetting.getGroup());
-        }
-
-        // Overwrite the default InterpreterSetting we registered from InterpreterSetting Templates
-        // remove it first
-        for (InterpreterSetting setting : interpreterSettings.values()) {
-          if (setting.getName().equals(savedInterpreterSetting.getName())) {
-            interpreterSettings.remove(setting.getId());
+      InterpreterSetting interpreterSettingTemplate =
+          interpreterSettingTemplates.get(savedInterpreterSetting.getGroup());
+      // InterpreterSettingTemplate is from interpreter-setting.json which represent the latest
+      // InterpreterSetting, while InterpreterSetting is from interpreter.json which represent
+      // the user saved interpreter setting
+      if (interpreterSettingTemplate != null) {
+        savedInterpreterSetting.setInterpreterDir(interpreterSettingTemplate.getInterpreterDir());
+        // merge properties from interpreter-setting.json and interpreter.json
+        Map<String, InterpreterProperty> mergedProperties =
+            new HashMap<>(InterpreterSetting.convertInterpreterProperties(
+                interpreterSettingTemplate.getProperties()));
+        Map<String, InterpreterProperty> savedProperties = InterpreterSetting
+            .convertInterpreterProperties(savedInterpreterSetting.getProperties());
+        for (Map.Entry<String, InterpreterProperty> entry : savedProperties.entrySet()) {
+          // only merge properties whose value is not empty
+          if (entry.getValue().getValue() != null && !
+              StringUtils.isBlank(entry.getValue().toString())) {
+            mergedProperties.put(entry.getKey(), entry.getValue());
           }
         }
-        savedInterpreterSetting.postProcessing();
-        LOGGER.info("Create Interpreter Setting {} from interpreter.json",
-            savedInterpreterSetting.getName());
-        interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
+        savedInterpreterSetting.setProperties(mergedProperties);
+        // merge InterpreterInfo
+        savedInterpreterSetting.setInterpreterInfos(
+            interpreterSettingTemplate.getInterpreterInfos());
+        savedInterpreterSetting.setInterpreterRunner(
+            interpreterSettingTemplate.getInterpreterRunner());
+      } else {
+        LOGGER.warn("No InterpreterSetting Template found for InterpreterSetting: "
+            + savedInterpreterSetting.getGroup());
       }
 
-      interpreterBindings.putAll(infoSaving.interpreterBindings);
-
-      if (infoSaving.interpreterRepositories != null) {
-        for (RemoteRepository repo : infoSaving.interpreterRepositories) {
-          if (!dependencyResolver.getRepos().contains(repo)) {
-            this.interpreterRepositories.add(repo);
-          }
+      // Overwrite the default InterpreterSetting we registered from InterpreterSetting Templates
+      // remove it first
+      for (InterpreterSetting setting : interpreterSettings.values()) {
+        if (setting.getName().equals(savedInterpreterSetting.getName())) {
+          interpreterSettings.remove(setting.getId());
         }
       }
-    } catch (IOException e) {
-      LOGGER.error("Fail to load interpreter setting configuration file: "
-              + interpreterSettingPath, e);
+      savedInterpreterSetting.postProcessing();
+      LOGGER.info("Create Interpreter Setting {} from interpreter.json",
+          savedInterpreterSetting.getName());
+      interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
+    }
+
+    interpreterBindings.putAll(infoSaving.interpreterBindings);
+
+    if (infoSaving.interpreterRepositories != null) {
+      for (RemoteRepository repo : infoSaving.interpreterRepositories) {
+        if (!dependencyResolver.getRepos().contains(repo)) {
+          this.interpreterRepositories.add(repo);
+        }
+      }
     }
   }
 
@@ -266,7 +275,7 @@ public class InterpreterSettingManager {
       info.interpreterBindings = interpreterBindings;
       info.interpreterSettings = interpreterSettings;
       info.interpreterRepositories = interpreterRepositories;
-      info.saveToFile(interpreterSettingPath);
+      configStorage.save(info);
     }
   }
 
@@ -307,8 +316,16 @@ public class InterpreterSettingManager {
     saveToFile();
   }
 
+  public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
+    return remoteInterpreterProcessListener;
+  }
+
+  public ApplicationEventListener getAppEventListener() {
+    return appEventListener;
+  }
+
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-      String interpreterJson) throws IOException {
+                                                  String interpreterJson) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
@@ -505,6 +522,10 @@ public class InterpreterSettingManager {
       }
     }
     return resourceSet;
+  }
+
+  public RecoveryStorage getRecoveryStorage() {
+    return recoveryStorage;
   }
 
   public void removeResourcesBelongsToParagraph(String noteId, String paragraphId) {
