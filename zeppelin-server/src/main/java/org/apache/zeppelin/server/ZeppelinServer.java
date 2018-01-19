@@ -53,6 +53,8 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.storage.ConfigStorage;
+import org.apache.zeppelin.storage.FileSystemConfigStorage;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.users.RecentNotesRepo;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -84,6 +86,7 @@ public class ZeppelinServer extends Application {
   private final InterpreterSettingManager interpreterSettingManager;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
+  private ConfigStorage configStorage;
   private SearchService noteSearchService;
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
@@ -128,7 +131,7 @@ public class ZeppelinServer extends Application {
     this.replFactory = new InterpreterFactory(interpreterSettingManager);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.noteSearchService = new LuceneSearch();
-    this.notebookAuthorization = NotebookAuthorization.init(conf);
+    this.notebookAuthorization = NotebookAuthorization.getInstance();
     this.credentials = new Credentials(
         conf.credentialsPersist(),
         conf.getCredentialsPath(),
@@ -137,6 +140,7 @@ public class ZeppelinServer extends Application {
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
             noteSearchService, notebookAuthorization, credentials);
+    this.configStorage = ConfigStorage.getInstance(conf);
 
     ZeppelinServer.helium = new Helium(
         conf.getHeliumConfPath(),

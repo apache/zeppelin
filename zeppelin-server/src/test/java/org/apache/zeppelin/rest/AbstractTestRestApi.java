@@ -370,6 +370,10 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown() throws Exception {
+    shutDown(true);
+  }
+
+  protected static void shutDown(final boolean deleteConfDir) throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
@@ -407,7 +411,7 @@ public abstract class AbstractTestRestApi {
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
-      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
         // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
         // id will change after zeppelin restart, then we can not recover interpreter process
         // properly
