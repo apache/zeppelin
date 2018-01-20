@@ -44,6 +44,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -228,7 +229,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
         getInterpreterGroup().getInterpreterHookRegistry(),
         Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
     if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
-      iPythonInterpreter.checkIPythonPrerequisite()) {
+        StringUtils.isEmpty(iPythonInterpreter.checkIPythonPrerequisite(getPythonBindPath()))) {
       try {
         iPythonInterpreter.open();
         if (InterpreterContext.get() != null) {
