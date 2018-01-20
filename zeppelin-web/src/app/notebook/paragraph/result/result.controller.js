@@ -755,7 +755,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     if (paragraphId === paragraph.id) {
       let builtInViz = builtInVisualizations[$scope.graphMode]
       if (builtInViz && builtInViz.instance) {
-        builtInViz.instance.resize()
+        $timeout(_ => builtInViz.instance.resize(), 200)
       }
     }
   })
