@@ -25,9 +25,11 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.httpclient.util.ExceptionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -121,7 +123,11 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       }
       pythonExecutable = getProperty("zeppelin.python", "python");
       LOGGER.info("Python Exec: " + pythonExecutable);
-
+      String checkPrerequisiteResult = checkIPythonPrerequisite(pythonExecutable);
+      if (!StringUtils.isEmpty(checkPrerequisiteResult)) {
+        throw new InterpreterException("IPython prerequisite is not meet: " +
+            checkPrerequisiteResult);
+      }
       ipythonLaunchTimeout = Long.parseLong(
           getProperty("zeppelin.ipython.launch.timeout", "30000"));
       this.zeppelinContext = new PythonZeppelinContext(
@@ -139,8 +145,15 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public boolean checkIPythonPrerequisite() {
-    ProcessBuilder processBuilder = new ProcessBuilder("pip", "freeze");
+  /**
+   * non-empty return value mean the errors when checking ipython prerequisite.
+   * empty value mean IPython prerequisite is meet.
+   * 
+   * @param pythonExec
+   * @return
+   */
+  public String checkIPythonPrerequisite(String pythonExec) {
+    ProcessBuilder processBuilder = new ProcessBuilder(pythonExec, "-m", "pip", "freeze");
     try {
       File stderrFile = File.createTempFile("zeppelin", ".txt");
       processBuilder.redirectError(stderrFile);
@@ -150,33 +163,28 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       Process proc = processBuilder.start();
       int ret = proc.waitFor();
       if (ret != 0) {
-        LOGGER.warn("Fail to run pip freeze.\n" +
-            IOUtils.toString(new FileInputStream(stderrFile)));
-        return false;
+        return "Fail to run pip freeze.\n" +
+            IOUtils.toString(new FileInputStream(stderrFile));
       }
       String freezeOutput = IOUtils.toString(new FileInputStream(stdoutFile));
       if (!freezeOutput.contains("jupyter-client=")) {
-        InterpreterContext.get().out.write("jupyter-client is not installed\n".getBytes());
-        return false;
+        return "jupyter-client is not installed.";
       }
       if (!freezeOutput.contains("ipykernel=")) {
-        InterpreterContext.get().out.write("ipkernel is not installed\n".getBytes());
-        return false;
+        return "ipkernel is not installed";
       }
       if (!freezeOutput.contains("ipython=")) {
-        InterpreterContext.get().out.write("ipython is not installed\n".getBytes());
-        return false;
+        return "ipython is not installed";
       }
       if (!freezeOutput.contains("grpcio=")) {
-        InterpreterContext.get().out.write("grpcio is not installed\n".getBytes());
-        return false;
+        return "grpcio is not installed";
       }
       LOGGER.info("IPython prerequisite is meet");
-      return true;
     } catch (Exception e) {
       LOGGER.warn("Fail to checkIPythonPrerequisite", e);
-      return false;
+      return "Fail to checkIPythonPrerequisite: " + ExceptionUtils.getStackTrace(e);
     }
+    return "";
   }
 
   private void setupJVMGateway(int jvmGatewayPort) throws IOException {
