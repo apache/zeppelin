@@ -114,6 +114,11 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+
+  // # run kinit
+  if [[ -n "${ZEPPELIN_SERVER_KERBEROS_KEYTAB}" ]] && [[ -n "${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}" ]]; then
+    kinit -kt ${ZEPPELIN_SERVER_KERBEROS_KEYTAB} ${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}
+  fi
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
