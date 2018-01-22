@@ -634,6 +634,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         builtInViz.instance.setConfig(config)
         builtInViz.instance.render(transformed)
         builtInViz.instance.renderSetting(visualizationSettingTargetEl)
+        builtInViz.instance.activate()
       }
     } else {
       afterLoaded = function (loadedElem) {
