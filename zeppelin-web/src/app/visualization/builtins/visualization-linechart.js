@@ -83,7 +83,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
         if (self.config.dateFormat) {
           return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format(self.config.dateFormat)
         } else {
-          return moment(new Date(self.xAxisTickFormat(d, self.xLabels)))
+          return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format('YYYY-MM-DD HH:mm:ss')
         }
       }
       return self.xAxisTickFormat(d, self.xLabels)
