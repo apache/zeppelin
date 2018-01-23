@@ -35,7 +35,7 @@
 
   <profiles>
     <profile>
-      <id>hive</id>
+      <id>jdbc-hive</id>
       <properties>
         <hive.version>1.2.1</hive.version>
         <hive2.version>2.1.0</hive2.version>
@@ -86,7 +86,7 @@
     </profile>
 
     <profile>
-      <id>phoenix</id>
+      <id>jdbc-phoenix</id>
       <properties>
         <phoenix.version>4.7.0</phoenix.version>
       </properties>
@@ -106,7 +106,7 @@
     </profile>
 
     <profile>
-      <id>hadoop2</id>
+      <id>jdbc-hadoop2</id>
       <properties>
         <hadoop-common.version>2.7.3</hadoop-common.version>
       </properties>
@@ -167,7 +167,7 @@
     </profile>
 
     <profile>
-      <id>hadoop3</id>
+      <id>jdbc-hadoop3</id>
       <properties>
         <hadoop-common.version>3.0.0</hadoop-common.version>
       </properties>
