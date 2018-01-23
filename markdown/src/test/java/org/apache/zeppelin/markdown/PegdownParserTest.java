@@ -19,6 +19,7 @@ package org.apache.zeppelin.markdown;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 
@@ -26,16 +27,17 @@ import static org.apache.zeppelin.markdown.PegdownParser.wrapWithMarkdownClassDi
 import static org.junit.Assert.assertThat;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ErrorCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PegdownParserTest {
   Logger logger = LoggerFactory.getLogger(PegdownParserTest.class);
   Markdown md;
+
+  @Rule
+  public ErrorCollector collector = new ErrorCollector();
 
   @Before
   public void setUp() throws Exception {
@@ -48,6 +50,35 @@ public class PegdownParserTest {
   @After
   public void tearDown() throws Exception {
     md.close();
+  }
+
+  @Test
+  public void testMultipleThread() {
+    ArrayList<Thread> arrThreads = new ArrayList<Thread>();
+    for (int i = 0; i < 10; i++) {
+      Thread t = new Thread() {
+        public void run() {
+          String r1 = null;
+          try {
+            r1 = md.interpret("# H1", null).code().name();
+          } catch (Exception e) {
+            logger.error("testTestMultipleThread failed to interpret", e);
+          }
+          collector.checkThat("SUCCESS",
+              CoreMatchers.containsString(r1));
+        }
+      };
+      t.start();
+      arrThreads.add(t);
+    }
+
+    for (int i = 0; i < 10; i++) {
+      try {
+        arrThreads.get(i).join();
+      } catch (InterruptedException e) {
+        logger.error("testTestMultipleThread failed to join threads", e);
+      }
+    }
   }
 
   @Test

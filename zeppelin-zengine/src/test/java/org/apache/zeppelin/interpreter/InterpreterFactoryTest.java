@@ -39,6 +39,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "") instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "");
     // EchoInterpreter is the default interpreter because mock1 is the default interpreter group
+
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test") instanceof RemoteInterpreter);

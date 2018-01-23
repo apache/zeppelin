@@ -41,20 +41,4 @@ public class ZeppelinITUtils {
       LOG.info("Finished.");
     }
   }
-
-  public static void restartZeppelin() {
-    CommandExecutor.executeCommandLocalHost("../bin/zeppelin-daemon.sh restart",
-        false, ProcessData.Types_Of_Data.OUTPUT);
-    //wait for server to start.
-    sleep(5000, false);
-  }
-
-  public static void turnOffImplicitWaits(WebDriver driver) {
-    driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
-  }
-
-  public static void turnOnImplicitWaits(WebDriver driver) {
-    driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
-        TimeUnit.SECONDS);
-  }
 }

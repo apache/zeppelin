@@ -18,6 +18,7 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -25,7 +26,6 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
 
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
@@ -166,15 +166,18 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   protected List<String> parseSQLOutput(String output) {
     List<String> rows = new ArrayList<>();
-    String[] lines = output.split("\n");
+    // Get first line by breaking on \n. We can guarantee
+    // that \n marks the end of the first line, but not for
+    // subsequent lines (as it could be in the cells)
+    String firstLine = output.split("\n", 2)[0];
     // at least 4 lines, even for empty sql output
     //    +---+---+
     //    |  a|  b|
     //    +---+---+
     //    +---+---+
 
-    // use the first line to determinte the position of feach cell
-    String[] tokens = StringUtils.split(lines[0], "\\+");
+    // use the first line to determine the position of each cell
+    String[] tokens = StringUtils.split(firstLine, "\\+");
     // pairs keeps the start/end position of each cell. We parse it from the first row
     // which use '+' as separator
     List<Pair> pairs = new ArrayList<>();
@@ -186,17 +189,26 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       pairs.add(new Pair(start, end));
     }
 
-    for (String line : lines) {
+    // Use the header line to determine the position
+    // of subsequent lines
+    int lineStart = 0;
+    int lineEnd = firstLine.length();
+    while (lineEnd < output.length()) {
       // Only match format "|....|"
       // skip line like "+---+---+" and "only showing top 1 row"
-      if (line.matches("^\\|.*\\|$")) {
+      String line = output.substring(lineStart, lineEnd);
+      // Use the DOTALL regex mode to match newlines
+      if (line.matches("(?s)^\\|.*\\|$")) {
         List<String> cells = new ArrayList<>();
         for (Pair pair : pairs) {
-          // strip the blank space around the cell
-          cells.add(line.substring(pair.start, pair.end).trim());
+          // strip the blank space around the cell and escape the string
+          cells.add(escapeJavaScript(line.substring(pair.start, pair.end)).trim());
         }
         rows.add(StringUtils.join(cells, "\t"));
       }
+      // Determine position of next line skipping newline
+      lineStart += firstLine.length() + 1;
+      lineEnd = lineStart + firstLine.length();
     }
     return rows;
   }
