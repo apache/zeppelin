@@ -116,7 +116,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     // try IPySparkInterpreter first
     iPySparkInterpreter = getIPySparkInterpreter();
     if (getProperty("zeppelin.pyspark.useIPython", "true").equals("true") &&
-        iPySparkInterpreter.checkIPythonPrerequisite()) {
+        StringUtils.isEmpty(
+            iPySparkInterpreter.checkIPythonPrerequisite(getPythonExec(getProperties())))) {
       try {
         iPySparkInterpreter.open();
         if (InterpreterContext.get() != null) {
