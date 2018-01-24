@@ -14,6 +14,7 @@
 
 import Nvd3ChartVisualization from './visualization-nvd3chart'
 import PivotTransformation from '../../tabledata/pivot'
+import moment from 'moment'
 
 /**
  * Visualize data in line chart
@@ -77,7 +78,16 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     let self = this
     let configObj = self.config
 
-    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels) })
+    chart.xAxis.tickFormat(function (d) {
+      if (self.config.isDateFormat) {
+        if (self.config.dateFormat) {
+          return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format(self.config.dateFormat)
+        } else {
+          return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format('YYYY-MM-DD HH:mm:ss')
+        }
+      }
+      return self.xAxisTickFormat(d, self.xLabels)
+    })
     chart.yAxis.tickFormat(function (d) {
       if (d === undefined) {
         return 'N/A'
@@ -131,6 +141,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       self.chart.xAxis.rotateLabels(type)
       self.emitConfig(configObj)
     }
+
+    self.config.setDateFormat = function (format) {
+      configObj.dateFormat = format
+      self.emitConfig(configObj)
+    }
   }
 
   getSetting (chart) {
@@ -163,6 +178,22 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
                ng-click="save()" />
           zoom
         </label>
+        
+        <br/>        
+        <label>
+          <input type="checkbox"
+               ng-model="config.isDateFormat"
+               ng-click="save()" />
+          Date format
+        </label>
+        <span ng-show="config.isDateFormat">
+          <input type="text"
+           placeholder="YYYY-MM-DD HH:mm:ss"
+           ng-model="config.dateFormat"
+           ng-enter="config.setDateFormat(config.dateFormat)"
+           ng-blur="config.setDateFormat(config.dateFormat)"
+            />
+        </span>
       </div>
       <ng-include src="'app/visualization/builtins/visualization-displayXAxis.html'">
       </ng-include>`,
