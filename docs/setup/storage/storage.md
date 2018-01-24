@@ -34,6 +34,7 @@ There are few notebook storage systems available for a use out of the box:
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
+  * storage using GitHub - `GitHubNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -361,3 +362,44 @@ export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT=true
 
 #### Import your local notes automatically
 By setting `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` as `true` (default `false`), you can import your local notes automatically when Zeppelin daemon starts up. This feature is for easy migration from local file system storage to MongoDB storage. A note with ID already existing in the collection will not be imported.
+
+## Notebook Storage in GitHub
+
+To enable GitHub tracking, uncomment the following properties in `zeppelin-site.xml`
+
+```sh
+<property>
+  <name>zeppelin.notebook.git.remote.url</name>
+  <value></value>
+  <description>remote Git repository URL</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.username</name>
+  <value>token</value>
+  <description>remote Git repository username</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.access-token</name>
+  <value></value>
+  <description>remote Git repository password</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.origin</name>
+  <value>origin</value>
+  <description>Git repository remote</description>
+</property>
+```
+
+And set the `zeppelin.notebook.storage` propery to `org.apache.zeppelin.notebook.repo.GitHubNotebookRepo`
+
+```sh
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitHubNotebookRepo</value>
+</property>
+```
+
+The access token could be obtained by following the steps on this link https://github.com/settings/tokens.

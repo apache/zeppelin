@@ -499,5 +499,29 @@
 </property>
 -->
 
+<!-- GitHub configurations
+<property>
+  <name>zeppelin.notebook.git.remote.url</name>
+  <value></value>
+  <description>remote Git repository URL</description>
+</property>
 
+<property>
+  <name>zeppelin.notebook.git.remote.username</name>
+  <value>token</value>
+  <description>remote Git repository username</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.access-token</name>
+  <value></value>
+  <description>remote Git repository password</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.origin</name>
+  <value>origin</value>
+  <description>Git repository remote</description>
+</property>
+-->
 </configuration>
