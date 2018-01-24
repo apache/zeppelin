@@ -115,7 +115,7 @@ fi
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
-  // # run kinit
+  # run kinit
   if [[ -n "${ZEPPELIN_SERVER_KERBEROS_KEYTAB}" ]] && [[ -n "${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}" ]]; then
     kinit -kt ${ZEPPELIN_SERVER_KERBEROS_KEYTAB} ${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}
   fi
