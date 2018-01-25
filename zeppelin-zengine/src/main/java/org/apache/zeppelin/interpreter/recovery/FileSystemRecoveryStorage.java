@@ -69,7 +69,9 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
     super(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
     this.zConf = zConf;
-    this.fs = FileSystemStorage.get(zConf);
+    this.fs = new FileSystemStorage(zConf, zConf.getRecoveryDir());
+    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
+        " for Zeppelin Recovery.");
     this.recoveryDir = this.fs.makeQualified(new Path(zConf.getRecoveryDir()));
     LOGGER.info("Using folder {} to store recovery data", recoveryDir);
     this.fs.tryMkDir(recoveryDir);
