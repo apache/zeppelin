@@ -294,7 +294,6 @@ public class InterpreterSettingManager {
             }
           })) {
         String interpreterDirString = interpreterDir.toString();
-
         /**
          * Register interpreter by the following ordering
          * 1. Register it from path {ZEPPELIN_HOME}/interpreter/{interpreter_name}/
@@ -304,7 +303,7 @@ public class InterpreterSettingManager {
          */
         if (!registerInterpreterFromPath(interpreterDirString, interpreterJson)) {
           if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson)) {
-            LOGGER.warn("No interpreter-setting.json found in " + interpreterDirPath);
+            LOGGER.warn("No interpreter-setting.json found in " + interpreterDirString);
           }
         }
       }
