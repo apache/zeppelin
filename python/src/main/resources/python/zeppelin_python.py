@@ -34,19 +34,16 @@ except ImportError:
 
 # for back compatibility
 
-class Logger(object):
-  def __init__(self):
-    pass
-
+class Logger(StringIO, object):
+  def __init__(self, *args, **kwargs):
+    if sys.version_info < (3, 0):
+      self.encoding = None
+    super(Logger, self).__init__(*args, **kwargs)
   def write(self, message):
     intp.appendOutput(message)
-
+    StringIO.write(self, message)
   def reset(self):
     pass
-
-  def flush(self):
-    pass
-
 
 class PyZeppelinContext(object):
   """ A context impl that uses Py4j to communicate to JVM
