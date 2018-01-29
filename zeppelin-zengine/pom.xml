@@ -39,6 +39,7 @@
     <hadoop.version>2.7.3</hadoop.version>
     <commons.lang3.version>3.4</commons.lang3.version>
     <commons.vfs2.version>2.0</commons.vfs2.version>
+    <gcs.storage.version>1.14.0</gcs.storage.version>
     <aws.sdk.s3.version>1.10.62</aws.sdk.s3.version>
     <adl.sdk.version>2.1.4</adl.sdk.version>
     <jackrabbit.webdav.version>1.5.2</jackrabbit.webdav.version>
@@ -51,6 +52,7 @@
 
     <!--test library versions-->
     <google.truth.version>0.27</google.truth.version>
+    <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
   </properties>
 
   <dependencies>
@@ -115,9 +117,83 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+      <version>${gcs.storage.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.api</groupId>
+          <artifactId>api-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.http-client</groupId>
+          <artifactId>google-http-client-jackson2</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.http-client</groupId>
+          <artifactId>google-http-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>api-common</artifactId>
+      <version>1.2.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.http-client</groupId>
+      <artifactId>google-http-client-jackson2</artifactId>
+      <version>1.23.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
       <version>${aws.sdk.s3.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -146,7 +222,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>15.0</version>
+      <version>20.0</version>
     </dependency>
 
     <dependency>
@@ -225,6 +301,23 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-nio</artifactId>
+      <version>${google.testing.nio.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -612,6 +705,10 @@
               <artifactId>protobuf-java</artifactId>
             </exclusion>
             <exclusion>
+              <groupId>com.google.protobuf</groupId>
+              <artifactId>protobuf-java-util</artifactId>
+            </exclusion>
+            <exclusion>
               <groupId>com.google.guava</groupId>
               <artifactId>guava</artifactId>
             </exclusion>
@@ -622,6 +719,10 @@
             <exclusion>
               <groupId>io.grpc</groupId>
               <artifactId>grpc-context</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.google.api.grpc</groupId>
+              <artifactId>proto-google-common-protos</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
