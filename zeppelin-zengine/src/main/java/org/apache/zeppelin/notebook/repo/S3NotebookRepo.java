@@ -90,8 +90,8 @@ public class S3NotebookRepo implements NotebookRepo {
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    bucketName = conf.getBucketName();
-    user = conf.getUser();
+    bucketName = conf.getS3BucketName();
+    user = conf.getS3User();
     useServerSideEncryption = conf.isS3ServerSideEncryption();
 
     // always use the default provider chain
@@ -123,7 +123,7 @@ public class S3NotebookRepo implements NotebookRepo {
     }
 
     // set S3 endpoint to use
-    s3client.setEndpoint(conf.getEndpoint());
+    s3client.setEndpoint(conf.getS3Endpoint());
   }
 
   /**

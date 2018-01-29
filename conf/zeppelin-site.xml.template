@@ -67,6 +67,23 @@
   <description>hide homescreen notebook from list when this value set to true</description>
 </property>
 
+<!-- Google Cloud Storage notebook storage -->
+<!--
+<property>
+  <name>zeppelin.notebook.gcs.dir</name>
+  <value></value>
+  <description>
+    A GCS path in the form gs://bucketname/path/to/dir.
+    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-id}/note.json
+ </description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
 
 <!-- Amazon S3 notebook storage -->
 <!-- Creates the following directory structure: s3://{bucket}/{username}/{notebook-id}/note.json -->
