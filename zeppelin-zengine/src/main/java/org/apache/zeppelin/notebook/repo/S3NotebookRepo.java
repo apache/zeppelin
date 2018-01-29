@@ -205,19 +205,10 @@ public class S3NotebookRepo implements NotebookRepo {
       throw new IOException("Unable to retrieve object from S3: " + ace, ace);
     }
 
-    Note note;
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      note = Note.fromJson(json);
+      return Note.fromJson(json);
     }
-
-    for (Paragraph p : note.getParagraphs()) {
-      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
-        p.setStatus(Status.ABORT);
-      }
-    }
-
-    return note;
   }
 
   private NoteInfo getNoteInfo(String key) throws IOException {

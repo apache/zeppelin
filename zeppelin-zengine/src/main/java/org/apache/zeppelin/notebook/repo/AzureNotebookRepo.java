@@ -17,6 +17,13 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.file.CloudFile;
+import com.microsoft.azure.storage.file.CloudFileClient;
+import com.microsoft.azure.storage.file.CloudFileDirectory;
+import com.microsoft.azure.storage.file.CloudFileShare;
+import com.microsoft.azure.storage.file.ListFileItem;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,25 +35,14 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.file.CloudFile;
-import com.microsoft.azure.storage.file.CloudFileClient;
-import com.microsoft.azure.storage.file.CloudFileDirectory;
-import com.microsoft.azure.storage.file.CloudFileShare;
-import com.microsoft.azure.storage.file.ListFileItem;
 
 /**
  * Azure storage backend for notebooks
@@ -128,15 +124,7 @@ public class AzureNotebookRepo implements NotebookRepo {
     String json = IOUtils.toString(ins,
         conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
-    Note note = Note.fromJson(json);
-
-    for (Paragraph p : note.getParagraphs()) {
-      if (p.getStatus() == Job.Status.PENDING || p.getStatus() == Job.Status.RUNNING) {
-        p.setStatus(Job.Status.ABORT);
-      }
-    }
-
-    return note;
+    return Note.fromJson(json);
   }
 
   @Override
