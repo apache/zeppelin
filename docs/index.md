@@ -104,6 +104,7 @@ limitations under the License.
   * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
   * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
+  * [Google Cloud Storage](./setup/storage/storage.html#notebook-storage-in-gcs)
   * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-storage-in-zeppelinhub)
   * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 

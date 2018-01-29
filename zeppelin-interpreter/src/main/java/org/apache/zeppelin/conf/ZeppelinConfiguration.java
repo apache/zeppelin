@@ -360,15 +360,19 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage");
   }
 
-  public String getUser() {
+  public String getGCSStorageDir() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR);
+  }
+
+  public String getS3User() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
 
-  public String getBucketName() {
+  public String getS3BucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
 
-  public String getEndpoint() {
+  public String getS3Endpoint() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT);
   }
 
@@ -697,6 +701,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
     // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
+    ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR("zeppelin.notebook.gcs.dir", ""),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),

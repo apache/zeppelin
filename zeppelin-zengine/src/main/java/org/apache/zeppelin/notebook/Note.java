@@ -963,6 +963,19 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     for (Paragraph p : paragraphs) {
       p.clearRuntimeInfos();
       p.parseText();
+
+      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
+        p.setStatus(Status.ABORT);
+      }
+
+      List<ApplicationState> appStates = p.getAllApplicationStates();
+      if (appStates != null) {
+        for (ApplicationState app : appStates) {
+          if (app.getStatus() != ApplicationState.Status.ERROR) {
+            app.setStatus(ApplicationState.Status.UNLOADED);
+          }
+        }
+      }
     }
   }
 
