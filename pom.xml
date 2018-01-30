@@ -385,9 +385,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
         <configuration>
+          <skip>true</skip>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
+          <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
           <configLocation>_tools/checkstyle.xml</configLocation>
-          <enableRSS>false</enableRSS>
+          <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
+          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+          <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
         </configuration>
         <executions>
           <execution>
