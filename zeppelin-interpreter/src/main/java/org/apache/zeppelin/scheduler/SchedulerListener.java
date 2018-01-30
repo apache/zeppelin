@@ -21,7 +21,7 @@ package org.apache.zeppelin.scheduler;
  * TODO(moon) : add description.
  */
 public interface SchedulerListener {
-  public void jobStarted(Scheduler scheduler, Job job);
+  void jobStarted(Scheduler scheduler, Job job);
 
-  public void jobFinished(Scheduler scheduler, Job job);
+  void jobFinished(Scheduler scheduler, Job job);
 }

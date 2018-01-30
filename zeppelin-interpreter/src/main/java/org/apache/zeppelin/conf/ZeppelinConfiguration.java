@@ -603,7 +603,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   /**
    * Wrapper class.
    */
-  public static enum ConfVars {
+  public enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "./"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
