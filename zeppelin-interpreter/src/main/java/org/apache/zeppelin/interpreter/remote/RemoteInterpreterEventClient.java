@@ -25,7 +25,11 @@ import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
-import org.apache.zeppelin.resource.*;
+import org.apache.zeppelin.resource.RemoteResource;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourceId;
+import org.apache.zeppelin.resource.ResourcePoolConnector;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -356,6 +360,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         try {
           eventQueue.wait(1000);
         } catch (InterruptedException e) {
+          // ignore exception
         }
       }
 

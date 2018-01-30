@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.ResourceSet;
 
 /**

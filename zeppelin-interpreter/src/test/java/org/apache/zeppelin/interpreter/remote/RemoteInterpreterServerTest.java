@@ -17,19 +17,17 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.thrift.TException;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
 
 public class RemoteInterpreterServerTest {
   @Before
@@ -60,7 +58,8 @@ public class RemoteInterpreterServerTest {
     }
 
     assertEquals(true, running);
-    assertEquals(true, RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", server.getPort()));
+    assertEquals(true, RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost",
+        server.getPort()));
 
     server.shutdown();
 
@@ -77,16 +76,22 @@ public class RemoteInterpreterServerTest {
 
   class ShutdownRun implements Runnable {
     private RemoteInterpreterServer serv = null;
-    public ShutdownRun(RemoteInterpreterServer serv) {
+
+    ShutdownRun(RemoteInterpreterServer serv) {
       this.serv = serv;
     }
+
     @Override
     public void run() {
       try {
         serv.shutdown();
-      } catch (Exception ex) {};
+      } catch (Exception ex) {
+        // ignore exception
+      }
     }
-  };
+  }
+
+  ;
 
   @Test
   public void testStartStopWithQueuedEvents() throws InterruptedException, IOException, TException {
@@ -108,10 +113,11 @@ public class RemoteInterpreterServerTest {
     }
 
     assertEquals(true, running);
-    assertEquals(true, RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", server.getPort()));
+    assertEquals(true, RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost",
+        server.getPort()));
 
     //just send an event on the client queue
-    server.eventClient.onAppStatusUpdate("","","","");
+    server.eventClient.onAppStatusUpdate("", "", "", "");
 
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 

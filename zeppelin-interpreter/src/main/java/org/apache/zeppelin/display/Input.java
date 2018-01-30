@@ -18,12 +18,20 @@
 package org.apache.zeppelin.display;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.display.ui.*;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
