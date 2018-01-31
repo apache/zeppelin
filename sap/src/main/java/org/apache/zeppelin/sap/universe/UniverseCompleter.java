@@ -281,6 +281,14 @@ public class UniverseCompleter {
     }
   }
 
+  public CachedCompleter getUniverseCompleter() {
+    return universeCompleter;
+  }
+
+  public Map<String, CachedCompleter> getUniverseInfoCompletersMap() {
+    return universeInfoCompletersMap;
+  }
+
   private class CursorArgument {
     private boolean universeNamePosition = false;
     private boolean universeNodePosition = false;
