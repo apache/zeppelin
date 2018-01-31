@@ -18,7 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.collect.Sets;
-import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -31,11 +30,10 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo;
-import org.apache.zeppelin.notebook.repo.GitHubNotebookRepo;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -46,10 +44,6 @@ import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Request;
-import org.junit.runner.Result;
-import org.mockito.internal.runners.JUnit44RunnerImpl;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +51,7 @@ import org.sonatype.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -77,6 +72,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+
 
 public class NotebookTest extends AbstractInterpreterTest implements JobListenerFactory {
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
@@ -99,7 +95,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     schedulerFactory = SchedulerFactory.singleton();
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
+    notebookRepo = new InMemoryNotebookRepo();
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
 
@@ -117,24 +113,127 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     NotebookRepo notebookRepo;
     Notebook notebook;
 
-    notebookRepo = new VFSNotebookRepo(conf);
+    notebookRepo = new DummyNotebookRepo();
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
         interpreterSettingManager, this, null,
         notebookAuthorization, credentials);
-    assertFalse("Revision is not supported in VFSNotebookRepo", notebook.isRevisionSupported());
+    assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
 
-    notebookRepo = new GitHubNotebookRepo(conf);
+    notebookRepo = new DummyNotebookRepoWithVersionControl();
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
         interpreterSettingManager, this, null,
         notebookAuthorization, credentials);
-    assertTrue("Revision is supported in GitHubNotebookRepo", notebook.isRevisionSupported());
-
-    notebookRepo = new FileSystemNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
-        interpreterSettingManager, this, null,
-        notebookAuthorization, credentials);
-    assertFalse("Revision is not supported in FileSystemNotebookRepo",
+    assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
         notebook.isRevisionSupported());
+  }
+
+  public static class DummyNotebookRepo implements NotebookRepo {
+
+    @Override
+    public void init(ZeppelinConfiguration zConf) throws IOException {
+
+    }
+
+    @Override
+    public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+      return new ArrayList<>();
+    }
+
+    @Override
+    public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+      return null;
+    }
+
+    @Override
+    public void save(Note note, AuthenticationInfo subject) throws IOException {
+
+    }
+
+    @Override
+    public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+      return null;
+    }
+
+    @Override
+    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+
+    }
+  }
+
+  public static class DummyNotebookRepoWithVersionControl implements
+      NotebookRepoWithVersionControl {
+
+    @Override
+    public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+        throws IOException {
+      return null;
+    }
+
+    @Override
+    public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
+      return null;
+    }
+
+    @Override
+    public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
+      return null;
+    }
+
+    @Override
+    public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject) throws
+        IOException {
+      return null;
+    }
+
+    @Override
+    public void init(ZeppelinConfiguration zConf) throws IOException {
+
+    }
+
+    @Override
+    public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+      return new ArrayList<>();
+    }
+
+    @Override
+    public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+      return null;
+    }
+
+    @Override
+    public void save(Note note, AuthenticationInfo subject) throws IOException {
+
+    }
+
+    @Override
+    public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+      return null;
+    }
+
+    @Override
+    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+
+    }
   }
 
   @Test
@@ -150,7 +249,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     p1.setText("%mock1 hello world");
     p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
     assertEquals("repl1: hello world", p1.getResult().message().get(0).getData());
 
     // run with specific repl
@@ -159,24 +258,23 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     p2.setText("%mock2 hello world");
     p2.setAuthenticationInfo(anonymous);
     note.run(p2.getId());
-    while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
+    while (p2.isTerminated() == false || p2.getResult() == null) Thread.yield();
     assertEquals("repl2: hello world", p2.getResult().message().get(0).getData());
     notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testReloadAndSetInterpreter() throws IOException {
-    // given a notebook
-    File srcDir = new File("src/test/resources/2A94M5J1Z");
-    File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
-    FileUtils.copyDirectory(srcDir, destDir);
+    Note note = notebook.createNote(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
+    p1.setText("%md hello world");
 
     // when load
     notebook.reloadAllNotes(anonymous);
     assertEquals(1, notebook.getAllNotes().size());
 
     // then interpreter factory should be injected into all the paragraphs
-    Note note = notebook.getAllNotes().get(0);
+    note = notebook.getAllNotes().get(0);
     try {
       note.getParagraphs().get(0).getBindedInterpreter();
       fail("Should throw InterpreterNotFoundException");
@@ -187,31 +285,16 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Test
   public void testReloadAllNotes() throws IOException {
-    /**
-     * 2A94M5J1Z old date format without timezone
-     * 2BQA35CJZ new date format with timezone
-     */
-    String[] noteNames = new String[]{"2A94M5J1Z", "2BQA35CJZ"};
+    Note note1 = notebook.createNote(AuthenticationInfo.ANONYMOUS);
+    Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
+    p1.setText("%md hello world");
 
-    // copy the notebook
-    try {
-      for (String note : noteNames) {
-        File srcDir = new File("src/test/resources/" + note);
-        File destDir = new File(notebookDir.getAbsolutePath() + "/" + note);
-        FileUtils.copyDirectory(srcDir, destDir);
-      }
-    } catch (IOException e) {
-      logger.error(e.toString(), e);
-    }
-
-    // doesn't have copied notebook in memory before reloading
-    List<Note> notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 0);
+    Note note2 = notebook.cloneNote(note1.getId(), "copied note", AuthenticationInfo.ANONYMOUS);
 
     // load copied notebook on memory when reloadAllNotes() is called
-    Note copiedNote = notebookRepo.get("2A94M5J1Z", anonymous);
+    Note copiedNote = notebookRepo.get(note2.getId(), anonymous);
     notebook.reloadAllNotes(anonymous);
-    notes = notebook.getAllNotes();
+    List<Note> notes = notebook.getAllNotes();
     assertEquals(notes.size(), 2);
     assertEquals(notes.get(1).getId(), copiedNote.getId());
     assertEquals(notes.get(1).getName(), copiedNote.getName());
@@ -225,17 +308,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     assertEquals(notes.get(1).getParagraphs().get(0).getTitle(),
         copiedNote.getParagraphs().get(0).getTitle());
 
-    // delete the notebook
-    for (String note : noteNames) {
-      File destDir = new File(notebookDir.getAbsolutePath() + "/" + note);
-      FileUtils.deleteDirectory(destDir);
-    }
-
-    // keep notebook in memory before reloading
-    notes = notebook.getAllNotes();
-    assertEquals(notes.size(), 2);
 
     // delete notebook from notebook list when reloadAllNotes() is called
+    ((InMemoryNotebookRepo) notebookRepo).reset();
     notebook.reloadAllNotes(anonymous);
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
@@ -300,7 +375,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
-  public void testClearParagraphOutput() throws IOException, SchedulerException{
+  public void testClearParagraphOutput() throws IOException, SchedulerException {
     Note note = notebook.createNote(anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
@@ -310,7 +385,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     p1.setAuthenticationInfo(anonymous);
     note.run(p1.getId());
 
-    while(p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
     assertEquals("repl1: hello world", p1.getResult().message().get(0).getData());
 
     // clear paragraph output/result
@@ -404,10 +479,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // create a note
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding("user", note.getId(),
-            interpreterSettingManager.getInterpreterSettingIds());
+        interpreterSettingManager.getInterpreterSettingIds());
 
     // append running and pending paragraphs to the note
-    for (Status status: new Status[]{Status.RUNNING, Status.PENDING}) {
+    for (Status status : new Status[]{Status.RUNNING, Status.PENDING}) {
       Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
       Map config = new HashMap<>();
       p.setConfig(config);
@@ -614,7 +689,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // create a cron scheduled note.
     Note cronNote = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), cronNote.getId(),
-            Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock1").getId()));
+        Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock1").getId()));
     cronNote.setConfig(new HashMap() {
       {
         put("cron", "1/5 * * * * ?");
@@ -623,28 +698,32 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       }
     });
     RemoteInterpreter cronNoteInterpreter =
-            (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
-                    cronNote.getId(), "mock1");
+        (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
+            cronNote.getId(), "mock1");
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     cronNoteParagraph.setConfig(new HashMap() {
-      { put("enabled", true); }
+      {
+        put("enabled", true);
+      }
     });
     cronNoteParagraph.setText("%mock1 sleep 1000");
 
     // create another note
     Note anotherNote = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), anotherNote.getId(),
-            Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock2").getId()));
+        Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock2").getId()));
     RemoteInterpreter anotherNoteInterpreter =
-            (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
-                    anotherNote.getId(), "mock2");
+        (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
+            anotherNote.getId(), "mock2");
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     anotherNoteParagraph.setConfig(new HashMap() {
-      { put("enabled", true); }
+      {
+        put("enabled", true);
+      }
     });
     anotherNoteParagraph.setText("%mock2 echo 1");
 
@@ -692,7 +771,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Test
   public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
-          InterruptedException, InterpreterException, SchedulerException, RepositoryException {
+      InterruptedException, InterpreterException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding("user", note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
@@ -922,27 +1001,27 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers or writers means note is public
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-            new HashSet<>(Arrays.asList("user2"))), true);
+        new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isReader(note.getId(),
-            new HashSet<>(Arrays.asList("user2"))), true);
+        new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isRunner(note.getId(),
-            new HashSet<>(Arrays.asList("user2"))), true);
+        new HashSet<>(Arrays.asList("user2"))), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
-            new HashSet<>(Arrays.asList("user2"))), true);
+        new HashSet<>(Arrays.asList("user2"))), true);
 
     notebookAuthorization.setOwners(note.getId(),
-            new HashSet<>(Arrays.asList("user1")));
+        new HashSet<>(Arrays.asList("user1")));
     notebookAuthorization.setReaders(note.getId(),
-            new HashSet<>(Arrays.asList("user1", "user2")));
-      notebookAuthorization.setRunners(note.getId(),
-              new HashSet<>(Arrays.asList("user3")));
+        new HashSet<>(Arrays.asList("user1", "user2")));
+    notebookAuthorization.setRunners(note.getId(),
+        new HashSet<>(Arrays.asList("user3")));
     notebookAuthorization.setWriters(note.getId(),
-            new HashSet<>(Arrays.asList("user1")));
+        new HashSet<>(Arrays.asList("user1")));
 
     assertEquals(notebookAuthorization.isOwner(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), false);
     assertEquals(notebookAuthorization.isOwner(note.getId(),
-            new HashSet<>(Arrays.asList("user1"))), true);
+        new HashSet<>(Arrays.asList("user1"))), true);
 
     assertEquals(notebookAuthorization.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user4"))), false);
@@ -950,9 +1029,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
         new HashSet<>(Arrays.asList("user2"))), true);
 
     assertEquals(notebookAuthorization.isRunner(note.getId(),
-            new HashSet<>(Arrays.asList("user3"))), true);
+        new HashSet<>(Arrays.asList("user3"))), true);
     assertEquals(notebookAuthorization.isRunner(note.getId(),
-            new HashSet<>(Arrays.asList("user2"))), false);
+        new HashSet<>(Arrays.asList("user2"))), false);
 
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), false);
@@ -1053,7 +1132,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException, InterpreterException {
     // create a notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%mock1 getId");
     p1.setAuthenticationInfo(anonymous);
@@ -1085,10 +1164,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testPerSessionInterpreter() throws IOException, InterpreterException {
     // create two notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-    Note note2  = notebook.createNote(anonymous);
+    Note note2 = notebook.createNote(anonymous);
     Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     p1.setText("%mock1 getId");
@@ -1129,10 +1208,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testPerNoteSessionInterpreter() throws IOException, InterpreterException {
     // create two notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
-    Note note2  = notebook.createNote(anonymous);
+    Note note2 = notebook.createNote(anonymous);
     Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     p1.setText("%mock1 getId");
@@ -1186,7 +1265,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException, InterpreterException {
     // create a notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setAuthenticationInfo(anonymous);
     p1.setText("%mock1 getId");
@@ -1278,7 +1357,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testNormalizeNoteName() throws IOException {
     // create a notes
-    Note note1  = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote(anonymous);
 
     note1.setName("MyNote");
     assertEquals(note1.getName(), "MyNote");
@@ -1317,7 +1396,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
     notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
-      notebook.getNotebookAuthorization().setRunners(note2.getId(), Sets.newHashSet("user2"));
+    notebook.getNotebookAuthorization().setRunners(note2.getId(), Sets.newHashSet("user2"));
     assertEquals(0, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user1")).size());
     assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user2")).size());
@@ -1450,12 +1529,13 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     }
   }
 
-  private void delete(File file){
-    if(file.isFile()) file.delete();
-    else if(file.isDirectory()){
-      File [] files = file.listFiles();
-      if(files!=null && files.length>0){
-        for(File f : files){
+  private void delete(File file) {
+    if (file.isFile()) {
+      file.delete();
+    } else if (file.isDirectory()) {
+      File[] files = file.listFiles();
+      if (files != null && files.length > 0) {
+        for (File f : files) {
           delete(f);
         }
       }
@@ -1465,7 +1545,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Override
   public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener(){
+    return new ParagraphJobListener() {
 
       @Override
       public void onOutputAppend(Paragraph paragraph, int idx, String output) {
@@ -1499,4 +1579,56 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     void onStatusChanged(Job job, Status before, Status after);
   }
 
+  private static class InMemoryNotebookRepo implements NotebookRepo {
+
+    private Map<String, Note> notes = new HashMap<>();
+
+    @Override
+    public void init(ZeppelinConfiguration zConf) throws IOException {
+
+    }
+
+    @Override
+    public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+      List<NoteInfo> notesInfo = new ArrayList<>();
+      for (Note note : notes.values()) {
+        notesInfo.add(new NoteInfo(note));
+      }
+      return notesInfo;
+    }
+
+    @Override
+    public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+      return notes.get(noteId);
+    }
+
+    @Override
+    public void save(Note note, AuthenticationInfo subject) throws IOException {
+      notes.put(note.getId(), note);
+    }
+
+    @Override
+    public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+      notes.remove(noteId);
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+      return null;
+    }
+
+    @Override
+    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+
+    }
+
+    public void reset() {
+      this.notes.clear();
+    }
+  }
 }
