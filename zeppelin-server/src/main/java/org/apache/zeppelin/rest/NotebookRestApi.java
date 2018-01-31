@@ -661,16 +661,18 @@ public class NotebookRestApi {
   @POST
   @Path("job/{noteId}")
   @ZeppelinApi
-  public Response runNoteJobs(@PathParam("noteId") String noteId)
+  public Response runNoteJobs(@PathParam("noteId") String noteId,
+                              @QueryParam("waitToFinish") Boolean waitToFinish)
           throws IOException, IllegalArgumentException {
-    LOG.info("run note jobs {} ", noteId);
+    boolean blocking = waitToFinish == null ? true : waitToFinish.booleanValue();
+    LOG.info("run note jobs {} waitToFinish: {}", noteId, blocking);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     checkIfNoteIsNotNull(note);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
     try {
-      note.runAll(subject, true);
+      note.runAll(subject, blocking);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       return new JsonResponse<>(Status.PRECONDITION_FAILED,
