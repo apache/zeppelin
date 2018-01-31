@@ -27,7 +27,7 @@ limitations under the License.
 There are two locations you can configure Apache Zeppelin.
 
 * **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
-* **Java properties** can ba defined in `conf/zeppelin-site.xml`.
+* **Java properties** can be defined in `conf/zeppelin-site.xml`.
 
 If both are defined, then the **environment variables** will take priority.
 > Mouse hover on each property and click <i class="fa fa-link fa-flip-horizontal"></i> then you can get a link for that.
