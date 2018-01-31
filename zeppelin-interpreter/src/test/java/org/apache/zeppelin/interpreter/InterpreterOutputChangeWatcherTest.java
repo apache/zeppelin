@@ -16,16 +16,18 @@
  */
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChangeListener {
   private File tmpDir;
@@ -38,7 +40,8 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     watcher = new InterpreterOutputChangeWatcher(this);
     watcher.start();
 
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
+        System.currentTimeMillis());
     tmpDir.mkdirs();
     fileChanged = null;
     numChanged = new AtomicInteger(0);
@@ -50,12 +53,13 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     delete(tmpDir);
   }
 
-  private void delete(File file){
-    if(file.isFile()) file.delete();
-    else if(file.isDirectory()){
-      File [] files = file.listFiles();
-      if(files!=null && files.length>0){
-        for(File f : files){
+  private void delete(File file) {
+    if (file.isFile()) {
+      file.delete();
+    } else if (file.isDirectory()) {
+      File[] files = file.listFiles();
+      if (files != null && files.length > 0) {
+        for (File f : files) {
           delete(f);
         }
       }
@@ -89,7 +93,7 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     out2.close();
 
     synchronized (this) {
-      wait(30*1000);
+      wait(30 * 1000);
     }
 
     assertNotNull(fileChanged);
@@ -102,7 +106,7 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     fileChanged = file;
     numChanged.incrementAndGet();
 
-    synchronized(this) {
+    synchronized (this) {
       notify();
     }
   }

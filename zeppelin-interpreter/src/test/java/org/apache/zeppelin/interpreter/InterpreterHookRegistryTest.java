@@ -17,12 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Test;
 
 public class InterpreterHookRegistryTest {
 
@@ -38,7 +36,7 @@ public class InterpreterHookRegistryTest {
     final String preExecHook = "pre";
     final String postExecHook = "post";
     InterpreterHookRegistry registry = new InterpreterHookRegistry("intpId");
-    
+
     // Test register()
     registry.register(noteId, className, PRE_EXEC, preExecHook);
     registry.register(noteId, className, POST_EXEC, postExecHook);
@@ -50,7 +48,7 @@ public class InterpreterHookRegistryTest {
     assertEquals(registry.get(noteId, className, POST_EXEC), postExecHook);
     assertEquals(registry.get(noteId, className, PRE_EXEC_DEV), preExecHook);
     assertEquals(registry.get(noteId, className, POST_EXEC_DEV), postExecHook);
-    
+
     // Test Unregister
     registry.unregister(noteId, className, PRE_EXEC);
     registry.unregister(noteId, className, POST_EXEC);
@@ -60,16 +58,16 @@ public class InterpreterHookRegistryTest {
     assertNull(registry.get(noteId, className, POST_EXEC));
     assertNull(registry.get(noteId, className, PRE_EXEC_DEV));
     assertNull(registry.get(noteId, className, POST_EXEC_DEV));
-    
+
     // Test Global Scope
     registry.register(null, className, PRE_EXEC, preExecHook);
     assertEquals(registry.get(GLOBAL_KEY, className, PRE_EXEC), preExecHook);
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void testValidEventCode() {
     InterpreterHookRegistry registry = new InterpreterHookRegistry("intpId");
-    
+
     // Test that only valid event codes ("pre_exec", "post_exec") are accepted
     registry.register("foo", "bar", "baz", "whatever");
   }
