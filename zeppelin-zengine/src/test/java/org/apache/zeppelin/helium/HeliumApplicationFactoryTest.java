@@ -30,7 +30,8 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+//import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -51,7 +52,7 @@ import static org.mockito.Mockito.mock;
 public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implements JobListenerFactory {
 
   private SchedulerFactory schedulerFactory;
-  private VFSNotebookRepo notebookRepo;
+  private NotebookRepo notebookRepo;
   private Notebook notebook;
   private HeliumApplicationFactory heliumAppFactory;
   private AuthenticationInfo anonymous;
@@ -69,7 +70,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     }
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
+    notebookRepo = mock(NotebookRepo.class);
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
     notebook = new Notebook(
         conf,

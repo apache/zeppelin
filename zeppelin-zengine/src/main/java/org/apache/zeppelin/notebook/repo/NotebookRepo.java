@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -31,6 +32,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
  * Notebook repository (persistence layer) abstraction
  */
 public interface NotebookRepo {
+
+  void init(ZeppelinConfiguration zConf) throws IOException;
+
   /**
    * Lists notebook information about all notebooks in storage.
    * @param subject contains user information.
