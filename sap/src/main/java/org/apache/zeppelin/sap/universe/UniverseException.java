@@ -19,7 +19,7 @@ package org.apache.zeppelin.sap.universe;
 
 
 /**
- * Runtime Exception for SAP universe client. *
+ * Runtime Exception for SAP universe
  */
 public class UniverseException extends Exception {
 
