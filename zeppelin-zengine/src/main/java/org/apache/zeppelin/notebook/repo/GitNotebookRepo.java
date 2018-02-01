@@ -17,11 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -39,8 +36,10 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * NotebookRepo that hosts all the notebook FS in a single Git repo
@@ -183,6 +182,11 @@ public class GitNotebookRepo extends VFSNotebookRepo {
 
   void setGit(Git git) {
     this.git = git;
+  }
+
+  @Override
+  public Boolean isRevisionSupported() {
+    return true;
   }
 
 }

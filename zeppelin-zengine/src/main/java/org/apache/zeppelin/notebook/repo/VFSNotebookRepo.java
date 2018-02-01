@@ -320,6 +320,11 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
+  public Boolean isRevisionSupported() {
+    return false;
+  }
+
+  @Override
   public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
       throws IOException {
     // Auto-generated method stub

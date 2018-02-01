@@ -131,6 +131,13 @@ public interface NotebookRepo {
   @ZeppelinApi public void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
 
   /**
+   * Check if revision feature supported.
+   *
+   */
+  @ZeppelinApi
+  Boolean isRevisionSupported();
+
+  /**
    * Represents the 'Revision' a point in life of the notebook
    */
   static class Revision {

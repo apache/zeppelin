@@ -497,6 +497,8 @@ public class Notebook implements NoteEventListener {
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
 
+    note.getConfig().put("isRevisionSupported", notebookRepo.isRevisionSupported());
+
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
     // restore angular object --------------

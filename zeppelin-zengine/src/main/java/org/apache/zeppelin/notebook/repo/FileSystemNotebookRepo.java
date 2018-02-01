@@ -121,4 +121,9 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOGGER.warn("updateSettings is not implemented for HdfsNotebookRepo");
   }
+
+  @Override
+  public Boolean isRevisionSupported() {
+    return false;
+  }
 }

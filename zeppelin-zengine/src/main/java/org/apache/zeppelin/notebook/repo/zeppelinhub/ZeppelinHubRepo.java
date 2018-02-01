@@ -373,4 +373,9 @@ public class ZeppelinHubRepo implements NotebookRepo {
     return null;
   }
 
+  @Override
+  public Boolean isRevisionSupported() {
+    return false;
+  }
+
 }
