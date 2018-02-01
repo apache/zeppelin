@@ -59,6 +59,9 @@ export default class TableData extends Dataset {
         if (i === 0) {
           columnNames.push({name: col, index: j, aggr: 'sum'})
         } else {
+          if (col.match('^[0-9]+([.,][0-9]+)?$')) {
+            col = parseFloat(col)
+          }
           cols.push(col)
           cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col})
         }
