@@ -781,5 +781,11 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     return `https://zeppelin.apache.org/docs/${currentVersion}/usage/interpreter/interpreter_binding_mode.html`
   }
 
+  $scope.toggleAllInterpreters = function(state) {
+    for (let setting = 0; setting < $scope.interpreterSettings.length; setting++) {
+      $scope.interpreterSettings[setting].isExpanded = (state === 'expand') ? true : false
+    }
+  }
+
   init()
 }
