@@ -396,6 +396,22 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('closeTable')
   }
 
+  $scope.toggleAllNumbering = function () {
+    if ($scope.note.config.numberingToggled) {
+      $scope.$broadcast('setNumbering', false)
+    } else {
+      $scope.$broadcast('setNumbering', true)
+    }
+    $scope.note.config.numberingToggled = !$scope.note.config.numberingToggled
+    $scope.setConfig()
+  }
+
+  $scope.updateParagraphNumbering = function () {
+    for (let i = 0; i < $scope.note.paragraphs.length; i++) {
+      $scope.note.paragraphs[i].number = i + 1
+    }
+  }
+
   /**
    * @returns {boolean} true if one more paragraphs are running. otherwise return false.
    */
@@ -539,6 +555,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       return
     }
     addPara(paragraph, index)
+    $scope.updateParagraphNumbering()
   })
 
   $scope.$on('removeParagraph', function (event, paragraphId) {
@@ -546,6 +563,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
       return
     }
     removePara(paragraphId)
+    $scope.updateParagraphNumbering()
   })
 
   $scope.$on('moveParagraph', function (event, paragraphId, newIdx) {
@@ -556,6 +574,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx)
     }
+    $scope.updateParagraphNumbering()
   })
 
   $scope.$on('updateNote', function (event, name, config, info) {
@@ -1396,7 +1415,6 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
 
     $scope.note = note
-
     $scope.paragraphUrl = $routeParams.paragraphId
     $scope.asIframe = $routeParams.asIframe
     if ($scope.paragraphUrl) {
