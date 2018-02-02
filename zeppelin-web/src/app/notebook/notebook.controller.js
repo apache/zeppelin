@@ -1415,6 +1415,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
 
     $scope.note = note
+
     $scope.paragraphUrl = $routeParams.paragraphId
     $scope.asIframe = $routeParams.asIframe
     if ($scope.paragraphUrl) {
