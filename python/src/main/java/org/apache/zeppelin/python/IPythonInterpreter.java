@@ -299,7 +299,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     if (watchDog != null) {
       LOGGER.debug("Kill IPython Process");
       ipythonClient.stop(StopRequest.newBuilder().build());
@@ -327,7 +327,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     ipythonClient.cancel(CancelRequest.newBuilder().build());
   }
 
@@ -337,7 +337,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     return 0;
   }
 
