@@ -1028,8 +1028,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   const autoAdjustEditorHeight = function (editor) {
     let height =
       editor.getSession().getScreenLength() *
-      editor.renderer.lineHeight +
-      editor.renderer.scrollBar.getWidth()
+      editor.renderer.lineHeight
 
     angular.element('#' + editor.container.id).height(height.toString() + 'px')
     editor.resize()
