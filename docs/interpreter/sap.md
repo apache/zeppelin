@@ -34,13 +34,13 @@ limitations under the License.
 
 {% include JB/setup %}
 
-# SAP BusinessObjects Interpreter for Apache Zeppelin
+# SAP BusinessObjects (Universe) Interpreter for Apache Zeppelin
 
 <div id="toc"></div>
 
 ## Overview
 
-[SAP BusinessObjects BI platform](https://help.sap.com/viewer/p/SAP_BUSINESSOBJECTS_BUSINESS_INTELLIGENCE_PLATFORM) can simplify the lives of business users and IT staff. SAP BusinessObjects is based on universes. The universe contains dual-semantic layer model. The users make queries upon universes. This interpreter is new interface for universes.
+[SAP BusinessObjects BI platform (universes)](https://help.sap.com/viewer/p/SAP_BUSINESSOBJECTS_BUSINESS_INTELLIGENCE_PLATFORM) can simplify the lives of business users and IT staff. SAP BusinessObjects is based on universes. The universe contains dual-semantic layer model. The users make queries upon universes. This interpreter is new interface for universes.
 
 *Disclaimer* SAP interpreter is not official interpreter for SAP BusinessObjects BI platform. It uses [BI Semantic Layer REST API](https://help.sap.com/viewer/5431204882b44fc98d56bd752e69f132/4.2.5/en-US/ec54808e6fdb101497906a7cb0e91070.html)
 
@@ -50,7 +50,7 @@ Tested with versions 4.2SP3 (14.2.3.2220) and 4.2SP5. There is no support for fi
 
 The universe name must be unique.
 
-## Configuring SAP BusinessObjects Interpreter
+## Configuring SAP Universe Interpreter
 
 At the "Interpreters" menu, you can edit SAP interpreter or create new one. Zeppelin provides these properties for SAP.
 
