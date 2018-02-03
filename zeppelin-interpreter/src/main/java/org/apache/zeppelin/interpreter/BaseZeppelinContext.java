@@ -237,6 +237,8 @@ public abstract class BaseZeppelinContext {
       if (isSupportedObject(o)) {
         interpreterContext.out.write(showData(o));
       } else {
+        interpreterContext.out.write("ZeppelinContext doesn't support to show type: "
+            + o.getClass().getCanonicalName() + "\n");
         interpreterContext.out.write(o.toString());
       }
     } catch (IOException e) {

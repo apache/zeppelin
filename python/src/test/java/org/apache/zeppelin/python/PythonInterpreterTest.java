@@ -93,7 +93,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
   }
 
   @After
-  public void afterTest() throws IOException {
+  public void afterTest() throws IOException, InterpreterException {
     pythonInterpreter.close();
   }
 

@@ -22,11 +22,11 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
  * Event from HeliumApplication running on remote interpreter process
  */
 public interface ApplicationEventListener {
-  public void onOutputAppend(
+  void onOutputAppend(
       String noteId, String paragraphId, int index, String appId, String output);
-  public void onOutputUpdated(
+  void onOutputUpdated(
       String noteId, String paragraphId, int index, String appId,
       InterpreterResult.Type type, String output);
-  public void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg);
-  public void onStatusChange(String noteId, String paragraphId, String appId, String status);
+  void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg);
+  void onStatusChange(String noteId, String paragraphId, String appId, String status);
 }

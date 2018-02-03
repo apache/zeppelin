@@ -21,7 +21,12 @@ import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
@@ -109,13 +114,14 @@ public class Resource implements JsonSerializable {
 
   /**
    * Call a method of the object that this resource holds
+   *
    * @param methodName name of method to call
    * @param paramTypes method parameter types
-   * @param params method parameter values
+   * @param params     method parameter values
    * @return return value of the method
    */
   public Object invokeMethod(
-      String methodName, Class [] paramTypes, Object [] params) {
+      String methodName, Class[] paramTypes, Object[] params) {
     if (r != null) {
       try {
         Method method = r.getClass().getMethod(
@@ -124,7 +130,7 @@ public class Resource implements JsonSerializable {
         method.setAccessible(true);
         Object ret = method.invoke(r, params);
         return ret;
-      }  catch (Exception e) {
+      } catch (Exception e) {
         logException(e);
         return null;
       }
@@ -135,14 +141,15 @@ public class Resource implements JsonSerializable {
 
   /**
    * Call a method of the object that this resource holds and save return value as a resource
-   * @param methodName name of method to call
-   * @param paramTypes method parameter types
-   * @param params method parameter values
+   *
+   * @param methodName         name of method to call
+   * @param paramTypes         method parameter types
+   * @param params             method parameter values
    * @param returnResourceName name of resource that return value will be saved
    * @return Resource that holds return value
    */
   public Resource invokeMethod(
-      String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
+      String methodName, Class[] paramTypes, Object[] params, String returnResourceName) {
     if (r != null) {
       try {
         Method method = r.getClass().getMethod(

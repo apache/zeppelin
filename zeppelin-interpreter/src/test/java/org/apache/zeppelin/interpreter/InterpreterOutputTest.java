@@ -16,13 +16,14 @@
  */
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class InterpreterOutputTest implements InterpreterOutputListener {

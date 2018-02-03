@@ -28,14 +28,17 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ApplicationLoaderTest {
   private File tmpDir;
 
   @Before
   public void setUp() {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
+        System.currentTimeMillis());
     tmpDir.mkdirs();
   }
 
