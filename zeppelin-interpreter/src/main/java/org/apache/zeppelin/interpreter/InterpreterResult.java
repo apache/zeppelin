@@ -54,6 +54,7 @@ public class InterpreterResult implements Serializable, JsonSerializable {
     TABLE,
     IMG,
     SVG,
+    SPELL,
     NULL,
     NETWORK
   }
