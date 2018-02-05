@@ -21,9 +21,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -51,15 +53,17 @@ import com.google.common.collect.Lists;
  *
  *   TODO(bzz): add default .gitignore
  */
-public class GitNotebookRepo extends VFSNotebookRepo {
+public class GitNotebookRepo implements NotebookGitRepo {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
   private Git git;
+  private NotebookRepoCommon commons;
 
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
-    super(conf);
-    localPath = getRootDir().getName().getPath();
+    commons = new NotebookRepoCommon(conf);
+    commons.setNotebookDirectory(conf.getNotebookDir());
+    localPath = commons.getRootDir().getName().getPath();
     LOG.info("Opening a git repo at '{}'", localPath);
     Repository localRepo = new FileRepository(Joiner.on(File.separator).join(localPath, ".git"));
     if (!localRepo.getDirectory().exists()) {
@@ -70,8 +74,23 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
+  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+    return commons.list(subject);
+  }
+
+  @Override
+  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+    return commons.get(noteId, subject);
+  }
+
+  @Override
   public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
-    super.save(note, subject);
+    commons.save(note, subject);
+  }
+
+  @Override
+  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+
   }
 
   /* implemented as git add+commit
@@ -125,7 +144,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
       // checkout to target revision
       git.checkout().setStartPoint(revId).addPath(noteId).call();
       // get the note
-      note = super.get(noteId, subject);
+      note = commons.get(noteId, subject);
       // checkout back to head
       git.checkout().setStartPoint(head.getName()).addPath(noteId).call();
       if (modified && stash != null) {
@@ -170,7 +189,17 @@ public class GitNotebookRepo extends VFSNotebookRepo {
     }
     return revisionNote;
   }
-  
+
+  @Override
+  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+    return commons.getSettings(subject);
+  }
+
+  @Override
+  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    commons.updateSettings(settings, subject);
+  }
+
   @Override
   public void close() {
     git.getRepository().close();
@@ -184,10 +213,5 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   void setGit(Git git) {
     this.git = git;
   }
-
-  @Override
-  public Boolean isRevisionSupported() {
-    return true;
-  }
-
+  
 }

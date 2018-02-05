@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.repo.NotebookGitRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
@@ -48,7 +49,7 @@ import com.google.gson.reflect.TypeToken;
 /**
  * ZeppelinHub repo class.
  */
-public class ZeppelinHubRepo implements NotebookRepo {
+public class ZeppelinHubRepo implements NotebookGitRepo {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRepo.class);
   private static final String DEFAULT_SERVER = "https://www.zeppelinhub.com";
   static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zeppelinhub.api.address";
@@ -371,11 +372,6 @@ public class ZeppelinHubRepo implements NotebookRepo {
       throws IOException {
     // Auto-generated method stub
     return null;
-  }
-
-  @Override
-  public Boolean isRevisionSupported() {
-    return false;
   }
 
 }

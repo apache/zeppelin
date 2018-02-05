@@ -24,6 +24,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.NotebookGitRepo.Revision;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ import java.util.*;
 /**
  * Notebook repository sync with remote storage
  */
-public class NotebookRepoSync implements NotebookRepo {
+public class NotebookRepoSync implements NotebookGitRepo {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIds";
@@ -317,7 +318,7 @@ public class NotebookRepoSync implements NotebookRepo {
     return maxRepoNum;
   }
 
-  NotebookRepo getRepo(int repoIndex) throws IOException {
+  public NotebookRepo getRepo(int repoIndex) throws IOException {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
       throw new IOException("Requested storage index " + repoIndex
           + " isn't initialized," + " repository count is " + getRepoCount());
@@ -431,6 +432,28 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
+  public Boolean isDefaultRepoGit() {
+    try {
+      if (getRepo(0) instanceof NotebookGitRepo) {
+        return true;
+      }
+    } catch (IOException e) {
+      LOG.error("Error getting default repo", e);
+    }
+    return false;
+  }
+
+  public Boolean isRepoGit(int repoIndex) {
+    try {
+      if (getRepo(repoIndex) instanceof NotebookGitRepo) {
+        return true;
+      }
+    } catch (IOException e) {
+      LOG.error("Error getting default repo", e);
+    }
+    return false;
+  }
+
   //checkpoint to all available storages
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
@@ -443,7 +466,10 @@ public class NotebookRepoSync implements NotebookRepo {
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
+        if (isRepoGit(i)) {
+          allRepoCheckpoints
+              .add(((NotebookGitRepo) getRepo(i)).checkpoint(noteId, checkpointMsg, subject));
+        }
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
           getRepo(i).getClass().toString(), i, noteId);
@@ -470,7 +496,9 @@ public class NotebookRepoSync implements NotebookRepo {
   public Note get(String noteId, String revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
-      revisionNote = getRepo(0).get(noteId, revId, subject);
+      if (isDefaultRepoGit()) {
+        revisionNote = ((NotebookGitRepo) getRepo(0)).get(noteId, revId, subject);
+      }
     } catch (IOException e) {
       LOG.error("Failed to get revision {} of note {}", revId, noteId, e);
     }
@@ -481,7 +509,9 @@ public class NotebookRepoSync implements NotebookRepo {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     List<Revision> revisions = Collections.emptyList();
     try {
-      revisions = getRepo(0).revisionHistory(noteId, subject);
+      if (isDefaultRepoGit()) {
+        revisions = ((NotebookGitRepo) getRepo(0)).revisionHistory(noteId, subject);
+      }
     } catch (IOException e) {
       LOG.error("Failed to list revision history", e);
     }
@@ -516,7 +546,9 @@ public class NotebookRepoSync implements NotebookRepo {
     Note currentNote = null, revisionNote = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        currentNote = getRepo(i).setNoteRevision(noteId, revId, subject);
+        if (isRepoGit(i)) {
+          currentNote = ((NotebookGitRepo) getRepo(i)).setNoteRevision(noteId, revId, subject);
+        }
       } catch (IOException e) {
         // already logged
         currentNote = null;
@@ -527,16 +559,6 @@ public class NotebookRepoSync implements NotebookRepo {
       }
     }
     return revisionNote;
-  }
-
-  @Override
-  public Boolean isRevisionSupported() {
-    try {
-      return getRepo(0).isRevisionSupported();
-    } catch (IOException e) {
-      LOG.error("Cannot get notebook repo settings", e);
-    }
-    return false;
   }
 
 }
