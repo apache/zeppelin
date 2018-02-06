@@ -17,22 +17,9 @@
 
 package org.apache.zeppelin.livy;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.net.ssl.SSLContext;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -51,15 +38,6 @@ import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -74,19 +52,40 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.net.ssl.SSLContext;
+
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * Base class for livy interpreters.
  */
 public abstract class BaseLivyInterpreter extends Interpreter {
-
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterpreter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-  private static String SESSION_NOT_FOUND_PATTERN = "\"Session '\\d+' not found.\"";
+  private static String sessionNotFoundPattern = "\"Session '\\d+' not found.\"";
 
   protected volatile SessionInfo sessionInfo;
   private String livyURL;
@@ -318,8 +317,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       Map<String, String> conf = new HashMap<>();
       for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
         if (entry.getKey().toString().startsWith("livy.spark.") &&
-            !entry.getValue().toString().isEmpty())
+            !entry.getValue().toString().isEmpty()) {
           conf.put(entry.getKey().toString().substring(5), entry.getValue().toString());
+        }
       }
 
       CreateSessionRequest request = new CreateSessionRequest(kind,
@@ -426,8 +426,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         cancelStatement(id);
       } catch (LivyException e) {
         LOGGER.error("Fail to cancel statement " + id + " for paragraph " + paragraphId, e);
-      }
-      finally {
+      } finally {
         paragraphsToCancel.remove(paragraphId);
       }
     } else {
@@ -466,7 +465,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
   }
 
-
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
     if (stmtInfo.output != null && stmtInfo.output.isError()) {
@@ -474,8 +472,10 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       StringBuilder sb = new StringBuilder();
       sb.append(stmtInfo.output.evalue);
       // in case evalue doesn't have newline char
-      if (!stmtInfo.output.evalue.contains("\n"))
+      if (!stmtInfo.output.evalue.contains("\n")) {
         sb.append("\n");
+      }
+
       if (stmtInfo.output.traceback != null) {
         sb.append(StringUtils.join(stmtInfo.output.traceback));
       }
@@ -489,14 +489,14 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Empty output");
     } else {
       //TODO(zjffdu) support other types of data (like json, image and etc)
-      String result = stmtInfo.output.data.plain_text;
+      String result = stmtInfo.output.data.plainText;
 
       // check table magic result first
-      if (stmtInfo.output.data.application_livy_table_json != null) {
+      if (stmtInfo.output.data.applicationLivyTableJson != null) {
         StringBuilder outputBuilder = new StringBuilder();
         boolean notFirstColumn = false;
 
-        for (Map header : stmtInfo.output.data.application_livy_table_json.headers) {
+        for (Map header : stmtInfo.output.data.applicationLivyTableJson.headers) {
           if (notFirstColumn) {
             outputBuilder.append("\t");
           }
@@ -505,15 +505,15 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         }
 
         outputBuilder.append("\n");
-        for (List<Object> row : stmtInfo.output.data.application_livy_table_json.records) {
+        for (List<Object> row : stmtInfo.output.data.applicationLivyTableJson.records) {
           outputBuilder.append(StringUtils.join(row, "\t"));
           outputBuilder.append("\n");
         }
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
             InterpreterResult.Type.TABLE, outputBuilder.toString());
-      } else if (stmtInfo.output.data.image_png != null) {
+      } else if (stmtInfo.output.data.imagePng != null) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-            InterpreterResult.Type.IMG, (String) stmtInfo.output.data.image_png);
+            InterpreterResult.Type.IMG, (String) stmtInfo.output.data.imagePng);
       } else if (result != null) {
         result = result.trim();
         if (result.startsWith("<link")
@@ -553,7 +553,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private void cancelStatement(int statementId) throws LivyException {
     callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId + "/cancel", "POST");
   }
-
 
   private RestTemplate createRestTemplate() {
     String keytabLocation = getProperty("zeppelin.livy.keytab");
@@ -674,7 +673,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       // Exception happens when kerberos is enabled.
       if (e.getCause() instanceof HttpClientErrorException) {
         HttpClientErrorException cause = (HttpClientErrorException) e.getCause();
-        if (cause.getResponseBodyAsString().matches(SESSION_NOT_FOUND_PATTERN)) {
+        if (cause.getResponseBodyAsString().matches(sessionNotFoundPattern)) {
           throw new SessionNotFoundException(cause.getResponseBodyAsString());
         }
         throw new LivyException(cause.getResponseBodyAsString() + "\n"
@@ -700,7 +699,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         || response.getStatusCode().value() == 201) {
       return response.getBody();
     } else if (response.getStatusCode().value() == 404) {
-      if (response.getBody().matches(SESSION_NOT_FOUND_PATTERN)) {
+      if (response.getBody().matches(sessionNotFoundPattern)) {
         throw new SessionNotFoundException(response.getBody());
       } else {
         throw new APINotFoundException("No rest api found for " + targetURL +
@@ -737,7 +736,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     public final String user;
     public final Map<String, String> conf;
 
-    public CreateSessionRequest(String kind, String user, Map<String, String> conf) {
+    CreateSessionRequest(String kind, String user, Map<String, String> conf) {
       this.kind = kind;
       this.user = user;
       this.conf = conf;
@@ -791,7 +790,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   static class ExecuteRequest {
     public final String code;
     public final String kind;
-    public ExecuteRequest(String code, String kind) {
+
+    ExecuteRequest(String code, String kind) {
       this.code = code;
       this.kind = kind;
     }
@@ -807,22 +807,22 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     public double progress;
     public StatementOutput output;
 
-    public StatementInfo() {
+    StatementInfo() {
     }
 
     public static StatementInfo fromJson(String json) {
-      String right_json = "";
+      String rightJson = "";
       try {
         gson.fromJson(json, StatementInfo.class);
-        right_json = json;
+        rightJson = json;
       } catch (Exception e) {
         if (json.contains("\"traceback\":{}")) {
           LOGGER.debug("traceback type mismatch, replacing the mismatching part ");
-          right_json = json.replace("\"traceback\":{}", "\"traceback\":[]");
-          LOGGER.debug("new json string is {}", right_json);
+          rightJson = json.replace("\"traceback\":{}", "\"traceback\":[]");
+          LOGGER.debug("new json string is {}", rightJson);
         }
       }
-      return gson.fromJson(right_json, StatementInfo.class);
+      return gson.fromJson(rightJson, StatementInfo.class);
     }
 
     public boolean isAvailable() {
@@ -835,7 +835,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
     private static class StatementOutput {
       public String status;
-      public String execution_count;
+      public String executionCount;
       public Data data;
       public String ename;
       public String evalue;
@@ -852,13 +852,13 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
       private static class Data {
         @SerializedName("text/plain")
-        public String plain_text;
+        public String plainText;
         @SerializedName("image/png")
-        public String image_png;
+        public String imagePng;
         @SerializedName("application/json")
-        public String application_json;
+        public String applicationJson;
         @SerializedName("application/vnd.livy.table.v1+json")
-        public TableMagic application_livy_table_json;
+        public TableMagic applicationLivyTableJson;
       }
 
       private static class TableMagic {
@@ -876,7 +876,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     public final String kind;
     public final int cursor;
 
-    public CompletionRequest(String code, String kind, int cursor) {
+    CompletionRequest(String code, String kind, int cursor) {
       this.code = code;
       this.kind = kind;
       this.cursor = cursor;
@@ -890,7 +890,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   static class CompletionResponse {
     public final String[] candidates;
 
-    public CompletionResponse(String[] candidates) {
+    CompletionResponse(String[] candidates) {
       this.candidates = candidates;
     }
 
@@ -911,5 +911,4 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       return gson.fromJson(json, LivyVersionResponse.class);
     }
   }
-
 }

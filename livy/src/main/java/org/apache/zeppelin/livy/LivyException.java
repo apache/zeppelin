@@ -18,7 +18,7 @@
 package org.apache.zeppelin.livy;
 
 /**
- * Livy api related exception
+ * Livy api related exception.
  */
 public class LivyException extends Exception {
   public LivyException() {

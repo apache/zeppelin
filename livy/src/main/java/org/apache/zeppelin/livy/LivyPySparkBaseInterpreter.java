@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.livy;
 
 import java.util.Properties;
 
 /**
- * Base class for PySpark Interpreter
+ * Base class for PySpark Interpreter.
  */
 public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
 
