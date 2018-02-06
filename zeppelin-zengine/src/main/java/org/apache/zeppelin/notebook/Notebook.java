@@ -513,12 +513,7 @@ public class Notebook implements NoteEventListener {
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
-
-    if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
-      note.getConfig().put("isRevisionSupported", true);
-    } else {
-      note.getConfig().put("isRevisionSupported", false);
-    }
+    note.setRevisionSupported(notebookRepo);
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 

@@ -47,6 +47,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.notebook.repo.NotebookGitRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
@@ -299,6 +300,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   void setNotebookRepo(NotebookRepo repo) {
     this.repo = repo;
+  }
+
+  void setRevisionSupported(NotebookRepo repo) {
+    if (repo instanceof NotebookGitRepo) {
+      getConfig().put("isRevisionSupported", true);
+    } else {
+      getConfig().put("isRevisionSupported", false);
+    }
   }
 
   public void setIndex(SearchService index) {
