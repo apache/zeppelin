@@ -433,14 +433,7 @@ public class NotebookRepoSync implements NotebookGitRepo {
   }
 
   public Boolean isDefaultRepoGit() {
-    try {
-      if (getRepo(0) instanceof NotebookGitRepo) {
-        return true;
-      }
-    } catch (IOException e) {
-      LOG.error("Error getting default repo", e);
-    }
-    return false;
+    return isRepoGit(0);
   }
 
   public Boolean isRepoGit(int repoIndex) {
