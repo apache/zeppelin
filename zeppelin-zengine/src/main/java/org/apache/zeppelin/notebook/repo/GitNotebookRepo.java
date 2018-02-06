@@ -53,7 +53,7 @@ import com.google.common.collect.Lists;
  *
  *   TODO(bzz): add default .gitignore
  */
-public class GitNotebookRepo implements NotebookGitRepo {
+public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
@@ -61,6 +61,7 @@ public class GitNotebookRepo implements NotebookGitRepo {
   private NotebookRepoCommon commons;
 
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
+    super(conf);
     commons = new NotebookRepoCommon(conf);
     commons.setNotebookDirectory(conf.getNotebookDir());
     localPath = commons.getRootDir().getName().getPath();

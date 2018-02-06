@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * Notebook repository (persistence layer) abstraction
  */
-public interface NotebookGitRepo extends NotebookRepo {
+public interface NotebookRepoWithVersionControl extends NotebookRepo {
 
   /**
    * chekpoint (set revision) for notebook.

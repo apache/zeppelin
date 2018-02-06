@@ -24,7 +24,6 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.NotebookGitRepo.Revision;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +36,7 @@ import java.util.*;
 /**
  * Notebook repository sync with remote storage
  */
-public class NotebookRepoSync implements NotebookGitRepo {
+public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIds";
@@ -438,7 +437,7 @@ public class NotebookRepoSync implements NotebookGitRepo {
 
   public Boolean isRepoGit(int repoIndex) {
     try {
-      if (getRepo(repoIndex) instanceof NotebookGitRepo) {
+      if (getRepo(repoIndex) instanceof NotebookRepoWithVersionControl) {
         return true;
       }
     } catch (IOException e) {
@@ -461,7 +460,7 @@ public class NotebookRepoSync implements NotebookGitRepo {
       try {
         if (isRepoGit(i)) {
           allRepoCheckpoints
-              .add(((NotebookGitRepo) getRepo(i)).checkpoint(noteId, checkpointMsg, subject));
+              .add(((NotebookRepoWithVersionControl) getRepo(i)).checkpoint(noteId, checkpointMsg, subject));
         }
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
@@ -490,7 +489,7 @@ public class NotebookRepoSync implements NotebookGitRepo {
     Note revisionNote = null;
     try {
       if (isDefaultRepoGit()) {
-        revisionNote = ((NotebookGitRepo) getRepo(0)).get(noteId, revId, subject);
+        revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, revId, subject);
       }
     } catch (IOException e) {
       LOG.error("Failed to get revision {} of note {}", revId, noteId, e);
@@ -503,7 +502,7 @@ public class NotebookRepoSync implements NotebookGitRepo {
     List<Revision> revisions = Collections.emptyList();
     try {
       if (isDefaultRepoGit()) {
-        revisions = ((NotebookGitRepo) getRepo(0)).revisionHistory(noteId, subject);
+        revisions = ((NotebookRepoWithVersionControl) getRepo(0)).revisionHistory(noteId, subject);
       }
     } catch (IOException e) {
       LOG.error("Failed to list revision history", e);
@@ -540,7 +539,7 @@ public class NotebookRepoSync implements NotebookGitRepo {
     for (int i = 0; i < repoBound; i++) {
       try {
         if (isRepoGit(i)) {
-          currentNote = ((NotebookGitRepo) getRepo(i)).setNoteRevision(noteId, revId, subject);
+          currentNote = ((NotebookRepoWithVersionControl) getRepo(i)).setNoteRevision(noteId, revId, subject);
         }
       } catch (IOException e) {
         // already logged

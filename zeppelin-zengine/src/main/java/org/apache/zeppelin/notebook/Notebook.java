@@ -54,8 +54,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookGitRepo;
-import org.apache.zeppelin.notebook.repo.NotebookGitRepo.Revision;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -387,7 +387,7 @@ public class Notebook implements NoteEventListener {
   public Revision checkpointNote(String noteId, String checkpointMessage,
       AuthenticationInfo subject) throws IOException {
     if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
-      return ((NotebookGitRepo) notebookRepo).checkpoint(noteId, checkpointMessage, subject);
+      return ((NotebookRepoWithVersionControl) notebookRepo).checkpoint(noteId, checkpointMessage, subject);
     } else {
       return null;
 
@@ -396,7 +396,7 @@ public class Notebook implements NoteEventListener {
 
   public List<Revision> listRevisionHistory(String noteId, AuthenticationInfo subject) {
     if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
-      return ((NotebookGitRepo) notebookRepo).revisionHistory(noteId, subject);
+      return ((NotebookRepoWithVersionControl) notebookRepo).revisionHistory(noteId, subject);
     } else {
       return null;
     }
@@ -405,7 +405,7 @@ public class Notebook implements NoteEventListener {
   public Note setNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
-      return ((NotebookGitRepo) notebookRepo).setNoteRevision(noteId, revisionId, subject);
+      return ((NotebookRepoWithVersionControl) notebookRepo).setNoteRevision(noteId, revisionId, subject);
     } else {
       return null;
     }
@@ -414,7 +414,7 @@ public class Notebook implements NoteEventListener {
   public Note getNoteByRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
-      return ((NotebookGitRepo) notebookRepo).get(noteId, revisionId, subject);
+      return ((NotebookRepoWithVersionControl) notebookRepo).get(noteId, revisionId, subject);
     } else {
       return null;
     }
